@@ -70,6 +70,11 @@ is warranted.
 | 008 | In-process EventEmitter + @fastify/websocket bridge; MQTT bridge is a defined extension point for M2+ |
 | 009 | PostgreSQL (Docker), single instance, per-plugin schemas; JSONB for semi-structured config |
 | 010 | PWA for mobile (Android); Web Push for out-of-home notifications; no native app planned |
+| 011 | Shell home surface is a composable, role-aware widget grid; M0 must not foreclose this model; implementation deferred to M1 |
+| 012 | shadcn/ui + Tailwind CSS v4 — component library and styling |
+| 013 | State in layers: React Context (auth/tier), Zustand (shell), TanStack Query (server/plugin data) |
+| 014 | Plugin design contract is import-based from `@family-os/ui` and `@family-os/platform` |
+| 015 | Permissions layer on top of tier: effective permissions = tier baseline + grants − revocations; `TierGate` for coarse gating, `PermissionGate` for fine-grained |
 
 ---
 
@@ -160,5 +165,6 @@ Deferred to later sessions:
 - **Platform API surface** — typed SDK contract (M0 Architecture session)
 - **Plugin dev toolchain** — scaffold, local dev server, hot reload
 - **Auth / identity model** — login, session management, tier enforcement
+- **Shell composition model** — widget system design, role-aware slot composition, plugin widget registration (ADR 011; M1 design session)
 - **External integrations** — Monarch, Greenlight, calendar sync (per module)
 - **MQTT bridge design** — deferred to M2+

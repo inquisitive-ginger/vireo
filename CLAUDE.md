@@ -12,8 +12,8 @@ with the family that runs it. See [`docs/vision.md`](docs/vision.md).
 ## Current Status
 - **Milestone:** M0 — Foundation (in progress)
 - **Active stories:** None
-- **Last session:** 2026-05-24 — Platform Architecture (ADRs 006–010, architecture.md populated)
-- **Next session:** System Design — see `docs/sessions/queue.md`
+- **Last session:** 2026-05-25 — System Design (ADRs 011–015, design-system.md populated)
+- **Next session:** M0 Product — see `docs/sessions/queue.md`
 
 > Update this section at the end of every session.
 
