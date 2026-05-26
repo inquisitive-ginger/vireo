@@ -7,20 +7,20 @@
 
 ## Up Next
 
-1. **M0 Product** ![Type](https://img.shields.io/badge/Type-Product-green)
-   Break M0 Foundation into stories, write specs and acceptance
-   criteria for each. Note revised M0 done definition: plugin loads
-   into a content slot via Module Federation; home screen is an
-   explicit placeholder (see ADR 011).
-   _Reads:_ `docs/roadmap.md`, `docs/architecture.md`, `docs/design-system.md`
-   _Produces:_ `docs/modules/platform/progress.md`, story specs
-
-2. **M0 Architecture** ![Type](https://img.shields.io/badge/Type-Architecture-blue)
-   Validate M0 stories against architecture, resolve conflicts,
-   confirm nothing was missed. Closes: auth identity model (JWT vs.
-   Lucia), permission string registry, Platform API surface.
-   _Reads:_ `docs/architecture.md`, M0 story specs, ADRs 011–015
+1. **M0 Architecture** ![Type](https://img.shields.io/badge/Type-Architecture-blue)
+   Validate M0 stories against architecture, resolve conflicts, confirm
+   nothing was missed. Closes: auth identity model (JWT vs. Lucia),
+   permission string registry, Platform API surface, plugin dev toolchain.
+   _Reads:_ `docs/architecture.md`, `docs/modules/platform/`, ADRs 011–016
    _Produces:_ Updated `docs/architecture.md`, any new ADRs
+
+2. **Login / Profile-Switch UX Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
+   Design how family members identify themselves on the tablet. The
+   mechanism is open (switcher, PIN, QR, proximity, etc.) — this session
+   explores and decides. Must complete before auth-and-profiles story is
+   implemented.
+   _Reads:_ `docs/design-system.md`, ADR 003 (tier model), auth story spec
+   _Produces:_ Login/profile-switch UX spec, updated `docs/design-system.md`
 
 3. **Widget Composition Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
    Design the shell home surface: widget system, role-aware slot
@@ -44,6 +44,13 @@ _None yet._
 ---
 
 ## Recently Completed
+
+- **2026-05-25 — M0 Product** ![Type](https://img.shields.io/badge/Type-Product-green)
+  M0 broken into 6 stories: dev-environment, shell-skeleton, event-bus,
+  auth-and-profiles, plugin-loader, demo-plugin. Monorepo tooling settled:
+  pnpm + Turborepo (ADR 016). Bulletin board deferred to M1. Login/profile-switch
+  UX flagged as a required design session before auth implementation.
+  _See:_ `docs/sessions/logs/2026-05-25-product-m0.md`
 
 - **2026-05-25 — System Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
   Component library (shadcn/ui + Tailwind CSS v4), typography direction
