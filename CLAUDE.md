@@ -12,8 +12,8 @@ with the family that runs it. See [`docs/vision.md`](docs/vision.md).
 ## Current Status
 - **Milestone:** M0 — Foundation (in progress)
 - **Active stories:** None — M0 stories defined, none started
-- **Last session:** 2026-05-29 — Login / Profile-Switch UX Design (ADR 021: global family PIN, family pseudo-profile, contextual auth pattern)
-- **Next session:** Widget Composition Design — see `docs/sessions/queue.md`
+- **Last session:** 2026-05-29 — Widget Composition Design (ADR 022: left sidebar nav, 6-size widget taxonomy, React Grid Layout, manifest registration shape, role-aware composition, layout persistence user model)
+- **Next session:** Visual Language Design — see `docs/sessions/queue.md`
 
 > Update this section at the end of every session.
 

@@ -1,6 +1,6 @@
 # Design System
 
-> Last updated: 2026-05-29 — Login / Profile-Switch UX Design session.
+> Last updated: 2026-05-29 — Widget Composition Design session.
 
 This document records settled design decisions. Deferred items are
 explicitly marked — do not treat absence of a spec as a free choice.
@@ -16,6 +16,8 @@ explicitly marked — do not treat absence of a spec as a free choice.
 - [Surfaces](#surfaces)
 - [Role-Aware Rendering](#role-aware-rendering)
 - [Login / Profile Switch](#login--profile-switch)
+- [Tablet Nav Layout](#tablet-nav-layout)
+- [Widget Composition System](#widget-composition-system)
 - [Plugin Design Contract](#plugin-design-contract)
 - [To Be Defined](#to-be-defined)
 
@@ -97,11 +99,9 @@ sit on top of a raw palette — plugins consume semantic tokens only.
 The family's central display. Always-on, landscape, touch-first.
 Target: 10–13" touchscreen, 1280×800 minimum.
 
-**Shell layout:** A nav structure with a main content slot that
-plugins render into. The specific nav layout (sidebar style,
-positioning) is not locked — it will be resolved in the Widget
-Composition design session alongside the home screen design
-(see ADR 011).
+**Shell layout:** Left sidebar (220px) + main content area (flex-1).
+No top header bar — the profile chip lives at the top of the sidebar.
+See [Tablet Nav Layout](#tablet-nav-layout) and [Widget Composition System](#widget-composition-system).
 
 **Home screen:** A named placeholder in M0. It explicitly does not
 define the final composition surface — that is the widget system,
@@ -252,6 +252,115 @@ UI-layer swap. No architectural accommodation needed now.
 
 ---
 
+## Tablet Nav Layout
+
+**Settled** — see ADR 022.
+
+Left sidebar, always visible, 220px wide. No top header bar.
+
+```
+┌──────────┬────────────────────────────────────┐
+│ Sidebar  │                                    │
+│  220px   │         Main content area          │
+│          │                                    │
+│          │                                    │
+└──────────┴────────────────────────────────────┘
+```
+
+### Sidebar structure (top to bottom)
+
+1. **Profile chip** — avatar + active profile name. Tap opens the profile grid overlay
+   (per ADR 021). Always visible. This is what ADR 021 calls the "corner chip in the
+   shell header" — functionally identical, repositioned to the sidebar top.
+2. **Nav items** — icon + label. Tier-filtered: items the active profile can't access
+   are hidden. Minimum 48px touch target height per item.
+3. **Settings** — bottom of sidebar. Visible to tier 4 only.
+
+### Nav item visibility
+
+Nav items are filtered by the active profile's tier. Plugins register nav routes in
+their `manifest.json` with a `minTier` field (same pattern as widget registration).
+The sidebar renders only the routes the current user can access.
+
+The family pseudo-profile (tier 1, no writes) sees only tier-1-appropriate nav items.
+
+---
+
+## Widget Composition System
+
+**Settled** — see ADR 022. Implementation is M1.
+
+### Grid
+
+React Grid Layout (`react-grid-layout`). Config: `cols: 4`, `rowHeight: 180`,
+`gap: 16`. The four columns fill the main content area (~1060px after sidebar at 1280px).
+
+M1 ships in static mode (`isDraggable: false`, `isResizable: false`).
+Drag-and-drop configuration UI is M1+.
+
+### Widget slot taxonomy
+
+Six named sizes. Plugin manifests declare these by name; the shell translates to
+React Grid Layout `{ w, h }` values internally.
+
+| Named size | `w` | `h` | ~Dimensions |
+|------------|-----|-----|-------------|
+| `compact` | 1 | 1 | 253×180px |
+| `standard` | 2 | 1 | 522×180px |
+| `tall` | 1 | 2 | 253×376px |
+| `large` | 2 | 2 | 522×376px |
+| `banner` | 4 | 1 | 1060×180px |
+| `full` | 4 | 4 | 1060×760px |
+
+### Widget registration
+
+Plugins declare widgets in `manifest.json`. See ADR 022 for the full field spec.
+Key fields:
+
+```json
+{
+  "id": "chores.today-summary",
+  "displayName": "Today's Chores",
+  "component": "./widgets/TodaySummary",
+  "defaultSize": "standard",
+  "supportedSizes": ["compact", "standard"],
+  "minTier": 1,
+  "requiredPermission": "chores.view",
+  "description": "Shows the current user's tasks due today."
+}
+```
+
+### Role-aware composition
+
+Two levels:
+
+1. **Shell — manifest gate:** Widget excluded from the layout if
+   `minTier > activeProfile.tier` or `requiredPermission` fails `can()`.
+   Skipped widgets are removed from the rendered grid; the layout re-flows.
+   The saved layout record is preserved — the widget returns if the gate
+   is later satisfied.
+
+2. **Widget — internal rendering:** Widget component uses `useTier()` and
+   `PermissionGate` to adapt its content within the slot.
+
+### Layout persistence
+
+Per-user layout stored in the platform DB as `{ widgetId, x, y, w, h }[]`.
+Exact schema deferred to the M1 implementation session.
+
+**Edit rights:**
+
+| Tier | Own layout | Others' layouts |
+|------|-----------|-----------------|
+| 1–2 | No | No |
+| 3 | Yes | No |
+| 4 | Yes | Any family member |
+
+New users seeded with a tier-appropriate default layout from platform config.
+Layout is not auto-rearranged on tier changes — a parent edits it intentionally.
+
+---
+
 ## Plugin Design Contract
 
 **Settled** — see ADR 014.
@@ -281,8 +390,8 @@ Every export is a commitment plugins can depend on.
 | Color palette and tokens | Visual Language design session |
 | Motion and animation | Visual Language design session |
 | Dark mode strategy | Visual Language design session |
-| Tablet nav layout (sidebar style, positioning) | Widget Composition design session |
-| Widget composition system | Widget Composition design session — see ADR 011 |
+| Tablet nav layout (sidebar style, positioning) | **Settled** — see [Tablet Nav Layout](#tablet-nav-layout) |
+| Widget composition system | **Settled** — see [Widget Composition System](#widget-composition-system) and ADR 022 |
 | Mobile surface layout | M1+ design session |
 | TV ambient layout | M2+ design session |
 | Pi room display layout | M2+ design session |

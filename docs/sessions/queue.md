@@ -7,14 +7,7 @@
 
 ## Up Next
 
-1. **Widget Composition Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
-   Design the shell home surface: widget system, role-aware slot
-   composition, plugin widget registration, tablet nav layout.
-   Must happen before M1 implementation begins.
-   _Reads:_ ADR 011, `docs/design-system.md`, M0 story specs
-   _Produces:_ Updated `docs/design-system.md`, widget system spec
-
-4. **Visual Language Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
+1. **Visual Language Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
    Typography (specific fonts), color palette, design tokens,
    motion/animation, dark mode strategy. Schedule once real M0 UI
    exists to evaluate candidates against.
@@ -29,6 +22,10 @@ _None yet._
 ---
 
 ## Recently Completed
+
+- **2026-05-29 — Widget Composition Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
+  Left sidebar nav (220px, profile chip at top). React Grid Layout, static mode in M1, drag-and-drop M1+. Six named widget sizes (compact → full). Widget manifest shape settled (extends ADR 007/014). Two-level role model: shell filters by minTier + requiredPermission; widget handles internal rendering. Per-user layout stored as {widgetId, x, y, w, h}[]; tier-gated edit rights; parent override. ADR 022.
+  _See:_ `docs/sessions/logs/2026-05-29-design-widget-composition.md`
 
 - **2026-05-29 — Login / Profile-Switch UX Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
   Family dashboard as default unattended state (pseudo-profile, tier 1 read-only). Corner chip + inactivity as entry points to the profile grid. Single global family PIN (not per-profile) — amends ADR 017. Contextual auth pattern: write actions on the family dashboard trigger profile selection inline. ADR 021.
