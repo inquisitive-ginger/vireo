@@ -1,6 +1,6 @@
 # 017 — Auth Session Mechanism
 
-**Status:** Decided
+**Status:** Decided — partially amended by ADR 021 (global PIN replaces per-profile `pin_hash`; family pseudo-profile added)
 
 **Decision:** Server-side sessions via `@fastify/session` + `connect-pg-simple`.
 Cookie-based. The session record stores `{ activeProfileId }`, resolved to a

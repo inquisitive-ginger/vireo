@@ -1,6 +1,6 @@
 # Design System
 
-> Last updated: 2026-05-25 — System Design session.
+> Last updated: 2026-05-29 — Login / Profile-Switch UX Design session.
 
 This document records settled design decisions. Deferred items are
 explicitly marked — do not treat absence of a spec as a free choice.
@@ -15,6 +15,7 @@ explicitly marked — do not treat absence of a spec as a free choice.
 - [Color & Tokens](#color--tokens)
 - [Surfaces](#surfaces)
 - [Role-Aware Rendering](#role-aware-rendering)
+- [Login / Profile Switch](#login--profile-switch)
 - [Plugin Design Contract](#plugin-design-contract)
 - [To Be Defined](#to-be-defined)
 
@@ -189,6 +190,68 @@ by parents — not hardcoded.
 
 ---
 
+## Login / Profile Switch
+
+**Settled** — see ADR 017, ADR 021, and the 2026-05-29 design session.
+
+### Family Dashboard
+
+The tablet's default state when no family member is active. A `family` pseudo-profile
+(tier 1, all writes removed via CASL) is permanently seeded and serves as the active
+profile. Modules render tier-appropriate content normally — no special null-auth code
+path.
+
+The family dashboard is **not a lock screen.** The tablet remains functional and
+informative in the unattended state. Intended content is module-owned; the rule is:
+anything visible at tier 1 is eligible for the family dashboard.
+
+**Contextual auth:** Write actions on the family dashboard intercept the tap and
+surface the profile picker inline. The action completes after profile selection.
+The CASL model enforces this naturally — the family pseudo-profile has no write
+permissions.
+
+### Entry Points
+
+| Trigger | Behavior |
+|---------|----------|
+| **Corner chip** (shell header) | Always visible. Shows current active profile (avatar + name). Tap opens profile grid overlay. |
+| **Inactivity timeout** | Deactivates personal profile, returns to family dashboard. Next interaction uses family dashboard or switches via chip. |
+
+There is no lock screen. The tablet does not gate access; it offers personalization.
+
+### Profile Grid
+
+A centered grid of circular avatars. Presented full-screen on inactivity transition;
+floating overlay from corner chip tap. Same component, `mode: 'fullscreen' | 'overlay'`.
+
+- Avatar: 80px minimum diameter
+- Tap target: 48px minimum (see touch targets in Surfaces)
+- Name label below each avatar
+- Avatar fallback: initials or emoji if no image set
+- Current active profile: highlighted ring, non-interactive
+- Family pseudo-profile: **not shown** in the picker — it is the default, not a choice
+
+### PIN Entry
+
+Triggered when switching to a profile at a higher tier than the current active profile.
+
+- **Single global family PIN** — one PIN for the whole family. Not per-profile.
+  Stored in `platform.system_config`. Any tier-4 profile can set or reset it.
+- **UI:** Full-screen overlay; large circular digit buttons; 4-digit PIN;
+  dot progress indicator
+- **Copy:** "Enter family PIN" — no attribution to a specific parent
+- **No PIN set:** Returns 423; upward switching is blocked until a tier-4 profile
+  completes first-run PIN setup
+- **Failed attempt:** Wrong-PIN message shown inline. Rate-limiting deferred to M1.
+
+### Future — Biometrics
+
+Touch ID / Face ID would replace PIN entry as the verification pathway on
+`POST /auth/verify-pin`. The session/switch model is unchanged — it is a
+UI-layer swap. No architectural accommodation needed now.
+
+---
+
 ## Plugin Design Contract
 
 **Settled** — see ADR 014.
@@ -225,5 +288,4 @@ Every export is a commitment plugins can depend on.
 | Pi room display layout | M2+ design session |
 | Notification and alert patterns | M1 design session |
 | Error and empty states | M1 design session |
-| Login / profile switcher UI | M0 Architecture session |
 | Permission string registry (full enumeration) | M0 Architecture session |

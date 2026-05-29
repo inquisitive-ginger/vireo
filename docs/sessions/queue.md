@@ -7,15 +7,7 @@
 
 ## Up Next
 
-1. **Login / Profile-Switch UX Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
-   Design how family members identify themselves on the tablet. The
-   mechanism is open (switcher, PIN, QR, proximity, etc.) — this session
-   explores and decides. Must complete before auth-and-profiles story is
-   implemented.
-   _Reads:_ `docs/design-system.md`, ADR 003 (tier model), auth story spec
-   _Produces:_ Login/profile-switch UX spec, updated `docs/design-system.md`
-
-3. **Widget Composition Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
+1. **Widget Composition Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
    Design the shell home surface: widget system, role-aware slot
    composition, plugin widget registration, tablet nav layout.
    Must happen before M1 implementation begins.
@@ -37,6 +29,10 @@ _None yet._
 ---
 
 ## Recently Completed
+
+- **2026-05-29 — Login / Profile-Switch UX Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
+  Family dashboard as default unattended state (pseudo-profile, tier 1 read-only). Corner chip + inactivity as entry points to the profile grid. Single global family PIN (not per-profile) — amends ADR 017. Contextual auth pattern: write actions on the family dashboard trigger profile selection inline. ADR 021.
+  _See:_ `docs/sessions/logs/2026-05-29-design-profile-switcher.md`
 
 - **2026-05-28 — M0 Architecture** ![Type](https://img.shields.io/badge/Type-Architecture-blue)
   Auth mechanism (`@fastify/session` + `connect-pg-simple`), CASL permission model (replaces flat strings, enables `accessibleBy()` row-level filtering), Prisma ORM, Turborepo plugin generator. ADRs 017–020. Auth-and-profiles story unblocked.
