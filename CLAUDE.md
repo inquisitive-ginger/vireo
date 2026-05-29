@@ -12,8 +12,8 @@ with the family that runs it. See [`docs/vision.md`](docs/vision.md).
 ## Current Status
 - **Milestone:** M0 — Foundation (in progress)
 - **Active stories:** None — M0 stories defined, none started
-- **Last session:** 2026-05-25 — M0 Product (6 stories specced, ADR 016, product template written)
-- **Next session:** M0 Architecture — see `docs/sessions/queue.md`
+- **Last session:** 2026-05-28 — M0 Architecture (ADRs 017–020: auth sessions, CASL permissions, Prisma, plugin toolchain)
+- **Next session:** Login / Profile-Switch UX Design — see `docs/sessions/queue.md`
 
 > Update this section at the end of every session.
 

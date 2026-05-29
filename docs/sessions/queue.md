@@ -7,14 +7,7 @@
 
 ## Up Next
 
-1. **M0 Architecture** ![Type](https://img.shields.io/badge/Type-Architecture-blue)
-   Validate M0 stories against architecture, resolve conflicts, confirm
-   nothing was missed. Closes: auth identity model (JWT vs. Lucia),
-   permission string registry, Platform API surface, plugin dev toolchain.
-   _Reads:_ `docs/architecture.md`, `docs/modules/platform/`, ADRs 011–016
-   _Produces:_ Updated `docs/architecture.md`, any new ADRs
-
-2. **Login / Profile-Switch UX Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
+1. **Login / Profile-Switch UX Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
    Design how family members identify themselves on the tablet. The
    mechanism is open (switcher, PIN, QR, proximity, etc.) — this session
    explores and decides. Must complete before auth-and-profiles story is
@@ -44,6 +37,10 @@ _None yet._
 ---
 
 ## Recently Completed
+
+- **2026-05-28 — M0 Architecture** ![Type](https://img.shields.io/badge/Type-Architecture-blue)
+  Auth mechanism (`@fastify/session` + `connect-pg-simple`), CASL permission model (replaces flat strings, enables `accessibleBy()` row-level filtering), Prisma ORM, Turborepo plugin generator. ADRs 017–020. Auth-and-profiles story unblocked.
+  _See:_ `docs/sessions/logs/2026-05-28-architecture-m0.md`
 
 - **2026-05-25 — M0 Product** ![Type](https://img.shields.io/badge/Type-Product-green)
   M0 broken into 6 stories: dev-environment, shell-skeleton, event-bus,

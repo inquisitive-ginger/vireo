@@ -1,6 +1,6 @@
 # 015 — Permission Layer on top of Tier Model
 
-**Status:** Decided
+**Status:** Decided — permission-check mechanism extended by ADR 018 (CASL); intent and gate primitives unchanged
 
 **Decision:** Trust tier (ADR 003) defines a baseline permission set.
 Individual permissions can be granted above or revoked below that
