@@ -10,11 +10,13 @@ with the family that runs it. See [`docs/vision.md`](docs/vision.md).
 ---
 
 ## Milestone Numbering
+
 > **Note:** Session logs prior to 2026-05-30 use pre-audit milestone numbering (old M1=Chores, M2=Calendar, M3=Smart Home, M7=Marketplace). The roadmap was restructured on 2026-05-30 to introduce M1 Platform Shell and renumber all subsequent milestones. `docs/roadmap.md` is authoritative — treat it as the source of truth over any milestone number found in session logs.
 
 ---
 
 ## Current Status
+
 - **Milestone:** M0 — Foundation (in progress)
 - **Active stories:** None — M0 stories defined, none started
 - **Last session:** 2026-05-30 — Roadmap & Planning Audit (milestone renumbering M1–M8, Platform Shell milestone introduced, Family Feed module, Home Surface design session queued, M0 story/arch gaps resolved)
@@ -26,17 +28,17 @@ with the family that runs it. See [`docs/vision.md`](docs/vision.md).
 
 ## Workspace Map
 
-| Path | What it is |
-|---|---|
-| `docs/vision.md` | The why — stable, rarely changes |
-| `docs/architecture.md` | How pieces fit — living doc |
-| `docs/design-system.md` | Visual language and component conventions |
-| `docs/decisions/` | ADRs — settled decisions |
-| `docs/modules/[name]/` | Per-module spec + progress board |
-| `docs/sessions/queue.md` | What to run next — the session queue |
-| `docs/sessions/templates/` | Session kickoff templates by type |
-| `docs/sessions/logs/` | Session output artifacts |
-| `docs/roadmap.md` | Milestones and delivery status |
+| Path                       | What it is                                |
+| -------------------------- | ----------------------------------------- |
+| `docs/vision.md`           | The why — stable, rarely changes          |
+| `docs/architecture.md`     | How pieces fit — living doc               |
+| `docs/design-system.md`    | Visual language and component conventions |
+| `docs/decisions/`          | ADRs — settled decisions                  |
+| `docs/modules/[name]/`     | Per-module spec + progress board          |
+| `docs/sessions/queue.md`   | What to run next — the session queue      |
+| `docs/sessions/templates/` | Session kickoff templates by type         |
+| `docs/sessions/logs/`      | Session output artifacts                  |
+| `docs/roadmap.md`          | Milestones and delivery status            |
 
 ---
 
@@ -55,7 +57,9 @@ with the family that runs it. See [`docs/vision.md`](docs/vision.md).
 ## Formats
 
 ### Session Notes
+
 Committed to `docs/sessions/logs/YYYY-MM-DD-[type]-[story].md`:
+
 - What was decided
 - What was built or produced
 - What was sent back and why (if anything)
@@ -63,6 +67,7 @@ Committed to `docs/sessions/logs/YYYY-MM-DD-[type]-[story].md`:
 - What the next session needs to know
 
 ### ADRs (`docs/decisions/NNN-title.md`)
+
 - **Status** — Decided | Superseded
 - **Decision** — what was chosen
 - **Why** — rationale
@@ -70,6 +75,7 @@ Committed to `docs/sessions/logs/YYYY-MM-DD-[type]-[story].md`:
 - **Do not revisit unless** — what would justify reopening
 
 ### Story Progress (`docs/modules/[name]/progress.md`)
+
 Statuses: ⬜ Not Started · 🔄 In Progress · ✅ Done · 🔙 Sent Back
 
 ---
@@ -85,8 +91,8 @@ but "backend for chores/task-completion story"
 ---
 
 ## Session Templates
+
 `docs/sessions/templates/` — one file per type:
-`product` · `design` · `architecture` · `backend` · `frontend`
-· `qa` · `planning`
+`product` · `design` · `architecture` · `development` · `qa` · `audit`
 
 Write each template before the first session of that type, not all upfront.
