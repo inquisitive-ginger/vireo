@@ -9,7 +9,7 @@ As a plugin developer, I can publish typed events to the platform event bus and 
 ## Scope
 **In:** In-process Node.js EventEmitter with typed event channels; `@fastify/websocket` bridge so browser clients receive events over WebSocket; event naming convention enforced at publish time (`module.noun.verb`); typed event bus API exported from `@family-os/platform`; demonstrated with at least one event flowing end-to-end
 
-**Out:** MQTT bridge (M2+); SSE for Pi displays (M2+); Web Push for mobile (M1+); cross-plugin event subscription authorization; event persistence or replay
+**Out:** MQTT bridge (M4+); SSE for Pi displays (M4+); Web Push for mobile (M1); cross-plugin event subscription authorization; event persistence or replay
 
 ## Acceptance criteria
 1. A Fastify plugin service can emit a typed event using the event bus API from `@family-os/platform`

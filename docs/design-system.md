@@ -390,11 +390,9 @@ Every export is a commitment plugins can depend on.
 | Color palette and tokens | Visual Language design session |
 | Motion and animation | Visual Language design session |
 | Dark mode strategy | Visual Language design session |
-| Tablet nav layout (sidebar style, positioning) | **Settled** — see [Tablet Nav Layout](#tablet-nav-layout) |
-| Widget composition system | **Settled** — see [Widget Composition System](#widget-composition-system) and ADR 022 |
 | Mobile surface layout | M1+ design session |
-| TV ambient layout | M2+ design session |
-| Pi room display layout | M2+ design session |
+| TV ambient layout | M4+ design session |
+| Pi room display layout | M4+ design session |
 | Notification and alert patterns | M1 design session |
 | Error and empty states | M1 design session |
 | Permission string registry (full enumeration) | M0 Architecture session |

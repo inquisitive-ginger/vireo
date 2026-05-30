@@ -10,7 +10,7 @@ events to connected browsers (satisfying ADR 004). Read-only clients
 instead of a full WebSocket connection. An MQTT bridge module is a
 defined extension point — it will subscribe to Mosquitto and publish
 into the same EventEmitter — but is not built until microcontroller /
-Pi integration is active (M2 or later). No external message broker is
+Pi integration is active (M4 Smart Home or later). No external message broker is
 introduced in M0.
 
 **Why:** An in-process EventEmitter is sufficient for M0 — all plugin

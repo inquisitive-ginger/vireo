@@ -7,9 +7,9 @@
 As a developer, I can run the full platform locally with one command so that I can work on any feature without manual environment setup.
 
 ## Scope
-**In:** pnpm + Turborepo monorepo scaffold; `packages/ui` and `packages/platform` stubs (types + barrel exports — no implementation); `apps/shell` React + Vite app scaffold; `apps/api` Fastify service scaffold; Docker Compose with PostgreSQL 16; shell hot-reload in development
+**In:** pnpm + Turborepo monorepo scaffold; `packages/ui` and `packages/platform` stubs (types + barrel exports — no implementation); `apps/shell` React + Vite app scaffold; `apps/api` Fastify service scaffold; Docker Compose with PostgreSQL 16; shell hot-reload in development; `pnpm turbo gen plugin` Turborepo generator that scaffolds new plugins (per ADR 020)
 
-**Out:** CI/CD pipeline; production deployment config; plugin scaffolding tooling; seed data (added by the story that needs it); any real package implementation beyond stubs
+**Out:** CI/CD pipeline; production deployment config; seed data (added by the story that needs it); any real package implementation beyond stubs
 
 ## Acceptance criteria
 1. `docker compose up` starts PostgreSQL and it accepts connections on the expected port
@@ -18,6 +18,8 @@ As a developer, I can run the full platform locally with one command so that I c
 4. `packages/ui` and `packages/platform` resolve as workspace dependencies from `apps/shell` — no TypeScript import errors
 5. `pnpm typecheck` passes with zero errors across all packages
 6. Editing a shell source file triggers hot-reload without a full page refresh
+7. `pnpm turbo gen plugin --name=<name>` creates a valid plugin scaffold under `plugins/<name>/` containing `vite.config.ts`, `manifest.json`, `tsconfig.json`, and `src/index.ts`
+8. The scaffolded plugin's entry is added to `pnpm-workspace.yaml` automatically; `pnpm dev` picks it up without manual configuration
 
 ## Dependencies
 - none

@@ -37,5 +37,5 @@ React Context for all state — re-render frequency makes it wrong for
 frequently-updating shell and plugin state.
 
 **Do not revisit unless:** Plugin state complexity grows to the point
-where cross-plugin state sharing is needed (evaluate at M7 Marketplace
+where cross-plugin state sharing is needed (evaluate at M8 Marketplace
 session).

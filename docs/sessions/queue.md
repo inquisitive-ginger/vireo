@@ -14,6 +14,29 @@
    _Reads:_ `docs/design-system.md`, running M0 shell
    _Produces:_ Updated `docs/design-system.md` with full token system
 
+2. **Home Surface Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
+   Defines the family dashboard default layout and the core module slot model.
+   Key questions to resolve: which modules are "core" (get reserved slots in the
+   default layout vs. manually placed); what placeholder state a reserved-but-uninstalled
+   slot renders; how the default layout is represented in platform config; whether the
+   family pseudo-profile layout is managed separately from personal home layouts.
+   Also defines the Family Feed module's widget(s) and their role as the anchor content
+   of the family dashboard. Produces an ADR 022 amendment: slot reservation model
+   (reserved core slots + placeholder states) replaces the current collapse-and-reflow
+   behavior for the default layout.
+   _Reads:_ `docs/design-system.md`, `docs/decisions/022-widget-system.md`, running M0 shell
+   _Produces:_ Updated `docs/design-system.md` (home surface section), ADR 022 amendment,
+   Family Feed module spec stub
+   _Blocked on:_ Visual Language Design (needs real UI to design against)
+
+3. **Notification & States Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
+   Notification and alert patterns (Web Push, in-app toasts, badge counts),
+   error states, and empty states. Required before M2 Chores implementation —
+   parent notification on completion depends on these patterns being defined.
+   _Reads:_ `docs/design-system.md` (post Visual Language), running M0 shell
+   _Produces:_ Updated `docs/design-system.md` with notification, error, and empty state specs
+   _Blocked on:_ Visual Language Design (needs color tokens and motion settled first)
+
 ---
 
 ## Blocked / Waiting

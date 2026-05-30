@@ -28,12 +28,12 @@ Plugins must not:
 - Import Tailwind directly — the platform stylesheet is injected;
   plugins inherit the token set
 
-**Why:** For a project where all plugins are first-party (M0–M6),
+**Why:** For a project where all plugins are first-party (M0–M7),
 import-based access is cleaner and more familiar than injection-based
 (passing a `platform` prop into every plugin root). The Federation
 singleton config handles the one legitimate concern (version
 mismatch). Injection earns its complexity when untrusted third-party
-plugins need hard isolation — that is a Marketplace (M7) problem,
+plugins need hard isolation — that is a Marketplace (M8) problem,
 not an M0 problem.
 
 **Alternatives considered:** Injection-based Platform API (platform
@@ -42,5 +42,5 @@ DX and premature for first-party-only plugin set; fully open imports
 (plugins import anything from the shell) — breaks plugin isolation
 and makes the shell's internals a de-facto public API.
 
-**Do not revisit unless:** M7 Marketplace session determines that
+**Do not revisit unless:** M8 Marketplace session determines that
 third-party plugin isolation requires a stricter contract.

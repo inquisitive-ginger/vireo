@@ -2,8 +2,7 @@
 
 **Status:** Decided
 
-**Decision:** Progressive Web App (PWA) for all milestones through
-at least M2. The PWA is the mobile surface for parents out of home
+**Decision:** Progressive Web App (PWA) from M1 Platform Shell onwards. The PWA is the mobile surface for parents out of home
 and for children on personal devices. Push notifications are delivered
 via the Web Push API (satisfying ADR 004). Native app development is
 not planned; revisit only if a concrete capability wall is hit that

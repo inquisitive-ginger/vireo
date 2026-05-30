@@ -22,22 +22,26 @@ The platform everything else runs on. No user-facing features yet.
 
 ---
 
-### M1 — Chores
-- Task creation and assignment
-- Completion flow (kid marks done)
-- XP + gamification basics
-- Parent notification on completion
+### M1 — Platform Shell
+The system is ready for a real family. Infrastructure and the home surface come online;
+the first module anchors the home screen.
+- Family onboarding (profile creation, family PIN setup — prerequisite for family handoff)
+- Profile management (create/edit profiles, avatar, tier, permission overrides, family PIN reset)
+- Home Surface: widget grid live; default layout defined with reserved slots for core modules; uninstalled core module slots render a placeholder state
+- Family Feed (MVP): family text posts visible as a home screen widget — anchors the family dashboard; enrichment deferred to a dedicated later milestone
+- Minimum mobile: installable PWA + Web Push notifications (mobile layout/nav deferred to a dedicated design session)
 
-**Done when:** A kid completes a chore and a parent sees it happen.
+**Done when:** A family can set up the system, see a meaningful home screen, and post to a shared feed.
 
 ---
 
-### M2 — Smart Home
-- Home Assistant integration
-- At least one working routine trigger
-- Room context basics
+### M2 — Chores
+- Task creation and assignment
+- Completion flow (kid marks done)
+- XP + gamification basics (chore completion awards XP only — F$ earning from chores is wired in M6 when the finance module exists)
+- Parent notification on completion
 
-**Done when:** One routine (e.g. bedtime) runs end-to-end via the system.
+**Done when:** A kid completes a chore and a parent sees it happen.
 
 ---
 
@@ -46,22 +50,30 @@ The platform everything else runs on. No user-facing features yet.
 - Event creation from mobile
 - Activity tracking
 
-**Done when:** Family stops using a separate calendar for day-to-day
-scheduling.
+**Done when:** Family stops using a separate calendar for day-to-day scheduling.
 
 ---
 
-### M4 — School
+### M4 — Smart Home
+- Home Assistant integration
+- At least one working routine trigger
+- Room context basics
+
+**Done when:** One routine (e.g. bedtime) runs end-to-end via the system.
+
+---
+
+### M5 — School
 Scope defined in product session. At minimum: homework tracking,
-assignment due dates, school events surfaced into the family calendar.
+assignment due dates, school events surfaced into the family calendar (depends on M3 Calendar).
 
 **Done when:** A kid's homework and due dates are tracked in the system
 and school events appear on the family calendar.
 
 ---
 
-### M5 — Finance
-- F$ earning and balance tracking
+### M6 — Finance
+- F$ earning and balance tracking (chore completions from M2 now credit F$)
 - Cashout flow with parent approval
 - Monarch sync
 - In-app reward redemption
@@ -71,7 +83,7 @@ up in Monarch.
 
 ---
 
-### M6 — Meals
+### M7 — Meals
 Scope defined in product session. At minimum: meal planning, grocery
 lists, recipe bank.
 
@@ -80,7 +92,7 @@ list without leaving the system.
 
 ---
 
-### M7 — Marketplace
+### M8 — Marketplace
 - Plugin API opened and documented
 - Plugin registry
 - One community plugin installable end-to-end
@@ -91,6 +103,8 @@ list without leaving the system.
 
 ## Future Milestones
 _Added here as MVP milestones complete and v2 needs emerge._
+
+- **Family Feed v2** — activity feed aggregation (chore completions, calendar events, F$ milestones surfaced as feed items via event subscriptions); richer post types; reactions. Scoped once M2–M6 modules have shipped and the feed has real events to aggregate.
 
 ---
 

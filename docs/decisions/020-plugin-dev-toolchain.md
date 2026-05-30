@@ -41,4 +41,4 @@ changes to a plugin hot-reload without affecting the shell or other plugins.
 
 **Do not revisit unless:** Plugin scaffolding requirements grow complex
 enough to justify a custom CLI (e.g., community plugin authors, marketplace
-onboarding in M7).
+onboarding in M8).

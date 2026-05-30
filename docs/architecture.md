@@ -33,10 +33,10 @@ graph TD
     Plugins["Plugin Services\nNode.js / Fastify"]
     Bus["Event Bus\nEventEmitter + WebSocket bridge"]
     PG["PostgreSQL\nper-plugin schemas"]
-    MQTT["MQTT Bridge\nM2+"]
+    MQTT["MQTT Bridge\nM4+"]
   end
 
-  subgraph Edge["Edge Devices — M2+"]
+  subgraph Edge["Edge Devices — M4+"]
     Pi["Pi Room Display\nSSE, thin agent"]
     MCU["Microcontrollers\nESP32 / Arduino via MQTT"]
   end
@@ -70,7 +70,7 @@ is warranted.
 | 005 | Allowance as ledger — system tracks balances, never moves real money; cashout is a parent-confirmed event |
 | 006 | TypeScript end-to-end — React shell, Node.js/Fastify plugin services |
 | 007 | Vite Module Federation for plugin loading — each plugin publishes a remoteEntry.js and manifest |
-| 008 | In-process EventEmitter + @fastify/websocket bridge; MQTT bridge is a defined extension point for M2+ |
+| 008 | In-process EventEmitter + @fastify/websocket bridge; MQTT bridge is a defined extension point for M4+ |
 | 009 | PostgreSQL (Docker), single instance, per-plugin schemas; JSONB for semi-structured config |
 | 010 | PWA for mobile (Android); Web Push for out-of-home notifications; no native app planned |
 | 011 | Shell home surface is a composable, role-aware widget grid; M0 must not foreclose this model; implementation deferred to M1 |
@@ -135,8 +135,8 @@ API** — a typed SDK injected at mount time. Plugins may not:
 flowchart LR
   P["Plugin Service"] --> EB["EventEmitter\n(typed channels)"]
   EB -->|"@fastify/websocket"| B["Browser Clients"]
-  EB -->|SSE| R["Read-only Clients\nPi displays, M2+"]
-  EB --> MB["MQTT Bridge\nM2+"]
+  EB -->|SSE| R["Read-only Clients\nPi displays, M4+"]
+  EB --> MB["MQTT Bridge\nM4+"]
   MB -->|Mosquitto| MCU["Microcontrollers"]
 ```
 
@@ -248,7 +248,6 @@ profiles
   id          uuid  PK
   name        text
   tier        integer (1–4)
-  pin_hash    text  nullable
   avatar_url  text  nullable
   created_at  timestamptz
 
@@ -260,7 +259,15 @@ permission_overrides
   type         text  ('grant' | 'revocation')
   granted_by   uuid  FK → profiles.id nullable
   created_at   timestamptz
+
+system_config
+  key          text  PK
+  value        jsonb
+  updated_by   uuid  FK → profiles.id nullable
+  updated_at   timestamptz
 ```
+
+The family PIN is stored in `system_config` as `key = 'family_pin_hash'` (ADR 021). Other platform-wide settings (e.g. default widget layouts per tier) live here without requiring schema migrations.
 
 Effective ability = `createAbility(profile, overrides)` — tier baseline rules + grant rows − revocation rows, built by `@family-os/platform/server`.
 
@@ -288,6 +295,5 @@ Effective ability = `createAbility(profile, overrides)` — tier baseline rules 
 
 Deferred to later sessions:
 
-- **Shell composition model** — widget system design, role-aware slot composition, plugin widget registration (ADR 011; M1 Widget Composition design session)
 - **External integrations** — Monarch, Greenlight, calendar sync (per module)
-- **MQTT bridge design** — deferred to M2+
+- **MQTT bridge design** — deferred to M4+ (Smart Home)

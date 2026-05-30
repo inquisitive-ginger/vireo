@@ -9,10 +9,15 @@ with the family that runs it. See [`docs/vision.md`](docs/vision.md).
 
 ---
 
+## Milestone Numbering
+> **Note:** Session logs prior to 2026-05-30 use pre-audit milestone numbering (old M1=Chores, M2=Calendar, M3=Smart Home, M7=Marketplace). The roadmap was restructured on 2026-05-30 to introduce M1 Platform Shell and renumber all subsequent milestones. `docs/roadmap.md` is authoritative — treat it as the source of truth over any milestone number found in session logs.
+
+---
+
 ## Current Status
 - **Milestone:** M0 — Foundation (in progress)
 - **Active stories:** None — M0 stories defined, none started
-- **Last session:** 2026-05-29 — Widget Composition Design (ADR 022: left sidebar nav, 6-size widget taxonomy, React Grid Layout, manifest registration shape, role-aware composition, layout persistence user model)
+- **Last session:** 2026-05-30 — Roadmap & Planning Audit (milestone renumbering M1–M8, Platform Shell milestone introduced, Family Feed module, Home Surface design session queued, M0 story/arch gaps resolved)
 - **Next session:** Visual Language Design — see `docs/sessions/queue.md`
 
 > Update this section at the end of every session.
