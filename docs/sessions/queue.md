@@ -7,40 +7,41 @@
 
 ## Up Next
 
-1. **Visual Language Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
-   Typography (specific fonts), color palette, design tokens,
-   motion/animation, dark mode strategy. Schedule once real M0 UI
-   exists to evaluate candidates against.
-   _Reads:_ `docs/design-system.md`, running M0 shell
-   _Produces:_ Updated `docs/design-system.md` with full token system
-
-2. **Home Surface Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
-   Defines the family dashboard default layout and the core module slot model.
-   Key questions to resolve: which modules are "core" (get reserved slots in the
-   default layout vs. manually placed); what placeholder state a reserved-but-uninstalled
-   slot renders; how the default layout is represented in platform config; whether the
-   family pseudo-profile layout is managed separately from personal home layouts.
-   Also defines the Family Feed module's widget(s) and their role as the anchor content
-   of the family dashboard. Produces an ADR 022 amendment: slot reservation model
-   (reserved core slots + placeholder states) replaces the current collapse-and-reflow
-   behavior for the default layout.
-   _Reads:_ `docs/design-system.md`, `docs/decisions/022-widget-system.md`, running M0 shell
-   _Produces:_ Updated `docs/design-system.md` (home surface section), ADR 022 amendment,
-   Family Feed module spec stub
-   _Blocked on:_ Visual Language Design (needs real UI to design against)
-
-3. **Notification & States Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
-   Notification and alert patterns (Web Push, in-app toasts, badge counts),
-   error states, and empty states. Required before M2 Chores implementation —
-   parent notification on completion depends on these patterns being defined.
-   _Reads:_ `docs/design-system.md` (post Visual Language), running M0 shell
-   _Produces:_ Updated `docs/design-system.md` with notification, error, and empty state specs
-   _Blocked on:_ Visual Language Design (needs color tokens and motion settled first)
+1. **M0 Implementation** ![Type](https://img.shields.io/badge/Type-Frontend-orange) ![Type](https://img.shields.io/badge/Type-Backend-red)
+   Six stories in dependency order. Run each as its own session.
+   - `dev-environment` — no dependencies, start here
+   - `shell-skeleton` + `event-bus` — parallel, both depend on dev-environment
+   - `auth-and-profiles` — depends on shell-skeleton
+   - `plugin-loader` — depends on shell-skeleton + auth-and-profiles
+   - `demo-plugin` — depends on all above; satisfies M0 done definition
+   _Reads:_ `docs/modules/platform/progress.md`, individual story specs
+   _Produces:_ Running platform — plugin installs and renders on the tablet
 
 ---
 
 ## Blocked / Waiting
-_None yet._
+
+2. **Visual Language Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
+   Typography (specific fonts), color palette, design tokens,
+   motion/animation, dark mode strategy.
+   _Reads:_ `docs/design-system.md`, running M0 shell
+   _Produces:_ Updated `docs/design-system.md` with full token system
+   _Blocked on:_ M0 Implementation (needs real UI to design against)
+
+3. **Home Surface Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
+   Default layout model, core module slot reservation, placeholder states,
+   Family Feed widget design, ADR 022 amendment.
+   _Reads:_ `docs/design-system.md`, `docs/decisions/022-widget-system.md`, running M0 shell
+   _Produces:_ Updated `docs/design-system.md` (home surface section), ADR 022 amendment,
+   Family Feed module spec stub
+   _Blocked on:_ Visual Language Design
+
+4. **Notification & States Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
+   Notification and alert patterns (Web Push, in-app toasts, badge counts),
+   error states, and empty states. Required before M2 Chores implementation.
+   _Reads:_ `docs/design-system.md` (post Visual Language), running M0 shell
+   _Produces:_ Updated `docs/design-system.md` with notification, error, and empty state specs
+   _Blocked on:_ Visual Language Design
 
 ---
 
