@@ -1,6 +1,6 @@
 # Architecture
 
-> Last updated: 2026-05-28 — M0 Architecture session.
+> Last updated: 2026-05-30 — Testing Strategy session.
 
 ---
 
@@ -9,6 +9,7 @@
 - [Topology](#topology)
 - [Settled Decisions](#settled-decisions)
 - [Plugin System](#plugin-system)
+- [Testing](#testing)
   - [Loading](#loading)
   - [Plugin Contract](#plugin-contract)
   - [Plugin Manifest](#plugin-manifest-shape)
@@ -83,6 +84,12 @@ is warranted.
 | 018 | CASL `(action, subject)` model for permission checks (extends ADR 015); `PERMISSION_REGISTRY` const for compile-time types + runtime enumeration; `@casl/prisma` `accessibleBy()` for row-level DB filtering |
 | 019 | ORM: Prisma; per-plugin `schema.prisma` files; `accessibleBy()` drives automatic row-level filtering in every module route |
 | 020 | Plugin dev toolchain: Turborepo generator (`pnpm turbo gen plugin`); per-plugin Vite dev servers; no custom CLI |
+| 021 | Global family PIN stored in `system_config` (`key = 'family_pin_hash'`); family pseudo-profile is unattended default state |
+| 022 | Widget system: React Grid Layout, six named sizes, widget manifest extends ADR 007/014, two-level role model (shell + widget), per-user layout as `{widgetId, x, y, w, h}[]` |
+| 023 | Test runner: Vitest (shares Vite pipeline); component tests: `@testing-library/react` + jsdom; route tests: `fastify.inject()` |
+| 024 | E2E: Playwright; deferred to M1 shell-skeleton story; lives in `packages/e2e` |
+| 025 | Component catalog: Storybook 8 in `packages/ui`; ships in M0 dev-environment story |
+| 026 | Test conventions: colocated test files; no enforced coverage thresholds; real PostgreSQL for integration tests (test-prefixed schemas); shared test utils in `packages/test-utils` |
 
 ---
 
@@ -121,9 +128,23 @@ API** — a typed SDK injected at mount time. Plugins may not:
   "events": {
     "publishes": ["chores.task.completed", "chores.task.created"],
     "subscribes": ["calendar.event.added"]
-  }
+  },
+  "widgets": [
+    {
+      "id": "chores.today-summary",
+      "displayName": "Today's Chores",
+      "component": "./widgets/TodaySummary",
+      "defaultSize": "standard",
+      "supportedSizes": ["compact", "standard"],
+      "minTier": 1,
+      "requiredPermission": "chores.view",
+      "description": "Shows the current user's tasks due today."
+    }
+  ]
 }
 ```
+
+The `widgets` field is optional — plugins that only add routes do not need it. See ADR 022 for full widget manifest field rules, slot taxonomy, and role-aware composition model.
 
 ---
 
@@ -228,6 +249,7 @@ export interface PluginManifest {
   routes: string[]
   schema: string
   events: { publishes: EventName[]; subscribes: EventName[] }
+  widgets?: unknown[]  // typed WidgetManifest added by M1 widget system story (ADR 022)
 }
 ```
 
@@ -288,6 +310,41 @@ Effective ability = `createAbility(profile, overrides)` — tier baseline rules 
 | `plugins/[name]/src/Plugin.tsx` | Minimal example using platform hooks |
 
 `pnpm-workspace.yaml` is updated automatically. Each plugin runs its own Vite dev server; `pnpm dev` starts everything in parallel via Turborepo's task graph.
+
+---
+
+## Testing
+
+### Stack
+
+| Layer | Tool | Notes |
+|-------|------|-------|
+| Test runner | Vitest | Shares Vite pipeline; ESM-native; Turborepo-cacheable |
+| Component tests | `@testing-library/react` + jsdom | Behavior-first; no snapshot tests |
+| Route tests | `fastify.inject()` | Full request pipeline; no real HTTP |
+| E2E | Playwright | Deferred to M1; lives in `packages/e2e` |
+| Component catalog | Storybook 8 | In `packages/ui`; dev-only; not in build pipeline |
+
+### Conventions
+
+- **Test files:** colocated with source (`Component.test.tsx`, `util.test.ts`)
+- **Coverage:** no thresholds enforced — `packages/platform` and permission logic are high-priority targets by convention
+- **Database:** real PostgreSQL for any test touching Prisma; test schemas prefixed `test_[plugin]`; wiped between runs
+- **Shared utilities:** `packages/test-utils` — custom RTL render with providers, profile factories per tier, synchronous event bus double
+
+### Package layout
+
+```
+packages/
+  test-utils/     — shared test helpers, factories, doubles
+  e2e/            — Playwright specs (created at M1)
+  ui/
+    .storybook/   — Storybook config
+    src/**/*.stories.tsx
+apps/
+  shell/
+    .storybook/   — shell-specific stories (not in packages/ui)
+```
 
 ---
 

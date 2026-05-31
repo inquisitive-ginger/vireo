@@ -33,7 +33,8 @@ rather than overriding silently. Log it as an open question.
 
 ## Outputs (required before closing)
 - [ ] New ADRs written to `docs/decisions/NNN-title.md`
-- [ ] `docs/architecture.md` updated if topology or constraints changed
+- [ ] `docs/architecture.md` updated — settled decisions table + any new section
+- [ ] Affected story specs updated if the decisions constrain or expand their scope or acceptance criteria
 - [ ] Session log committed to `docs/sessions/logs/YYYY-MM-DD-architecture-[topic].md`
 - [ ] `CLAUDE.md` current status updated
 

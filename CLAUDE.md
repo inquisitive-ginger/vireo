@@ -18,9 +18,9 @@ with the family that runs it. See [`docs/vision.md`](docs/vision.md).
 ## Current Status
 
 - **Milestone:** M0 — Foundation (in progress)
-- **Active stories:** None — M0 stories defined, none started
-- **Last session:** 2026-05-30 — Roadmap & Planning Audit (milestone renumbering M1–M8, Platform Shell milestone introduced, Family Feed module, Home Surface design session queued, M0 story/arch gaps resolved)
-- **Next session:** Visual Language Design — see `docs/sessions/queue.md`
+- **Active stories:** None — `dev-environment` done; `shell-skeleton` + `event-bus` up next (parallel)
+- **Last session:** 2026-05-30 — Development: dev-environment (monorepo scaffold, Vitest, Storybook 8, test-utils, plugin generator, CONTRIBUTING.md)
+- **Next session:** M0 `shell-skeleton` or `event-bus` (parallel, both depend on dev-environment)
 
 > Update this section at the end of every session.
 

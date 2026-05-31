@@ -4,7 +4,7 @@
 
 | Story | Status | Notes |
 |-------|--------|-------|
-| [Dev Environment](stories/dev-environment.md) | ⬜ Not Started | No dependencies — start here |
+| [Dev Environment](stories/dev-environment.md) | ✅ Done | |
 | [Shell Skeleton](stories/shell-skeleton.md) | ⬜ Not Started | Depends on dev-environment |
 | [Event Bus](stories/event-bus.md) | ⬜ Not Started | Depends on dev-environment; parallel with shell work |
 | [Auth & Family Profiles](stories/auth-and-profiles.md) | ⬜ Not Started | Blocked on M0 Architecture (auth mechanism); depends on shell-skeleton |
