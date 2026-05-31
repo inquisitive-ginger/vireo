@@ -2,6 +2,14 @@ export type TierLevel = 1 | 2 | 3 | 4
 
 export type EventName = `${string}.${string}.${string}`
 
+export type BusMessage = { event: EventName; payload: unknown }
+
+export type EventBus = {
+  emit(event: EventName, payload: unknown): void
+  on(event: EventName, handler: (payload: unknown) => void): () => void
+  onAny(handler: (message: BusMessage) => void): () => void
+}
+
 export type Profile = {
   id: string
   name: string

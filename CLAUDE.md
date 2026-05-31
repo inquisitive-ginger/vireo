@@ -18,9 +18,9 @@ with the family that runs it. See [`docs/vision.md`](docs/vision.md).
 ## Current Status
 
 - **Milestone:** M0 — Foundation (in progress)
-- **Active stories:** None — `shell-skeleton` done; `event-bus` up next
-- **Last session:** 2026-05-30 — Development: shell-skeleton (React shell, sidebar layout, React Router, shadcn/ui, Tailwind v4, packages/e2e scaffold)
-- **Next session:** M0 `event-bus`
+- **Active stories:** None — `event-bus` done; `auth-and-profiles` up next
+- **Last session:** 2026-05-30 — Development: event-bus (EventBus, @fastify/websocket bridge, useEventBus hook with auto-reconnect, live event log in shell)
+- **Next session:** M0 `auth-and-profiles`
 
 > Update this section at the end of every session.
 
