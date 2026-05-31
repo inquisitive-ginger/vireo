@@ -146,7 +146,7 @@ const { tier } = useTier();  // 1 | 2 | 3 | 4
 
 // Effective permissions — tier baseline + grants − revocations
 const { can } = usePermissions();
-can('tasks.create');  // → boolean
+can('create', 'chores.Task');  // → boolean
 ```
 
 All three imported from `@family-os/platform`.
@@ -162,12 +162,12 @@ All three imported from `@family-os/platform`.
 
 // PermissionGate — fine-grained capability gating
 // Use for specific actions that can be granted/revoked independently
-<PermissionGate permission="tasks.create">
+<PermissionGate action="create" subject="chores.Task">
   <NewTaskButton />
 </PermissionGate>
 
 // Both support a fallback
-<PermissionGate permission="finance.spend.request" fallback={<LockedState />}>
+<PermissionGate action="create" subject="finance.Transaction" fallback={<LockedState />}>
   <SpendingControls />
 </PermissionGate>
 ```
@@ -395,4 +395,3 @@ Every export is a commitment plugins can depend on.
 | Pi room display layout | M4+ design session |
 | Notification and alert patterns | M1 design session |
 | Error and empty states | M1 design session |
-| Permission string registry (full enumeration) | M0 Architecture session |

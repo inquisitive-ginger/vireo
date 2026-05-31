@@ -212,6 +212,8 @@ export function useEventBus(): {
   publish(event: EventName, payload: unknown): void
   subscribe(event: EventName, handler: (payload: unknown) => void): () => void
 }
+// Note: currently a callback-based dev hook in apps/shell. Promoted to
+// @family-os/platform with this publish/subscribe shape in auth-and-profiles.
 ```
 
 ### Server exports (`@family-os/platform/server`)
@@ -234,9 +236,9 @@ export type TierLevel = 1 | 2 | 3 | 4
 export type EventName = `${string}.${string}.${string}`
 
 export const PERMISSION_REGISTRY = {
-  'platform.profile.view':   { label: 'View profiles',         module: 'platform', action: 'view',   subject: 'Profile' },
-  'platform.profile.switch': { label: 'Switch active profile', module: 'platform', action: 'switch', subject: 'Profile' },
-  'platform.plugin.view':    { label: 'Use plugins',           module: 'platform', action: 'view',   subject: 'Plugin'  },
+  'platform.profile.view':   { label: 'View profiles',         module: 'platform', action: 'view',   subject: 'platform.Profile' },
+  'platform.profile.switch': { label: 'Switch active profile', module: 'platform', action: 'switch', subject: 'platform.Profile' },
+  'platform.plugin.view':    { label: 'Use plugins',           module: 'platform', action: 'view',   subject: 'platform.Plugin'  },
 } as const
 
 export type PermissionString = keyof typeof PERMISSION_REGISTRY

@@ -19,7 +19,7 @@ with the family that runs it. See [`docs/vision.md`](docs/vision.md).
 
 - **Milestone:** M0 — Foundation (in progress)
 - **Active stories:** None — `event-bus` done; `auth-and-profiles` up next
-- **Last session:** 2026-05-30 — Development: event-bus (EventBus, @fastify/websocket bridge, useEventBus hook with auto-reconnect, live event log in shell)
+- **Last session:** 2026-05-31 — Audit: post-implementation consistency pass (6 issues resolved — see session log)
 - **Next session:** M0 `auth-and-profiles`
 
 > Update this section at the end of every session.
