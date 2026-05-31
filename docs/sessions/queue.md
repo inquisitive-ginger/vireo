@@ -9,7 +9,7 @@
 
 1. **M0 Implementation** ![Type](https://img.shields.io/badge/Type-Frontend-orange) ![Type](https://img.shields.io/badge/Type-Backend-red)
    Six stories in dependency order. Run each as its own session.
-   - `dev-environment` — no dependencies, start here
+   - ~~`dev-environment`~~ ✅ Done
    - `shell-skeleton` + `event-bus` — parallel, both depend on dev-environment
    - `auth-and-profiles` — depends on shell-skeleton
    - `plugin-loader` — depends on shell-skeleton + auth-and-profiles
@@ -46,6 +46,10 @@
 ---
 
 ## Recently Completed
+
+- **2026-05-30 — Architecture: Testing Strategy** ![Type](https://img.shields.io/badge/Type-Architecture-blue)
+  Vitest (shares Vite pipeline) + RTL + jsdom for unit/component tests. `fastify.inject()` for route tests. Playwright for E2E (deferred to M1). Storybook 8 in `packages/ui` (ships in M0). Test conventions: colocated files, no coverage thresholds, real PostgreSQL for integration tests, `packages/test-utils` for shared factories. ADRs 023–026. Architecture template amended to require story spec updates as an output.
+  _See:_ `docs/sessions/logs/2026-05-30-architecture-testing-strategy.md`
 
 - **2026-05-29 — Widget Composition Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
   Left sidebar nav (220px, profile chip at top). React Grid Layout, static mode in M1, drag-and-drop M1+. Six named widget sizes (compact → full). Widget manifest shape settled (extends ADR 007/014). Two-level role model: shell filters by minTier + requiredPermission; widget handles internal rendering. Per-user layout stored as {widgetId, x, y, w, h}[]; tier-gated edit rights; parent override. ADR 022.
