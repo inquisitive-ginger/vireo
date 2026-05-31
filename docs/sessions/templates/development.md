@@ -1,6 +1,7 @@
 # Development Session Template
 
 ## Pre-session checklist
+- [ ] Create branch: `git checkout -b dev/[module]-[story]` (do this before touching any files)
 - [ ] Read `CLAUDE.md`
 - [ ] Read `docs/architecture.md`
 - [ ] Read the target story spec (`docs/modules/[name]/stories/[story].md`)
