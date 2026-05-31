@@ -23,4 +23,4 @@ As a plugin developer, I can publish typed events to the platform event bus and 
 - dev-environment
 
 ## Notes
-The EventEmitter is in-process on the API server; the WebSocket bridge (`@fastify/websocket`) fans events out to connected browser clients. This story can be built in parallel with Shell Skeleton since it's primarily server-side. The end-to-end AC (criterion 6) requires the shell to have at least a minimal WebSocket listener — coordinate with Shell Skeleton if that story isn't complete first.
+The EventEmitter is in-process on the API server; the WebSocket bridge (`@fastify/websocket`) fans events out to connected browser clients. This story runs after Shell Skeleton — the end-to-end AC (criterion 6) requires the shell to have at least a minimal WebSocket listener, so shell-skeleton should be complete before starting this story.

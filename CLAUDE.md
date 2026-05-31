@@ -18,9 +18,9 @@ with the family that runs it. See [`docs/vision.md`](docs/vision.md).
 ## Current Status
 
 - **Milestone:** M0 — Foundation (in progress)
-- **Active stories:** None — `dev-environment` done; `shell-skeleton` + `event-bus` up next (parallel)
-- **Last session:** 2026-05-30 — Development: dev-environment (monorepo scaffold, Vitest, Storybook 8, test-utils, plugin generator, CONTRIBUTING.md)
-- **Next session:** M0 `shell-skeleton` or `event-bus` (parallel, both depend on dev-environment)
+- **Active stories:** None — `shell-skeleton` done; `event-bus` up next
+- **Last session:** 2026-05-30 — Development: shell-skeleton (React shell, sidebar layout, React Router, shadcn/ui, Tailwind v4, packages/e2e scaffold)
+- **Next session:** M0 `event-bus`
 
 > Update this section at the end of every session.
 

@@ -1,7 +1,7 @@
 # Story: Shell Skeleton
 
 **Module:** platform
-**Status:** ⬜ Not Started
+**Status:** ✅ Done
 
 ## User story
 As a family member, I can open the tablet and see the Family OS shell with a content slot that plugins render into so that there is a consistent entry point for all family features.

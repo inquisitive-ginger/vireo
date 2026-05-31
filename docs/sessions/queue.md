@@ -10,7 +10,8 @@
 1. **M0 Implementation** ![Type](https://img.shields.io/badge/Type-Frontend-orange) ![Type](https://img.shields.io/badge/Type-Backend-red)
    Six stories in dependency order. Run each as its own session.
    - ~~`dev-environment`~~ ✅ Done
-   - `shell-skeleton` + `event-bus` — parallel, both depend on dev-environment
+   - ~~`shell-skeleton`~~ ✅ Done
+   - `event-bus` — depends on dev-environment; run after shell-skeleton
    - `auth-and-profiles` — depends on shell-skeleton
    - `plugin-loader` — depends on shell-skeleton + auth-and-profiles
    - `demo-plugin` — depends on all above; satisfies M0 done definition
