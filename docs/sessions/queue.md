@@ -11,7 +11,7 @@
    Six stories in dependency order. Run each as its own session.
    - ~~`dev-environment`~~ ✅ Done
    - ~~`shell-skeleton`~~ ✅ Done
-   - `event-bus` — depends on dev-environment; run after shell-skeleton
+   - ~~`event-bus`~~ ✅ Done
    - `auth-and-profiles` — depends on shell-skeleton
    - `plugin-loader` — depends on shell-skeleton + auth-and-profiles
    - `demo-plugin` — depends on all above; satisfies M0 done definition
@@ -47,6 +47,10 @@
 ---
 
 ## Recently Completed
+
+- **2026-05-30 — Development: event-bus** ![Type](https://img.shields.io/badge/Type-Backend-red)
+  Typed `EventBus` (in-process `EventEmitter` + runtime `module.noun.verb` validation). `@fastify/websocket` bridge fans all events to connected browser clients. `useEventBus` hook with exponential-backoff reconnect. `POST /trigger-event` demo + live event log in shell. 17 tests passing.
+  _See:_ `docs/sessions/logs/2026-05-30-dev-event-bus.md`
 
 - **2026-05-30 — Architecture: Testing Strategy** ![Type](https://img.shields.io/badge/Type-Architecture-blue)
   Vitest (shares Vite pipeline) + RTL + jsdom for unit/component tests. `fastify.inject()` for route tests. Playwright for E2E (deferred to M1). Storybook 8 in `packages/ui` (ships in M0). Test conventions: colocated files, no coverage thresholds, real PostgreSQL for integration tests, `packages/test-utils` for shared factories. ADRs 023–026. Architecture template amended to require story spec updates as an output.
