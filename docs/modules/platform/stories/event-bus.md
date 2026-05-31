@@ -1,7 +1,7 @@
 # Story: Event Bus
 
 **Module:** platform
-**Status:** ⬜ Not Started
+**Status:** ✅ Done
 
 ## User story
 As a plugin developer, I can publish typed events to the platform event bus and have subscribers receive them in real time so that plugins can react to activity in other parts of the system.

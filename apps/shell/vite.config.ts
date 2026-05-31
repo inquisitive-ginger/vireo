@@ -12,5 +12,9 @@ export default defineConfig({
   },
   server: {
     port: 5173,
+    proxy: {
+      '/events': { target: 'ws://localhost:3000', ws: true },
+      '/trigger-event': { target: 'http://localhost:3000' },
+    },
   },
 })

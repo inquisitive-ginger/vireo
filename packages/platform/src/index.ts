@@ -1,8 +1,8 @@
-// Client-side platform API — type exports only for M0
-// Hook and component implementations added by shell-skeleton and auth-and-profiles stories
 export type {
   TierLevel,
   EventName,
+  BusMessage,
+  EventBus,
   Profile,
   PermissionOverride,
   PermissionString,
