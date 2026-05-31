@@ -7,7 +7,7 @@
 As a family member, I can open the tablet and see the Family OS shell with a content slot that plugins render into so that there is a consistent entry point for all family features.
 
 ## Scope
-**In:** React shell renders on the tablet; left sidebar layout (220px wide, profile chip at top, nav items below, Settings entry at bottom — see ADR 022); main content area (`flex-1`) with a plugin content slot; home screen as a named placeholder (explicitly not the widget grid — see ADR 011); Tailwind CSS v4 configured; shadcn/ui installed and usable; system font CSS variables in place (placeholder — specific fonts deferred); 48px minimum touch targets on all nav and sidebar elements
+**In:** React shell renders on the tablet; left sidebar layout (220px wide, profile chip at top, nav items below, Settings entry at bottom — see ADR 022); main content area (`flex-1`) with a plugin content slot; home screen as a named placeholder (explicitly not the widget grid — see ADR 011); Tailwind CSS v4 configured; shadcn/ui installed and usable; system font CSS variables in place (placeholder — specific fonts deferred); 48px minimum touch targets on all nav and sidebar elements; `packages/e2e/` Playwright scaffold (ADR 024 — created at shell-skeleton)
 
 **Out:** Widget grid and role-aware composition (ADR 011 — M1); nav visual styling — colors, typography, active states (Visual Language design session); color palette and tokens (Visual Language design session); mobile, TV, and Pi surfaces; any real content or module UI; tier-filtering of nav items (auth-and-profiles story)
 

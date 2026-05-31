@@ -324,7 +324,7 @@ Effective ability = `createAbility(profile, overrides)` — tier baseline rules 
 | Test runner | Vitest | Shares Vite pipeline; ESM-native; Turborepo-cacheable |
 | Component tests | `@testing-library/react` + jsdom | Behavior-first; no snapshot tests |
 | Route tests | `fastify.inject()` | Full request pipeline; no real HTTP |
-| E2E | Playwright | Deferred to M1; lives in `packages/e2e` |
+| E2E | Playwright | Scaffolded in M0 shell-skeleton; lives in `packages/e2e` |
 | Component catalog | Storybook 8 | In `packages/ui`; dev-only; not in build pipeline |
 
 ### Conventions

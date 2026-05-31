@@ -9,7 +9,7 @@ As a developer, I can run the full platform locally with one command so that I c
 ## Scope
 **In:** pnpm + Turborepo monorepo scaffold; `packages/ui` and `packages/platform` stubs (types + barrel exports — no implementation); `apps/shell` React + Vite app scaffold; `apps/api` Fastify service scaffold; Docker Compose with PostgreSQL 16; shell hot-reload in development; `pnpm turbo gen plugin` Turborepo generator that scaffolds new plugins (per ADR 020); Vitest workspace config with per-package `vitest.config.ts` (ADR 023); `packages/test-utils` with RTL custom render, profile factories, and event bus test double (ADR 026); Storybook 8 in `packages/ui` with Tailwind CSS v4 and Vite integration (ADR 025); `CONTRIBUTING.md` with code style/formatting conventions and branching/git workflow
 
-**Out:** CI/CD pipeline; production deployment config; seed data (added by the story that needs it); any real package implementation beyond stubs; Playwright E2E scaffold (deferred to M1 shell-skeleton per ADR 024); Storybook stories beyond the initial setup verification story; typed `WidgetManifest` shape in generated manifest (placeholder `widgets: []` is included per ADR 022; full type is M1 scope)
+**Out:** CI/CD pipeline; production deployment config; seed data (added by the story that needs it); any real package implementation beyond stubs; Playwright E2E scaffold (deferred to shell-skeleton per ADR 024); Storybook stories beyond the initial setup verification story; typed `WidgetManifest` shape in generated manifest (placeholder `widgets: []` is included per ADR 022; full type is M1 scope)
 
 ## Acceptance criteria
 1. `docker compose up` starts PostgreSQL and it accepts connections on the expected port
