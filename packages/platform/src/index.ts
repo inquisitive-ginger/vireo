@@ -6,6 +6,7 @@ export type {
   Profile,
   PermissionOverride,
   PermissionString,
+  RegistryEntry,
   PluginManifest,
 } from './types'
 

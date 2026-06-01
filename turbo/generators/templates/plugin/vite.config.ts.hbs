@@ -14,6 +14,10 @@ export default defineConfig({
       shared: ['react', 'react-dom', '@family-os/ui', '@family-os/platform'],
     }),
   ],
+  server: {
+    port: {{port}},
+    strictPort: true,
+  },
   build: {
     target: 'esnext',
   },

@@ -1,10 +1,31 @@
 import path from 'path'
+import { readFileSync } from 'fs'
 import { defineConfig } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
+import federation from '@originjs/vite-plugin-federation'
+import type { RegistryEntry } from '@family-os/platform/types'
+
+const registryPath = path.resolve(__dirname, '../../plugins.json')
+const registry: RegistryEntry[] = JSON.parse(readFileSync(registryPath, 'utf-8'))
 
 export default defineConfig({
-  plugins: [react(), tailwindcss()],
+  plugins: [
+    react(),
+    tailwindcss(),
+    federation({
+      name: 'shell',
+      remotes: Object.fromEntries(
+        registry.map((p) => [p.name, `${p.baseUrl}/assets/remoteEntry.js`])
+      ),
+      shared: {
+        react: { singleton: true, requiredVersion: '^19.0.0' },
+        'react-dom': { singleton: true, requiredVersion: '^19.0.0' },
+        '@family-os/platform': { singleton: true },
+        '@family-os/ui': { singleton: true },
+      },
+    }),
+  ],
   resolve: {
     alias: {
       '@': path.resolve(__dirname, './src'),
@@ -17,5 +38,8 @@ export default defineConfig({
       '/events': { target: 'ws://localhost:3000', ws: true },
       '/api': { target: 'http://localhost:3000' },
     },
+  },
+  build: {
+    target: 'esnext',
   },
 })

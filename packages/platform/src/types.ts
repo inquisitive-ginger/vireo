@@ -49,6 +49,11 @@ export const PERMISSION_REGISTRY = {
 
 export type PermissionString = keyof typeof PERMISSION_REGISTRY
 
+export type RegistryEntry = {
+  name: string
+  baseUrl: string
+}
+
 export type PluginManifest = {
   name: string
   version: string

@@ -2,22 +2,66 @@ import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
 import { AuthProvider } from '@family-os/platform'
+import type { RegistryEntry, PluginManifest } from '@family-os/platform'
 import './styles.css'
 import { App } from './App'
 import { Home } from './pages/Home'
-import { DemoPage } from './pages/DemoPage'
+import { PluginView } from './components/PluginView'
+import { PluginErrorBoundary } from './components/PluginErrorBoundary'
+import { PluginNotFound } from './pages/PluginNotFound'
+
+type LoadedPlugin = PluginManifest & { remoteName: string }
+
+async function loadPlugins(): Promise<LoadedPlugin[]> {
+  try {
+    const res = await fetch('/api/plugins')
+    const entries: RegistryEntry[] = await res.json()
+
+    const results = await Promise.allSettled(
+      entries.map(async (entry) => {
+        const manifestRes = await fetch(`${entry.baseUrl}/manifest.json`)
+        const manifest: PluginManifest = await manifestRes.json()
+        return { ...manifest, remoteName: entry.name }
+      })
+    )
+
+    return results
+      .filter((r): r is PromiseFulfilledResult<LoadedPlugin> => r.status === 'fulfilled')
+      .map((r) => r.value)
+  } catch {
+    return []
+  }
+}
+
+const plugins = await loadPlugins()
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          {/* Pathless layout route — App (sidebar + outlet) renders for every URL.
-              The path="*" catch-all child ensures the layout renders even when no
-              named route matches (e.g. /settings before that story is built). */}
           <Route element={<App />}>
             <Route index element={<Home />} />
-            <Route path="demo" element={<DemoPage />} />
+
+            {/* Plugin routes — registered dynamically from each plugin's manifest */}
+            {plugins.flatMap((plugin) =>
+              plugin.routes.map((route) => (
+                <Route
+                  key={route}
+                  path={route.replace(/^\//, '')}
+                  element={
+                    <PluginErrorBoundary>
+                      <PluginView remoteName={plugin.remoteName} />
+                    </PluginErrorBoundary>
+                  }
+                />
+              ))
+            )}
+
+            {/* Unregistered plugin-namespace routes */}
+            <Route path="plugin/*" element={<PluginNotFound />} />
+
+            {/* Shell catch-all — future shell pages render null until built */}
             <Route path="*" element={null} />
           </Route>
         </Routes>

@@ -8,5 +8,5 @@
 | [Shell Skeleton](stories/shell-skeleton.md) | ✅ Done | |
 | [Event Bus](stories/event-bus.md) | ✅ Done | |
 | [Auth & Family Profiles](stories/auth-and-profiles.md) | ✅ Done | |
-| [Plugin Registry & Loader](stories/plugin-loader.md) | ⬜ Not Started | Depends on shell-skeleton + auth-and-profiles |
+| [Plugin Registry & Loader](stories/plugin-loader.md) | ✅ Done | |
 | [Demo Plugin](stories/demo-plugin.md) | ⬜ Not Started | Depends on all above; directly satisfies M0 done definition |
