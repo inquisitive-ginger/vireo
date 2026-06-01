@@ -35,6 +35,49 @@ const tasks = await prisma.task.findMany({
 })
 ```
 
+**Prisma 7 — required setup (breaking changes from Prisma 5/6):**
+
+Prisma 7 removed the `url` field from `schema.prisma`'s `datasource` block. Each package that uses Prisma needs two files at its root:
+
+`prisma.config.ts` — CLI config (migrations, seed, generate):
+```typescript
+import path from 'path'
+import { defineConfig } from 'prisma/config'
+import { PrismaPg } from '@prisma/adapter-pg'
+
+const connectionString = process.env.DATABASE_URL
+
+export default defineConfig({
+  earlyAccess: true,
+  schema: path.join(__dirname, 'prisma/schema.prisma'),
+  datasource: { url: connectionString },
+  migrate: {
+    async adapter() {
+      const { Pool } = await import('pg')
+      return new PrismaPg(new Pool({ connectionString }))
+    },
+  },
+  migrations: { seed: 'tsx prisma/seed.ts' },
+})
+```
+
+`src/db.ts` — runtime client (always pass the adapter):
+```typescript
+import { Pool } from 'pg'
+import { PrismaPg } from '@prisma/adapter-pg'
+import { PrismaClient } from './generated/prisma'
+
+const pool = new Pool({
+  connectionString: process.env.DATABASE_URL ?? 'postgresql://familyos:familyos@localhost:5432/familyos',
+})
+export const prisma = new PrismaClient({ adapter: new PrismaPg(pool) })
+```
+
+Other Prisma 7 changes to be aware of:
+- `previewFeatures = ["multiSchema"]` is removed — multi-schema works without it; delete the `previewFeatures` line from any `schema.prisma` generator block
+- Seed config moves from `package.json`'s `"prisma"` key to `migrations.seed` in `prisma.config.ts` (as shown above)
+- `PrismaClient()` called without an adapter will fail — the adapter is mandatory in Prisma 7
+
 **Alternatives considered:**
 
 - **Drizzle ORM:** lighter, closer to raw SQL, strong TypeScript support —

@@ -61,6 +61,22 @@ Each module adds its entries to this registry when it is implemented.
   Use for capabilities a parent might reasonably grant early or revoke as a
   consequence.
 
+**Implementation note — use `createPrismaAbility`, not `createMongoAbility`:**
+
+`@casl/ability` exports `createMongoAbility`, which despite its name works with any backend. However, for this project always use `createPrismaAbility` from `@casl/prisma`:
+
+```typescript
+import { createPrismaAbility } from '@casl/prisma'
+
+// In createAbility (server — builds from profile + overrides):
+const { can, build } = new AbilityBuilder<AppAbility>(createPrismaAbility)
+
+// In AuthProvider (client — reconstructs from serialized rules):
+const ability = createPrismaAbility<AppAbility>(data.rules)
+```
+
+`createPrismaAbility` returns a `PrismaAbility` typed specifically for use with `accessibleBy()`. Using `createMongoAbility` compiles but produces type errors when calling `accessibleBy(ability, 'read').ModelName` in route handlers.
+
 **Alternatives considered:**
 
 - **Flat TypeScript union type:** compile-time safe but erased at runtime —
