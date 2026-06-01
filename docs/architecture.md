@@ -1,6 +1,6 @@
 # Architecture
 
-> Last updated: 2026-06-01 — auth-and-profiles follow-up (env config, Fastify scoping, DB isolation).
+> Last updated: 2026-06-01 — plugin-loader (registry, Module Federation, dynamic routing, error boundaries).
 
 ---
 
@@ -9,7 +9,6 @@
 - [Topology](#topology)
 - [Settled Decisions](#settled-decisions)
 - [Plugin System](#plugin-system)
-- [Testing](#testing)
   - [Loading](#loading)
   - [Plugin Contract](#plugin-contract)
   - [Plugin Manifest](#plugin-manifest-shape)
@@ -19,8 +18,16 @@
 - [Data Storage](#data-storage)
 - [Hosting](#hosting)
 - [Platform API](#platform-api)
+  - [Client Exports](#client-exports-family-osplatform)
+  - [Server Exports](#server-exports-family-osplatformserver)
+  - [Shared Types](#shared-types-family-osplatformtypes)
+  - [Fastify Plugin Scoping](#fastify-plugin-scoping)
 - [Auth](#auth)
 - [Plugin Dev Toolchain](#plugin-dev-toolchain)
+- [Testing](#testing)
+  - [Stack](#stack)
+  - [Conventions](#conventions)
+  - [Package Layout](#package-layout)
 - [To Be Defined](#to-be-defined)
 
 ---
@@ -330,7 +337,7 @@ Effective ability = `createAbility(profile, overrides)` — tier baseline rules 
 | File | Purpose |
 |------|---------|
 | `plugins/[name]/vite.config.ts` | Module Federation config; `@family-os/ui` and `@family-os/platform` as shared singletons |
-| `plugins/[name]/manifest.json` | Stub matching `PluginManifest` type |
+| `plugins/[name]/public/manifest.json` | Stub matching `PluginManifest` type; served at `/manifest.json` by Vite |
 | `plugins/[name]/tsconfig.json` | Extends workspace root config |
 | `plugins/[name]/src/index.ts` | Barrel — exposes the plugin module |
 | `plugins/[name]/src/Plugin.tsx` | Minimal example using platform hooks |
