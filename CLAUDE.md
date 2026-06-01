@@ -18,9 +18,9 @@ with the family that runs it. See [`docs/vision.md`](docs/vision.md).
 ## Current Status
 
 - **Milestone:** M0 — Foundation (in progress)
-- **Active stories:** None — `auth-and-profiles` done; `plugin-loader` up next
-- **Last session:** 2026-06-01 — Development: auth-and-profiles follow-up (env system, test DB isolation, doc pass)
-- **Next session:** M0 `plugin-loader`
+- **Active stories:** None — `plugin-loader` done; `demo-plugin` up next
+- **Last session:** 2026-06-01 — Development: plugin-loader (registry, Module Federation, dynamic routing, error boundaries)
+- **Next session:** M0 `demo-plugin`
 
 > Update this section at the end of every session.
 
