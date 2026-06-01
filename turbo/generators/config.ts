@@ -1,3 +1,5 @@
+import { readFileSync, writeFileSync } from 'fs'
+import { resolve } from 'path'
 import type { PlopTypes } from '@turbo/gen'
 
 export default function generator(plop: PlopTypes.NodePlopAPI): void {
@@ -10,6 +12,13 @@ export default function generator(plop: PlopTypes.NodePlopAPI): void {
         message: 'Plugin name (kebab-case):',
         validate: (value: string) =>
           /^[a-z][a-z0-9-]*$/.test(value) || 'Plugin name must be kebab-case (e.g. my-plugin)',
+      },
+      {
+        type: 'input',
+        name: 'port',
+        message: 'Dev server port (must be unique across all plugins):',
+        validate: (value: string) =>
+          /^\d{4,5}$/.test(value) || 'Port must be a 4-5 digit number',
       },
     ],
     actions: [
@@ -25,7 +34,7 @@ export default function generator(plop: PlopTypes.NodePlopAPI): void {
       },
       {
         type: 'add',
-        path: '{{turbo.paths.root}}/plugins/{{name}}/manifest.json',
+        path: '{{turbo.paths.root}}/plugins/{{name}}/public/manifest.json',
         templateFile: 'templates/plugin/manifest.json.hbs',
       },
       {
@@ -42,6 +51,14 @@ export default function generator(plop: PlopTypes.NodePlopAPI): void {
         type: 'add',
         path: '{{turbo.paths.root}}/plugins/{{name}}/src/Plugin.tsx',
         templateFile: 'templates/plugin/src/Plugin.tsx.hbs',
+      },
+      // Register the plugin in plugins.json so the shell Vite config picks it up
+      function registerPlugin(answers: { name: string; port: string }, _config, rootPath) {
+        const registryPath = resolve(rootPath as string, 'plugins.json')
+        const entries = JSON.parse(readFileSync(registryPath, 'utf-8'))
+        entries.push({ name: answers.name, baseUrl: `http://localhost:${answers.port}` })
+        writeFileSync(registryPath, JSON.stringify(entries, null, 2) + '\n')
+        return `Registered ${answers.name} in plugins.json`
       },
     ],
   })
