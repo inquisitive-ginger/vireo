@@ -1,6 +1,6 @@
 # Architecture
 
-> Last updated: 2026-05-30 — Testing Strategy session.
+> Last updated: 2026-06-01 — auth-and-profiles follow-up (env config, Fastify scoping, DB isolation).
 
 ---
 
@@ -89,7 +89,8 @@ is warranted.
 | 023 | Test runner: Vitest (shares Vite pipeline); component tests: `@testing-library/react` + jsdom; route tests: `fastify.inject()` |
 | 024 | E2E: Playwright; deferred to M1 shell-skeleton story; lives in `packages/e2e` |
 | 025 | Component catalog: Storybook 8 in `packages/ui`; ships in M0 dev-environment story |
-| 026 | Test conventions: colocated test files; no enforced coverage thresholds; real PostgreSQL for integration tests (test-prefixed schemas); shared test utils in `packages/test-utils` |
+| 026 | Test conventions: colocated test files; no enforced coverage thresholds; real PostgreSQL for integration tests (`familyos_test` DB separate from dev); shared test utils in `packages/test-utils` |
+| 027 | Environment configuration: `.env` files at repo root; `NODE_OPTIONS --env-file` for dev server; Vitest `envDir` for tests; `familyos` / `familyos_test` database separation |
 
 ---
 
@@ -255,6 +256,29 @@ export interface PluginManifest {
 }
 ```
 
+### Fastify plugin scoping
+
+All HTTP routes are registered under the `/api` prefix via a scoped sub-plugin. The WebSocket `/events` endpoint lives at root:
+
+```typescript
+await app.register(eventBusPlugin)           // /events — root, no prefix
+
+await app.register(async (api) => {
+  await api.register(authPlugin)             // /api/auth/*
+  api.get('/health', ...)                    // /api/health
+}, { prefix: '/api' })
+```
+
+**Gotcha:** plugins wrapped with `fastify-plugin` (e.g. `@fastify/session`, `@fastify/cookie`) break encapsulation — they apply globally regardless of which scoped sub-plugin registers them. This is intentional for decorators that must be visible everywhere (session, cookie), but means those plugins should be registered on the root `app`, not inside the `/api` scope, if their decorators are needed by multiple scopes. Route-only sub-plugins that do not use `fastify-plugin` stay properly scoped.
+
+The Vite dev proxy maps these to the API server:
+```typescript
+proxy: {
+  '/events': { target: 'ws://localhost:3000', ws: true },
+  '/api':    { target: 'http://localhost:3000' },
+}
+```
+
 ---
 
 ## Auth
@@ -262,7 +286,7 @@ export interface PluginManifest {
 - **Mechanism:** `@fastify/session` + `connect-pg-simple` — server-side sessions in PostgreSQL (ADR 017)
 - **Session payload:** `{ activeProfileId: string }` — resolved to a full `Profile` object by auth middleware on each request
 - **Profile switching:** `POST /auth/switch { targetProfileId }` — unblocked if target tier ≤ current tier; 403 if target tier > current tier (requires `POST /auth/verify-pin { pin, targetProfileId }` first)
-- **Reactive updates:** `AuthProvider` queries `/auth/me` via TanStack Query; `queryClient.invalidateQueries(['auth/me'])` on a successful switch re-renders all `TierGate` and `PermissionGate` trees without a page reload
+- **Reactive updates:** `AuthProvider` queries `/api/auth/me` via TanStack Query with key `['api/auth/me']`; `queryClient.invalidateQueries({ queryKey: ['api/auth/me'] })` on a successful switch re-renders all `TierGate` and `PermissionGate` trees without a page reload
 - **M0 dev mechanism:** query-parameter or UI selector — real login/profile-switch UX is a separate design session (see queue)
 
 **`platform` schema tables:**
@@ -331,7 +355,7 @@ Effective ability = `createAbility(profile, overrides)` — tier baseline rules 
 
 - **Test files:** colocated with source (`Component.test.tsx`, `util.test.ts`)
 - **Coverage:** no thresholds enforced — `packages/platform` and permission logic are high-priority targets by convention
-- **Database:** real PostgreSQL for any test touching Prisma; test schemas prefixed `test_[plugin]`; wiped between runs
+- **Database:** real PostgreSQL for any test touching Prisma; tests run against a separate `familyos_test` database (never the dev `familyos` DB); `beforeEach` truncates test-relevant tables between runs (ADR 026, ADR 027)
 - **Shared utilities:** `packages/test-utils` — custom RTL render with providers, profile factories per tier, synchronous event bus double
 
 ### Package layout

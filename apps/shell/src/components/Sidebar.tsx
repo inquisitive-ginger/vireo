@@ -1,6 +1,8 @@
 import { NavLink } from 'react-router-dom'
 import { Home, Settings } from 'lucide-react'
+import { useAuth } from '@family-os/platform'
 import { cn } from '@/lib/utils'
+import { DevProfileSelector } from './DevProfileSelector'
 
 export function Sidebar() {
   return (
@@ -12,20 +14,23 @@ export function Sidebar() {
       <div className="border-t border-border">
         <NavItem to="/settings" icon={<Settings size={18} aria-hidden />} label="Settings" />
       </div>
+      <DevProfileSelector />
     </aside>
   )
 }
 
 function ProfileChip() {
+  const { name } = useAuth()
+  const initial = name.charAt(0).toUpperCase()
   return (
     <div className="flex items-center gap-2 px-4 min-h-[48px] border-b border-border">
       <div
         className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs font-semibold shrink-0"
         aria-hidden
       >
-        F
+        {initial}
       </div>
-      <span className="text-sm font-medium truncate">Family</span>
+      <span className="text-sm font-medium truncate">{name}</span>
     </div>
   )
 }

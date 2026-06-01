@@ -18,9 +18,9 @@ with the family that runs it. See [`docs/vision.md`](docs/vision.md).
 ## Current Status
 
 - **Milestone:** M0 — Foundation (in progress)
-- **Active stories:** None — `event-bus` done; `auth-and-profiles` up next
-- **Last session:** 2026-05-31 — Audit: post-implementation consistency pass (6 issues resolved — see session log)
-- **Next session:** M0 `auth-and-profiles`
+- **Active stories:** None — `auth-and-profiles` done; `plugin-loader` up next
+- **Last session:** 2026-06-01 — Development: auth-and-profiles follow-up (env system, test DB isolation, doc pass)
+- **Next session:** M0 `plugin-loader`
 
 > Update this section at the end of every session.
 

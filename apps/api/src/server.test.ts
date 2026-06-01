@@ -4,7 +4,7 @@ import { buildServer } from './server'
 describe('API server', () => {
   it('GET /health returns ok', async () => {
     const app = await buildServer()
-    const res = await app.inject({ method: 'GET', url: '/health' })
+    const res = await app.inject({ method: 'GET', url: '/api/health' })
     expect(res.statusCode).toBe(200)
     expect(res.json()).toEqual({ status: 'ok' })
   })
@@ -14,7 +14,7 @@ describe('API server', () => {
     const received: unknown[] = []
     app.eventBus.onAny((msg) => received.push(msg))
 
-    const res = await app.inject({ method: 'POST', url: '/trigger-event' })
+    const res = await app.inject({ method: 'POST', url: '/api/trigger-event' })
     expect(res.statusCode).toBe(200)
     expect(res.json()).toEqual({ ok: true })
     expect(received).toHaveLength(1)

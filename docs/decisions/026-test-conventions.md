@@ -17,7 +17,7 @@ Coverage is not gated in CI. High-value targets are tested thoroughly by convent
 - Plugin UI components — RTL behavior tests for interactive elements; snapshot tests are discouraged
 
 ### 3. Real database for integration tests
-Tests that touch Prisma use a real PostgreSQL database. Each plugin schema uses a `test_` prefixed schema (e.g. `test_chore_engine`) isolated from the dev schema. The `vitest.setup.ts` in each package that needs a database runs Prisma migrations against the test schema and truncates tables between tests. No Prisma mocking.
+Tests that touch Prisma use a real PostgreSQL database, isolated from the dev database by running against a separate `familyos_test` database in the same Docker container. `TEST_DATABASE_URL` (loaded from `.env.test` via Vitest's `envDir`) points to `familyos_test`; `test.setup.ts` assigns it to `DATABASE_URL` before any test file imports the Prisma client. `beforeEach` hooks truncate test-relevant tables between test runs. No Prisma mocking. See ADR 027 for the full env configuration pattern and setup commands.
 
 ### 4. Shared setup
 A root `vitest.workspace.ts` lists all packages. A shared `packages/test-utils/` package exports:

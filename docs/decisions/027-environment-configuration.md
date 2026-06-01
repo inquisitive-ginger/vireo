@@ -1,0 +1,63 @@
+# ADR 027 — Environment Configuration
+
+**Status:** Decided
+
+## Decision
+
+Environment variables are managed via `.env` files at the repository root.
+
+| File | Committed? | Purpose |
+|------|-----------|---------|
+| `.env.example` | Yes | Template documenting all required vars — copy to `.env` to get started |
+| `.env` | No (gitignored) | Dev values — loaded by the API server at startup |
+| `.env.test` | No (gitignored) | Test overrides — loaded by Vitest automatically |
+
+**Variables:**
+
+| Name | Used by | Description |
+|------|---------|-------------|
+| `DATABASE_URL` | API server, Prisma CLI | Dev database connection string |
+| `SESSION_SECRET` | API server | `@fastify/session` cookie signing key |
+| `TEST_DATABASE_URL` | Vitest test setup | Test database connection string |
+
+**Loading:**
+
+- **API dev server** (`apps/api`): `NODE_OPTIONS='--env-file=../../.env'` in the `dev` script. Uses Node 22's native `--env-file` flag — no `dotenv` dependency.
+- **Vitest** (`apps/api`): `envDir: '../../'` in `vitest.config.ts` causes Vitest to auto-load `.env.test` when running in test mode. `src/test.setup.ts` then assigns `process.env.DATABASE_URL = TEST_DATABASE_URL`.
+
+**Database separation:**
+
+Two databases are maintained locally inside the same Docker PostgreSQL container:
+
+| Database | Used by |
+|----------|---------|
+| `familyos` | Dev server |
+| `familyos_test` | Test suite |
+
+Tests never touch the dev database. Both databases are migrated and seeded identically. `beforeEach` hooks truncate test-relevant tables between runs.
+
+To set up the test database from scratch:
+
+```bash
+psql postgresql://familyos:familyos@localhost:5432/postgres -c "CREATE DATABASE familyos_test;"
+DATABASE_URL=postgresql://familyos:familyos@localhost:5432/familyos_test \
+  pnpm --filter @family-os/platform exec prisma migrate deploy
+DATABASE_URL=postgresql://familyos:familyos@localhost:5432/familyos_test \
+  pnpm --filter @family-os/platform exec prisma db seed
+```
+
+## Why
+
+A single shared dev/test database silently corrupts dev state whenever the test suite runs — `beforeEach` truncates `platform.system_config`, which removes any PIN or config set during a dev session. Separate databases eliminate this at zero infrastructure cost: both live in the same Docker container that is already required by ADR 009.
+
+`NODE_OPTIONS --env-file` is preferred over importing `dotenv` because Node 22 ships it natively. Vitest's `envDir` integrates with Vitest's env loading order (`.env` → `.env.test` → `.env.local`) without any extra setup code.
+
+## Alternatives considered
+
+- **Per-package `.env` files:** duplication — vars used by multiple packages (e.g. `DATABASE_URL`) must be copied to each; root-level is simpler
+- **`dotenv/config` import in `index.ts`:** adds a runtime dependency and requires a path argument pointing to the root `.env`; less transparent than `NODE_OPTIONS`
+- **Test schema prefixes (`test_platform`, `test_chore_engine`):** finer-grained but requires each package to know its prefixed schema name, and all migration commands must explicitly target the prefixed schema; a separate database is equivalent isolation at lower complexity
+
+## Do not revisit unless
+
+The project moves to a hosting model where `--env-file` is unavailable, or secrets management requires an external vault — at that point, environment injection at deploy time replaces `.env` files entirely.

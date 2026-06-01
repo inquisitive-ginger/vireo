@@ -31,19 +31,19 @@ export const PERMISSION_REGISTRY = {
     label: 'View profiles',
     module: 'platform',
     action: 'view',
-    subject: 'Profile',
+    subject: 'platform.Profile',
   },
   'platform.profile.switch': {
     label: 'Switch active profile',
     module: 'platform',
     action: 'switch',
-    subject: 'Profile',
+    subject: 'platform.Profile',
   },
   'platform.plugin.view': {
     label: 'Use plugins',
     module: 'platform',
     action: 'view',
-    subject: 'Plugin',
+    subject: 'platform.Plugin',
   },
 } as const
 
