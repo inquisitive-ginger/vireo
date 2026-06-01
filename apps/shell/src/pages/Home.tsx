@@ -13,7 +13,7 @@ export function Home() {
   })
 
   async function sendEvent() {
-    await fetch('/trigger-event', { method: 'POST' })
+    await fetch('/api/trigger-event', { method: 'POST' })
   }
 
   return (

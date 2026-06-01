@@ -1,7 +1,7 @@
 # Story: Plugin Registry & Loader
 
 **Module:** platform
-**Status:** ⬜ Not Started
+**Status:** ✅ Done
 
 ## User story
 As a developer, I can register a plugin and have the shell load and mount it via Module Federation so that plugins are the standard delivery mechanism for all platform features.
