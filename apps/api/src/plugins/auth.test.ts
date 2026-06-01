@@ -29,9 +29,9 @@ function getCookie(res: LightMyRequestResponse): string {
   return header.split(';')[0] ?? ''
 }
 
-describe('GET /auth/me', () => {
+describe('GET /api/auth/me', () => {
   it('returns the family profile when no session is active', async () => {
-    const res = await app.inject({ method: 'GET', url: '/auth/me' })
+    const res = await app.inject({ method: 'GET', url: '/api/auth/me' })
     expect(res.statusCode).toBe(200)
     const body = res.json<{ id: string; tier: number }>()
     expect(body.id).toBe('family')
@@ -39,18 +39,18 @@ describe('GET /auth/me', () => {
   })
 })
 
-describe('POST /auth/switch', () => {
+describe('POST /api/auth/switch', () => {
   it('allows switching down from parent (tier 4) to child (tier 1)', async () => {
     // First switch up to the parent via the family session — family is tier 1
     // so we need to start as parent. Simulate by switching from a tier-4 session.
-    // Start: set session to parent via inject (no real session; test via /auth/me after switch).
+    // Start: set session to parent via inject (no real session; test via /api/auth/me after switch).
     //
     // We switch from the seed-parent-1 session.
     // Step 1: Switch to parent from family (tier 4 > tier 1 → 403 without PIN; skip that flow).
     // Instead start with a direct switch from family → child (both tier 1 → allowed).
     const res = await app.inject({
       method: 'POST',
-      url: '/auth/switch',
+      url: '/api/auth/switch',
       payload: { targetProfileId: 'seed-child-1' },
     })
     expect(res.statusCode).toBe(200)
@@ -61,7 +61,7 @@ describe('POST /auth/switch', () => {
     // family (tier 1) tries to switch to parent (tier 4)
     const res = await app.inject({
       method: 'POST',
-      url: '/auth/switch',
+      url: '/api/auth/switch',
       payload: { targetProfileId: 'seed-parent-1' },
     })
     expect(res.statusCode).toBe(403)
@@ -77,7 +77,7 @@ describe('POST /auth/switch', () => {
     // Verify PIN → switches to parent (tier 4), receives cookie
     const verifyRes = await app.inject({
       method: 'POST',
-      url: '/auth/verify-pin',
+      url: '/api/auth/verify-pin',
       payload: { pin: '1234', targetProfileId: 'seed-parent-1' },
     })
     expect(verifyRes.statusCode).toBe(200)
@@ -86,7 +86,7 @@ describe('POST /auth/switch', () => {
     // Now switch down to child (tier 1 ≤ tier 4 — allowed)
     const switchRes = await app.inject({
       method: 'POST',
-      url: '/auth/switch',
+      url: '/api/auth/switch',
       headers: { cookie },
       payload: { targetProfileId: 'seed-child-1' },
     })
@@ -95,11 +95,11 @@ describe('POST /auth/switch', () => {
   })
 })
 
-describe('POST /auth/verify-pin', () => {
+describe('POST /api/auth/verify-pin', () => {
   it('returns 423 when no family PIN has been set', async () => {
     const res = await app.inject({
       method: 'POST',
-      url: '/auth/verify-pin',
+      url: '/api/auth/verify-pin',
       payload: { pin: 'anything', targetProfileId: 'seed-parent-1' },
     })
     expect(res.statusCode).toBe(423)
@@ -113,7 +113,7 @@ describe('POST /auth/verify-pin', () => {
 
     const res = await app.inject({
       method: 'POST',
-      url: '/auth/verify-pin',
+      url: '/api/auth/verify-pin',
       payload: { pin: 'wrong', targetProfileId: 'seed-parent-1' },
     })
     expect(res.statusCode).toBe(403)
@@ -127,7 +127,7 @@ describe('POST /auth/verify-pin', () => {
 
     const res = await app.inject({
       method: 'POST',
-      url: '/auth/verify-pin',
+      url: '/api/auth/verify-pin',
       payload: { pin: '5678', targetProfileId: 'seed-parent-1' },
     })
     expect(res.statusCode).toBe(200)

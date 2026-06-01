@@ -10,12 +10,12 @@ export function DevProfileSelector() {
 
   const { data: profiles = [] } = useQuery<ProfileRow[]>({
     queryKey: ['profiles'],
-    queryFn: () => fetch('/profiles').then((r) => r.json()) as Promise<ProfileRow[]>,
+    queryFn: () => fetch('/api/profiles').then((r) => r.json()) as Promise<ProfileRow[]>,
     staleTime: Infinity,
   })
 
   async function switchTo(targetProfileId: string) {
-    const res = await fetch('/auth/switch', {
+    const res = await fetch('/api/auth/switch', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ targetProfileId }),
@@ -24,7 +24,7 @@ export function DevProfileSelector() {
     if (res.status === 403) {
       const pin = window.prompt('PIN required to switch to this profile:')
       if (!pin) return
-      const verifyRes = await fetch('/auth/verify-pin', {
+      const verifyRes = await fetch('/api/auth/verify-pin', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ pin, targetProfileId }),
@@ -37,7 +37,7 @@ export function DevProfileSelector() {
       return
     }
 
-    await queryClient.invalidateQueries({ queryKey: ['auth/me'] })
+    await queryClient.invalidateQueries({ queryKey: ['api/auth/me'] })
   }
 
   if (profiles.length === 0) return null

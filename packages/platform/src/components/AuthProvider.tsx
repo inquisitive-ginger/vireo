@@ -27,8 +27,8 @@ export function useAuthContext(): AuthContextValue {
 
 function AuthLoader({ children, queryClient }: { children: ReactNode; queryClient: QueryClient }) {
   const { data } = useQuery<AuthMeResponse>({
-    queryKey: ['auth/me'],
-    queryFn: () => fetch('/auth/me').then((r) => r.json()) as Promise<AuthMeResponse>,
+    queryKey: ['api/auth/me'],
+    queryFn: () => fetch('/api/auth/me').then((r) => r.json()) as Promise<AuthMeResponse>,
     staleTime: Infinity,
     refetchOnWindowFocus: false,
   })
@@ -40,7 +40,7 @@ function AuthLoader({ children, queryClient }: { children: ReactNode; queryClien
     [data?.rules],
   )
 
-  const invalidate = () => queryClient.invalidateQueries({ queryKey: ['auth/me'] })
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: ['api/auth/me'] })
 
   return (
     <AuthContext.Provider value={{ user, ability, invalidate }}>

@@ -53,7 +53,7 @@ export function useEventBus(): EventBusHook {
   }, [])
 
   const publish = useCallback((event: EventName, payload: unknown) => {
-    fetch('/trigger-event', {
+    fetch('/api/trigger-event', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ event, payload }),
