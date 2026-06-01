@@ -1,0 +1,66 @@
+import { createContext, useContext, useMemo, type ReactNode } from 'react'
+import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query'
+import { createPrismaAbility } from '@casl/prisma'
+import type { RawRuleOf } from '@casl/ability'
+import type { TierLevel } from '../types'
+import type { AppAbility } from '../ability'
+
+export type AuthUser = { id: string; name: string; tier: TierLevel }
+
+type AuthMeResponse = AuthUser & { rules: RawRuleOf<AppAbility>[] }
+
+type AuthContextValue = {
+  user: AuthUser
+  ability: AppAbility
+  invalidate: () => void
+}
+
+export const AuthContext = createContext<AuthContextValue | null>(null)
+
+const FAMILY_FALLBACK: AuthUser = { id: 'family', name: 'Family', tier: 1 }
+
+export function useAuthContext(): AuthContextValue {
+  const ctx = useContext(AuthContext)
+  if (!ctx) throw new Error('useAuthContext must be used inside AuthProvider')
+  return ctx
+}
+
+function AuthLoader({ children, queryClient }: { children: ReactNode; queryClient: QueryClient }) {
+  const { data } = useQuery<AuthMeResponse>({
+    queryKey: ['auth/me'],
+    queryFn: () => fetch('/auth/me').then((r) => r.json()) as Promise<AuthMeResponse>,
+    staleTime: Infinity,
+    refetchOnWindowFocus: false,
+  })
+
+  const user: AuthUser = data ? { id: data.id, name: data.name, tier: data.tier } : FAMILY_FALLBACK
+
+  const ability = useMemo(
+    () => createPrismaAbility<AppAbility>(data?.rules ?? []),
+    [data?.rules],
+  )
+
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: ['auth/me'] })
+
+  return (
+    <AuthContext.Provider value={{ user, ability, invalidate }}>
+      {children}
+    </AuthContext.Provider>
+  )
+}
+
+const defaultQueryClient = new QueryClient()
+
+export function AuthProvider({
+  children,
+  queryClient = defaultQueryClient,
+}: {
+  children: ReactNode
+  queryClient?: QueryClient
+}) {
+  return (
+    <QueryClientProvider client={queryClient}>
+      <AuthLoader queryClient={queryClient}>{children}</AuthLoader>
+    </QueryClientProvider>
+  )
+}

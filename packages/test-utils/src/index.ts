@@ -1,4 +1,5 @@
 export { renderWithProviders } from './render'
+export { MockAuthProvider } from './MockAuthProvider'
 export {
   createProfile,
   profileTier1,

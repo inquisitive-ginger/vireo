@@ -1,0 +1,63 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  schemas  = ["platform"]
+}
+
+model Profile {
+  id        String   @id @default(uuid())
+  name      String
+  tier      Int
+  avatarUrl String?  @map("avatar_url")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  permissionOverrides PermissionOverride[] @relation("profile_overrides")
+  grantedOverrides    PermissionOverride[] @relation("granted_by_overrides")
+  systemConfigs       SystemConfig[]
+
+  @@map("profiles")
+  @@schema("platform")
+}
+
+model PermissionOverride {
+  id        String   @id @default(uuid())
+  profileId String   @map("profile_id")
+  action    String
+  subject   String
+  type      String
+  grantedBy String?  @map("granted_by")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  profile   Profile  @relation("profile_overrides", fields: [profileId], references: [id])
+  grantor   Profile? @relation("granted_by_overrides", fields: [grantedBy], references: [id])
+
+  @@map("permission_overrides")
+  @@schema("platform")
+}
+
+model SystemConfig {
+  key       String   @id
+  value     Json
+  updatedBy String?  @map("updated_by")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  profile Profile? @relation(fields: [updatedBy], references: [id])
+
+  @@map("system_config")
+  @@schema("platform")
+}
+
+// Managed by connect-pg-simple; Prisma tracks it here to avoid schema drift.
+model Session {
+  sid    String   @id @db.VarChar
+  sess   Json
+  expire DateTime @db.Timestamp(6)
+
+  @@index([expire], name: "IDX_sessions_expire")
+  @@map("sessions")
+  @@schema("platform")
+}

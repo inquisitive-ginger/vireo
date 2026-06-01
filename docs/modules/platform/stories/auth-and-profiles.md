@@ -1,7 +1,7 @@
 # Story: Auth & Family Profiles
 
 **Module:** platform
-**Status:** ⬜ Not Started
+**Status:** ✅ Done
 
 ## User story
 As a plugin developer, I can read the current user's identity and trust tier from the platform so that plugins can render tier-appropriate content.

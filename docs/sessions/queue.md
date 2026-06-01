@@ -12,7 +12,7 @@
    - ~~`dev-environment`~~ ✅ Done
    - ~~`shell-skeleton`~~ ✅ Done
    - ~~`event-bus`~~ ✅ Done
-   - `auth-and-profiles` — depends on shell-skeleton
+   - ~~`auth-and-profiles`~~ ✅ Done
    - `plugin-loader` — depends on shell-skeleton + auth-and-profiles
    - `demo-plugin` — depends on all above; satisfies M0 done definition
    _Reads:_ `docs/modules/platform/progress.md`, individual story specs
