@@ -5,7 +5,10 @@
 > roadmap as earlier milestones complete and needs become clearer.
 
 ## Active Milestone
-**M0 — Foundation** · In Progress
+**M1 — Platform Shell** · Not Started
+
+## Completed
+**M0 — Foundation** · ✅ Done (2026-06-01)
 
 ---
 
