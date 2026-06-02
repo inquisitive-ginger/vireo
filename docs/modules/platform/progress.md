@@ -9,4 +9,4 @@
 | [Event Bus](stories/event-bus.md) | ✅ Done | |
 | [Auth & Family Profiles](stories/auth-and-profiles.md) | ✅ Done | |
 | [Plugin Registry & Loader](stories/plugin-loader.md) | ✅ Done | |
-| [Demo Plugin](stories/demo-plugin.md) | ⬜ Not Started | Depends on all above; directly satisfies M0 done definition |
+| [Demo Plugin](stories/demo-plugin.md) | ✅ Done | Satisfies M0 done definition |

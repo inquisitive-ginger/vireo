@@ -1,3 +1,3 @@
-// @family-os/ui — shared component library
-// shadcn/ui components and Tailwind CSS v4 utilities added by feature stories
-export type { ComponentPropsWithoutRef, ComponentPropsWithRef } from 'react'
+export { Button, buttonVariants } from './components/button'
+export type { ButtonProps } from './components/button'
+export { cn } from './lib/utils'

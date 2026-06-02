@@ -1,7 +1,8 @@
 # Development Session Template
 
 ## Pre-session checklist
-- [ ] Create branch: `git checkout -b dev/[module]-[story]` (do this before touching any files)
+
+- [ ] Create branch off `main`: `git checkout -b dev/[module]-[story]` (do this before touching any files)
 - [ ] Read `CLAUDE.md`
 - [ ] Read `docs/architecture.md`
 - [ ] Read the target story spec (`docs/modules/[name]/stories/[story].md`)
@@ -13,12 +14,15 @@
       or document gaps first.
 
 ## Session scope
+
 _One sentence: what story does this session implement, and what is the done condition?_
 
 ## Story: `[module/story-name]`
+
 _Copy the story's acceptance criteria here so they're visible during work._
 
 ## Constraints coming in
+
 _List ADRs or prior decisions that bound implementation choices. Do not re-litigate._
 
 ---
@@ -41,6 +45,7 @@ Log it as an open question; don't silently override settled decisions.
 ---
 
 ## Outputs (required before closing)
+
 - [ ] All acceptance criteria verified and passing
 - [ ] `pnpm typecheck` passes with zero errors
 - [ ] `pnpm test` passes (if test files were written or modified)
@@ -52,6 +57,7 @@ Log it as an open question; don't silently override settled decisions.
 - [ ] PR opened against `main` following conventions in `CONTRIBUTING.md`
 
 ## Session log format
+
 ```
 ## What was built
 ## Acceptance criteria status (pass / skip / deferred — with reason)

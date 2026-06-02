@@ -19,9 +19,24 @@ export default defineConfig({
       },
     },
   ],
-  webServer: {
-    command: 'pnpm --filter @family-os/shell dev',
-    url: 'http://localhost:5173',
-    reuseExistingServer: !process.env.CI,
-  },
+  webServer: [
+    {
+      // API server — requires DATABASE_URL in .env at repo root
+      command: 'pnpm --filter @family-os/api dev',
+      url: 'http://localhost:3000/api/health',
+      reuseExistingServer: !process.env.CI,
+    },
+    {
+      // Plugin preview server — requires a prior `pnpm --filter @family-os/plugin-demo-plugin build`
+      // CI: run build before `pnpm e2e`. Local dev: keep `vite preview` running on port 3010.
+      command: 'pnpm --filter @family-os/plugin-demo-plugin preview',
+      url: 'http://localhost:3010',
+      reuseExistingServer: !process.env.CI,
+    },
+    {
+      command: 'pnpm --filter @family-os/shell dev',
+      url: 'http://localhost:5173',
+      reuseExistingServer: !process.env.CI,
+    },
+  ],
 })
