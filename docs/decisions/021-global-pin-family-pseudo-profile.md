@@ -50,7 +50,7 @@ Add `platform.system_config`:
 ```sql
 CREATE TABLE platform.system_config (
   key         text PRIMARY KEY,
-  value       text,
+  value       jsonb,
   updated_by  uuid REFERENCES platform.profiles(id),
   updated_at  timestamptz NOT NULL DEFAULT now()
 );

@@ -7,28 +7,17 @@
 
 ## Up Next
 
-1. **M0 Implementation** ![Type](https://img.shields.io/badge/Type-Frontend-orange) ![Type](https://img.shields.io/badge/Type-Backend-red)
-   Six stories in dependency order. Run each as its own session.
-   - ~~`dev-environment`~~ ✅ Done
-   - ~~`shell-skeleton`~~ ✅ Done
-   - ~~`event-bus`~~ ✅ Done
-   - ~~`auth-and-profiles`~~ ✅ Done
-   - ~~`plugin-loader`~~ ✅ Done
-   - ~~`demo-plugin`~~ ✅ Done
-   _Produces:_ Running platform — plugin installs and renders on the tablet ✅
+1. **Visual Language Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
+   Typography (specific fonts), color palette, design tokens,
+   motion/animation, dark mode strategy.
+   _Reads:_ `docs/design-system.md`, running M0 shell
+   _Produces:_ Updated `docs/design-system.md` with full token system
 
 ---
 
 ## Blocked / Waiting
 
-2. **Visual Language Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
-   Typography (specific fonts), color palette, design tokens,
-   motion/animation, dark mode strategy.
-   _Reads:_ `docs/design-system.md`, running M0 shell
-   _Produces:_ Updated `docs/design-system.md` with full token system
-   _Blocked on:_ M0 Implementation (needs real UI to design against)
-
-3. **Home Surface Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
+2. **Home Surface Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
    Default layout model, core module slot reservation, placeholder states,
    Family Feed widget design, ADR 022 amendment.
    _Reads:_ `docs/design-system.md`, `docs/decisions/022-widget-system.md`, running M0 shell
@@ -46,6 +35,9 @@
 ---
 
 ## Recently Completed
+
+- **2026-06-01 — M0 Implementation** ![Type](https://img.shields.io/badge/Type-Frontend-orange) ![Type](https://img.shields.io/badge/Type-Backend-red)
+  All six M0 stories complete: dev-environment, shell-skeleton, event-bus, auth-and-profiles, plugin-loader, demo-plugin. Full plugin contract exercised end-to-end on the tablet. M0 done definition satisfied.
 
 - **2026-05-30 — Development: event-bus** ![Type](https://img.shields.io/badge/Type-Backend-red)
   Typed `EventBus` (in-process `EventEmitter` + runtime `module.noun.verb` validation). `@fastify/websocket` bridge fans all events to connected browser clients. `useEventBus` hook with exponential-backoff reconnect. `POST /trigger-event` demo + live event log in shell. 17 tests passing.

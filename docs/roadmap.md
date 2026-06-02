@@ -112,4 +112,12 @@ _Added here as MVP milestones complete and v2 needs emerge._
 ---
 
 ## Completed Milestones
-_None yet._
+
+### M0 — Foundation · ✅ Done (2026-06-01)
+The platform everything else runs on. No user-facing features yet.
+- Platform shell + plugin system
+- Family profiles + tier model
+- Event bus
+- Base tablet layout (one surface)
+
+**Done when:** A plugin can be installed and rendered on the tablet. ✅
