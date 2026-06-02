@@ -16,7 +16,7 @@ export default defineConfig({
     federation({
       name: 'shell',
       remotes: Object.fromEntries(
-        registry.map((p) => [p.name, `${p.baseUrl}/assets/remoteEntry.js`])
+        registry.map((p) => [p.name, `/plugins/${p.name}/assets/remoteEntry.js`])
       ),
       shared: {
         react: { singleton: true, requiredVersion: '^19.0.0' },
@@ -37,6 +37,12 @@ export default defineConfig({
     proxy: {
       '/events': { target: 'ws://localhost:3000', ws: true },
       '/api': { target: 'http://localhost:3000' },
+      ...Object.fromEntries(
+        registry.map((p) => [
+          `/plugins/${p.name}`,
+          { target: p.baseUrl, rewrite: (path: string) => path.replace(`/plugins/${p.name}`, '') },
+        ])
+      ),
     },
   },
   build: {

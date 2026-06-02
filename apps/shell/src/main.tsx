@@ -19,7 +19,7 @@ async function loadPlugins(): Promise<LoadedPlugin[]> {
 
     const results = await Promise.allSettled(
       entries.map(async (entry) => {
-        const manifestRes = await fetch(`${entry.baseUrl}/manifest.json`)
+        const manifestRes = await fetch(`/plugins/${entry.name}/manifest.json`)
         const manifest: PluginManifest = await manifestRes.json()
         return { ...manifest, remoteName: entry.name }
       })
