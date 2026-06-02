@@ -41,7 +41,7 @@ test.describe('shell skeleton', () => {
 
   // AC5
   test('navigating to a plugin route renders content in the main slot', async ({ page }) => {
-    await page.goto('/demo')
+    await page.goto('/demo-plugin')
     await expect(page.locator('main')).toBeVisible()
     await expect(page.locator('h1', { hasText: 'Demo Plugin' })).toBeVisible()
     // sidebar persists during navigation
@@ -64,6 +64,8 @@ test.describe('shell skeleton', () => {
   // AC7
   test('all interactive sidebar elements meet 48px minimum touch target', async ({ page }) => {
     const links = page.locator('aside').getByRole('link')
+    // Wait for at least one link to be in the DOM before counting
+    await links.first().waitFor()
     const count = await links.count()
     expect(count).toBeGreaterThan(0)
     for (let i = 0; i < count; i++) {
