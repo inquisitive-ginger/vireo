@@ -17,8 +17,14 @@ export async function buildServer() {
 
       api.get('/health', async () => ({ status: 'ok' }))
 
-      api.post('/trigger-event', async () => {
-        app.eventBus.emit('platform.ping.sent', { timestamp: Date.now() })
+      api.post('/trigger-event', async (req) => {
+        const body = req.body as { event?: string; payload?: unknown } | null
+        const event = body?.event ?? 'platform.ping.sent'
+        const payload = body?.payload ?? { timestamp: Date.now() }
+        if (!/^[a-zA-Z][a-zA-Z0-9-]*\.[a-zA-Z][a-zA-Z0-9-]*\.[a-zA-Z][a-zA-Z0-9-]*$/.test(event)) {
+          return { ok: false, error: 'invalid event name' }
+        }
+        app.eventBus.emit(event as `${string}.${string}.${string}`, payload)
         return { ok: true }
       })
     },

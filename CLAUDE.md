@@ -18,9 +18,9 @@ with the family that runs it. See [`docs/vision.md`](docs/vision.md).
 ## Current Status
 
 - **Milestone:** M0 — Foundation (in progress)
-- **Active stories:** None — `plugin-loader` done; `demo-plugin` up next
-- **Last session:** 2026-06-01 — Development: plugin-loader (registry, Module Federation, dynamic routing, error boundaries)
-- **Next session:** M0 `demo-plugin`
+- **Active stories:** None — M0 complete
+- **Last session:** 2026-06-01 — Development: demo-plugin (M0 integration proof; full plugin contract exercised end-to-end)
+- **Next session:** Visual Language Design (blocked on M0; see queue)
 
 > Update this section at the end of every session.
 

@@ -1,7 +1,7 @@
 # Story: Demo Plugin
 
 **Module:** platform
-**Status:** ⬜ Not Started
+**Status:** ✅ Done
 
 ## User story
 As a parent, I can see the demo plugin running on the tablet so that the platform's plugin model is proven end-to-end before any real module is built.
