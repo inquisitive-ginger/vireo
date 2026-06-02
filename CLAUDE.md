@@ -19,8 +19,8 @@ with the family that runs it. See [`docs/vision.md`](docs/vision.md).
 
 - **Milestone:** M1 — Platform Shell (not started)
 - **Active stories:** None — awaiting first M1 planning session
-- **Last session:** 2026-06-01 — Development: demo-plugin (M0 integration proof; full plugin contract exercised end-to-end)
-- **Next session:** Visual Language Design (M0 complete — unblocked; see queue)
+- **Last session:** 2026-06-02 — Visual Language Design (Lora + DM Sans, Terracotta & Teal palette, dark mode tokens committed)
+- **Next session:** Home Surface Design (unblocked; see queue)
 
 > Update this section at the end of every session.
 

@@ -20,24 +20,44 @@
 
 @layer base {
   :root {
-    /* M0 placeholder — replaced when fonts are chosen (Visual Language design session) */
-    --font-ui: system-ui, sans-serif;
-    --font-display: system-ui, sans-serif;
+    --font-display: 'Lora', Georgia, 'Times New Roman', serif;
+    --font-ui:      'DM Sans', 'Helvetica Neue', Arial, sans-serif;
 
-    --background: oklch(1 0 0);
-    --foreground: oklch(0.145 0 0);
-    --primary: oklch(0.205 0 0);
-    --primary-foreground: oklch(0.985 0 0);
-    --secondary: oklch(0.961 0 0);
-    --secondary-foreground: oklch(0.205 0 0);
-    --muted: oklch(0.961 0 0);
-    --muted-foreground: oklch(0.508 0 0);
-    --accent: oklch(0.961 0 0);
-    --accent-foreground: oklch(0.205 0 0);
-    --destructive: oklch(0.577 0.245 27.325);
-    --border: oklch(0.922 0 0);
-    --input: oklch(0.922 0 0);
-    --ring: oklch(0.708 0 0);
+    /* Terracotta & Teal — light */
+    --background:          oklch(0.985 0.008 75);
+    --foreground:          oklch(0.18  0.04  50);
+    --primary:             oklch(0.57  0.14  35);
+    --primary-foreground:  oklch(0.99  0     0);
+    --secondary:           oklch(0.93  0.022 72);
+    --secondary-foreground:oklch(0.28  0.05  50);
+    --muted:               oklch(0.93  0.016 72);
+    --muted-foreground:    oklch(0.52  0.04  58);
+    --accent:              oklch(0.52  0.11  190);
+    --accent-foreground:   oklch(0.99  0     0);
+    --destructive:         oklch(0.577 0.245 27.325);
+    --border:              oklch(0.88  0.022 75);
+    --input:               oklch(0.88  0.022 75);
+    --ring:                oklch(0.57  0.14  35);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      /* Terracotta & Teal — dark (warm clay background, not cold blue-black) */
+      --background:          oklch(0.15  0.022 45);
+      --foreground:          oklch(0.92  0.012 75);
+      --primary:             oklch(0.66  0.14  35);
+      --primary-foreground:  oklch(0.99  0     0);
+      --secondary:           oklch(0.22  0.020 48);
+      --secondary-foreground:oklch(0.82  0.012 70);
+      --muted:               oklch(0.20  0.016 48);
+      --muted-foreground:    oklch(0.56  0.022 60);
+      --accent:              oklch(0.62  0.11  190);
+      --accent-foreground:   oklch(0.99  0     0);
+      --destructive:         oklch(0.704 0.191 22.216);
+      --border:              oklch(0.30  0.022 48);
+      --input:               oklch(0.30  0.022 48);
+      --ring:                oklch(0.66  0.14  35);
+    }
   }
 
   * {

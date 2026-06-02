@@ -7,34 +7,26 @@
 
 ## Up Next
 
-1. **Visual Language Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
-   Typography (specific fonts), color palette, design tokens,
-   motion/animation, dark mode strategy.
-   _Reads:_ `docs/design-system.md`, running M0 shell
-   _Produces:_ Updated `docs/design-system.md` with full token system
-
----
-
-## Blocked / Waiting
-
-2. **Home Surface Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
+1. **Home Surface Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
    Default layout model, core module slot reservation, placeholder states,
    Family Feed widget design, ADR 022 amendment.
    _Reads:_ `docs/design-system.md`, `docs/decisions/022-widget-system.md`, running M0 shell
    _Produces:_ Updated `docs/design-system.md` (home surface section), ADR 022 amendment,
    Family Feed module spec stub
-   _Blocked on:_ Visual Language Design
 
-4. **Notification & States Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
+2. **Notification & States Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
    Notification and alert patterns (Web Push, in-app toasts, badge counts),
    error states, and empty states. Required before M2 Chores implementation.
    _Reads:_ `docs/design-system.md` (post Visual Language), running M0 shell
    _Produces:_ Updated `docs/design-system.md` with notification, error, and empty state specs
-   _Blocked on:_ Visual Language Design
 
 ---
 
 ## Recently Completed
+
+- **2026-06-02 — Visual Language Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
+  Typography: Lora (display) + DM Sans (UI). Palette: Terracotta & Teal — burnt orange primary, teal accent. Dark mode: warm clay background via `prefers-color-scheme: dark`. Tokens committed to `styles.css`, fonts loaded in `index.html`.
+  _See:_ `docs/sessions/logs/2026-06-02-design-visual-language.md`
 
 - **2026-06-01 — M0 Implementation** ![Type](https://img.shields.io/badge/Type-Frontend-orange) ![Type](https://img.shields.io/badge/Type-Backend-red)
   All six M0 stories complete: dev-environment, shell-skeleton, event-bus, auth-and-profiles, plugin-loader, demo-plugin. Full plugin contract exercised end-to-end on the tablet. M0 done definition satisfied.

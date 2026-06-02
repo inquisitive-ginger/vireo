@@ -1,6 +1,6 @@
 # Design System
 
-> Last updated: 2026-05-29 — Widget Composition Design session.
+> Last updated: 2026-06-02 — Visual Language Design session.
 
 This document records settled design decisions. Deferred items are
 explicitly marked — do not treat absence of a spec as a free choice.
@@ -59,34 +59,76 @@ output — not upgrading a dependency.
 
 ## Typography
 
-**Direction settled. Specific fonts deferred** — see To Be Defined.
+**Settled** — Visual Language design session, 2026-06-02.
 
-- **Two font families** — a UI workhorse and a warmer display font
-- **Warmer feel** — rounded, approachable; deliberately not the
-  Inter/Geist default aesthetic
-- **M0 placeholder** — ship with the system font stack; no font
-  decision baked in, nothing to undo later
+| Role | Font | Fallback |
+|------|------|----------|
+| Display (headings, greeting text) | **Lora** | Georgia, 'Times New Roman', serif |
+| UI (body, labels, nav, buttons) | **DM Sans** | 'Helvetica Neue', Arial, sans-serif |
+
+**Pairing rationale:** Lora's well-crafted serifs give headings warmth and editorial character without stuffiness. DM Sans provides clean, legible structure for UI text without the generic Inter/Geist feel. Together they read as distinctive and warm — adult-legible but approachable for kids.
 
 ```css
-/* M0 placeholder — replaced when fonts are chosen */
---font-ui:      system-ui, sans-serif;
---font-display: system-ui, sans-serif;
+--font-display: 'Lora', Georgia, 'Times New Roman', serif;
+--font-ui:      'DM Sans', 'Helvetica Neue', Arial, sans-serif;
 ```
 
-Specific font choices require real UI to evaluate against. Deferred
-to the Visual Language design session.
+Loaded from Google Fonts in `apps/shell/index.html`. Plugins must
+use `var(--font-display)` and `var(--font-ui)` — never hardcode a
+font family.
 
 ---
 
 ## Color & Tokens
 
-**Deferred** — to the Visual Language design session. Real UI is
-needed before palette decisions can be made well.
+**Settled** — Visual Language design session, 2026-06-02.
 
-The token structure will use CSS custom properties so theming
-(light/dark, tier variants) is cascade-based with no JavaScript
-overhead. Semantic tokens (e.g. `--background`, `--accent`) will
-sit on top of a raw palette — plugins consume semantic tokens only.
+**Palette: Terracotta & Teal.** A warm burnt-orange primary paired
+with a teal accent — earthy warmth balanced by a calm complement.
+Deliberately two distinct hues rather than a single-hue scale.
+
+Theming is cascade-based via CSS custom properties. No JavaScript
+overhead. Plugins consume semantic tokens only — never raw oklch values.
+
+### Light mode
+
+| Token | Value | Role |
+|-------|-------|------|
+| `--background` | `oklch(0.985 0.008 75)` | Page background — warm off-white |
+| `--foreground` | `oklch(0.18 0.04 50)` | Primary text |
+| `--primary` | `oklch(0.57 0.14 35)` | Terracotta — main actions, active states |
+| `--primary-foreground` | `oklch(0.99 0 0)` | Text on primary |
+| `--secondary` | `oklch(0.93 0.022 72)` | Card and sidebar surfaces |
+| `--secondary-foreground` | `oklch(0.28 0.05 50)` | Text on secondary |
+| `--muted` | `oklch(0.93 0.016 72)` | Subtle backgrounds |
+| `--muted-foreground` | `oklch(0.52 0.04 58)` | Subdued labels, timestamps |
+| `--accent` | `oklch(0.52 0.11 190)` | Teal — progress, highlights, indicators |
+| `--accent-foreground` | `oklch(0.99 0 0)` | Text on accent |
+| `--border` / `--input` | `oklch(0.88 0.022 75)` | Borders and input outlines |
+| `--ring` | `oklch(0.57 0.14 35)` | Focus ring (matches primary) |
+| `--destructive` | `oklch(0.577 0.245 27.325)` | Error and delete actions |
+
+### Dark mode
+
+Triggered by `prefers-color-scheme: dark` — no JavaScript required,
+cascade-based. The dark background is a **warm clay** (`oklch(0.15 0.022 45)`)
+rather than the cold blue-black common in most apps. Primaries lighten
+to maintain contrast against dark surfaces.
+
+| Token | Value |
+|-------|-------|
+| `--background` | `oklch(0.15 0.022 45)` |
+| `--foreground` | `oklch(0.92 0.012 75)` |
+| `--primary` | `oklch(0.66 0.14 35)` |
+| `--secondary` | `oklch(0.22 0.020 48)` |
+| `--muted` | `oklch(0.20 0.016 48)` |
+| `--muted-foreground` | `oklch(0.56 0.022 60)` |
+| `--accent` | `oklch(0.62 0.11 190)` |
+| `--border` / `--input` | `oklch(0.30 0.022 48)` |
+| `--destructive` | `oklch(0.704 0.191 22.216)` |
+
+A manual dark mode toggle (for families who want to override the
+system preference) is deferred to M1.
 
 ---
 
@@ -386,10 +428,8 @@ Every export is a commitment plugins can depend on.
 
 | Item | Deferred to |
 |------|------------|
-| Specific font choices | Visual Language design session |
-| Color palette and tokens | Visual Language design session |
-| Motion and animation | Visual Language design session |
-| Dark mode strategy | Visual Language design session |
+| Motion and animation | M1 design session |
+| Manual dark mode toggle | M1 |
 | Mobile surface layout | M1+ design session |
 | TV ambient layout | M4+ design session |
 | Pi room display layout | M4+ design session |
