@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "private": true,
   "scripts": {
-    "dev": "vite",
+    "dev": "vite build && concurrently \"vite build --watch\" \"vite preview\"",
     "preview": "vite preview",
     "build": "vite build",
     "typecheck": "tsc --noEmit",
@@ -21,6 +21,7 @@
     "@types/react": "^19.0.7",
     "@types/react-dom": "^19.0.3",
     "@vitejs/plugin-react": "^4.3.4",
+    "concurrently": "^10.0.1",
     "typescript": "^5.7.2",
     "vite": "^6.0.7",
     "vitest": "^2.1.9"
