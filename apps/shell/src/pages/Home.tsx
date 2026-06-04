@@ -1,19 +1,21 @@
-import { useState } from 'react'
-import { Button } from '@/components/ui/button'
-import { useEventBus } from '@/hooks/useEventBus'
-import type { BusMessage } from '@family-os/platform'
+import { useState, useEffect } from 'react'
+import { Button } from '@family-os/ui'
+import { useEventBus } from '@family-os/platform'
 
-type LogEntry = BusMessage & { receivedAt: number }
+type LogEntry = { event: string; payload: unknown; receivedAt: number }
 
 export function Home() {
   const [events, setEvents] = useState<LogEntry[]>([])
+  const { publish, subscribe } = useEventBus()
 
-  useEventBus((msg) => {
-    setEvents((prev) => [{ ...msg, receivedAt: Date.now() }, ...prev].slice(0, 20))
-  })
+  useEffect(() => {
+    return subscribe('platform.ping.sent', (payload) => {
+      setEvents((prev) => [{ event: 'platform.ping.sent', payload, receivedAt: Date.now() }, ...prev].slice(0, 20))
+    })
+  }, [subscribe])
 
-  async function sendEvent() {
-    await fetch('/api/trigger-event', { method: 'POST' })
+  function sendEvent() {
+    publish('platform.ping.sent', {})
   }
 
   return (

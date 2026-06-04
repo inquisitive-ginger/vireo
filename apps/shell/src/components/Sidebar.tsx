@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom'
 import { Home, Settings } from 'lucide-react'
 import { useAuth } from '@family-os/platform'
-import { cn } from '@/lib/utils'
+import { cn } from '@family-os/ui'
 import { DevProfileSelector } from './DevProfileSelector'
 
 export function Sidebar() {
