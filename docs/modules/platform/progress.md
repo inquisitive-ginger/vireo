@@ -1,6 +1,18 @@
-# Platform — M0 Stories
+# Platform — Progress
 
-> **Milestone done when:** A plugin can be installed and rendered on the tablet.
+---
+
+## M1 — Platform Shell · Not Started
+
+> **Milestone done when:** A family can set up the system, see a meaningful home screen, and post to a shared feed.
+
+_Stories to be defined in the M1 Product Planning session._
+
+---
+
+## M0 — Foundation · ✅ Done (2026-06-01)
+
+> **Milestone done when:** A plugin can be installed and rendered on the tablet. ✅
 
 | Story | Status | Notes |
 |-------|--------|-------|

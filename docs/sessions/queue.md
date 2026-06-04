@@ -16,9 +16,18 @@
 
 2. **Notification & States Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
    Notification and alert patterns (Web Push, in-app toasts, badge counts),
-   error states, and empty states. Required before M2 Chores implementation.
+   error states, empty states, and motion/animation (transitions, timing, easing — per
+   "calm by default" principle). Required before M2 Chores implementation.
    _Reads:_ `docs/design-system.md` (post Visual Language), running M0 shell
-   _Produces:_ Updated `docs/design-system.md` with notification, error, and empty state specs
+   _Produces:_ Updated `docs/design-system.md` with notification, error, empty state, and motion specs
+
+3. **M1 Product Planning** ![Type](https://img.shields.io/badge/Type-Planning-orange)
+   Break M1 roadmap scope into implementation stories. Blocked on items 1 and 2
+   (home surface design and notification/states/motion design must be settled first).
+   _Reads:_ `docs/roadmap.md`, `docs/design-system.md` (post items 1–2), `docs/architecture.md`,
+   `docs/modules/platform/progress.md`, all completed session logs
+   _Produces:_ `docs/modules/platform/progress.md` updated for M1, M1 story specs under
+   `docs/modules/platform/stories/`
 
 ---
 

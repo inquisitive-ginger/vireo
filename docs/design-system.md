@@ -460,7 +460,7 @@ Every export is a commitment plugins can depend on.
 
 | Item | Deferred to |
 |------|------------|
-| Motion and animation | M1 design session |
+| Motion and animation | M1 Notification & States design session |
 | Manual dark mode toggle | M1 |
 | Mobile surface layout | M1+ design session |
 | TV ambient layout | M4+ design session |
