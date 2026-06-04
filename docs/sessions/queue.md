@@ -7,23 +7,16 @@
 
 ## Up Next
 
-1. **Home Surface Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
-   Default layout model, core module slot reservation, placeholder states,
-   Family Feed widget design, ADR 022 amendment.
-   _Reads:_ `docs/design-system.md`, `docs/decisions/022-widget-system.md`, running M0 shell
-   _Produces:_ Updated `docs/design-system.md` (home surface section), ADR 022 amendment,
-   Family Feed module spec stub
-
-2. **Notification & States Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
+1. **Notification & States Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
    Notification and alert patterns (Web Push, in-app toasts, badge counts),
    error states, empty states, and motion/animation (transitions, timing, easing — per
    "calm by default" principle). Required before M2 Chores implementation.
    _Reads:_ `docs/design-system.md` (post Visual Language), running M0 shell
    _Produces:_ Updated `docs/design-system.md` with notification, error, empty state, and motion specs
 
-3. **M1 Product Planning** ![Type](https://img.shields.io/badge/Type-Planning-orange)
-   Break M1 roadmap scope into implementation stories. Blocked on items 1 and 2
-   (home surface design and notification/states/motion design must be settled first).
+2. **M1 Product Planning** ![Type](https://img.shields.io/badge/Type-Planning-orange)
+   Break M1 roadmap scope into implementation stories. Blocked on item 1
+   (notification/states/motion design must be settled first).
    _Reads:_ `docs/roadmap.md`, `docs/design-system.md` (post items 1–2), `docs/architecture.md`,
    `docs/modules/platform/progress.md`, all completed session logs
    _Produces:_ `docs/modules/platform/progress.md` updated for M1, M1 story specs under
@@ -32,6 +25,10 @@
 ---
 
 ## Recently Completed
+
+- **2026-06-03 — Home Surface Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
+  Three-bucket default layouts (family pseudo-profile, tiers 1–2, tiers 3–4) with Chores/Calendar as the dominant widget per tier. Family Feed, Chores, Calendar reserved in all layouts; uninstalled slots render a muted placeholder card. Family Feed widget spec: `standard`/`large`/`banner`, text-only MVP, compose gated by write permission.
+  _See:_ `docs/sessions/logs/2026-06-03-design-home-surface.md`
 
 - **2026-06-02 — Visual Language Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
   Typography: Lora (display) + DM Sans (UI). Palette: Terracotta & Teal — burnt orange primary, teal accent. Dark mode: warm clay background via `prefers-color-scheme: dark`. Tokens committed to `styles.css`, fonts loaded in `index.html`.

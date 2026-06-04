@@ -18,6 +18,7 @@ explicitly marked — do not treat absence of a spec as a free choice.
 - [Login / Profile Switch](#login--profile-switch)
 - [Tablet Nav Layout](#tablet-nav-layout)
 - [Widget Composition System](#widget-composition-system)
+- [Home Surface](#home-surface)
 - [Plugin Design Contract](#plugin-design-contract)
 - [To Be Defined](#to-be-defined)
 
@@ -414,7 +415,98 @@ Exact schema deferred to the M1 implementation session.
 | 4 | Yes | Any family member |
 
 New users seeded with a tier-appropriate default layout from platform config.
+See [Home Surface](#home-surface) for the actual default layout definitions (ADR 028).
 Layout is not auto-rearranged on tier changes — a parent edits it intentionally.
+
+---
+
+## Home Surface
+
+**Settled** — see ADR 028. Implementation is M1.
+
+The home surface is the primary view when the shell loads. It renders the widget grid
+per the Widget Composition System. This section defines the default layout seeded for
+new users and the reserved slot behavior for core modules.
+
+### Default layouts
+
+Three tier-appropriate default layouts are seeded from platform config. All slot
+dimensions reference the 1280×800 viewport; widget components use CSS container
+queries to adapt to their actual rendered size.
+
+**Family pseudo-profile** (unattended tablet — shared family display):
+
+```
+┌─────────────────────────────────────────────┐
+│           Family Feed        [banner 4×1]   │
+├──────────────────────┬──────────────────────┤
+│  Chores  [standard]  │  Calendar [standard] │
+└──────────────────────┴──────────────────────┘
+```
+
+| `widgetId` | x | y | w | h |
+|-----------|---|---|---|---|
+| `family-feed.feed` | 0 | 0 | 4 | 1 |
+| `chores.today-summary` | 0 | 1 | 2 | 1 |
+| `calendar.today` | 2 | 1 | 2 | 1 |
+
+**Tiers 1–2** (child profiles — chores-first):
+
+```
+┌──────────────────┬───────────────────────────┐
+│                  │  Family Feed  [standard]  │
+│  Chores  [large] ├───────────────────────────┤
+│                  │  Calendar     [standard]  │
+└──────────────────┴───────────────────────────┘
+```
+
+| `widgetId` | x | y | w | h |
+|-----------|---|---|---|---|
+| `chores.today-summary` | 0 | 0 | 2 | 2 |
+| `family-feed.feed` | 2 | 0 | 2 | 1 |
+| `calendar.today` | 2 | 1 | 2 | 1 |
+
+**Tiers 3–4** (parent/teen profiles — calendar-first):
+
+```
+┌──────────────────┬───────────────────────────┐
+│                  │  Family Feed  [standard]  │
+│ Calendar [large] ├───────────────────────────┤
+│                  │  Chores       [standard]  │
+└──────────────────┴───────────────────────────┘
+```
+
+| `widgetId` | x | y | w | h |
+|-----------|---|---|---|---|
+| `calendar.today` | 0 | 0 | 2 | 2 |
+| `family-feed.feed` | 2 | 0 | 2 | 1 |
+| `chores.today-summary` | 2 | 1 | 2 | 1 |
+
+These are initial defaults, expected to be tuned once real content is rendering and
+interaction patterns are established post-M1 build-out.
+
+### Core module reservation
+
+Family Feed, Chores, and Calendar are **reserved modules** — they hold positions in
+every default layout regardless of whether their plugin is installed. When a reserved
+module's plugin is absent from the registry, the slot renders a **placeholder card**
+rather than being removed from the grid.
+
+The shell checks plugin registry presence at render time. This is a shell concern —
+plugins do not need to handle their own absent state.
+
+### Placeholder state
+
+A reserved slot whose module is not installed renders a muted informational card:
+
+- Background: `--muted`
+- Module name: `--muted-foreground`, UI font, medium weight
+- One-line module description
+- Small Lucide icon representing the module
+- No install CTA (marketplace pathway is M8)
+
+The placeholder occupies the same `{ w, h }` as the reserved slot. Lower contrast and
+no interactive affordances distinguish it visually from active widgets.
 
 ---
 
