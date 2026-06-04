@@ -15,7 +15,7 @@ export function Home() {
   }, [subscribe])
 
   function sendEvent() {
-    publish('platform.ping.sent', {})
+    publish('platform.ping.sent', { ts: Date.now() })
   }
 
   return (
