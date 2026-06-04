@@ -11,7 +11,7 @@ export function Sidebar() {
       <nav className="flex-1 py-2" aria-label="Main navigation">
         <NavItem to="/" icon={<Home size={18} aria-hidden />} label="Home" end />
       </nav>
-      <div className="border-t border-border">
+      <div className="border-t border-border py-1">
         <NavItem to="/settings" icon={<Settings size={18} aria-hidden />} label="Settings" />
       </div>
       <DevProfileSelector />
@@ -52,10 +52,10 @@ function NavItem({
       end={end}
       className={({ isActive }) =>
         cn(
-          'flex items-center gap-3 px-4 min-h-[48px] w-full text-sm transition-colors',
+          'flex items-center gap-3 px-3 py-2.5 mx-1 rounded-md text-sm transition-colors',
           isActive
             ? 'bg-accent text-accent-foreground font-medium'
-            : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
+            : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
         )
       }
     >
