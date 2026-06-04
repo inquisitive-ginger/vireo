@@ -1,6 +1,6 @@
 # Design System
 
-> Last updated: 2026-06-02 — Visual Language Design session.
+> Last updated: 2026-06-03 — palette refinement and token migration.
 
 This document records settled design decisions. Deferred items are
 explicitly marked — do not treat absence of a spec as a free choice.
@@ -84,13 +84,15 @@ font family.
 **Settled** — Visual Language design session, 2026-06-02.
 
 **Palette: Terracotta & Teal.** A warm burnt-orange primary paired
-with a teal accent — earthy warmth balanced by a calm complement.
-Deliberately two distinct hues rather than a single-hue scale.
+with a muted sage-teal accent — earthy warmth balanced by a calm
+complement. Deliberately two distinct hues rather than a single-hue
+scale.
 
-Theming is cascade-based via CSS custom properties. No JavaScript
-overhead. Plugins consume semantic tokens only — never raw oklch values.
+Theming is cascade-based via CSS custom properties defined in
+`packages/ui/src/styles.css`. No JavaScript overhead. Plugins consume
+semantic tokens only — never raw oklch values.
 
-### Light mode
+### Core tokens — light mode
 
 | Token | Value | Role |
 |-------|-------|------|
@@ -102,11 +104,24 @@ overhead. Plugins consume semantic tokens only — never raw oklch values.
 | `--secondary-foreground` | `oklch(0.28 0.05 50)` | Text on secondary |
 | `--muted` | `oklch(0.93 0.016 72)` | Subtle backgrounds |
 | `--muted-foreground` | `oklch(0.52 0.04 58)` | Subdued labels, timestamps |
-| `--accent` | `oklch(0.52 0.11 190)` | Teal — progress, highlights, indicators |
+| `--accent` | `oklch(0.47 0.07 185)` | Muted sage-teal — highlights, indicators |
 | `--accent-foreground` | `oklch(0.99 0 0)` | Text on accent |
 | `--border` / `--input` | `oklch(0.88 0.022 75)` | Borders and input outlines |
 | `--ring` | `oklch(0.57 0.14 35)` | Focus ring (matches primary) |
-| `--destructive` | `oklch(0.577 0.245 27.325)` | Error and delete actions |
+
+### Semantic status tokens — light mode
+
+Each token has a paired `-foreground`. `--destructive` is a CSS alias
+for `--error` so shadcn components keep working without a separate
+value to maintain.
+
+| Token | Value | Role |
+|-------|-------|------|
+| `--info` | `oklch(0.45 0.09 200)` | Informational banners and badges |
+| `--success` | `oklch(0.44 0.10 148)` | Completion, confirmed states |
+| `--warning` | `oklch(0.69 0.12 78)` | Attention needed, soft alerts |
+| `--error` | `oklch(0.50 0.17 12)` | Failures, validation errors |
+| `--destructive` | `var(--error)` | shadcn alias — do not use directly in new code |
 
 ### Dark mode
 
@@ -115,17 +130,17 @@ cascade-based. The dark background is a **warm clay** (`oklch(0.15 0.022 45)`)
 rather than the cold blue-black common in most apps. Primaries lighten
 to maintain contrast against dark surfaces.
 
-| Token | Value |
-|-------|-------|
-| `--background` | `oklch(0.15 0.022 45)` |
-| `--foreground` | `oklch(0.92 0.012 75)` |
-| `--primary` | `oklch(0.66 0.14 35)` |
-| `--secondary` | `oklch(0.22 0.020 48)` |
-| `--muted` | `oklch(0.20 0.016 48)` |
-| `--muted-foreground` | `oklch(0.56 0.022 60)` |
-| `--accent` | `oklch(0.62 0.11 190)` |
-| `--border` / `--input` | `oklch(0.30 0.022 48)` |
-| `--destructive` | `oklch(0.704 0.191 22.216)` |
+| Token | Light | Dark |
+|-------|-------|------|
+| `--background` | `oklch(0.985 0.008 75)` | `oklch(0.15 0.022 45)` |
+| `--foreground` | `oklch(0.18 0.04 50)` | `oklch(0.92 0.012 75)` |
+| `--primary` | `oklch(0.57 0.14 35)` | `oklch(0.66 0.14 35)` |
+| `--accent` | `oklch(0.47 0.07 185)` | `oklch(0.56 0.08 185)` |
+| `--secondary` | `oklch(0.93 0.022 72)` | `oklch(0.22 0.020 48)` |
+| `--muted` | `oklch(0.93 0.016 72)` | `oklch(0.20 0.016 48)` |
+| `--muted-foreground` | `oklch(0.52 0.04 58)` | `oklch(0.56 0.022 60)` |
+| `--border` / `--input` | `oklch(0.88 0.022 75)` | `oklch(0.30 0.022 48)` |
+| `--error` | `oklch(0.50 0.17 12)` | `oklch(0.62 0.17 12)` |
 
 A manual dark mode toggle (for families who want to override the
 system preference) is deferred to M1.
@@ -417,7 +432,24 @@ Plugins must not:
 - Import from the shell or other plugins directly
 - Hardcode color values — use CSS custom property tokens
 - Use media queries for layout — use CSS container queries
-- Import Tailwind directly — the platform stylesheet is injected
+
+**CSS setup for first-party plugins** (monorepo):
+
+```css
+@import "tailwindcss";
+@import "@family-os/ui/styles.css";
+```
+
+This gives the plugin the full token set and Tailwind utility classes
+(`bg-primary`, `text-muted-foreground`, etc.) at build time.
+
+**CSS setup for community plugins**: CSS custom properties (`var(--primary)`,
+`var(--error)`, etc.) are inherited from the shell's `:root` at runtime — no
+import required for token access. Tailwind utility classes require the
+`@theme inline` block from `@family-os/ui/styles.css`, which means the package
+must be available. Until `@family-os/ui` is published, community plugins should
+use `var(--token)` inline styles or their own CSS rather than Tailwind color
+utilities.
 
 The `@family-os/ui` surface starts minimal and grows deliberately.
 Every export is a commitment plugins can depend on.

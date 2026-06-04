@@ -1,1 +1,100 @@
-@import "tailwindcss";
+@theme inline {
+  --color-background:            var(--background);
+  --color-foreground:            var(--foreground);
+  --color-primary:               var(--primary);
+  --color-primary-foreground:    var(--primary-foreground);
+  --color-secondary:             var(--secondary);
+  --color-secondary-foreground:  var(--secondary-foreground);
+  --color-muted:                 var(--muted);
+  --color-muted-foreground:      var(--muted-foreground);
+  --color-accent:                var(--accent);
+  --color-accent-foreground:     var(--accent-foreground);
+  --color-destructive:           var(--destructive);
+  --color-border:                var(--border);
+  --color-input:                 var(--input);
+  --color-ring:                  var(--ring);
+  --color-info:                  var(--info);
+  --color-info-foreground:       var(--info-foreground);
+  --color-success:               var(--success);
+  --color-success-foreground:    var(--success-foreground);
+  --color-warning:               var(--warning);
+  --color-warning-foreground:    var(--warning-foreground);
+  --color-error:                 var(--error);
+  --color-error-foreground:      var(--error-foreground);
+}
+
+@layer base {
+  :root {
+    --font-display: 'Lora', Georgia, 'Times New Roman', serif;
+    --font-ui:      'DM Sans', 'Helvetica Neue', Arial, sans-serif;
+
+    /* Terracotta & Teal — light */
+    --background:           oklch(0.985 0.008 75);
+    --foreground:           oklch(0.18  0.04  50);
+    --primary:              oklch(0.57  0.14  35);
+    --primary-foreground:   oklch(0.99  0     0);
+    --secondary:            oklch(0.93  0.022 72);
+    --secondary-foreground: oklch(0.28  0.05  50);
+    --muted:                oklch(0.93  0.016 72);
+    --muted-foreground:     oklch(0.52  0.04  58);
+    --accent:               oklch(0.47  0.07  185);
+    --accent-foreground:    oklch(0.99  0     0);
+    --border:               oklch(0.88  0.022 75);
+    --input:                oklch(0.88  0.022 75);
+    --ring:                 oklch(0.57  0.14  35);
+
+    /* Semantic status — error is source of truth; destructive aliases it */
+    --info:                 oklch(0.45  0.09  200);
+    --info-foreground:      oklch(0.99  0     0);
+    --success:              oklch(0.44  0.10  148);
+    --success-foreground:   oklch(0.99  0     0);
+    --warning:              oklch(0.69  0.12  78);
+    --warning-foreground:   oklch(0.15  0.04  78);
+    --error:                oklch(0.50  0.17  12);
+    --error-foreground:     oklch(0.99  0     0);
+    --destructive:          var(--error);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root {
+      /* Terracotta & Teal — dark */
+      --background:           oklch(0.15  0.022 45);
+      --foreground:           oklch(0.92  0.012 75);
+      --primary:              oklch(0.66  0.14  35);
+      --primary-foreground:   oklch(0.99  0     0);
+      --secondary:            oklch(0.22  0.020 48);
+      --secondary-foreground: oklch(0.82  0.012 70);
+      --muted:                oklch(0.20  0.016 48);
+      --muted-foreground:     oklch(0.56  0.022 60);
+      --accent:               oklch(0.56  0.08  185);
+      --accent-foreground:    oklch(0.99  0     0);
+      --border:               oklch(0.30  0.022 48);
+      --input:                oklch(0.30  0.022 48);
+      --ring:                 oklch(0.66  0.14  35);
+
+      --info:                 oklch(0.56  0.09  200);
+      --info-foreground:      oklch(0.99  0     0);
+      --success:              oklch(0.57  0.10  148);
+      --success-foreground:   oklch(0.99  0     0);
+      --warning:              oklch(0.75  0.11  78);
+      --warning-foreground:   oklch(0.15  0.04  78);
+      --error:                oklch(0.62  0.17  12);
+      --error-foreground:     oklch(0.99  0     0);
+      --destructive:          var(--error);
+    }
+  }
+
+  * {
+    border-color: var(--border);
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-ui);
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    font-family: var(--font-display);
+  }
+}
