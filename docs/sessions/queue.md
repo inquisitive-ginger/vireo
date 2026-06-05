@@ -7,12 +7,7 @@
 
 ## Up Next
 
-1. **M1 Dev: home-surface** ![Type](https://img.shields.io/badge/Type-Development-orange)
-   Widget grid implementation: React Grid Layout static mode, default layouts seeded per tier, reserved slot placeholder cards, motion tokens, dark mode toggle, E2E scaffold.
-   _Reads:_ `docs/modules/platform/stories/home-surface.md`, `docs/design-system.md` (Widget Composition System, Home Surface)
-   _Produces:_ Working widget grid on home screen; `packages/e2e` smoke test for widget grid; `WidgetGrid`, `WidgetSlot`, `PlaceholderCard` in `packages/ui`
-
-2. **M1 Dev: family-onboarding** ![Type](https://img.shields.io/badge/Type-Development-orange)
+1. **M1 Dev: family-onboarding** ![Type](https://img.shields.io/badge/Type-Development-orange)
    First-run setup flow: create profiles, set family PIN, `db:reset` script.
    _Reads:_ `docs/modules/platform/stories/family-onboarding.md`, `docs/design-system.md` (Login / Profile Switch, PIN Entry)
    _Produces:_ `/onboarding` route; `packages/schemas` scaffold; `ProfileAvatar` in `packages/ui`
@@ -60,6 +55,10 @@
 ---
 
 ## Recently Completed
+
+- **2026-06-05 — M1 Dev: home-surface** ![Type](https://img.shields.io/badge/Type-Development-orange)
+  Widget grid live end-to-end: `WidgetGrid`, `WidgetSlot`, `PlaceholderCard` in `packages/ui`; layout API with per-tier seeding; dark mode toggle in Settings; 18 E2E tests passing.
+  _See:_ `docs/sessions/logs/2026-06-05-dev-home-surface.md`
 
 - **2026-06-04 — M1 Product Planning** ![Type](https://img.shields.io/badge/Type-Planning-orange)
   9 stories defined across `platform` and `family-feed` modules. Form library settled: React Hook Form + Zod with `packages/schemas` for shared schemas. Dark mode toggle scoped to all tiers. Queue updated with M1 implementation sessions.

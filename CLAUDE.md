@@ -17,10 +17,10 @@ with the family that runs it. See [`docs/vision.md`](docs/vision.md).
 
 ## Current Status
 
-- **Milestone:** M1 — Platform Shell (in progress — stories defined)
-- **Active stories:** None — first implementation session is home-surface
-- **Last session:** 2026-06-04 — Pre-M1 Audit (6 issues resolved: packages/e2e creation conflict, home-surface AC wording, design-system TBD stale row, dependency gaps in profile-management and notification-infrastructure, ADR 022/028 cross-reference)
-- **Next session:** M1 Dev: home-surface (see queue)
+- **Milestone:** M1 — Platform Shell (in progress)
+- **Active stories:** None
+- **Last session:** 2026-06-05 — M1 Dev: home-surface (widget grid, placeholder cards, dark mode toggle, settings page, E2E smoke tests)
+- **Next session:** M1 Dev: family-onboarding (see queue)
 
 > Update this section at the end of every session.
 

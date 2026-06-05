@@ -6,6 +6,7 @@ import type { RegistryEntry, PluginManifest } from '@family-os/platform'
 import './styles.css'
 import { App } from './App'
 import { Home } from './pages/Home'
+import { Settings } from './pages/Settings'
 import { PluginView } from './components/PluginView'
 import { PluginErrorBoundary } from './components/PluginErrorBoundary'
 import { PluginNotFound } from './pages/PluginNotFound'
@@ -42,6 +43,7 @@ createRoot(document.getElementById('root')!).render(
         <Routes>
           <Route element={<App />}>
             <Route index element={<Home />} />
+            <Route path="settings" element={<Settings />} />
 
             {/* Plugin routes — registered dynamically from each plugin's manifest */}
             {plugins.flatMap((plugin) =>

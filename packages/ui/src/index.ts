@@ -1,3 +1,10 @@
 export { Button, buttonVariants } from './components/button'
 export type { ButtonProps } from './components/button'
+export { PlaceholderCard } from './components/placeholder-card'
+export type { PlaceholderCardProps } from './components/placeholder-card'
+export { WidgetSlot } from './components/widget-slot'
+export type { WidgetSlotProps } from './components/widget-slot'
+
+export { WidgetGrid } from './components/widget-grid'
+export type { WidgetGridProps, WidgetLayoutItem } from './components/widget-grid'
 export { cn } from './lib/utils'
