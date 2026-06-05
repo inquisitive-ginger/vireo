@@ -1,7 +1,7 @@
 import { NavLink } from 'react-router-dom'
 import { Home, Settings } from 'lucide-react'
 import { useAuth } from '@family-os/platform'
-import { cn } from '@family-os/ui'
+import { cn, ProfileAvatar } from '@family-os/ui'
 import { DevProfileSelector } from './DevProfileSelector'
 
 export function Sidebar() {
@@ -21,15 +21,9 @@ export function Sidebar() {
 
 function ProfileChip() {
   const { name } = useAuth()
-  const initial = name.charAt(0).toUpperCase()
   return (
     <div className="flex items-center gap-2 px-4 min-h-[48px] border-b border-border">
-      <div
-        className="w-8 h-8 rounded-full bg-muted flex items-center justify-center text-xs font-semibold shrink-0"
-        aria-hidden
-      >
-        {initial}
-      </div>
+      <ProfileAvatar name={name} size="sm" />
       <span className="text-sm font-medium truncate">{name}</span>
     </div>
   )

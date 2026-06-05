@@ -6,7 +6,9 @@ import type { RegistryEntry, PluginManifest } from '@family-os/platform'
 import './styles.css'
 import { App } from './App'
 import { Home } from './pages/Home'
+import { Onboarding } from './pages/Onboarding'
 import { Settings } from './pages/Settings'
+import { RequireSetup } from './components/RequireSetup'
 import { PluginView } from './components/PluginView'
 import { PluginErrorBoundary } from './components/PluginErrorBoundary'
 import { PluginNotFound } from './pages/PluginNotFound'
@@ -41,30 +43,34 @@ createRoot(document.getElementById('root')!).render(
     <AuthProvider>
       <BrowserRouter>
         <Routes>
-          <Route element={<App />}>
-            <Route index element={<Home />} />
-            <Route path="settings" element={<Settings />} />
+          <Route path="onboarding" element={<Onboarding />} />
 
-            {/* Plugin routes — registered dynamically from each plugin's manifest */}
-            {plugins.flatMap((plugin) =>
-              plugin.routes.map((route) => (
-                <Route
-                  key={route}
-                  path={route.replace(/^\//, '')}
-                  element={
-                    <PluginErrorBoundary>
-                      <PluginView remoteName={plugin.remoteName} />
-                    </PluginErrorBoundary>
-                  }
-                />
-              ))
-            )}
+          <Route element={<RequireSetup />}>
+            <Route element={<App />}>
+              <Route index element={<Home />} />
+              <Route path="settings" element={<Settings />} />
 
-            {/* Unregistered plugin-namespace routes */}
-            <Route path="plugin/*" element={<PluginNotFound />} />
+              {/* Plugin routes — registered dynamically from each plugin's manifest */}
+              {plugins.flatMap((plugin) =>
+                plugin.routes.map((route) => (
+                  <Route
+                    key={route}
+                    path={route.replace(/^\//, '')}
+                    element={
+                      <PluginErrorBoundary>
+                        <PluginView remoteName={plugin.remoteName} />
+                      </PluginErrorBoundary>
+                    }
+                  />
+                ))
+              )}
 
-            {/* Shell catch-all — future shell pages render null until built */}
-            <Route path="*" element={null} />
+              {/* Unregistered plugin-namespace routes */}
+              <Route path="plugin/*" element={<PluginNotFound />} />
+
+              {/* Shell catch-all — future shell pages render null until built */}
+              <Route path="*" element={null} />
+            </Route>
           </Route>
         </Routes>
       </BrowserRouter>
