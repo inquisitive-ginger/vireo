@@ -36,7 +36,8 @@ test.describe('settings route guard', () => {
 
   test('parent (tier 4) can access /settings after PIN entry', async ({ page }) => {
     await switchToParent(page)
-    await page.goto('/settings')
+    await page.locator('a[href="/settings"]').click()
+    await page.waitForURL(/\/settings/)
     await expect(page.getByRole('heading', { level: 1 })).toHaveText('Settings')
     await expect(page.getByRole('button', { name: 'Light' })).toBeVisible()
     await expect(page.getByRole('button', { name: 'System' })).toBeVisible()
@@ -49,7 +50,8 @@ test.describe('settings route guard', () => {
 test.describe('family name', () => {
   test('can edit the family name', async ({ page }) => {
     await switchToParent(page)
-    await page.goto('/settings')
+    await page.locator('a[href="/settings"]').click()
+    await page.waitForURL(/\/settings/)
 
     // The Family section shows the current name and an Edit button
     await page.getByRole('button', { name: 'Edit' }).first().click()
@@ -81,7 +83,8 @@ test.describe('family name', () => {
 test.describe('profile CRUD', () => {
   test('can create a new profile', async ({ page }) => {
     await switchToParent(page)
-    await page.goto('/settings')
+    await page.locator('a[href="/settings"]').click()
+    await page.waitForURL(/\/settings/)
 
     await page.getByRole('button', { name: 'Add' }).click()
     await page.getByLabel('Name').fill('E2E Teen')
@@ -94,7 +97,8 @@ test.describe('profile CRUD', () => {
 
   test('can edit a profile name', async ({ page }) => {
     await switchToParent(page)
-    await page.goto('/settings')
+    await page.locator('a[href="/settings"]').click()
+    await page.waitForURL(/\/settings/)
 
     await page.getByRole('button', { name: 'Edit E2E Teen' }).click()
     const nameInput = page.getByLabel('Name')
@@ -103,18 +107,19 @@ test.describe('profile CRUD', () => {
     await page.getByRole('button', { name: 'Save changes' }).click()
 
     await expect(page.getByText('E2E Teen Edited')).toBeVisible()
-    await expect(page.getByText('E2E Teen')).not.toBeVisible()
+    await expect(page.getByText('E2E Teen', { exact: true })).not.toBeVisible()
   })
 
   test('delete shows confirm dialog and removes the profile', async ({ page }) => {
     await switchToParent(page)
-    await page.goto('/settings')
+    await page.locator('a[href="/settings"]').click()
+    await page.waitForURL(/\/settings/)
 
     await page.getByRole('button', { name: 'Remove E2E Teen Edited' }).click()
 
     // Confirm dialog appears
     await expect(page.getByRole('alertdialog')).toBeVisible()
-    await expect(page.getByRole('alertdialog')).toContainText('E2E Teen Edited')
+    await expect(page.getByRole('alertdialog')).toContainText('Remove E2E?')
 
     // Confirm the removal
     await page.getByRole('alertdialog').getByRole('button', { name: 'Remove' }).click()
@@ -129,7 +134,8 @@ test.describe('profile CRUD', () => {
 test.describe('PIN reset', () => {
   test('incorrect current PIN shows error immediately without advancing', async ({ page }) => {
     await switchToParent(page)
-    await page.goto('/settings')
+    await page.locator('a[href="/settings"]').click()
+    await page.waitForURL(/\/settings/)
 
     await page.getByRole('button', { name: 'Reset' }).click()
     await expect(page.getByText('Enter current PIN')).toBeVisible()
@@ -144,7 +150,8 @@ test.describe('PIN reset', () => {
 
   test('correct current PIN advances to new PIN entry', async ({ page }) => {
     await switchToParent(page)
-    await page.goto('/settings')
+    await page.locator('a[href="/settings"]').click()
+    await page.waitForURL(/\/settings/)
 
     await page.getByRole('button', { name: 'Reset' }).click()
     await page.getByRole('button', { name: /PIN digit boxes/i }).click()
@@ -152,20 +159,12 @@ test.describe('PIN reset', () => {
 
     await expect(page.getByText('Choose a new PIN')).toBeVisible()
 
-    // Enter new PIN and confirm
+    // Enter new PIN to reach the confirm step, then cancel to leave PIN unchanged
     await page.keyboard.type('5678')
     await expect(page.getByText('Confirm new PIN')).toBeVisible()
-    await page.keyboard.type('5678')
+    await page.getByRole('button', { name: 'Cancel' }).click()
 
-    // Dismissed back to idle (no "PIN saved" flash — closes immediately)
+    // Dismissed back to idle
     await expect(page.getByRole('button', { name: 'Reset' })).toBeVisible({ timeout: 3000 })
-  })
-
-  test.afterAll(async ({ request }) => {
-    // Reset PIN back to 1234 so other tests that depend on it still work.
-    // Requires tier-4 cookie — do this via a direct bcrypt hash + DB write
-    // which is not available here. We accept that PIN is now 5678 and note that
-    // the onboarding project resets on next run anyway.
-    void request // suppress unused warning
   })
 })

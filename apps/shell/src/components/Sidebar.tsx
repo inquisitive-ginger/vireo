@@ -51,7 +51,7 @@ function ProfileChip() {
 
 function SettingsNavItem() {
   const { tier } = useAuth()
-  if (tier < 4) return null
+  if (tier < 2) return null
   return (
     <div className="border-t border-border py-2">
       <NavItem to="/settings" icon={<Settings size={18} aria-hidden />} label="Settings" />

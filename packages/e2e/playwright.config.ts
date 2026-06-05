@@ -33,7 +33,9 @@ export default defineConfig({
   ],
   webServer: [
     {
-      // API server — requires DATABASE_URL in .env at repo root
+      // API server — DATABASE_URL is set to familyos_test via --env-file in the e2e
+      // script. tsx's own --env-file flag won't override it (Node --env-file semantics).
+      // Local dev with reuseExistingServer=true reuses whatever server is on :3000.
       command: 'pnpm --filter @family-os/api dev',
       url: 'http://localhost:3000/api/health',
       reuseExistingServer: !process.env.CI,

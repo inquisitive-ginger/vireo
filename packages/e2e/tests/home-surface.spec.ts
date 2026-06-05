@@ -20,6 +20,6 @@ test.describe('home surface', () => {
     await expect(page.getByRole('status', { name: /family feed/i })).toBeVisible()
   })
 
-  // Settings appearance test moved to profile-management.spec.ts —
-  // /settings now requires tier 4 (RequireTier4 guard added in profile-management story)
+  // Settings appearance test lives in settings-permissions.spec.ts —
+  // /settings requires tier 2+ (RequireTier2 guard; tier 4 sees full page, tier 2–3 see Display only)
 })

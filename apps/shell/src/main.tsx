@@ -9,7 +9,7 @@ import { Home } from './pages/Home'
 import { Onboarding } from './pages/Onboarding'
 import { Settings } from './pages/Settings'
 import { RequireSetup } from './components/RequireSetup'
-import { RequireTier4 } from './components/RequireTier4'
+import { RequireTier2 } from './components/RequireTier2'
 import { PluginView } from './components/PluginView'
 import { PluginErrorBoundary } from './components/PluginErrorBoundary'
 import { PluginNotFound } from './pages/PluginNotFound'
@@ -49,7 +49,7 @@ createRoot(document.getElementById('root')!).render(
           <Route element={<RequireSetup />}>
             <Route element={<App />}>
               <Route index element={<Home />} />
-              <Route element={<RequireTier4 />}>
+              <Route element={<RequireTier2 />}>
                 <Route path="settings" element={<Settings />} />
               </Route>
 

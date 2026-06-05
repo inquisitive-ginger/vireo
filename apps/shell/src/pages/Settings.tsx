@@ -5,7 +5,7 @@ import type { LucideIcon } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { useAuth } from '@family-os/platform'
+import { useAuth, TierGate } from '@family-os/platform'
 import {
   Button,
   Input,
@@ -592,15 +592,17 @@ function AppearanceRow() {
 export function Settings() {
   return (
     <SettingsLayout>
-      <SettingsSection title="Family">
-        <FamilySection />
-      </SettingsSection>
+      <TierGate min={4}>
+        <SettingsSection title="Family">
+          <FamilySection />
+        </SettingsSection>
 
-      <ProfilesSection />
+        <ProfilesSection />
 
-      <SettingsSection title="Security">
-        <PinResetRow />
-      </SettingsSection>
+        <SettingsSection title="Security">
+          <PinResetRow />
+        </SettingsSection>
+      </TierGate>
 
       <SettingsSection title="Display">
         <AppearanceRow />

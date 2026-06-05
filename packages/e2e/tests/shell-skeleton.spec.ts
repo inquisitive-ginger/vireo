@@ -8,10 +8,10 @@ test.describe('shell skeleton', () => {
   // AC1
   test('renders without console errors at 1280x800', async ({ page }) => {
     const errors: string[] = []
-    page.on('console', msg => {
+    page.on('console', (msg) => {
       if (msg.type() === 'error') errors.push(msg.text())
     })
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('pageerror', (err) => errors.push(err.message))
     await page.reload()
     expect(errors).toHaveLength(0)
   })
@@ -51,9 +51,10 @@ test.describe('shell skeleton', () => {
     await expect(page.locator('aside')).toBeVisible()
   })
 
-  // AC6
-  test('settings entry is visible at the bottom of the sidebar', async ({ page }) => {
-    await expect(page.locator('aside').getByRole('link', { name: 'Settings' })).toBeVisible()
+  // AC6 — Settings nav item is hidden for the family pseudo-profile (tier 1).
+  // Tier 2+ access is covered by settings-permissions.spec.ts.
+  test('settings entry is not visible for the family pseudo-profile (tier 1)', async ({ page }) => {
+    await expect(page.locator('aside').getByRole('link', { name: 'Settings' })).not.toBeVisible()
   })
 
   // AC7
