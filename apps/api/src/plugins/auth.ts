@@ -78,11 +78,13 @@ const authPlugin: FastifyPluginAsync = async (fastify) => {
   })
 
   fastify.get('/auth/me', async (request) => {
+    const familyNameConfig = await prisma.systemConfig.findUnique({ where: { key: 'family_name' } })
     return {
       id: request.profile.id,
       name: request.profile.name,
       tier: request.profile.tier,
       darkMode: request.profile.darkMode ?? null,
+      familyName: (familyNameConfig?.value as string | null) ?? null,
       rules: request.ability.rules,
     }
   })

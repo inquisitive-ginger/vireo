@@ -7,45 +7,55 @@
 
 ## Up Next
 
-1. **M1 Dev: profile-management** ![Type](https://img.shields.io/badge/Type-Development-orange)
-   Settings page for profile CRUD and family PIN reset.
-   _Reads:_ `docs/modules/platform/stories/profile-management.md`
-   _Produces:_ Settings route; `SettingsLayout`, `ProfileListItem`, `ConfirmDialog` in `packages/ui`
+1. **M1 Dev: settings-permissions** ![Type](https://img.shields.io/badge/Type-Development-orange)
+   Tier-appropriate Settings access: tier 2–3 profiles can reach a limited Settings view to control their own appearance; tier 4 retains full access. Fixes regression from profile-management where all non-tier-4 profiles lost appearance control.
+   _Reads:_ `docs/modules/platform/stories/settings-permissions.md`
+   _Produces:_ Tiered Settings route guard; limited Settings view for tier 2–3
 
-2. **M1 Dev: permission-overrides** ![Type](https://img.shields.io/badge/Type-Development-orange)
+2. **M1 Design: typography-scale** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
+   Develop and lock the complete UI typography scale — sizes, weights, line-heights, and token names — to be committed to `design-system.md` and enforced in `packages/ui`. Builds on `page-title` and `section-label` tokens landed in profile-management.
+   _Reads:_ `docs/design-system.md`, `packages/ui/src/components/typography.stories.tsx`
+   _Produces:_ Updated `docs/design-system.md` (Typography section); typography Storybook story finalised
+
+3. **M1 Dev: profile-management-tests** ![Type](https://img.shields.io/badge/Type-Development-orange)
+   E2E tests for profile-management flows (create/edit/delete profile, PIN reset, settings route guard). Also covers the three untested API endpoints from this session: `GET /auth/pin-exists`, `POST /auth/pin/check`, `PATCH /settings/family-name`.
+   _Reads:_ `docs/modules/platform/stories/profile-management.md`, `apps/api/src/plugins/profiles.ts`
+   _Produces:_ Playwright spec; 3 additional API integration tests
+
+4. **M1 Dev: permission-overrides** ![Type](https://img.shields.io/badge/Type-Development-orange)
    Per-profile capability grants and revocations.
    _Reads:_ `docs/modules/platform/stories/permission-overrides.md`
    _Produces:_ Capabilities panel; `PermissionToggleList`, `PermissionToggleItem` in `packages/ui`
 
-3. **M1 Dev: notification-infrastructure** ![Type](https://img.shields.io/badge/Type-Development-orange)
+5. **M1 Dev: notification-infrastructure** ![Type](https://img.shields.io/badge/Type-Development-orange)
    `platform.notify()` API, Sonner toast, notification tray, bell badge.
    _Reads:_ `docs/modules/platform/stories/notification-infrastructure.md`, `docs/design-system.md` (Notification System)
    _Produces:_ `platform.notify()` in `@family-os/platform`; `Toast`, `NotificationTray`, `NotificationItem`, `BellBadge` in `packages/ui`
 
-4. **M1 Dev: pwa-installable** ![Type](https://img.shields.io/badge/Type-Development-orange)
+6. **M1 Dev: pwa-installable** ![Type](https://img.shields.io/badge/Type-Development-orange)
    Web app manifest, service worker, installable PWA.
    _Reads:_ `docs/modules/platform/stories/pwa-installable.md`
    _Produces:_ Installable PWA on Android Chrome
 
-5. **M1 Dev: web-push** ![Type](https://img.shields.io/badge/Type-Development-orange)
+7. **M1 Dev: web-push** ![Type](https://img.shields.io/badge/Type-Development-orange)
    Web Push subscription and delivery from `platform.notify()`.
    _Reads:_ `docs/modules/platform/stories/web-push.md`
    _Produces:_ Push notification delivery for tier 3–4 profiles
 
-6. **M1 Dev: family-feed-read** ![Type](https://img.shields.io/badge/Type-Development-orange)
+8. **M1 Dev: family-feed-read** ![Type](https://img.shields.io/badge/Type-Development-orange)
    Family Feed plugin: scaffold, data model, read API, widget, feed view.
    _Reads:_ `docs/modules/family-feed/stories/family-feed-read.md`, `docs/modules/family-feed/spec.md`
    _Produces:_ Family Feed plugin installed and rendering; `FeedPostCard`, `FeedEmptyState` in `packages/ui`
 
-7. **M1 Dev: family-feed-compose** ![Type](https://img.shields.io/badge/Type-Development-orange)
+9. **M1 Dev: family-feed-compose** ![Type](https://img.shields.io/badge/Type-Development-orange)
    Compose form, create post API, permission registration.
    _Reads:_ `docs/modules/family-feed/stories/family-feed-compose.md`
    _Produces:_ Post creation flow; `ComposeForm` in `packages/ui`; `family-feed.post.create` in `PERMISSION_REGISTRY`
 
-8. **Mobile Surface Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
-   Mobile layout and nav design for the PWA. Deferred from M1 design sessions — required before mobile surface implementation can begin.
-   _Reads:_ `docs/design-system.md` (Surfaces — Other Surfaces), `docs/modules/platform/stories/pwa-installable.md`
-   _Produces:_ Updated `docs/design-system.md` with mobile surface spec
+10. **Mobile Surface Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
+    Mobile layout and nav design for the PWA. Deferred from M1 design sessions — required before mobile surface implementation can begin.
+    _Reads:_ `docs/design-system.md` (Surfaces — Other Surfaces), `docs/modules/platform/stories/pwa-installable.md`
+    _Produces:_ Updated `docs/design-system.md` with mobile surface spec
 
 ---
 

@@ -3,31 +3,9 @@ import type { FastifyPluginAsync } from 'fastify'
 import bcrypt from 'bcryptjs'
 import { prisma } from '@family-os/platform/server'
 import { FamilySetupSchema, CreateFamilyMembersSchema, SetPinSchema } from '@family-os/schemas'
+import { seedWidgetLayout } from '../lib/seed-layout'
 
 const FAMILY_PROFILE_ID = 'family'
-
-const DEFAULT_LAYOUT_KEYS: Record<number, string> = {
-  1: 'default_layout_tier_1_2',
-  2: 'default_layout_tier_1_2',
-  3: 'default_layout_tier_3_4',
-  4: 'default_layout_tier_3_4',
-}
-
-async function seedWidgetLayout(profileId: string, tier: number) {
-  const key = DEFAULT_LAYOUT_KEYS[tier] ?? 'default_layout_tier_3_4'
-  const config = await prisma.systemConfig.findUnique({ where: { key } })
-  if (!config?.value) return
-  const items = config.value as Array<{
-    widgetId: string
-    x: number
-    y: number
-    w: number
-    h: number
-  }>
-  await prisma.widgetLayout.createMany({
-    data: items.map((item) => ({ ...item, profileId })),
-  })
-}
 
 const setupPlugin: FastifyPluginAsync = async (fastify) => {
   // GET /setup/status

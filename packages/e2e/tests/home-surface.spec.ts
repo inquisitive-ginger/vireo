@@ -17,15 +17,9 @@ test.describe('home surface', () => {
   })
 
   test('family feed placeholder is labelled correctly', async ({ page }) => {
-    await expect(
-      page.getByRole('status', { name: /family feed/i }),
-    ).toBeVisible()
+    await expect(page.getByRole('status', { name: /family feed/i })).toBeVisible()
   })
 
-  test('settings page shows appearance control', async ({ page }) => {
-    await page.goto('/settings')
-    await expect(page.getByRole('button', { name: 'Light' })).toBeVisible()
-    await expect(page.getByRole('button', { name: 'System' })).toBeVisible()
-    await expect(page.getByRole('button', { name: 'Dark' })).toBeVisible()
-  })
+  // Settings appearance test moved to profile-management.spec.ts —
+  // /settings now requires tier 4 (RequireTier4 guard added in profile-management story)
 })
