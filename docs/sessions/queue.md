@@ -51,6 +51,10 @@
 
 ## Recently Completed
 
+- **2026-06-06 — M1 Dev: family-onboarding tests** ![Type](https://img.shields.io/badge/Type-Development-orange)
+  Setup + auth unit tests (28 passing), onboarding E2E spec, `POST /api/dev/reset` endpoint. Fixed test DB (missing migration + seed) and vitest parallelism race (singleFork). Playwright project dependencies for onboarding-first ordering.
+  _See:_ `docs/sessions/logs/2026-06-06-dev-family-onboarding-tests.md`
+
 - **2026-06-06 — M1 Dev: family-onboarding** ![Type](https://img.shields.io/badge/Type-Development-orange)
   3-step onboarding flow (family name + parent, add members, PIN). `packages/schemas` with shared Zod v4 schemas. `ProfileAvatar`, `Input`, `Label`, `Badge`, `ghost-destructive` Button variant in `packages/ui`. `RequireSetup` route guard. `db:reset` script. PIN gate narrowed to tier < 4 → tier 4 only. Husky + lint-staged pre-commit formatting hook.
   _See:_ `docs/sessions/logs/2026-06-06-dev-family-onboarding.md`
