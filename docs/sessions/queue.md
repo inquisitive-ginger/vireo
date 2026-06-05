@@ -7,54 +7,53 @@
 
 ## Up Next
 
-1. **M1 Dev: family-onboarding** ![Type](https://img.shields.io/badge/Type-Development-orange)
-   First-run setup flow: create profiles, set family PIN, `db:reset` script.
-   _Reads:_ `docs/modules/platform/stories/family-onboarding.md`, `docs/design-system.md` (Login / Profile Switch, PIN Entry)
-   _Produces:_ `/onboarding` route; `packages/schemas` scaffold; `ProfileAvatar` in `packages/ui`
-
-3. **M1 Dev: profile-management** ![Type](https://img.shields.io/badge/Type-Development-orange)
+1. **M1 Dev: profile-management** ![Type](https://img.shields.io/badge/Type-Development-orange)
    Settings page for profile CRUD and family PIN reset.
    _Reads:_ `docs/modules/platform/stories/profile-management.md`
    _Produces:_ Settings route; `SettingsLayout`, `ProfileListItem`, `ConfirmDialog` in `packages/ui`
 
-4. **M1 Dev: permission-overrides** ![Type](https://img.shields.io/badge/Type-Development-orange)
+2. **M1 Dev: permission-overrides** ![Type](https://img.shields.io/badge/Type-Development-orange)
    Per-profile capability grants and revocations.
    _Reads:_ `docs/modules/platform/stories/permission-overrides.md`
    _Produces:_ Capabilities panel; `PermissionToggleList`, `PermissionToggleItem` in `packages/ui`
 
-5. **M1 Dev: notification-infrastructure** ![Type](https://img.shields.io/badge/Type-Development-orange)
+3. **M1 Dev: notification-infrastructure** ![Type](https://img.shields.io/badge/Type-Development-orange)
    `platform.notify()` API, Sonner toast, notification tray, bell badge.
    _Reads:_ `docs/modules/platform/stories/notification-infrastructure.md`, `docs/design-system.md` (Notification System)
    _Produces:_ `platform.notify()` in `@family-os/platform`; `Toast`, `NotificationTray`, `NotificationItem`, `BellBadge` in `packages/ui`
 
-6. **M1 Dev: pwa-installable** ![Type](https://img.shields.io/badge/Type-Development-orange)
+4. **M1 Dev: pwa-installable** ![Type](https://img.shields.io/badge/Type-Development-orange)
    Web app manifest, service worker, installable PWA.
    _Reads:_ `docs/modules/platform/stories/pwa-installable.md`
    _Produces:_ Installable PWA on Android Chrome
 
-7. **M1 Dev: web-push** ![Type](https://img.shields.io/badge/Type-Development-orange)
+5. **M1 Dev: web-push** ![Type](https://img.shields.io/badge/Type-Development-orange)
    Web Push subscription and delivery from `platform.notify()`.
    _Reads:_ `docs/modules/platform/stories/web-push.md`
    _Produces:_ Push notification delivery for tier 3–4 profiles
 
-8. **M1 Dev: family-feed-read** ![Type](https://img.shields.io/badge/Type-Development-orange)
+6. **M1 Dev: family-feed-read** ![Type](https://img.shields.io/badge/Type-Development-orange)
    Family Feed plugin: scaffold, data model, read API, widget, feed view.
    _Reads:_ `docs/modules/family-feed/stories/family-feed-read.md`, `docs/modules/family-feed/spec.md`
    _Produces:_ Family Feed plugin installed and rendering; `FeedPostCard`, `FeedEmptyState` in `packages/ui`
 
-9. **M1 Dev: family-feed-compose** ![Type](https://img.shields.io/badge/Type-Development-orange)
+7. **M1 Dev: family-feed-compose** ![Type](https://img.shields.io/badge/Type-Development-orange)
    Compose form, create post API, permission registration.
    _Reads:_ `docs/modules/family-feed/stories/family-feed-compose.md`
    _Produces:_ Post creation flow; `ComposeForm` in `packages/ui`; `family-feed.post.create` in `PERMISSION_REGISTRY`
 
-10. **Mobile Surface Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
-    Mobile layout and nav design for the PWA. Deferred from M1 design sessions — required before mobile surface implementation can begin.
-    _Reads:_ `docs/design-system.md` (Surfaces — Other Surfaces), `docs/modules/platform/stories/pwa-installable.md`
-    _Produces:_ Updated `docs/design-system.md` with mobile surface spec
+8. **Mobile Surface Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
+   Mobile layout and nav design for the PWA. Deferred from M1 design sessions — required before mobile surface implementation can begin.
+   _Reads:_ `docs/design-system.md` (Surfaces — Other Surfaces), `docs/modules/platform/stories/pwa-installable.md`
+   _Produces:_ Updated `docs/design-system.md` with mobile surface spec
 
 ---
 
 ## Recently Completed
+
+- **2026-06-06 — M1 Dev: family-onboarding** ![Type](https://img.shields.io/badge/Type-Development-orange)
+  3-step onboarding flow (family name + parent, add members, PIN). `packages/schemas` with shared Zod v4 schemas. `ProfileAvatar`, `Input`, `Label`, `Badge`, `ghost-destructive` Button variant in `packages/ui`. `RequireSetup` route guard. `db:reset` script. PIN gate narrowed to tier < 4 → tier 4 only. Husky + lint-staged pre-commit formatting hook.
+  _See:_ `docs/sessions/logs/2026-06-06-dev-family-onboarding.md`
 
 - **2026-06-05 — M1 Dev: home-surface** ![Type](https://img.shields.io/badge/Type-Development-orange)
   Widget grid live end-to-end: `WidgetGrid`, `WidgetSlot`, `PlaceholderCard` in `packages/ui`; layout API with per-tier seeding; dark mode toggle in Settings; 18 E2E tests passing.

@@ -19,8 +19,8 @@ with the family that runs it. See [`docs/vision.md`](docs/vision.md).
 
 - **Milestone:** M1 — Platform Shell (in progress)
 - **Active stories:** None
-- **Last session:** 2026-06-05 — M1 Dev: home-surface (widget grid, placeholder cards, dark mode toggle, settings page, E2E smoke tests)
-- **Next session:** M1 Dev: family-onboarding (see queue)
+- **Last session:** 2026-06-06 — M1 Dev: family-onboarding (3-step onboarding, UI primitives, schemas package, pre-commit hook)
+- **Next session:** M1 Dev: profile-management (see queue)
 
 > Update this section at the end of every session.
 
