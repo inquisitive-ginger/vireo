@@ -57,14 +57,28 @@ describe('POST /api/auth/switch', () => {
     expect(res.json<{ tier: number }>().tier).toBe(1)
   })
 
-  it('returns 403 when switching up to a higher-tier profile', async () => {
-    // family (tier 1) tries to switch to parent (tier 4)
+  it('returns 403 when switching from tier < 4 to tier 4', async () => {
+    // family (tier 1) tries to switch to parent (tier 4) without PIN
     const res = await app.inject({
       method: 'POST',
       url: '/api/auth/switch',
       payload: { targetProfileId: 'seed-parent-1' },
     })
     expect(res.statusCode).toBe(403)
+  })
+
+  it('allows switching from tier 1 to tier 3 without a PIN', async () => {
+    const teen = await prisma.profile.create({ data: { name: 'Teen', tier: 3 } })
+
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/auth/switch',
+      payload: { targetProfileId: teen.id },
+    })
+    expect(res.statusCode).toBe(200)
+    expect(res.json<{ tier: number }>().tier).toBe(3)
+
+    await prisma.profile.delete({ where: { id: teen.id } })
   })
 
   it('allows switching down after a tier-4 session is established via verify-pin', async () => {

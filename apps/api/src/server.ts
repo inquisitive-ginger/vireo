@@ -4,6 +4,8 @@ import authPlugin from './plugins/auth'
 import pluginRegistryPlugin from './plugins/plugin-registry'
 import homePlugin from './plugins/home'
 import preferencesPlugin from './plugins/preferences'
+import setupPlugin from './plugins/setup'
+import devPlugin from './plugins/dev'
 
 export async function buildServer() {
   const app = Fastify({ logger: true })
@@ -14,7 +16,9 @@ export async function buildServer() {
   // All HTTP routes under /api
   await app.register(
     async (api) => {
+      await api.register(setupPlugin)
       await api.register(authPlugin)
+      if (process.env.NODE_ENV !== 'production') await api.register(devPlugin)
       await api.register(pluginRegistryPlugin)
       await api.register(homePlugin)
       await api.register(preferencesPlugin)
@@ -32,7 +36,7 @@ export async function buildServer() {
         return { ok: true }
       })
     },
-    { prefix: '/api' },
+    { prefix: '/api' }
   )
 
   return app

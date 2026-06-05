@@ -55,9 +55,9 @@ const authPlugin: FastifyPluginAsync = async (fastify) => {
 
     const profile: Profile = row
       ? {
-          id:       row.id,
-          name:     row.name,
-          tier:     row.tier as Profile['tier'],
+          id: row.id,
+          name: row.name,
+          tier: row.tier as Profile['tier'],
           avatarUrl: row.avatarUrl ?? undefined,
           darkMode: row.darkMode ?? null,
         }
@@ -79,11 +79,11 @@ const authPlugin: FastifyPluginAsync = async (fastify) => {
 
   fastify.get('/auth/me', async (request) => {
     return {
-      id:       request.profile.id,
-      name:     request.profile.name,
-      tier:     request.profile.tier,
+      id: request.profile.id,
+      name: request.profile.name,
+      tier: request.profile.tier,
       darkMode: request.profile.darkMode ?? null,
-      rules:    request.ability.rules,
+      rules: request.ability.rules,
     }
   })
 
@@ -93,8 +93,8 @@ const authPlugin: FastifyPluginAsync = async (fastify) => {
     const target = await prisma.profile.findUnique({ where: { id: targetProfileId } })
     if (!target) return reply.status(404).send({ error: 'Profile not found' })
 
-    if (target.tier > request.profile.tier) {
-      return reply.status(403).send({ error: 'PIN required to switch to a higher-tier profile' })
+    if (target.tier === 4 && request.profile.tier < 4) {
+      return reply.status(403).send({ error: 'PIN required to switch to a tier-4 profile' })
     }
 
     request.session.activeProfileId = targetProfileId

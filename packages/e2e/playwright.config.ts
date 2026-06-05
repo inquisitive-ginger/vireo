@@ -12,7 +12,19 @@ export default defineConfig({
   },
   projects: [
     {
+      // Runs first: resets DB to onboarding state, completes the flow,
+      // leaving DB in "setup complete" state for all subsequent tests.
+      name: 'onboarding',
+      testMatch: /onboarding\.spec\.ts/,
+      use: {
+        ...devices['Desktop Chrome'],
+        viewport: { width: 1280, height: 800 },
+      },
+    },
+    {
       name: 'chromium',
+      dependencies: ['onboarding'],
+      testIgnore: /onboarding\.spec\.ts/,
       use: {
         ...devices['Desktop Chrome'],
         viewport: { width: 1280, height: 800 },
