@@ -5,6 +5,7 @@ import pluginRegistryPlugin from './plugins/plugin-registry'
 import homePlugin from './plugins/home'
 import preferencesPlugin from './plugins/preferences'
 import setupPlugin from './plugins/setup'
+import profilesPlugin from './plugins/profiles'
 import devPlugin from './plugins/dev'
 
 export async function buildServer() {
@@ -22,6 +23,7 @@ export async function buildServer() {
       await api.register(pluginRegistryPlugin)
       await api.register(homePlugin)
       await api.register(preferencesPlugin)
+      await api.register(profilesPlugin)
 
       api.get('/health', async () => ({ status: 'ok' }))
 

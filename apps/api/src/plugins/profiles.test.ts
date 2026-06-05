@@ -1,0 +1,550 @@
+import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest'
+import type { FastifyInstance } from 'fastify'
+import type { LightMyRequestResponse } from 'fastify'
+import { buildServer } from '../server'
+import { prisma } from '@family-os/platform/server'
+import bcrypt from 'bcryptjs'
+
+let app: FastifyInstance
+
+const DEFAULT_LAYOUTS = {
+  default_layout_tier_1_2: [
+    { widgetId: 'chores.today-summary', x: 0, y: 0, w: 2, h: 2 },
+    { widgetId: 'family-feed.feed', x: 2, y: 0, w: 2, h: 1 },
+    { widgetId: 'calendar.today', x: 2, y: 1, w: 2, h: 1 },
+  ],
+  default_layout_tier_3_4: [
+    { widgetId: 'calendar.today', x: 0, y: 0, w: 2, h: 2 },
+    { widgetId: 'family-feed.feed', x: 2, y: 0, w: 2, h: 1 },
+    { widgetId: 'chores.today-summary', x: 2, y: 1, w: 2, h: 1 },
+  ],
+}
+
+function getCookie(res: LightMyRequestResponse): string {
+  const raw = res.headers['set-cookie']
+  const header = Array.isArray(raw) ? raw[0] : (raw ?? '')
+  return header.split(';')[0] ?? ''
+}
+
+beforeAll(async () => {
+  app = await buildServer()
+  for (const [key, value] of Object.entries(DEFAULT_LAYOUTS)) {
+    await prisma.systemConfig.upsert({
+      where: { key },
+      update: { value },
+      create: { key, value },
+    })
+  }
+})
+
+afterAll(async () => {
+  await app.close()
+  await prisma.$disconnect()
+})
+
+beforeEach(async () => {
+  await prisma.widgetLayout.deleteMany()
+  await prisma.permissionOverride.deleteMany()
+  await prisma.profile.deleteMany({
+    where: { id: { notIn: ['family', 'seed-parent-1', 'seed-child-1'] } },
+  })
+  await prisma.systemConfig.deleteMany({
+    where: { key: { in: ['family_pin_hash', 'family_name'] } },
+  })
+})
+
+// Helper: set the family PIN and get a tier-4 session cookie via verify-pin
+async function getTier4Cookie(): Promise<string> {
+  const hash = await bcrypt.hash('1234', 10)
+  await prisma.systemConfig.upsert({
+    where: { key: 'family_pin_hash' },
+    update: { value: hash },
+    create: { key: 'family_pin_hash', value: hash, updatedBy: null },
+  })
+  const res = await app.inject({
+    method: 'POST',
+    url: '/api/auth/verify-pin',
+    payload: { pin: '1234', targetProfileId: 'seed-parent-1' },
+  })
+  return getCookie(res)
+}
+
+// ─── POST /profiles ───────────────────────────────────────────────────────────
+
+describe('POST /api/profiles', () => {
+  it('creates a profile and seeds a widget layout', async () => {
+    const cookie = await getTier4Cookie()
+
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/profiles',
+      headers: { cookie },
+      payload: { name: 'Jordan', tier: 2 },
+    })
+
+    expect(res.statusCode).toBe(200)
+    const body = res.json<{ id: string; name: string; tier: number }>()
+    expect(body.name).toBe('Jordan')
+    expect(body.tier).toBe(2)
+
+    const layouts = await prisma.widgetLayout.findMany({ where: { profileId: body.id } })
+    expect(layouts.length).toBeGreaterThan(0)
+  })
+
+  it('seeds a tier-3/4 layout for a tier-4 profile', async () => {
+    const cookie = await getTier4Cookie()
+
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/profiles',
+      headers: { cookie },
+      payload: { name: 'Alex', tier: 4 },
+    })
+
+    const { id } = res.json<{ id: string }>()
+    const layouts = await prisma.widgetLayout.findMany({ where: { profileId: id } })
+    const widgetIds = layouts.map((l) => l.widgetId)
+    expect(widgetIds).toContain('calendar.today')
+  })
+
+  it('returns 403 when session is tier < 4', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/profiles',
+      payload: { name: 'Jordan', tier: 2 },
+    })
+    expect(res.statusCode).toBe(403)
+  })
+
+  it('returns 400 when name is missing', async () => {
+    const cookie = await getTier4Cookie()
+
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/profiles',
+      headers: { cookie },
+      payload: { tier: 2 },
+    })
+    expect(res.statusCode).toBe(400)
+  })
+
+  it('returns 400 when tier is out of range', async () => {
+    const cookie = await getTier4Cookie()
+
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/profiles',
+      headers: { cookie },
+      payload: { name: 'Jordan', tier: 5 },
+    })
+    expect(res.statusCode).toBe(400)
+  })
+})
+
+// ─── PATCH /profiles/:id ──────────────────────────────────────────────────────
+
+describe('PATCH /api/profiles/:id', () => {
+  it('updates profile name', async () => {
+    const cookie = await getTier4Cookie()
+    const created = await prisma.profile.create({ data: { name: 'Old Name', tier: 2 } })
+
+    const res = await app.inject({
+      method: 'PATCH',
+      url: `/api/profiles/${created.id}`,
+      headers: { cookie },
+      payload: { name: 'New Name' },
+    })
+
+    expect(res.statusCode).toBe(200)
+    expect(res.json<{ name: string }>().name).toBe('New Name')
+  })
+
+  it('updates profile tier', async () => {
+    const cookie = await getTier4Cookie()
+    const created = await prisma.profile.create({ data: { name: 'Sam', tier: 1 } })
+
+    const res = await app.inject({
+      method: 'PATCH',
+      url: `/api/profiles/${created.id}`,
+      headers: { cookie },
+      payload: { tier: 3 },
+    })
+
+    expect(res.statusCode).toBe(200)
+    expect(res.json<{ tier: number }>().tier).toBe(3)
+  })
+
+  it('returns 400 when editing the family profile', async () => {
+    const cookie = await getTier4Cookie()
+
+    const res = await app.inject({
+      method: 'PATCH',
+      url: '/api/profiles/family',
+      headers: { cookie },
+      payload: { name: 'Whatever' },
+    })
+    expect(res.statusCode).toBe(400)
+  })
+
+  it('returns 404 for a non-existent profile', async () => {
+    const cookie = await getTier4Cookie()
+
+    const res = await app.inject({
+      method: 'PATCH',
+      url: '/api/profiles/nonexistent-id',
+      headers: { cookie },
+      payload: { name: 'Whatever' },
+    })
+    expect(res.statusCode).toBe(404)
+  })
+
+  it('returns 400 when body has no updatable fields', async () => {
+    const cookie = await getTier4Cookie()
+    const created = await prisma.profile.create({ data: { name: 'Sam', tier: 2 } })
+
+    const res = await app.inject({
+      method: 'PATCH',
+      url: `/api/profiles/${created.id}`,
+      headers: { cookie },
+      payload: {},
+    })
+    expect(res.statusCode).toBe(400)
+  })
+
+  it('returns 403 when session is tier < 4', async () => {
+    const created = await prisma.profile.create({ data: { name: 'Sam', tier: 2 } })
+
+    const res = await app.inject({
+      method: 'PATCH',
+      url: `/api/profiles/${created.id}`,
+      payload: { name: 'Other' },
+    })
+    expect(res.statusCode).toBe(403)
+  })
+})
+
+// ─── DELETE /profiles/:id ─────────────────────────────────────────────────────
+
+describe('DELETE /api/profiles/:id', () => {
+  it('deletes a profile and its widget layouts', async () => {
+    const cookie = await getTier4Cookie()
+    const created = await prisma.profile.create({ data: { name: 'Gone', tier: 2 } })
+    await prisma.widgetLayout.create({
+      data: { profileId: created.id, widgetId: 'chores.today-summary', x: 0, y: 0, w: 2, h: 2 },
+    })
+
+    const res = await app.inject({
+      method: 'DELETE',
+      url: `/api/profiles/${created.id}`,
+      headers: { cookie },
+    })
+
+    expect(res.statusCode).toBe(200)
+    expect(res.json<{ ok: boolean }>().ok).toBe(true)
+
+    const stillExists = await prisma.profile.findUnique({ where: { id: created.id } })
+    expect(stillExists).toBeNull()
+
+    const layouts = await prisma.widgetLayout.findMany({ where: { profileId: created.id } })
+    expect(layouts).toHaveLength(0)
+  })
+
+  it('returns 400 when deleting the family profile', async () => {
+    const cookie = await getTier4Cookie()
+
+    const res = await app.inject({
+      method: 'DELETE',
+      url: '/api/profiles/family',
+      headers: { cookie },
+    })
+    expect(res.statusCode).toBe(400)
+  })
+
+  it('returns 404 for a non-existent profile', async () => {
+    const cookie = await getTier4Cookie()
+
+    const res = await app.inject({
+      method: 'DELETE',
+      url: '/api/profiles/nonexistent-id',
+      headers: { cookie },
+    })
+    expect(res.statusCode).toBe(404)
+  })
+
+  it('returns 403 when session is tier < 4', async () => {
+    const created = await prisma.profile.create({ data: { name: 'Sam', tier: 2 } })
+
+    const res = await app.inject({
+      method: 'DELETE',
+      url: `/api/profiles/${created.id}`,
+    })
+    expect(res.statusCode).toBe(403)
+  })
+})
+
+// ─── POST /auth/pin ───────────────────────────────────────────────────────────
+
+describe('POST /api/auth/pin', () => {
+  it('sets a new PIN when none exists', async () => {
+    const cookie = await getTier4Cookie()
+    // Clear the PIN set by getTier4Cookie
+    await prisma.systemConfig.deleteMany({ where: { key: 'family_pin_hash' } })
+
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/auth/pin',
+      headers: { cookie },
+      payload: { newPin: '5678' },
+    })
+
+    expect(res.statusCode).toBe(200)
+    expect(res.json<{ ok: boolean }>().ok).toBe(true)
+
+    const config = await prisma.systemConfig.findUnique({ where: { key: 'family_pin_hash' } })
+    expect(config).not.toBeNull()
+    const valid = await bcrypt.compare('5678', config!.value as string)
+    expect(valid).toBe(true)
+  })
+
+  it('updates PIN when current PIN is provided and correct', async () => {
+    const cookie = await getTier4Cookie()
+
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/auth/pin',
+      headers: { cookie },
+      payload: { currentPin: '1234', newPin: '9999' },
+    })
+
+    expect(res.statusCode).toBe(200)
+    const config = await prisma.systemConfig.findUnique({ where: { key: 'family_pin_hash' } })
+    const valid = await bcrypt.compare('9999', config!.value as string)
+    expect(valid).toBe(true)
+  })
+
+  it('returns 422 when PIN exists and currentPin is not provided', async () => {
+    const cookie = await getTier4Cookie()
+
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/auth/pin',
+      headers: { cookie },
+      payload: { newPin: '5678' },
+    })
+
+    expect(res.statusCode).toBe(422)
+  })
+
+  it('returns 403 when currentPin is wrong', async () => {
+    const cookie = await getTier4Cookie()
+
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/auth/pin',
+      headers: { cookie },
+      payload: { currentPin: 'wrong', newPin: '5678' },
+    })
+
+    // 'wrong' doesn't match /^\d{4}$/ → 400 from schema validation
+    // so use a 4-digit wrong PIN
+    expect([400, 403]).toContain(res.statusCode)
+  })
+
+  it('returns 403 when currentPin is a valid format but incorrect', async () => {
+    const cookie = await getTier4Cookie()
+
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/auth/pin',
+      headers: { cookie },
+      payload: { currentPin: '0000', newPin: '5678' },
+    })
+
+    expect(res.statusCode).toBe(403)
+  })
+
+  it('returns 400 for a non-4-digit newPin', async () => {
+    const cookie = await getTier4Cookie()
+    await prisma.systemConfig.deleteMany({ where: { key: 'family_pin_hash' } })
+
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/auth/pin',
+      headers: { cookie },
+      payload: { newPin: '12' },
+    })
+
+    expect(res.statusCode).toBe(400)
+  })
+
+  it('returns 403 when session is tier < 4', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/auth/pin',
+      payload: { newPin: '5678' },
+    })
+    expect(res.statusCode).toBe(403)
+  })
+})
+
+// ─── GET /auth/pin-exists ─────────────────────────────────────────────────────
+
+describe('GET /api/auth/pin-exists', () => {
+  it('returns exists:false when no PIN has been set', async () => {
+    const cookie = await getTier4Cookie()
+    await prisma.systemConfig.deleteMany({ where: { key: 'family_pin_hash' } })
+
+    const res = await app.inject({
+      method: 'GET',
+      url: '/api/auth/pin-exists',
+      headers: { cookie },
+    })
+
+    expect(res.statusCode).toBe(200)
+    expect(res.json<{ exists: boolean }>().exists).toBe(false)
+  })
+
+  it('returns exists:true when a PIN is set', async () => {
+    const cookie = await getTier4Cookie()
+
+    const res = await app.inject({
+      method: 'GET',
+      url: '/api/auth/pin-exists',
+      headers: { cookie },
+    })
+
+    expect(res.statusCode).toBe(200)
+    expect(res.json<{ exists: boolean }>().exists).toBe(true)
+  })
+
+  it('returns 403 when session is tier < 4', async () => {
+    const res = await app.inject({ method: 'GET', url: '/api/auth/pin-exists' })
+    expect(res.statusCode).toBe(403)
+  })
+})
+
+// ─── POST /auth/pin/check ─────────────────────────────────────────────────────
+
+describe('POST /api/auth/pin/check', () => {
+  it('returns 200 when the PIN is correct', async () => {
+    const cookie = await getTier4Cookie()
+
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/auth/pin/check',
+      headers: { cookie },
+      payload: { pin: '1234' },
+    })
+
+    expect(res.statusCode).toBe(200)
+    expect(res.json<{ ok: boolean }>().ok).toBe(true)
+  })
+
+  it('returns 403 when the PIN is incorrect', async () => {
+    const cookie = await getTier4Cookie()
+
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/auth/pin/check',
+      headers: { cookie },
+      payload: { pin: '0000' },
+    })
+
+    expect(res.statusCode).toBe(403)
+  })
+
+  it('returns 423 when no PIN has been set', async () => {
+    const cookie = await getTier4Cookie()
+    await prisma.systemConfig.deleteMany({ where: { key: 'family_pin_hash' } })
+
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/auth/pin/check',
+      headers: { cookie },
+      payload: { pin: '1234' },
+    })
+
+    expect(res.statusCode).toBe(423)
+  })
+
+  it('returns 400 for a non-4-digit PIN', async () => {
+    const cookie = await getTier4Cookie()
+
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/auth/pin/check',
+      headers: { cookie },
+      payload: { pin: '12' },
+    })
+
+    expect(res.statusCode).toBe(400)
+  })
+
+  it('returns 403 when session is tier < 4', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/auth/pin/check',
+      payload: { pin: '1234' },
+    })
+    expect(res.statusCode).toBe(403)
+  })
+})
+
+// ─── PATCH /settings/family-name ─────────────────────────────────────────────
+
+describe('PATCH /api/settings/family-name', () => {
+  it('sets the family name when none exists', async () => {
+    const cookie = await getTier4Cookie()
+
+    const res = await app.inject({
+      method: 'PATCH',
+      url: '/api/settings/family-name',
+      headers: { cookie },
+      payload: { name: 'The Smiths' },
+    })
+
+    expect(res.statusCode).toBe(200)
+    expect(res.json<{ familyName: string }>().familyName).toBe('The Smiths')
+
+    const config = await prisma.systemConfig.findUnique({ where: { key: 'family_name' } })
+    expect(config?.value).toBe('The Smiths')
+  })
+
+  it('updates an existing family name', async () => {
+    const cookie = await getTier4Cookie()
+    await prisma.systemConfig.create({ data: { key: 'family_name', value: 'The Joneses' } })
+
+    const res = await app.inject({
+      method: 'PATCH',
+      url: '/api/settings/family-name',
+      headers: { cookie },
+      payload: { name: 'The Smiths' },
+    })
+
+    expect(res.statusCode).toBe(200)
+    const config = await prisma.systemConfig.findUnique({ where: { key: 'family_name' } })
+    expect(config?.value).toBe('The Smiths')
+  })
+
+  it('returns 400 when name is empty', async () => {
+    const cookie = await getTier4Cookie()
+
+    const res = await app.inject({
+      method: 'PATCH',
+      url: '/api/settings/family-name',
+      headers: { cookie },
+      payload: { name: '' },
+    })
+
+    expect(res.statusCode).toBe(400)
+  })
+
+  it('returns 403 when session is tier < 4', async () => {
+    const res = await app.inject({
+      method: 'PATCH',
+      url: '/api/settings/family-name',
+      payload: { name: 'The Smiths' },
+    })
+    expect(res.statusCode).toBe(403)
+  })
+})

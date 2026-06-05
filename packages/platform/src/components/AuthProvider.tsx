@@ -5,7 +5,13 @@ import type { RawRuleOf } from '@casl/ability'
 import type { TierLevel } from '../types'
 import type { AppAbility } from '../ability'
 
-export type AuthUser = { id: string; name: string; tier: TierLevel; darkMode?: boolean | null }
+export type AuthUser = {
+  id: string
+  name: string
+  tier: TierLevel
+  darkMode?: boolean | null
+  familyName?: string | null
+}
 
 type AuthMeResponse = AuthUser & { rules: RawRuleOf<AppAbility>[] }
 
@@ -34,7 +40,13 @@ function AuthLoader({ children, queryClient }: { children: ReactNode; queryClien
   })
 
   const user: AuthUser = data
-    ? { id: data.id, name: data.name, tier: data.tier, darkMode: data.darkMode }
+    ? {
+        id: data.id,
+        name: data.name,
+        tier: data.tier,
+        darkMode: data.darkMode,
+        familyName: data.familyName,
+      }
     : FAMILY_FALLBACK
 
   useEffect(() => {

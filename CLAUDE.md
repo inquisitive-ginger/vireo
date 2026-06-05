@@ -19,8 +19,8 @@ with the family that runs it. See [`docs/vision.md`](docs/vision.md).
 
 - **Milestone:** M1 — Platform Shell (in progress)
 - **Active stories:** None
-- **Last session:** 2026-06-06 — Audit: cross-document consistency (roadmap status, story spec statuses, architecture.md ADR table + schema + Storybook version)
-- **Next session:** M1 Dev: profile-management (see queue)
+- **Last session:** 2026-06-06 — M1 Dev: profile-management (Settings page, profile CRUD, family PIN reset, ProfileGrid, RequireTier4 route guard, optimistic appearance toggle)
+- **Next session:** M1 Dev: settings-permissions (see queue)
 
 > Update this section at the end of every session.
 
