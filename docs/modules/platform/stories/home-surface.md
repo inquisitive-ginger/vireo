@@ -1,13 +1,16 @@
 # Story: Home Surface
 
 **Module:** platform
-**Status:** ⬜ Not Started
+**Status:** ✅ Done
 
 ## User story
+
 As any user, I can see a tier-appropriate widget grid on the home screen so the platform presents the right content from first load.
 
 ## Scope
+
 **In:**
+
 - React Grid Layout (`react-grid-layout`) installed and configured: `cols: 4`, `rowHeight: 180`, `gap: 16`
 - Static mode (`isDraggable: false`, `isResizable: false`)
 - Platform config seeded with three default layouts per ADR 028 (family pseudo-profile, tiers 1–2, tiers 3–4)
@@ -22,6 +25,7 @@ As any user, I can see a tier-appropriate widget grid on the home screen so the 
 **Out:** Drag-and-drop layout editing; widget configuration UI; mobile layout; actual Chores or Calendar plugins (those slots render placeholders in M1)
 
 ## Acceptance criteria
+
 1. Family pseudo-profile home screen renders: Family Feed placeholder (banner, 4×1), Chores placeholder (2×1), Calendar placeholder (2×1)
 2. Tier 1–2 home screen renders: Chores placeholder large (2×2), Family Feed placeholder (2×1), Calendar placeholder (2×1)
 3. Tier 3–4 home screen renders: Calendar placeholder large (2×2), Family Feed placeholder (2×1), Chores placeholder (2×1)
@@ -34,7 +38,9 @@ As any user, I can see a tier-appropriate widget grid on the home screen so the 
 10. `WidgetGrid`, `WidgetSlot`, and `PlaceholderCard` are exported from `packages/ui` with Storybook stories covering their key states
 
 ## Dependencies
+
 - none
 
 ## Notes
+
 `widget_layouts` table schema: `{ id uuid PK, profile_id uuid FK → platform.profiles, widget_id text, x int, y int, w int, h int }`. Seed the tier-appropriate default layout on first home-screen load if no layout record exists for the active profile. The Family Feed widget slot will render a placeholder until the family-feed-read story is complete.

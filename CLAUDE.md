@@ -19,7 +19,7 @@ with the family that runs it. See [`docs/vision.md`](docs/vision.md).
 
 - **Milestone:** M1 — Platform Shell (in progress)
 - **Active stories:** None
-- **Last session:** 2026-06-06 — M1 Dev: family-onboarding tests (setup + auth unit tests, onboarding E2E, dev reset endpoint, test DB fixed)
+- **Last session:** 2026-06-06 — Audit: cross-document consistency (roadmap status, story spec statuses, architecture.md ADR table + schema + Storybook version)
 - **Next session:** M1 Dev: profile-management (see queue)
 
 > Update this section at the end of every session.

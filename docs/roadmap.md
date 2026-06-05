@@ -5,9 +5,11 @@
 > roadmap as earlier milestones complete and needs become clearer.
 
 ## Active Milestone
-**M1 — Platform Shell** · Not Started
+
+**M1 — Platform Shell** · 🔄 In Progress
 
 ## Completed
+
 **M0 — Foundation** · ✅ Done (2026-06-01)
 
 ---
@@ -15,7 +17,9 @@
 ## Current Roadmap (MVP Pass)
 
 ### M0 — Foundation
+
 The platform everything else runs on. No user-facing features yet.
+
 - Platform shell + plugin system
 - Family profiles + tier model
 - Event bus
@@ -26,8 +30,10 @@ The platform everything else runs on. No user-facing features yet.
 ---
 
 ### M1 — Platform Shell
+
 The system is ready for a real family. Infrastructure and the home surface come online;
 the first module anchors the home screen.
+
 - Family onboarding (profile creation, family PIN setup — prerequisite for family handoff)
 - Profile management (create/edit profiles, avatar, tier, permission overrides, family PIN reset)
 - Home Surface: widget grid live; default layout defined with reserved slots for core modules; uninstalled core module slots render a placeholder state
@@ -39,6 +45,7 @@ the first module anchors the home screen.
 ---
 
 ### M2 — Chores
+
 - Task creation and assignment
 - Completion flow (kid marks done)
 - XP + gamification basics (chore completion awards XP only — F$ earning from chores is wired in M6 when the finance module exists)
@@ -49,6 +56,7 @@ the first module anchors the home screen.
 ---
 
 ### M3 — Calendar
+
 - Family calendar view on tablet
 - Event creation from mobile
 - Activity tracking
@@ -58,6 +66,7 @@ the first module anchors the home screen.
 ---
 
 ### M4 — Smart Home
+
 - Home Assistant integration
 - At least one working routine trigger
 - Room context basics
@@ -67,6 +76,7 @@ the first module anchors the home screen.
 ---
 
 ### M5 — School
+
 Scope defined in product session. At minimum: homework tracking,
 assignment due dates, school events surfaced into the family calendar (depends on M3 Calendar).
 
@@ -76,6 +86,7 @@ and school events appear on the family calendar.
 ---
 
 ### M6 — Finance
+
 - F$ earning and balance tracking (chore completions from M2 now credit F$)
 - Cashout flow with parent approval
 - Monarch sync
@@ -87,6 +98,7 @@ up in Monarch.
 ---
 
 ### M7 — Meals
+
 Scope defined in product session. At minimum: meal planning, grocery
 lists, recipe bank.
 
@@ -96,6 +108,7 @@ list without leaving the system.
 ---
 
 ### M8 — Marketplace
+
 - Plugin API opened and documented
 - Plugin registry
 - One community plugin installable end-to-end
@@ -105,6 +118,7 @@ list without leaving the system.
 ---
 
 ## Future Milestones
+
 _Added here as MVP milestones complete and v2 needs emerge._
 
 - **Family Feed v2** — activity feed aggregation (chore completions, calendar events, F$ milestones surfaced as feed items via event subscriptions); richer post types; reactions. Scoped once M2–M6 modules have shipped and the feed has real events to aggregate.
@@ -114,7 +128,9 @@ _Added here as MVP milestones complete and v2 needs emerge._
 ## Completed Milestones
 
 ### M0 — Foundation · ✅ Done (2026-06-01)
+
 The platform everything else runs on. No user-facing features yet.
+
 - Platform shell + plugin system
 - Family profiles + tier model
 - Event bus

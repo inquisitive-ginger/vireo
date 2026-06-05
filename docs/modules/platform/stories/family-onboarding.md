@@ -1,13 +1,16 @@
 # Story: Family Onboarding
 
 **Module:** platform
-**Status:** ⬜ Not Started
+**Status:** ✅ Done
 
 ## User story
+
 As a first-time parent, I can complete a guided setup flow to create family profiles and set a family PIN so the system is ready for the family to use.
 
 ## Scope
+
 **In:**
+
 - First-run detection: no non-family profiles exist → redirect any route to `/onboarding` before rendering the shell
 - Step 1: create at least one tier-4 profile (name, initials avatar)
 - Step 2: optionally add child profiles (name, tier selection 1–3)
@@ -21,6 +24,7 @@ As a first-time parent, I can complete a guided setup flow to create family prof
 **Out:** Avatar image file upload (initials fallback only in M1); permission override configuration during onboarding; email or external account linking; rate limiting on PIN attempts (deferred)
 
 ## Acceptance criteria
+
 1. A fresh install (no non-family profiles) redirects any route to `/onboarding` before rendering the shell
 2. A parent profile can be created with a name; an initials-based avatar renders correctly in the profile chip
 3. One or more child profiles can be added with a name and tier (1–3)
@@ -34,7 +38,9 @@ As a first-time parent, I can complete a guided setup flow to create family prof
 11. `ProfileAvatar` is exported from `packages/ui` with Storybook stories covering initials fallback and ring states
 
 ## Dependencies
+
 - none
 
 ## Notes
+
 The family pseudo-profile (`id = 'family'`, tier 1) is already seeded from M0 — `db:reset` must re-seed it, not delete it entirely. First-run detection queries `profiles` for any row that is not the family pseudo-profile.

@@ -4,13 +4,13 @@
 
 ## Decision
 
-**Storybook 8** is the component catalog, hosted in `packages/ui`. It ships as part of the M0 `dev-environment` story.
+**Storybook 10** is the component catalog, hosted in `packages/ui`. It ships as part of the M0 `dev-environment` story.
 
 ## Why
 
 Design sessions need a living canvas to work against. Without Storybook, the Visual Language Design session (blocked on M0) has nowhere to render tokens, typography, and component states — it becomes a document exercise rather than an interactive one. Earlier is better; waiting until M1 means the component library grows without a catalog and stories must be written retroactively.
 
-Storybook 8 has native Vite integration — it uses the same Vite config as the app and picks up Tailwind CSS v4 and shadcn/ui without extra setup. It runs as a separate dev server (`pnpm storybook`) and is not part of the production build.
+Storybook 10 has native Vite integration — it uses the same Vite config as the app and picks up Tailwind CSS v4 and shadcn/ui without extra setup. It runs as a separate dev server (`pnpm storybook`) and is not part of the production build.
 
 ## Alternatives considered
 
