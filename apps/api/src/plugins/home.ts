@@ -6,14 +6,14 @@ type DefaultLayoutRow = { widgetId: string; x: number; y: number; w: number; h: 
 
 function defaultLayoutKey(profileId: string, tier: number): string {
   if (profileId === 'family') return 'default_layout_family'
-  if (tier <= 2)              return 'default_layout_tier_1_2'
-  return                             'default_layout_tier_3_4'
+  if (tier <= 2) return 'default_layout_tier_1_2'
+  return 'default_layout_tier_3_4'
 }
 
 const homePlugin: FastifyPluginAsync = async (fastify) => {
   fastify.get('/home/layout', async (request) => {
     const profileId = request.profile.id
-    const tier      = request.profile.tier
+    const tier = request.profile.tier
 
     const existing = await prisma.widgetLayout.findMany({ where: { profileId } })
 
