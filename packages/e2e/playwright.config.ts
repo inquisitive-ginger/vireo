@@ -33,12 +33,13 @@ export default defineConfig({
   ],
   webServer: [
     {
-      // API server — DATABASE_URL is set to familyos_test via --env-file in the e2e
-      // script. tsx's own --env-file flag won't override it (Node --env-file semantics).
-      // Local dev with reuseExistingServer=true reuses whatever server is on :3000.
+      // API server — DATABASE_URL=familyos_test is inherited from the e2e script's
+      // --env-file. E2E=true (also from .env.test) disables server reuse so the test
+      // DB is always used; tsx's --env-file won't override an already-set var.
+      // If a dev API is running on :3000, stop it before running E2E.
       command: 'pnpm --filter @family-os/api dev',
       url: 'http://localhost:3000/api/health',
-      reuseExistingServer: !process.env.CI,
+      reuseExistingServer: !process.env.CI && !process.env.E2E,
     },
     {
       // Plugin preview server — requires a prior `pnpm --filter @family-os/plugin-demo-plugin build`
