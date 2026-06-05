@@ -34,7 +34,7 @@ As a user, I receive in-app notifications from the platform so that important ev
 11. `Toast`, `NotificationTray`, `NotificationItem`, and `BellBadge` are exported from `packages/ui` with Storybook stories covering key states (variants, empty tray, badge severity levels)
 
 ## Dependencies
-- none
+- home-surface
 
 ## Notes
 New platform DB table: `notifications { id uuid PK, profile_id uuid FK → platform.profiles, title text, body text nullable, variant text, priority text, is_read boolean default false, created_at timestamptz }`. Motion tokens (`--duration-*`, `--ease-*`) are added in the home-surface story and referenced here for tray animation timing.

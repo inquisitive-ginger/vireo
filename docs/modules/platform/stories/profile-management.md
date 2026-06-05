@@ -32,7 +32,7 @@ As a parent, I can manage family member profiles from a settings page so the fam
 10. `SettingsLayout`, `ProfileListItem`, and `ConfirmDialog` are exported from `packages/ui` with Storybook stories
 
 ## Dependencies
-- none
+- family-onboarding
 
 ## Notes
 Tier changes take effect on the next profile switch — the active session is not invalidated mid-session. The PIN entry component introduced in the family-onboarding story is reused here.

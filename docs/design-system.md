@@ -147,8 +147,10 @@ to maintain contrast against dark surfaces.
 | `--border` / `--input` | `oklch(0.88 0.022 75)` | `oklch(0.30 0.022 48)` |
 | `--error` | `oklch(0.50 0.17 12)` | `oklch(0.62 0.17 12)` |
 
-A manual dark mode toggle (for families who want to override the
-system preference) is deferred to M1.
+A manual dark mode toggle is available to all tiers in display preferences.
+The preference is stored per-profile and overrides `prefers-color-scheme` on
+load. The family pseudo-profile always follows `prefers-color-scheme`.
+Implemented in the M1 home-surface story.
 
 ---
 
@@ -757,7 +759,6 @@ Every export is a commitment plugins can depend on.
 
 | Item | Deferred to |
 |------|------------|
-| Manual dark mode toggle | M1 |
 | Mobile surface layout | M1+ design session |
 | TV ambient layout | M4+ design session |
 | Pi room display layout | M4+ design session |

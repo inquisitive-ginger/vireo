@@ -1,6 +1,6 @@
 # 022 — Widget System
 
-**Status:** Decided
+**Status:** Decided — default layout definitions filled in by ADR 028
 
 **Decision:** The shell home surface is a composable widget grid driven by React Grid
 Layout. Plugins register home screen widgets in their `manifest.json`. The shell filters

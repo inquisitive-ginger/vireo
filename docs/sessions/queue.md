@@ -10,7 +10,7 @@
 1. **M1 Dev: home-surface** ![Type](https://img.shields.io/badge/Type-Development-orange)
    Widget grid implementation: React Grid Layout static mode, default layouts seeded per tier, reserved slot placeholder cards, motion tokens, dark mode toggle, E2E scaffold.
    _Reads:_ `docs/modules/platform/stories/home-surface.md`, `docs/design-system.md` (Widget Composition System, Home Surface)
-   _Produces:_ Working widget grid on home screen; `packages/e2e` scaffold; `WidgetGrid`, `WidgetSlot`, `PlaceholderCard` in `packages/ui`
+   _Produces:_ Working widget grid on home screen; `packages/e2e` smoke test for widget grid; `WidgetGrid`, `WidgetSlot`, `PlaceholderCard` in `packages/ui`
 
 2. **M1 Dev: family-onboarding** ![Type](https://img.shields.io/badge/Type-Development-orange)
    First-run setup flow: create profiles, set family PIN, `db:reset` script.

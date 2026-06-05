@@ -10,9 +10,9 @@
 |-------|--------|-------|
 | [Home Surface](stories/home-surface.md) | ⬜ Not Started | Dependency for family-feed-read |
 | [Family Onboarding](stories/family-onboarding.md) | ⬜ Not Started | Scaffolds `packages/schemas` |
-| [Profile Management](stories/profile-management.md) | ⬜ Not Started | |
+| [Profile Management](stories/profile-management.md) | ⬜ Not Started | Depends on family-onboarding (PIN entry component) |
 | [Permission Overrides](stories/permission-overrides.md) | ⬜ Not Started | Depends on profile-management |
-| [Notification Infrastructure](stories/notification-infrastructure.md) | ⬜ Not Started | |
+| [Notification Infrastructure](stories/notification-infrastructure.md) | ⬜ Not Started | Depends on home-surface (motion tokens) |
 | [PWA Installable](stories/pwa-installable.md) | ⬜ Not Started | |
 | [Web Push](stories/web-push.md) | ⬜ Not Started | Depends on notification-infrastructure + pwa-installable |
 

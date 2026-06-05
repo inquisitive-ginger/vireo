@@ -19,7 +19,7 @@ with the family that runs it. See [`docs/vision.md`](docs/vision.md).
 
 - **Milestone:** M1 — Platform Shell (in progress — stories defined)
 - **Active stories:** None — first implementation session is home-surface
-- **Last session:** 2026-06-04 — M1 Product Planning (9 stories defined across platform and family-feed modules; React Hook Form + Zod settled as form library)
+- **Last session:** 2026-06-04 — Pre-M1 Audit (6 issues resolved: packages/e2e creation conflict, home-surface AC wording, design-system TBD stale row, dependency gaps in profile-management and notification-infrastructure, ADR 022/028 cross-reference)
 - **Next session:** M1 Dev: home-surface (see queue)
 
 > Update this section at the end of every session.
