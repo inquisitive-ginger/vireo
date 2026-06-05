@@ -2,6 +2,8 @@ import Fastify from 'fastify'
 import eventBusPlugin from './plugins/event-bus'
 import authPlugin from './plugins/auth'
 import pluginRegistryPlugin from './plugins/plugin-registry'
+import homePlugin from './plugins/home'
+import preferencesPlugin from './plugins/preferences'
 
 export async function buildServer() {
   const app = Fastify({ logger: true })
@@ -14,6 +16,8 @@ export async function buildServer() {
     async (api) => {
       await api.register(authPlugin)
       await api.register(pluginRegistryPlugin)
+      await api.register(homePlugin)
+      await api.register(preferencesPlugin)
 
       api.get('/health', async () => ({ status: 'ok' }))
 

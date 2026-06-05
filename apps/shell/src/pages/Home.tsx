@@ -1,64 +1,78 @@
-import { useState, useEffect } from 'react'
-import { Button } from '@family-os/ui'
-import { useEventBus } from '@family-os/platform'
+import type { ReactNode } from 'react'
+import { useQuery } from '@tanstack/react-query'
+import { Loader2, Users, ClipboardList, CalendarDays } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
+import { WidgetGrid, PlaceholderCard } from '@family-os/ui'
+import type { WidgetLayoutItem } from '@family-os/ui'
+import type { RegistryEntry } from '@family-os/platform/types'
+import { useAuth } from '@family-os/platform'
 
-type LogEntry = { event: string; payload: unknown; receivedAt: number }
+type WidgetMeta = { moduleName: string; description: string; icon: LucideIcon }
+
+const WIDGET_META: Record<string, WidgetMeta> = {
+  'family-feed': {
+    moduleName: 'Family Feed',
+    description: 'Shared updates, photos, and activity from the whole family.',
+    icon: Users,
+  },
+  chores: {
+    moduleName: 'Chores',
+    description: "Today's tasks and who's completed what.",
+    icon: ClipboardList,
+  },
+  calendar: {
+    moduleName: 'Calendar',
+    description: "Today's events and upcoming schedule.",
+    icon: CalendarDays,
+  },
+}
+
+function moduleFromWidgetId(widgetId: string): string {
+  return widgetId.split('.')[0] ?? widgetId
+}
 
 export function Home() {
-  const [events, setEvents] = useState<LogEntry[]>([])
-  const { publish, subscribe } = useEventBus()
+  const { id: profileId } = useAuth()
 
-  useEffect(() => {
-    return subscribe('platform.ping.sent', (payload) => {
-      setEvents((prev) => [{ event: 'platform.ping.sent', payload, receivedAt: Date.now() }, ...prev].slice(0, 20))
-    })
-  }, [subscribe])
+  const { data: layout, isLoading } = useQuery<WidgetLayoutItem[]>({
+    queryKey: ['api/home/layout', profileId],
+    queryFn: () => fetch('/api/home/layout').then((r) => r.json()) as Promise<WidgetLayoutItem[]>,
+    staleTime: 5 * 60 * 1000,
+  })
 
-  function sendEvent() {
-    publish('platform.ping.sent', { ts: Date.now() })
+  const { data: plugins } = useQuery<RegistryEntry[]>({
+    queryKey: ['api/plugins'],
+    queryFn: () => fetch('/api/plugins').then((r) => r.json()) as Promise<RegistryEntry[]>,
+    staleTime: 5 * 60 * 1000,
+  })
+
+  const installedModules = new Set((plugins ?? []).map((p) => p.name))
+
+  const widgetChildren: Record<string, ReactNode> = {}
+  for (const item of layout ?? []) {
+    const module = moduleFromWidgetId(item.widgetId)
+    const meta = WIDGET_META[module]
+    if (!meta) continue
+
+    if (installedModules.has(module)) {
+      // TODO M2+: swap in real <ModuleWidget /> once each plugin ships its widget component
+      widgetChildren[item.widgetId] = <PlaceholderCard {...meta} />
+    } else {
+      widgetChildren[item.widgetId] = <PlaceholderCard {...meta} />
+    }
+  }
+
+  if (isLoading) {
+    return (
+      <div className="flex h-full items-center justify-center">
+        <Loader2 className="size-5 animate-spin text-muted-foreground" />
+      </div>
+    )
   }
 
   return (
-    <div className="flex flex-col h-full p-8 gap-6">
-      <div className="flex flex-col items-center justify-center gap-4 text-center">
-        <h1 className="text-2xl font-semibold">Home</h1>
-        <p className="text-sm text-muted-foreground max-w-sm">
-          Family OS home screen — widget grid coming in M1.
-        </p>
-        <Button variant="outline" size="sm">
-          Get Started
-        </Button>
-      </div>
-
-      <div className="max-w-lg mx-auto w-full">
-        <div className="flex items-center justify-between mb-3">
-          <h2 className="text-sm font-medium">Event Bus</h2>
-          <Button size="sm" onClick={sendEvent}>
-            Send platform.ping.sent
-          </Button>
-        </div>
-        <div className="rounded-md border bg-muted/40 min-h-[120px] max-h-[320px] overflow-y-auto">
-          {events.length === 0 ? (
-            <p className="text-xs text-muted-foreground p-4 text-center">
-              No events yet — click the button to emit one.
-            </p>
-          ) : (
-            <ul className="divide-y text-xs font-mono">
-              {events.map((e) => (
-                <li key={e.receivedAt} className="px-4 py-2 flex gap-3">
-                  <span className="text-muted-foreground shrink-0">
-                    {new Date(e.receivedAt).toLocaleTimeString()}
-                  </span>
-                  <span className="text-foreground">{e.event}</span>
-                  <span className="text-muted-foreground truncate">
-                    {JSON.stringify(e.payload)}
-                  </span>
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
-      </div>
+    <div className="p-6">
+      <WidgetGrid layout={layout ?? []} children={widgetChildren} />
     </div>
   )
 }

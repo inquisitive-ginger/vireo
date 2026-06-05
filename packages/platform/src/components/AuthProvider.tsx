@@ -1,11 +1,11 @@
-import { createContext, useContext, useMemo, type ReactNode } from 'react'
+import { createContext, useContext, useEffect, useMemo, type ReactNode } from 'react'
 import { QueryClient, QueryClientProvider, useQuery } from '@tanstack/react-query'
 import { createPrismaAbility } from '@casl/prisma'
 import type { RawRuleOf } from '@casl/ability'
 import type { TierLevel } from '../types'
 import type { AppAbility } from '../ability'
 
-export type AuthUser = { id: string; name: string; tier: TierLevel }
+export type AuthUser = { id: string; name: string; tier: TierLevel; darkMode?: boolean | null }
 
 type AuthMeResponse = AuthUser & { rules: RawRuleOf<AppAbility>[] }
 
@@ -33,7 +33,16 @@ function AuthLoader({ children, queryClient }: { children: ReactNode; queryClien
     refetchOnWindowFocus: false,
   })
 
-  const user: AuthUser = data ? { id: data.id, name: data.name, tier: data.tier } : FAMILY_FALLBACK
+  const user: AuthUser = data
+    ? { id: data.id, name: data.name, tier: data.tier, darkMode: data.darkMode }
+    : FAMILY_FALLBACK
+
+  useEffect(() => {
+    const root = document.documentElement
+    if (user.darkMode === true)  root.setAttribute('data-theme', 'dark')
+    else if (user.darkMode === false) root.setAttribute('data-theme', 'light')
+    else root.removeAttribute('data-theme')
+  }, [user.darkMode])
 
   const ability = useMemo(
     () => createPrismaAbility<AppAbility>(data?.rules ?? []),

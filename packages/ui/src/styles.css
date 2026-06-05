@@ -28,6 +28,14 @@
     --font-display: 'Lora', Georgia, 'Times New Roman', serif;
     --font-ui:      'DM Sans', 'Helvetica Neue', Arial, sans-serif;
 
+    /* Motion tokens */
+    --duration-fast:   100ms;
+    --duration-normal: 200ms;
+    --duration-slow:   300ms;
+    --ease-out:    cubic-bezier(0, 0, 0.2, 1);
+    --ease-in:     cubic-bezier(0.4, 0, 1, 1);
+    --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+
     /* Terracotta & Teal — light */
     --background:           oklch(0.985 0.008 75);
     --foreground:           oklch(0.18  0.04  50);
@@ -56,7 +64,7 @@
   }
 
   @media (prefers-color-scheme: dark) {
-    :root {
+    :root:not([data-theme="light"]) {
       /* Terracotta & Teal — dark */
       --background:           oklch(0.15  0.022 45);
       --foreground:           oklch(0.92  0.012 75);
@@ -82,6 +90,33 @@
       --error-foreground:     oklch(0.99  0     0);
       --destructive:          var(--error);
     }
+  }
+
+  /* Manual dark mode override — per-profile preference (AC8) */
+  [data-theme="dark"] {
+    --background:           oklch(0.15  0.022 45);
+    --foreground:           oklch(0.92  0.012 75);
+    --primary:              oklch(0.66  0.14  35);
+    --primary-foreground:   oklch(0.99  0     0);
+    --secondary:            oklch(0.22  0.020 48);
+    --secondary-foreground: oklch(0.82  0.012 70);
+    --muted:                oklch(0.20  0.016 48);
+    --muted-foreground:     oklch(0.56  0.022 60);
+    --accent:               oklch(0.56  0.08  185);
+    --accent-foreground:    oklch(0.99  0     0);
+    --border:               oklch(0.30  0.022 48);
+    --input:                oklch(0.30  0.022 48);
+    --ring:                 oklch(0.66  0.14  35);
+
+    --info:                 oklch(0.56  0.09  200);
+    --info-foreground:      oklch(0.99  0     0);
+    --success:              oklch(0.57  0.10  148);
+    --success-foreground:   oklch(0.99  0     0);
+    --warning:              oklch(0.75  0.11  78);
+    --warning-foreground:   oklch(0.15  0.04  78);
+    --error:                oklch(0.62  0.17  12);
+    --error-foreground:     oklch(0.99  0     0);
+    --destructive:          var(--error);
   }
 
   * {

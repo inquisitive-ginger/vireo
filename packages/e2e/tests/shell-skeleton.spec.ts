@@ -16,11 +16,6 @@ test.describe('shell skeleton', () => {
     expect(errors).toHaveLength(0)
   })
 
-  // AC2
-  test('home screen placeholder is visible and labeled', async ({ page }) => {
-    await expect(page.locator('h1', { hasText: 'Home' })).toBeVisible()
-  })
-
   // AC3
   test('sidebar is 220px wide with profile chip area and nav section', async ({ page }) => {
     const sidebar = page.locator('aside')
@@ -52,7 +47,7 @@ test.describe('shell skeleton', () => {
   test('clicking a nav link navigates without a full page reload', async ({ page }) => {
     await page.goto('/demo')
     await page.locator('nav').getByRole('link', { name: 'Home' }).click()
-    await expect(page.locator('h1', { hasText: 'Home' })).toBeVisible()
+    await expect(page.getByTestId('widget-grid')).toBeVisible()
     await expect(page.locator('aside')).toBeVisible()
   })
 
@@ -78,14 +73,6 @@ test.describe('shell skeleton', () => {
   test('tailwind utility classes apply correctly', async ({ page }) => {
     const box = await page.locator('aside').boundingBox()
     expect(box?.width).toBe(220)
-  })
-
-  // AC9
-  test('shadcn Button renders without errors', async ({ page }) => {
-    const button = page.getByRole('button', { name: 'Get Started' })
-    await expect(button).toBeVisible()
-    const tag = await button.evaluate(el => el.tagName)
-    expect(tag).toBe('BUTTON')
   })
 
   // AC10

@@ -13,13 +13,30 @@ model Profile {
   name      String
   tier      Int
   avatarUrl String?  @map("avatar_url")
+  darkMode  Boolean? @map("dark_mode")
   createdAt DateTime @default(now()) @map("created_at")
 
   permissionOverrides PermissionOverride[] @relation("profile_overrides")
   grantedOverrides    PermissionOverride[] @relation("granted_by_overrides")
   systemConfigs       SystemConfig[]
+  widgetLayouts       WidgetLayout[]
 
   @@map("profiles")
+  @@schema("platform")
+}
+
+model WidgetLayout {
+  id        String  @id @default(uuid())
+  profileId String  @map("profile_id")
+  widgetId  String  @map("widget_id")
+  x         Int
+  y         Int
+  w         Int
+  h         Int
+
+  profile Profile @relation(fields: [profileId], references: [id])
+
+  @@map("widget_layouts")
   @@schema("platform")
 }
 

@@ -8,7 +8,7 @@
 
 | Story | Status | Notes |
 |-------|--------|-------|
-| [Home Surface](stories/home-surface.md) | ⬜ Not Started | Dependency for family-feed-read |
+| [Home Surface](stories/home-surface.md) | ✅ Done | |
 | [Family Onboarding](stories/family-onboarding.md) | ⬜ Not Started | Scaffolds `packages/schemas` |
 | [Profile Management](stories/profile-management.md) | ⬜ Not Started | Depends on family-onboarding (PIN entry component) |
 | [Permission Overrides](stories/permission-overrides.md) | ⬜ Not Started | Depends on profile-management |

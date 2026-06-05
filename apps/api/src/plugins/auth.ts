@@ -55,12 +55,13 @@ const authPlugin: FastifyPluginAsync = async (fastify) => {
 
     const profile: Profile = row
       ? {
-          id: row.id,
-          name: row.name,
-          tier: row.tier as Profile['tier'],
+          id:       row.id,
+          name:     row.name,
+          tier:     row.tier as Profile['tier'],
           avatarUrl: row.avatarUrl ?? undefined,
+          darkMode: row.darkMode ?? null,
         }
-      : { id: FAMILY_PROFILE_ID, name: 'Family', tier: 1 }
+      : { id: FAMILY_PROFILE_ID, name: 'Family', tier: 1, darkMode: null }
 
     const overrides =
       row?.permissionOverrides.map((o) => ({
@@ -78,10 +79,11 @@ const authPlugin: FastifyPluginAsync = async (fastify) => {
 
   fastify.get('/auth/me', async (request) => {
     return {
-      id: request.profile.id,
-      name: request.profile.name,
-      tier: request.profile.tier,
-      rules: request.ability.rules,
+      id:       request.profile.id,
+      name:     request.profile.name,
+      tier:     request.profile.tier,
+      darkMode: request.profile.darkMode ?? null,
+      rules:    request.ability.rules,
     }
   })
 
