@@ -7,20 +7,26 @@
 Four conventions apply across all packages:
 
 ### 1. File colocation
+
 Test files live next to their source: `Component.test.tsx`, `util.test.ts`, `route.test.ts`. No `__tests__/` directories, no mirrored tree.
 
 ### 2. No enforced coverage thresholds
+
 Coverage is not gated in CI. High-value targets are tested thoroughly by convention, not by threshold enforcement:
+
 - `packages/platform` — platform API, permission logic, CASL ability construction
 - `packages/platform/server` — Fastify plugins, event bus, route handlers
 - Plugin business logic (chore rules, finance ledger) — unit tested
 - Plugin UI components — RTL behavior tests for interactive elements; snapshot tests are discouraged
 
 ### 3. Real database for integration tests
-Tests that touch Prisma use a real PostgreSQL database, isolated from the dev database by running against a separate `familyos_test` database in the same Docker container. `TEST_DATABASE_URL` (loaded from `.env.test` via Vitest's `envDir`) points to `familyos_test`; `test.setup.ts` assigns it to `DATABASE_URL` before any test file imports the Prisma client. `beforeEach` hooks truncate test-relevant tables between test runs. No Prisma mocking. See ADR 027 for the full env configuration pattern and setup commands.
+
+Tests that touch Prisma use a real PostgreSQL database, isolated from the dev database by running against a separate `familyos_test` database in the same Docker container. `.env.test` sets `DATABASE_URL=familyos_test`; Vitest's `envDir` loads it before any test file imports the Prisma client. `test.setup.ts` uses `??=` as a fallback guard. `beforeEach` hooks truncate test-relevant tables between test runs. No Prisma mocking. Playwright E2E uses the same `familyos_test` DB via `.env.test` loaded with `--env-file` in the e2e scripts. See ADR 027 for the full env configuration pattern and setup commands.
 
 ### 4. Shared setup
+
 A root `vitest.workspace.ts` lists all packages. A shared `packages/test-utils/` package exports:
+
 - RTL custom render wrapping `AuthProvider` and `QueryClientProvider`
 - Test profile factories (pre-built `Profile` objects for each tier)
 - Event bus test double (in-memory, synchronous)
