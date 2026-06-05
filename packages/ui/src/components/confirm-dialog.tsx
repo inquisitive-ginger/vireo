@@ -38,7 +38,7 @@ export function ConfirmDialog({
         aria-labelledby="confirm-dialog-title"
         aria-describedby="confirm-dialog-body"
       >
-        <h3 id="confirm-dialog-title" className="text-[15px] font-semibold mb-2 text-foreground">
+        <h3 id="confirm-dialog-title" className="text-card-title mb-2 text-foreground">
           {title}
         </h3>
         <p

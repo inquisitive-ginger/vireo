@@ -134,12 +134,9 @@ export const PageTitle: Story = {
       <SettingsSection title="Example section">
         <div className="px-6 py-4 text-sm text-muted-foreground">
           The h1 above uses{' '}
-          <code className="text-xs bg-muted px-1 py-0.5 rounded">
-            text-2xl font-semibold tracking-tight
-          </code>{' '}
-          — distinct from the{' '}
-          <code className="text-xs bg-muted px-1 py-0.5 rounded">section-label</code> token used in
-          section headers.
+          <code className="text-xs bg-muted px-1 py-0.5 rounded">text-page-title</code> — distinct
+          from the <code className="text-xs bg-muted px-1 py-0.5 rounded">section-label</code> token
+          used in section headers.
         </div>
       </SettingsSection>
     </SettingsLayout>

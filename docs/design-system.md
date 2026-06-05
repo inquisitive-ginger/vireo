@@ -33,15 +33,15 @@ explicitly marked — do not treat absence of a spec as a free choice.
 Every design decision should be checkable against these. They flow
 directly from the project vision.
 
-| Principle | What it means in practice |
-|-----------|--------------------------|
-| **Kids are participants** | Kid-facing views are first-class UI, not simplified adult UI |
-| **Legible at a glance** | Tablet is often across a room — key info must read without approaching |
-| **Tier-appropriate, not age-locked** | UI adapts to trust tier, not birth year |
-| **Calm by default** | No unnecessary motion, badges, or urgency cues |
-| **Touch-first, pointer-friendly** | Tablet and mobile are touch surfaces; mouse/keyboard work but are secondary |
-| **Plugins feel native** | Community-built plugins use the same component library and tokens as first-party modules |
-| **No AI aesthetic** | Family OS should have its own visual character — avoid the generic Inter/Geist/hyper-minimal look |
+| Principle                            | What it means in practice                                                                         |
+| ------------------------------------ | ------------------------------------------------------------------------------------------------- |
+| **Kids are participants**            | Kid-facing views are first-class UI, not simplified adult UI                                      |
+| **Legible at a glance**              | Tablet is often across a room — key info must read without approaching                            |
+| **Tier-appropriate, not age-locked** | UI adapts to trust tier, not birth year                                                           |
+| **Calm by default**                  | No unnecessary motion, badges, or urgency cues                                                    |
+| **Touch-first, pointer-friendly**    | Tablet and mobile are touch surfaces; mouse/keyboard work but are secondary                       |
+| **Plugins feel native**              | Community-built plugins use the same component library and tokens as first-party modules          |
+| **No AI aesthetic**                  | Family OS should have its own visual character — avoid the generic Inter/Geist/hyper-minimal look |
 
 ---
 
@@ -49,12 +49,12 @@ directly from the project vision.
 
 **Settled** — see ADR 012.
 
-| Layer | Choice |
-|-------|--------|
-| Component primitives | Radix UI (via shadcn/ui) |
-| Component library | shadcn/ui — copy-paste model, owned by this repo |
-| Styling | Tailwind CSS v4 — CSS variable tokens |
-| Icons | Lucide |
+| Layer                | Choice                                           |
+| -------------------- | ------------------------------------------------ |
+| Component primitives | Radix UI (via shadcn/ui)                         |
+| Component library    | shadcn/ui — copy-paste model, owned by this repo |
+| Styling              | Tailwind CSS v4 — CSS variable tokens            |
+| Icons                | Lucide                                           |
 
 Components live in `packages/ui/` once the monorepo is scaffolded.
 Adding a component means running the shadcn CLI and editing the
@@ -64,23 +64,55 @@ output — not upgrading a dependency.
 
 ## Typography
 
-**Settled** — Visual Language design session, 2026-06-02.
+**Settled** — fonts: Visual Language session 2026-06-02; scale locked 2026-06-08.
 
-| Role | Font | Fallback |
-|------|------|----------|
-| Display (headings, greeting text) | **Lora** | Georgia, 'Times New Roman', serif |
-| UI (body, labels, nav, buttons) | **DM Sans** | 'Helvetica Neue', Arial, sans-serif |
+### Font families
 
-**Pairing rationale:** Lora's well-crafted serifs give headings warmth and editorial character without stuffiness. DM Sans provides clean, legible structure for UI text without the generic Inter/Geist feel. Together they read as distinctive and warm — adult-legible but approachable for kids.
+| Role                                        | Font        | Fallback                            |
+| ------------------------------------------- | ----------- | ----------------------------------- |
+| Display — page titles and emotional moments | **Lora**    | Georgia, 'Times New Roman', serif   |
+| UI — all other text                         | **DM Sans** | 'Helvetica Neue', Arial, sans-serif |
+
+**Pairing rationale:** Lora gives page titles and narrative moments warmth and editorial character. DM Sans keeps UI text clean and legible without the generic Inter/Geist feel.
+
+**Lora scope:** `page-title`, `display-lg`, `display-xl` only. All other tokens — including `heading`, `card-title`, `section-label` — use DM Sans. Structural headings that don't carry emotional weight stay in DM Sans.
 
 ```css
 --font-display: 'Lora', Georgia, 'Times New Roman', serif;
---font-ui:      'DM Sans', 'Helvetica Neue', Arial, sans-serif;
+--font-ui: 'DM Sans', 'Helvetica Neue', Arial, sans-serif;
 ```
 
-Loaded from Google Fonts in `apps/shell/index.html`. Plugins must
-use `var(--font-display)` and `var(--font-ui)` — never hardcode a
-font family.
+Loaded from Google Fonts in `apps/shell/index.html`. Plugins must use `var(--font-display)` and `var(--font-ui)` — never hardcode a font family.
+
+### Type scale
+
+Major second ratio (1.125), base 16px. 11 tokens.
+
+**Viewing distance rule:** UI chrome (sidebar, settings, dialogs, forms) reads close-up — tokens up to `card-title` are appropriate. Widget and content areas may be glanced from across the table — `body` (18px) is the minimum for primary content text.
+
+All tokens are defined as CSS utilities in `packages/ui/src/styles.css` and are available as Tailwind classes throughout the codebase. Use the utility name — never raw pixel values.
+
+| Token           | Utility class        | px  | Weight | Line-height | Tracking | Font                       |
+| --------------- | -------------------- | --- | ------ | ----------- | -------- | -------------------------- |
+| `xs`            | `text-xs-token`      | 10  | 600    | 1.4         | 0        | DM Sans                    |
+| `section-label` | `text-section-label` | 11  | 700    | 1.4         | 0.1em    | DM Sans · always uppercase |
+| `sm`            | `text-sm-token`      | 13  | 400    | 1.5         | 0        | DM Sans                    |
+| `base`          | `text-base-token`    | 14  | 400    | 1.5         | 0        | DM Sans                    |
+| `card-title`    | `text-card-title`    | 16  | 600    | 1.3         | 0        | DM Sans                    |
+| `body`          | `text-body`          | 18  | 400    | 1.6         | 0        | DM Sans                    |
+| `heading`       | `text-heading`       | 20  | 600    | 1.2         | −0.01em  | DM Sans                    |
+| `page-title`    | `text-page-title`    | 26  | 600    | 1.2         | −0.02em  | **Lora**                   |
+| `display-lg`    | `text-display-lg`    | 29  | 600    | 1.2         | −0.01em  | **Lora**                   |
+| `metric`        | `text-metric`        | 32  | 700    | 1.0         | −0.01em  | DM Sans                    |
+| `display-xl`    | `text-display-xl`    | 36  | 400    | 1.15        | −0.01em  | **Lora**                   |
+
+**Usage notes:**
+
+- `section-label` — always `--muted-foreground`; uppercase is baked into the utility
+- `page-title` — one per route; renders in Lora
+- `display-lg` — empty state headings, error page headings
+- `display-xl` — greeting text ("Good morning, Zach"), hero moments
+- `metric` — widget key numbers and counts (XP, task count, etc.)
 
 ---
 
@@ -99,20 +131,20 @@ semantic tokens only — never raw oklch values.
 
 ### Core tokens — light mode
 
-| Token | Value | Role |
-|-------|-------|------|
-| `--background` | `oklch(0.985 0.008 75)` | Page background — warm off-white |
-| `--foreground` | `oklch(0.18 0.04 50)` | Primary text |
-| `--primary` | `oklch(0.57 0.14 35)` | Terracotta — main actions, active states |
-| `--primary-foreground` | `oklch(0.99 0 0)` | Text on primary |
-| `--secondary` | `oklch(0.93 0.022 72)` | Card and sidebar surfaces |
-| `--secondary-foreground` | `oklch(0.28 0.05 50)` | Text on secondary |
-| `--muted` | `oklch(0.93 0.016 72)` | Subtle backgrounds |
-| `--muted-foreground` | `oklch(0.52 0.04 58)` | Subdued labels, timestamps |
-| `--accent` | `oklch(0.47 0.07 185)` | Muted sage-teal — highlights, indicators |
-| `--accent-foreground` | `oklch(0.99 0 0)` | Text on accent |
-| `--border` / `--input` | `oklch(0.88 0.022 75)` | Borders and input outlines |
-| `--ring` | `oklch(0.57 0.14 35)` | Focus ring (matches primary) |
+| Token                    | Value                   | Role                                     |
+| ------------------------ | ----------------------- | ---------------------------------------- |
+| `--background`           | `oklch(0.985 0.008 75)` | Page background — warm off-white         |
+| `--foreground`           | `oklch(0.18 0.04 50)`   | Primary text                             |
+| `--primary`              | `oklch(0.57 0.14 35)`   | Terracotta — main actions, active states |
+| `--primary-foreground`   | `oklch(0.99 0 0)`       | Text on primary                          |
+| `--secondary`            | `oklch(0.93 0.022 72)`  | Card and sidebar surfaces                |
+| `--secondary-foreground` | `oklch(0.28 0.05 50)`   | Text on secondary                        |
+| `--muted`                | `oklch(0.93 0.016 72)`  | Subtle backgrounds                       |
+| `--muted-foreground`     | `oklch(0.52 0.04 58)`   | Subdued labels, timestamps               |
+| `--accent`               | `oklch(0.47 0.07 185)`  | Muted sage-teal — highlights, indicators |
+| `--accent-foreground`    | `oklch(0.99 0 0)`       | Text on accent                           |
+| `--border` / `--input`   | `oklch(0.88 0.022 75)`  | Borders and input outlines               |
+| `--ring`                 | `oklch(0.57 0.14 35)`   | Focus ring (matches primary)             |
 
 ### Semantic status tokens — light mode
 
@@ -120,13 +152,13 @@ Each token has a paired `-foreground`. `--destructive` is a CSS alias
 for `--error` so shadcn components keep working without a separate
 value to maintain.
 
-| Token | Value | Role |
-|-------|-------|------|
-| `--info` | `oklch(0.45 0.09 200)` | Informational banners and badges |
-| `--success` | `oklch(0.44 0.10 148)` | Completion, confirmed states |
-| `--warning` | `oklch(0.69 0.12 78)` | Attention needed, soft alerts |
-| `--error` | `oklch(0.50 0.17 12)` | Failures, validation errors |
-| `--destructive` | `var(--error)` | shadcn alias — do not use directly in new code |
+| Token           | Value                  | Role                                           |
+| --------------- | ---------------------- | ---------------------------------------------- |
+| `--info`        | `oklch(0.45 0.09 200)` | Informational banners and badges               |
+| `--success`     | `oklch(0.44 0.10 148)` | Completion, confirmed states                   |
+| `--warning`     | `oklch(0.69 0.12 78)`  | Attention needed, soft alerts                  |
+| `--error`       | `oklch(0.50 0.17 12)`  | Failures, validation errors                    |
+| `--destructive` | `var(--error)`         | shadcn alias — do not use directly in new code |
 
 ### Dark mode
 
@@ -135,17 +167,17 @@ cascade-based. The dark background is a **warm clay** (`oklch(0.15 0.022 45)`)
 rather than the cold blue-black common in most apps. Primaries lighten
 to maintain contrast against dark surfaces.
 
-| Token | Light | Dark |
-|-------|-------|------|
-| `--background` | `oklch(0.985 0.008 75)` | `oklch(0.15 0.022 45)` |
-| `--foreground` | `oklch(0.18 0.04 50)` | `oklch(0.92 0.012 75)` |
-| `--primary` | `oklch(0.57 0.14 35)` | `oklch(0.66 0.14 35)` |
-| `--accent` | `oklch(0.47 0.07 185)` | `oklch(0.56 0.08 185)` |
-| `--secondary` | `oklch(0.93 0.022 72)` | `oklch(0.22 0.020 48)` |
-| `--muted` | `oklch(0.93 0.016 72)` | `oklch(0.20 0.016 48)` |
-| `--muted-foreground` | `oklch(0.52 0.04 58)` | `oklch(0.56 0.022 60)` |
-| `--border` / `--input` | `oklch(0.88 0.022 75)` | `oklch(0.30 0.022 48)` |
-| `--error` | `oklch(0.50 0.17 12)` | `oklch(0.62 0.17 12)` |
+| Token                  | Light                   | Dark                   |
+| ---------------------- | ----------------------- | ---------------------- |
+| `--background`         | `oklch(0.985 0.008 75)` | `oklch(0.15 0.022 45)` |
+| `--foreground`         | `oklch(0.18 0.04 50)`   | `oklch(0.92 0.012 75)` |
+| `--primary`            | `oklch(0.57 0.14 35)`   | `oklch(0.66 0.14 35)`  |
+| `--accent`             | `oklch(0.47 0.07 185)`  | `oklch(0.56 0.08 185)` |
+| `--secondary`          | `oklch(0.93 0.022 72)`  | `oklch(0.22 0.020 48)` |
+| `--muted`              | `oklch(0.93 0.016 72)`  | `oklch(0.20 0.016 48)` |
+| `--muted-foreground`   | `oklch(0.52 0.04 58)`   | `oklch(0.56 0.022 60)` |
+| `--border` / `--input` | `oklch(0.88 0.022 75)`  | `oklch(0.30 0.022 48)` |
+| `--error`              | `oklch(0.50 0.17 12)`   | `oklch(0.62 0.17 12)`  |
 
 A manual dark mode toggle is available to all tiers in display preferences.
 The preference is stored per-profile and overrides `prefers-color-scheme` on
@@ -193,7 +225,7 @@ respective design sessions. See `docs/sessions/queue.md`.
 
 Tier defines the baseline permission set. Individual permissions
 can be granted above or revoked below that baseline by a parent.
-All capability checks operate on the *effective* permission set.
+All capability checks operate on the _effective_ permission set.
 
 ```
 effective permissions = tier_baseline ∪ granted − revoked
@@ -203,14 +235,14 @@ effective permissions = tier_baseline ∪ granted − revoked
 
 ```ts
 // Primary hook — full user object including tier
-const { user } = useAuth();
+const { user } = useAuth()
 
 // Tier level only
-const { tier } = useTier();  // 1 | 2 | 3 | 4
+const { tier } = useTier() // 1 | 2 | 3 | 4
 
 // Effective permissions — tier baseline + grants − revocations
-const { can } = usePermissions();
-can('create', 'chores.Task');  // → boolean
+const { can } = usePermissions()
+can('create', 'chores.Task') // → boolean
 ```
 
 All three imported from `@family-os/platform`.
@@ -241,12 +273,12 @@ Permission strings follow `module.noun.verb` convention.
 
 ### Tier rendering intent
 
-| Tier | General intent |
-|------|---------------|
-| 1 | Simplified vocabulary, large targets, no financial data, task completion only |
-| 2 | Earning progress visible, full task detail, no management UI |
-| 3 | Family schedule visible, can propose/create tasks, light management UI |
-| 4 (parent) | Full management, approval queues, all financial data, system settings |
+| Tier       | General intent                                                                |
+| ---------- | ----------------------------------------------------------------------------- |
+| 1          | Simplified vocabulary, large targets, no financial data, task completion only |
+| 2          | Earning progress visible, full task detail, no management UI                  |
+| 3          | Family schedule visible, can propose/create tasks, light management UI        |
+| 4 (parent) | Full management, approval queues, all financial data, system settings         |
 
 Specific capability rules per module are defined in module specs,
 not here. Individual grants and revocations are managed at runtime
@@ -276,10 +308,10 @@ permissions.
 
 ### Entry Points
 
-| Trigger | Behavior |
-|---------|----------|
-| **Corner chip** (shell header) | Always visible. Shows current active profile (avatar + name). Tap opens profile grid overlay. |
-| **Inactivity timeout** | Deactivates personal profile, returns to family dashboard. Next interaction uses family dashboard or switches via chip. |
+| Trigger                        | Behavior                                                                                                                |
+| ------------------------------ | ----------------------------------------------------------------------------------------------------------------------- |
+| **Corner chip** (shell header) | Always visible. Shows current active profile (avatar + name). Tap opens profile grid overlay.                           |
+| **Inactivity timeout**         | Deactivates personal profile, returns to family dashboard. Next interaction uses family dashboard or switches via chip. |
 
 There is no lock screen. The tablet does not gate access; it offers personalization.
 
@@ -368,13 +400,13 @@ Six named sizes. Plugin manifests declare these by name; the shell translates to
 React Grid Layout `{ w, h }` values internally.
 
 | Named size | `w` | `h` | ~Dimensions |
-|------------|-----|-----|-------------|
-| `compact` | 1 | 1 | 253×180px |
-| `standard` | 2 | 1 | 522×180px |
-| `tall` | 1 | 2 | 253×376px |
-| `large` | 2 | 2 | 522×376px |
-| `banner` | 4 | 1 | 1060×180px |
-| `full` | 4 | 4 | 1060×760px |
+| ---------- | --- | --- | ----------- |
+| `compact`  | 1   | 1   | 253×180px   |
+| `standard` | 2   | 1   | 522×180px   |
+| `tall`     | 1   | 2   | 253×376px   |
+| `large`    | 2   | 2   | 522×376px   |
+| `banner`   | 4   | 1   | 1060×180px  |
+| `full`     | 4   | 4   | 1060×760px  |
 
 ### Widget registration
 
@@ -414,11 +446,11 @@ Exact schema deferred to the M1 implementation session.
 
 **Edit rights:**
 
-| Tier | Own layout | Others' layouts |
-|------|-----------|-----------------|
-| 1–2 | No | No |
-| 3 | Yes | No |
-| 4 | Yes | Any family member |
+| Tier | Own layout | Others' layouts   |
+| ---- | ---------- | ----------------- |
+| 1–2  | No         | No                |
+| 3    | Yes        | No                |
+| 4    | Yes        | Any family member |
 
 New users seeded with a tier-appropriate default layout from platform config.
 See [Home Surface](#home-surface) for the actual default layout definitions (ADR 028).
@@ -450,11 +482,11 @@ queries to adapt to their actual rendered size.
 └──────────────────────┴──────────────────────┘
 ```
 
-| `widgetId` | x | y | w | h |
-|-----------|---|---|---|---|
-| `family-feed.feed` | 0 | 0 | 4 | 1 |
-| `chores.today-summary` | 0 | 1 | 2 | 1 |
-| `calendar.today` | 2 | 1 | 2 | 1 |
+| `widgetId`             | x   | y   | w   | h   |
+| ---------------------- | --- | --- | --- | --- |
+| `family-feed.feed`     | 0   | 0   | 4   | 1   |
+| `chores.today-summary` | 0   | 1   | 2   | 1   |
+| `calendar.today`       | 2   | 1   | 2   | 1   |
 
 **Tiers 1–2** (child profiles — chores-first):
 
@@ -466,11 +498,11 @@ queries to adapt to their actual rendered size.
 └──────────────────┴───────────────────────────┘
 ```
 
-| `widgetId` | x | y | w | h |
-|-----------|---|---|---|---|
-| `chores.today-summary` | 0 | 0 | 2 | 2 |
-| `family-feed.feed` | 2 | 0 | 2 | 1 |
-| `calendar.today` | 2 | 1 | 2 | 1 |
+| `widgetId`             | x   | y   | w   | h   |
+| ---------------------- | --- | --- | --- | --- |
+| `chores.today-summary` | 0   | 0   | 2   | 2   |
+| `family-feed.feed`     | 2   | 0   | 2   | 1   |
+| `calendar.today`       | 2   | 1   | 2   | 1   |
 
 **Tiers 3–4** (parent/teen profiles — calendar-first):
 
@@ -482,11 +514,11 @@ queries to adapt to their actual rendered size.
 └──────────────────┴───────────────────────────┘
 ```
 
-| `widgetId` | x | y | w | h |
-|-----------|---|---|---|---|
-| `calendar.today` | 0 | 0 | 2 | 2 |
-| `family-feed.feed` | 2 | 0 | 2 | 1 |
-| `chores.today-summary` | 2 | 1 | 2 | 1 |
+| `widgetId`             | x   | y   | w   | h   |
+| ---------------------- | --- | --- | --- | --- |
+| `calendar.today`       | 0   | 0   | 2   | 2   |
+| `family-feed.feed`     | 2   | 0   | 2   | 1   |
+| `chores.today-summary` | 2   | 1   | 2   | 1   |
 
 These are initial defaults, expected to be tuned once real content is rendering and
 interaction patterns are established post-M1 build-out.
@@ -544,12 +576,12 @@ platform.notify({
 - Max 3 visible simultaneously; additional notifications queue
 - Anatomy: icon + title + optional body + optional action link + dismiss button
 
-| Variant | Auto-dismiss | Notes |
-|---------|-------------|-------|
-| `success` | 3s | |
-| `info` | 5s | |
-| `warning` | 8s | User-dismissable |
-| `error` | Persistent | Must be explicitly dismissed |
+| Variant   | Auto-dismiss | Notes                        |
+| --------- | ------------ | ---------------------------- |
+| `success` | 3s           |                              |
+| `info`    | 5s           |                              |
+| `warning` | 8s           | User-dismissable             |
+| `error`   | Persistent   | Must be explicitly dismissed |
 
 All tiers receive toasts for modules they can access.
 
@@ -563,14 +595,14 @@ the main content dims behind it; the layout does not shift.
 - **Badge:** unread count pill on the bell icon
 - **Badge color:** `max(severity)` across all unread notifications:
 
-| Max unread severity | Badge color |
-|--------------------|-------------|
-| `success` or `info` | `--accent` (teal) — all calm |
-| `warning` | `--warning` (amber) — attention soon |
-| `error` / `alert` | `--error` (red) — act now |
+| Max unread severity | Badge color                          |
+| ------------------- | ------------------------------------ |
+| `success` or `info` | `--accent` (teal) — all calm         |
+| `warning`           | `--warning` (amber) — attention soon |
+| `error` / `alert`   | `--error` (red) — act now            |
 
-  Badge color re-evaluates whenever the unread set changes. Opening the
-  tray marks all items as read and resets the badge.
+Badge color re-evaluates whenever the unread set changes. Opening the
+tray marks all items as read and resets the badge.
 
 - **Tray panel:** notification list, newest first. Each item: module icon +
   title + optional body + relative timestamp + variant color indicator.
@@ -578,11 +610,11 @@ the main content dims behind it; the layout does not shift.
 
 ### Web Push routing
 
-| Tier | Behavior |
-|------|----------|
-| Tier 4 | Web Push on by default for `priority: 'alert'` notifications |
-| Tier 3 | Web Push opt-in per profile; `priority: 'alert'` only |
-| Tier 1–2 | No Web Push |
+| Tier     | Behavior                                                     |
+| -------- | ------------------------------------------------------------ |
+| Tier 4   | Web Push on by default for `priority: 'alert'` notifications |
+| Tier 3   | Web Push opt-in per profile; `priority: 'alert'` only        |
+| Tier 1–2 | No Web Push                                                  |
 
 `priority: 'info'` never triggers Web Push regardless of tier.
 Opt-in preference stored as a boolean per profile in platform settings.
@@ -644,10 +676,10 @@ All empty states share the same structure:
 
 ### Copy tone
 
-| Tier | Tone | Example (no chores) |
-|------|------|---------------------|
-| 1 | Warm, encouraging | "All done!" / "Nothing today!" |
-| 2+ | Neutral, functional | "No tasks scheduled" |
+| Tier | Tone                | Example (no chores)            |
+| ---- | ------------------- | ------------------------------ |
+| 1    | Warm, encouraging   | "All done!" / "Nothing today!" |
+| 2+   | Neutral, functional | "No tasks scheduled"           |
 
 Modules write two copy variants — one for tier 1, one for tier 2+.
 The CTA is always wrapped in `PermissionGate` — if the profile cannot
@@ -677,32 +709,32 @@ This is non-negotiable — every animated property must be wrapped in a
 ### Duration tokens
 
 ```css
---duration-fast:   100ms;   /* micro-interactions: button press, toggle */
---duration-normal: 200ms;   /* standard transitions: toast, fade, badge */
---duration-slow:   300ms;   /* larger surfaces: tray panel, profile overlay */
+--duration-fast: 100ms; /* micro-interactions: button press, toggle */
+--duration-normal: 200ms; /* standard transitions: toast, fade, badge */
+--duration-slow: 300ms; /* larger surfaces: tray panel, profile overlay */
 ```
 
 ### Easing tokens
 
 ```css
---ease-out:    cubic-bezier(0, 0, 0.2, 1);     /* elements appearing */
---ease-in:     cubic-bezier(0.4, 0, 1, 1);     /* elements leaving */
---ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);   /* position/size transforms */
+--ease-out: cubic-bezier(0, 0, 0.2, 1); /* elements appearing */
+--ease-in: cubic-bezier(0.4, 0, 1, 1); /* elements leaving */
+--ease-in-out: cubic-bezier(0.4, 0, 0.2, 1); /* position/size transforms */
 ```
 
 ### Transition patterns
 
-| Pattern | Duration | Easing | Notes |
-|---------|----------|--------|-------|
-| Button press | `--duration-fast` | `--ease-out` | Scale 0.97, color unchanged |
-| Toggle / checkbox | `--duration-fast` | `--ease-out` | Color/fill only |
-| Toast appear | `--duration-normal` | `--ease-out` | Slide up + fade in |
-| Toast dismiss | `--duration-fast` | `--ease-in` | Fade out only, no slide |
-| Notification tray open/close | `--duration-slow` | `--ease-in-out` | Slide in from right |
-| Profile grid overlay | `--duration-slow` | `--ease-out` | Fade in + backdrop blur |
-| Route transition | `--duration-normal` | `--ease-in-out` | Fade only, no slide |
-| Bell badge update | `--duration-fast` | `--ease-out` | Scale pulse 1.0→1.15→1.0 |
-| Widget mount (M1) | None | — | No animation on initial grid render |
+| Pattern                      | Duration            | Easing          | Notes                               |
+| ---------------------------- | ------------------- | --------------- | ----------------------------------- |
+| Button press                 | `--duration-fast`   | `--ease-out`    | Scale 0.97, color unchanged         |
+| Toggle / checkbox            | `--duration-fast`   | `--ease-out`    | Color/fill only                     |
+| Toast appear                 | `--duration-normal` | `--ease-out`    | Slide up + fade in                  |
+| Toast dismiss                | `--duration-fast`   | `--ease-in`     | Fade out only, no slide             |
+| Notification tray open/close | `--duration-slow`   | `--ease-in-out` | Slide in from right                 |
+| Profile grid overlay         | `--duration-slow`   | `--ease-out`    | Fade in + backdrop blur             |
+| Route transition             | `--duration-normal` | `--ease-in-out` | Fade only, no slide                 |
+| Bell badge update            | `--duration-fast`   | `--ease-out`    | Scale pulse 1.0→1.15→1.0            |
+| Widget mount (M1)            | None                | —               | No animation on initial grid render |
 
 ### Prohibition list — M1
 
@@ -723,11 +755,12 @@ timing values.
 
 ```ts
 // Plugins import from shared platform packages only
-import { Button, Card, TierGate, PermissionGate } from '@family-os/ui';
-import { useAuth, useTier, usePermissions }        from '@family-os/platform';
+import { Button, Card, TierGate, PermissionGate } from '@family-os/ui'
+import { useAuth, useTier, usePermissions } from '@family-os/platform'
 ```
 
 Plugins must not:
+
 - Import from the shell or other plugins directly
 - Hardcode color values — use CSS custom property tokens
 - Use media queries for layout — use CSS container queries
@@ -735,8 +768,8 @@ Plugins must not:
 **CSS setup for first-party plugins** (monorepo):
 
 ```css
-@import "tailwindcss";
-@import "@family-os/ui/styles.css";
+@import 'tailwindcss';
+@import '@family-os/ui/styles.css';
 ```
 
 This gives the plugin the full token set and Tailwind utility classes
@@ -757,8 +790,8 @@ Every export is a commitment plugins can depend on.
 
 ## To Be Defined
 
-| Item | Deferred to |
-|------|------------|
-| Mobile surface layout | M1+ design session |
-| TV ambient layout | M4+ design session |
+| Item                   | Deferred to        |
+| ---------------------- | ------------------ |
+| Mobile surface layout  | M1+ design session |
+| TV ambient layout      | M4+ design session |
 | Pi room display layout | M4+ design session |

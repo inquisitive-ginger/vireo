@@ -31,7 +31,7 @@ export interface SettingsLayoutProps {
 export function SettingsLayout({ children }: SettingsLayoutProps) {
   return (
     <div className="p-8 max-w-2xl">
-      <h1 className="text-2xl font-semibold tracking-tight mb-7">Settings</h1>
+      <h1 className="text-page-title mb-7">Settings</h1>
       <div className="flex flex-col gap-5">{children}</div>
     </div>
   )

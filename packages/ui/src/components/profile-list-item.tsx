@@ -17,7 +17,7 @@ export function ProfileListItem({ name, tier, isLast, onEdit, onRemove }: Profil
   return (
     <div className={cn('flex items-center gap-4 px-6 py-4', !isLast && 'border-b border-border')}>
       <ProfileAvatar name={name} size="md" />
-      <span className="flex-1 text-[15px] font-semibold">{name}</span>
+      <span className="flex-1 text-card-title">{name}</span>
       <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-secondary text-muted-foreground tracking-[0.03em]">
         Tier {tier}
       </span>

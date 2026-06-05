@@ -455,7 +455,7 @@ function OnboardingFlow({ initialStep }: { initialStep: Step }) {
             <p className="text-xs text-muted-foreground uppercase tracking-widest font-semibold mb-1.5">
               Step {step} of 3
             </p>
-            <h2 className="text-xl font-semibold">{STEP_META[step].title}</h2>
+            <h2 className="text-heading">{STEP_META[step].title}</h2>
             <p className="text-sm text-muted-foreground mt-1">{STEP_META[step].sub}</p>
           </div>
           <StepDots current={step} />

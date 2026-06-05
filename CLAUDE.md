@@ -19,8 +19,8 @@ with the family that runs it. See [`docs/vision.md`](docs/vision.md).
 
 - **Milestone:** M1 — Platform Shell (in progress)
 - **Active stories:** None
-- **Last session:** 2026-06-07 — Audit: cross-document consistency check (packages/schemas added to architecture.md, e2e milestone corrected, permission-overrides notes clarified, test addendum pattern documented)
-- **Next session:** M1 Dev: settings-permissions (see queue)
+- **Last session:** 2026-06-08 — Design: typography scale locked (11 tokens, major 2nd, Lora for page-title + display tokens, token utilities in styles.css, all components updated)
+- **Next session:** Delete `typography.playground.stories.tsx`, then M1 Dev: settings-permissions (see queue)
 
 > Update this section at the end of every session.
 
