@@ -19,7 +19,7 @@ with the family that runs it. See [`docs/vision.md`](docs/vision.md).
 
 - **Milestone:** M1 — Platform Shell (in progress)
 - **Active stories:** None
-- **Last session:** 2026-06-06 — M1 Dev: profile-management (Settings page, profile CRUD, family PIN reset, ProfileGrid, RequireTier4 route guard, optimistic appearance toggle)
+- **Last session:** 2026-06-07 — Audit: cross-document consistency check (packages/schemas added to architecture.md, e2e milestone corrected, permission-overrides notes clarified, test addendum pattern documented)
 - **Next session:** M1 Dev: settings-permissions (see queue)
 
 > Update this section at the end of every session.

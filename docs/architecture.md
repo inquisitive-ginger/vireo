@@ -1,6 +1,6 @@
 # Architecture
 
-> Last updated: 2026-06-01 — plugin-loader (registry, Module Federation, dynamic routing, error boundaries).
+> Last updated: 2026-06-07 — packages/schemas added; packages/e2e creation milestone corrected.
 
 ---
 
@@ -406,8 +406,9 @@ Effective ability = `createAbility(profile, overrides)` — tier baseline rules 
 
 ```
 packages/
+  schemas/        — shared Zod v4 schemas; consumed by shell, API, and plugins
   test-utils/     — shared test helpers, factories, doubles
-  e2e/            — Playwright specs (created at M1)
+  e2e/            — Playwright specs (created in M0 shell-skeleton)
   ui/
     .storybook/   — Storybook config
     src/**/*.stories.tsx
