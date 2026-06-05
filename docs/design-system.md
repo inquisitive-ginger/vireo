@@ -1,6 +1,6 @@
 # Design System
 
-> Last updated: 2026-06-03 — palette refinement and token migration.
+> Last updated: 2026-06-04 — notification system, error states, empty states, motion tokens.
 
 This document records settled design decisions. Deferred items are
 explicitly marked — do not treat absence of a spec as a free choice.
@@ -19,6 +19,10 @@ explicitly marked — do not treat absence of a spec as a free choice.
 - [Tablet Nav Layout](#tablet-nav-layout)
 - [Widget Composition System](#widget-composition-system)
 - [Home Surface](#home-surface)
+- [Notification System](#notification-system)
+- [Error States](#error-states)
+- [Empty States](#empty-states)
+- [Motion & Animation](#motion--animation)
 - [Plugin Design Contract](#plugin-design-contract)
 - [To Be Defined](#to-be-defined)
 
@@ -510,6 +514,207 @@ no interactive affordances distinguish it visually from active widgets.
 
 ---
 
+## Notification System
+
+**Settled** — see ADR 029. Implementation is M1.
+
+### Delivery model
+
+All notifications flow through `platform.notify()`. Plugins never render
+their own toasts, trays, or push payloads. The platform routes each
+notification to the appropriate channel based on `priority` and the
+active profile's tier.
+
+```typescript
+platform.notify({
+  title: string,
+  body?: string,
+  variant: 'success' | 'info' | 'warning' | 'error',
+  priority?: 'info' | 'alert',  // default: 'info'
+  actions?: Array<{ label: string; href: string }>
+})
+```
+
+### Toast
+
+- Component: Sonner (shadcn/ui toast primitive)
+- Position: bottom-right on tablet
+- Max 3 visible simultaneously; additional notifications queue
+- Anatomy: icon + title + optional body + optional action link + dismiss button
+
+| Variant | Auto-dismiss | Notes |
+|---------|-------------|-------|
+| `success` | 3s | |
+| `info` | 5s | |
+| `warning` | 8s | User-dismissable |
+| `error` | Persistent | Must be explicitly dismissed |
+
+All tiers receive toasts for modules they can access.
+
+### Notification tray
+
+A bell icon in the sidebar, between the nav items and the Settings entry.
+Tapping it opens a panel that slides in from the right as an overlay —
+the main content dims behind it; the layout does not shift.
+
+- **Visible to:** tier 2+ only (tier 1 has no notification history to review)
+- **Badge:** unread count pill on the bell icon
+- **Badge color:** `max(severity)` across all unread notifications:
+
+| Max unread severity | Badge color |
+|--------------------|-------------|
+| `success` or `info` | `--accent` (teal) — all calm |
+| `warning` | `--warning` (amber) — attention soon |
+| `error` / `alert` | `--error` (red) — act now |
+
+  Badge color re-evaluates whenever the unread set changes. Opening the
+  tray marks all items as read and resets the badge.
+
+- **Tray panel:** notification list, newest first. Each item: module icon +
+  title + optional body + relative timestamp + variant color indicator.
+- **History:** last 50 notifications retained per user; older items pruned.
+
+### Web Push routing
+
+| Tier | Behavior |
+|------|----------|
+| Tier 4 | Web Push on by default for `priority: 'alert'` notifications |
+| Tier 3 | Web Push opt-in per profile; `priority: 'alert'` only |
+| Tier 1–2 | No Web Push |
+
+`priority: 'info'` never triggers Web Push regardless of tier.
+Opt-in preference stored as a boolean per profile in platform settings.
+
+---
+
+## Error States
+
+**Settled** — Notification & States design session, 2026-06-04.
+
+### Level 1 — Inline (form / field validation)
+
+- `--error`-colored text below the input field, DM Sans 14px
+- Lucide `CircleAlert` (14px) inline-start of the error text
+- Input border and ring shift to `--error`
+- Never use error color text alone without the icon (accessibility)
+
+### Level 2 — Component (widget / section error boundary)
+
+When a widget's error boundary catches or a plugin's remote entry fails
+to load, the widget slot renders a muted error card in the same `{w, h}`:
+
+- Background: `--muted`
+- Icon: Lucide `AlertTriangle`, 24px, `--muted-foreground`
+- Copy: "[Module Name] couldn't load"
+- Retry button: text variant, `--muted-foreground` — triggers a remount
+- Visually calm — no red on the home surface. Distinguished from the
+  placeholder card (not-installed) by the warning icon.
+
+### Level 3 — Page / route error (404, 500)
+
+Centered in the main content area. Not full-screen red.
+
+- Icon: Lucide icon appropriate to the error type, 40px, `--muted-foreground`
+- Heading: Lora — "Page not found" / "Something went wrong"
+- Body: DM Sans, `--muted-foreground`, one line
+- Action: Back button (404) or Retry link (500)
+
+---
+
+## Empty States
+
+**Settled** — Notification & States design session, 2026-06-04.
+
+### Anatomy
+
+All empty states share the same structure:
+
+```
+     [Lucide icon — 40px, --muted-foreground]
+
+       Nothing scheduled today          ← Lora, --foreground
+     Your calendar is clear.            ← DM Sans, --muted-foreground
+                                          optional, max 2 lines
+
+         [ + Add Event ]                ← PermissionGate-wrapped
+                                          omitted entirely if can() = false
+```
+
+### Copy tone
+
+| Tier | Tone | Example (no chores) |
+|------|------|---------------------|
+| 1 | Warm, encouraging | "All done!" / "Nothing today!" |
+| 2+ | Neutral, functional | "No tasks scheduled" |
+
+Modules write two copy variants — one for tier 1, one for tier 2+.
+The CTA is always wrapped in `PermissionGate` — if the profile cannot
+create, the button is absent entirely (no locked/disabled state).
+
+### Rules
+
+- Empty states are informational, never apologetic
+- The icon must represent the module/category — not a generic empty box
+- No animated illustrations in M1
+
+---
+
+## Motion & Animation
+
+**Settled** — Notification & States design session, 2026-06-04.
+
+### Principle
+
+Motion should orient, confirm, or communicate — never decorate. If
+removing an animation would not confuse the user, it should not be there.
+
+`prefers-reduced-motion: reduce` disables all transitions and animations.
+This is non-negotiable — every animated property must be wrapped in a
+`@media (prefers-reduced-motion: no-preference)` guard or equivalent.
+
+### Duration tokens
+
+```css
+--duration-fast:   100ms;   /* micro-interactions: button press, toggle */
+--duration-normal: 200ms;   /* standard transitions: toast, fade, badge */
+--duration-slow:   300ms;   /* larger surfaces: tray panel, profile overlay */
+```
+
+### Easing tokens
+
+```css
+--ease-out:    cubic-bezier(0, 0, 0.2, 1);     /* elements appearing */
+--ease-in:     cubic-bezier(0.4, 0, 1, 1);     /* elements leaving */
+--ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);   /* position/size transforms */
+```
+
+### Transition patterns
+
+| Pattern | Duration | Easing | Notes |
+|---------|----------|--------|-------|
+| Button press | `--duration-fast` | `--ease-out` | Scale 0.97, color unchanged |
+| Toggle / checkbox | `--duration-fast` | `--ease-out` | Color/fill only |
+| Toast appear | `--duration-normal` | `--ease-out` | Slide up + fade in |
+| Toast dismiss | `--duration-fast` | `--ease-in` | Fade out only, no slide |
+| Notification tray open/close | `--duration-slow` | `--ease-in-out` | Slide in from right |
+| Profile grid overlay | `--duration-slow` | `--ease-out` | Fade in + backdrop blur |
+| Route transition | `--duration-normal` | `--ease-in-out` | Fade only, no slide |
+| Bell badge update | `--duration-fast` | `--ease-out` | Scale pulse 1.0→1.15→1.0 |
+| Widget mount (M1) | None | — | No animation on initial grid render |
+
+### Prohibition list — M1
+
+- No page slide animations (tablet is not a phone)
+- No spring physics
+- No stagger animations on list items
+- No entrance animations on initial widget grid render
+- No parallax or decorative movement
+
+Plugins must use the duration and easing tokens above — never hardcode
+timing values.
+
+---
+
 ## Plugin Design Contract
 
 **Settled** — see ADR 014.
@@ -552,10 +757,7 @@ Every export is a commitment plugins can depend on.
 
 | Item | Deferred to |
 |------|------------|
-| Motion and animation | M1 Notification & States design session |
 | Manual dark mode toggle | M1 |
 | Mobile surface layout | M1+ design session |
 | TV ambient layout | M4+ design session |
 | Pi room display layout | M4+ design session |
-| Notification and alert patterns | M1 design session |
-| Error and empty states | M1 design session |

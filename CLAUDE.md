@@ -19,8 +19,8 @@ with the family that runs it. See [`docs/vision.md`](docs/vision.md).
 
 - **Milestone:** M1 — Platform Shell (not started)
 - **Active stories:** None — awaiting first M1 planning session
-- **Last session:** 2026-06-03 — Home Surface Design (default layouts, module reservation, placeholder state, Family Feed widget spec)
-- **Next session:** Notification & States Design (includes motion/animation; see queue)
+- **Last session:** 2026-06-04 — Notification & States Design (toast + tray model, bell badge severity, platform.notify API, error states, empty states, motion tokens)
+- **Next session:** M1 Product Planning (now unblocked; see queue)
 
 > Update this section at the end of every session.
 
