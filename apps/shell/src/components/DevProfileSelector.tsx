@@ -37,6 +37,7 @@ export function DevProfileSelector() {
       return
     }
 
+    queryClient.removeQueries({ queryKey: ['api/home/layout', targetProfileId] })
     await queryClient.invalidateQueries({ queryKey: ['api/auth/me'] })
   }
 
@@ -44,7 +45,9 @@ export function DevProfileSelector() {
 
   return (
     <div className="px-4 py-2 border-t border-border">
-      <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-1">Dev: Profile</p>
+      <p className="text-[10px] font-semibold uppercase tracking-widest text-muted-foreground mb-1">
+        Dev: Profile
+      </p>
       <select
         className="w-full text-xs bg-background border border-border rounded px-2 py-1"
         value={activeId}

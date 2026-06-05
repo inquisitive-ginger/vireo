@@ -38,6 +38,7 @@ export function Home() {
     queryKey: ['api/home/layout', profileId],
     queryFn: () => fetch('/api/home/layout').then((r) => r.json()) as Promise<WidgetLayoutItem[]>,
     staleTime: 5 * 60 * 1000,
+    enabled: !!profileId,
   })
 
   const { data: plugins } = useQuery<RegistryEntry[]>({

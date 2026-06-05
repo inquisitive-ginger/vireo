@@ -17,7 +17,7 @@ type AuthContextValue = {
 
 export const AuthContext = createContext<AuthContextValue | null>(null)
 
-const FAMILY_FALLBACK: AuthUser = { id: 'family', name: 'Family', tier: 1 }
+const FAMILY_FALLBACK: AuthUser = { id: '', name: 'Family', tier: 1 }
 
 export function useAuthContext(): AuthContextValue {
   const ctx = useContext(AuthContext)
@@ -39,22 +39,17 @@ function AuthLoader({ children, queryClient }: { children: ReactNode; queryClien
 
   useEffect(() => {
     const root = document.documentElement
-    if (user.darkMode === true)  root.setAttribute('data-theme', 'dark')
+    if (user.darkMode === true) root.setAttribute('data-theme', 'dark')
     else if (user.darkMode === false) root.setAttribute('data-theme', 'light')
     else root.removeAttribute('data-theme')
   }, [user.darkMode])
 
-  const ability = useMemo(
-    () => createPrismaAbility<AppAbility>(data?.rules ?? []),
-    [data?.rules],
-  )
+  const ability = useMemo(() => createPrismaAbility<AppAbility>(data?.rules ?? []), [data?.rules])
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ['api/auth/me'] })
 
   return (
-    <AuthContext.Provider value={{ user, ability, invalidate }}>
-      {children}
-    </AuthContext.Provider>
+    <AuthContext.Provider value={{ user, ability, invalidate }}>{children}</AuthContext.Provider>
   )
 }
 
