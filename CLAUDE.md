@@ -17,10 +17,10 @@ with the family that runs it. See [`docs/vision.md`](docs/vision.md).
 
 ## Current Status
 
-- **Milestone:** M1 — Platform Shell (not started)
-- **Active stories:** None — awaiting first M1 planning session
-- **Last session:** 2026-06-04 — Notification & States Design (toast + tray model, bell badge severity, platform.notify API, error states, empty states, motion tokens)
-- **Next session:** M1 Product Planning (now unblocked; see queue)
+- **Milestone:** M1 — Platform Shell (in progress — stories defined)
+- **Active stories:** None — first implementation session is home-surface
+- **Last session:** 2026-06-04 — M1 Product Planning (9 stories defined across platform and family-feed modules; React Hook Form + Zod settled as form library)
+- **Next session:** M1 Dev: home-surface (see queue)
 
 > Update this section at the end of every session.
 

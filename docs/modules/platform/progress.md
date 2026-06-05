@@ -2,11 +2,19 @@
 
 ---
 
-## M1 — Platform Shell · Not Started
+## M1 — Platform Shell · 🔄 In Progress
 
 > **Milestone done when:** A family can set up the system, see a meaningful home screen, and post to a shared feed.
 
-_Stories to be defined in the M1 Product Planning session._
+| Story | Status | Notes |
+|-------|--------|-------|
+| [Home Surface](stories/home-surface.md) | ⬜ Not Started | Dependency for family-feed-read |
+| [Family Onboarding](stories/family-onboarding.md) | ⬜ Not Started | Scaffolds `packages/schemas` |
+| [Profile Management](stories/profile-management.md) | ⬜ Not Started | |
+| [Permission Overrides](stories/permission-overrides.md) | ⬜ Not Started | Depends on profile-management |
+| [Notification Infrastructure](stories/notification-infrastructure.md) | ⬜ Not Started | |
+| [PWA Installable](stories/pwa-installable.md) | ⬜ Not Started | |
+| [Web Push](stories/web-push.md) | ⬜ Not Started | Depends on notification-infrastructure + pwa-installable |
 
 ---
 

@@ -7,24 +7,67 @@
 
 ## Up Next
 
-1. **Notification & States Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
-   Notification and alert patterns (Web Push, in-app toasts, badge counts),
-   error states, empty states, and motion/animation (transitions, timing, easing — per
-   "calm by default" principle). Required before M2 Chores implementation.
-   _Reads:_ `docs/design-system.md` (post Visual Language), running M0 shell
-   _Produces:_ Updated `docs/design-system.md` with notification, error, empty state, and motion specs
+1. **M1 Dev: home-surface** ![Type](https://img.shields.io/badge/Type-Development-orange)
+   Widget grid implementation: React Grid Layout static mode, default layouts seeded per tier, reserved slot placeholder cards, motion tokens, dark mode toggle, E2E scaffold.
+   _Reads:_ `docs/modules/platform/stories/home-surface.md`, `docs/design-system.md` (Widget Composition System, Home Surface)
+   _Produces:_ Working widget grid on home screen; `packages/e2e` scaffold; `WidgetGrid`, `WidgetSlot`, `PlaceholderCard` in `packages/ui`
 
-2. **M1 Product Planning** ![Type](https://img.shields.io/badge/Type-Planning-orange)
-   Break M1 roadmap scope into implementation stories. Blocked on item 1
-   (notification/states/motion design must be settled first).
-   _Reads:_ `docs/roadmap.md`, `docs/design-system.md` (post items 1–2), `docs/architecture.md`,
-   `docs/modules/platform/progress.md`, all completed session logs
-   _Produces:_ `docs/modules/platform/progress.md` updated for M1, M1 story specs under
-   `docs/modules/platform/stories/`
+2. **M1 Dev: family-onboarding** ![Type](https://img.shields.io/badge/Type-Development-orange)
+   First-run setup flow: create profiles, set family PIN, `db:reset` script.
+   _Reads:_ `docs/modules/platform/stories/family-onboarding.md`, `docs/design-system.md` (Login / Profile Switch, PIN Entry)
+   _Produces:_ `/onboarding` route; `packages/schemas` scaffold; `ProfileAvatar` in `packages/ui`
+
+3. **M1 Dev: profile-management** ![Type](https://img.shields.io/badge/Type-Development-orange)
+   Settings page for profile CRUD and family PIN reset.
+   _Reads:_ `docs/modules/platform/stories/profile-management.md`
+   _Produces:_ Settings route; `SettingsLayout`, `ProfileListItem`, `ConfirmDialog` in `packages/ui`
+
+4. **M1 Dev: permission-overrides** ![Type](https://img.shields.io/badge/Type-Development-orange)
+   Per-profile capability grants and revocations.
+   _Reads:_ `docs/modules/platform/stories/permission-overrides.md`
+   _Produces:_ Capabilities panel; `PermissionToggleList`, `PermissionToggleItem` in `packages/ui`
+
+5. **M1 Dev: notification-infrastructure** ![Type](https://img.shields.io/badge/Type-Development-orange)
+   `platform.notify()` API, Sonner toast, notification tray, bell badge.
+   _Reads:_ `docs/modules/platform/stories/notification-infrastructure.md`, `docs/design-system.md` (Notification System)
+   _Produces:_ `platform.notify()` in `@family-os/platform`; `Toast`, `NotificationTray`, `NotificationItem`, `BellBadge` in `packages/ui`
+
+6. **M1 Dev: pwa-installable** ![Type](https://img.shields.io/badge/Type-Development-orange)
+   Web app manifest, service worker, installable PWA.
+   _Reads:_ `docs/modules/platform/stories/pwa-installable.md`
+   _Produces:_ Installable PWA on Android Chrome
+
+7. **M1 Dev: web-push** ![Type](https://img.shields.io/badge/Type-Development-orange)
+   Web Push subscription and delivery from `platform.notify()`.
+   _Reads:_ `docs/modules/platform/stories/web-push.md`
+   _Produces:_ Push notification delivery for tier 3–4 profiles
+
+8. **M1 Dev: family-feed-read** ![Type](https://img.shields.io/badge/Type-Development-orange)
+   Family Feed plugin: scaffold, data model, read API, widget, feed view.
+   _Reads:_ `docs/modules/family-feed/stories/family-feed-read.md`, `docs/modules/family-feed/spec.md`
+   _Produces:_ Family Feed plugin installed and rendering; `FeedPostCard`, `FeedEmptyState` in `packages/ui`
+
+9. **M1 Dev: family-feed-compose** ![Type](https://img.shields.io/badge/Type-Development-orange)
+   Compose form, create post API, permission registration.
+   _Reads:_ `docs/modules/family-feed/stories/family-feed-compose.md`
+   _Produces:_ Post creation flow; `ComposeForm` in `packages/ui`; `family-feed.post.create` in `PERMISSION_REGISTRY`
+
+10. **Mobile Surface Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
+    Mobile layout and nav design for the PWA. Deferred from M1 design sessions — required before mobile surface implementation can begin.
+    _Reads:_ `docs/design-system.md` (Surfaces — Other Surfaces), `docs/modules/platform/stories/pwa-installable.md`
+    _Produces:_ Updated `docs/design-system.md` with mobile surface spec
 
 ---
 
 ## Recently Completed
+
+- **2026-06-04 — M1 Product Planning** ![Type](https://img.shields.io/badge/Type-Planning-orange)
+  9 stories defined across `platform` and `family-feed` modules. Form library settled: React Hook Form + Zod with `packages/schemas` for shared schemas. Dark mode toggle scoped to all tiers. Queue updated with M1 implementation sessions.
+  _See:_ `docs/sessions/logs/2026-06-04-product-m1.md`
+
+- **2026-06-04 — Notification & States Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
+  Notification and alert patterns (toast + tray model, bell badge severity, `platform.notify()` API), error states (three levels), empty states (anatomy + tier-aware copy tone), and motion tokens (duration + easing tokens, M1 prohibition list).
+  _See:_ `docs/sessions/logs/2026-06-04-design-notifications-states.md`
 
 - **2026-06-03 — Home Surface Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
   Three-bucket default layouts (family pseudo-profile, tiers 1–2, tiers 3–4) with Chores/Calendar as the dominant widget per tier. Family Feed, Chores, Calendar reserved in all layouts; uninstalled slots render a muted placeholder card. Family Feed widget spec: `standard`/`large`/`banner`, text-only MVP, compose gated by write permission.
