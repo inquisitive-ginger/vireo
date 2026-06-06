@@ -1,4 +1,4 @@
-import { createPortal } from 'react-dom'
+import * as AlertDialog from '@radix-ui/react-alert-dialog'
 import { Button } from './button'
 
 export interface ConfirmDialogProps {
@@ -20,48 +20,41 @@ export function ConfirmDialog({
   onCancel,
   isPending,
 }: ConfirmDialogProps) {
-  if (!open) return null
-
-  return createPortal(
-    <div
-      className="fixed inset-0 flex items-center justify-center z-50"
-      style={{ background: 'oklch(0.18 0.04 50 / 0.35)', backdropFilter: 'blur(3px)' }}
-      onClick={(e) => {
-        if (e.target === e.currentTarget) onCancel()
-      }}
-    >
-      <div
-        className="bg-background border border-border rounded-xl p-6 w-[340px]"
-        style={{ boxShadow: '0 12px 40px oklch(0.18 0.04 50 / 0.12)' }}
-        role="alertdialog"
-        aria-modal="true"
-        aria-labelledby="confirm-dialog-title"
-        aria-describedby="confirm-dialog-body"
-      >
-        <h3 id="confirm-dialog-title" className="text-card-title mb-2 text-foreground">
-          {title}
-        </h3>
-        <p
-          id="confirm-dialog-body"
-          className="text-[13px] text-muted-foreground leading-relaxed mb-5"
+  return (
+    <AlertDialog.Root open={open} onOpenChange={(isOpen) => !isOpen && onCancel()}>
+      <AlertDialog.Portal>
+        <AlertDialog.Overlay
+          className="fixed inset-0 z-50"
+          style={{ background: 'oklch(0.18 0.04 50 / 0.35)', backdropFilter: 'blur(3px)' }}
+        />
+        <AlertDialog.Content
+          className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 bg-background border border-border rounded-xl p-6 w-[340px] focus:outline-none"
+          style={{ boxShadow: '0 12px 40px oklch(0.18 0.04 50 / 0.12)' }}
+          onEscapeKeyDown={(e) => isPending && e.preventDefault()}
         >
-          {description}
-        </p>
-        <div className="flex gap-2 justify-end">
-          <Button variant="ghost" size="sm" onClick={onCancel} disabled={isPending}>
-            Cancel
-          </Button>
-          <Button
-            size="sm"
-            onClick={onConfirm}
-            disabled={isPending}
-            className="bg-destructive text-error-foreground hover:bg-destructive/90"
-          >
-            {confirmLabel}
-          </Button>
-        </div>
-      </div>
-    </div>,
-    document.body
+          <AlertDialog.Title className="text-card-title mb-2 text-foreground">
+            {title}
+          </AlertDialog.Title>
+          <AlertDialog.Description className="text-[13px] text-muted-foreground leading-relaxed mb-5">
+            {description}
+          </AlertDialog.Description>
+          <div className="flex gap-2 justify-end">
+            <AlertDialog.Cancel asChild>
+              <Button variant="ghost" size="sm" disabled={isPending}>
+                Cancel
+              </Button>
+            </AlertDialog.Cancel>
+            <Button
+              size="sm"
+              onClick={onConfirm}
+              disabled={isPending}
+              className="bg-destructive text-error-foreground hover:bg-destructive/90"
+            >
+              {confirmLabel}
+            </Button>
+          </div>
+        </AlertDialog.Content>
+      </AlertDialog.Portal>
+    </AlertDialog.Root>
   )
 }

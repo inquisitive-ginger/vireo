@@ -119,10 +119,12 @@ export const CustomLabels: Story = {
   },
 }
 
-// ─── Backdrop dismiss ─────────────────────────────────────────────────────────
+// ─── Escape key dismiss ───────────────────────────────────────────────────────
+// AlertDialog intentionally blocks backdrop-click dismissal for destructive
+// confirmations — Escape key is the explicit accessible dismissal path.
 
-export const BackdropDismiss: Story = {
-  name: 'Backdrop click dismisses',
+export const EscapeKeyDismiss: Story = {
+  name: 'Escape key dismisses',
   render: () => {
     function Demo() {
       const [open, setOpen] = useState(true)
@@ -134,7 +136,7 @@ export const BackdropDismiss: Story = {
               style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 12 }}
             >
               <p style={{ fontSize: 14, color: 'var(--muted-foreground)' }}>
-                Dismissed via backdrop click
+                Dismissed via Escape key
               </p>
               <Button
                 size="sm"
@@ -149,7 +151,7 @@ export const BackdropDismiss: Story = {
             </div>
           ) : (
             <p style={{ fontSize: 14, color: 'var(--muted-foreground)' }}>
-              Click outside the dialog to dismiss
+              Press Escape to dismiss
             </p>
           )}
           <ConfirmDialog

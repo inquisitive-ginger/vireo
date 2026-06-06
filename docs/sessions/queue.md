@@ -32,18 +32,13 @@
    _Reads:_ `docs/modules/family-feed/stories/family-feed-compose.md`
    _Produces:_ Post creation flow; `ComposeForm` in `packages/ui`; `family-feed.post.create` in `PERMISSION_REGISTRY`
 
-6. **M1 Dev: accessibility-radix-audit** ![Type](https://img.shields.io/badge/Type-Development-orange)
-   Audit `packages/ui` components and replace custom interactive implementations with Radix primitives where accessibility behavior (focus trap, Escape, ARIA state) was missed.
-   _Reads:_ `docs/modules/platform/stories/accessibility-radix-audit.md`
-   _Produces:_ `ConfirmDialog` on `@radix-ui/react-alert-dialog`; any other gaps resolved; Storybook stories updated
-
-7. **M1 Dev: appearance-preference-gate** ![Type](https://img.shields.io/badge/Type-Development-orange)
+6. **M1 Dev: appearance-preference-gate** ![Type](https://img.shields.io/badge/Type-Development-orange)
    Add `platform.preferences.appearance` to `PERMISSION_REGISTRY`; wrap the dark mode toggle in Settings with `PermissionGate` so parents can revoke appearance control for tier 2–3 profiles. Small addendum to the settings-permissions + permission-overrides work.
    _Surfaced in 2026-06-09 audit — deferred gap from settings-permissions story_
    _Reads:_ `docs/modules/platform/stories/settings-permissions.md`, `docs/modules/platform/stories/permission-overrides.md`
    _Produces:_ `platform.preferences.appearance` in `PERMISSION_REGISTRY`; Settings dark mode toggle gated by `PermissionGate`
 
-8. **Mobile Surface Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
+7. **Mobile Surface Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
    Mobile layout and nav design for the PWA. Deferred from M1 design sessions — required before mobile surface implementation can begin.
    _Reads:_ `docs/design-system.md` (Surfaces — Other Surfaces), `docs/modules/platform/stories/pwa-installable.md`
    _Produces:_ Updated `docs/design-system.md` with mobile surface spec
@@ -51,6 +46,10 @@
 ---
 
 ## Recently Completed
+
+- **2026-06-06 — M1 Dev: accessibility-radix-audit** ![Type](https://img.shields.io/badge/Type-Development-orange)
+  `ConfirmDialog` replaced with `@radix-ui/react-alert-dialog` (focus trap, Escape dismiss, scroll lock). Full audit confirmed `Drawer` and `Switch` were already on Radix. `PinInput` documented as Radix-exempt (numeric input mask, no open/closed/expanded state). `BackdropDismiss` story replaced with `EscapeKeyDismiss`.
+  _See:_ `docs/sessions/logs/2026-06-06-dev-accessibility-radix-audit.md`
 
 - **2026-06-06 — M1 Dev: permission-overrides** ![Type](https://img.shields.io/badge/Type-Development-orange)
   Drawer-based profile edit (autosave name, role buttons). `GET/POST/DELETE` override routes with CASL baseline merge. `Switch`, `Drawer`, `PermissionToggleItem`, `PermissionToggleList` in `packages/ui`. Last-admin guard (409). Tier change atomically clears overrides. React.memo + pendingKey fix for switch re-render. 79 API unit tests + 8 E2E tests. `dev/reset` now seeds layout config + family profile layout.
