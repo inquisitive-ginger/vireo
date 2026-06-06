@@ -7,42 +7,37 @@
 
 ## Up Next
 
-1. **M1 Dev: profile-management-tests** ![Type](https://img.shields.io/badge/Type-Development-orange)
-   E2E tests for profile-management flows (create/edit/delete profile, PIN reset, settings route guard). Also covers the three untested API endpoints from this session: `GET /auth/pin-exists`, `POST /auth/pin/check`, `PATCH /settings/family-name`.
-   _Reads:_ `docs/modules/platform/stories/profile-management.md`, `apps/api/src/plugins/profiles.ts`
-   _Produces:_ Playwright spec; 3 additional API integration tests
-
-2. **M1 Dev: permission-overrides** ![Type](https://img.shields.io/badge/Type-Development-orange)
+1. **M1 Dev: permission-overrides** ![Type](https://img.shields.io/badge/Type-Development-orange)
    Per-profile capability grants and revocations.
    _Reads:_ `docs/modules/platform/stories/permission-overrides.md`
    _Produces:_ Capabilities panel; `PermissionToggleList`, `PermissionToggleItem` in `packages/ui`
 
-3. **M1 Dev: notification-infrastructure** ![Type](https://img.shields.io/badge/Type-Development-orange)
+2. **M1 Dev: notification-infrastructure** ![Type](https://img.shields.io/badge/Type-Development-orange)
    `platform.notify()` API, Sonner toast, notification tray, bell badge.
    _Reads:_ `docs/modules/platform/stories/notification-infrastructure.md`, `docs/design-system.md` (Notification System)
    _Produces:_ `platform.notify()` in `@family-os/platform`; `Toast`, `NotificationTray`, `NotificationItem`, `BellBadge` in `packages/ui`
 
-4. **M1 Dev: pwa-installable** ![Type](https://img.shields.io/badge/Type-Development-orange)
+3. **M1 Dev: pwa-installable** ![Type](https://img.shields.io/badge/Type-Development-orange)
    Web app manifest, service worker, installable PWA.
    _Reads:_ `docs/modules/platform/stories/pwa-installable.md`
    _Produces:_ Installable PWA on Android Chrome
 
-5. **M1 Dev: web-push** ![Type](https://img.shields.io/badge/Type-Development-orange)
+4. **M1 Dev: web-push** ![Type](https://img.shields.io/badge/Type-Development-orange)
    Web Push subscription and delivery from `platform.notify()`.
    _Reads:_ `docs/modules/platform/stories/web-push.md`
    _Produces:_ Push notification delivery for tier 3–4 profiles
 
-6. **M1 Dev: family-feed-read** ![Type](https://img.shields.io/badge/Type-Development-orange)
+5. **M1 Dev: family-feed-read** ![Type](https://img.shields.io/badge/Type-Development-orange)
    Family Feed plugin: scaffold, data model, read API, widget, feed view.
    _Reads:_ `docs/modules/family-feed/stories/family-feed-read.md`, `docs/modules/family-feed/spec.md`
    _Produces:_ Family Feed plugin installed and rendering; `FeedPostCard`, `FeedEmptyState` in `packages/ui`
 
-7. **M1 Dev: family-feed-compose** ![Type](https://img.shields.io/badge/Type-Development-orange)
+6. **M1 Dev: family-feed-compose** ![Type](https://img.shields.io/badge/Type-Development-orange)
    Compose form, create post API, permission registration.
    _Reads:_ `docs/modules/family-feed/stories/family-feed-compose.md`
    _Produces:_ Post creation flow; `ComposeForm` in `packages/ui`; `family-feed.post.create` in `PERMISSION_REGISTRY`
 
-8. **Mobile Surface Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
+7. **Mobile Surface Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
    Mobile layout and nav design for the PWA. Deferred from M1 design sessions — required before mobile surface implementation can begin.
    _Reads:_ `docs/design-system.md` (Surfaces — Other Surfaces), `docs/modules/platform/stories/pwa-installable.md`
    _Produces:_ Updated `docs/design-system.md` with mobile surface spec
@@ -50,6 +45,10 @@
 ---
 
 ## Recently Completed
+
+- **2026-06-06 — M1 Dev: profile-management-tests** ![Type](https://img.shields.io/badge/Type-Development-orange)
+  Written as part of the profile-management session. 11 E2E tests (route guard, family name, profile CRUD, PIN reset) in `profile-management.spec.ts`; API integration tests covering `GET /auth/pin-exists`, `POST /auth/pin/check`, `PATCH /settings/family-name` in `profiles.test.ts`. All 62 API tests and 11 E2E tests passing.
+  _See:_ `docs/sessions/logs/2026-06-06-dev-profile-management.md`
 
 - **2026-06-09 — M1 Dev: settings-permissions** ![Type](https://img.shields.io/badge/Type-Development-orange)
   Lowered `/settings` route guard to tier 2+. Wrapped admin sections (Family, Profiles, Security) with `TierGate min={4}` inside the page. Settings nav item visible for tier 2+. 15 new E2E tests. Fixed 4 pre-existing E2E failures (shell-skeleton settings assertion, demo-plugin profile selector, profile-management partial match + dialog text). Fixed `ProfileAvatar` CSS shorthand/longhand React warning. Fixed E2E test DB: `packages/e2e` now loads `.env.test` (`familyos_test`) via `node --env-file`.
