@@ -70,13 +70,35 @@ component whose layout hasn't been established by a prior design session or ADR.
 with no new UI; or UI work explicitly covered by an approved design spec from a prior
 design session.
 
+### Testing
+
+Write tests alongside implementation — not as a final step. For stories that touch
+high-value targets (ADR 026), tests are expected, not optional:
+
+- **Platform API and permission logic** — unit and integration tests in `packages/platform`
+- **Fastify route handlers** — test via `fastify.inject()`; no real HTTP, no mocking
+- **Plugin business logic** — unit tested
+- **Interactive plugin UI** — RTL behavior tests for interactive elements; no snapshot tests
+
+Use `packages/test-utils/` (custom render, profile factories, event bus test double)
+rather than rolling per-test setup. Integration tests that touch Prisma use the real
+`familyos_test` database — never mock Prisma (ADR 026).
+
+If a story introduces a new end-to-end user flow, add a Playwright test in
+`packages/e2e/` (ADR 024).
+
+If tests genuinely can't be written this session, queue a `[story]-tests` addendum
+entry in `docs/sessions/queue.md` before closing — do not silently drop them.
+
 ---
 
 ## Outputs (required before closing)
 
 - [ ] All acceptance criteria verified and passing
 - [ ] `pnpm typecheck` passes with zero errors
-- [ ] `pnpm test` passes (if test files were written or modified)
+- [ ] Tests written for new business logic, route handlers, and interactive UI (ADR 026);
+      or a test addendum entry added to `docs/sessions/queue.md` if deferred
+- [ ] `pnpm test` passes with no failures
 - [ ] UX playground file deleted (if one was created this session)
 - [ ] Any new stub stories written and added to queue
 - [ ] Story status updated to ✅ Done in `docs/modules/[name]/progress.md`
