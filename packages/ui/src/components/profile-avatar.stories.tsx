@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { ProfileAvatar } from './profile-avatar'
 
@@ -118,7 +119,6 @@ export const ProfilePicker: Story = {
   render: () => {
     // Inline state via a wrapper component
     function Picker() {
-      const { useState } = require('react') as typeof import('react')
       const [active, setActive] = useState(0)
       const profiles = ['Alex Johnson', 'Jordan', 'Sam Lee', 'Mia']
 

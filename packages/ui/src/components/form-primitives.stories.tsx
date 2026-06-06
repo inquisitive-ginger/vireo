@@ -12,6 +12,76 @@ const meta: Meta = {
 
 export default meta
 type Story = StoryObj
+type InputStory = StoryObj<typeof Input>
+type ButtonStory = StoryObj<typeof Button>
+type BadgeStory = StoryObj<typeof Badge>
+
+// ─── Interactive playgrounds ──────────────────────────────────────────────────
+
+export const InputInteractive: InputStory = {
+  name: 'Input — interactive',
+  argTypes: {
+    placeholder: { control: 'text' },
+    disabled: { control: 'boolean' },
+    error: { control: 'boolean' },
+    type: { control: 'select', options: ['text', 'password', 'email', 'number'] },
+  },
+  args: {
+    placeholder: 'Enter value',
+    disabled: false,
+    error: false,
+    type: 'text',
+  },
+  render: (args) => (
+    <div style={{ width: 300, padding: 32 }}>
+      <Input {...args} />
+    </div>
+  ),
+}
+
+export const ButtonInteractive: ButtonStory = {
+  name: 'Button — interactive',
+  argTypes: {
+    variant: {
+      control: 'select',
+      options: ['default', 'secondary', 'outline', 'ghost', 'ghost-destructive'],
+    },
+    size: { control: 'select', options: ['sm', 'default', 'lg', 'icon'] },
+    disabled: { control: 'boolean' },
+    children: { control: 'text' },
+  },
+  args: {
+    variant: 'default',
+    size: 'default',
+    disabled: false,
+    children: 'Button',
+  },
+  render: (args) => (
+    <div style={{ padding: 32 }}>
+      <Button {...args} />
+    </div>
+  ),
+}
+
+export const BadgeInteractive: BadgeStory = {
+  name: 'Badge — interactive',
+  argTypes: {
+    variant: {
+      control: 'select',
+      options: ['default', 'secondary', 'outline', 'muted', 'success', 'destructive'],
+    },
+    children: { control: 'text' },
+  },
+  args: {
+    variant: 'default',
+    children: 'Label',
+  },
+  render: (args) => (
+    <div style={{ padding: 32 }}>
+      <Badge {...args} />
+    </div>
+  ),
+}
 
 // ─── Field anatomy ────────────────────────────────────────────────────────────
 // Shows the Label → Input → error hint stack that every real form field uses.

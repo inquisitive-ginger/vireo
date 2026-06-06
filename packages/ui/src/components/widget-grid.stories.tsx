@@ -50,30 +50,18 @@ type Story = StoryObj<typeof WidgetGrid>
 
 // ─── Narrow viewport — single-column stack ───────────────────────────────────
 
-export const NarrowStack: Story = {
-  name: 'Narrow — single-column stack (<768px)',
-  parameters: { viewport: { defaultViewport: 'mobile1' } },
-  render: () => (
-    <WidgetGrid layout={[
-      { widgetId: 'family-feed.feed',     x: 0, y: 0, w: 4, h: 1 },
-      { widgetId: 'chores.today-summary', x: 0, y: 1, w: 2, h: 1 },
-      { widgetId: 'calendar.today',       x: 2, y: 1, w: 2, h: 1 },
-    ]}>
-      {PLACEHOLDERS}
-    </WidgetGrid>
-  ),
-}
-
 // ─── ADR 028 — Default layouts ───────────────────────────────────────────────
 
 export const FamilyPseudoProfile: Story = {
   name: 'Family pseudo-profile (unattended tablet)',
   render: () => (
-    <WidgetGrid layout={[
-      { widgetId: 'family-feed.feed',     x: 0, y: 0, w: 4, h: 1 },
-      { widgetId: 'chores.today-summary', x: 0, y: 1, w: 2, h: 1 },
-      { widgetId: 'calendar.today',       x: 2, y: 1, w: 2, h: 1 },
-    ]}>
+    <WidgetGrid
+      layout={[
+        { widgetId: 'family-feed.feed', x: 0, y: 0, w: 4, h: 1 },
+        { widgetId: 'chores.today-summary', x: 0, y: 1, w: 2, h: 1 },
+        { widgetId: 'calendar.today', x: 2, y: 1, w: 2, h: 1 },
+      ]}
+    >
       {PLACEHOLDERS}
     </WidgetGrid>
   ),
@@ -82,11 +70,13 @@ export const FamilyPseudoProfile: Story = {
 export const Tiers12: Story = {
   name: 'Tiers 1–2 (child profiles — chores-first)',
   render: () => (
-    <WidgetGrid layout={[
-      { widgetId: 'chores.today-summary', x: 0, y: 0, w: 2, h: 2 },
-      { widgetId: 'family-feed.feed',     x: 2, y: 0, w: 2, h: 1 },
-      { widgetId: 'calendar.today',       x: 2, y: 1, w: 2, h: 1 },
-    ]}>
+    <WidgetGrid
+      layout={[
+        { widgetId: 'chores.today-summary', x: 0, y: 0, w: 2, h: 2 },
+        { widgetId: 'family-feed.feed', x: 2, y: 0, w: 2, h: 1 },
+        { widgetId: 'calendar.today', x: 2, y: 1, w: 2, h: 1 },
+      ]}
+    >
       {PLACEHOLDERS}
     </WidgetGrid>
   ),
@@ -95,15 +85,16 @@ export const Tiers12: Story = {
 export const Tiers34: Story = {
   name: 'Tiers 3–4 (parent/teen profiles — calendar-first)',
   render: () => (
-    <WidgetGrid layout={[
-      { widgetId: 'calendar.today',       x: 0, y: 0, w: 2, h: 2 },
-      { widgetId: 'family-feed.feed',     x: 2, y: 0, w: 2, h: 1 },
-      { widgetId: 'chores.today-summary', x: 2, y: 1, w: 2, h: 1 },
-    ]}>
+    <WidgetGrid
+      layout={[
+        { widgetId: 'calendar.today', x: 0, y: 0, w: 2, h: 2 },
+        { widgetId: 'family-feed.feed', x: 2, y: 0, w: 2, h: 1 },
+        { widgetId: 'chores.today-summary', x: 2, y: 1, w: 2, h: 1 },
+      ]}
+    >
       {PLACEHOLDERS}
     </WidgetGrid>
   ),
 }
 
 // ─── WidgetSlot standalone ───────────────────────────────────────────────────
-

@@ -6,6 +6,7 @@ const meta: Meta<typeof ProfileListItem> = {
   component: ProfileListItem,
   parameters: { layout: 'padded' },
   argTypes: {
+    name: { control: 'text' },
     tier: { control: 'radio', options: [1, 2, 3, 4] },
     isLast: { control: 'boolean' },
   },
@@ -156,7 +157,7 @@ export const DividerBehavior: Story = {
             border: '1px solid var(--border)',
             borderRadius: 16,
             overflow: 'hidden',
-            width: 320,
+            width: 420,
           }}
         >
           <ProfileListItem
@@ -167,6 +168,31 @@ export const DividerBehavior: Story = {
             onRemove={() => {}}
           />
           <ProfileListItem name="Jordan" tier={2} isLast onEdit={() => {}} onRemove={() => {}} />
+        </div>
+      </div>
+
+      <div>
+        <p
+          style={{
+            fontSize: 10,
+            fontWeight: 700,
+            textTransform: 'uppercase',
+            letterSpacing: '0.1em',
+            color: 'var(--muted-foreground)',
+            marginBottom: 8,
+          }}
+        >
+          isLast=true (no divider)
+        </p>
+        <div
+          style={{
+            border: '1px solid var(--border)',
+            borderRadius: 16,
+            overflow: 'hidden',
+            width: 420,
+          }}
+        >
+          <ProfileListItem name="Alex" tier={4} isLast onEdit={() => {}} onRemove={() => {}} />
         </div>
       </div>
     </div>

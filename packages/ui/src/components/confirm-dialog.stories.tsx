@@ -4,17 +4,35 @@ import { ConfirmDialog } from './confirm-dialog'
 import { Button } from './button'
 
 const meta: Meta<typeof ConfirmDialog> = {
-  title: 'Platform/ConfirmDialog',
+  title: 'Primitives/Dialog',
   component: ConfirmDialog,
   parameters: { layout: 'centered' },
   argTypes: {
     open: { control: 'boolean' },
+    title: { control: 'text' },
+    description: { control: 'text' },
     confirmLabel: { control: 'text' },
     isPending: { control: 'boolean' },
+  },
+  args: {
+    open: true,
+    title: 'Remove Jordan?',
+    description:
+      'Their home screen, preferences, and all module data including chores and schedules will be permanently deleted.',
+    confirmLabel: 'Remove',
+    isPending: false,
+    onConfirm: () => {},
+    onCancel: () => {},
   },
 }
 export default meta
 type Story = StoryObj<typeof ConfirmDialog>
+
+// ─── Playground — always open, all controls live ─────────────────────────────
+
+export const Playground: Story = {
+  name: 'Playground — always open',
+}
 
 // ─── Interactive trigger ──────────────────────────────────────────────────────
 

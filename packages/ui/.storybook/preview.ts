@@ -10,6 +10,20 @@ const preview: Preview = {
         date: /Date$/i,
       },
     },
+    options: {
+      storySort: {
+        order: [
+          'Foundation',
+          ['Color', 'Typography', 'Motion'],
+          'Primitives',
+          ['Form', 'Dialog', 'EmptyState'],
+          'Platform',
+          ['ProfileAvatar', 'ProfileListItem', 'PermissionToggle'],
+          'Home Surface',
+          ['WidgetGrid', 'WidgetSlot', 'PlaceholderCard'],
+        ],
+      },
+    },
   },
   decorators: [
     withThemeByDataAttribute({

@@ -19,7 +19,7 @@ with the family that runs it. See [`docs/vision.md`](docs/vision.md).
 
 - **Milestone:** M1 — Platform Shell (in progress)
 - **Active stories:** None
-- **Last session:** 2026-06-09 — Dev: settings-permissions (lowered /settings route guard to tier 2+; TierGate-wrapped admin sections; Settings nav item visible tier 2+; 15 new E2E tests; 4 pre-existing E2E fixes; packages/e2e now loads .env.test)
+- **Last session:** 2026-06-06 — Storybook audit (Foundation/Primitives/Platform/Home Surface hierarchy; storySort; Color + Motion + EmptyState stories added; controls on Form/Dialog/PermissionToggle/PlaceholderCard; dark mode canvas fix; cut Welcome + SettingsLayout stories)
 - **Next session:** M1 Dev: notification-infrastructure (see queue)
 
 > Update this section at the end of every session.

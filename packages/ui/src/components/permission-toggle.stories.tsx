@@ -5,8 +5,8 @@ import { PermissionToggleList } from './permission-toggle-list'
 
 // ─── PermissionToggleItem ─────────────────────────────────────────────────────
 
-const itemMeta: Meta<typeof PermissionToggleItem> = {
-  title: 'Platform/PermissionToggleItem',
+const meta: Meta<typeof PermissionToggleItem> = {
+  title: 'Platform/PermissionToggle',
   component: PermissionToggleItem,
   parameters: { layout: 'padded' },
   decorators: [
@@ -16,9 +16,28 @@ const itemMeta: Meta<typeof PermissionToggleItem> = {
       </div>
     ),
   ],
+  argTypes: {
+    label: { control: 'text' },
+    inBaseline: { control: 'boolean' },
+    override: { control: 'select', options: [null, 'grant', 'revocation'] },
+    disabled: { control: 'boolean' },
+    isLast: { control: 'boolean' },
+  },
+  args: {
+    id: 'platform.profile.view',
+    label: 'View profiles',
+    inBaseline: true,
+    override: null,
+    isLast: true,
+    onToggle: () => {},
+  },
 }
-export default itemMeta
+export default meta
 type ItemStory = StoryObj<typeof PermissionToggleItem>
+
+export const Interactive: ItemStory = {
+  name: 'Interactive',
+}
 
 export const ActiveBaseline: ItemStory = {
   name: 'Active — tier baseline',
