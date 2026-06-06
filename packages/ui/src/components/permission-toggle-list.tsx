@@ -25,7 +25,7 @@ export function PermissionToggleList({ items, onToggle }: PermissionToggleListPr
           override={item.override}
           disabled={item.disabled}
           isLast={i === items.length - 1}
-          onToggle={() => onToggle(item.key)}
+          onToggle={onToggle}
         />
       ))}
     </>

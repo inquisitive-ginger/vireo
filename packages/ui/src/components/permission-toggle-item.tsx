@@ -1,3 +1,4 @@
+import { memo } from 'react'
 import { cn } from '../lib/utils'
 import { Switch } from './switch'
 
@@ -8,14 +9,14 @@ export interface PermissionToggleItemProps {
   override: 'grant' | 'revocation' | null
   disabled?: boolean
   isLast?: boolean
-  onToggle: () => void
+  onToggle: (key: string) => void
 }
 
 function isChecked(inBaseline: boolean, override: 'grant' | 'revocation' | null): boolean {
   return inBaseline ? override !== 'revocation' : override === 'grant'
 }
 
-export function PermissionToggleItem({
+export const PermissionToggleItem = memo(function PermissionToggleItem({
   id,
   label,
   inBaseline,
@@ -44,9 +45,9 @@ export function PermissionToggleItem({
       <Switch
         id={id}
         checked={isChecked(inBaseline, override)}
-        onCheckedChange={onToggle}
+        onCheckedChange={() => onToggle(id)}
         disabled={disabled}
       />
     </div>
   )
-}
+})

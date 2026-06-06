@@ -28,7 +28,7 @@ export const ActiveBaseline: ItemStory = {
     inBaseline: true,
     override: null,
     isLast: true,
-    onToggle: () => {},
+    onToggle: (_key: string) => {},
   },
 }
 
@@ -40,7 +40,7 @@ export const Revoked: ItemStory = {
     inBaseline: true,
     override: 'revocation',
     isLast: true,
-    onToggle: () => {},
+    onToggle: (_key: string) => {},
   },
 }
 
@@ -52,7 +52,7 @@ export const Inactive: ItemStory = {
     inBaseline: false,
     override: null,
     isLast: true,
-    onToggle: () => {},
+    onToggle: (_key: string) => {},
   },
 }
 
@@ -64,7 +64,7 @@ export const Granted: ItemStory = {
     inBaseline: false,
     override: 'grant',
     isLast: true,
-    onToggle: () => {},
+    onToggle: (_key: string) => {},
   },
 }
 
@@ -77,7 +77,7 @@ export const Disabled: ItemStory = {
     override: null,
     disabled: true,
     isLast: true,
-    onToggle: () => {},
+    onToggle: (_key: string) => {},
   },
 }
 

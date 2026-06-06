@@ -221,6 +221,68 @@ describe('PATCH /api/profiles/:id', () => {
     })
     expect(res.statusCode).toBe(403)
   })
+
+  it('returns 409 when demoting the last tier-4 profile', async () => {
+    const cookie = await getTier4Cookie()
+
+    const res = await app.inject({
+      method: 'PATCH',
+      url: '/api/profiles/seed-parent-1',
+      headers: { cookie },
+      payload: { tier: 3 },
+    })
+
+    expect(res.statusCode).toBe(409)
+  })
+
+  it('clears overrides atomically when tier changes', async () => {
+    const cookie = await getTier4Cookie()
+    const target = await prisma.profile.create({ data: { name: 'Test', tier: 1 } })
+    await prisma.permissionOverride.create({
+      data: {
+        profileId: target.id,
+        action: 'view',
+        subject: 'platform.Plugin',
+        type: 'revocation',
+        grantedBy: 'seed-parent-1',
+      },
+    })
+
+    const res = await app.inject({
+      method: 'PATCH',
+      url: `/api/profiles/${target.id}`,
+      headers: { cookie },
+      payload: { tier: 2 },
+    })
+
+    expect(res.statusCode).toBe(200)
+    const remaining = await prisma.permissionOverride.findMany({ where: { profileId: target.id } })
+    expect(remaining).toHaveLength(0)
+  })
+
+  it('does not clear overrides when only name changes', async () => {
+    const cookie = await getTier4Cookie()
+    const target = await prisma.profile.create({ data: { name: 'Test', tier: 1 } })
+    await prisma.permissionOverride.create({
+      data: {
+        profileId: target.id,
+        action: 'view',
+        subject: 'platform.Plugin',
+        type: 'revocation',
+        grantedBy: 'seed-parent-1',
+      },
+    })
+
+    await app.inject({
+      method: 'PATCH',
+      url: `/api/profiles/${target.id}`,
+      headers: { cookie },
+      payload: { name: 'New Name' },
+    })
+
+    const remaining = await prisma.permissionOverride.findMany({ where: { profileId: target.id } })
+    expect(remaining).toHaveLength(1)
+  })
 })
 
 // ─── DELETE /profiles/:id ─────────────────────────────────────────────────────
@@ -487,6 +549,261 @@ describe('POST /api/auth/pin/check', () => {
       payload: { pin: '1234' },
     })
     expect(res.statusCode).toBe(403)
+  })
+})
+
+// ─── GET /profiles/:id/permissions ───────────────────────────────────────────
+
+describe('GET /api/profiles/:id/permissions', () => {
+  it('returns all registry permissions with correct inBaseline for tier 1', async () => {
+    const cookie = await getTier4Cookie()
+    const target = await prisma.profile.create({ data: { name: 'Test', tier: 1 } })
+
+    const res = await app.inject({
+      method: 'GET',
+      url: `/api/profiles/${target.id}/permissions`,
+      headers: { cookie },
+    })
+
+    expect(res.statusCode).toBe(200)
+    const { permissions } = res.json<{
+      permissions: Array<{
+        key: string
+        inBaseline: boolean
+        override: string | null
+        overrideId: string | null
+      }>
+    }>()
+    expect(permissions).toHaveLength(3)
+    expect(permissions.every((p) => p.override === null && p.overrideId === null)).toBe(true)
+    // tier 1 baseline: view platform.Plugin only
+    expect(permissions.find((p) => p.key === 'platform.plugin.view')?.inBaseline).toBe(true)
+    expect(permissions.find((p) => p.key === 'platform.profile.view')?.inBaseline).toBe(false)
+    expect(permissions.find((p) => p.key === 'platform.profile.switch')?.inBaseline).toBe(false)
+  })
+
+  it('reflects an existing override in the response', async () => {
+    const cookie = await getTier4Cookie()
+    const target = await prisma.profile.create({ data: { name: 'Test', tier: 1 } })
+    const override = await prisma.permissionOverride.create({
+      data: {
+        profileId: target.id,
+        action: 'view',
+        subject: 'platform.Plugin',
+        type: 'revocation',
+        grantedBy: 'seed-parent-1',
+      },
+    })
+
+    const res = await app.inject({
+      method: 'GET',
+      url: `/api/profiles/${target.id}/permissions`,
+      headers: { cookie },
+    })
+
+    const { permissions } = res.json<{
+      permissions: Array<{ key: string; override: string | null; overrideId: string | null }>
+    }>()
+    const p = permissions.find((p) => p.key === 'platform.plugin.view')
+    expect(p?.override).toBe('revocation')
+    expect(p?.overrideId).toBe(override.id)
+  })
+
+  it('returns 403 when session is tier < 4', async () => {
+    const target = await prisma.profile.create({ data: { name: 'Test', tier: 1 } })
+
+    const res = await app.inject({
+      method: 'GET',
+      url: `/api/profiles/${target.id}/permissions`,
+    })
+
+    expect(res.statusCode).toBe(403)
+  })
+
+  it('returns 404 for a non-existent profile', async () => {
+    const cookie = await getTier4Cookie()
+
+    const res = await app.inject({
+      method: 'GET',
+      url: '/api/profiles/nonexistent/permissions',
+      headers: { cookie },
+    })
+
+    expect(res.statusCode).toBe(404)
+  })
+})
+
+// ─── POST /profiles/:id/permissions ──────────────────────────────────────────
+
+describe('POST /api/profiles/:id/permissions', () => {
+  it('creates a revocation override for a baseline permission', async () => {
+    const cookie = await getTier4Cookie()
+    const target = await prisma.profile.create({ data: { name: 'Test', tier: 1 } })
+
+    const res = await app.inject({
+      method: 'POST',
+      url: `/api/profiles/${target.id}/permissions`,
+      headers: { cookie },
+      payload: { action: 'view', subject: 'platform.Plugin', type: 'revocation' },
+    })
+
+    expect(res.statusCode).toBe(200)
+    const { id } = res.json<{ id: string }>()
+    const saved = await prisma.permissionOverride.findUnique({ where: { id } })
+    expect(saved?.type).toBe('revocation')
+    expect(saved?.profileId).toBe(target.id)
+    expect(saved?.grantedBy).toBe('seed-parent-1')
+  })
+
+  it('creates a grant override for a non-baseline permission', async () => {
+    const cookie = await getTier4Cookie()
+    const target = await prisma.profile.create({ data: { name: 'Test', tier: 1 } })
+
+    const res = await app.inject({
+      method: 'POST',
+      url: `/api/profiles/${target.id}/permissions`,
+      headers: { cookie },
+      payload: { action: 'switch', subject: 'platform.Profile', type: 'grant' },
+    })
+
+    expect(res.statusCode).toBe(200)
+    const { id } = res.json<{ id: string }>()
+    const saved = await prisma.permissionOverride.findUnique({ where: { id } })
+    expect(saved?.type).toBe('grant')
+  })
+
+  it('returns 403 when trying to edit own profile overrides', async () => {
+    const cookie = await getTier4Cookie()
+
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/profiles/seed-parent-1/permissions',
+      headers: { cookie },
+      payload: { action: 'view', subject: 'platform.Plugin', type: 'revocation' },
+    })
+
+    expect(res.statusCode).toBe(403)
+  })
+
+  it('returns 403 when session is tier < 4', async () => {
+    const target = await prisma.profile.create({ data: { name: 'Test', tier: 1 } })
+
+    const res = await app.inject({
+      method: 'POST',
+      url: `/api/profiles/${target.id}/permissions`,
+      payload: { action: 'view', subject: 'platform.Plugin', type: 'revocation' },
+    })
+
+    expect(res.statusCode).toBe(403)
+  })
+
+  it('returns 404 for a non-existent profile', async () => {
+    const cookie = await getTier4Cookie()
+
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/profiles/nonexistent/permissions',
+      headers: { cookie },
+      payload: { action: 'view', subject: 'platform.Plugin', type: 'revocation' },
+    })
+
+    expect(res.statusCode).toBe(404)
+  })
+
+  it('returns 400 for an invalid body', async () => {
+    const cookie = await getTier4Cookie()
+    const target = await prisma.profile.create({ data: { name: 'Test', tier: 1 } })
+
+    const res = await app.inject({
+      method: 'POST',
+      url: `/api/profiles/${target.id}/permissions`,
+      headers: { cookie },
+      payload: { action: 'view' },
+    })
+
+    expect(res.statusCode).toBe(400)
+  })
+})
+
+// ─── DELETE /profiles/:id/permissions/:permissionId ──────────────────────────
+
+describe('DELETE /api/profiles/:id/permissions/:permissionId', () => {
+  it('deletes an existing override', async () => {
+    const cookie = await getTier4Cookie()
+    const target = await prisma.profile.create({ data: { name: 'Test', tier: 1 } })
+    const override = await prisma.permissionOverride.create({
+      data: {
+        profileId: target.id,
+        action: 'view',
+        subject: 'platform.Plugin',
+        type: 'revocation',
+        grantedBy: 'seed-parent-1',
+      },
+    })
+
+    const res = await app.inject({
+      method: 'DELETE',
+      url: `/api/profiles/${target.id}/permissions/${override.id}`,
+      headers: { cookie },
+    })
+
+    expect(res.statusCode).toBe(200)
+    expect(res.json<{ ok: boolean }>().ok).toBe(true)
+    expect(await prisma.permissionOverride.findUnique({ where: { id: override.id } })).toBeNull()
+  })
+
+  it('returns 403 when trying to edit own profile overrides', async () => {
+    const cookie = await getTier4Cookie()
+    const override = await prisma.permissionOverride.create({
+      data: {
+        profileId: 'seed-parent-1',
+        action: 'view',
+        subject: 'platform.Plugin',
+        type: 'revocation',
+        grantedBy: 'seed-parent-1',
+      },
+    })
+
+    const res = await app.inject({
+      method: 'DELETE',
+      url: `/api/profiles/seed-parent-1/permissions/${override.id}`,
+      headers: { cookie },
+    })
+
+    expect(res.statusCode).toBe(403)
+  })
+
+  it('returns 403 when session is tier < 4', async () => {
+    const target = await prisma.profile.create({ data: { name: 'Test', tier: 1 } })
+    const override = await prisma.permissionOverride.create({
+      data: {
+        profileId: target.id,
+        action: 'view',
+        subject: 'platform.Plugin',
+        type: 'revocation',
+        grantedBy: 'seed-parent-1',
+      },
+    })
+
+    const res = await app.inject({
+      method: 'DELETE',
+      url: `/api/profiles/${target.id}/permissions/${override.id}`,
+    })
+
+    expect(res.statusCode).toBe(403)
+  })
+
+  it('returns 404 when the override does not exist', async () => {
+    const cookie = await getTier4Cookie()
+    const target = await prisma.profile.create({ data: { name: 'Test', tier: 1 } })
+
+    const res = await app.inject({
+      method: 'DELETE',
+      url: `/api/profiles/${target.id}/permissions/nonexistent-id`,
+      headers: { cookie },
+    })
+
+    expect(res.statusCode).toBe(404)
   })
 })
 

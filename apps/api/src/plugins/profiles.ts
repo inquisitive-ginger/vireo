@@ -51,11 +51,23 @@ const profilesPlugin: FastifyPluginAsync = async (fastify) => {
     const target = await prisma.profile.findUnique({ where: { id } })
     if (!target) return reply.status(404).send({ error: 'Profile not found' })
 
-    const updated = await prisma.profile.update({
-      where: { id },
-      data: result.data,
-    })
+    // Prevent demoting the last tier-4 profile
+    if (result.data.tier !== undefined && result.data.tier < 4 && target.tier === 4) {
+      const tier4Count = await prisma.profile.count({ where: { tier: 4 } })
+      if (tier4Count <= 1)
+        return reply.status(409).send({ error: 'At least one administrator (tier 4) must remain' })
+    }
 
+    // Tier change — clear overrides atomically so stale grants/revocations don't carry over
+    if (result.data.tier !== undefined && result.data.tier !== target.tier) {
+      const [, updated] = await prisma.$transaction([
+        prisma.permissionOverride.deleteMany({ where: { profileId: id } }),
+        prisma.profile.update({ where: { id }, data: result.data }),
+      ])
+      return { id: updated.id, name: updated.name, tier: updated.tier }
+    }
+
+    const updated = await prisma.profile.update({ where: { id }, data: result.data })
     return { id: updated.id, name: updated.name, tier: updated.tier }
   })
 
