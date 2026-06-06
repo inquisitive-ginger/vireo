@@ -54,7 +54,7 @@ export function ProfileAvatar({
         className
       )}
       style={{
-        background: avatarUrl ? undefined : `oklch(0.80 0.09 ${hue})`,
+        backgroundColor: `oklch(0.80 0.09 ${hue})`,
         color: `oklch(0.22 0.06 ${hue})`,
         backgroundImage: avatarUrl ? `url(${avatarUrl})` : undefined,
         backgroundSize: 'cover',

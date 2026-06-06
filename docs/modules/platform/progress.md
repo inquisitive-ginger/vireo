@@ -11,8 +11,8 @@
 | [Home Surface](stories/home-surface.md)                               | ✅ Done        |                                                          |
 | [Family Onboarding](stories/family-onboarding.md)                     | ✅ Done        |                                                          |
 | [Profile Management](stories/profile-management.md)                   | ✅ Done        |                                                          |
-| [Settings Permissions](stories/settings-permissions.md)               | ⬜ Not Started | Depends on profile-management                            |
-| [Typography Scale](stories/typography-scale.md)                       | ⬜ Not Started | Design session                                           |
+| [Settings Permissions](stories/settings-permissions.md)               | ✅ Done        |                                                          |
+| [Typography Scale](stories/typography-scale.md)                       | ✅ Done        | Design session 2026-06-08                                |
 | [Permission Overrides](stories/permission-overrides.md)               | ⬜ Not Started | Depends on profile-management                            |
 | [Notification Infrastructure](stories/notification-infrastructure.md) | ⬜ Not Started | Depends on home-surface (motion tokens)                  |
 | [PWA Installable](stories/pwa-installable.md)                         | ⬜ Not Started |                                                          |

@@ -6,32 +6,33 @@
 
 Environment variables are managed via `.env` files at the repository root.
 
-| File | Committed? | Purpose |
-|------|-----------|---------|
-| `.env.example` | Yes | Template documenting all required vars — copy to `.env` to get started |
-| `.env` | No (gitignored) | Dev values — loaded by the API server at startup |
-| `.env.test` | No (gitignored) | Test overrides — loaded by Vitest automatically |
+| File           | Committed?      | Purpose                                                                |
+| -------------- | --------------- | ---------------------------------------------------------------------- |
+| `.env.example` | Yes             | Template documenting all required vars — copy to `.env` to get started |
+| `.env`         | No (gitignored) | Dev values — loaded by the API server at startup                       |
+| `.env.test`    | No (gitignored) | Test overrides — loaded by Vitest automatically                        |
 
 **Variables:**
 
-| Name | Used by | Description |
-|------|---------|-------------|
-| `DATABASE_URL` | API server, Prisma CLI | Dev database connection string |
-| `SESSION_SECRET` | API server | `@fastify/session` cookie signing key |
-| `TEST_DATABASE_URL` | Vitest test setup | Test database connection string |
+| Name             | Used by                | Description                                                                                                                          |
+| ---------------- | ---------------------- | ------------------------------------------------------------------------------------------------------------------------------------ |
+| `DATABASE_URL`   | API server, Prisma CLI | Database connection string — dev in `.env`, test in `.env.test`                                                                      |
+| `SESSION_SECRET` | API server             | `@fastify/session` cookie signing key                                                                                                |
+| `E2E`            | Playwright config      | Set to `true` in `.env.test`; disables `reuseExistingServer` for the API so E2E always starts a fresh server against `familyos_test` |
 
 **Loading:**
 
-- **API dev server** (`apps/api`): `NODE_OPTIONS='--env-file=../../.env'` in the `dev` script. Uses Node 22's native `--env-file` flag — no `dotenv` dependency.
-- **Vitest** (`apps/api`): `envDir: '../../'` in `vitest.config.ts` causes Vitest to auto-load `.env.test` when running in test mode. `src/test.setup.ts` then assigns `process.env.DATABASE_URL = TEST_DATABASE_URL`.
+- **API dev server** (`apps/api`): `tsx watch --env-file ../../.env src/index.ts` in the `dev` script. Uses Node 22's native `--env-file` flag — no `dotenv` dependency. `--env-file` does not override vars already set in the process environment.
+- **Vitest** (`apps/api`): `envDir: '../../'` in `vitest.config.ts` causes Vitest to load `.env.test` after `.env`, overriding `DATABASE_URL` with `familyos_test`. `src/test.setup.ts` uses `??=` as a fallback guard in case Vitest is invoked outside the normal script.
+- **Playwright E2E** (`packages/e2e`): `node --env-file ../../.env.test` in the `e2e` and `e2e:ui` scripts loads `DATABASE_URL=familyos_test` and `E2E=true` into the Playwright process. Child processes (including the spawned API server) inherit these vars; tsx's own `--env-file ../../.env` does not override them.
 
 **Database separation:**
 
 Two databases are maintained locally inside the same Docker PostgreSQL container:
 
-| Database | Used by |
-|----------|---------|
-| `familyos` | Dev server |
+| Database        | Used by    |
+| --------------- | ---------- |
+| `familyos`      | Dev server |
 | `familyos_test` | Test suite |
 
 Tests never touch the dev database. Both databases are migrated and seeded identically. `beforeEach` hooks truncate test-relevant tables between runs.

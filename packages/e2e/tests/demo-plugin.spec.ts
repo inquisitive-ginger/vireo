@@ -1,12 +1,12 @@
 import { test, expect } from '@playwright/test'
 
-const FAMILY_PIN = process.env.FAMILY_PIN ?? '5678'
-
 test.describe('demo plugin', () => {
   test('loads and renders without console errors', async ({ page }) => {
     const errors: string[] = []
-    page.on('console', msg => { if (msg.type() === 'error') errors.push(msg.text()) })
-    page.on('pageerror', err => errors.push(err.message))
+    page.on('console', (msg) => {
+      if (msg.type() === 'error') errors.push(msg.text())
+    })
+    page.on('pageerror', (err) => errors.push(err.message))
 
     await page.goto('/demo-plugin')
     await expect(page.getByRole('heading', { name: 'Demo Plugin' })).toBeVisible()
@@ -22,16 +22,17 @@ test.describe('demo plugin', () => {
   })
 
   test('renders parent view for tier-4 profile after PIN', async ({ page }) => {
-    page.on('dialog', async dialog => {
-      if (dialog.type() === 'prompt') await dialog.accept(FAMILY_PIN)
-      else await dialog.dismiss()
-    })
-
     await page.goto('/demo-plugin')
-    // Switch to Parent profile via dev selector
-    await page.locator('select').selectOption({ label: 'Parent (T4)' })
-    // Wait for profile switch to complete and re-render
-    await expect(page.getByText('Active: Parent · Tier 4')).toBeVisible()
+    // Switch to E2E Parent via sidebar profile chip — triggers PIN entry (tier 4)
+    await page.locator('[aria-haspopup="listbox"]').click()
+    await page.getByRole('button', { name: /E2E Parent/ }).click()
+    await page.getByRole('button', { name: /PIN digit boxes/i }).click()
+    await page.keyboard.type('1234')
+    await expect(page.locator('[aria-haspopup="listbox"]')).toContainText('E2E Parent', {
+      timeout: 5000,
+    })
+    // Plugin re-renders with the active profile
+    await expect(page.getByText('Active: E2E Parent · Tier 4')).toBeVisible()
     await expect(page.getByText('Parent view — full access enabled')).toBeVisible()
     // Child fallback must not appear
     await expect(page.getByText('Child view — limited access')).not.toBeVisible()
@@ -50,7 +51,7 @@ test.describe('demo plugin', () => {
 
   test.skip('shows error boundary when plugin remote is unreachable', async ({ page }) => {
     // Abort the federation remoteEntry.js before the plugin is loaded
-    await page.route('**/assets/remoteEntry.js', route => route.abort())
+    await page.route('**/assets/remoteEntry.js', (route) => route.abort())
 
     await page.goto('/demo-plugin')
 
