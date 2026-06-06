@@ -16,6 +16,7 @@ export function Toast({ position = 'bottom-right', visibleToasts = 3 }: ToastPro
     <Toaster
       position={position}
       visibleToasts={visibleToasts}
+      closeButton
       theme="system"
       toastOptions={{
         style: {
