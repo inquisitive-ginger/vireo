@@ -1,7 +1,7 @@
 # Story: Accessibility & Radix Primitives Audit
 
 **Module:** platform
-**Status:** ⬜ Not Started
+**Status:** ✅ Done
 
 ## User story
 

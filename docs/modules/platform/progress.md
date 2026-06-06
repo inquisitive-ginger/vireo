@@ -6,18 +6,18 @@
 
 > **Milestone done when:** A family can set up the system, see a meaningful home screen, and post to a shared feed.
 
-| Story                                                                 | Status         | Notes                                                        |
-| --------------------------------------------------------------------- | -------------- | ------------------------------------------------------------ |
-| [Home Surface](stories/home-surface.md)                               | ✅ Done        |                                                              |
-| [Family Onboarding](stories/family-onboarding.md)                     | ✅ Done        |                                                              |
-| [Profile Management](stories/profile-management.md)                   | ✅ Done        |                                                              |
-| [Settings Permissions](stories/settings-permissions.md)               | ✅ Done        |                                                              |
-| [Typography Scale](stories/typography-scale.md)                       | ✅ Done        | Design session 2026-06-08                                    |
-| [Permission Overrides](stories/permission-overrides.md)               | ✅ Done        |                                                              |
-| [Notification Infrastructure](stories/notification-infrastructure.md) | ⬜ Not Started | Depends on home-surface (motion tokens)                      |
-| [PWA Installable](stories/pwa-installable.md)                         | ⬜ Not Started |                                                              |
-| [Web Push](stories/web-push.md)                                       | ⬜ Not Started | Depends on notification-infrastructure + pwa-installable     |
-| [Accessibility & Radix Audit](stories/accessibility-radix-audit.md)   | ⬜ Not Started | Audit all `packages/ui` components; known gap: ConfirmDialog |
+| Story                                                                 | Status         | Notes                                                                                                |
+| --------------------------------------------------------------------- | -------------- | ---------------------------------------------------------------------------------------------------- |
+| [Home Surface](stories/home-surface.md)                               | ✅ Done        |                                                                                                      |
+| [Family Onboarding](stories/family-onboarding.md)                     | ✅ Done        |                                                                                                      |
+| [Profile Management](stories/profile-management.md)                   | ✅ Done        |                                                                                                      |
+| [Settings Permissions](stories/settings-permissions.md)               | ✅ Done        |                                                                                                      |
+| [Typography Scale](stories/typography-scale.md)                       | ✅ Done        | Design session 2026-06-08                                                                            |
+| [Permission Overrides](stories/permission-overrides.md)               | ✅ Done        |                                                                                                      |
+| [Notification Infrastructure](stories/notification-infrastructure.md) | ⬜ Not Started | Depends on home-surface (motion tokens)                                                              |
+| [PWA Installable](stories/pwa-installable.md)                         | ⬜ Not Started |                                                                                                      |
+| [Web Push](stories/web-push.md)                                       | ⬜ Not Started | Depends on notification-infrastructure + pwa-installable                                             |
+| [Accessibility & Radix Audit](stories/accessibility-radix-audit.md)   | ✅ Done        | `ConfirmDialog` on `@radix-ui/react-alert-dialog`; all other interactive components already on Radix |
 
 ---
 

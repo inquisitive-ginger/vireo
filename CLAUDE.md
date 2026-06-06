@@ -19,7 +19,7 @@ with the family that runs it. See [`docs/vision.md`](docs/vision.md).
 
 - **Milestone:** M1 — Platform Shell (in progress)
 - **Active stories:** None
-- **Last session:** 2026-06-06 — Storybook audit (Foundation/Primitives/Platform/Home Surface hierarchy; storySort; Color + Motion + EmptyState stories added; controls on Form/Dialog/PermissionToggle/PlaceholderCard; dark mode canvas fix; cut Welcome + SettingsLayout stories)
+- **Last session:** 2026-06-06 — accessibility-radix-audit (`ConfirmDialog` replaced with `@radix-ui/react-alert-dialog`; full audit confirmed Drawer + Switch already on Radix; PinInput exempt)
 - **Next session:** M1 Dev: notification-infrastructure (see queue)
 
 > Update this section at the end of every session.
