@@ -104,9 +104,11 @@ test.describe('profile CRUD', () => {
     const nameInput = page.getByLabel('Name')
     await nameInput.clear()
     await nameInput.fill('E2E Teen Edited')
-    await page.getByRole('button', { name: 'Save changes' }).click()
+    // Name autosaves on blur; close drawer then verify list updated
+    await nameInput.blur()
+    await page.getByRole('button', { name: 'Close' }).click()
 
-    await expect(page.getByText('E2E Teen Edited')).toBeVisible()
+    await expect(page.getByText('E2E Teen Edited')).toBeVisible({ timeout: 5000 })
     await expect(page.getByText('E2E Teen', { exact: true })).not.toBeVisible()
   })
 

@@ -19,8 +19,8 @@ with the family that runs it. See [`docs/vision.md`](docs/vision.md).
 
 - **Milestone:** M1 — Platform Shell (in progress)
 - **Active stories:** None
-- **Last session:** 2026-06-09 — Dev: settings-permissions (tier 2+ route guard, TierGate admin sections, 15 E2E tests, test DB isolation via --env-file)
-- **Next session:** M1 Dev: profile-management-tests (see queue)
+- **Last session:** 2026-06-06 — Dev: permission-overrides (drawer-based profile edit; Switch, Drawer, PermissionToggleItem, PermissionToggleList in packages/ui; GET/POST/DELETE override routes; Capabilities panel; 79 unit tests + 8 E2E tests; dev/reset layout seeding fix)
+- **Next session:** M1 Dev: notification-infrastructure (see queue)
 
 > Update this section at the end of every session.
 

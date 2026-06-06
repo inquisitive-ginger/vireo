@@ -40,6 +40,16 @@ export type ResetPinInput = z.infer<typeof ResetPinSchema>
 export type CheckPinInput = z.infer<typeof CheckPinSchema>
 export type FamilyNameUpdateInput = z.infer<typeof FamilyNameUpdateSchema>
 
+// ─── Permission overrides ─────────────────────────────────────────────────────
+
+export const PermissionOverrideCreateSchema = z.object({
+  action: z.string().min(1),
+  subject: z.string().min(1),
+  type: z.enum(['grant', 'revocation']),
+})
+
+export type PermissionOverrideCreateInput = z.infer<typeof PermissionOverrideCreateSchema>
+
 // ─── Onboarding ───────────────────────────────────────────────────────────────
 
 // Step 1: first parent + family name

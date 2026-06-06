@@ -22,4 +22,15 @@ export { ConfirmDialog } from './components/confirm-dialog'
 export type { ConfirmDialogProps } from './components/confirm-dialog'
 export { PinInput } from './components/pin-input'
 export type { PinInputProps } from './components/pin-input'
+export { Drawer } from './components/drawer'
+export type { DrawerProps } from './components/drawer'
+export { Switch } from './components/switch'
+export type { SwitchProps } from './components/switch'
+export { PermissionToggleItem } from './components/permission-toggle-item'
+export type { PermissionToggleItemProps } from './components/permission-toggle-item'
+export { PermissionToggleList } from './components/permission-toggle-list'
+export type {
+  PermissionToggleListProps,
+  PermissionToggleListItem,
+} from './components/permission-toggle-list'
 export { cn } from './lib/utils'

@@ -1,6 +1,6 @@
-import { useState } from 'react'
+import { useState, useRef, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Sun, Monitor, Moon, Plus, Shield, CircleAlert, Pencil } from 'lucide-react'
+import { Sun, Monitor, Moon, Plus, Shield, CircleAlert, Pencil, Check } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -16,7 +16,10 @@ import {
   ProfileListItem,
   ConfirmDialog,
   PinInput,
+  PermissionToggleList,
+  Drawer,
 } from '@family-os/ui'
+import type { PermissionToggleListItem } from '@family-os/ui'
 import {
   CreateProfileSchema,
   type CreateProfileInput,
@@ -28,6 +31,12 @@ import {
 type ProfileRow = { id: string; name: string; tier: 1 | 2 | 3 | 4 }
 type DarkModeValue = boolean | null
 type PinResetPhase = 'idle' | 'current' | 'current-error' | 'new' | 'confirm' | 'mismatch'
+
+type PermissionRow = PermissionToggleListItem & {
+  action: string
+  subject: string
+  overrideId: string | null
+}
 
 const FamilyNameSchema = z.object({ name: z.string().min(1, 'Name is required').max(50) })
 type FamilyNameInput = z.infer<typeof FamilyNameSchema>
@@ -62,11 +71,13 @@ function ProfileForm({
   onSave,
   onCancel,
   isPending,
+  className,
 }: {
   initial?: ProfileRow
   onSave: (data: CreateProfileInput) => void
   onCancel: () => void
   isPending: boolean
+  className?: string
 }) {
   const {
     register,
@@ -83,7 +94,7 @@ function ProfileForm({
   return (
     <form
       onSubmit={handleSubmit(onSave)}
-      className="flex flex-col gap-4 px-6 py-5 border-t border-border bg-secondary/40"
+      className={cn('flex flex-col gap-4 px-6 py-5', className)}
     >
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="profile-name">Name</Label>
@@ -108,7 +119,7 @@ function ProfileForm({
               className={cn(
                 'flex-1 py-1.5 rounded-lg border text-xs font-medium transition-colors',
                 tier === t
-                  ? 'bg-primary text-primary-foreground border-primary'
+                  ? 'bg-primary/10 text-primary border-primary'
                   : 'border-border text-muted-foreground hover:bg-muted'
               )}
             >
@@ -130,11 +141,251 @@ function ProfileForm({
   )
 }
 
+// ─── Capabilities panel ───────────────────────────────────────────────────────
+
+function CapabilitiesPanel({ profileId }: { profileId: string }) {
+  const queryClient = useQueryClient()
+  const queryKey = ['api/profiles', profileId, 'permissions']
+  const [pendingKey, setPendingKey] = useState<string | null>(null)
+
+  const { data, isLoading } = useQuery<{ permissions: PermissionRow[] }>({
+    queryKey,
+    queryFn: () =>
+      fetch(`/api/profiles/${profileId}/permissions`).then((r) => r.json()) as Promise<{
+        permissions: PermissionRow[]
+      }>,
+  })
+
+  const createOverride = useMutation({
+    mutationFn: (body: { action: string; subject: string; type: 'grant' | 'revocation' }) =>
+      fetch(`/api/profiles/${profileId}/permissions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      }).then((r) => {
+        if (!r.ok) return r.json().then((e) => Promise.reject(e))
+        return r.json()
+      }),
+    onSettled: () => {
+      setPendingKey(null)
+      queryClient.invalidateQueries({ queryKey })
+    },
+  })
+
+  const deleteOverride = useMutation({
+    mutationFn: (overrideId: string) =>
+      fetch(`/api/profiles/${profileId}/permissions/${overrideId}`, { method: 'DELETE' }).then(
+        (r) => {
+          if (!r.ok) return r.json().then((e) => Promise.reject(e))
+          return r.json()
+        }
+      ),
+    onSettled: () => {
+      setPendingKey(null)
+      queryClient.invalidateQueries({ queryKey })
+    },
+  })
+
+  function handleToggle(key: string) {
+    if (pendingKey !== null) return
+    const item = data?.permissions.find((p) => p.key === key)
+    if (!item) return
+    setPendingKey(key)
+    if (item.overrideId !== null) {
+      deleteOverride.mutate(item.overrideId)
+    } else {
+      createOverride.mutate({
+        action: item.action,
+        subject: item.subject,
+        type: item.inBaseline ? 'revocation' : 'grant',
+      })
+    }
+  }
+
+  if (isLoading) return null
+
+  return (
+    <PermissionToggleList
+      items={(data?.permissions ?? []).map((p) => ({ ...p, disabled: p.key === pendingKey }))}
+      onToggle={handleToggle}
+    />
+  )
+}
+
+// ─── Profile edit fields (autosave) ──────────────────────────────────────────
+
+function ProfileEditFields({ profile }: { profile: ProfileRow }) {
+  const queryClient = useQueryClient()
+  const [name, setName] = useState(profile.name)
+  const savedName = useRef(profile.name)
+  const [nameStatus, setNameStatus] = useState<'idle' | 'saved' | 'error'>('idle')
+  const nameTimer = useRef<ReturnType<typeof setTimeout>>(undefined)
+
+  useEffect(() => () => clearTimeout(nameTimer.current), [])
+
+  const saveNameMutation = useMutation({
+    mutationFn: (newName: string) =>
+      fetch(`/api/profiles/${profile.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name: newName }),
+      }).then((r) => {
+        if (!r.ok) return r.json().then((e) => Promise.reject(e))
+        return r.json()
+      }),
+    onSuccess: (_, newName) => {
+      savedName.current = newName
+      queryClient.invalidateQueries({ queryKey: ['api/profiles'] })
+      clearTimeout(nameTimer.current)
+      setNameStatus('saved')
+      nameTimer.current = setTimeout(() => setNameStatus('idle'), 1500)
+    },
+    onError: () => setNameStatus('error'),
+  })
+
+  function handleNameBlur() {
+    const trimmed = name.trim()
+    if (!trimmed || trimmed === savedName.current) return
+    saveNameMutation.mutate(trimmed)
+  }
+
+  return (
+    <div className="px-6 py-5">
+      <div className="flex flex-col gap-1.5">
+        <div className="flex items-center gap-1.5">
+          <Label htmlFor="edit-profile-name">Name</Label>
+          <Check
+            size={12}
+            className={cn(
+              'text-[oklch(0.58_0.13_160)] transition-opacity duration-700',
+              nameStatus === 'saved' ? 'opacity-100' : 'opacity-0'
+            )}
+          />
+        </div>
+        <Input
+          id="edit-profile-name"
+          value={name}
+          onChange={(e) => {
+            setName(e.target.value)
+            if (nameStatus === 'error') setNameStatus('idle')
+          }}
+          onBlur={handleNameBlur}
+          error={!name.trim() || nameStatus === 'error'}
+          autoFocus
+        />
+        {!name.trim() && <FieldError message="Name is required" />}
+        {nameStatus === 'error' && name.trim() && (
+          <FieldError message="Failed to save — try again" />
+        )}
+      </div>
+    </div>
+  )
+}
+
+// ─── Profile role field (autosave, lives inside Role & Capabilities section) ──
+
+function ProfileRoleField({ profile }: { profile: ProfileRow }) {
+  const queryClient = useQueryClient()
+  const [tier, setTier] = useState<1 | 2 | 3 | 4>(profile.tier)
+  const savedTier = useRef(profile.tier)
+  const [tierErrorMsg, setTierErrorMsg] = useState<string | null>(null)
+
+  const saveTierMutation = useMutation({
+    mutationFn: (newTier: 1 | 2 | 3 | 4) =>
+      fetch(`/api/profiles/${profile.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ tier: newTier }),
+      }).then((r) => {
+        if (!r.ok) return r.json().then((e) => Promise.reject(e))
+        return r.json()
+      }),
+    onSuccess: (_, newTier) => {
+      savedTier.current = newTier
+      setTierErrorMsg(null)
+      queryClient.invalidateQueries({ queryKey: ['api/profiles'] })
+      queryClient.invalidateQueries({ queryKey: ['api/profiles', profile.id, 'permissions'] })
+    },
+    onError: (err: unknown) => {
+      setTier(savedTier.current)
+      setTierErrorMsg((err as { error?: string })?.error ?? 'Failed to save — try again')
+    },
+  })
+
+  function handleTierChange(t: 1 | 2 | 3 | 4) {
+    if (t === tier) return
+    setTier(t)
+    setTierErrorMsg(null)
+    saveTierMutation.mutate(t)
+  }
+
+  return (
+    <div className="flex flex-col gap-1.5 px-6 pb-5">
+      <div className="flex gap-2">
+        {TIER_OPTS.map(({ tier: t, label }) => (
+          <button
+            key={t}
+            type="button"
+            onClick={() => handleTierChange(t)}
+            className={cn(
+              'flex-1 py-1.5 rounded-lg border text-xs font-medium transition-colors',
+              tier === t
+                ? 'bg-primary/10 text-primary border-primary'
+                : 'border-border text-muted-foreground hover:bg-muted'
+            )}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+      {tierErrorMsg && <FieldError message={tierErrorMsg} />}
+    </div>
+  )
+}
+
+// ─── Profile edit drawer ──────────────────────────────────────────────────────
+
+function ProfileEditDrawer({
+  profile,
+  onClose,
+}: {
+  profile: ProfileRow | null
+  onClose: () => void
+}) {
+  const { id: activeProfileId } = useAuth()
+  const isOwnProfile = profile?.id === activeProfileId
+
+  return (
+    <Drawer open={!!profile} onClose={onClose} title={profile?.name ?? ''}>
+      {profile && (
+        <>
+          <ProfileEditFields profile={profile} />
+
+          <div className="border-t-2 border-border">
+            <div className="px-6 pt-5 pb-3">
+              <h3 className="text-[11px] font-bold uppercase tracking-[0.1em] text-muted-foreground">
+                Role & Capabilities
+              </h3>
+            </div>
+            <ProfileRoleField profile={profile} />
+            {!isOwnProfile && (
+              <div className="border-t border-border">
+                <CapabilitiesPanel profileId={profile.id} />
+              </div>
+            )}
+          </div>
+        </>
+      )}
+    </Drawer>
+  )
+}
+
 // ─── Profiles section ─────────────────────────────────────────────────────────
 
 function ProfilesSection() {
   const queryClient = useQueryClient()
-  const [formMode, setFormMode] = useState<'hidden' | 'create' | { edit: ProfileRow }>('hidden')
+  const [showCreate, setShowCreate] = useState(false)
+  const [editTarget, setEditTarget] = useState<ProfileRow | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<ProfileRow | null>(null)
 
   const { data: profiles = [] } = useQuery<ProfileRow[]>({
@@ -159,23 +410,7 @@ function ProfilesSection() {
       }),
     onSuccess: () => {
       invalidate()
-      setFormMode('hidden')
-    },
-  })
-
-  const editMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: UpdateProfileInput }) =>
-      fetch(`/api/profiles/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      }).then((r) => {
-        if (!r.ok) return r.json().then((e) => Promise.reject(e))
-        return r.json()
-      }),
-    onSuccess: () => {
-      invalidate()
-      setFormMode('hidden')
+      setShowCreate(false)
     },
   })
 
@@ -191,15 +426,13 @@ function ProfilesSection() {
     },
   })
 
-  const isMutating = createMutation.isPending || editMutation.isPending
-
   return (
     <>
       <SettingsSection
         title="Profiles"
         action={
-          formMode === 'hidden' ? (
-            <Button size="sm" variant="outline" onClick={() => setFormMode('create')}>
+          !showCreate ? (
+            <Button size="sm" variant="outline" onClick={() => setShowCreate(true)}>
               <Plus className="size-3.5" /> Add
             </Button>
           ) : undefined
@@ -210,35 +443,27 @@ function ProfilesSection() {
             key={profile.id}
             name={profile.name}
             tier={profile.tier}
-            isLast={i === nonFamily.length - 1 && formMode === 'hidden'}
-            onEdit={() => setFormMode({ edit: profile })}
+            isLast={i === nonFamily.length - 1 && !showCreate}
+            onEdit={() => setEditTarget(profile)}
             onRemove={() => setDeleteTarget(profile)}
           />
         ))}
 
-        {nonFamily.length === 0 && formMode === 'hidden' && (
+        {nonFamily.length === 0 && !showCreate && (
           <p className="px-6 py-5 text-sm text-muted-foreground">No profiles yet.</p>
         )}
 
-        {formMode === 'create' && (
+        {showCreate && (
           <ProfileForm
             onSave={(data) => createMutation.mutate(data)}
-            onCancel={() => setFormMode('hidden')}
-            isPending={isMutating}
-          />
-        )}
-
-        {typeof formMode === 'object' && 'edit' in formMode && (
-          <ProfileForm
-            initial={formMode.edit}
-            onSave={(data) =>
-              editMutation.mutate({ id: (formMode as { edit: ProfileRow }).edit.id, data })
-            }
-            onCancel={() => setFormMode('hidden')}
-            isPending={isMutating}
+            onCancel={() => setShowCreate(false)}
+            isPending={createMutation.isPending}
+            className="border-t border-border bg-secondary/40"
           />
         )}
       </SettingsSection>
+
+      <ProfileEditDrawer profile={editTarget} onClose={() => setEditTarget(null)} />
 
       <ConfirmDialog
         open={!!deleteTarget}
