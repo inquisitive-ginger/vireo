@@ -37,7 +37,13 @@
    _Reads:_ `docs/modules/platform/stories/accessibility-radix-audit.md`
    _Produces:_ `ConfirmDialog` on `@radix-ui/react-alert-dialog`; any other gaps resolved; Storybook stories updated
 
-7. **Mobile Surface Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
+7. **M1 Dev: appearance-preference-gate** ![Type](https://img.shields.io/badge/Type-Development-orange)
+   Add `platform.preferences.appearance` to `PERMISSION_REGISTRY`; wrap the dark mode toggle in Settings with `PermissionGate` so parents can revoke appearance control for tier 2–3 profiles. Small addendum to the settings-permissions + permission-overrides work.
+   _Surfaced in 2026-06-09 audit — deferred gap from settings-permissions story_
+   _Reads:_ `docs/modules/platform/stories/settings-permissions.md`, `docs/modules/platform/stories/permission-overrides.md`
+   _Produces:_ `platform.preferences.appearance` in `PERMISSION_REGISTRY`; Settings dark mode toggle gated by `PermissionGate`
+
+8. **Mobile Surface Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
    Mobile layout and nav design for the PWA. Deferred from M1 design sessions — required before mobile surface implementation can begin.
    _Reads:_ `docs/design-system.md` (Surfaces — Other Surfaces), `docs/modules/platform/stories/pwa-installable.md`
    _Produces:_ Updated `docs/design-system.md` with mobile surface spec

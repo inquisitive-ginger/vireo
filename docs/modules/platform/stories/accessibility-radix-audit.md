@@ -33,6 +33,6 @@ As a developer, I want all interactive UI components to use Radix UI primitives 
 ## Notes
 
 Radix primitives that are candidates based on current and near-term components:
-`react-alert-dialog` (ConfirmDialog), `react-switch` (PermissionToggleItem), `react-collapsible` (any future expandable sections), `react-tooltip` (icon buttons needing labels).
+`react-alert-dialog` (ConfirmDialog), `react-collapsible` (any future expandable sections), `react-tooltip` (icon buttons needing labels).
 
-`react-switch` will be used in the permission-overrides story — this audit story covers the remaining gaps.
+`react-switch` shipped in the permission-overrides story (`Switch` in `packages/ui`) — this audit story covers the remaining gaps.

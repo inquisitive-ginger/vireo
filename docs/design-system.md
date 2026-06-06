@@ -1,6 +1,6 @@
 # Design System
 
-> Last updated: 2026-06-04 — notification system, error states, empty states, motion tokens.
+> Last updated: 2026-06-08 — typography scale (11-token major second, Lora/DM Sans rules).
 
 This document records settled design decisions. Deferred items are
 explicitly marked — do not treat absence of a spec as a free choice.

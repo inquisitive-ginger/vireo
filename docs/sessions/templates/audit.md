@@ -24,16 +24,21 @@ references, or queue new sessions as a byproduct of gap-finding.
 ## Audit checklist
 
 Work through each area. Log every issue found before fixing anything.
-Present issues to the user one at a time; get approval before applying
-each fix.
+Once all checklist items are complete, present the full issues log as a
+summary table (columns: #, Issue, File) before beginning any fixes — this
+gives the user a complete picture upfront. Then present issues to the user
+one at a time; get approval before applying each fix. The user may approve
+batching multiple fixes at once; one-at-a-time is the default.
 
 ### 1. Milestone coherence
+
 - [ ] Are milestones sequenced correctly given inter-milestone dependencies?
 - [ ] Is each milestone's done definition achievable with its listed scope alone?
 - [ ] Are any features planned but not assigned to any milestone?
 - [ ] Is any milestone carrying scope that belongs to two separate concerns?
 
 ### 2. Cross-document consistency
+
 - [ ] Do story specs reflect all decisions made since the stories were written?
       (Design or architecture sessions may have settled things the stories still
       treat as deferred.)
@@ -45,12 +50,14 @@ each fix.
       the session queue?
 
 ### 3. Story completeness
+
 - [ ] Does every story have a clear dependency chain with no missing links?
 - [ ] Does every settled architectural or design decision have at least one
       story AC that implements it?
 - [ ] Does any story's Out scope incorrectly exclude something that is now settled?
 
 ### 4. Session queue health
+
 - [ ] Are design/architecture sessions that implementation sessions depend on
       queued ahead of them?
 - [ ] Are blocking dependencies between queued sessions explicitly noted?
@@ -58,6 +65,7 @@ each fix.
       exist in the queue?
 
 ### 5. ADR integrity
+
 - [ ] Do any ADRs reference milestone numbers that have since changed?
 - [ ] Do any ADRs reference decisions superseded by a later ADR without being
       marked Superseded?
@@ -71,7 +79,7 @@ each fix.
 3. **Wait for approval**
 4. **Apply the fix**, then move to the next issue
 
-One issue at a time. Do not batch.
+One issue at a time by default. The user may explicitly approve batching multiple fixes.
 
 ---
 
@@ -87,6 +95,6 @@ One issue at a time. Do not batch.
 
 _Fill in during the session._
 
-| # | Issue | Fix applied | Deferred? |
-|---|-------|-------------|-----------|
-| 1 | | | |
+| #   | Issue | Fix applied | Deferred? |
+| --- | ----- | ----------- | --------- |
+| 1   |       |             |           |

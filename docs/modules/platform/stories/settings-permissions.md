@@ -1,7 +1,7 @@
 # Story: Settings Permissions
 
 **Module:** platform
-**Status:** ⬜ Not Started
+**Status:** ✅ Done
 
 ## User story
 
@@ -25,7 +25,7 @@ The fix is to gate per section inside the page rather than at the route level.
 
 **Out:**
 
-- `PermissionGate`-based appearance locking (a parent revoking a child's ability to change appearance) — this is a follow-up for the permission-overrides story via `platform.preferences.appearance` in `PERMISSION_REGISTRY`
+- `PermissionGate`-based appearance locking (a parent revoking a child's ability to change appearance via `platform.preferences.appearance` in `PERMISSION_REGISTRY`) — not implemented in permission-overrides; queued as a follow-up (see session queue)
 - Any new settings sections beyond what profile-management already built
 
 ## Acceptance criteria

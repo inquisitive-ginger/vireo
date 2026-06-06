@@ -1,13 +1,16 @@
 # Story: Profile Management
 
 **Module:** platform
-**Status:** ⬜ Not Started
+**Status:** ✅ Done
 
 ## User story
+
 As a parent, I can manage family member profiles from a settings page so the family's accounts stay current.
 
 ## Scope
+
 **In:**
+
 - Settings route accessible via sidebar to tier 4 only
 - Profile list showing all non-family profiles with name, avatar, and tier
 - Create profile: name, tier (1–4), initials avatar
@@ -20,6 +23,7 @@ As a parent, I can manage family member profiles from a settings page so the fam
 **Out:** Avatar image file upload (initials fallback only in M1); permission overrides (permission-overrides story); profile archival or deactivation
 
 ## Acceptance criteria
+
 1. Tier 4 profiles see a Settings entry in the sidebar; tier 1–3 profiles do not
 2. The profile list shows all non-family profiles with name, avatar, and tier; the family pseudo-profile is not shown and cannot be edited or deleted
 3. A new profile can be created with a name and tier (1–4); it appears in the profile grid immediately
@@ -32,7 +36,9 @@ As a parent, I can manage family member profiles from a settings page so the fam
 10. `SettingsLayout`, `ProfileListItem`, and `ConfirmDialog` are exported from `packages/ui` with Storybook stories
 
 ## Dependencies
+
 - family-onboarding
 
 ## Notes
+
 Tier changes take effect on the next profile switch — the active session is not invalidated mid-session. The PIN entry component introduced in the family-onboarding story is reused here.

@@ -1,7 +1,7 @@
 # Story: Typography Scale
 
 **Module:** platform
-**Status:** ⬜ Not Started
+**Status:** ✅ Done
 **Type:** Design
 
 ## User story

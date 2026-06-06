@@ -1,6 +1,7 @@
 # Design Session Template
 
 ## Pre-session checklist
+
 - [ ] Read `CLAUDE.md`
 - [ ] Read `docs/vision.md`
 - [ ] Read `docs/architecture.md`
@@ -8,15 +9,19 @@
 - [ ] Read any module spec being designed (if surface-specific)
 
 ## Session scope
+
 _One sentence: what design question does this session answer?_
 
 ## Surfaces in scope
+
 _List which surfaces this session covers: tablet · mobile · TV · Pi display_
 
 ## Constraints coming in
+
 _List ADRs or prior decisions that bound the design space._
 
 ## Decisions to make
+
 _List the open questions this session must close. Each becomes a section in
 `docs/design-system.md` or a new ADR._
 
@@ -25,6 +30,7 @@ _List the open questions this session must close. Each becomes a section in
 ## During the session
 
 For each decision:
+
 1. State the options and their tradeoffs
 2. Ask: does this hold across all surfaces in scope?
 3. Ask: does this hold at all trust tiers?
@@ -37,12 +43,14 @@ write an ADR** rather than burying it in the design doc.
 ---
 
 ## Outputs (required before closing)
-- [ ] `docs/design-system.md` updated with decisions from this session
+
+- [ ] `docs/design-system.md` updated with decisions from this session; **Last updated** header updated to today's date
 - [ ] Any new ADRs written to `docs/decisions/NNN-title.md`
 - [ ] Session log committed to `docs/sessions/logs/YYYY-MM-DD-design-[topic].md`
 - [ ] `CLAUDE.md` current status updated
 
 ## Session log format
+
 ```
 ## What was decided
 ## What was produced

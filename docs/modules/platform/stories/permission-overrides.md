@@ -1,7 +1,7 @@
 # Story: Permission Overrides
 
 **Module:** platform
-**Status:** ⬜ Not Started
+**Status:** ✅ Done
 
 ## User story
 

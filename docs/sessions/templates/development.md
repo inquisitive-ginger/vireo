@@ -80,6 +80,7 @@ design session.
 - [ ] UX playground file deleted (if one was created this session)
 - [ ] Any new stub stories written and added to queue
 - [ ] Story status updated to ✅ Done in `docs/modules/[name]/progress.md`
+- [ ] Story spec `**Status:**` field updated to ✅ Done in `docs/modules/[name]/stories/[story].md`
 - [ ] Session log committed to `docs/sessions/logs/YYYY-MM-DD-dev-[story].md`
 - [ ] `CLAUDE.md` current status updated
 - [ ] `docs/sessions/queue.md` updated if this session unblocks or adds new entries
