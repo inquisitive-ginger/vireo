@@ -19,8 +19,8 @@ with the family that runs it. See [`docs/vision.md`](docs/vision.md).
 
 - **Milestone:** M1 — Platform Shell (in progress)
 - **Active stories:** None
-- **Last session:** 2026-06-09 — Dev: profile-management-tests (confirmed already done; tests were written during the profile-management session — queue updated)
-- **Next session:** M1 Dev: permission-overrides (see queue)
+- **Last session:** 2026-06-05 — Dev: permission-overrides (drawer-based profile edit; Switch, Drawer, PermissionToggleItem, PermissionToggleList in packages/ui; GET/POST/DELETE override routes; Capabilities panel in profile edit drawer)
+- **Next session:** M1 Dev: notification-infrastructure (see queue)
 
 > Update this section at the end of every session.
 

@@ -16,7 +16,10 @@ import {
   ProfileListItem,
   ConfirmDialog,
   PinInput,
+  PermissionToggleList,
+  Drawer,
 } from '@family-os/ui'
+import type { PermissionToggleListItem } from '@family-os/ui'
 import {
   CreateProfileSchema,
   type CreateProfileInput,
@@ -28,6 +31,12 @@ import {
 type ProfileRow = { id: string; name: string; tier: 1 | 2 | 3 | 4 }
 type DarkModeValue = boolean | null
 type PinResetPhase = 'idle' | 'current' | 'current-error' | 'new' | 'confirm' | 'mismatch'
+
+type PermissionRow = PermissionToggleListItem & {
+  action: string
+  subject: string
+  overrideId: string | null
+}
 
 const FamilyNameSchema = z.object({ name: z.string().min(1, 'Name is required').max(50) })
 type FamilyNameInput = z.infer<typeof FamilyNameSchema>
@@ -62,11 +71,13 @@ function ProfileForm({
   onSave,
   onCancel,
   isPending,
+  className,
 }: {
   initial?: ProfileRow
   onSave: (data: CreateProfileInput) => void
   onCancel: () => void
   isPending: boolean
+  className?: string
 }) {
   const {
     register,
@@ -83,7 +94,7 @@ function ProfileForm({
   return (
     <form
       onSubmit={handleSubmit(onSave)}
-      className="flex flex-col gap-4 px-6 py-5 border-t border-border bg-secondary/40"
+      className={cn('flex flex-col gap-4 px-6 py-5', className)}
     >
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="profile-name">Name</Label>
@@ -130,11 +141,133 @@ function ProfileForm({
   )
 }
 
+// ─── Capabilities panel ───────────────────────────────────────────────────────
+
+function CapabilitiesPanel({ profileId }: { profileId: string }) {
+  const queryClient = useQueryClient()
+  const queryKey = ['api/profiles', profileId, 'permissions']
+
+  const { data, isLoading } = useQuery<{ permissions: PermissionRow[] }>({
+    queryKey,
+    queryFn: () =>
+      fetch(`/api/profiles/${profileId}/permissions`).then((r) => r.json()) as Promise<{
+        permissions: PermissionRow[]
+      }>,
+  })
+
+  const createOverride = useMutation({
+    mutationFn: (body: { action: string; subject: string; type: 'grant' | 'revocation' }) =>
+      fetch(`/api/profiles/${profileId}/permissions`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(body),
+      }).then((r) => {
+        if (!r.ok) return r.json().then((e) => Promise.reject(e))
+        return r.json()
+      }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey }),
+  })
+
+  const deleteOverride = useMutation({
+    mutationFn: (overrideId: string) =>
+      fetch(`/api/profiles/${profileId}/permissions/${overrideId}`, { method: 'DELETE' }).then(
+        (r) => {
+          if (!r.ok) return r.json().then((e) => Promise.reject(e))
+          return r.json()
+        }
+      ),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey }),
+  })
+
+  function handleToggle(key: string) {
+    const item = data?.permissions.find((p) => p.key === key)
+    if (!item) return
+    if (item.overrideId !== null) {
+      deleteOverride.mutate(item.overrideId)
+    } else {
+      createOverride.mutate({
+        action: item.action,
+        subject: item.subject,
+        type: item.inBaseline ? 'revocation' : 'grant',
+      })
+    }
+  }
+
+  const isPending = createOverride.isPending || deleteOverride.isPending
+
+  if (isLoading) return null
+
+  return (
+    <PermissionToggleList
+      items={(data?.permissions ?? []).map((p) => ({ ...p, disabled: isPending }))}
+      onToggle={handleToggle}
+    />
+  )
+}
+
+// ─── Profile edit drawer ──────────────────────────────────────────────────────
+
+function ProfileEditDrawer({
+  profile,
+  onClose,
+}: {
+  profile: ProfileRow | null
+  onClose: () => void
+}) {
+  const { id: activeProfileId } = useAuth()
+  const queryClient = useQueryClient()
+
+  const editMutation = useMutation({
+    mutationFn: ({ id, data }: { id: string; data: UpdateProfileInput }) =>
+      fetch(`/api/profiles/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(data),
+      }).then((r) => {
+        if (!r.ok) return r.json().then((e) => Promise.reject(e))
+        return r.json()
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['api/profiles'] })
+      onClose()
+    },
+  })
+
+  const isOwnProfile = profile?.id === activeProfileId
+
+  return (
+    <Drawer open={!!profile} onClose={onClose} title={profile?.name ?? ''}>
+      {profile && (
+        <div className="divide-y divide-border">
+          <ProfileForm
+            initial={profile}
+            onSave={(data) => editMutation.mutate({ id: profile.id, data })}
+            onCancel={onClose}
+            isPending={editMutation.isPending}
+          />
+
+          {!isOwnProfile && (
+            <div>
+              <div className="px-6 py-4">
+                <h3 className="text-[11px] font-bold uppercase tracking-[0.1em] text-muted-foreground">
+                  Capabilities
+                </h3>
+              </div>
+              <CapabilitiesPanel profileId={profile.id} />
+            </div>
+          )}
+        </div>
+      )}
+    </Drawer>
+  )
+}
+
 // ─── Profiles section ─────────────────────────────────────────────────────────
 
 function ProfilesSection() {
   const queryClient = useQueryClient()
-  const [formMode, setFormMode] = useState<'hidden' | 'create' | { edit: ProfileRow }>('hidden')
+  const [showCreate, setShowCreate] = useState(false)
+  const [editTarget, setEditTarget] = useState<ProfileRow | null>(null)
   const [deleteTarget, setDeleteTarget] = useState<ProfileRow | null>(null)
 
   const { data: profiles = [] } = useQuery<ProfileRow[]>({
@@ -159,23 +292,7 @@ function ProfilesSection() {
       }),
     onSuccess: () => {
       invalidate()
-      setFormMode('hidden')
-    },
-  })
-
-  const editMutation = useMutation({
-    mutationFn: ({ id, data }: { id: string; data: UpdateProfileInput }) =>
-      fetch(`/api/profiles/${id}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(data),
-      }).then((r) => {
-        if (!r.ok) return r.json().then((e) => Promise.reject(e))
-        return r.json()
-      }),
-    onSuccess: () => {
-      invalidate()
-      setFormMode('hidden')
+      setShowCreate(false)
     },
   })
 
@@ -191,15 +308,13 @@ function ProfilesSection() {
     },
   })
 
-  const isMutating = createMutation.isPending || editMutation.isPending
-
   return (
     <>
       <SettingsSection
         title="Profiles"
         action={
-          formMode === 'hidden' ? (
-            <Button size="sm" variant="outline" onClick={() => setFormMode('create')}>
+          !showCreate ? (
+            <Button size="sm" variant="outline" onClick={() => setShowCreate(true)}>
               <Plus className="size-3.5" /> Add
             </Button>
           ) : undefined
@@ -210,35 +325,27 @@ function ProfilesSection() {
             key={profile.id}
             name={profile.name}
             tier={profile.tier}
-            isLast={i === nonFamily.length - 1 && formMode === 'hidden'}
-            onEdit={() => setFormMode({ edit: profile })}
+            isLast={i === nonFamily.length - 1 && !showCreate}
+            onEdit={() => setEditTarget(profile)}
             onRemove={() => setDeleteTarget(profile)}
           />
         ))}
 
-        {nonFamily.length === 0 && formMode === 'hidden' && (
+        {nonFamily.length === 0 && !showCreate && (
           <p className="px-6 py-5 text-sm text-muted-foreground">No profiles yet.</p>
         )}
 
-        {formMode === 'create' && (
+        {showCreate && (
           <ProfileForm
             onSave={(data) => createMutation.mutate(data)}
-            onCancel={() => setFormMode('hidden')}
-            isPending={isMutating}
-          />
-        )}
-
-        {typeof formMode === 'object' && 'edit' in formMode && (
-          <ProfileForm
-            initial={formMode.edit}
-            onSave={(data) =>
-              editMutation.mutate({ id: (formMode as { edit: ProfileRow }).edit.id, data })
-            }
-            onCancel={() => setFormMode('hidden')}
-            isPending={isMutating}
+            onCancel={() => setShowCreate(false)}
+            isPending={createMutation.isPending}
+            className="border-t border-border bg-secondary/40"
           />
         )}
       </SettingsSection>
+
+      <ProfileEditDrawer profile={editTarget} onClose={() => setEditTarget(null)} />
 
       <ConfirmDialog
         open={!!deleteTarget}

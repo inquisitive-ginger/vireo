@@ -37,7 +37,12 @@
    _Reads:_ `docs/modules/family-feed/stories/family-feed-compose.md`
    _Produces:_ Post creation flow; `ComposeForm` in `packages/ui`; `family-feed.post.create` in `PERMISSION_REGISTRY`
 
-7. **Mobile Surface Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
+7. **M1 Dev: accessibility-radix-audit** ![Type](https://img.shields.io/badge/Type-Development-orange)
+   Audit `packages/ui` components and replace custom interactive implementations with Radix primitives where accessibility behavior (focus trap, Escape, ARIA state) was missed.
+   _Reads:_ `docs/modules/platform/stories/accessibility-radix-audit.md`
+   _Produces:_ `ConfirmDialog` on `@radix-ui/react-alert-dialog`; any other gaps resolved; Storybook stories updated
+
+8. **Mobile Surface Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
    Mobile layout and nav design for the PWA. Deferred from M1 design sessions — required before mobile surface implementation can begin.
    _Reads:_ `docs/design-system.md` (Surfaces — Other Surfaces), `docs/modules/platform/stories/pwa-installable.md`
    _Produces:_ Updated `docs/design-system.md` with mobile surface spec
