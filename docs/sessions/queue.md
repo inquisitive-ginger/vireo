@@ -7,42 +7,37 @@
 
 ## Up Next
 
-1. **M1 Dev: permission-overrides** ![Type](https://img.shields.io/badge/Type-Development-orange)
-   Per-profile capability grants and revocations.
-   _Reads:_ `docs/modules/platform/stories/permission-overrides.md`
-   _Produces:_ Capabilities panel; `PermissionToggleList`, `PermissionToggleItem` in `packages/ui`
-
-2. **M1 Dev: notification-infrastructure** ![Type](https://img.shields.io/badge/Type-Development-orange)
+1. **M1 Dev: notification-infrastructure** ![Type](https://img.shields.io/badge/Type-Development-orange)
    `platform.notify()` API, Sonner toast, notification tray, bell badge.
    _Reads:_ `docs/modules/platform/stories/notification-infrastructure.md`, `docs/design-system.md` (Notification System)
    _Produces:_ `platform.notify()` in `@family-os/platform`; `Toast`, `NotificationTray`, `NotificationItem`, `BellBadge` in `packages/ui`
 
-3. **M1 Dev: pwa-installable** ![Type](https://img.shields.io/badge/Type-Development-orange)
+2. **M1 Dev: pwa-installable** ![Type](https://img.shields.io/badge/Type-Development-orange)
    Web app manifest, service worker, installable PWA.
    _Reads:_ `docs/modules/platform/stories/pwa-installable.md`
    _Produces:_ Installable PWA on Android Chrome
 
-4. **M1 Dev: web-push** ![Type](https://img.shields.io/badge/Type-Development-orange)
+3. **M1 Dev: web-push** ![Type](https://img.shields.io/badge/Type-Development-orange)
    Web Push subscription and delivery from `platform.notify()`.
    _Reads:_ `docs/modules/platform/stories/web-push.md`
    _Produces:_ Push notification delivery for tier 3–4 profiles
 
-5. **M1 Dev: family-feed-read** ![Type](https://img.shields.io/badge/Type-Development-orange)
+4. **M1 Dev: family-feed-read** ![Type](https://img.shields.io/badge/Type-Development-orange)
    Family Feed plugin: scaffold, data model, read API, widget, feed view.
    _Reads:_ `docs/modules/family-feed/stories/family-feed-read.md`, `docs/modules/family-feed/spec.md`
    _Produces:_ Family Feed plugin installed and rendering; `FeedPostCard`, `FeedEmptyState` in `packages/ui`
 
-6. **M1 Dev: family-feed-compose** ![Type](https://img.shields.io/badge/Type-Development-orange)
+5. **M1 Dev: family-feed-compose** ![Type](https://img.shields.io/badge/Type-Development-orange)
    Compose form, create post API, permission registration.
    _Reads:_ `docs/modules/family-feed/stories/family-feed-compose.md`
    _Produces:_ Post creation flow; `ComposeForm` in `packages/ui`; `family-feed.post.create` in `PERMISSION_REGISTRY`
 
-7. **M1 Dev: accessibility-radix-audit** ![Type](https://img.shields.io/badge/Type-Development-orange)
+6. **M1 Dev: accessibility-radix-audit** ![Type](https://img.shields.io/badge/Type-Development-orange)
    Audit `packages/ui` components and replace custom interactive implementations with Radix primitives where accessibility behavior (focus trap, Escape, ARIA state) was missed.
    _Reads:_ `docs/modules/platform/stories/accessibility-radix-audit.md`
    _Produces:_ `ConfirmDialog` on `@radix-ui/react-alert-dialog`; any other gaps resolved; Storybook stories updated
 
-8. **Mobile Surface Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
+7. **Mobile Surface Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
    Mobile layout and nav design for the PWA. Deferred from M1 design sessions — required before mobile surface implementation can begin.
    _Reads:_ `docs/design-system.md` (Surfaces — Other Surfaces), `docs/modules/platform/stories/pwa-installable.md`
    _Produces:_ Updated `docs/design-system.md` with mobile surface spec
@@ -50,6 +45,10 @@
 ---
 
 ## Recently Completed
+
+- **2026-06-06 — M1 Dev: permission-overrides** ![Type](https://img.shields.io/badge/Type-Development-orange)
+  Drawer-based profile edit (autosave name, role buttons). `GET/POST/DELETE` override routes with CASL baseline merge. `Switch`, `Drawer`, `PermissionToggleItem`, `PermissionToggleList` in `packages/ui`. Last-admin guard (409). Tier change atomically clears overrides. React.memo + pendingKey fix for switch re-render. 79 API unit tests + 8 E2E tests. `dev/reset` now seeds layout config + family profile layout.
+  _See:_ `docs/sessions/logs/2026-06-06-dev-permission-overrides.md`
 
 - **2026-06-06 — M1 Dev: profile-management-tests** ![Type](https://img.shields.io/badge/Type-Development-orange)
   Written as part of the profile-management session. 11 E2E tests (route guard, family name, profile CRUD, PIN reset) in `profile-management.spec.ts`; API integration tests covering `GET /auth/pin-exists`, `POST /auth/pin/check`, `PATCH /settings/family-name` in `profiles.test.ts`. All 62 API tests and 11 E2E tests passing.
