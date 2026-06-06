@@ -27,6 +27,26 @@ export type PermissionOverride = {
   grantedBy?: string
 }
 
+export type NotifyVariant = 'success' | 'info' | 'warning' | 'error'
+
+export type NotifyPayload = {
+  title: string
+  body?: string
+  variant: NotifyVariant
+  priority?: 'info' | 'alert'
+  actions?: Array<{ label: string; href: string }>
+}
+
+export type NotificationRecord = {
+  id: string
+  title: string
+  body?: string | null
+  variant: NotifyVariant
+  priority: string
+  isRead: boolean
+  createdAt: string
+}
+
 export const PERMISSION_REGISTRY = {
   'platform.profile.view': {
     label: 'View profiles',

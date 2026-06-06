@@ -43,6 +43,7 @@ afterAll(async () => {
 })
 
 beforeEach(async () => {
+  await prisma.notification.deleteMany()
   await prisma.widgetLayout.deleteMany()
   await prisma.permissionOverride.deleteMany()
   await prisma.profile.deleteMany({

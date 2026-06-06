@@ -8,6 +8,9 @@ export type {
   PermissionString,
   RegistryEntry,
   PluginManifest,
+  NotifyPayload,
+  NotifyVariant,
+  NotificationRecord,
 } from './types'
 
 export { PERMISSION_REGISTRY } from './types'
@@ -24,5 +27,6 @@ export { useAuth } from './hooks/useAuth'
 export { useTier } from './hooks/useTier'
 export { usePermissions } from './hooks/usePermissions'
 export { useEventBus } from './hooks/useEventBus'
+export { useNotify } from './hooks/useNotify'
 
 export { MockAuthProvider } from './testing'

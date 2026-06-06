@@ -1,0 +1,89 @@
+import * as Dialog from '@radix-ui/react-dialog'
+import { X, Bell } from 'lucide-react'
+import { cn } from '../lib/utils'
+import { Button } from './button'
+import { NotificationItem } from './notification-item'
+import type { NotifyVariant } from './notification-item'
+
+export interface NotificationEntry {
+  id: string
+  title: string
+  body?: string | null
+  variant: NotifyVariant
+  createdAt: string
+  isRead: boolean
+}
+
+export interface NotificationTrayProps {
+  open: boolean
+  onClose: () => void
+  notifications: NotificationEntry[]
+  loading?: boolean
+  className?: string
+}
+
+export function NotificationTray({
+  open,
+  onClose,
+  notifications,
+  loading = false,
+  className,
+}: NotificationTrayProps) {
+  return (
+    <Dialog.Root open={open} onOpenChange={(o) => !o && onClose()}>
+      <Dialog.Portal>
+        <Dialog.Overlay className="fixed inset-0 z-40 bg-black/20" />
+        <Dialog.Content
+          aria-describedby={undefined}
+          className={cn(
+            'fixed inset-y-0 right-0 z-50 flex w-[400px] flex-col',
+            'bg-background border-l border-border shadow-xl',
+            'animate-tray-in focus:outline-none',
+            className
+          )}
+        >
+          <div className="flex shrink-0 items-center justify-between border-b border-border px-4 py-4">
+            <Dialog.Title className="text-card-title flex items-center gap-2">
+              <Bell size={16} aria-hidden />
+              Notifications
+            </Dialog.Title>
+            <Dialog.Close asChild>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="size-8 p-0"
+                aria-label="Close notifications"
+              >
+                <X className="size-4" />
+              </Button>
+            </Dialog.Close>
+          </div>
+
+          <div className="flex-1 overflow-y-auto">
+            {loading ? (
+              <div className="flex items-center justify-center h-32 text-sm text-muted-foreground">
+                Loading…
+              </div>
+            ) : notifications.length === 0 ? (
+              <div className="flex flex-col items-center justify-center gap-3 h-48 px-6 text-center">
+                <Bell size={40} className="text-muted-foreground" aria-hidden />
+                <p className="text-heading font-display text-foreground">No notifications</p>
+                <p className="text-sm text-muted-foreground">You're all caught up.</p>
+              </div>
+            ) : (
+              notifications.map((n) => (
+                <NotificationItem
+                  key={n.id}
+                  title={n.title}
+                  body={n.body}
+                  variant={n.variant}
+                  createdAt={n.createdAt}
+                />
+              ))
+            )}
+          </div>
+        </Dialog.Content>
+      </Dialog.Portal>
+    </Dialog.Root>
+  )
+}

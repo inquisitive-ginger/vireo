@@ -1,0 +1,102 @@
+import fp from 'fastify-plugin'
+import type { FastifyPluginAsync } from 'fastify'
+import { prisma } from '@family-os/platform/server'
+
+const MAX_NOTIFICATIONS = 50
+
+const notificationsPlugin: FastifyPluginAsync = async (fastify) => {
+  // POST /notifications — persist a notification for tier 2+ profiles
+  fastify.post('/notifications', async (request) => {
+    const { profile } = request
+    if (profile.tier < 2) return { ok: true }
+
+    const body = request.body as {
+      title?: string
+      body?: string
+      variant?: string
+      priority?: string
+    }
+
+    if (!body?.title || !body?.variant) return { ok: false, error: 'title and variant required' }
+
+    const notification = await prisma.notification.create({
+      data: {
+        profileId: profile.id,
+        title: body.title,
+        body: body.body ?? null,
+        variant: body.variant,
+        priority: body.priority ?? 'info',
+      },
+    })
+
+    // Prune oldest beyond the limit
+    const count = await prisma.notification.count({ where: { profileId: profile.id } })
+    if (count > MAX_NOTIFICATIONS) {
+      const oldest = await prisma.notification.findMany({
+        where: { profileId: profile.id },
+        orderBy: { createdAt: 'asc' },
+        take: count - MAX_NOTIFICATIONS,
+        select: { id: true },
+      })
+      await prisma.notification.deleteMany({ where: { id: { in: oldest.map((n) => n.id) } } })
+    }
+
+    return { ok: true, id: notification.id }
+  })
+
+  // GET /notifications — list for active profile, newest first
+  fastify.get('/notifications', async (request, reply) => {
+    if (request.profile.tier < 2) return reply.status(403).send({ error: 'Requires tier 2' })
+
+    const notifications = await prisma.notification.findMany({
+      where: { profileId: request.profile.id },
+      orderBy: { createdAt: 'desc' },
+      take: MAX_NOTIFICATIONS,
+    })
+
+    return notifications.map((n) => ({
+      id: n.id,
+      title: n.title,
+      body: n.body,
+      variant: n.variant,
+      priority: n.priority,
+      isRead: n.isRead,
+      createdAt: n.createdAt.toISOString(),
+    }))
+  })
+
+  // GET /notifications/unread — unread count + max severity for the badge
+  fastify.get('/notifications/unread', async (request, reply) => {
+    if (request.profile.tier < 2) return reply.status(403).send({ error: 'Requires tier 2' })
+
+    const unread = await prisma.notification.findMany({
+      where: { profileId: request.profile.id, isRead: false },
+      select: { variant: true },
+    })
+
+    const SEVERITY_ORDER = ['error', 'warning', 'info', 'success']
+    let maxSeverity: string | null = null
+    for (const sev of SEVERITY_ORDER) {
+      if (unread.some((n) => n.variant === sev)) {
+        maxSeverity = sev
+        break
+      }
+    }
+
+    return { unreadCount: unread.length, maxSeverity }
+  })
+
+  // POST /notifications/read — mark all as read for active profile
+  fastify.post('/notifications/read', async (request, reply) => {
+    if (request.profile.tier < 2) return reply.status(403).send({ error: 'Requires tier 2' })
+
+    await prisma.notification.updateMany({
+      where: { profileId: request.profile.id, isRead: false },
+      data: { isRead: true },
+    })
+
+    return { ok: true }
+  })
+}
+
+export default fp(notificationsPlugin, { name: 'notifications' })

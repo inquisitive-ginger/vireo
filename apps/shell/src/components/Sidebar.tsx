@@ -1,9 +1,11 @@
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import { NavLink } from 'react-router-dom'
 import { Home, Settings, ChevronRight } from 'lucide-react'
 import { useAuth } from '@family-os/platform'
-import { cn, ProfileAvatar } from '@family-os/ui'
+import { cn, ProfileAvatar, BellBadge, NotificationTray } from '@family-os/ui'
+import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { ProfileGrid } from './ProfileGrid'
+import type { NotificationEntry } from '@family-os/ui'
 
 export function Sidebar() {
   return (
@@ -12,6 +14,7 @@ export function Sidebar() {
       <nav className="flex-1 py-2" aria-label="Main navigation">
         <NavItem to="/" icon={<Home size={18} aria-hidden />} label="Home" end />
       </nav>
+      <NotificationBell />
       <SettingsNavItem />
     </aside>
   )
@@ -46,6 +49,66 @@ function ProfileChip() {
       </button>
       <ProfileGrid open={gridOpen} onClose={() => setGridOpen(false)} />
     </>
+  )
+}
+
+type UnreadData = {
+  unreadCount: number
+  maxSeverity: 'success' | 'info' | 'warning' | 'error' | null
+}
+
+function NotificationBell() {
+  const { tier } = useAuth()
+  const queryClient = useQueryClient()
+  const [trayOpen, setTrayOpen] = useState(false)
+
+  const { data: unread } = useQuery<UnreadData>({
+    queryKey: ['notifications/unread'],
+    queryFn: () => fetch('/api/notifications/unread').then((r) => r.json()) as Promise<UnreadData>,
+    enabled: tier >= 2,
+    staleTime: 30_000,
+  })
+
+  const { data: notifications = [], isFetching } = useQuery<NotificationEntry[]>({
+    queryKey: ['notifications'],
+    queryFn: () =>
+      fetch('/api/notifications').then((r) => r.json()) as Promise<NotificationEntry[]>,
+    enabled: trayOpen && tier >= 2,
+    staleTime: 0,
+  })
+
+  useEffect(() => {
+    if (tier < 2) return
+    function onNotify() {
+      queryClient.invalidateQueries({ queryKey: ['notifications/unread'] })
+    }
+    window.addEventListener('platform:notification', onNotify)
+    return () => window.removeEventListener('platform:notification', onNotify)
+  }, [tier, queryClient])
+
+  async function openTray() {
+    setTrayOpen(true)
+    await fetch('/api/notifications/read', { method: 'POST', credentials: 'include' })
+    queryClient.invalidateQueries({ queryKey: ['notifications/unread'] })
+    queryClient.invalidateQueries({ queryKey: ['notifications'] })
+  }
+
+  if (tier < 2) return null
+
+  return (
+    <div className="px-1 py-1 border-t border-border">
+      <BellBadge
+        count={unread?.unreadCount ?? 0}
+        maxSeverity={unread?.maxSeverity ?? null}
+        onClick={openTray}
+      />
+      <NotificationTray
+        open={trayOpen}
+        onClose={() => setTrayOpen(false)}
+        notifications={notifications}
+        loading={isFetching}
+      />
+    </div>
   )
 }
 

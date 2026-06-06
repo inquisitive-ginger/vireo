@@ -225,3 +225,19 @@
     font-family: var(--font-ui);
   }
 }
+
+/* Notification tray slide-in animation */
+@keyframes tray-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@utility animate-tray-in {
+  @media (prefers-reduced-motion: no-preference) {
+    animation: tray-in var(--duration-slow) var(--ease-in-out);
+  }
+}

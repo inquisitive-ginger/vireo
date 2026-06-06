@@ -19,8 +19,8 @@ with the family that runs it. See [`docs/vision.md`](docs/vision.md).
 
 - **Milestone:** M1 — Platform Shell (in progress)
 - **Active stories:** None
-- **Last session:** 2026-06-06 — accessibility-radix-audit (`ConfirmDialog` replaced with `@radix-ui/react-alert-dialog`; full audit confirmed Drawer + Switch already on Radix; PinInput exempt)
-- **Next session:** M1 Dev: notification-infrastructure (see queue)
+- **Last session:** 2026-06-06 — notification-infrastructure (`platform.notify()` / `useNotify()` hook, Sonner toast, notification tray + bell badge, `notifications` DB table, 17 API tests, 14 UI tests)
+- **Next session:** M1 Dev: pwa-installable (see queue)
 
 > Update this section at the end of every session.
 

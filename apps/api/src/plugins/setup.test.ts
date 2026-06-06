@@ -47,6 +47,7 @@ afterAll(async () => {
 })
 
 beforeEach(async () => {
+  await prisma.notification.deleteMany()
   await prisma.widgetLayout.deleteMany()
   await prisma.profile.deleteMany({ where: { id: { not: 'family' } } })
   await prisma.systemConfig.deleteMany({
