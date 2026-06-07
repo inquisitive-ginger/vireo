@@ -1,13 +1,16 @@
 # Story: Notification Infrastructure
 
 **Module:** platform
-**Status:** ⬜ Not Started
+**Status:** ✅ Done
 
 ## User story
+
 As a user, I receive in-app notifications from the platform so that important events surface without interrupting what I'm doing.
 
 ## Scope
+
 **In:**
+
 - `platform.notify({ title, body?, variant, priority?, actions? })` exported from `@family-os/platform`
 - Sonner toast at bottom-right: max 3 visible, queued; auto-dismiss per variant (success 3s, info 5s, warning 8s, error persistent)
 - Notification tray: bell icon in sidebar between nav items and Settings, visible to tier 2+ only
@@ -21,6 +24,7 @@ As a user, I receive in-app notifications from the platform so that important ev
 **Out:** Web Push delivery (web-push story); per-plugin notification preferences; deduplication or batching
 
 ## Acceptance criteria
+
 1. Calling `platform.notify({ title: 'Test', variant: 'success' })` renders a Sonner toast at bottom-right that auto-dismisses after 3s
 2. `variant: 'error'` toasts do not auto-dismiss and must be explicitly dismissed
 3. A maximum of 3 toasts are visible simultaneously; additional notifications queue and appear as earlier toasts dismiss
@@ -34,7 +38,9 @@ As a user, I receive in-app notifications from the platform so that important ev
 11. `Toast`, `NotificationTray`, `NotificationItem`, and `BellBadge` are exported from `packages/ui` with Storybook stories covering key states (variants, empty tray, badge severity levels)
 
 ## Dependencies
+
 - home-surface
 
 ## Notes
+
 New platform DB table: `notifications { id uuid PK, profile_id uuid FK → platform.profiles, title text, body text nullable, variant text, priority text, is_read boolean default false, created_at timestamptz }`. Motion tokens (`--duration-*`, `--ease-*`) are added in the home-surface story and referenced here for tray animation timing.

@@ -20,8 +20,25 @@ model Profile {
   grantedOverrides    PermissionOverride[] @relation("granted_by_overrides")
   systemConfigs       SystemConfig[]
   widgetLayouts       WidgetLayout[]
+  notifications       Notification[]
 
   @@map("profiles")
+  @@schema("platform")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  profileId String   @map("profile_id")
+  title     String
+  body      String?
+  variant   String
+  priority  String   @default("info")
+  isRead    Boolean  @default(false) @map("is_read")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  profile Profile @relation(fields: [profileId], references: [id])
+
+  @@map("notifications")
   @@schema("platform")
 }
 
