@@ -32,6 +32,11 @@
    _Reads:_ `docs/design-system.md` (Surfaces — Other Surfaces), `docs/modules/platform/stories/pwa-installable.md`
    _Produces:_ Updated `docs/design-system.md` with mobile surface spec
 
+6. **M1 Dev: push-multi-profile-device** ![Type](https://img.shields.io/badge/Type-Development-orange)
+   Allow multiple profiles to hold subscriptions for the same endpoint. Currently `endpoint` is unique — the last profile to subscribe on a shared device displaces the previous one. Migrate to `(profile_id, endpoint)` composite key; update 410 cleanup to delete by endpoint across all profiles.
+   _Reads:_ `docs/modules/platform/stories/push-multi-profile-device.md`
+   _Produces:_ Schema migration; updated subscribe/unsubscribe/410-cleanup logic; updated tests
+
 ---
 
 ## Recently Completed

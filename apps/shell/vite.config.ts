@@ -48,6 +48,8 @@ export default defineConfig({
   },
   preview: {
     port: 4173,
+    host: true,
+    allowedHosts: ['.trycloudflare.com'],
     proxy: {
       '/events': { target: 'ws://localhost:3000', ws: true },
       '/api': { target: 'http://localhost:3000' },
