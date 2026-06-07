@@ -31,14 +31,20 @@ async function cacheFirst(request) {
   const cached = await caches.match(request)
   if (cached) return cached
   const response = await fetch(request)
-  if (response.ok) caches.open(CACHE).then((c) => c.put(request, response.clone()))
+  if (response.ok && request.method === 'GET') {
+    const clone = response.clone()
+    caches.open(CACHE).then((c) => c.put(request, clone))
+  }
   return response
 }
 
 async function networkFirst(request) {
   try {
     const response = await fetch(request)
-    if (response.ok) caches.open(CACHE).then((c) => c.put(request, response.clone()))
+    if (response.ok && request.method === 'GET') {
+      const clone = response.clone()
+      caches.open(CACHE).then((c) => c.put(request, clone))
+    }
     return response
   } catch {
     return (await caches.match(request)) ?? Response.error()
