@@ -7,31 +7,30 @@
 
 ## Up Next
 
-1. **M1 Dev: web-push** ![Type](https://img.shields.io/badge/Type-Development-orange)
+1. **M1 Design: notification-design-audit** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
+   Two open questions from the notification-infrastructure session: (1) design alternatives for `NotificationItem` — density, read/unread state, icon/timestamp placement; (2) notification routing model — family feed vs. notification system distinction, broadcast targeting, family profile / tier 1 tray access.
+   _Reads:_ `docs/modules/platform/stories/notification-design-audit.md`
+   _Produces:_ Updated `NotificationItem` design; notification routing ADR
+
+2. **M1 Dev: web-push** ![Type](https://img.shields.io/badge/Type-Development-orange)
    Web Push subscription and delivery from `platform.notify()`.
    _Reads:_ `docs/modules/platform/stories/web-push.md`
    _Produces:_ Push notification delivery for tier 3–4 profiles
 
-2. **M1 Dev: family-feed-read** ![Type](https://img.shields.io/badge/Type-Development-orange)
+3. **M1 Dev: family-feed-read** ![Type](https://img.shields.io/badge/Type-Development-orange)
    Family Feed plugin: scaffold, data model, read API, widget, feed view.
    _Reads:_ `docs/modules/family-feed/stories/family-feed-read.md`, `docs/modules/family-feed/spec.md`
    _Produces:_ Family Feed plugin installed and rendering; `FeedPostCard`, `FeedEmptyState` in `packages/ui`
 
-3. **M1 Dev: family-feed-compose** ![Type](https://img.shields.io/badge/Type-Development-orange)
+4. **M1 Dev: family-feed-compose** ![Type](https://img.shields.io/badge/Type-Development-orange)
    Compose form, create post API, permission registration.
    _Reads:_ `docs/modules/family-feed/stories/family-feed-compose.md`
    _Produces:_ Post creation flow; `ComposeForm` in `packages/ui`; `family-feed.post.create` in `PERMISSION_REGISTRY`
 
-4. **M1 Dev: appearance-preference-gate** ![Type](https://img.shields.io/badge/Type-Development-orange)
+5. **M1 Dev: appearance-preference-gate** ![Type](https://img.shields.io/badge/Type-Development-orange)
    Add `platform.preferences.appearance` to `PERMISSION_REGISTRY`; wrap the dark mode toggle in Settings with `PermissionGate` so parents can revoke appearance control for tier 2–3 profiles. Small addendum to the settings-permissions + permission-overrides work.
-   _Surfaced in 2026-06-09 audit — deferred gap from settings-permissions story_
-   _Reads:_ `docs/modules/platform/stories/settings-permissions.md`, `docs/modules/platform/stories/permission-overrides.md`
+   _Reads:_ `docs/modules/platform/stories/appearance-preference-gate.md`
    _Produces:_ `platform.preferences.appearance` in `PERMISSION_REGISTRY`; Settings dark mode toggle gated by `PermissionGate`
-
-5. **M1 Design: notification-design-audit** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
-   Two open questions from the notification-infrastructure session: (1) design alternatives for `NotificationItem` — density, read/unread state, icon/timestamp placement; (2) notification routing model — family feed vs. notification system distinction, broadcast targeting, family profile / tier 1 tray access.
-   _Reads:_ `docs/modules/platform/stories/notification-design-audit.md`
-   _Produces:_ Updated `NotificationItem` design; notification routing ADR
 
 6. **Mobile Surface Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
    Mobile layout and nav design for the PWA. Deferred from M1 design sessions — required before mobile surface implementation can begin.
@@ -106,7 +105,7 @@
   _See:_ `docs/sessions/logs/2026-05-30-dev-event-bus.md`
 
 - **2026-05-30 — Architecture: Testing Strategy** ![Type](https://img.shields.io/badge/Type-Architecture-blue)
-  Vitest (shares Vite pipeline) + RTL + jsdom for unit/component tests. `fastify.inject()` for route tests. Playwright for E2E (deferred to M1). Storybook 8 in `packages/ui` (ships in M0). Test conventions: colocated files, no coverage thresholds, real PostgreSQL for integration tests, `packages/test-utils` for shared factories. ADRs 023–026. Architecture template amended to require story spec updates as an output.
+  Vitest (shares Vite pipeline) + RTL + jsdom for unit/component tests. `fastify.inject()` for route tests. Playwright for E2E (deferred to M1). Storybook 10 in `packages/ui` (ships in M0). Test conventions: colocated files, no coverage thresholds, real PostgreSQL for integration tests, `packages/test-utils` for shared factories. ADRs 023–026. Architecture template amended to require story spec updates as an output.
   _See:_ `docs/sessions/logs/2026-05-30-architecture-testing-strategy.md`
 
 - **2026-05-29 — Widget Composition Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)

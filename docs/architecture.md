@@ -286,7 +286,7 @@ export interface PluginManifest {
   routes: string[]
   schema: string
   events: { publishes: EventName[]; subscribes: EventName[] }
-  widgets?: unknown[] // typed WidgetManifest added by M1 widget system story (ADR 022)
+  widgets?: WidgetManifest[]
 }
 ```
 

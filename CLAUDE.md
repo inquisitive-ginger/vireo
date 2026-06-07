@@ -19,8 +19,8 @@ with the family that runs it. See [`docs/vision.md`](docs/vision.md).
 
 - **Milestone:** M1 — Platform Shell (in progress)
 - **Active stories:** None
-- **Last session:** 2026-06-06 — pwa-installable (`manifest.webmanifest`, manual service worker, 192/512px icons, SW registration, 3 Playwright tests)
-- **Next session:** M1 Dev: web-push (see queue)
+- **Last session:** 2026-06-06 — audit (`notification-design-audit` + `appearance-preference-gate` added to progress.md; story spec created for appearance-preference-gate; queue reordered with notification-design-audit before web-push; Storybook 8 → 10 in queue log; stale PluginManifest comment removed from architecture.md)
+- **Next session:** M1 Design: notification-design-audit (see queue)
 
 > Update this section at the end of every session.
 
