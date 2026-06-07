@@ -14,6 +14,12 @@ import { PluginView } from './components/PluginView'
 import { PluginErrorBoundary } from './components/PluginErrorBoundary'
 import { PluginNotFound } from './pages/PluginNotFound'
 
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js').catch(() => {})
+  })
+}
+
 type LoadedPlugin = PluginManifest & { remoteName: string }
 
 async function loadPlugins(): Promise<LoadedPlugin[]> {

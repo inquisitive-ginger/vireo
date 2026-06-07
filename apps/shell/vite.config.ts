@@ -34,6 +34,20 @@ export default defineConfig({
   server: {
     port: 5173,
     host: true,
+    allowedHosts: ['.trycloudflare.com'],
+    proxy: {
+      '/events': { target: 'ws://localhost:3000', ws: true },
+      '/api': { target: 'http://localhost:3000' },
+      ...Object.fromEntries(
+        registry.map((p) => [
+          `/plugins/${p.name}`,
+          { target: p.baseUrl, rewrite: (path: string) => path.replace(`/plugins/${p.name}`, '') },
+        ])
+      ),
+    },
+  },
+  preview: {
+    port: 4173,
     proxy: {
       '/events': { target: 'ws://localhost:3000', ws: true },
       '/api': { target: 'http://localhost:3000' },

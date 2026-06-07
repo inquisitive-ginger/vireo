@@ -15,7 +15,7 @@
 | [Typography Scale](stories/typography-scale.md)                       | ✅ Done        | Design session 2026-06-08                                                                            |
 | [Permission Overrides](stories/permission-overrides.md)               | ✅ Done        |                                                                                                      |
 | [Notification Infrastructure](stories/notification-infrastructure.md) | ✅ Done        |                                                                                                      |
-| [PWA Installable](stories/pwa-installable.md)                         | ⬜ Not Started |                                                                                                      |
+| [PWA Installable](stories/pwa-installable.md)                         | ✅ Done        |                                                                                                      |
 | [Web Push](stories/web-push.md)                                       | ⬜ Not Started | Depends on notification-infrastructure + pwa-installable                                             |
 | [Accessibility & Radix Audit](stories/accessibility-radix-audit.md)   | ✅ Done        | `ConfirmDialog` on `@radix-ui/react-alert-dialog`; all other interactive components already on Radix |
 
