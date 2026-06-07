@@ -44,3 +44,19 @@ async function networkFirst(request) {
     return (await caches.match(request)) ?? Response.error()
   }
 }
+
+self.addEventListener('push', (e) => {
+  let data = { title: 'Family OS', body: '' }
+  try {
+    data = e.data ? e.data.json() : data
+  } catch {
+    data.body = e.data ? e.data.text() : ''
+  }
+  e.waitUntil(
+    self.registration.showNotification(data.title, {
+      body: data.body,
+      icon: '/icons/icon-192x192.png',
+      badge: '/icons/icon-192x192.png',
+    })
+  )
+})

@@ -28,5 +28,7 @@ export { useTier } from './hooks/useTier'
 export { usePermissions } from './hooks/usePermissions'
 export { useEventBus } from './hooks/useEventBus'
 export { useNotify } from './hooks/useNotify'
+export { usePushSubscription } from './hooks/usePushSubscription'
+export type { PushSubscriptionState } from './hooks/usePushSubscription'
 
 export { MockAuthProvider } from './testing'

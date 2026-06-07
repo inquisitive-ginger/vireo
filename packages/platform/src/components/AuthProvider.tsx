@@ -10,6 +10,7 @@ export type AuthUser = {
   name: string
   tier: TierLevel
   darkMode?: boolean | null
+  pushEnabled?: boolean
   familyName?: string | null
 }
 
@@ -45,6 +46,7 @@ function AuthLoader({ children, queryClient }: { children: ReactNode; queryClien
         name: data.name,
         tier: data.tier,
         darkMode: data.darkMode,
+        pushEnabled: data.pushEnabled ?? false,
         familyName: data.familyName,
       }
     : FAMILY_FALLBACK

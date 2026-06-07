@@ -7,9 +7,12 @@ import preferencesPlugin from './plugins/preferences'
 import setupPlugin from './plugins/setup'
 import profilesPlugin from './plugins/profiles'
 import notificationsPlugin from './plugins/notifications'
+import pushPlugin, { initVapidKeys } from './plugins/push'
 import devPlugin from './plugins/dev'
 
 export async function buildServer() {
+  await initVapidKeys()
+
   const app = Fastify({ logger: true })
 
   // WebSocket event stream lives at root — no /api prefix (proxied separately by Vite)
@@ -26,6 +29,7 @@ export async function buildServer() {
       await api.register(preferencesPlugin)
       await api.register(profilesPlugin)
       await api.register(notificationsPlugin)
+      await api.register(pushPlugin)
 
       api.get('/health', async () => ({ status: 'ok' }))
 
