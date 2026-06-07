@@ -7,38 +7,33 @@
 
 ## Up Next
 
-1. **M1 Dev: pwa-installable** ![Type](https://img.shields.io/badge/Type-Development-orange)
-   Web app manifest, service worker, installable PWA.
-   _Reads:_ `docs/modules/platform/stories/pwa-installable.md`
-   _Produces:_ Installable PWA on Android Chrome
-
-2. **M1 Dev: web-push** ![Type](https://img.shields.io/badge/Type-Development-orange)
+1. **M1 Dev: web-push** ![Type](https://img.shields.io/badge/Type-Development-orange)
    Web Push subscription and delivery from `platform.notify()`.
    _Reads:_ `docs/modules/platform/stories/web-push.md`
    _Produces:_ Push notification delivery for tier 3–4 profiles
 
-3. **M1 Dev: family-feed-read** ![Type](https://img.shields.io/badge/Type-Development-orange)
+2. **M1 Dev: family-feed-read** ![Type](https://img.shields.io/badge/Type-Development-orange)
    Family Feed plugin: scaffold, data model, read API, widget, feed view.
    _Reads:_ `docs/modules/family-feed/stories/family-feed-read.md`, `docs/modules/family-feed/spec.md`
    _Produces:_ Family Feed plugin installed and rendering; `FeedPostCard`, `FeedEmptyState` in `packages/ui`
 
-4. **M1 Dev: family-feed-compose** ![Type](https://img.shields.io/badge/Type-Development-orange)
+3. **M1 Dev: family-feed-compose** ![Type](https://img.shields.io/badge/Type-Development-orange)
    Compose form, create post API, permission registration.
    _Reads:_ `docs/modules/family-feed/stories/family-feed-compose.md`
    _Produces:_ Post creation flow; `ComposeForm` in `packages/ui`; `family-feed.post.create` in `PERMISSION_REGISTRY`
 
-5. **M1 Dev: appearance-preference-gate** ![Type](https://img.shields.io/badge/Type-Development-orange)
+4. **M1 Dev: appearance-preference-gate** ![Type](https://img.shields.io/badge/Type-Development-orange)
    Add `platform.preferences.appearance` to `PERMISSION_REGISTRY`; wrap the dark mode toggle in Settings with `PermissionGate` so parents can revoke appearance control for tier 2–3 profiles. Small addendum to the settings-permissions + permission-overrides work.
    _Surfaced in 2026-06-09 audit — deferred gap from settings-permissions story_
    _Reads:_ `docs/modules/platform/stories/settings-permissions.md`, `docs/modules/platform/stories/permission-overrides.md`
    _Produces:_ `platform.preferences.appearance` in `PERMISSION_REGISTRY`; Settings dark mode toggle gated by `PermissionGate`
 
-6. **M1 Design: notification-design-audit** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
+5. **M1 Design: notification-design-audit** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
    Two open questions from the notification-infrastructure session: (1) design alternatives for `NotificationItem` — density, read/unread state, icon/timestamp placement; (2) notification routing model — family feed vs. notification system distinction, broadcast targeting, family profile / tier 1 tray access.
    _Reads:_ `docs/modules/platform/stories/notification-design-audit.md`
    _Produces:_ Updated `NotificationItem` design; notification routing ADR
 
-7. **Mobile Surface Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
+6. **Mobile Surface Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
    Mobile layout and nav design for the PWA. Deferred from M1 design sessions — required before mobile surface implementation can begin.
    _Reads:_ `docs/design-system.md` (Surfaces — Other Surfaces), `docs/modules/platform/stories/pwa-installable.md`
    _Produces:_ Updated `docs/design-system.md` with mobile surface spec
@@ -46,6 +41,10 @@
 ---
 
 ## Recently Completed
+
+- **2026-06-06 — M1 Dev: pwa-installable** ![Type](https://img.shields.io/badge/Type-Development-orange)
+  `manifest.webmanifest` (name, icons, standalone, start*url, theme/background colors). Manual service worker (cache-first for shell assets, network-first for `/api/`, `/events`, `/plugins/`). 192px + 512px PNG icons. SW registration in `main.tsx`. 3 Playwright tests (manifest fields, icons, SW registration). Chose manual SW over `vite-plugin-pwa` to avoid Module Federation build conflicts.
+  \_See:* `docs/sessions/logs/2026-06-06-dev-pwa-installable.md`
 
 - **2026-06-06 — M1 Dev: notification-infrastructure** ![Type](https://img.shields.io/badge/Type-Development-orange)
   `useNotify()` hook exported from `@family-os/platform`. Sonner toast (variant timing, max 3 visible). `notifications` DB table with 50-item pruning. Four API routes (POST/GET/GET-unread/POST-read). `Toast`, `BellBadge`, `NotificationItem`, `NotificationTray` in `packages/ui`. Bell integrated in Sidebar (tier 2+). 17 API + 14 UI tests. Storybook stories for all components.
