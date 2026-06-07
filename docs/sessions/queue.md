@@ -33,7 +33,12 @@
    _Reads:_ `docs/modules/platform/stories/settings-permissions.md`, `docs/modules/platform/stories/permission-overrides.md`
    _Produces:_ `platform.preferences.appearance` in `PERMISSION_REGISTRY`; Settings dark mode toggle gated by `PermissionGate`
 
-6. **Mobile Surface Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
+6. **M1 Design: notification-design-audit** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
+   Two open questions from the notification-infrastructure session: (1) design alternatives for `NotificationItem` — density, read/unread state, icon/timestamp placement; (2) notification routing model — family feed vs. notification system distinction, broadcast targeting, family profile / tier 1 tray access.
+   _Reads:_ `docs/modules/platform/stories/notification-design-audit.md`
+   _Produces:_ Updated `NotificationItem` design; notification routing ADR
+
+7. **Mobile Surface Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
    Mobile layout and nav design for the PWA. Deferred from M1 design sessions — required before mobile surface implementation can begin.
    _Reads:_ `docs/design-system.md` (Surfaces — Other Surfaces), `docs/modules/platform/stories/pwa-installable.md`
    _Produces:_ Updated `docs/design-system.md` with mobile surface spec
