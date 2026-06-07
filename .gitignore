@@ -9,4 +9,5 @@ coverage/
 storybook-static/
 .DS_Store
 *.log
+*.tsbuildinfo
 packages/platform/src/generated/
