@@ -348,3 +348,114 @@ describe('POST /api/notifications/read', () => {
     expect(count).toBe(1)
   })
 })
+
+// ─── DELETE /notifications/:id ────────────────────────────────────────────────
+
+describe('DELETE /api/notifications/:id', () => {
+  it('deletes a notification belonging to the active profile', async () => {
+    const cookie = await getTier4Cookie()
+    const notification = await prisma.notification.create({
+      data: { profileId: 'seed-parent-1', title: 'To delete', variant: 'info', priority: 'info' },
+    })
+
+    const res = await app.inject({
+      method: 'DELETE',
+      url: `/api/notifications/${notification.id}`,
+      headers: { cookie },
+    })
+
+    expect(res.statusCode).toBe(200)
+    expect(res.json().ok).toBe(true)
+    const remaining = await prisma.notification.findUnique({ where: { id: notification.id } })
+    expect(remaining).toBeNull()
+  })
+
+  it('returns 404 when notification does not exist', async () => {
+    const cookie = await getTier4Cookie()
+    const res = await app.inject({
+      method: 'DELETE',
+      url: '/api/notifications/nonexistent-id',
+      headers: { cookie },
+    })
+    expect(res.statusCode).toBe(404)
+  })
+
+  it('returns 403 when notification belongs to another profile', async () => {
+    const cookie = await getTier4Cookie()
+    const notification = await prisma.notification.create({
+      data: {
+        profileId: 'seed-child-1',
+        title: 'Other profile',
+        variant: 'info',
+        priority: 'info',
+      },
+    })
+
+    const res = await app.inject({
+      method: 'DELETE',
+      url: `/api/notifications/${notification.id}`,
+      headers: { cookie },
+    })
+
+    expect(res.statusCode).toBe(403)
+    const remaining = await prisma.notification.findUnique({ where: { id: notification.id } })
+    expect(remaining).not.toBeNull()
+  })
+
+  it('returns 403 for tier 1 profile', async () => {
+    const cookie = await getTier1Cookie()
+    const res = await app.inject({
+      method: 'DELETE',
+      url: '/api/notifications/any-id',
+      headers: { cookie },
+    })
+    expect(res.statusCode).toBe(403)
+  })
+})
+
+// ─── DELETE /notifications ────────────────────────────────────────────────────
+
+describe('DELETE /api/notifications', () => {
+  it('deletes all notifications for the active profile', async () => {
+    const cookie = await getTier4Cookie()
+    await prisma.notification.createMany({
+      data: [
+        { profileId: 'seed-parent-1', title: 'A', variant: 'info', priority: 'info' },
+        { profileId: 'seed-parent-1', title: 'B', variant: 'warning', priority: 'info' },
+      ],
+    })
+
+    const res = await app.inject({
+      method: 'DELETE',
+      url: '/api/notifications',
+      headers: { cookie },
+    })
+
+    expect(res.statusCode).toBe(200)
+    expect(res.json().ok).toBe(true)
+    const remaining = await prisma.notification.count({ where: { profileId: 'seed-parent-1' } })
+    expect(remaining).toBe(0)
+  })
+
+  it('does not delete notifications for other profiles', async () => {
+    const cookie = await getTier4Cookie()
+    await prisma.notification.create({
+      data: { profileId: 'seed-child-1', title: 'Other', variant: 'info', priority: 'info' },
+    })
+
+    await app.inject({ method: 'DELETE', url: '/api/notifications', headers: { cookie } })
+
+    const remaining = await prisma.notification.count({ where: { profileId: 'seed-child-1' } })
+    expect(remaining).toBe(1)
+  })
+
+  it('returns 403 for tier 1 profile', async () => {
+    const cookie = await getTier1Cookie()
+    const res = await app.inject({
+      method: 'DELETE',
+      url: '/api/notifications',
+      headers: { cookie },
+    })
+    expect(res.statusCode).toBe(403)
+  })
+})

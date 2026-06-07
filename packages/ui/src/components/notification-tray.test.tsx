@@ -59,4 +59,64 @@ describe('NotificationTray', () => {
     render(<NotificationTray open={true} onClose={() => {}} notifications={[]} loading={true} />)
     expect(screen.getByText(/loading/i)).toBeInTheDocument()
   })
+
+  it('shows Clear all button when notifications exist and onClearAll is provided', () => {
+    render(
+      <NotificationTray
+        open={true}
+        onClose={() => {}}
+        notifications={SAMPLE}
+        onClearAll={() => {}}
+      />
+    )
+    expect(screen.getByRole('button', { name: /clear all/i })).toBeInTheDocument()
+  })
+
+  it('hides Clear all button when notification list is empty', () => {
+    render(
+      <NotificationTray open={true} onClose={() => {}} notifications={[]} onClearAll={() => {}} />
+    )
+    expect(screen.queryByRole('button', { name: /clear all/i })).not.toBeInTheDocument()
+  })
+
+  it('calls onClearAll when Clear all is clicked', () => {
+    const onClearAll = vi.fn()
+    render(
+      <NotificationTray
+        open={true}
+        onClose={() => {}}
+        notifications={SAMPLE}
+        onClearAll={onClearAll}
+      />
+    )
+    fireEvent.click(screen.getByRole('button', { name: /clear all/i }))
+    expect(onClearAll).toHaveBeenCalledOnce()
+  })
+
+  it('shows per-item delete button on hover when onDeleteNotification is provided', () => {
+    const onDeleteNotification = vi.fn()
+    render(
+      <NotificationTray
+        open={true}
+        onClose={() => {}}
+        notifications={[SAMPLE[0]]}
+        onDeleteNotification={onDeleteNotification}
+      />
+    )
+    expect(screen.queryByLabelText(/delete notification/i)).not.toBeInTheDocument()
+
+    const container = screen.getByText('Chore completed').closest('.relative')!
+    fireEvent.mouseEnter(container)
+
+    const btn = screen.getByLabelText('Delete notification: Chore completed')
+    fireEvent.click(btn)
+    expect(onDeleteNotification).toHaveBeenCalledWith('1')
+  })
+
+  it('does not show delete button when onDeleteNotification is not provided', () => {
+    render(<NotificationTray open={true} onClose={() => {}} notifications={SAMPLE} />)
+    const container = screen.getByText('Chore completed').closest('.relative')!
+    fireEvent.mouseEnter(container)
+    expect(screen.queryByLabelText(/delete notification/i)).not.toBeInTheDocument()
+  })
 })

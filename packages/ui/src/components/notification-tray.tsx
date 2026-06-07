@@ -18,6 +18,8 @@ export interface NotificationTrayProps {
   open: boolean
   onClose: () => void
   notifications: NotificationEntry[]
+  onDeleteNotification?: (id: string) => void
+  onClearAll?: () => void
   loading?: boolean
   className?: string
 }
@@ -26,6 +28,8 @@ export function NotificationTray({
   open,
   onClose,
   notifications,
+  onDeleteNotification,
+  onClearAll,
   loading = false,
   className,
 }: NotificationTrayProps) {
@@ -47,16 +51,28 @@ export function NotificationTray({
               <Bell size={16} aria-hidden />
               Notifications
             </Dialog.Title>
-            <Dialog.Close asChild>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="size-8 p-0"
-                aria-label="Close notifications"
-              >
-                <X className="size-4" />
-              </Button>
-            </Dialog.Close>
+            <div className="flex items-center gap-1">
+              {onClearAll && notifications.length > 0 && (
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="text-xs text-muted-foreground h-7 px-2"
+                  onClick={onClearAll}
+                >
+                  Clear all
+                </Button>
+              )}
+              <Dialog.Close asChild>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  className="size-8 p-0"
+                  aria-label="Close notifications"
+                >
+                  <X className="size-4" />
+                </Button>
+              </Dialog.Close>
+            </div>
           </div>
 
           <div className="flex-1 overflow-y-auto">
@@ -78,6 +94,8 @@ export function NotificationTray({
                   body={n.body}
                   variant={n.variant}
                   createdAt={n.createdAt}
+                  isRead={n.isRead}
+                  onDelete={onDeleteNotification ? () => onDeleteNotification(n.id) : undefined}
                 />
               ))
             )}

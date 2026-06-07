@@ -86,11 +86,35 @@ function NotificationBell() {
     return () => window.removeEventListener('platform:notification', onNotify)
   }, [tier, queryClient])
 
-  async function openTray() {
+  function openTray() {
     setTrayOpen(true)
-    await fetch('/api/notifications/read', { method: 'POST', credentials: 'include' })
+  }
+
+  function closeTray() {
+    setTrayOpen(false)
+    // Mark all read on close — user has reviewed the list
+    fetch('/api/notifications/read', { method: 'POST', credentials: 'include' })
+      .then(() => queryClient.invalidateQueries({ queryKey: ['notifications/unread'] }))
+      .catch(() => {
+        // Badge will re-sync on next open
+      })
+  }
+
+  async function handleDeleteNotification(id: string) {
+    // Optimistic: remove from list immediately
+    queryClient.setQueryData<NotificationEntry[]>(
+      ['notifications'],
+      (prev) => prev?.filter((n) => n.id !== id) ?? []
+    )
+    await fetch(`/api/notifications/${id}`, { method: 'DELETE', credentials: 'include' })
     queryClient.invalidateQueries({ queryKey: ['notifications/unread'] })
-    queryClient.invalidateQueries({ queryKey: ['notifications'] })
+  }
+
+  async function handleClearAll() {
+    // Optimistic: empty the list immediately
+    queryClient.setQueryData<NotificationEntry[]>(['notifications'], [])
+    await fetch('/api/notifications', { method: 'DELETE', credentials: 'include' })
+    queryClient.invalidateQueries({ queryKey: ['notifications/unread'] })
   }
 
   if (tier < 2) return null
@@ -104,8 +128,10 @@ function NotificationBell() {
       />
       <NotificationTray
         open={trayOpen}
-        onClose={() => setTrayOpen(false)}
+        onClose={closeTray}
         notifications={notifications}
+        onDeleteNotification={handleDeleteNotification}
+        onClearAll={handleClearAll}
         loading={isFetching}
       />
     </div>

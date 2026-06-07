@@ -97,6 +97,32 @@ const notificationsPlugin: FastifyPluginAsync = async (fastify) => {
 
     return { ok: true }
   })
+
+  // DELETE /notifications/:id — delete a single notification for active profile
+  fastify.delete('/notifications/:id', async (request, reply) => {
+    if (request.profile.tier < 2) return reply.status(403).send({ error: 'Requires tier 2' })
+
+    const { id } = request.params as { id: string }
+    const notification = await prisma.notification.findUnique({
+      where: { id },
+      select: { profileId: true },
+    })
+
+    if (!notification) return reply.status(404).send({ error: 'Not found' })
+    if (notification.profileId !== request.profile.id)
+      return reply.status(403).send({ error: 'Forbidden' })
+
+    await prisma.notification.delete({ where: { id } })
+    return { ok: true }
+  })
+
+  // DELETE /notifications — clear all notifications for active profile
+  fastify.delete('/notifications', async (request, reply) => {
+    if (request.profile.tier < 2) return reply.status(403).send({ error: 'Requires tier 2' })
+
+    await prisma.notification.deleteMany({ where: { profileId: request.profile.id } })
+    return { ok: true }
+  })
 }
 
 export default fp(notificationsPlugin, { name: 'notifications' })

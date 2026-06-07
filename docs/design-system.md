@@ -1,6 +1,6 @@
 # Design System
 
-> Last updated: 2026-06-08 — typography scale (11-token major second, Lora/DM Sans rules).
+> Last updated: 2026-06-07 — notification item design (Frame B) + tray interaction model.
 
 This document records settled design decisions. Deferred items are
 explicitly marked — do not treat absence of a spec as a free choice.
@@ -601,12 +601,43 @@ the main content dims behind it; the layout does not shift.
 | `warning`           | `--warning` (amber) — attention soon |
 | `error` / `alert`   | `--error` (red) — act now            |
 
-Badge color re-evaluates whenever the unread set changes. Opening the
-tray marks all items as read and resets the badge.
+Badge color re-evaluates whenever the unread set changes. **Closing** the
+tray marks all items as read and resets the badge (not opening — so the
+unread visual state is visible while reviewing).
 
-- **Tray panel:** notification list, newest first. Each item: module icon +
-  title + optional body + relative timestamp + variant color indicator.
+- **Tray panel:** notification list, newest first.
 - **History:** last 50 notifications retained per user; older items pruned.
+
+### NotificationItem (Frame B)
+
+Each item in the tray uses the following layout:
+
+```
+[icon]  Title text (bold if unread)          2m ago  [×]
+        Optional body text (muted, 2-line clamp)
+```
+
+- **Left border:** 3px `--accent` (teal) when unread; transparent when read
+- **Title weight:** 600 (unread) · 400 (read)
+- **Icon opacity:** 1 (unread) · 0.45 (read)
+- **Timestamp:** right-aligned on the title row (not below body)
+- **Hover × button** (mouse only): `Button variant="ghost" size="icon-sm"`,
+  appears on `mouseEnter`, calls `onDelete` — does not affect other profiles
+
+### Per-item delete
+
+Two mechanisms, both call `DELETE /notifications/:id`:
+
+| Surface     | Mechanism                                                                                                                                                                            |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
+| Touch / pen | Swipe left — `@use-gesture/react` with `axis: 'x'`, `pointer: { mouse: false }`. Reveals red backdrop. Auto-dismisses past 100px or on flick (velocity > 0.5). Snaps back otherwise. |
+| Mouse       | × button visible on hover (top-right of item)                                                                                                                                        |
+
+### Clear all
+
+"Clear all" text button in the tray header (right side), visible only when
+the notification list is non-empty. Calls `DELETE /notifications` (bulk).
+Optimistic: list empties immediately in the UI before server confirms.
 
 ### Web Push routing
 

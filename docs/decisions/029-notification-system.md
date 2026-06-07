@@ -20,17 +20,39 @@ platform.notify({
 
 **Routing rules:**
 
-| Channel | Condition |
-|---------|-----------|
-| Toast | Always, for all tiers with access to the originating module |
-| Notification tray | Tier 2+ profiles; all priorities |
-| Web Push | Tier 4 (default on) or tier 3 (opt-in); `priority: 'alert'` only |
+| Channel           | Condition                                                        |
+| ----------------- | ---------------------------------------------------------------- |
+| Toast             | Always, for all tiers with access to the originating module      |
+| Notification tray | Tier 2+ profiles; all priorities                                 |
+| Web Push          | Tier 4 (default on) or tier 3 (opt-in); `priority: 'alert'` only |
 
 `priority: 'info'` never triggers Web Push regardless of tier.
 
 **Bell badge:** Displays unread count. Badge color reflects `max(severity)`
 across unread items — `--accent` (info/success), `--warning`, or `--error`.
-Resets on tray open.
+Resets on tray **close** (not open — unread state must be visible during review).
+
+**Routing decisions settled (2026-06-07):**
+
+1. **Family Feed vs. Notification System** — entirely separate systems.
+   Notifications are ephemeral, pull-based, profile-specific. Family Feed is
+   a persistent shared activity stream. A plugin may produce both independently
+   (e.g. chore completion → notify parent + create feed post), but they never
+   share routing or storage.
+
+2. **Broadcast targeting** — `platform.notify()` targets the active profile
+   only for M1. Broadcast use cases (family-wide reminders, scheduled alerts)
+   are deferred to a follow-on story. No API change needed for M1.
+
+3. **Family profile (tier 1) tray access** — tier 2+ gate on the tray is
+   correct. The family profile is an ambient display surface, not a user
+   reviewing notification history. It receives toasts for modules it has
+   access to (unchanged). A dedicated notification surface for shared/TV
+   devices is a separate open question — see
+   `docs/modules/platform/stories/family-profile-notifications.md`.
+
+4. **Per-profile read state** — marking notifications as read for one profile
+   does not affect other profiles. Implemented correctly; confirmed settled.
 
 **Why:** "Calm by default" requires global rate-limiting, deduplication,
 and tier-appropriate filtering — only possible if every notification flows
@@ -41,6 +63,7 @@ to plugin authors — they declare intent (`priority: 'alert'`), the
 platform handles mobile delivery.
 
 **Alternatives considered:**
+
 - Plugins call shadcn/ui `toast()` directly — rejected: no global rate
   limit, inconsistent UX, no tray history, no Web Push path.
 - Shell listens to all events and derives notifications — rejected: too

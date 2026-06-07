@@ -153,54 +153,147 @@ export const BellOverflow: StoryObj = {
 }
 
 // ─── NotificationItem ────────────────────────────────────────────────────────
+// Frame B: left accent bar (unread), bold title (unread), timestamp inline-right.
+// Hover reveals × delete button (mouse). Swipe-left dismisses (touch/pen).
 
-export const ItemSuccess: StoryObj = {
-  name: 'NotificationItem — success',
+export const ItemReadStates: StoryObj = {
+  name: 'NotificationItem — read vs unread states',
   render: () => (
-    <div style={{ width: 400, border: '1px solid var(--border)', borderRadius: 8 }}>
+    <div
+      style={{ width: 400, border: '1px solid var(--border)', borderRadius: 8, overflow: 'hidden' }}
+    >
       <NotificationItem
         title="Chore completed"
         body='Jordan marked "Clean room" as done'
         variant="success"
         createdAt={NOW}
+        isRead={false}
       />
-    </div>
-  ),
-}
-
-export const ItemInfo: StoryObj = {
-  name: 'NotificationItem — info',
-  render: () => (
-    <div style={{ width: 400, border: '1px solid var(--border)', borderRadius: 8 }}>
       <NotificationItem
         title="Calendar reminder"
         body="Soccer practice in 30 minutes"
         variant="info"
         createdAt={HOUR_AGO}
+        isRead={false}
       />
-    </div>
-  ),
-}
-
-export const ItemWarning: StoryObj = {
-  name: 'NotificationItem — warning',
-  render: () => (
-    <div style={{ width: 400, border: '1px solid var(--border)', borderRadius: 8 }}>
       <NotificationItem
         title="Allowance low"
         body="F$ balance is below 10"
         variant="warning"
         createdAt={DAY_AGO}
+        isRead={true}
+      />
+      <NotificationItem
+        title="Plugin failed to load"
+        variant="error"
+        createdAt={DAY_AGO}
+        isRead={true}
       />
     </div>
   ),
 }
 
-export const ItemError: StoryObj = {
-  name: 'NotificationItem — error, no body',
+export const ItemWithDelete: StoryObj = {
+  name: 'NotificationItem — hover × delete (mouse)',
+  render: () => {
+    function Demo() {
+      const [items, setItems] = useState([
+        {
+          id: '1',
+          title: 'Chore completed',
+          body: 'Jordan marked "Clean room" as done',
+          variant: 'success' as const,
+          createdAt: NOW,
+          isRead: false,
+        },
+        {
+          id: '2',
+          title: 'Calendar reminder',
+          body: 'Soccer practice in 30 minutes',
+          variant: 'info' as const,
+          createdAt: HOUR_AGO,
+          isRead: true,
+        },
+      ])
+      return (
+        <div
+          style={{
+            width: 400,
+            border: '1px solid var(--border)',
+            borderRadius: 8,
+            overflow: 'hidden',
+            fontFamily: 'var(--font-ui)',
+          }}
+        >
+          <p
+            style={{
+              fontSize: 11,
+              color: 'var(--muted-foreground)',
+              padding: '8px 16px 4px',
+              borderBottom: '1px solid var(--border)',
+            }}
+          >
+            Hover an item to reveal the × button
+          </p>
+          {items.length === 0 && (
+            <p
+              style={{
+                fontSize: 13,
+                color: 'var(--muted-foreground)',
+                padding: '24px 16px',
+                textAlign: 'center',
+              }}
+            >
+              All deleted
+            </p>
+          )}
+          {items.map((item) => (
+            <NotificationItem
+              key={item.id}
+              {...item}
+              onDelete={() => setItems((prev) => prev.filter((i) => i.id !== item.id))}
+            />
+          ))}
+        </div>
+      )
+    }
+    return <Demo />
+  },
+}
+
+export const ItemVariants: StoryObj = {
+  name: 'NotificationItem — all variants (unread)',
   render: () => (
-    <div style={{ width: 400, border: '1px solid var(--border)', borderRadius: 8 }}>
-      <NotificationItem title="Plugin failed to load" variant="error" createdAt={HOUR_AGO} />
+    <div
+      style={{ width: 400, border: '1px solid var(--border)', borderRadius: 8, overflow: 'hidden' }}
+    >
+      <NotificationItem
+        title="Chore completed"
+        body='Jordan marked "Clean room" as done'
+        variant="success"
+        createdAt={NOW}
+        isRead={false}
+      />
+      <NotificationItem
+        title="Calendar reminder"
+        body="Soccer practice in 30 minutes"
+        variant="info"
+        createdAt={HOUR_AGO}
+        isRead={false}
+      />
+      <NotificationItem
+        title="Allowance low"
+        body="F$ balance is below 10"
+        variant="warning"
+        createdAt={DAY_AGO}
+        isRead={false}
+      />
+      <NotificationItem
+        title="Plugin failed to load"
+        variant="error"
+        createdAt={HOUR_AGO}
+        isRead={false}
+      />
     </div>
   ),
 }
@@ -208,17 +301,22 @@ export const ItemError: StoryObj = {
 // ─── NotificationTray ────────────────────────────────────────────────────────
 
 export const TrayWithNotifications: StoryObj = {
-  name: 'NotificationTray — with items',
+  name: 'NotificationTray — with items + delete + clear all',
   render: () => {
     function Demo() {
       const [open, setOpen] = useState(false)
+      const [notifications, setNotifications] = useState(SAMPLE_NOTIFICATIONS)
       return (
         <div style={{ padding: 32, fontFamily: 'var(--font-ui)' }}>
           <BellBadge count={2} maxSeverity="warning" onClick={() => setOpen(true)} />
           <NotificationTray
             open={open}
             onClose={() => setOpen(false)}
-            notifications={SAMPLE_NOTIFICATIONS}
+            notifications={notifications}
+            onDeleteNotification={(id) =>
+              setNotifications((prev) => prev.filter((n) => n.id !== id))
+            }
+            onClearAll={() => setNotifications([])}
           />
         </div>
       )
