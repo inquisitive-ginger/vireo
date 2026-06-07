@@ -45,6 +45,19 @@ export default defineConfig({
       ),
     },
   },
+  preview: {
+    port: 4173,
+    proxy: {
+      '/events': { target: 'ws://localhost:3000', ws: true },
+      '/api': { target: 'http://localhost:3000' },
+      ...Object.fromEntries(
+        registry.map((p) => [
+          `/plugins/${p.name}`,
+          { target: p.baseUrl, rewrite: (path: string) => path.replace(`/plugins/${p.name}`, '') },
+        ])
+      ),
+    },
+  },
   build: {
     target: 'esnext',
   },
