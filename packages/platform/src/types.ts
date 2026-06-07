@@ -16,6 +16,7 @@ export type Profile = {
   tier: TierLevel
   avatarUrl?: string
   darkMode?: boolean | null
+  pushEnabled?: boolean
 }
 
 export type PermissionOverride = {

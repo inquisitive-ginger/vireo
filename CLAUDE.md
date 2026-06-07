@@ -19,8 +19,8 @@ with the family that runs it. See [`docs/vision.md`](docs/vision.md).
 
 - **Milestone:** M1 — Platform Shell (in progress)
 - **Active stories:** None
-- **Last session:** 2026-06-07 — notification-design-audit (Frame B NotificationItem design; swipe + hover delete; mark-all-read on close; Clear All in tray header; 4 routing decisions settled in ADR 029; family-profile-notifications stub story created)
-- **Next session:** M1 Dev: web-push (see queue)
+- **Last session:** 2026-06-07 — web-push (VAPID key lifecycle; push_subscriptions table; subscribe/unsubscribe API; web push delivery in platform.notify() for priority: 'alert'; Push Notifications toggle in Settings tier 3+; sw.js push event handler; usePushSubscription hook in @family-os/platform; 12 API unit tests; 5 E2E tests)
+- **Next session:** M1 Dev: family-feed-read (see queue)
 
 > Update this section at the end of every session.
 

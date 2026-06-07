@@ -1,6 +1,7 @@
 import fp from 'fastify-plugin'
 import type { FastifyPluginAsync } from 'fastify'
 import { prisma } from '@family-os/platform/server'
+import { sendPushToProfile } from './push'
 
 const MAX_NOTIFICATIONS = 50
 
@@ -19,13 +20,15 @@ const notificationsPlugin: FastifyPluginAsync = async (fastify) => {
 
     if (!body?.title || !body?.variant) return { ok: false, error: 'title and variant required' }
 
+    const priority = body.priority ?? 'info'
+
     const notification = await prisma.notification.create({
       data: {
         profileId: profile.id,
         title: body.title,
         body: body.body ?? null,
         variant: body.variant,
-        priority: body.priority ?? 'info',
+        priority,
       },
     })
 
@@ -39,6 +42,18 @@ const notificationsPlugin: FastifyPluginAsync = async (fastify) => {
         select: { id: true },
       })
       await prisma.notification.deleteMany({ where: { id: { in: oldest.map((n) => n.id) } } })
+    }
+
+    // Web Push: only for priority: 'alert', tier 4 always, tier 3 only when push_enabled
+    const qualifiesForPush =
+      priority === 'alert' && (profile.tier === 4 || (profile.tier === 3 && profile.pushEnabled))
+
+    if (qualifiesForPush) {
+      void sendPushToProfile(profile.id, {
+        title: body.title,
+        body: body.body ?? '',
+        variant: body.variant,
+      })
     }
 
     return { ok: true, id: notification.id }

@@ -10,7 +10,11 @@
     "lint": "turbo lint",
     "db:reset": "pnpm --filter @family-os/platform db:reset",
     "format": "prettier --write .",
-    "prepare": "husky"
+    "prepare": "husky",
+    "dev:tunnel": "./scripts/dev-tunnel.sh",
+    "dev:stop": "./scripts/dev-tunnel.sh stop",
+    "preview:tunnel": "./scripts/preview-tunnel.sh",
+    "preview:stop": "./scripts/preview-tunnel.sh stop"
   },
   "lint-staged": {
     "*.{ts,tsx,js,jsx,json,css,md}": "prettier --write"

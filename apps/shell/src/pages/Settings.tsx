@@ -1,11 +1,11 @@
 import { useState, useRef, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Sun, Monitor, Moon, Plus, Shield, CircleAlert, Pencil, Check } from 'lucide-react'
+import { Sun, Monitor, Moon, Plus, Shield, CircleAlert, Pencil, Check, Bell } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { useAuth, TierGate } from '@family-os/platform'
+import { useAuth, TierGate, usePushSubscription } from '@family-os/platform'
 import {
   Button,
   Input,
@@ -18,6 +18,7 @@ import {
   PinInput,
   PermissionToggleList,
   Drawer,
+  Switch,
 } from '@family-os/ui'
 import type { PermissionToggleListItem } from '@family-os/ui'
 import {
@@ -812,6 +813,52 @@ function AppearanceRow() {
   )
 }
 
+// ─── Push notifications row ───────────────────────────────────────────────────
+
+function PushNotificationsRow() {
+  const queryClient = useQueryClient()
+  const { state, isLoading, subscribe, unsubscribe } = usePushSubscription()
+
+  const enabled = state === 'subscribed'
+
+  async function handleToggle() {
+    if (isLoading) return
+    if (enabled) {
+      await unsubscribe()
+    } else {
+      await subscribe()
+    }
+    queryClient.invalidateQueries({ queryKey: ['api/auth/me'] })
+  }
+
+  const subtitle =
+    state === 'unsupported'
+      ? 'Not supported in this browser'
+      : state === 'denied'
+        ? 'Notifications blocked — check browser settings'
+        : 'Receive alerts on this device when away'
+
+  return (
+    <div className="flex items-center gap-4 px-6 py-4">
+      <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+        <Bell size={16} className="text-primary" />
+      </div>
+      <div className="flex-1">
+        <Label htmlFor="push-notifications-toggle" className="text-sm font-medium cursor-pointer">
+          Push Notifications
+        </Label>
+        <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>
+      </div>
+      <Switch
+        id="push-notifications-toggle"
+        checked={enabled}
+        onCheckedChange={handleToggle}
+        disabled={isLoading || state === 'unsupported' || state === 'denied' || state === 'unknown'}
+      />
+    </div>
+  )
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export function Settings() {
@@ -832,6 +879,12 @@ export function Settings() {
       <SettingsSection title="Display">
         <AppearanceRow />
       </SettingsSection>
+
+      <TierGate min={3}>
+        <SettingsSection title="Notifications">
+          <PushNotificationsRow />
+        </SettingsSection>
+      </TierGate>
     </SettingsLayout>
   )
 }

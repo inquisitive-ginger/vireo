@@ -16,7 +16,7 @@
 | [Permission Overrides](stories/permission-overrides.md)                 | ✅ Done        |                                                                                                      |
 | [Notification Infrastructure](stories/notification-infrastructure.md)   | ✅ Done        |                                                                                                      |
 | [PWA Installable](stories/pwa-installable.md)                           | ✅ Done        |                                                                                                      |
-| [Web Push](stories/web-push.md)                                         | ⬜ Not Started | Depends on notification-infrastructure + pwa-installable                                             |
+| [Web Push](stories/web-push.md)                                         | ✅ Done        |                                                                                                      |
 | [Notification Design Audit](stories/notification-design-audit.md)       | ✅ Done        | Design session 2026-06-07                                                                            |
 | [Family Profile Notifications](stories/family-profile-notifications.md) | ⬜ Not Started | Design + dev; shared-device notification surface for tier 1                                          |
 | [Appearance Preference Gate](stories/appearance-preference-gate.md)     | ⬜ Not Started | Addendum from settings-permissions (surfaced 2026-06-09 audit)                                       |

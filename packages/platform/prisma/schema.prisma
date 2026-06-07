@@ -9,20 +9,36 @@ datasource db {
 }
 
 model Profile {
-  id        String   @id @default(uuid())
-  name      String
-  tier      Int
-  avatarUrl String?  @map("avatar_url")
-  darkMode  Boolean? @map("dark_mode")
-  createdAt DateTime @default(now()) @map("created_at")
+  id          String   @id @default(uuid())
+  name        String
+  tier        Int
+  avatarUrl   String?  @map("avatar_url")
+  darkMode    Boolean? @map("dark_mode")
+  pushEnabled Boolean  @default(false) @map("push_enabled")
+  createdAt   DateTime @default(now()) @map("created_at")
 
   permissionOverrides PermissionOverride[] @relation("profile_overrides")
   grantedOverrides    PermissionOverride[] @relation("granted_by_overrides")
   systemConfigs       SystemConfig[]
   widgetLayouts       WidgetLayout[]
   notifications       Notification[]
+  pushSubscriptions   PushSubscription[]
 
   @@map("profiles")
+  @@schema("platform")
+}
+
+model PushSubscription {
+  id        String   @id @default(uuid())
+  profileId String   @map("profile_id")
+  endpoint  String   @unique
+  p256dhKey String   @map("p256dh_key")
+  authKey   String   @map("auth_key")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  profile Profile @relation(fields: [profileId], references: [id])
+
+  @@map("push_subscriptions")
   @@schema("platform")
 }
 
