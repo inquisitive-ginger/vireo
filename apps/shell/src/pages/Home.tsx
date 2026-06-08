@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { type ReactNode, Suspense } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Loader2, Users, ClipboardList, CalendarDays } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
@@ -6,6 +6,7 @@ import { WidgetGrid, PlaceholderCard } from '@family-os/ui'
 import type { WidgetLayoutItem } from '@family-os/ui'
 import type { RegistryEntry } from '@family-os/platform/types'
 import { useAuth } from '@family-os/platform'
+import { getLazyWidget } from '../lib/load-plugin'
 
 type WidgetMeta = { moduleName: string; description: string; icon: LucideIcon }
 
@@ -56,8 +57,14 @@ export function Home() {
     if (!meta) continue
 
     if (installedModules.has(module)) {
-      // TODO M2+: swap in real <ModuleWidget /> once each plugin ships its widget component
-      widgetChildren[item.widgetId] = <PlaceholderCard {...meta} />
+      const Widget = getLazyWidget(module)
+      widgetChildren[item.widgetId] = Widget ? (
+        <Suspense fallback={<PlaceholderCard {...meta} />}>
+          <Widget />
+        </Suspense>
+      ) : (
+        <PlaceholderCard {...meta} />
+      )
     } else {
       widgetChildren[item.widgetId] = <PlaceholderCard {...meta} />
     }

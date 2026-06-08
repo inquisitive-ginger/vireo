@@ -1,0 +1,23 @@
+{
+  "name": "family-feed",
+  "version": "0.0.1",
+  "remoteEntry": "http://localhost:3011/assets/remoteEntry.js",
+  "exposes": ["./Plugin", "./widgets/FeedWidget"],
+  "routes": ["/family-feed"],
+  "schema": "family_feed",
+  "events": {
+    "publishes": [],
+    "subscribes": []
+  },
+  "widgets": [
+    {
+      "id": "family-feed.feed",
+      "displayName": "Family Feed",
+      "component": "./widgets/FeedWidget",
+      "defaultSize": "standard",
+      "supportedSizes": ["standard", "large", "banner"],
+      "minTier": 1,
+      "description": "Recent family posts."
+    }
+  ]
+}

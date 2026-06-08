@@ -19,8 +19,8 @@ with the family that runs it. See [`docs/vision.md`](docs/vision.md).
 
 - **Milestone:** M1 — Platform Shell (in progress)
 - **Active stories:** None
-- **Last session:** 2026-06-07 — web-push (VAPID key lifecycle; push_subscriptions table; subscribe/unsubscribe API; web push delivery in platform.notify() for priority: 'alert'; Push Notifications toggle in Settings tier 3+; sw.js push event handler; usePushSubscription hook in @family-os/platform; 12 API unit tests; 5 E2E tests)
-- **Next session:** M1 Dev: family-feed-read (see queue)
+- **Last session:** 2026-06-07 — family-feed-read (plugin scaffold; family_feed schema db push; GET /api/family-feed/posts cursor pagination; FeedWidget CSS container queries Frame A; FeedPage; FeedPostCard + FeedEmptyState; unified Storybook glob; shell wiring via getLazyWidget; 8 API tests)
+- **Next session:** M1 Dev: family-feed-compose (see queue)
 
 > Update this section at the end of every session.
 

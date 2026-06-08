@@ -7,32 +7,27 @@
 
 ## Up Next
 
-1. **M1 Dev: family-feed-read** ![Type](https://img.shields.io/badge/Type-Development-orange)
-   Family Feed plugin: scaffold, data model, read API, widget, feed view.
-   _Reads:_ `docs/modules/family-feed/stories/family-feed-read.md`, `docs/modules/family-feed/spec.md`
-   _Produces:_ Family Feed plugin installed and rendering; `FeedPostCard`, `FeedEmptyState` in `packages/ui`
-
-2. **M1 Dev: family-feed-compose** ![Type](https://img.shields.io/badge/Type-Development-orange)
+1. **M1 Dev: family-feed-compose** ![Type](https://img.shields.io/badge/Type-Development-orange)
    Compose form, create post API, permission registration.
    _Reads:_ `docs/modules/family-feed/stories/family-feed-compose.md`
    _Produces:_ Post creation flow; `ComposeForm` in `packages/ui`; `family-feed.post.create` in `PERMISSION_REGISTRY`
 
-3. **M1 Dev: appearance-preference-gate** ![Type](https://img.shields.io/badge/Type-Development-orange)
+2. **M1 Dev: appearance-preference-gate** ![Type](https://img.shields.io/badge/Type-Development-orange)
    Add `platform.preferences.appearance` to `PERMISSION_REGISTRY`; wrap the dark mode toggle in Settings with `PermissionGate` so parents can revoke appearance control for tier 2–3 profiles. Small addendum to the settings-permissions + permission-overrides work.
    _Reads:_ `docs/modules/platform/stories/appearance-preference-gate.md`
    _Produces:_ `platform.preferences.appearance` in `PERMISSION_REGISTRY`; Settings dark mode toggle gated by `PermissionGate`
 
-4. **M1 Design+Dev: family-profile-notifications** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
+3. **M1 Design+Dev: family-profile-notifications** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
    Shared-device notification surface for the family profile (tier 1). The family profile is always-on on kitchen tablets and Pi displays but receives no persistent notification history. Design and implement an ambient notification surface appropriate for shared household devices.
    _Reads:_ `docs/modules/platform/stories/family-profile-notifications.md`, ADR 029
    _Produces:_ Design decision on surface shape + implementation; amendment to ADR 029 if broadcast/audience model is introduced
 
-5. **Mobile Surface Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
+4. **Mobile Surface Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
    Mobile layout and nav design for the PWA. Deferred from M1 design sessions — required before mobile surface implementation can begin.
    _Reads:_ `docs/design-system.md` (Surfaces — Other Surfaces), `docs/modules/platform/stories/pwa-installable.md`
    _Produces:_ Updated `docs/design-system.md` with mobile surface spec
 
-6. **M1 Dev: push-multi-profile-device** ![Type](https://img.shields.io/badge/Type-Development-orange)
+5. **M1 Dev: push-multi-profile-device** ![Type](https://img.shields.io/badge/Type-Development-orange)
    Allow multiple profiles to hold subscriptions for the same endpoint. Currently `endpoint` is unique — the last profile to subscribe on a shared device displaces the previous one. Migrate to `(profile_id, endpoint)` composite key; update 410 cleanup to delete by endpoint across all profiles.
    _Reads:_ `docs/modules/platform/stories/push-multi-profile-device.md`
    _Produces:_ Schema migration; updated subscribe/unsubscribe/410-cleanup logic; updated tests
@@ -40,6 +35,10 @@
 ---
 
 ## Recently Completed
+
+- **2026-06-07 — M1 Dev: family-feed-read** ![Type](https://img.shields.io/badge/Type-Development-orange)
+  Family Feed plugin scaffold. `family_feed.posts` Prisma schema + `db push`. `GET /api/family-feed/posts` with cursor pagination + platform profile join. `FeedWidget` (CSS container queries, Frame A — dividers). `FeedPage` with load-more. `FeedPostCard`, `FeedEmptyState` in plugin. Unified Storybook glob covers plugin stories. Shell wired: `getLazyWidget`, `Suspense` fallback, `family-feed` in `plugins.json`. 8 API unit tests.
+  _See:_ `docs/sessions/logs/2026-06-07-dev-family-feed-read.md`
 
 - **2026-06-07 — M1 Dev: web-push** ![Type](https://img.shields.io/badge/Type-Development-orange)
   VAPID key lifecycle. `push_subscriptions` table. Subscribe/unsubscribe routes. `sendPushToProfile()` hooked into `POST /notifications` for `priority: 'alert'`. Service worker push event handler. `usePushSubscription` hook in `@family-os/platform`. Push Notifications toggle in Settings (tier 3+ via `TierGate`). 12 API unit tests + 5 E2E tests.
