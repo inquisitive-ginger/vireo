@@ -695,15 +695,21 @@ Centered in the main content area. Not full-screen red.
 All empty states share the same structure:
 
 ```
-     [Lucide icon — 40px, --muted-foreground]
+     [Lucide icon — 36px, --muted-foreground, opacity 0.4]
 
-       Nothing scheduled today          ← Lora, --foreground
-     Your calendar is clear.            ← DM Sans, --muted-foreground
+       Nothing scheduled today          ← text-display-lg (Lora), --foreground
+     Your calendar is clear.            ← text-body (DM Sans), --muted-foreground
                                           optional, max 2 lines
 
          [ + Add Event ]                ← PermissionGate-wrapped
                                           omitted entirely if can() = false
 ```
+
+**Icon:** 36px, `color: var(--muted-foreground)`, `opacity: 0.4`. The reduced opacity reads as "absence" without adding visual weight.
+
+**Heading:** `text-display-lg` (Lora, 29px). Empty state headings are the primary signal — they deserve the display weight.
+
+**Body:** `text-body` (DM Sans, 18px), `--muted-foreground`. Single sentence max; matches widget viewing-distance minimum.
 
 ### Copy tone
 

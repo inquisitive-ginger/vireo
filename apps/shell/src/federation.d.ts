@@ -7,3 +7,15 @@ declare module 'demo-plugin/Plugin' {
   const Plugin: ComponentType
   export default Plugin
 }
+
+declare module 'family-feed/Plugin' {
+  import type { ComponentType } from 'react'
+  const Plugin: ComponentType
+  export default Plugin
+}
+
+declare module 'family-feed/widgets/FeedWidget' {
+  import type { ComponentType } from 'react'
+  const FeedWidget: ComponentType
+  export default FeedWidget
+}

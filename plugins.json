@@ -1,3 +1,4 @@
 [
-  { "name": "demo-plugin", "baseUrl": "http://localhost:3010" }
+  { "name": "demo-plugin", "baseUrl": "http://localhost:3010" },
+  { "name": "family-feed", "baseUrl": "http://localhost:3011" }
 ]

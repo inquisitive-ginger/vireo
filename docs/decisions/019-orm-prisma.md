@@ -31,7 +31,7 @@ plugins/chore-engine/
 ```typescript
 // No manual WHERE clause — CASL drives the filter
 const tasks = await prisma.task.findMany({
-  where: accessibleBy(request.ability, 'read').Task
+  where: accessibleBy(request.ability, 'read').Task,
 })
 ```
 
@@ -40,6 +40,7 @@ const tasks = await prisma.task.findMany({
 Prisma 7 removed the `url` field from `schema.prisma`'s `datasource` block. Each package that uses Prisma needs two files at its root:
 
 `prisma.config.ts` — CLI config (migrations, seed, generate):
+
 ```typescript
 import path from 'path'
 import { defineConfig } from 'prisma/config'
@@ -62,21 +63,77 @@ export default defineConfig({
 ```
 
 `src/db.ts` — runtime client (always pass the adapter):
+
 ```typescript
 import { Pool } from 'pg'
 import { PrismaPg } from '@prisma/adapter-pg'
 import { PrismaClient } from './generated/prisma'
 
 const pool = new Pool({
-  connectionString: process.env.DATABASE_URL ?? 'postgresql://familyos:familyos@localhost:5432/familyos',
+  connectionString:
+    process.env.DATABASE_URL ?? 'postgresql://familyos:familyos@localhost:5432/familyos',
 })
 export const prisma = new PrismaClient({ adapter: new PrismaPg(pool) })
 ```
 
 Other Prisma 7 changes to be aware of:
+
 - `previewFeatures = ["multiSchema"]` is removed — multi-schema works without it; delete the `previewFeatures` line from any `schema.prisma` generator block
 - Seed config moves from `package.json`'s `"prisma"` key to `migrations.seed` in `prisma.config.ts` (as shown above)
 - `PrismaClient()` called without an adapter will fail — the adapter is mandatory in Prisma 7
+
+**Plugin schema setup — dev workflow:**
+
+Plugin schemas **cannot use `prisma migrate dev`**. The platform's migration
+history lands in `public._prisma_migrations` (not `platform._prisma_migrations`),
+so Prisma detects those platform migrations as "applied to the database but
+missing from the local migrations directory" and refuses to proceed. Setting
+`migrate.migrationTableSchema` in `prisma.config.ts` does not fully resolve
+this because Prisma still reads from the shared `public` table before the
+plugin schema exists.
+
+**Use `prisma db push` instead for plugin development:**
+
+```bash
+# Dev database
+DATABASE_URL=postgresql://familyos:familyos@localhost:5432/familyos \
+  pnpm --filter @family-os/plugin-[name] exec prisma db push
+
+# Test database — required or tests fail with "table does not exist"
+DATABASE_URL=postgresql://familyos:familyos@localhost:5432/familyos_test \
+  pnpm --filter @family-os/plugin-[name] exec prisma db push
+```
+
+Then regenerate the typed client:
+
+```bash
+DATABASE_URL=... pnpm --filter @family-os/plugin-[name] db:generate
+```
+
+Both databases must receive `db push` — the API test suite uses `familyos_test`
+and the table must exist there or tests will fail even if the dev database is
+correct.
+
+**`apps/api` must declare the plugin as a dependency** to import its Prisma
+client in route handlers:
+
+```json
+// apps/api/package.json
+"dependencies": {
+  "@family-os/plugin-[name]": "workspace:*"
+}
+```
+
+Then import the plugin's client in the route file:
+
+```typescript
+import { [name]Prisma } from '@family-os/plugin-[name]/db'
+```
+
+**Migration formalization** (future): Properly tracked migrations for plugin
+schemas would require the platform to move its own history from
+`public._prisma_migrations` to `platform._prisma_migrations` first. Until
+that cleanup happens, `db push` is the supported workflow for all plugin schemas.
 
 **Alternatives considered:**
 
