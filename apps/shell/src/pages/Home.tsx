@@ -79,8 +79,8 @@ export function Home() {
   }
 
   return (
-    <div className="p-6">
-      <WidgetGrid layout={layout ?? []} children={widgetChildren} />
+    <div className="flex h-full flex-col p-6">
+      <WidgetGrid layout={layout ?? []} children={widgetChildren} className="flex-1 min-h-0" />
     </div>
   )
 }

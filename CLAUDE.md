@@ -19,8 +19,8 @@ with the family that runs it. See [`docs/vision.md`](docs/vision.md).
 
 - **Milestone:** M1 — Platform Shell (in progress)
 - **Active stories:** None
-- **Last session:** 2026-06-07 — family-feed-read (plugin scaffold; family_feed schema db push; GET /api/family-feed/posts cursor pagination; FeedWidget CSS container queries Frame A; FeedPage; FeedPostCard + FeedEmptyState; unified Storybook glob; shell wiring via getLazyWidget; 8 API tests)
-- **Next session:** M1 Dev: family-feed-compose (see queue)
+- **Last session:** 2026-06-08 — family-feed-compose (family-feed.post.create in PERMISSION_REGISTRY; tier 2+ baseline; POST /api/family-feed/posts with permission check; Textarea + ComposeForm in packages/ui; Frame B card design; FeedPage compose toggle with PermissionGate; widget empty state compose button; 6 new API tests + 3 new ability tests; both playground files deleted)
+- **Next session:** M1 Dev: appearance-preference-gate (see queue)
 
 > Update this section at the end of every session.
 

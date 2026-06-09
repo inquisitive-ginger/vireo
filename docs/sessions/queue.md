@@ -7,27 +7,22 @@
 
 ## Up Next
 
-1. **M1 Dev: family-feed-compose** ![Type](https://img.shields.io/badge/Type-Development-orange)
-   Compose form, create post API, permission registration.
-   _Reads:_ `docs/modules/family-feed/stories/family-feed-compose.md`
-   _Produces:_ Post creation flow; `ComposeForm` in `packages/ui`; `family-feed.post.create` in `PERMISSION_REGISTRY`
-
-2. **M1 Dev: appearance-preference-gate** ![Type](https://img.shields.io/badge/Type-Development-orange)
+1. **M1 Dev: appearance-preference-gate** ![Type](https://img.shields.io/badge/Type-Development-orange)
    Add `platform.preferences.appearance` to `PERMISSION_REGISTRY`; wrap the dark mode toggle in Settings with `PermissionGate` so parents can revoke appearance control for tier 2–3 profiles. Small addendum to the settings-permissions + permission-overrides work.
    _Reads:_ `docs/modules/platform/stories/appearance-preference-gate.md`
    _Produces:_ `platform.preferences.appearance` in `PERMISSION_REGISTRY`; Settings dark mode toggle gated by `PermissionGate`
 
-3. **M1 Design+Dev: family-profile-notifications** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
+2. **M1 Design+Dev: family-profile-notifications** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
    Shared-device notification surface for the family profile (tier 1). The family profile is always-on on kitchen tablets and Pi displays but receives no persistent notification history. Design and implement an ambient notification surface appropriate for shared household devices.
    _Reads:_ `docs/modules/platform/stories/family-profile-notifications.md`, ADR 029
    _Produces:_ Design decision on surface shape + implementation; amendment to ADR 029 if broadcast/audience model is introduced
 
-4. **Mobile Surface Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
+3. **Mobile Surface Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
    Mobile layout and nav design for the PWA. Deferred from M1 design sessions — required before mobile surface implementation can begin.
    _Reads:_ `docs/design-system.md` (Surfaces — Other Surfaces), `docs/modules/platform/stories/pwa-installable.md`
    _Produces:_ Updated `docs/design-system.md` with mobile surface spec
 
-5. **M1 Dev: push-multi-profile-device** ![Type](https://img.shields.io/badge/Type-Development-orange)
+4. **M1 Dev: push-multi-profile-device** ![Type](https://img.shields.io/badge/Type-Development-orange)
    Allow multiple profiles to hold subscriptions for the same endpoint. Currently `endpoint` is unique — the last profile to subscribe on a shared device displaces the previous one. Migrate to `(profile_id, endpoint)` composite key; update 410 cleanup to delete by endpoint across all profiles.
    _Reads:_ `docs/modules/platform/stories/push-multi-profile-device.md`
    _Produces:_ Schema migration; updated subscribe/unsubscribe/410-cleanup logic; updated tests

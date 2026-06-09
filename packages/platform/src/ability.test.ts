@@ -29,6 +29,21 @@ describe('createAbility — tier baselines', () => {
     expect(ability.can('switch', 'platform.Profile')).toBe(false)
   })
 
+  it('tier 1: cannot create family-feed.Post', () => {
+    const ability = createAbility(profile(1), [])
+    expect(ability.can('create', 'family-feed.Post')).toBe(false)
+  })
+
+  it('tier 2: can create family-feed.Post', () => {
+    const ability = createAbility(profile(2), [])
+    expect(ability.can('create', 'family-feed.Post')).toBe(true)
+  })
+
+  it('tier 3: can create family-feed.Post', () => {
+    const ability = createAbility(profile(3), [])
+    expect(ability.can('create', 'family-feed.Post')).toBe(true)
+  })
+
   it('tier 3: can view platform.Plugin and switch platform.Profile', () => {
     const ability = createAbility(profile(3), [])
     expect(ability.can('view', 'platform.Plugin')).toBe(true)

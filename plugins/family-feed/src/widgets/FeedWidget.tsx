@@ -1,7 +1,7 @@
-import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
-import type { PostsResponse } from '../types'
-import type { FeedPost } from '../types'
+import { Button } from '@family-os/ui'
+import { PermissionGate, useQuery } from '@family-os/platform'
+import type { PostsResponse, FeedPost } from '../types'
 import { FeedPostCard } from '../components/FeedPostCard'
 import { FeedEmptyState } from '../components/FeedEmptyState'
 
@@ -18,15 +18,17 @@ const WIDGET_STYLES = `
 `
 
 export default function FeedWidget() {
-  const [posts, setPosts] = useState<FeedPost[]>([])
+  const { data } = useQuery<FeedPost[]>({
+    queryKey: ['family-feed/posts/widget'],
+    queryFn: () =>
+      fetch('/api/family-feed/posts?limit=5')
+        .then((r) => r.json())
+        .then((d: PostsResponse) => d.posts),
+    staleTime: 60_000,
+    retry: 3,
+  })
 
-  useEffect(() => {
-    fetch('/api/family-feed/posts?limit=5')
-      .then((r) => r.json())
-      .then((data: PostsResponse) => setPosts(data.posts))
-      .catch(() => {})
-  }, [])
-
+  const posts: FeedPost[] = data ?? []
   const latest = posts[0]
 
   return (
@@ -47,7 +49,17 @@ export default function FeedWidget() {
       <div className="ffeed-single" style={{ justifyContent: 'center', padding: '16px 18px' }}>
         {!latest ? (
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <FeedEmptyState />
+            <FeedEmptyState
+              compose={
+                <PermissionGate action="create" subject="family-feed.Post">
+                  <Link to="/family-feed">
+                    <Button size="sm" variant="outline">
+                      New Post
+                    </Button>
+                  </Link>
+                </PermissionGate>
+              }
+            />
           </div>
         ) : (
           <Link
@@ -69,7 +81,17 @@ export default function FeedWidget() {
       <div className="ffeed-multi" style={{ justifyContent: 'space-evenly', padding: '12px 18px' }}>
         {posts.length === 0 ? (
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <FeedEmptyState />
+            <FeedEmptyState
+              compose={
+                <PermissionGate action="create" subject="family-feed.Post">
+                  <Link to="/family-feed">
+                    <Button size="sm" variant="outline">
+                      New Post
+                    </Button>
+                  </Link>
+                </PermissionGate>
+              }
+            />
           </div>
         ) : (
           <Link

@@ -7,6 +7,36 @@ const DEFAULT_LIMIT = 20
 const MAX_LIMIT = 50
 
 const familyFeedPlugin: FastifyPluginAsync = async (fastify) => {
+  // POST /family-feed/posts { body: string }
+  fastify.post('/family-feed/posts', async (request, reply) => {
+    if (!request.ability.can('create', 'family-feed.Post')) {
+      return reply.status(403).send({ error: 'Permission denied' })
+    }
+
+    const raw = (request.body as { body?: unknown }).body
+    if (typeof raw !== 'string' || raw.trim().length === 0) {
+      return reply.status(400).send({ error: 'body is required' })
+    }
+    const body = raw.trim()
+
+    const post = await feedPrisma.post.create({
+      data: { authorId: request.profile.id, body },
+    })
+
+    const author = await prisma.profile.findUnique({ where: { id: post.authorId } })
+
+    return reply.status(201).send({
+      id: post.id,
+      body: post.body,
+      createdAt: post.createdAt.toISOString(),
+      author: {
+        id: post.authorId,
+        name: author?.name ?? 'Unknown',
+        avatarUrl: null,
+      },
+    })
+  })
+
   // GET /family-feed/posts?cursor=<uuid>&limit=<number>
   fastify.get('/family-feed/posts', async (request, reply) => {
     const query = request.query as { cursor?: string; limit?: string }

@@ -32,3 +32,6 @@ export { usePushSubscription } from './hooks/usePushSubscription'
 export type { PushSubscriptionState } from './hooks/usePushSubscription'
 
 export { MockAuthProvider } from './testing'
+
+// Re-export useQuery via the singleton so plugins share the shell's QueryClient
+export { useQuery } from '@tanstack/react-query'

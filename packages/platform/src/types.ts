@@ -67,6 +67,12 @@ export const PERMISSION_REGISTRY = {
     action: 'view',
     subject: 'platform.Plugin',
   },
+  'family-feed.post.create': {
+    label: 'Post to family feed',
+    module: 'family-feed',
+    action: 'create',
+    subject: 'family-feed.Post',
+  },
 } as const
 
 export type PermissionString = keyof typeof PERMISSION_REGISTRY

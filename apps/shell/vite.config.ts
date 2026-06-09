@@ -21,6 +21,7 @@ export default defineConfig({
       shared: {
         react: { singleton: true, requiredVersion: '^19.0.0' },
         'react-dom': { singleton: true, requiredVersion: '^19.0.0' },
+        'react-router-dom': { singleton: true },
         '@family-os/platform': { singleton: true },
         '@family-os/ui': { singleton: true },
       },
@@ -34,6 +35,7 @@ export default defineConfig({
   server: {
     port: 5173,
     host: true,
+    hmr: { host: 'localhost', port: 5173 },
     allowedHosts: ['.trycloudflare.com'],
     proxy: {
       '/events': { target: 'ws://localhost:3000', ws: true },

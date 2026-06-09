@@ -1,6 +1,11 @@
+import type { ReactNode } from 'react'
 import { Rss } from 'lucide-react'
 
-export function FeedEmptyState() {
+interface FeedEmptyStateProps {
+  compose?: ReactNode
+}
+
+export function FeedEmptyState({ compose }: FeedEmptyStateProps) {
   return (
     <div className="flex flex-col items-center justify-center gap-3 text-center px-6 py-5">
       <Rss size={36} style={{ color: 'var(--muted-foreground)', opacity: 0.4 }} strokeWidth={1.5} />
@@ -10,6 +15,7 @@ export function FeedEmptyState() {
       <p className="text-body" style={{ color: 'var(--muted-foreground)', margin: 0 }}>
         Be the first to share something.
       </p>
+      {compose}
     </div>
   )
 }
