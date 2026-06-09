@@ -14,18 +14,29 @@ export function FeedPage() {
   const [posts, setPosts] = useState<FeedPost[]>([])
   const [cursor, setCursor] = useState<string | null>(null)
   const [loading, setLoading] = useState(true)
+  const [error, setError] = useState(false)
   const [loadingMore, setLoadingMore] = useState(false)
   const [composing, setComposing] = useState(false)
   const feedRef = useRef<HTMLDivElement>(null)
 
-  useEffect(() => {
+  function loadInitial() {
+    setLoading(true)
+    setError(false)
     fetch('/api/family-feed/posts?limit=20')
-      .then((r) => r.json())
+      .then((r) => {
+        if (!r.ok) throw new Error(String(r.status))
+        return r.json()
+      })
       .then((data: PostsResponse) => {
         setPosts(data.posts)
         setCursor(data.nextCursor)
       })
+      .catch(() => setError(true))
       .finally(() => setLoading(false))
+  }
+
+  useEffect(() => {
+    loadInitial()
   }, [])
 
   function loadMore() {
@@ -61,6 +72,17 @@ export function FeedPage() {
     return (
       <div className="flex h-64 items-center justify-center">
         <Loader2 className="size-5 animate-spin" style={{ color: 'var(--muted-foreground)' }} />
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="flex h-64 flex-col items-center justify-center gap-3">
+        <p style={{ color: 'var(--muted-foreground)', fontSize: 14 }}>Could not load posts.</p>
+        <Button variant="outline" size="sm" onClick={loadInitial}>
+          Try again
+        </Button>
       </div>
     )
   }

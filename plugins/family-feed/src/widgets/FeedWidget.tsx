@@ -1,9 +1,8 @@
-import { useState, useEffect } from 'react'
+import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { Button } from '@family-os/ui'
 import { PermissionGate } from '@family-os/platform'
-import type { PostsResponse } from '../types'
-import type { FeedPost } from '../types'
+import type { PostsResponse, FeedPost } from '../types'
 import { FeedPostCard } from '../components/FeedPostCard'
 import { FeedEmptyState } from '../components/FeedEmptyState'
 
@@ -20,15 +19,17 @@ const WIDGET_STYLES = `
 `
 
 export default function FeedWidget() {
-  const [posts, setPosts] = useState<FeedPost[]>([])
+  const { data } = useQuery<FeedPost[]>({
+    queryKey: ['family-feed/posts/widget'],
+    queryFn: () =>
+      fetch('/api/family-feed/posts?limit=5')
+        .then((r) => r.json())
+        .then((d: PostsResponse) => d.posts),
+    staleTime: 60_000,
+    retry: 3,
+  })
 
-  useEffect(() => {
-    fetch('/api/family-feed/posts?limit=5')
-      .then((r) => r.json())
-      .then((data: PostsResponse) => setPosts(data.posts))
-      .catch(() => {})
-  }, [])
-
+  const posts: FeedPost[] = data ?? []
   const latest = posts[0]
 
   return (
