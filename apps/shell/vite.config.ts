@@ -21,6 +21,7 @@ export default defineConfig({
       shared: {
         react: { singleton: true, requiredVersion: '^19.0.0' },
         'react-dom': { singleton: true, requiredVersion: '^19.0.0' },
+        'react-router-dom': { singleton: true },
         '@family-os/platform': { singleton: true },
         '@family-os/ui': { singleton: true },
       },
