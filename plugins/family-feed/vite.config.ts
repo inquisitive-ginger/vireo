@@ -28,7 +28,7 @@ export default defineConfig({
   preview: {
     port: 3011,
     strictPort: true,
-    headers: { 'Access-Control-Allow-Origin': '*' },
+    headers: { 'Access-Control-Allow-Origin': '*', 'Cache-Control': 'no-cache' },
   },
   build: {
     target: 'esnext',
