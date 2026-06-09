@@ -575,12 +575,13 @@ describe('GET /api/profiles/:id/permissions', () => {
         overrideId: string | null
       }>
     }>()
-    expect(permissions).toHaveLength(3)
+    expect(permissions).toHaveLength(4)
     expect(permissions.every((p) => p.override === null && p.overrideId === null)).toBe(true)
     // tier 1 baseline: view platform.Plugin only
     expect(permissions.find((p) => p.key === 'platform.plugin.view')?.inBaseline).toBe(true)
     expect(permissions.find((p) => p.key === 'platform.profile.view')?.inBaseline).toBe(false)
     expect(permissions.find((p) => p.key === 'platform.profile.switch')?.inBaseline).toBe(false)
+    expect(permissions.find((p) => p.key === 'family-feed.post.create')?.inBaseline).toBe(false)
   })
 
   it('reflects an existing override in the response', async () => {

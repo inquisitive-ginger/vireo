@@ -1,5 +1,7 @@
 import { useState, useEffect } from 'react'
 import { Link } from 'react-router-dom'
+import { Button } from '@family-os/ui'
+import { PermissionGate } from '@family-os/platform'
 import type { PostsResponse } from '../types'
 import type { FeedPost } from '../types'
 import { FeedPostCard } from '../components/FeedPostCard'
@@ -47,7 +49,17 @@ export default function FeedWidget() {
       <div className="ffeed-single" style={{ justifyContent: 'center', padding: '16px 18px' }}>
         {!latest ? (
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <FeedEmptyState />
+            <FeedEmptyState
+              compose={
+                <PermissionGate action="create" subject="family-feed.Post">
+                  <Link to="/family-feed">
+                    <Button size="sm" variant="outline">
+                      New Post
+                    </Button>
+                  </Link>
+                </PermissionGate>
+              }
+            />
           </div>
         ) : (
           <Link
@@ -69,7 +81,17 @@ export default function FeedWidget() {
       <div className="ffeed-multi" style={{ justifyContent: 'space-evenly', padding: '12px 18px' }}>
         {posts.length === 0 ? (
           <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-            <FeedEmptyState />
+            <FeedEmptyState
+              compose={
+                <PermissionGate action="create" subject="family-feed.Post">
+                  <Link to="/family-feed">
+                    <Button size="sm" variant="outline">
+                      New Post
+                    </Button>
+                  </Link>
+                </PermissionGate>
+              }
+            />
           </div>
         ) : (
           <Link
