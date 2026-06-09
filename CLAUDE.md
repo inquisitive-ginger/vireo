@@ -19,7 +19,7 @@ with the family that runs it. See [`docs/vision.md`](docs/vision.md).
 
 - **Milestone:** M1 — Platform Shell (in progress)
 - **Active stories:** None
-- **Last session:** 2026-06-08 — family-feed-compose (family-feed.post.create in PERMISSION_REGISTRY; tier 2+ baseline; POST /api/family-feed/posts with permission check; Textarea + ComposeForm in packages/ui; Frame B card design; FeedPage compose toggle with PermissionGate; widget empty state compose button; 6 new API tests + 3 new ability tests; both playground files deleted)
+- **Last session:** 2026-06-09 — family-feed-compose post-merge fixes (react-router-dom singleton + Plugin.tsx nested Routes fix; WidgetGrid dynamic row height fills viewport; FeedWidget useQuery via @family-os/platform singleton for retry/stale-while-revalidate; FeedPage error state; vite preview no-cache header; shell hmr localhost config)
 - **Next session:** M1 Dev: appearance-preference-gate (see queue)
 
 > Update this section at the end of every session.
