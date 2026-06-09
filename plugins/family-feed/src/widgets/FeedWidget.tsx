@@ -1,7 +1,6 @@
-import { useQuery } from '@tanstack/react-query'
 import { Link } from 'react-router-dom'
 import { Button } from '@family-os/ui'
-import { PermissionGate } from '@family-os/platform'
+import { PermissionGate, useQuery } from '@family-os/platform'
 import type { PostsResponse, FeedPost } from '../types'
 import { FeedPostCard } from '../components/FeedPostCard'
 import { FeedEmptyState } from '../components/FeedEmptyState'
