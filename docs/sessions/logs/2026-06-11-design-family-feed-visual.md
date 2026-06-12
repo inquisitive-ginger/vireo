@@ -68,8 +68,11 @@ family voice is serif_, _Surfaces lift, backgrounds recede_.
 
 **`plugins/family-feed`**
 
-- `FeedPostCard`: note card (card surface, radius 14, shadow, 4px identity
-  spine, 40px avatar, Lora body) + `plain` variant for widget use
+- `FeedPostCard`: note card (card surface, radius 14, shadow, 40px avatar,
+  Lora body) + `plain` variant for widget use. Identity edge: 4px
+  full-height bar clipped by the card radius so its curve follows the
+  corner — chosen from a five-option Storybook exploration (full-height
+  clipped edge · floating pill · inset tab · avatar ring · edge + wash)
 - `FeedPageView` (new, presentational): bulletin header (accent section
   label + Lora title), day-grouped posts (Today / Yesterday / weekday /
   date) with accent labels + hairlines; `FeedPage` is now a thin container

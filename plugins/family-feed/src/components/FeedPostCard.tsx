@@ -67,6 +67,8 @@ export function FeedPostCard({ post, lineClamp, variant = 'note' }: FeedPostCard
         borderRadius: 14,
         boxShadow: 'var(--shadow-card)',
         padding: '16px 20px',
+        // clips the identity edge so its curve follows the card corner
+        overflow: 'hidden',
       }}
     >
       <span
@@ -74,10 +76,9 @@ export function FeedPostCard({ post, lineClamp, variant = 'note' }: FeedPostCard
         style={{
           position: 'absolute',
           left: 0,
-          top: 14,
-          bottom: 14,
+          top: 0,
+          bottom: 0,
           width: 4,
-          borderRadius: '0 4px 4px 0',
           background: identityColor(post.author.name),
         }}
       />

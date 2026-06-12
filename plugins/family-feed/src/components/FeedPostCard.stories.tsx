@@ -23,7 +23,8 @@ type Story = StoryObj<typeof FeedPostCard>
 export const Note: Story = {
   args: { post: SAMPLE_POSTS[0] },
   parameters: {
-    annotation: 'note variant (default) — card + identity spine + Lora prose · feed page',
+    annotation:
+      'note variant (default) — card + full-height identity edge + Lora prose · feed page',
   },
 }
 
