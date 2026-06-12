@@ -34,23 +34,23 @@ export function ComposeForm({
   return (
     <div
       style={{
-        background: 'var(--secondary)',
+        background: 'var(--card)',
         border: '1px solid var(--border)',
-        borderRadius: 12,
+        borderRadius: 14,
         padding: '16px 18px',
-        boxShadow: '0 2px 8px oklch(0 0 0 / 0.06)',
+        boxShadow: 'var(--shadow-raised)',
       }}
     >
       <div className="flex gap-3 items-start">
-        <ProfileAvatar name={authorName} size="sm" />
+        <ProfileAvatar name={authorName} size="base" />
         <Textarea
           autoFocus
           value={body}
           onChange={(e) => setBody(e.target.value)}
-          placeholder="Share something with the family…"
+          placeholder="Leave a note for the family…"
           rows={3}
           disabled={isSubmitting}
-          className="border-none bg-transparent shadow-none focus-visible:ring-0 px-0 py-1 text-base"
+          className="text-prose border-none bg-transparent shadow-none focus-visible:ring-0 px-0 py-1.5"
         />
       </div>
       <div style={{ height: 1, background: 'var(--border)', margin: '12px 0' }} />

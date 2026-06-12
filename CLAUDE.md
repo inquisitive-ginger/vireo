@@ -19,7 +19,7 @@ with the family that runs it. See [`docs/vision.md`](docs/vision.md).
 
 - **Milestone:** M1 — Platform Shell (in progress)
 - **Active stories:** None
-- **Last session:** 2026-06-09 — family-feed-compose post-merge fixes (react-router-dom singleton + Plugin.tsx nested Routes fix; WidgetGrid dynamic row height fills viewport; FeedWidget useQuery via @family-os/platform singleton for retry/stale-while-revalidate; FeedPage error state; vite preview no-cache header; shell hmr localhost config)
+- **Last session:** 2026-06-11 — Design: family-feed visual language ("Family Bulletin" direction; surface elevation tokens + member identity palette (ADR 030) + `prose` Lora token + widget identity headers; FeedPage/FeedWidget container–view splits with Storybook playground; on branch `dev/family-feed-visual-language`)
 - **Next session:** M1 Dev: appearance-preference-gate (see queue)
 
 > Update this section at the end of every session.

@@ -449,7 +449,7 @@ function OnboardingFlow({ initialStep }: { initialStep: Step }) {
         Family OS
       </p>
 
-      <div className="w-full max-w-md bg-secondary border border-border rounded-2xl shadow-sm overflow-hidden">
+      <div className="w-full max-w-md bg-card border border-border rounded-2xl shadow-[var(--shadow-raised)] overflow-hidden">
         <div className="px-8 pt-8 pb-6 border-b border-border flex items-start justify-between gap-4">
           <div>
             <p className="text-xs text-muted-foreground uppercase tracking-widest font-semibold mb-1.5">

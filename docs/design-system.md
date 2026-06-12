@@ -1,6 +1,6 @@
 # Design System
 
-> Last updated: 2026-06-07 — notification item design (Frame B) + tray interaction model.
+> Last updated: 2026-06-11 — surface elevation tokens, member identity palette, `prose` type token, widget identity headers (Family Feed visual language session).
 
 This document records settled design decisions. Deferred items are
 explicitly marked — do not treat absence of a spec as a free choice.
@@ -33,15 +33,18 @@ explicitly marked — do not treat absence of a spec as a free choice.
 Every design decision should be checkable against these. They flow
 directly from the project vision.
 
-| Principle                            | What it means in practice                                                                         |
-| ------------------------------------ | ------------------------------------------------------------------------------------------------- |
-| **Kids are participants**            | Kid-facing views are first-class UI, not simplified adult UI                                      |
-| **Legible at a glance**              | Tablet is often across a room — key info must read without approaching                            |
-| **Tier-appropriate, not age-locked** | UI adapts to trust tier, not birth year                                                           |
-| **Calm by default**                  | No unnecessary motion, badges, or urgency cues                                                    |
-| **Touch-first, pointer-friendly**    | Tablet and mobile are touch surfaces; mouse/keyboard work but are secondary                       |
-| **Plugins feel native**              | Community-built plugins use the same component library and tokens as first-party modules          |
-| **No AI aesthetic**                  | Family OS should have its own visual character — avoid the generic Inter/Geist/hyper-minimal look |
+| Principle                             | What it means in practice                                                                             |
+| ------------------------------------- | ----------------------------------------------------------------------------------------------------- |
+| **Kids are participants**             | Kid-facing views are first-class UI, not simplified adult UI                                          |
+| **Legible at a glance**               | Tablet is often across a room — key info must read without approaching                                |
+| **Tier-appropriate, not age-locked**  | UI adapts to trust tier, not birth year                                                               |
+| **Calm by default**                   | No unnecessary motion, badges, or urgency cues                                                        |
+| **Touch-first, pointer-friendly**     | Tablet and mobile are touch surfaces; mouse/keyboard work but are secondary                           |
+| **Plugins feel native**               | Community-built plugins use the same component library and tokens as first-party modules              |
+| **No AI aesthetic**                   | Family OS should have its own visual character — avoid the generic Inter/Geist/hyper-minimal look     |
+| **People are color**                  | Every family member maps to a stable identity hue, used consistently across all modules               |
+| **The family voice is serif**         | User-authored words (posts, notes) render in Lora via `prose`; UI chrome stays DM Sans                |
+| **Surfaces lift, backgrounds recede** | Content cards float on the warm background via elevation tokens — depth, not lines, creates hierarchy |
 
 ---
 
@@ -75,7 +78,7 @@ output — not upgrading a dependency.
 
 **Pairing rationale:** Lora gives page titles and narrative moments warmth and editorial character. DM Sans keeps UI text clean and legible without the generic Inter/Geist feel.
 
-**Lora scope:** `page-title`, `display-lg`, `display-xl` only. All other tokens — including `heading`, `card-title`, `section-label` — use DM Sans. Structural headings that don't carry emotional weight stay in DM Sans.
+**Lora scope:** `page-title`, `display-lg`, `display-xl`, and `prose` (user-authored content — see below). All other tokens — including `heading`, `card-title`, `section-label` — use DM Sans. Structural headings that don't carry emotional weight stay in DM Sans.
 
 ```css
 --font-display: 'Lora', Georgia, 'Times New Roman', serif;
@@ -100,6 +103,7 @@ All tokens are defined as CSS utilities in `packages/ui/src/styles.css` and are 
 | `base`          | `text-base-token`    | 14  | 400    | 1.5         | 0        | DM Sans                    |
 | `card-title`    | `text-card-title`    | 16  | 600    | 1.3         | 0        | DM Sans                    |
 | `body`          | `text-body`          | 18  | 400    | 1.6         | 0        | DM Sans                    |
+| `prose`         | `text-prose`         | 18  | 400    | 1.65        | 0        | **Lora**                   |
 | `heading`       | `text-heading`       | 20  | 600    | 1.2         | −0.01em  | DM Sans                    |
 | `page-title`    | `text-page-title`    | 26  | 600    | 1.2         | −0.02em  | **Lora**                   |
 | `display-lg`    | `text-display-lg`    | 29  | 600    | 1.2         | −0.01em  | **Lora**                   |
@@ -108,7 +112,8 @@ All tokens are defined as CSS utilities in `packages/ui/src/styles.css` and are 
 
 **Usage notes:**
 
-- `section-label` — always `--muted-foreground`; uppercase is baked into the utility
+- `section-label` — `--muted-foreground` by default; `--accent` when naming a module surface (widget identity headers, feed day markers); uppercase is baked into the utility
+- `prose` — user-authored content only (feed posts, notes, messages). The family's own words get the warmth of the display face; text _about_ the UI never does. Same 18px viewing-distance floor as `body`
 - `page-title` — one per route; renders in Lora
 - `display-lg` — empty state headings, error page headings
 - `display-xl` — greeting text ("Good morning, Zach"), hero moments
@@ -145,6 +150,63 @@ semantic tokens only — never raw oklch values.
 | `--accent-foreground`    | `oklch(0.99 0 0)`       | Text on accent                           |
 | `--border` / `--input`   | `oklch(0.88 0.022 75)`  | Borders and input outlines               |
 | `--ring`                 | `oklch(0.57 0.14 35)`   | Focus ring (matches primary)             |
+
+### Surface elevation
+
+**Settled** — Family Feed visual language session, 2026-06-11.
+
+The original token set had no depth layer — `--secondary` (oklch 0.93) on
+`--background` (oklch 0.985) read as nearly flat, which made every surface
+look like the same beige. Elevation now carries surface hierarchy:
+
+| Token               | Light                   | Dark                   | Role                                     |
+| ------------------- | ----------------------- | ---------------------- | ---------------------------------------- |
+| `--card`            | `oklch(0.999 0.004 80)` | `oklch(0.21 0.022 47)` | Content cards — lifts _above_ background |
+| `--card-foreground` | `var(--foreground)`     | `var(--foreground)`    | Text on cards                            |
+| `--shadow-card`     | warm-tinted, subtle     | deep black, subtle     | Resting cards, widget slots              |
+| `--shadow-raised`   | warm-tinted, pronounced | deep black, pronounced | Compose forms, overlays, pickers         |
+
+Rules:
+
+- Light-mode shadows are **warm-tinted** (`oklch(0.35 0.06 50 / …)`), never
+  neutral gray — gray shadows go cold against the warm palette
+- `--card` is _lighter_ than `--background` in light mode (lift toward white);
+  in dark mode it is lighter than the clay background by ~0.06 L
+- `--secondary` remains for inset/structural surfaces (sidebar, grouped
+  settings rows); content that "sits on the table" uses `--card` + shadow
+- Never hardcode `box-shadow` values — use the two shadow tokens
+- `WidgetSlot` renders `--card` + `--shadow-card`; widgets get elevation
+  for free and must not add their own card chrome at the slot level
+
+Where each level applies:
+
+| Level             | Surfaces                                                                                                              |
+| ----------------- | --------------------------------------------------------------------------------------------------------------------- |
+| `--shadow-card`   | Widget slots, feed post cards, settings sections — content at rest                                                    |
+| `--shadow-raised` | Compose forms, notification tray, drawers, dialogs, toasts, profile picker, onboarding card — surfaces above the page |
+| No shadow (flat)  | Sidebar, nav, inset rows, placeholder cards — structural chrome is never elevated                                     |
+
+### Member identity palette
+
+**Settled** — see ADR 030. Helpers: `getIdentityHue`, `identityToken`,
+`identityColor` from `@family-os/ui`.
+
+Six fixed hues harmonized with Terracotta & Teal. Every family member maps
+to one hue and keeps it **everywhere** — avatar fill, feed post spine,
+calendar chips, chore assignments. Three layers per hue, light + dark aware:
+
+| Layer | Token pattern           | Use                                |
+| ----- | ----------------------- | ---------------------------------- |
+| base  | `--identity-{hue}`      | Spines, rings, markers, indicators |
+| tint  | `--identity-{hue}-tint` | Avatar fill, soft backgrounds      |
+| ink   | `--identity-{hue}-ink`  | Initials/text on tint              |
+
+Hues: `terracotta` · `marigold` · `sage` · `teal` · `sky` · `plum`
+
+Assignment is currently a name hash (collisions possible); explicit
+per-profile assignment is the planned evolution (ADR 030). Components
+accept an explicit hue (`ProfileAvatar identity` prop) so the upgrade is
+non-breaking. Plugins must never invent member colors outside this palette.
 
 ### Semantic status tokens — light mode
 
@@ -425,6 +487,23 @@ Key fields:
   "description": "Shows the current user's tasks due today."
 }
 ```
+
+### Widget identity header
+
+**Settled** — Family Feed visual language session, 2026-06-11.
+
+Every content widget opens with an identity header so the module is legible
+at a glance (the tablet is often viewed across a room, and an unlabeled
+widget is anonymous):
+
+```
+[icon 13px, --accent]  MODULE NAME        ← text-section-label, --accent
+```
+
+- Lucide icon representing the module, 13px, `--accent`
+- Label: `text-section-label` in `--accent` (the sanctioned accent use of
+  section-label — see Typography usage notes)
+- Placeholder cards and error cards are exempt (they carry their own anatomy)
 
 ### Role-aware composition
 
@@ -721,6 +800,13 @@ All empty states share the same structure:
 Modules write two copy variants — one for tier 1, one for tier 2+.
 The CTA is always wrapped in `PermissionGate` — if the profile cannot
 create, the button is absent entirely (no locked/disabled state).
+
+### Compact variant — widget slots
+
+Inside 1-row widget slots (~180px) the full anatomy doesn't fit. Widgets
+use a compact variant: heading drops to `card-title` (DM Sans), body to
+`sm`, icon omitted. The CTA rule is unchanged (PermissionGate-wrapped or
+absent).
 
 ### Rules
 

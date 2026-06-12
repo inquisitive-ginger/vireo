@@ -21,9 +21,13 @@ export default meta
 type Story = StoryObj<typeof WidgetSlot>
 
 const ROW_H = 180
-const GAP   = 16
-function slotH(h: number) { return h * ROW_H + (h - 1) * GAP }
-function slotW(w: number) { return w * 253  + (w - 1) * GAP }
+const GAP = 16
+function slotH(h: number) {
+  return h * ROW_H + (h - 1) * GAP
+}
+function slotW(w: number) {
+  return w * 253 + (w - 1) * GAP
+}
 
 function Slot({ w, h, children }: { w: number; h: number; children: ReactNode }) {
   return <div style={{ width: slotW(w), height: slotH(h) }}>{children}</div>
@@ -34,7 +38,11 @@ export const Standard: Story = {
   render: () => (
     <Slot w={2} h={1}>
       <WidgetSlot>
-        <PlaceholderCard moduleName="Calendar" description="Upcoming events and schedule" icon={Calendar} />
+        <PlaceholderCard
+          moduleName="Calendar"
+          description="Upcoming events and schedule"
+          icon={Calendar}
+        />
       </WidgetSlot>
     </Slot>
   ),
@@ -45,7 +53,11 @@ export const Large: Story = {
   render: () => (
     <Slot w={2} h={2}>
       <WidgetSlot>
-        <PlaceholderCard moduleName="Chores" description="Tasks and responsibilities for today" icon={CheckSquare} />
+        <PlaceholderCard
+          moduleName="Chores"
+          description="Tasks and responsibilities for today"
+          icon={CheckSquare}
+        />
       </WidgetSlot>
     </Slot>
   ),
@@ -56,7 +68,11 @@ export const Banner: Story = {
   render: () => (
     <Slot w={4} h={1}>
       <WidgetSlot>
-        <PlaceholderCard moduleName="Family Feed" description="Shared updates from everyone at home" icon={Rss} />
+        <PlaceholderCard
+          moduleName="Family Feed"
+          description="Shared updates from everyone at home"
+          icon={Rss}
+        />
       </WidgetSlot>
     </Slot>
   ),

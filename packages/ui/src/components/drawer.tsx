@@ -20,7 +20,7 @@ export function Drawer({ open, onClose, title, children, className }: DrawerProp
         <Dialog.Content
           className={cn(
             'fixed inset-y-0 right-0 z-50 flex w-[440px] flex-col',
-            'bg-background border-l border-border shadow-xl',
+            'bg-card border-l border-border shadow-[var(--shadow-raised)]',
             'focus:outline-none',
             className
           )}
