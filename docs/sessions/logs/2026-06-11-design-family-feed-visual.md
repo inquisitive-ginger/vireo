@@ -50,10 +50,13 @@ family voice is serif_, _Surfaces lift, backgrounds recede_.
 - `WidgetSlot`: `--card` + `--shadow-card` (was flat `--secondary`)
 - `ComposeForm`: card surface, `--shadow-raised`, `text-prose` textarea,
   warmer placeholder copy
-- `identity-colors.stories.tsx` (new): Foundation/Identity Colors — palette
-  reference
-- `elevation.stories.tsx` (new): Foundation/Elevation — surface layers
-  (background / secondary / card), both shadow tokens, in-context example
+- Foundation/Color extended with member identity tokens (swatch rows for
+  base/tint/ink per hue + avatar) and a `--card` row; `elevation.stories.tsx`
+  (new): Foundation/Elevation — surface layers, shadow tokens, in-context
+  example, all in the Foundation swatch-row + annotation format
+- Family Feed stories share a `StoryAnnotation` helper — every story carries
+  an uppercase context annotation (slot size, tier/permission context,
+  variant rationale) in the same style as Foundation stories
 - Elevation applied across all floating surfaces: `NotificationTray`,
   `Drawer`, `ConfirmDialog`, `Toast` → `--card` + `--shadow-raised`;
   `SettingsSection` → `--card` + `--shadow-card`

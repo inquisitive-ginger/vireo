@@ -1,141 +1,173 @@
 import type { Meta, StoryObj } from '@storybook/react'
-import { Bell, ClipboardList } from 'lucide-react'
+import { ClipboardList } from 'lucide-react'
 import { Button } from './button'
 
 const meta: Meta = {
   title: 'Foundation/Elevation',
-  parameters: { layout: 'fullscreen' },
+  parameters: { layout: 'padded' },
 }
-
 export default meta
 type Story = StoryObj
 
-/* Surface layers — how the three background tokens relate.
-   --background recedes, --secondary is structural (inset), --card lifts. */
-export const SurfaceLayers: Story = {
-  render: () => (
-    <div style={{ background: 'var(--background)', minHeight: '100vh', padding: 40 }}>
-      <div style={{ maxWidth: 640 }}>
-        <p
-          className="text-base-token"
-          style={{ color: 'var(--muted-foreground)', marginBottom: 28 }}
-        >
-          Three surface layers. <strong>Depth, not lines, creates hierarchy</strong> — content that
-          “sits on the table” gets <code>--card</code> + shadow; structural chrome stays flat.
-        </p>
+function SectionLabel({ children }: { children: React.ReactNode }) {
+  return (
+    <p
+      style={{
+        fontFamily: 'var(--font-ui)',
+        fontSize: 11,
+        fontWeight: 700,
+        textTransform: 'uppercase',
+        letterSpacing: '0.1em',
+        color: 'var(--muted-foreground)',
+        marginBottom: 8,
+      }}
+    >
+      {children}
+    </p>
+  )
+}
 
-        <div className="flex flex-col gap-5">
-          {(
-            [
-              [
-                '--background',
-                'none',
-                'Page background — recedes. The warm table everything sits on.',
-              ],
-              [
-                '--secondary',
-                'none',
-                'Structural / inset surfaces — sidebar, grouped rows. Flat by design: it is part of the chrome, not content.',
-              ],
-              [
-                '--card',
-                'var(--shadow-card)',
-                'Content cards — lift above the background. Always paired with --shadow-card and a border.',
-              ],
-            ] as const
-          ).map(([token, shadow, blurb]) => (
-            <div key={token} className="flex items-center gap-5">
-              <div
-                className="rounded-xl border border-border shrink-0"
-                style={{ width: 180, height: 80, background: `var(${token})`, boxShadow: shadow }}
-              />
-              <div>
-                <div className="text-card-title" style={{ color: 'var(--foreground)' }}>
-                  {token}
-                </div>
-                <div className="text-sm-token" style={{ color: 'var(--muted-foreground)' }}>
-                  {blurb}
-                </div>
-              </div>
-            </div>
-          ))}
-        </div>
+function Footnote({ children }: { children: React.ReactNode }) {
+  return (
+    <p
+      style={{
+        fontFamily: 'var(--font-ui)',
+        fontSize: 11,
+        color: 'var(--muted-foreground)',
+        marginTop: 16,
+        lineHeight: 1.5,
+      }}
+    >
+      {children}
+    </p>
+  )
+}
+
+type SurfaceItem = {
+  token: string
+  shadow?: string
+  role: string
+}
+
+const SURFACES: SurfaceItem[] = [
+  { token: '--background', role: 'Page background — recedes. The warm table everything sits on' },
+  {
+    token: '--secondary',
+    role: 'Structural / inset surfaces — sidebar, grouped rows. Flat by design',
+  },
+  {
+    token: '--card',
+    shadow: '--shadow-card',
+    role: 'Content cards — lift above the background, always with shadow + border',
+  },
+]
+
+const SHADOWS: SurfaceItem[] = [
+  {
+    token: '--shadow-card',
+    shadow: '--shadow-card',
+    role: 'Resting — widget slots, feed posts, settings sections',
+  },
+  {
+    token: '--shadow-raised',
+    shadow: '--shadow-raised',
+    role: 'Raised — compose forms, trays, drawers, dialogs, toasts, profile picker',
+  },
+]
+
+function SurfaceRow({ token, shadow, role, chipBg }: SurfaceItem & { chipBg?: string }) {
+  return (
+    <div
+      style={{
+        display: 'grid',
+        gridTemplateColumns: '56px 220px 1fr',
+        alignItems: 'center',
+        gap: 16,
+        padding: '12px 0',
+        borderBottom: '1px solid var(--border)',
+        fontFamily: 'var(--font-ui)',
+      }}
+    >
+      <div
+        style={{
+          width: 48,
+          height: 48,
+          borderRadius: 10,
+          background: chipBg ?? `var(${token})`,
+          border: '1px solid color-mix(in oklch, var(--border) 60%, transparent)',
+          boxShadow: shadow ? `var(${shadow})` : undefined,
+          flexShrink: 0,
+        }}
+      />
+      <div style={{ display: 'flex', flexDirection: 'column', gap: 2 }}>
+        <code style={{ fontSize: 11, fontWeight: 600, color: 'var(--foreground)' }}>{token}</code>
+        {shadow && shadow !== token && (
+          <code style={{ fontSize: 10, color: 'var(--muted-foreground)' }}>{shadow}</code>
+        )}
       </div>
+      <span style={{ fontSize: 12, color: 'var(--muted-foreground)' }}>{role}</span>
+    </div>
+  )
+}
+
+export const SurfaceLayers: Story = {
+  name: 'Surface layers',
+  render: () => (
+    <div style={{ maxWidth: 680 }}>
+      <SectionLabel>
+        Surface layers — depth, not lines, creates hierarchy — use the theme toggle to verify dark
+        mode
+      </SectionLabel>
+      {SURFACES.map((s) => (
+        <SurfaceRow key={s.token} {...s} />
+      ))}
+      <Footnote>
+        Content that “sits on the table” gets <code>--card</code> + <code>--shadow-card</code> +
+        border. Structural chrome (sidebar, nav, inset rows, placeholder cards) is never elevated.
+      </Footnote>
     </div>
   ),
 }
 
-/* The two shadow tokens, side by side. */
-export const Shadows: Story = {
+export const ShadowTokens: Story = {
+  name: 'Shadow tokens',
   render: () => (
-    <div style={{ background: 'var(--background)', minHeight: '100vh', padding: 40 }}>
-      <div className="flex gap-10 items-start">
-        {(
-          [
-            [
-              '--shadow-card',
-              'Resting',
-              'Cards at rest: widget slots, feed posts, settings sections. Subtle — visible lift, no drama.',
-            ],
-            [
-              '--shadow-raised',
-              'Raised',
-              'Surfaces above the page: compose forms, trays, drawers, dialogs, toasts, the profile picker.',
-            ],
-          ] as const
-        ).map(([token, name, blurb]) => (
-          <div key={token} style={{ width: 280 }}>
-            <div
-              className="rounded-xl border border-border"
-              style={{
-                height: 150,
-                background: 'var(--card)',
-                boxShadow: `var(${token})`,
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-              }}
-            >
-              <code className="text-sm-token" style={{ color: 'var(--muted-foreground)' }}>
-                {token}
-              </code>
-            </div>
-            <div className="text-card-title" style={{ marginTop: 16, color: 'var(--foreground)' }}>
-              {name}
-            </div>
-            <div
-              className="text-sm-token"
-              style={{ color: 'var(--muted-foreground)', marginTop: 4 }}
-            >
-              {blurb}
-            </div>
-          </div>
-        ))}
-      </div>
-      <p
-        className="text-sm-token"
-        style={{ color: 'var(--muted-foreground)', marginTop: 32, maxWidth: 560 }}
-      >
+    <div style={{ maxWidth: 680 }}>
+      <SectionLabel>Two levels only — resting and raised</SectionLabel>
+      {SHADOWS.map((s) => (
+        <SurfaceRow key={s.token} {...s} chipBg="var(--card)" />
+      ))}
+      <Footnote>
         Light-mode shadows are warm-tinted (<code>oklch(0.35 0.06 50 / …)</code>) — never neutral
         gray, which goes cold against the warm palette. Dark mode deepens to black. Use the tokens;
         never hardcode <code>box-shadow</code>.
-      </p>
+      </Footnote>
     </div>
   ),
 }
 
-/* Both tokens doing their actual jobs: a resting widget card on the home
-   surface with a raised compose-like panel above it. */
 export const InContext: Story = {
+  name: 'In context',
   render: () => (
-    <div style={{ background: 'var(--background)', minHeight: '100vh', padding: 40 }}>
-      <div style={{ position: 'relative', width: 560 }}>
+    <div style={{ maxWidth: 680 }}>
+      <SectionLabel>Both tokens at work — resting widget card, raised panel above it</SectionLabel>
+      <div
+        style={{
+          position: 'relative',
+          background: 'var(--background)',
+          borderRadius: 12,
+          padding: 32,
+          paddingBottom: 120,
+          border: '1px solid var(--border)',
+        }}
+      >
         <div
           className="rounded-xl border border-border"
           style={{
             background: 'var(--card)',
             boxShadow: 'var(--shadow-card)',
             padding: '14px 18px',
+            maxWidth: 480,
           }}
         >
           <div className="flex items-center gap-1.5">
@@ -153,23 +185,20 @@ export const InContext: Story = {
           className="rounded-xl border border-border"
           style={{
             position: 'absolute',
-            top: 64,
-            left: 48,
-            right: -32,
+            top: 88,
+            left: 80,
+            width: 440,
             background: 'var(--card)',
             boxShadow: 'var(--shadow-raised)',
             padding: '16px 18px',
           }}
         >
-          <div className="flex items-center gap-2" style={{ marginBottom: 10 }}>
-            <Bell size={14} style={{ color: 'var(--accent)' }} aria-hidden />
-            <span className="text-card-title" style={{ color: 'var(--card-foreground)' }}>
-              A raised panel above the page
-            </span>
-          </div>
+          <span className="text-card-title" style={{ color: 'var(--card-foreground)' }}>
+            A raised panel above the page
+          </span>
           <p
             className="text-sm-token"
-            style={{ color: 'var(--muted-foreground)', marginBottom: 12 }}
+            style={{ color: 'var(--muted-foreground)', margin: '6px 0 12px' }}
           >
             Dialogs, trays, compose forms — <code>--shadow-raised</code>.
           </p>
@@ -181,6 +210,10 @@ export const InContext: Story = {
           </div>
         </div>
       </div>
+      <Footnote>
+        The raised panel overlaps the resting card the way a dialog overlaps the home surface — the
+        stronger shadow is what separates the two planes.
+      </Footnote>
     </div>
   ),
 }
