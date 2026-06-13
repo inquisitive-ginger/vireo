@@ -19,8 +19,8 @@ with the family that runs it. See [`docs/vision.md`](docs/vision.md).
 
 - **Milestone:** M1 — Platform Shell (in progress)
 - **Active stories:** None
-- **Last session:** 2026-06-11 — Design: family-feed visual language ("Family Bulletin" direction; surface elevation tokens + member identity palette (ADR 030) + `prose` Lora token + widget identity headers; FeedPage/FeedWidget container–view splits with Storybook playground; on branch `dev/family-feed-visual-language`)
-- **Next session:** M1 Dev: appearance-preference-gate (see queue)
+- **Last session:** 2026-06-13 — Design: shell-chrome-interaction-states (sidebar surface → `--secondary`; active nav → `bg-primary/20 text-primary`; hover unified to `bg-primary/10`; accent locked to module identity; all sidebar hairlines removed; ADR 031; on branch `dev/shell-chrome-interaction-states`)
+- **Next session:** M1 Design: widget-slot-states (see queue)
 
 > Update this section at the end of every session.
 

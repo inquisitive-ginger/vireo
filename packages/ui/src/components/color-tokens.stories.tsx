@@ -26,7 +26,7 @@ const CORE: SwatchItem[] = [
   {
     token: '--secondary',
     fgToken: '--secondary-foreground',
-    role: 'Structural / inset surfaces — sidebar, grouped rows',
+    role: 'Inset / structural surfaces — sidebar background, grouped settings rows',
   },
   {
     token: '--card',
@@ -35,7 +35,11 @@ const CORE: SwatchItem[] = [
   },
   { token: '--muted', fgToken: '--muted-foreground', role: 'Subtle backgrounds' },
   { token: '--muted-foreground', role: 'Subdued labels, timestamps' },
-  { token: '--accent', fgToken: '--accent-foreground', role: 'Sage-teal — highlights, indicators' },
+  {
+    token: '--accent',
+    fgToken: '--accent-foreground',
+    role: 'Sage-teal — module identity only (widget headers, feed markers, notification badges)',
+  },
   { token: '--border', role: 'Borders and input outlines' },
   { token: '--ring', role: 'Focus ring — matches primary' },
 ]

@@ -1,6 +1,6 @@
 # Design System
 
-> Last updated: 2026-06-11 — surface elevation tokens, member identity palette, `prose` type token, widget identity headers (Family Feed visual language session).
+> Last updated: 2026-06-13 — interaction-state language + sidebar surface plane (shell-chrome-interaction-states design session).
 
 This document records settled design decisions. Deferred items are
 explicitly marked — do not treat absence of a spec as a free choice.
@@ -136,20 +136,20 @@ semantic tokens only — never raw oklch values.
 
 ### Core tokens — light mode
 
-| Token                    | Value                   | Role                                     |
-| ------------------------ | ----------------------- | ---------------------------------------- |
-| `--background`           | `oklch(0.985 0.008 75)` | Page background — warm off-white         |
-| `--foreground`           | `oklch(0.18 0.04 50)`   | Primary text                             |
-| `--primary`              | `oklch(0.57 0.14 35)`   | Terracotta — main actions, active states |
-| `--primary-foreground`   | `oklch(0.99 0 0)`       | Text on primary                          |
-| `--secondary`            | `oklch(0.93 0.022 72)`  | Card and sidebar surfaces                |
-| `--secondary-foreground` | `oklch(0.28 0.05 50)`   | Text on secondary                        |
-| `--muted`                | `oklch(0.93 0.016 72)`  | Subtle backgrounds                       |
-| `--muted-foreground`     | `oklch(0.52 0.04 58)`   | Subdued labels, timestamps               |
-| `--accent`               | `oklch(0.47 0.07 185)`  | Muted sage-teal — highlights, indicators |
-| `--accent-foreground`    | `oklch(0.99 0 0)`       | Text on accent                           |
-| `--border` / `--input`   | `oklch(0.88 0.022 75)`  | Borders and input outlines               |
-| `--ring`                 | `oklch(0.57 0.14 35)`   | Focus ring (matches primary)             |
+| Token                    | Value                   | Role                                                                   |
+| ------------------------ | ----------------------- | ---------------------------------------------------------------------- |
+| `--background`           | `oklch(0.985 0.008 75)` | Page background — warm off-white                                       |
+| `--foreground`           | `oklch(0.18 0.04 50)`   | Primary text                                                           |
+| `--primary`              | `oklch(0.57 0.14 35)`   | Terracotta — main actions, active states                               |
+| `--primary-foreground`   | `oklch(0.99 0 0)`       | Text on primary                                                        |
+| `--secondary`            | `oklch(0.93 0.022 72)`  | Inset / structural surfaces — sidebar, grouped rows, settings sections |
+| `--secondary-foreground` | `oklch(0.28 0.05 50)`   | Text on secondary                                                      |
+| `--muted`                | `oklch(0.93 0.016 72)`  | Subtle backgrounds                                                     |
+| `--muted-foreground`     | `oklch(0.52 0.04 58)`   | Subdued labels, timestamps                                             |
+| `--accent`               | `oklch(0.47 0.07 185)`  | Muted sage-teal — module identity only (see Accent scope below)        |
+| `--accent-foreground`    | `oklch(0.99 0 0)`       | Text on accent                                                         |
+| `--border` / `--input`   | `oklch(0.88 0.022 75)`  | Borders and input outlines                                             |
+| `--ring`                 | `oklch(0.57 0.14 35)`   | Focus ring (matches primary)                                           |
 
 ### Surface elevation
 
@@ -441,6 +441,47 @@ their `manifest.json` with a `minTier` field (same pattern as widget registratio
 The sidebar renders only the routes the current user can access.
 
 The family pseudo-profile (tier 1, no writes) sees only tier-1-appropriate nav items.
+
+### Sidebar surface
+
+**Settled** — shell-chrome-interaction-states design session, 2026-06-13.
+
+The sidebar renders on `--secondary`. No `border-r` separator between sidebar and main
+content — the lightness delta (`--secondary` 0.93 L vs. `--background` 0.985 L in light
+mode; 0.22 vs. 0.15 in dark mode) creates the seam naturally. This applies the "depth,
+not lines, creates hierarchy" principle to the nav rail as much as to content cards.
+
+No internal hairlines within the sidebar. Vertical spacing groups the profile chip, nav
+items, notification bell, and settings entry.
+
+### Interaction states
+
+**Settled** — ADR 031, shell-chrome-interaction-states design session, 2026-06-13.
+
+`--primary` owns "active" across the entire app. `--accent` is locked to module identity
+and must never appear on navigation state (active, hover, selected).
+
+#### Accent scope
+
+`--accent` (sage-teal) is reserved for module identity surfaces only:
+
+- Widget identity headers (icon + `text-section-label`)
+- Feed day markers
+- `section-label` when naming a module surface
+- Notification badge for success/info severity
+
+#### Nav state classes
+
+| State              | Classes                                     | Notes                                        |
+| ------------------ | ------------------------------------------- | -------------------------------------------- |
+| Active nav item    | `bg-primary/20 text-primary font-medium`    | "You are here" — warm terracotta tint + text |
+| Nav hover          | `hover:bg-primary/10 hover:text-foreground` | Directional hint toward active               |
+| Profile chip hover | `hover:bg-primary/10`                       | Matches nav hover                            |
+| Profile chip open  | `bg-primary/15`                             | Expanded / profile grid open                 |
+
+The active profile avatar uses a `--primary` ring (ADR 030). Ring (circular, avatar-level)
+and fill (rectangular, item-level) are visually distinct shapes of the same
+"primary = selected" signal — no conflict.
 
 ---
 

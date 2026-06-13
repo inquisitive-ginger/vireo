@@ -9,7 +9,7 @@ import type { NotificationEntry } from '@family-os/ui'
 
 export function Sidebar() {
   return (
-    <aside className="w-[220px] shrink-0 h-screen flex flex-col border-r border-border bg-background relative">
+    <aside className="w-[220px] shrink-0 h-screen flex flex-col bg-secondary relative">
       <ProfileChip />
       <nav className="flex-1 py-2" aria-label="Main navigation">
         <NavItem to="/" icon={<Home size={18} aria-hidden />} label="Home" end />
@@ -30,9 +30,9 @@ function ProfileChip() {
       <button
         onClick={() => setGridOpen((v) => !v)}
         className={cn(
-          'flex items-center gap-3 px-4 py-3 min-h-[56px] border-b border-border w-full text-left',
+          'flex items-center gap-3 px-4 py-3 min-h-[56px] w-full text-left mb-1',
           'transition-colors duration-[var(--duration-fast)]',
-          gridOpen ? 'bg-secondary' : 'hover:bg-muted'
+          gridOpen ? 'bg-primary/15' : 'hover:bg-primary/10'
         )}
         aria-expanded={gridOpen}
         aria-haspopup="listbox"
@@ -120,7 +120,7 @@ function NotificationBell() {
   if (tier < 2) return null
 
   return (
-    <div className="px-1 py-1 border-t border-border">
+    <div className="px-1 py-1">
       <BellBadge
         count={unread?.unreadCount ?? 0}
         maxSeverity={unread?.maxSeverity ?? null}
@@ -142,7 +142,7 @@ function SettingsNavItem() {
   const { tier } = useAuth()
   if (tier < 2) return null
   return (
-    <div className="border-t border-border py-2">
+    <div className="py-2">
       <NavItem to="/settings" icon={<Settings size={18} aria-hidden />} label="Settings" />
     </div>
   )
@@ -167,8 +167,8 @@ function NavItem({
         cn(
           'flex items-center gap-3 px-3 py-2.5 mx-1 rounded-md text-sm transition-colors min-h-[48px]',
           isActive
-            ? 'bg-accent text-accent-foreground font-medium'
-            : 'text-muted-foreground hover:bg-secondary hover:text-foreground'
+            ? 'bg-primary/20 text-primary font-medium'
+            : 'text-muted-foreground hover:bg-primary/10 hover:text-foreground'
         )
       }
     >
