@@ -19,7 +19,7 @@ with the family that runs it. See [`docs/vision.md`](docs/vision.md).
 
 - **Milestone:** M1 — Platform Shell (in progress)
 - **Active stories:** None
-- **Last session:** 2026-06-13 — Design: widget-slot-states (`WidgetSlot flat` prop; `ErrorCard` component; `FeedPostCard variant="widget"` identity spine; placeholder/error slot spec settled)
+- **Last session:** 2026-06-13 — Dev: plugin-nav-items (manifest `navItem` field; shell icon registry; Family Feed nav entry live; ADR 032)
 - **Next session:** M1 Dev: appearance-preference-gate (see queue)
 
 > Update this section at the end of every session.

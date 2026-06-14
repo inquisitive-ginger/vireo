@@ -19,5 +19,11 @@
       "minTier": 1,
       "description": "Recent family posts."
     }
-  ]
+  ],
+  "navItem": {
+    "label": "Family Feed",
+    "route": "/family-feed",
+    "icon": "rss",
+    "minTier": 1
+  }
 }

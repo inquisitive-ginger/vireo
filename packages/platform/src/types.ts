@@ -82,6 +82,13 @@ export type RegistryEntry = {
   baseUrl: string
 }
 
+export type NavItemManifest = {
+  label: string
+  route: string
+  icon: string // lucide-react icon name, e.g. "rss" — resolved to a component by the shell
+  minTier?: TierLevel
+}
+
 export type PluginManifest = {
   name: string
   version: string
@@ -94,4 +101,5 @@ export type PluginManifest = {
     subscribes: EventName[]
   }
   widgets?: unknown[] // typed WidgetManifest added by M1 widget system story (ADR 022)
+  navItem?: NavItemManifest // ADR 032 — one sidebar nav entry per plugin
 }
