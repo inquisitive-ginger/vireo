@@ -19,8 +19,8 @@ const WIDGET_STYLES = `
 function WidgetHeader() {
   return (
     <div className="flex items-center gap-1.5 shrink-0">
-      <MessagesSquare size={13} style={{ color: 'var(--accent)' }} aria-hidden />
-      <span className="text-section-label" style={{ color: 'var(--accent)' }}>
+      <MessagesSquare size={13} style={{ color: 'var(--muted-foreground)' }} aria-hidden />
+      <span className="text-section-label" style={{ color: 'var(--muted-foreground)' }}>
         Family Feed
       </span>
     </div>
@@ -68,12 +68,12 @@ export function FeedWidgetView({ posts, emptyAction }: FeedWidgetViewProps) {
         {posts.length === 0 ? (
           empty
         ) : (
-          <div style={{ marginTop: 14, minHeight: 0, overflow: 'hidden' }}>
+          <div style={{ marginTop: 28, minHeight: 0, overflow: 'hidden' }}>
             {posts.slice(0, 3).map((post, i, arr) => (
               <div key={post.id}>
                 <FeedPostCard post={post} lineClamp={2} variant="widget" />
                 {i < arr.length - 1 && (
-                  <div style={{ height: 1, background: 'var(--border)', margin: '14px 0' }} />
+                  <div style={{ height: 1, background: 'var(--border)', margin: '22px 0' }} />
                 )}
               </div>
             ))}
