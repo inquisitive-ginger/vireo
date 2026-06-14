@@ -18,7 +18,7 @@ const preview: Preview = {
           'Primitives',
           ['Form', 'Dialog', 'EmptyState'],
           'Platform',
-          ['ProfileAvatar', 'ProfileListItem', 'PermissionToggle'],
+          ['Sidebar', 'ProfileAvatar', 'ProfileListItem', 'PermissionToggle'],
           'Home Surface',
           ['WidgetGrid', 'WidgetSlot', 'PlaceholderCard'],
         ],

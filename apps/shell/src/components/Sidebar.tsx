@@ -7,12 +7,24 @@ import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { ProfileGrid } from './ProfileGrid'
 import type { NotificationEntry } from '@family-os/ui'
 
-export function Sidebar() {
+export type PluginNavItem = {
+  to: string
+  icon: React.ReactNode
+  label: string
+  minTier?: 1 | 2 | 3 | 4
+}
+
+export function Sidebar({ pluginNavItems = [] }: { pluginNavItems?: PluginNavItem[] }) {
+  const { tier } = useAuth()
+  const visiblePluginItems = pluginNavItems.filter((item) => !item.minTier || item.minTier <= tier)
   return (
     <aside className="w-[220px] shrink-0 h-screen flex flex-col bg-secondary relative">
       <ProfileChip />
       <nav className="flex-1 py-2" aria-label="Main navigation">
         <NavItem to="/" icon={<Home size={18} aria-hidden />} label="Home" end />
+        {visiblePluginItems.map((item) => (
+          <NavItem key={item.to} to={item.to} icon={item.icon} label={item.label} />
+        ))}
       </nav>
       <NotificationBell />
       <SettingsNavItem />
