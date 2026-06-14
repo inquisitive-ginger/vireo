@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(pnpm --filter * test *)",
+      "Bash(pnpm --filter * typecheck *)",
+      "Bash(pnpm --filter * exec tsc --noEmit *)",
+      "Bash(pnpm test *)",
+      "Bash(pnpm --filter * exec prisma migrate status *)",
+      "Bash(npm info *)"
+    ]
+  }
+}
