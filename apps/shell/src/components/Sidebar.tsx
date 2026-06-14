@@ -42,7 +42,7 @@ function ProfileChip() {
       <button
         onClick={() => setGridOpen((v) => !v)}
         className={cn(
-          'flex items-center gap-3 px-4 py-3 min-h-[56px] w-full text-left mb-1',
+          'flex items-center gap-3 px-4 py-3 min-h-[56px] w-full text-left mb-1 cursor-pointer',
           'transition-colors duration-[var(--duration-fast)]',
           gridOpen ? 'bg-primary/15' : 'hover:bg-primary/10'
         )}
