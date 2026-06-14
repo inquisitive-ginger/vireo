@@ -18,6 +18,7 @@ async function main() {
   console.log('Resetting platform to zero state...')
 
   await prisma.session.deleteMany()
+  await prisma.pushSubscription.deleteMany()
   await prisma.widgetLayout.deleteMany()
   await prisma.permissionOverride.deleteMany()
 
