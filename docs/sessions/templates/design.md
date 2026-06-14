@@ -1,5 +1,11 @@
 # Design Session Template
 
+> **Recipe for kickoff docs.** Fill this in before the session opens and save it
+> to `docs/sessions/kickoffs/[session-name].md`. The session itself executes the
+> kickoff — it doesn't fill out the template live.
+
+---
+
 ## Pre-session checklist
 
 - [ ] Read `CLAUDE.md`
@@ -46,6 +52,7 @@ write an ADR** rather than burying it in the design doc.
 
 - [ ] `docs/design-system.md` updated with decisions from this session; **Last updated** header updated to today's date
 - [ ] Any new ADRs written to `docs/decisions/NNN-title.md`
+- [ ] If this session produced code (Storybook stories, token changes, component updates): branch opened, PR created
 - [ ] Session log committed to `docs/sessions/logs/YYYY-MM-DD-design-[topic].md`
 - [ ] `CLAUDE.md` current status updated
 

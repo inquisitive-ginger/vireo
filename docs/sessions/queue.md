@@ -2,30 +2,52 @@
 
 > Owned by planning sessions. Updated at the end of every planning
 > session. All other session types read but don't modify this file.
+>
+> Each queued session has a kickoff doc in `docs/sessions/kickoffs/` that
+> pre-loads context, constraints, and decisions-to-make. Open the kickoff
+> before starting work — don't fill out a template live.
 
 ---
 
 ## Up Next
 
-1. **M1 Dev: appearance-preference-gate** ![Type](https://img.shields.io/badge/Type-Development-orange)
-   Add `platform.preferences.appearance` to `PERMISSION_REGISTRY`; wrap the dark mode toggle in Settings with `PermissionGate` so parents can revoke appearance control for tier 2–3 profiles. Small addendum to the settings-permissions + permission-overrides work.
-   _Reads:_ `docs/modules/platform/stories/appearance-preference-gate.md`
-   _Produces:_ `platform.preferences.appearance` in `PERMISSION_REGISTRY`; Settings dark mode toggle gated by `PermissionGate`
+### M1 Dev: Appearance Preference Gate
 
-2. **M1 Design+Dev: family-profile-notifications** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
-   Shared-device notification surface for the family profile (tier 1). The family profile is always-on on kitchen tablets and Pi displays but receives no persistent notification history. Design and implement an ambient notification surface appropriate for shared household devices.
-   _Reads:_ `docs/modules/platform/stories/family-profile-notifications.md`, ADR 029
-   _Produces:_ Design decision on surface shape + implementation; amendment to ADR 029 if broadcast/audience model is introduced
+**Type:** development
+**Kickoff:** [kickoffs/dev-appearance-preference-gate.md](kickoffs/dev-appearance-preference-gate.md)
+**Reads:** `docs/modules/platform/stories/appearance-preference-gate.md`
+**Produces:** `platform.preferences.appearance` in `PERMISSION_REGISTRY`; dark mode toggle wrapped with `PermissionGate` in Settings
+**Depends on:** settings-permissions ✅, permission-overrides ✅
 
-3. **Mobile Surface Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
-   Mobile layout and nav design for the PWA. Deferred from M1 design sessions — required before mobile surface implementation can begin.
-   _Reads:_ `docs/design-system.md` (Surfaces — Other Surfaces), `docs/modules/platform/stories/pwa-installable.md`
-   _Produces:_ Updated `docs/design-system.md` with mobile surface spec
+---
 
-4. **M1 Dev: push-multi-profile-device** ![Type](https://img.shields.io/badge/Type-Development-orange)
-   Allow multiple profiles to hold subscriptions for the same endpoint. Currently `endpoint` is unique — the last profile to subscribe on a shared device displaces the previous one. Migrate to `(profile_id, endpoint)` composite key; update 410 cleanup to delete by endpoint across all profiles.
-   _Reads:_ `docs/modules/platform/stories/push-multi-profile-device.md`
-   _Produces:_ Schema migration; updated subscribe/unsubscribe/410-cleanup logic; updated tests
+### M1 Design+Dev: Family Profile Notifications
+
+**Type:** design + development
+**Kickoff:** [kickoffs/design-family-profile-notifications.md](kickoffs/design-family-profile-notifications.md)
+**Reads:** `docs/modules/platform/stories/family-profile-notifications.md`, ADR 029, notification-design-audit log
+**Produces:** design decision on surface shape; `FamilyNotificationStrip` component; ADR 029 amended with `audience` field
+**Depends on:** notification-infrastructure ✅, family-feed-read ✅
+
+---
+
+### M1 Design: Mobile Surface
+
+**Type:** design
+**Kickoff:** [kickoffs/design-mobile-surface.md](kickoffs/design-mobile-surface.md)
+**Reads:** `docs/design-system.md` (Surfaces, Tablet Nav Layout), ADR 022, `docs/modules/platform/stories/pwa-installable.md`
+**Produces:** "Mobile Surface" section in `docs/design-system.md`; mobile nav ADR; Storybook exploration
+**Depends on:** pwa-installable ✅
+
+---
+
+### M1 Dev: Push Multi-Profile Device
+
+**Type:** development
+**Kickoff:** [kickoffs/dev-push-multi-profile-device.md](kickoffs/dev-push-multi-profile-device.md)
+**Reads:** `docs/modules/platform/stories/push-multi-profile-device.md`, web-push session log
+**Produces:** schema migration (composite key); updated subscribe/unsubscribe/410 routes; updated tests
+**Depends on:** web-push ✅
 
 ---
 

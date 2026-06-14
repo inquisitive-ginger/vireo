@@ -1,5 +1,11 @@
 # Audit Session Template
 
+> **Recipe for kickoff docs.** Fill this in before the session opens and save it
+> to `docs/sessions/kickoffs/[session-name].md`. The session itself executes the
+> kickoff — it doesn't fill out the template live.
+
+---
+
 Use this template to check cross-document consistency and surface gaps
 before starting a new milestone or after a run of design/architecture
 sessions. Audit sessions do not define new stories from scratch — that

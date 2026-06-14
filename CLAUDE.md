@@ -20,7 +20,7 @@ with the family that runs it. See [`docs/vision.md`](docs/vision.md).
 - **Milestone:** M1 — Platform Shell (in progress)
 - **Active stories:** None
 - **Last session:** 2026-06-13 — Dev: plugin-nav-items (manifest `navItem` field; shell icon registry; Family Feed nav entry live; ADR 032)
-- **Next session:** M1 Dev: appearance-preference-gate (see queue)
+- **Next session:** see queue
 
 > Update this section at the end of every session.
 
@@ -36,7 +36,8 @@ with the family that runs it. See [`docs/vision.md`](docs/vision.md).
 | `docs/decisions/`          | ADRs — settled decisions                  |
 | `docs/modules/[name]/`     | Per-module spec + progress board          |
 | `docs/sessions/queue.md`   | What to run next — the session queue      |
-| `docs/sessions/templates/` | Session kickoff templates by type         |
+| `docs/sessions/kickoffs/`  | Pre-loaded kickoff doc per queued session |
+| `docs/sessions/templates/` | Recipes for writing kickoff docs          |
 | `docs/sessions/logs/`      | Session output artifacts                  |
 | `docs/roadmap.md`          | Milestones and delivery status            |
 
@@ -45,16 +46,24 @@ with the family that runs it. See [`docs/vision.md`](docs/vision.md).
 ## Rules Every Session Follows
 
 1. **Read this file first**
-2. **Read the relevant module spec and story before touching anything**
+2. **Open the kickoff doc** (`docs/sessions/kickoffs/`) for this session — it has the pre-loaded context, constraints, and scope. If no kickoff exists (ad-hoc session), write a minimal one before touching code.
 3. **Check `docs/decisions/` before proposing changes to settled questions**
 4. **Do not re-litigate ADRs** — if a decision needs revisiting, flag
    it in your session note; don't just override it
 5. **Commit an output artifact + session note before closing**
-6. **Planning sessions must update `docs/sessions/queue.md`** before closing
+6. **Delete the kickoff doc** for this session after closing (it becomes the session log)
+7. **Planning sessions must update `docs/sessions/queue.md`** before closing — add a kickoff stub for any new sessions queued
 
 ---
 
 ## Formats
+
+### Kickoff Docs (`docs/sessions/kickoffs/[session-name].md`)
+
+Written before the session opens. Contains: pre-session reads, scope statement,
+ACs or decisions to make, constraints coming in, implementation notes (if dev),
+and the required outputs checklist. Deleted after the session closes (its content
+lives in the session log). Template recipes are in `docs/sessions/templates/`.
 
 ### Session Notes
 
@@ -95,4 +104,5 @@ but "backend for chores/task-completion story"
 `docs/sessions/templates/` — one file per type:
 `product` · `design` · `architecture` · `development` · `qa` · `audit`
 
-Write each template before the first session of that type, not all upfront.
+Templates are recipes for writing kickoff docs, not docs to fill out live.
+All six types now exist.

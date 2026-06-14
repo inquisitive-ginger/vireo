@@ -1,5 +1,12 @@
 # Development Session Template
 
+> **Recipe for kickoff docs.** Fill this in before the session opens and save it
+> to `docs/sessions/kickoffs/[session-name].md`. The session itself executes the
+> kickoff — it doesn't fill out the template live. For ad-hoc sessions (not from
+> queue), write a minimal kickoff (scope + ACs + constraints) before touching code.
+
+---
+
 ## Pre-session checklist
 
 - [ ] Create branch off `main`: `git checkout -b dev/[module]-[story]` (do this before touching any files)
