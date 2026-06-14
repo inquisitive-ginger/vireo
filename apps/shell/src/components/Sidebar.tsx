@@ -177,15 +177,22 @@ function NavItem({
       end={end}
       className={({ isActive }) =>
         cn(
-          'flex items-center gap-3 px-3 py-2.5 mx-1 rounded-md text-sm transition-colors min-h-[48px]',
+          'relative overflow-hidden flex items-center gap-3 px-3 py-2.5 mx-1 rounded-md text-sm transition-colors min-h-[48px]',
           isActive
-            ? 'bg-primary/20 text-primary font-medium'
-            : 'text-muted-foreground hover:bg-primary/10 hover:text-foreground'
+            ? 'bg-primary/15 text-primary font-medium'
+            : 'text-muted-foreground hover:bg-primary/8 hover:text-foreground'
         )
       }
     >
-      {icon}
-      <span>{label}</span>
+      {({ isActive }: { isActive: boolean }) => (
+        <>
+          {isActive && (
+            <span aria-hidden className="absolute left-0 top-0 bottom-0 w-[3px] bg-primary" />
+          )}
+          {icon}
+          <span>{label}</span>
+        </>
+      )}
     </NavLink>
   )
 }
