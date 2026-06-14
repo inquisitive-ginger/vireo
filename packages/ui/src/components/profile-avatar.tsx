@@ -1,12 +1,15 @@
 import { cn } from '../lib/utils'
+import { getIdentityHue, identityToken, type IdentityHue } from '../lib/identity'
 
-export type ProfileAvatarSize = 'sm' | 'md' | 'lg'
+export type ProfileAvatarSize = 'sm' | 'base' | 'md' | 'lg'
 
 export interface ProfileAvatarProps {
   name: string
   size?: ProfileAvatarSize
   active?: boolean
   avatarUrl?: string
+  /** Explicitly assigned identity hue; falls back to a name hash. */
+  identity?: IdentityHue
   className?: string
 }
 
@@ -21,14 +24,9 @@ function getInitials(name: string): string {
   )
 }
 
-function getHue(name: string): number {
-  let h = 0
-  for (const c of name) h = (h * 31 + c.charCodeAt(0)) >>> 0
-  return h % 360
-}
-
 const SIZE_CLASSES: Record<ProfileAvatarSize, string> = {
   sm: 'w-8 h-8 text-[11px]',
+  base: 'w-10 h-10 text-[13px]',
   md: 'w-14 h-14 text-base',
   lg: 'w-20 h-20 text-[22px]',
 }
@@ -38,10 +36,10 @@ export function ProfileAvatar({
   size = 'md',
   active = false,
   avatarUrl,
+  identity,
   className,
 }: ProfileAvatarProps) {
-  const hue = getHue(name)
-
+  const hue = identity ?? getIdentityHue(name)
   return (
     <div
       role="img"
@@ -54,8 +52,8 @@ export function ProfileAvatar({
         className
       )}
       style={{
-        backgroundColor: `oklch(0.80 0.09 ${hue})`,
-        color: `oklch(0.22 0.06 ${hue})`,
+        backgroundColor: identityToken(hue, 'tint'),
+        color: identityToken(hue, 'ink'),
         backgroundImage: avatarUrl ? `url(${avatarUrl})` : undefined,
         backgroundSize: 'cover',
         backgroundPosition: 'center',

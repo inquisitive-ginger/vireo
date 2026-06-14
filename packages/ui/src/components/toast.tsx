@@ -20,9 +20,10 @@ export function Toast({ position = 'bottom-right', visibleToasts = 3 }: ToastPro
       theme="system"
       toastOptions={{
         style: {
-          background: 'var(--background)',
-          color: 'var(--foreground)',
+          background: 'var(--card)',
+          color: 'var(--card-foreground)',
           border: '1px solid var(--border)',
+          boxShadow: 'var(--shadow-raised)',
           fontFamily: 'var(--font-ui)',
         },
       }}

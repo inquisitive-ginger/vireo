@@ -41,7 +41,7 @@ export function NotificationTray({
           aria-describedby={undefined}
           className={cn(
             'fixed inset-y-0 right-0 z-50 flex w-[400px] flex-col',
-            'bg-background border-l border-border shadow-xl',
+            'bg-card border-l border-border shadow-[var(--shadow-raised)]',
             'animate-tray-in focus:outline-none',
             className
           )}

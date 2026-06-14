@@ -34,6 +34,8 @@ export type {
   PermissionToggleListItem,
 } from './components/permission-toggle-list'
 export { cn } from './lib/utils'
+export { IDENTITY_HUES, getIdentityHue, identityColor, identityToken } from './lib/identity'
+export type { IdentityHue, IdentityLayer } from './lib/identity'
 export { Toast } from './components/toast'
 export type { ToastProps } from './components/toast'
 export { BellBadge } from './components/bell-badge'

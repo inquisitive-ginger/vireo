@@ -28,8 +28,8 @@ export function ConfirmDialog({
           style={{ background: 'oklch(0.18 0.04 50 / 0.35)', backdropFilter: 'blur(3px)' }}
         />
         <AlertDialog.Content
-          className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 bg-background border border-border rounded-xl p-6 w-[340px] focus:outline-none"
-          style={{ boxShadow: '0 12px 40px oklch(0.18 0.04 50 / 0.12)' }}
+          className="fixed left-1/2 top-1/2 z-50 -translate-x-1/2 -translate-y-1/2 bg-card border border-border rounded-xl p-6 w-[340px] focus:outline-none"
+          style={{ boxShadow: 'var(--shadow-raised)' }}
           onEscapeKeyDown={(e) => isPending && e.preventDefault()}
         >
           <AlertDialog.Title className="text-card-title mb-2 text-foreground">

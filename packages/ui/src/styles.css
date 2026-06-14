@@ -1,6 +1,8 @@
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
   --color-primary: var(--primary);
   --color-primary-foreground: var(--primary-foreground);
   --color-secondary: var(--secondary);
@@ -119,6 +121,15 @@
   letter-spacing: -0.01em;
 }
 
+/* Prose — user-authored content (posts, notes, messages).
+   The only Lora token below display sizes: family voice, not UI chrome. */
+@utility text-prose {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.65;
+}
+
 @layer base {
   :root {
     --font-display: 'Lora', Georgia, 'Times New Roman', serif;
@@ -146,6 +157,33 @@
     --border: oklch(0.88 0.022 75);
     --input: oklch(0.88 0.022 75);
     --ring: oklch(0.57 0.14 35);
+
+    /* Surface elevation — cards lift toward warm white, above --background */
+    --card: oklch(0.999 0.004 80);
+    --card-foreground: var(--foreground);
+    --shadow-card: 0 1px 2px oklch(0.35 0.06 50 / 0.06), 0 2px 10px oklch(0.35 0.06 50 / 0.07);
+    --shadow-raised: 0 2px 6px oklch(0.35 0.06 50 / 0.07), 0 10px 28px oklch(0.35 0.06 50 / 0.12);
+
+    /* Member identity palette — six fixed hues harmonized with Terracotta & Teal.
+       base: spines, rings, markers · tint: avatar fill · ink: initials on tint */
+    --identity-terracotta: oklch(0.6 0.13 35);
+    --identity-terracotta-tint: oklch(0.92 0.04 40);
+    --identity-terracotta-ink: oklch(0.38 0.1 35);
+    --identity-marigold: oklch(0.71 0.12 78);
+    --identity-marigold-tint: oklch(0.93 0.05 85);
+    --identity-marigold-ink: oklch(0.42 0.09 70);
+    --identity-sage: oklch(0.6 0.1 148);
+    --identity-sage-tint: oklch(0.92 0.045 148);
+    --identity-sage-ink: oklch(0.36 0.08 148);
+    --identity-teal: oklch(0.55 0.09 188);
+    --identity-teal-tint: oklch(0.91 0.04 188);
+    --identity-teal-ink: oklch(0.35 0.07 188);
+    --identity-sky: oklch(0.58 0.09 235);
+    --identity-sky-tint: oklch(0.91 0.035 235);
+    --identity-sky-ink: oklch(0.36 0.08 235);
+    --identity-plum: oklch(0.56 0.1 330);
+    --identity-plum-tint: oklch(0.92 0.035 330);
+    --identity-plum-ink: oklch(0.36 0.08 330);
 
     /* Semantic status — error is source of truth; destructive aliases it */
     --info: oklch(0.45 0.09 200);
@@ -176,6 +214,30 @@
       --input: oklch(0.3 0.022 48);
       --ring: oklch(0.66 0.14 35);
 
+      --card: oklch(0.21 0.022 47);
+      --card-foreground: var(--foreground);
+      --shadow-card: 0 1px 2px oklch(0 0 0 / 0.3), 0 2px 10px oklch(0 0 0 / 0.35);
+      --shadow-raised: 0 2px 6px oklch(0 0 0 / 0.35), 0 10px 28px oklch(0 0 0 / 0.45);
+
+      --identity-terracotta: oklch(0.7 0.13 35);
+      --identity-terracotta-tint: oklch(0.32 0.05 35);
+      --identity-terracotta-ink: oklch(0.9 0.04 40);
+      --identity-marigold: oklch(0.78 0.12 78);
+      --identity-marigold-tint: oklch(0.33 0.05 78);
+      --identity-marigold-ink: oklch(0.91 0.05 85);
+      --identity-sage: oklch(0.7 0.1 148);
+      --identity-sage-tint: oklch(0.31 0.045 148);
+      --identity-sage-ink: oklch(0.9 0.045 148);
+      --identity-teal: oklch(0.66 0.09 188);
+      --identity-teal-tint: oklch(0.3 0.04 188);
+      --identity-teal-ink: oklch(0.89 0.04 188);
+      --identity-sky: oklch(0.68 0.09 235);
+      --identity-sky-tint: oklch(0.31 0.04 235);
+      --identity-sky-ink: oklch(0.89 0.035 235);
+      --identity-plum: oklch(0.66 0.1 330);
+      --identity-plum-tint: oklch(0.31 0.04 330);
+      --identity-plum-ink: oklch(0.9 0.035 330);
+
       --info: oklch(0.56 0.09 200);
       --info-foreground: oklch(0.99 0 0);
       --success: oklch(0.57 0.1 148);
@@ -203,6 +265,30 @@
     --border: oklch(0.3 0.022 48);
     --input: oklch(0.3 0.022 48);
     --ring: oklch(0.66 0.14 35);
+
+    --card: oklch(0.21 0.022 47);
+    --card-foreground: var(--foreground);
+    --shadow-card: 0 1px 2px oklch(0 0 0 / 0.3), 0 2px 10px oklch(0 0 0 / 0.35);
+    --shadow-raised: 0 2px 6px oklch(0 0 0 / 0.35), 0 10px 28px oklch(0 0 0 / 0.45);
+
+    --identity-terracotta: oklch(0.7 0.13 35);
+    --identity-terracotta-tint: oklch(0.32 0.05 35);
+    --identity-terracotta-ink: oklch(0.9 0.04 40);
+    --identity-marigold: oklch(0.78 0.12 78);
+    --identity-marigold-tint: oklch(0.33 0.05 78);
+    --identity-marigold-ink: oklch(0.91 0.05 85);
+    --identity-sage: oklch(0.7 0.1 148);
+    --identity-sage-tint: oklch(0.31 0.045 148);
+    --identity-sage-ink: oklch(0.9 0.045 148);
+    --identity-teal: oklch(0.66 0.09 188);
+    --identity-teal-tint: oklch(0.3 0.04 188);
+    --identity-teal-ink: oklch(0.89 0.04 188);
+    --identity-sky: oklch(0.68 0.09 235);
+    --identity-sky-tint: oklch(0.31 0.04 235);
+    --identity-sky-ink: oklch(0.89 0.035 235);
+    --identity-plum: oklch(0.66 0.1 330);
+    --identity-plum-tint: oklch(0.31 0.04 330);
+    --identity-plum-ink: oklch(0.9 0.035 330);
 
     --info: oklch(0.56 0.09 200);
     --info-foreground: oklch(0.99 0 0);

@@ -19,8 +19,8 @@ with the family that runs it. See [`docs/vision.md`](docs/vision.md).
 
 - **Milestone:** M1 — Platform Shell (in progress)
 - **Active stories:** None
-- **Last session:** 2026-06-09 — family-feed-compose post-merge fixes (react-router-dom singleton + Plugin.tsx nested Routes fix; WidgetGrid dynamic row height fills viewport; FeedWidget useQuery via @family-os/platform singleton for retry/stale-while-revalidate; FeedPage error state; vite preview no-cache header; shell hmr localhost config)
-- **Next session:** M1 Dev: appearance-preference-gate (see queue)
+- **Last session:** 2026-06-13 — Design: shell-chrome-interaction-states (sidebar surface → `--secondary`; active nav → `bg-primary/20 text-primary`; hover unified to `bg-primary/10`; accent locked to module identity; all sidebar hairlines removed; ADR 031; on branch `dev/shell-chrome-interaction-states`)
+- **Next session:** M1 Design: widget-slot-states (see queue)
 
 > Update this section at the end of every session.
 

@@ -14,11 +14,11 @@ const preview: Preview = {
       storySort: {
         order: [
           'Foundation',
-          ['Color', 'Typography', 'Motion'],
+          ['Color', 'Elevation', 'Typography', 'Motion'],
           'Primitives',
           ['Form', 'Dialog', 'EmptyState'],
           'Platform',
-          ['ProfileAvatar', 'ProfileListItem', 'PermissionToggle'],
+          ['Sidebar', 'ProfileAvatar', 'ProfileListItem', 'PermissionToggle'],
           'Home Surface',
           ['WidgetGrid', 'WidgetSlot', 'PlaceholderCard'],
         ],
