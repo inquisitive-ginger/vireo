@@ -51,6 +51,8 @@ export function Home() {
   const installedModules = new Set((plugins ?? []).map((p) => p.name))
 
   const widgetChildren: Record<string, ReactNode> = {}
+  const flatSlots: string[] = []
+
   for (const item of layout ?? []) {
     const module = moduleFromWidgetId(item.widgetId)
     const meta = WIDGET_META[module]
@@ -67,6 +69,7 @@ export function Home() {
       )
     } else {
       widgetChildren[item.widgetId] = <PlaceholderCard {...meta} />
+      flatSlots.push(item.widgetId)
     }
   }
 
@@ -80,7 +83,12 @@ export function Home() {
 
   return (
     <div className="flex h-full flex-col p-6">
-      <WidgetGrid layout={layout ?? []} children={widgetChildren} className="flex-1 min-h-0" />
+      <WidgetGrid
+        layout={layout ?? []}
+        children={widgetChildren}
+        flatSlots={flatSlots}
+        className="flex-1 min-h-0"
+      />
     </div>
   )
 }

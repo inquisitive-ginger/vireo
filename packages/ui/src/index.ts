@@ -9,6 +9,8 @@ export { ProfileAvatar } from './components/profile-avatar'
 export type { ProfileAvatarProps, ProfileAvatarSize } from './components/profile-avatar'
 export { PlaceholderCard } from './components/placeholder-card'
 export type { PlaceholderCardProps } from './components/placeholder-card'
+export { ErrorCard } from './components/error-card'
+export type { ErrorCardProps } from './components/error-card'
 export { WidgetSlot } from './components/widget-slot'
 export type { WidgetSlotProps } from './components/widget-slot'
 

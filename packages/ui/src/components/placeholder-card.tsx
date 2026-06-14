@@ -16,14 +16,32 @@ export function PlaceholderCard({
 }: PlaceholderCardProps) {
   return (
     <div
-      className={cn('@container h-full w-full', className)}
+      className={cn('@container relative h-full w-full', className)}
       aria-label={`${moduleName} — not installed`}
       role="status"
     >
+      <svg
+        className="pointer-events-none absolute inset-0 size-full"
+        fill="none"
+        aria-hidden="true"
+      >
+        <rect
+          x="1.5"
+          y="1.5"
+          width="calc(100% - 3px)"
+          height="calc(100% - 3px)"
+          rx="10.5"
+          stroke="currentColor"
+          strokeWidth="1.5"
+          strokeDasharray="10 6"
+          strokeLinecap="round"
+          className="text-muted-foreground/30"
+        />
+      </svg>
       <div
         className={cn(
-          'flex h-full w-full flex-col items-center justify-center gap-2.5 rounded-xl px-5 py-5',
-          'bg-muted text-center',
+          'flex h-full w-full flex-col items-center justify-center gap-2.5 px-5 py-5',
+          'text-center',
           '@[600px]:flex-row @[600px]:text-left @[600px]:gap-3.5'
         )}
       >

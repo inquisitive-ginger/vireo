@@ -16,8 +16,9 @@ export interface FeedPostCardProps {
   post: FeedPost
   lineClamp?: number
   /** `note` — elevated card with identity spine (feed page).
-      `plain` — bare layout for surfaces that provide their own card (widget). */
-  variant?: 'note' | 'plain'
+      `widget` — identity spine without card chrome (dense widget slots).
+      `plain` — bare layout, no spine, for surfaces that handle their own card chrome. */
+  variant?: 'note' | 'widget' | 'plain'
 }
 
 export function FeedPostCard({ post, lineClamp, variant = 'note' }: FeedPostCardProps) {
@@ -57,6 +58,26 @@ export function FeedPostCard({ post, lineClamp, variant = 'note' }: FeedPostCard
   )
 
   if (variant === 'plain') return inner
+
+  if (variant === 'widget') {
+    return (
+      <div style={{ position: 'relative', paddingLeft: 10 }}>
+        <span
+          aria-hidden
+          style={{
+            position: 'absolute',
+            left: 0,
+            top: 0,
+            bottom: 0,
+            width: 4,
+            borderRadius: 2,
+            background: identityColor(post.author.name),
+          }}
+        />
+        {inner}
+      </div>
+    )
+  }
 
   return (
     <article

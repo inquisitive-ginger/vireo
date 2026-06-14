@@ -17,6 +17,8 @@ export interface WidgetGridProps {
   /** Children keyed by widgetId */
   children: Record<string, ReactNode>
   className?: string
+  /** Widget IDs that should render in a flat (no card chrome) slot — used for placeholder and error states. */
+  flatSlots?: string[]
 }
 
 const GRID_COLS = 4
@@ -39,7 +41,8 @@ function stackHeight(h: number, rowHeight: number) {
   return h * rowHeight + (h - 1) * GAP
 }
 
-export function WidgetGrid({ layout, children, className }: WidgetGridProps) {
+export function WidgetGrid({ layout, children, className, flatSlots }: WidgetGridProps) {
+  const flatSet = new Set(flatSlots ?? [])
   const { containerRef, width } = useContainerWidth()
   const [height, setHeight] = useState(0)
 
@@ -81,7 +84,7 @@ export function WidgetGrid({ layout, children, className }: WidgetGridProps) {
           <div className="flex flex-col" style={{ gap: GAP }}>
             {layout.map(({ widgetId, h }) => (
               <div key={widgetId} style={{ height: stackHeight(h, MIN_ROW_HEIGHT) }}>
-                <WidgetSlot>{children[widgetId]}</WidgetSlot>
+                <WidgetSlot flat={flatSet.has(widgetId)}>{children[widgetId]}</WidgetSlot>
               </div>
             ))}
           </div>
@@ -96,7 +99,7 @@ export function WidgetGrid({ layout, children, className }: WidgetGridProps) {
           >
             {rglLayout.map(({ i }) => (
               <div key={i}>
-                <WidgetSlot>{children[i]}</WidgetSlot>
+                <WidgetSlot flat={flatSet.has(i)}>{children[i]}</WidgetSlot>
               </div>
             ))}
           </GridLayout>

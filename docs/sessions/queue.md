@@ -7,27 +7,22 @@
 
 ## Up Next
 
-1. **M1 Design: widget-slot-states** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
-   Define how non-live content renders in the widget grid — placeholder (not installed), error (failed to load), and member-identity expression in dense slots — so these states read as intentional, not broken, beside live `--card` widgets. Resolves placeholder/error cards inheriting the slot's elevation despite the "flat" spec, and the identity spine dropping out of the feed widget. From the 2026-06-12 visual-language audit.
-   _Reads:_ `docs/sessions/kickoffs/design-widget-slot-states.md` (driving doc), `docs/design-system.md` (Elevation, Home Surface placeholder, Error States, Widget identity header), ADR 028, ADR 030, `packages/ui/src/components/widget-slot.tsx` + `placeholder-card.tsx`, `plugins/family-feed/src/widgets/FeedWidgetView.tsx`
-   _Produces:_ Non-content slot-state spec + identity-in-widget rule in `docs/design-system.md`; `WidgetSlot` variant/contract decision (note to dev or short ADR); updated stories
-
-2. **M1 Dev: appearance-preference-gate** ![Type](https://img.shields.io/badge/Type-Development-orange)
+1. **M1 Dev: appearance-preference-gate** ![Type](https://img.shields.io/badge/Type-Development-orange)
    Add `platform.preferences.appearance` to `PERMISSION_REGISTRY`; wrap the dark mode toggle in Settings with `PermissionGate` so parents can revoke appearance control for tier 2–3 profiles. Small addendum to the settings-permissions + permission-overrides work.
    _Reads:_ `docs/modules/platform/stories/appearance-preference-gate.md`
    _Produces:_ `platform.preferences.appearance` in `PERMISSION_REGISTRY`; Settings dark mode toggle gated by `PermissionGate`
 
-3. **M1 Design+Dev: family-profile-notifications** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
+2. **M1 Design+Dev: family-profile-notifications** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
    Shared-device notification surface for the family profile (tier 1). The family profile is always-on on kitchen tablets and Pi displays but receives no persistent notification history. Design and implement an ambient notification surface appropriate for shared household devices.
    _Reads:_ `docs/modules/platform/stories/family-profile-notifications.md`, ADR 029
    _Produces:_ Design decision on surface shape + implementation; amendment to ADR 029 if broadcast/audience model is introduced
 
-4. **Mobile Surface Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
+3. **Mobile Surface Design** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
    Mobile layout and nav design for the PWA. Deferred from M1 design sessions — required before mobile surface implementation can begin.
    _Reads:_ `docs/design-system.md` (Surfaces — Other Surfaces), `docs/modules/platform/stories/pwa-installable.md`
    _Produces:_ Updated `docs/design-system.md` with mobile surface spec
 
-5. **M1 Dev: push-multi-profile-device** ![Type](https://img.shields.io/badge/Type-Development-orange)
+4. **M1 Dev: push-multi-profile-device** ![Type](https://img.shields.io/badge/Type-Development-orange)
    Allow multiple profiles to hold subscriptions for the same endpoint. Currently `endpoint` is unique — the last profile to subscribe on a shared device displaces the previous one. Migrate to `(profile_id, endpoint)` composite key; update 410 cleanup to delete by endpoint across all profiles.
    _Reads:_ `docs/modules/platform/stories/push-multi-profile-device.md`
    _Produces:_ Schema migration; updated subscribe/unsubscribe/410-cleanup logic; updated tests
@@ -35,6 +30,10 @@
 ---
 
 ## Recently Completed
+
+- **2026-06-13 — M1 Design: widget-slot-states** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
+  `WidgetSlot flat` prop strips card chrome for non-content slots. `ErrorCard` component (Level-2 error state). `FeedPostCard variant="widget"` adds identity spine without card chrome; `FeedWidgetView` switched to it. Three-state visual language settled: elevated (live), flat muted (not installed), flat muted + AlertTriangle (error). Identity-in-widget rule documented for all future content widgets. Shell wiring (`flatSlots`) and error boundary hookup are dev follow-ons.
+  _See:_ `docs/sessions/logs/2026-06-13-design-widget-slot-states.md`
 
 - **2026-06-13 — M1 Design: shell-chrome-interaction-states** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
   Sidebar surface → `--secondary` (bug fix; was `--background`). Active nav → `bg-primary/20 text-primary`. Hover unified → `bg-primary/10`. `--accent` locked to module identity only. All sidebar hairlines removed. ADR 031. Design-system.md updated; color-tokens story reconciled; Sidebar.tsx updated.

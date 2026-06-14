@@ -1,6 +1,6 @@
 # Design System
 
-> Last updated: 2026-06-13 — interaction-state language + sidebar surface plane (shell-chrome-interaction-states design session).
+> Last updated: 2026-06-13 — widget slot non-content states + identity-in-widget rule (widget-slot-states design session).
 
 This document records settled design decisions. Deferred items are
 explicitly marked — do not treat absence of a spec as a free choice.
@@ -182,9 +182,9 @@ Where each level applies:
 
 | Level             | Surfaces                                                                                                              |
 | ----------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `--shadow-card`   | Widget slots, feed post cards, settings sections — content at rest                                                    |
+| `--shadow-card`   | Live widget slots, feed post cards, settings sections — content at rest                                               |
 | `--shadow-raised` | Compose forms, notification tray, drawers, dialogs, toasts, profile picker, onboarding card — surfaces above the page |
-| No shadow (flat)  | Sidebar, nav, inset rows, placeholder cards — structural chrome is never elevated                                     |
+| No shadow (flat)  | Sidebar, nav, inset rows, placeholder slots, error slots — structural chrome is never elevated                        |
 
 ### Member identity palette
 
@@ -544,7 +544,31 @@ widget is anonymous):
 - Lucide icon representing the module, 13px, `--accent`
 - Label: `text-section-label` in `--accent` (the sanctioned accent use of
   section-label — see Typography usage notes)
-- Placeholder cards and error cards are exempt (they carry their own anatomy)
+- Placeholder cards and error cards are exempt (they carry their own anatomy and
+  do not label an active module surface)
+
+### Identity in widget slots
+
+**Settled** — widget-slot-states design session, 2026-06-13.
+
+"People are color" (ADR 030) must hold in widget slots, not just on full-page views.
+In the feed widget, each post row carries a **4px left spine** in the author's identity
+hue (`--identity-{hue}`), with `border-radius: 2px`, using a `position: relative`
+container wrapper (not a card border — no card chrome in widget context).
+
+**General rule for all content widgets:** when a widget row is authored by or
+assigned to a specific family member, it expresses that member's identity hue as
+a left spine on the row. The spine is always `4px wide`, `border-radius: 2px`.
+Chores widget: assignee hue on each task row. Calendar widget: organizer/assignee
+hue on each event row. The spine does not appear on unassigned or multi-person items.
+
+`FeedPostCard` ships three variants:
+
+| Variant  | Chrome                                                      | Identity       | Use                                   |
+| -------- | ----------------------------------------------------------- | -------------- | ------------------------------------- |
+| `note`   | `--card` bg + border + `--shadow-card` + `overflow: hidden` | 4px left spine | Feed page — standalone elevated cards |
+| `widget` | None                                                        | 4px left spine | Feed widget — dense list rows         |
+| `plain`  | None                                                        | None           | Surfaces that manage their own chrome |
 
 ### Role-aware composition
 
@@ -655,16 +679,59 @@ plugins do not need to handle their own absent state.
 
 ### Placeholder state
 
-A reserved slot whose module is not installed renders a muted informational card:
+**Settled** — widget-slot-states design session, 2026-06-13 (visual resolution of the flat/elevated conflict).
 
-- Background: `--muted`
-- Module name: `--muted-foreground`, UI font, medium weight
-- One-line module description
-- Small Lucide icon representing the module
+A reserved slot whose module is not installed renders in a **flat slot** (`WidgetSlot flat`):
+
+- Slot chrome: none — no `--card` background, no border, no shadow
+- Slot shape: `rounded-xl overflow-hidden` (same as live slots — only the elevation is removed)
+- Background: transparent (page background shows through)
+- Border: SVG `<rect>` dashed outline — `strokeWidth 1.5px`, `strokeDasharray 10 6`,
+  `--muted-foreground/30`, `rx` matching the slot corner radius. CSS `border-dashed` is
+  not used — SVG provides dash/gap size control that CSS cannot.
+- Module icon: Lucide icon representing the module, 20px, `--muted-foreground`, inside a
+  `--muted-foreground/10` rounded icon well
+- Module name: 13px, medium weight, `--muted-foreground`
+- One-line description: 11px, `--muted-foreground/70`
 - No install CTA (marketplace pathway is M8)
+- No widget identity header (exempt — the placeholder carries its own anatomy)
 
-The placeholder occupies the same `{ w, h }` as the reserved slot. Lower contrast and
-no interactive affordances distinguish it visually from active widgets.
+The flat/elevated contrast between placeholder slots and live widget slots is the primary
+state signal: live widgets lift off the page; non-content slots recede into the background.
+`PlaceholderCard` (`@family-os/ui`) implements this anatomy.
+
+### Error state (slot level)
+
+**Settled** — widget-slot-states design session, 2026-06-13.
+
+When a widget's error boundary catches or a plugin's remote entry fails to load, the slot
+renders an `ErrorCard` in the same `{ w, h }` — also in a **flat slot**:
+
+- Slot chrome: none (same flat treatment as placeholder)
+- Background: `--muted`
+- Icon: Lucide `AlertTriangle`, 24px, `--muted-foreground`
+- Copy: "[Module Name] couldn't load"
+- Retry button: ghost variant, `--muted-foreground`, triggers a remount
+- Visually calm — no red on the home surface
+- No widget identity header (exempt)
+
+Distinguished from the placeholder (not-installed) state by the warning icon and the retry
+affordance. Both are flat — the absence of elevation is the shared "non-content" signal.
+`ErrorCard` (`@family-os/ui`) implements this anatomy.
+
+### WidgetSlot contract
+
+**Settled** — widget-slot-states design session, 2026-06-13.
+
+`WidgetSlot` accepts a `flat` boolean prop:
+
+| `flat`            | Chrome                                                     | Use                          |
+| ----------------- | ---------------------------------------------------------- | ---------------------------- |
+| `false` (default) | `bg-card border border-border shadow-[var(--shadow-card)]` | Live widgets                 |
+| `true`            | None — shape only (`rounded-xl overflow-hidden`)           | Placeholder and error states |
+
+`WidgetGrid` accepts `flatSlots?: string[]` — a list of widget IDs that should render
+flat. The shell passes this when it determines a slot holds a non-content state.
 
 ---
 
@@ -785,15 +852,9 @@ Opt-in preference stored as a boolean per profile in platform settings.
 
 ### Level 2 — Component (widget / section error boundary)
 
-When a widget's error boundary catches or a plugin's remote entry fails
-to load, the widget slot renders a muted error card in the same `{w, h}`:
-
-- Background: `--muted`
-- Icon: Lucide `AlertTriangle`, 24px, `--muted-foreground`
-- Copy: "[Module Name] couldn't load"
-- Retry button: text variant, `--muted-foreground` — triggers a remount
-- Visually calm — no red on the home surface. Distinguished from the
-  placeholder card (not-installed) by the warning icon.
+When a widget's error boundary catches or a plugin's remote entry fails to load,
+the slot renders `ErrorCard` in a flat `WidgetSlot`. See [Error state (slot level)](#error-state-slot-level)
+in the Home Surface section for the full spec. `ErrorCard` is exported from `@family-os/ui`.
 
 ### Level 3 — Page / route error (404, 500)
 

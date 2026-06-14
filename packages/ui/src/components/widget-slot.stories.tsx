@@ -3,6 +3,7 @@ import type { ReactNode } from 'react'
 import { Rss, CheckSquare, Calendar } from 'lucide-react'
 import { WidgetSlot } from './widget-slot'
 import { PlaceholderCard } from './placeholder-card'
+import { ErrorCard } from './error-card'
 
 const meta: Meta<typeof WidgetSlot> = {
   title: 'Home Surface/WidgetSlot',
@@ -33,11 +34,105 @@ function Slot({ w, h, children }: { w: number; h: number; children: ReactNode })
   return <div style={{ width: slotW(w), height: slotH(h) }}>{children}</div>
 }
 
+function MockWidgetContent({ label }: { label: string }) {
+  return (
+    <div
+      style={{
+        height: '100%',
+        display: 'flex',
+        flexDirection: 'column',
+        padding: '14px 18px',
+        gap: 8,
+      }}
+    >
+      <span
+        style={{
+          fontSize: 11,
+          fontWeight: 700,
+          letterSpacing: '0.1em',
+          color: 'var(--accent)',
+          textTransform: 'uppercase',
+        }}
+      >
+        {label}
+      </span>
+      <div style={{ flex: 1, display: 'flex', alignItems: 'center' }}>
+        <span style={{ fontSize: 14, color: 'var(--muted-foreground)' }}>Live widget content</span>
+      </div>
+    </div>
+  )
+}
+
+// ─── Three slot states side by side ──────────────────────────────────────────
+
+export const AllStates: Story = {
+  name: 'All three states (standard 2×1)',
+  render: () => (
+    <div style={{ display: 'flex', gap: GAP, flexWrap: 'wrap' }}>
+      <div>
+        <div
+          style={{
+            fontSize: 11,
+            color: 'var(--muted-foreground)',
+            marginBottom: 8,
+            fontWeight: 600,
+          }}
+        >
+          Live widget
+        </div>
+        <Slot w={2} h={1}>
+          <WidgetSlot>
+            <MockWidgetContent label="Calendar" />
+          </WidgetSlot>
+        </Slot>
+      </div>
+      <div>
+        <div
+          style={{
+            fontSize: 11,
+            color: 'var(--muted-foreground)',
+            marginBottom: 8,
+            fontWeight: 600,
+          }}
+        >
+          Not installed (flat)
+        </div>
+        <Slot w={2} h={1}>
+          <WidgetSlot flat>
+            <PlaceholderCard
+              moduleName="Calendar"
+              description="Upcoming events and schedule"
+              icon={Calendar}
+            />
+          </WidgetSlot>
+        </Slot>
+      </div>
+      <div>
+        <div
+          style={{
+            fontSize: 11,
+            color: 'var(--muted-foreground)',
+            marginBottom: 8,
+            fontWeight: 600,
+          }}
+        >
+          Failed to load (flat)
+        </div>
+        <Slot w={2} h={1}>
+          <WidgetSlot flat>
+            <ErrorCard moduleName="Calendar" onRetry={() => {}} />
+          </WidgetSlot>
+        </Slot>
+      </div>
+    </div>
+  ),
+}
+
 export const Standard: Story = {
-  name: 'Standard (2×1)',
+  name: 'Standard placeholder (2×1)',
   render: () => (
     <Slot w={2} h={1}>
-      <WidgetSlot>
+      <WidgetSlot flat>
         <PlaceholderCard
           moduleName="Calendar"
           description="Upcoming events and schedule"
@@ -49,10 +144,10 @@ export const Standard: Story = {
 }
 
 export const Large: Story = {
-  name: 'Large (2×2)',
+  name: 'Large placeholder (2×2)',
   render: () => (
     <Slot w={2} h={2}>
-      <WidgetSlot>
+      <WidgetSlot flat>
         <PlaceholderCard
           moduleName="Chores"
           description="Tasks and responsibilities for today"
@@ -64,15 +159,26 @@ export const Large: Story = {
 }
 
 export const Banner: Story = {
-  name: 'Banner (4×1)',
+  name: 'Banner placeholder (4×1)',
   render: () => (
     <Slot w={4} h={1}>
-      <WidgetSlot>
+      <WidgetSlot flat>
         <PlaceholderCard
           moduleName="Family Feed"
           description="Shared updates from everyone at home"
           icon={Rss}
         />
+      </WidgetSlot>
+    </Slot>
+  ),
+}
+
+export const ErrorState: Story = {
+  name: "Error — couldn't load (2×1)",
+  render: () => (
+    <Slot w={2} h={1}>
+      <WidgetSlot flat>
+        <ErrorCard moduleName="Calendar" onRetry={() => {}} />
       </WidgetSlot>
     </Slot>
   ),

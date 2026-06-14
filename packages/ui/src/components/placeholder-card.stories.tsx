@@ -2,6 +2,7 @@ import type { Meta, StoryObj } from '@storybook/react'
 import type { ReactNode } from 'react'
 import { Rss, CheckSquare, Calendar, BookOpen } from 'lucide-react'
 import { PlaceholderCard } from './placeholder-card'
+import { WidgetSlot } from './widget-slot'
 
 const meta: Meta<typeof PlaceholderCard> = {
   title: 'Home Surface/PlaceholderCard',
@@ -44,7 +45,9 @@ export const Interactive: Story = {
   decorators: [
     (Story) => (
       <div style={{ width: SLOT_WIDTH(2), height: SLOT_HEIGHT(1) }}>
-        <Story />
+        <WidgetSlot flat>
+          <Story />
+        </WidgetSlot>
       </div>
     ),
   ],
@@ -54,7 +57,9 @@ export const CompactSize: Story = {
   name: 'Compact (1×1)',
   render: () => (
     <Slot w={1} h={1}>
-      <PlaceholderCard moduleName="Notes" description="Quick notes" icon={BookOpen} />
+      <WidgetSlot flat>
+        <PlaceholderCard moduleName="Notes" description="Quick notes" icon={BookOpen} />
+      </WidgetSlot>
     </Slot>
   ),
 }
@@ -67,37 +72,45 @@ export const AllSizes: Story = {
     <div className="flex flex-col gap-4">
       <div className="text-xs font-medium text-[var(--muted-foreground)] mb-1">Banner (4×1)</div>
       <Slot w={4} h={1}>
-        <PlaceholderCard
-          moduleName="Family Feed"
-          description="Shared updates from everyone at home"
-          icon={Rss}
-        />
+        <WidgetSlot flat>
+          <PlaceholderCard
+            moduleName="Family Feed"
+            description="Shared updates from everyone at home"
+            icon={Rss}
+          />
+        </WidgetSlot>
       </Slot>
       <div className="text-xs font-medium text-[var(--muted-foreground)] mt-2 mb-1">
         Large (2×2)
       </div>
       <Slot w={2} h={2}>
-        <PlaceholderCard
-          moduleName="Chores"
-          description="Tasks and responsibilities for today"
-          icon={CheckSquare}
-        />
+        <WidgetSlot flat>
+          <PlaceholderCard
+            moduleName="Chores"
+            description="Tasks and responsibilities for today"
+            icon={CheckSquare}
+          />
+        </WidgetSlot>
       </Slot>
       <div className="text-xs font-medium text-[var(--muted-foreground)] mt-2 mb-1">
         Standard (2×1)
       </div>
       <Slot w={2} h={1}>
-        <PlaceholderCard
-          moduleName="Calendar"
-          description="Upcoming events and schedule"
-          icon={Calendar}
-        />
+        <WidgetSlot flat>
+          <PlaceholderCard
+            moduleName="Calendar"
+            description="Upcoming events and schedule"
+            icon={Calendar}
+          />
+        </WidgetSlot>
       </Slot>
       <div className="text-xs font-medium text-[var(--muted-foreground)] mt-2 mb-1">
         Compact (1×1)
       </div>
       <Slot w={1} h={1}>
-        <PlaceholderCard moduleName="Notes" description="Quick notes" icon={BookOpen} />
+        <WidgetSlot flat>
+          <PlaceholderCard moduleName="Notes" description="Quick notes" icon={BookOpen} />
+        </WidgetSlot>
       </Slot>
     </div>
   ),

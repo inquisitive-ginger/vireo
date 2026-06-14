@@ -57,7 +57,7 @@ export function FeedWidgetView({ posts, emptyAction }: FeedWidgetViewProps) {
           <div
             style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}
           >
-            <FeedPostCard post={latest} lineClamp={2} variant="plain" />
+            <FeedPostCard post={latest} lineClamp={2} variant="widget" />
           </div>
         )}
       </div>
@@ -71,7 +71,7 @@ export function FeedWidgetView({ posts, emptyAction }: FeedWidgetViewProps) {
           <div style={{ marginTop: 14, minHeight: 0, overflow: 'hidden' }}>
             {posts.slice(0, 3).map((post, i, arr) => (
               <div key={post.id}>
-                <FeedPostCard post={post} lineClamp={2} variant="plain" />
+                <FeedPostCard post={post} lineClamp={2} variant="widget" />
                 {i < arr.length - 1 && (
                   <div style={{ height: 1, background: 'var(--border)', margin: '14px 0' }} />
                 )}
