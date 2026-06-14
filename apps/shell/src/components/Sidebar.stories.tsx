@@ -21,7 +21,6 @@ const ALL_MODULE_ITEMS: PluginNavItem[] = [
 
 const PROFILES = {
   parent: { id: 'zach', name: 'Zach', tier: 4 } satisfies Profile,
-  teen: { id: 'sam', name: 'Sam', tier: 3 } satisfies Profile,
   child: { id: 'emmy', name: 'Emmy', tier: 2 } satisfies Profile,
   family: { id: 'family', name: 'Pritchett Family', tier: 1 } satisfies Profile,
 }
@@ -81,39 +80,31 @@ type Story = StoryObj
 
 // ─── Stories ──────────────────────────────────────────────────────────────────
 
-export const ParentHomeActive: Story = {
-  name: 'Parent — full nav, Home active',
+// Full nav, active at the top — main showcase
+export const FullNav: Story = {
+  name: 'Full nav — Home active',
   render: () => (
     <Shell profile={PROFILES.parent} activeRoute="/" unreadCount={3} maxSeverity="warning" />
   ),
 }
 
-export const ParentFeedActive: Story = {
-  name: 'Parent — full nav, Feed active',
-  render: () => <Shell profile={PROFILES.parent} activeRoute="/family-feed" />,
-}
-
-export const ParentFinanceActive: Story = {
-  name: 'Parent — full nav, Finance active (mid-list)',
+// Active item mid-list — tests whether the pill reads in context
+export const ActiveMidList: Story = {
+  name: 'Full nav — active mid-list (Finance)',
   render: () => (
     <Shell profile={PROFILES.parent} activeRoute="/finance" unreadCount={1} maxSeverity="info" />
   ),
 }
 
-export const TeenNav: Story = {
-  name: 'Teen (tier 3) — Calendar active, no Finance/Smart Home',
-  render: () => (
-    <Shell profile={PROFILES.teen} activeRoute="/calendar" unreadCount={2} maxSeverity="success" />
-  ),
-}
-
-export const ChildNav: Story = {
-  name: 'Child (tier 2) — Chores active, tier-filtered',
+// Tier filtering in action — Finance and Smart Home hidden
+export const ChildFiltered: Story = {
+  name: 'Child (tier 2) — tier-filtered nav',
   render: () => <Shell profile={PROFILES.child} activeRoute="/chores" />,
 }
 
-export const FamilyPseudoProfile: Story = {
-  name: 'Family pseudo-profile — Home active, no bell, no settings',
+// Minimal chrome — no bell, no settings, tier-1 items only
+export const FamilyProfile: Story = {
+  name: 'Family pseudo-profile — minimal chrome',
   render: () => (
     <Shell
       profile={PROFILES.family}
@@ -121,9 +112,4 @@ export const FamilyPseudoProfile: Story = {
       pluginNavItems={ALL_MODULE_ITEMS.filter((i) => !i.minTier || i.minTier <= 1)}
     />
   ),
-}
-
-export const NoModules: Story = {
-  name: 'M1 current state — Home only',
-  render: () => <Shell profile={PROFILES.parent} activeRoute="/" pluginNavItems={[]} />,
 }
