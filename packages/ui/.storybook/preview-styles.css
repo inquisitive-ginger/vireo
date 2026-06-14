@@ -1,6 +1,11 @@
 @import 'tailwindcss';
 @import '../src/styles.css';
 
+/* Explicit source scan for shell and plugin files whose classes would otherwise
+   miss Tailwind's transform-time detection in the Storybook Vite context */
+@source "../../../apps/shell/src/**/*.{ts,tsx}";
+@source "../../../plugins/*/src/**/*.{ts,tsx}";
+
 /* Re-declare outside @layer base so this beats Storybook's unlayered canvas styles */
 body {
   background-color: var(--background);

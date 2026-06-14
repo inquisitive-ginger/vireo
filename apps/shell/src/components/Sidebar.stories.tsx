@@ -60,9 +60,9 @@ function Shell({
     <QueryClientProvider client={qc}>
       <MockAuthProvider profile={profile}>
         <MemoryRouter initialEntries={[activeRoute]}>
-          <div className="flex h-screen w-screen">
+          <div className="flex h-screen w-screen overflow-hidden">
             <Sidebar pluginNavItems={pluginNavItems} />
-            <main className="flex-1 bg-background" />
+            <main className="flex-1 overflow-auto bg-background" />
           </div>
         </MemoryRouter>
       </MockAuthProvider>
