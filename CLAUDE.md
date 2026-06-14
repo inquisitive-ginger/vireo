@@ -19,7 +19,7 @@ with the family that runs it. See [`docs/vision.md`](docs/vision.md).
 
 - **Milestone:** M1 — Platform Shell (in progress)
 - **Active stories:** None
-- **Last session:** 2026-06-13 — Design: shell-chrome-interaction-states (sidebar surface → `--secondary`; active nav → `bg-primary/20 text-primary`; hover unified to `bg-primary/10`; accent locked to module identity; all sidebar hairlines removed; ADR 031; on branch `dev/shell-chrome-interaction-states`)
+- **Last session:** 2026-06-13 — Design: shell-chrome-interaction-states (sidebar surface → `--secondary`; active nav → `bg-primary/20 text-primary`; hover unified to `bg-primary/10`; accent locked to module identity; all sidebar hairlines removed; ADR 031; PR #17 merged)
 - **Next session:** M1 Design: widget-slot-states (see queue)
 
 > Update this section at the end of every session.
