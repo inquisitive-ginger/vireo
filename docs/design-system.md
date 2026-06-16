@@ -1077,6 +1077,52 @@ The M1 prohibition list (no page slide animations) extends to mobile. Tab-to-tab
 
 ---
 
+## Reward / XP — the "gold" semantic
+
+**Settled** — M2 Design: Chores (2026-06-15).
+
+XP (and reward/treasure cues generally) use a dedicated **gold** treatment built
+on the marigold/`--warning` hue family (≈ hue 78), kept well clear of error-red
+(hue 12) so a reward never reads as an alarm.
+
+| Layer     | Value (light)          | Use                              |
+| --------- | ---------------------- | -------------------------------- |
+| gold      | `oklch(0.74 0.13 80)`  | coin gradient mid, chip borders  |
+| gold-hi   | `oklch(0.88 0.09 86)`  | coin highlight (top-left)        |
+| gold-deep | `oklch(0.55 0.12 66)`  | gold numerals / deep edge        |
+| gold-tint | `oklch(0.95 0.045 86)` | soft gold chip / pill background |
+| gold-ink  | `oklch(0.45 0.1 70)`   | gold text on tint                |
+
+> Currently inline constants in the chores surfaces; promote to `--reward-*`
+> tokens (light + dark) when a second module needs them.
+
+**Rules:**
+
+- **Gold is reserved for XP/reward only.** Status never uses gold; XP never uses
+  red/green.
+- **XP numerals are DM Sans** (`text-metric`), not Lora — the gold treatment
+  carries the warmth, the type scale stays compliant.
+- The **lifetime total** reads as a minted "score plate" (coin + numeral +
+  `XP / TOTAL`); **daily earned** is a lighter momentum stat (TrendingUp icon,
+  gold-ink text) — distinct in weight/icon so the two don't read at one level.
+
+## Status vs identity colour
+
+**Settled** — M2 Design: Chores (2026-06-15).
+
+When a surface shows **one person's own items**, the identity hue carries no
+information (everything is that person) — so **colour encodes status**, not
+identity: neutral default, **red only for overdue**, green for done. Flooding
+such a surface with the owner's identity tint is both meaningless and a false
+alarm (e.g. a terracotta owner makes every row read red-ish).
+
+When a surface shows **multiple people** (admin / family / cross-member views),
+the identity hue **does** carry meaning — use it for per-person lanes, dots, and
+avatars.
+
+> Corollary: **red is reserved for overdue/error**, never identity. The
+> terracotta identity hue ≠ the error red.
+
 ## To Be Defined
 
 | Item                   | Deferred to        |
