@@ -26,7 +26,12 @@ describe('TierGate', () => {
   })
 
   it('renders fallback when tier is below minimum', () => {
-    wrap(1, <TierGate min={4} fallback={<span>locked</span>}>hidden</TierGate>)
+    wrap(
+      1,
+      <TierGate min={4} fallback={<span>locked</span>}>
+        hidden
+      </TierGate>
+    )
     expect(screen.queryByText('hidden')).not.toBeInTheDocument()
     expect(screen.getByText('locked')).toBeInTheDocument()
   })

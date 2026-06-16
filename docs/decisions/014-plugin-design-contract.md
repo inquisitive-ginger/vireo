@@ -21,6 +21,7 @@ is a commitment plugins can depend on — additions are intentional,
 not automatic.
 
 Plugins must not:
+
 - Import from the shell or other plugins directly
 - Hardcode color values — use CSS custom properties (tokens)
 - Use media queries for layout — use CSS container queries so the

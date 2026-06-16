@@ -11,13 +11,53 @@
 
 ## Up Next
 
-### M2 Product Planning
+### M2 Design: Chores
 
-**Type:** planning
-**Kickoff:** [kickoffs/product-m2.md](kickoffs/product-m2.md)
-**Reads:** `docs/roadmap.md` (M2 Chores), `docs/vision.md`, ADRs 002/003/005/022/028/030/032
-**Produces:** M2 story list; `docs/modules/chores/` spec + progress board; queue updated with M2 sessions — **including an M2 Design: Chores session queued ahead of the dev sessions** (chores has no module design yet)
-**Depends on:** M1 Design: Mobile Surface
+**Type:** design
+**Kickoff:** [kickoffs/design-chores.md](kickoffs/design-chores.md)
+**Reads:** `docs/modules/chores/spec.md`, all chores story specs, `docs/design-system.md`, ADRs 003/030/032, home-surface design log
+**Produces:** Visual direction for task list (kid + parent views), create-and-assign surface, completion interaction, XP display, widget layout (standard + large); `design-system.md` updated if new patterns settle
+**Depends on:** M2 Product Planning ✅
+
+---
+
+### M2 Dev: Task Model + Creation
+
+**Type:** development
+**Kickoff:** [kickoffs/dev-chores-task-model.md](kickoffs/dev-chores-task-model.md)
+**Reads:** `docs/modules/chores/stories/task-model-creation.md`, `docs/modules/chores/spec.md`, design-chores session log
+**Produces:** `chore-engine` plugin scaffold; `tasks` table; create/assign + list routes; chores full-page task list view; `PERMISSION_REGISTRY` updated
+**Depends on:** M2 Design: Chores
+
+---
+
+### M2 Dev: Completion Flow
+
+**Type:** development
+**Kickoff:** [kickoffs/dev-chores-completion.md](kickoffs/dev-chores-completion.md)
+**Reads:** `docs/modules/chores/stories/completion-flow.md`, design-chores session log, dev-chores-task-model session log
+**Produces:** `PATCH /api/chores/tasks/:id/complete` route; `chores.task.completed` event; completion button + optimistic UI; route tests + E2E test
+**Depends on:** M2 Dev: Task Model + Creation
+
+---
+
+### M2 Dev: XP Award + Parent Notification
+
+**Type:** development
+**Kickoff:** [kickoffs/dev-chores-xp-and-notification.md](kickoffs/dev-chores-xp-and-notification.md)
+**Reads:** `docs/modules/chores/stories/xp-award.md`, `docs/modules/chores/stories/parent-notification.md`, dev-chores-completion session log
+**Produces:** `xp_balances` table; XP event subscriber; `GET /api/chores/xp` route; XP display in chores view; parent notification event subscriber; tests for both stories
+**Depends on:** M2 Dev: Completion Flow
+
+---
+
+### M2 Dev: Today Widget
+
+**Type:** development
+**Kickoff:** [kickoffs/dev-chores-today-widget.md](kickoffs/dev-chores-today-widget.md)
+**Reads:** `docs/modules/chores/stories/today-widget.md`, design-chores session log, dev-chores-task-model session log
+**Produces:** `chores.today-summary` widget (standard + large); fills reserved home screen slot; Storybook stories
+**Depends on:** M2 Dev: Task Model + Creation; M2 Design: Chores
 
 ---
 
@@ -46,6 +86,10 @@ These sessions were scoped for M1 but don't map to M1's done-when criteria. Kick
 ---
 
 ## Recently Completed
+
+- **2026-06-15 — M2 Product Planning** ![Type](https://img.shields.io/badge/Type-Planning-orange)
+  5 stories defined across the `chores` module. `docs/modules/chores/` created (spec, progress board, 5 story specs). Open questions resolved: one-shot tasks only (no recurrence), XP as running total (no levels), auto-accept completion (no approval step), one assignee per task (tier 4 assigns). XP Award + Parent Notification combined into one dev session. M2 Design: Chores queued ahead of all dev sessions.
+  _See:_ `docs/sessions/logs/2026-06-15-product-m2.md`
 
 - **2026-06-15 — M1 Dev: mobile-brand-top-bar** ![Type](https://img.shields.io/badge/Type-Development-orange)
   Settled the mobile bell/profile placement left open by ADR 033. Built a 4-option UX playground, chose **Option 1 — brand top bar** (avatar · Family OS wordmark · bell), and wired it into `App.tsx` (`grid`, `safe-area-inset-top`; floating bell removed; `ProfileGrid` re-anchored as a top dropdown). `BottomTabBar` is now nav-only (profile slot + props removed). ADR 034 added; ADR 033 superseded clauses annotated. Story gains autodocs + mobile-frame variant; tests updated; playground deleted. typecheck + 30 tests green.

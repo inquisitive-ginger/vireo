@@ -1,4 +1,5 @@
 # Session Log — Development: shell-skeleton
+
 **Date:** 2026-05-30
 **Type:** Development
 **Story:** platform/shell-skeleton
@@ -28,18 +29,18 @@ Dependencies added to `apps/shell`: `react-router-dom`, `class-variance-authorit
 
 ## Acceptance criteria status
 
-| AC | Status | Notes |
-|----|--------|-------|
-| 1. Renders at 1280×800 without console errors | ✅ Pass | Verified via Playwright |
-| 2. Home screen placeholder visible and labeled | ✅ Pass | `<h1>Home</h1>` in main content |
-| 3. Left sidebar 220px, profile chip, nav section | ✅ Pass | Exact 220px measured; chip at top, nav below |
-| 4. Main content area fills remaining width | ✅ Pass | 1060px (1280 − 220) |
-| 5. Navigating to a plugin route renders in the slot | ✅ Pass | `/demo` route renders DemoPage in `<Outlet />` |
-| 6. Settings entry visible at bottom of sidebar | ✅ Pass | Pinned via border-t at bottom of sidebar |
-| 7. All interactive elements ≥ 48×48px | ✅ Pass | All `<NavLink>` elements measured at exactly 48px |
-| 8. Tailwind CSS v4 configured | ✅ Pass | `@theme inline` wiring confirmed, utility classes apply |
-| 9. At least one shadcn/ui component renders | ✅ Pass | `<Button>` on Home page, native `BUTTON` element |
-| 10. `--font-ui` and `--font-display` defined | ✅ Pass | `system-ui, sans-serif` on `:root` |
+| AC                                                  | Status  | Notes                                                   |
+| --------------------------------------------------- | ------- | ------------------------------------------------------- |
+| 1. Renders at 1280×800 without console errors       | ✅ Pass | Verified via Playwright                                 |
+| 2. Home screen placeholder visible and labeled      | ✅ Pass | `<h1>Home</h1>` in main content                         |
+| 3. Left sidebar 220px, profile chip, nav section    | ✅ Pass | Exact 220px measured; chip at top, nav below            |
+| 4. Main content area fills remaining width          | ✅ Pass | 1060px (1280 − 220)                                     |
+| 5. Navigating to a plugin route renders in the slot | ✅ Pass | `/demo` route renders DemoPage in `<Outlet />`          |
+| 6. Settings entry visible at bottom of sidebar      | ✅ Pass | Pinned via border-t at bottom of sidebar                |
+| 7. All interactive elements ≥ 48×48px               | ✅ Pass | All `<NavLink>` elements measured at exactly 48px       |
+| 8. Tailwind CSS v4 configured                       | ✅ Pass | `@theme inline` wiring confirmed, utility classes apply |
+| 9. At least one shadcn/ui component renders         | ✅ Pass | `<Button>` on Home page, native `BUTTON` element        |
+| 10. `--font-ui` and `--font-display` defined        | ✅ Pass | `system-ui, sans-serif` on `:root`                      |
 
 ---
 

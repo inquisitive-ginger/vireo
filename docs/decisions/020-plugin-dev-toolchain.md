@@ -21,14 +21,14 @@ changes to a plugin hot-reload without affecting the shell or other plugins.
 
 **What `pnpm turbo gen plugin` produces:**
 
-| File | Purpose |
-|------|---------|
+| File                            | Purpose                                                                                           |
+| ------------------------------- | ------------------------------------------------------------------------------------------------- |
 | `plugins/[name]/vite.config.ts` | Module Federation config; `@family-os/ui` and `@family-os/platform` declared as shared singletons |
-| `plugins/[name]/manifest.json` | Stub matching the `PluginManifest` type |
-| `plugins/[name]/tsconfig.json` | Extends workspace root config |
-| `plugins/[name]/src/index.ts` | Barrel — exposes the plugin module |
-| `plugins/[name]/src/Plugin.tsx` | Minimal example using platform hooks |
-| `pnpm-workspace.yaml` | Entry added automatically |
+| `plugins/[name]/manifest.json`  | Stub matching the `PluginManifest` type                                                           |
+| `plugins/[name]/tsconfig.json`  | Extends workspace root config                                                                     |
+| `plugins/[name]/src/index.ts`   | Barrel — exposes the plugin module                                                                |
+| `plugins/[name]/src/Plugin.tsx` | Minimal example using platform hooks                                                              |
+| `pnpm-workspace.yaml`           | Entry added automatically                                                                         |
 
 **Alternatives considered:**
 

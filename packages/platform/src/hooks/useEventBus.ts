@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react'
+import { useEffect, useCallback } from 'react'
 import type { EventName, BusMessage } from '../types'
 
 type EventBusHook = {
@@ -6,13 +6,19 @@ type EventBusHook = {
   subscribe: (event: EventName, handler: (payload: unknown) => void) => () => void
 }
 
-type SocketRef = { socket: WebSocket | null; closed: boolean; delay: number; timer: ReturnType<typeof setTimeout> | null }
+type SocketRef = {
+  socket: WebSocket | null
+  closed: boolean
+  delay: number
+  timer: ReturnType<typeof setTimeout> | null
+}
 
 let sharedSocket: SocketRef | null = null
 const subscribers = new Map<EventName | '__any__', Set<(payload: unknown) => void>>()
 
 function ensureSocket() {
-  if (sharedSocket && sharedSocket.socket && sharedSocket.socket.readyState <= WebSocket.OPEN) return
+  if (sharedSocket && sharedSocket.socket && sharedSocket.socket.readyState <= WebSocket.OPEN)
+    return
 
   if (!sharedSocket) sharedSocket = { socket: null, closed: false, delay: 1000, timer: null }
 
@@ -22,7 +28,9 @@ function ensureSocket() {
     const ws = new WebSocket(`${protocol}//${window.location.host}/events`)
     sharedSocket!.socket = ws
 
-    ws.onopen = () => { sharedSocket!.delay = 1000 }
+    ws.onopen = () => {
+      sharedSocket!.delay = 1000
+    }
 
     ws.onmessage = (event) => {
       try {
@@ -63,7 +71,9 @@ export function useEventBus(): EventBusHook {
   const subscribe = useCallback((event: EventName, handler: (payload: unknown) => void) => {
     if (!subscribers.has(event)) subscribers.set(event, new Set())
     subscribers.get(event)!.add(handler)
-    return () => { subscribers.get(event)?.delete(handler) }
+    return () => {
+      subscribers.get(event)?.delete(handler)
+    }
   }, [])
 
   return { publish, subscribe }

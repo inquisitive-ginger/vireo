@@ -17,8 +17,7 @@ export default function generator(plop: PlopTypes.NodePlopAPI): void {
         type: 'input',
         name: 'port',
         message: 'Dev server port (must be unique across all plugins):',
-        validate: (value: string) =>
-          /^\d{4,5}$/.test(value) || 'Port must be a 4-5 digit number',
+        validate: (value: string) => /^\d{4,5}$/.test(value) || 'Port must be a 4-5 digit number',
       },
     ],
     actions: [

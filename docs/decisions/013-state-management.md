@@ -4,13 +4,13 @@
 
 **Decision:** State is managed in layers matched to the type of state:
 
-| Layer | Tool | Scope |
-|-------|------|-------|
-| Auth + tier | React Context (`AuthProvider`, `useAuth()`, `useTier()`) | Global — shell root |
-| Shell client state | Zustand | Global — shell root, no provider needed |
-| Server / plugin data | TanStack Query | Per-plugin — fetching, caching, loading states |
-| Plugin UI state | React `useState` / `useReducer` | Local — within plugin |
-| Real-time (event bus) | WebSocket → TanStack Query cache invalidation | Per-plugin |
+| Layer                 | Tool                                                     | Scope                                          |
+| --------------------- | -------------------------------------------------------- | ---------------------------------------------- |
+| Auth + tier           | React Context (`AuthProvider`, `useAuth()`, `useTier()`) | Global — shell root                            |
+| Shell client state    | Zustand                                                  | Global — shell root, no provider needed        |
+| Server / plugin data  | TanStack Query                                           | Per-plugin — fetching, caching, loading states |
+| Plugin UI state       | React `useState` / `useReducer`                          | Local — within plugin                          |
+| Real-time (event bus) | WebSocket → TanStack Query cache invalidation            | Per-plugin                                     |
 
 `useAuth()` is the primary hook and returns the full user object
 including trust tier. `useTier()` is a convenience wrapper over

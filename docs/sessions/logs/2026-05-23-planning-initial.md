@@ -5,6 +5,7 @@
 ---
 
 ## What Was Decided
+
 - Plugin-native micro-frontend architecture (ADR 001)
 - Two-layer currency model: XP + Family Dollars (ADR 002)
 - Four age-tiered trust levels, family-configurable display names (ADR 003)
@@ -16,6 +17,7 @@
   Finance, Meals, Marketplace) — all MVP-first
 
 ## What Was Produced
+
 - `CLAUDE.md` — master session context
 - `docs/vision.md` — project north star
 - `docs/roadmap.md` — milestone map M0–M7
@@ -23,9 +25,11 @@
 - `docs/sessions/queue.md` — near-term session queue
 
 ## What Was Sent Back
+
 Nothing — this was the first session.
 
 ## Open Questions Raised
+
 - Final product name (working title: "Family OS")
 - Default tier display names — deferred to System Design session
 - Bulletin board / announcements: surface feature or thin module?
@@ -34,6 +38,7 @@ Nothing — this was the first session.
   full scope defined in product session
 
 ## What the Next Session Needs to Know
+
 - Platform Architecture is up next — see `docs/sessions/queue.md`
 - No tech stack decisions have been made yet; everything is open
 - The plugin API contract (ADR 001) is the most critical thing to

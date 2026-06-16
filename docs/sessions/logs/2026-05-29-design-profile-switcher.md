@@ -1,4 +1,5 @@
 # Session Log — Login / Profile-Switch UX Design
+
 **Date:** 2026-05-29
 **Type:** Design
 **Story:** Login / Profile-Switch UX (pre-requisite for auth-and-profiles)
@@ -8,22 +9,28 @@
 ## What was decided
 
 ### 1. Entry point model
+
 Two entry points, same underlying component:
+
 - **Corner chip** — persistent in the shell header, shows current active profile (avatar + name), tap opens profile grid overlay
 - **Inactivity** — idle timeout deactivates personal profile and returns to family dashboard; no lock screen
 
 ### 2. Profile selection UI
+
 Centered avatar grid. Circular avatars with name below. Large tap targets (80px avatar minimum). Current active profile highlighted, non-interactive. Family pseudo-profile not shown in the grid. Same component with `mode: 'fullscreen' | 'overlay'`.
 
 ### 3. PIN entry
+
 Single global family PIN — not per-profile. Large circular digit buttons, 4-digit, dot progress indicator. Copy: "Enter family PIN." Any tier-4 profile can set or reset it. Blocked upward switching returns 423 if no PIN has been set.
 
 ### 4. Unattended state — Family Dashboard
+
 The tablet's default unattended state is a **family dashboard** (pseudo-profile), not a lock screen. A `family` pseudo-profile (tier 1, all writes removed via CASL) is permanently seeded. The tablet shows shared content — upcoming events, chore leaderboard, shared goals — at all times.
 
 **Contextual auth:** Write actions on the family dashboard intercept the tap and surface the profile picker inline. The family pseudo-profile has no write permissions; CASL enforces this naturally. No special null-auth code path needed.
 
 ### Schema change
+
 `pin_hash` removed from `platform.profiles`. New `platform.system_config` table holds the family PIN hash. This amends ADR 017.
 
 ---

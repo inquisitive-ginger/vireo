@@ -17,10 +17,10 @@ with the family that runs it. See [`docs/vision.md`](docs/vision.md).
 
 ## Current Status
 
-- **Milestone:** M1 — Platform Shell (in progress)
+- **Milestone:** M2 — Chores (planning complete; design + dev sessions queued)
 - **Active stories:** None
-- **Last session:** 2026-06-15 — Dev: mobile-brand-top-bar (Option 1 chosen → ADR 034; `App.tsx` brand top bar = avatar · Family OS · bell; floating bell removed; `BottomTabBar` now nav-only; `ProfileGrid` top dropdown; UX playground deleted)
-- **Next session:** M2 Product Planning (`docs/sessions/kickoffs/product-m2.md`)
+- **Last session:** 2026-06-15 — Product: M2 Chores planning (5 stories defined; `docs/modules/chores/` created; open questions resolved; M2 Design: Chores queued first)
+- **Next session:** M2 Design: Chores (`docs/sessions/kickoffs/design-chores.md`)
 
 > Update this section at the end of every session.
 

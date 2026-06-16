@@ -32,15 +32,15 @@ the family dashboard without requiring any other module to be installed.
 
 ### `family-feed.feed`
 
-| Field | Value |
-|-------|-------|
-| `id` | `family-feed.feed` |
-| `displayName` | Family Feed |
-| `defaultSize` | `standard` |
-| `supportedSizes` | `standard`, `large`, `banner` |
-| `minTier` | 1 |
-| `requiredPermission` | — (none) |
-| `description` | Recent family posts. |
+| Field                | Value                         |
+| -------------------- | ----------------------------- |
+| `id`                 | `family-feed.feed`            |
+| `displayName`        | Family Feed                   |
+| `defaultSize`        | `standard`                    |
+| `supportedSizes`     | `standard`, `large`, `banner` |
+| `minTier`            | 1                             |
+| `requiredPermission` | — (none)                      |
+| `description`        | Recent family posts.          |
 
 ### Content at each size
 
@@ -65,8 +65,8 @@ the family pseudo-profile (tier 1, no writes) and any tier-1 profile.
 
 Reserved in all three default layouts (see ADR 028):
 
-| Tier bucket | Size | Position |
-|-------------|------|----------|
-| Family pseudo-profile | `banner` | Full-width top row |
-| Tiers 1–2 | `standard` | Top-right |
-| Tiers 3–4 | `standard` | Top-right |
+| Tier bucket           | Size       | Position           |
+| --------------------- | ---------- | ------------------ |
+| Family pseudo-profile | `banner`   | Full-width top row |
+| Tiers 1–2             | `standard` | Top-right          |
+| Tiers 3–4             | `standard` | Top-right          |

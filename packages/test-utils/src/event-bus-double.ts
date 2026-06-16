@@ -24,7 +24,10 @@ export function createEventBusDouble(): EventBusDouble {
       handlers.set(event, [...(handlers.get(event) ?? []), handler])
       return () => {
         const list = handlers.get(event) ?? []
-        handlers.set(event, list.filter((h) => h !== handler))
+        handlers.set(
+          event,
+          list.filter((h) => h !== handler)
+        )
       }
     },
     onAny(handler) {

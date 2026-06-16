@@ -20,7 +20,7 @@ const preferencesPlugin: FastifyPluginAsync = async (fastify) => {
       })
 
       return { darkMode }
-    },
+    }
   )
 }
 

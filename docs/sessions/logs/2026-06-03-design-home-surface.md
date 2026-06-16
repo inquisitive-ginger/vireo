@@ -1,4 +1,5 @@
 # Session Log — Home Surface Design
+
 **Date:** 2026-06-03
 **Type:** Design
 
@@ -7,11 +8,13 @@
 ## What was decided
 
 ### Reserved modules
+
 Family Feed, Chores, and Calendar are the three reserved modules in M1 default
 layouts. Finance and Smart Home excluded — too far out to be useful as early
 placeholders.
 
 ### Default layouts — three tier buckets
+
 Dominant slot swaps by tier; the rest of the layout mirrors:
 
 - **Family pseudo-profile:** Family Feed banner (full-width), Chores + Calendar
@@ -19,18 +22,20 @@ Dominant slot swaps by tier; the rest of the layout mirrors:
 - **Tiers 1–2 (kids):** Chores large (dominant, top-left), Family Feed + Calendar
   standard stacked right — chores-first.
 - **Tiers 3–4 (parents/teens):** Calendar large (dominant, top-left), Family Feed
-  + Chores standard stacked right — calendar-first.
+  - Chores standard stacked right — calendar-first.
 
 Marked as initial defaults; expected to be tuned post-M1 once real content and
 interactions are established.
 
 ### Placeholder state
+
 Reserved slots whose module isn't installed render a muted informational card:
 `--muted` background, `--muted-foreground` label, Lucide icon, one-line description.
 No install CTA (marketplace is M8). Shell-level concern — plugins don't handle their
 own absent state.
 
 ### Family Feed widget spec (MVP)
+
 Supports `standard`, `large`, `banner`. Content is latest-post strip at 1-row sizes;
 2–3 stacked posts at `large`. Text posts only — images/reactions/aggregation are v2.
 Empty state shows compose button only for profiles with write permission.

@@ -30,16 +30,16 @@ Plugins declare home screen widgets in `manifest.json` (extends ADR 007 and ADR 
 
 **Field rules:**
 
-| Field | Required | Rules |
-|-------|----------|-------|
-| `id` | Yes | Globally unique; namespaced by plugin ID (`pluginId.widgetName`) |
-| `displayName` | Yes | Shown in the widget picker UI |
-| `component` | Yes | Module Federation export path within the plugin's remote |
-| `defaultSize` | Yes | One of the six named sizes; must appear in `supportedSizes` |
-| `supportedSizes` | Yes | Non-empty subset of the six named sizes |
-| `minTier` | No | Numeric 1–4; defaults to 1 if omitted |
-| `requiredPermission` | No | Permission string (`module.noun`); omit if no permission gate needed |
-| `description` | Yes | Plain text; used in the widget picker UI |
+| Field                | Required | Rules                                                                |
+| -------------------- | -------- | -------------------------------------------------------------------- |
+| `id`                 | Yes      | Globally unique; namespaced by plugin ID (`pluginId.widgetName`)     |
+| `displayName`        | Yes      | Shown in the widget picker UI                                        |
+| `component`          | Yes      | Module Federation export path within the plugin's remote             |
+| `defaultSize`        | Yes      | One of the six named sizes; must appear in `supportedSizes`          |
+| `supportedSizes`     | Yes      | Non-empty subset of the six named sizes                              |
+| `minTier`            | No       | Numeric 1–4; defaults to 1 if omitted                                |
+| `requiredPermission` | No       | Permission string (`module.noun`); omit if no permission gate needed |
+| `description`        | Yes      | Plain text; used in the widget picker UI                             |
 
 The `widgets` field is optional — plugins that only add routes do not need it.
 
@@ -67,13 +67,13 @@ content area (~1060px) after the 220px sidebar at 1280px viewport.
 Six named sizes map directly to React Grid Layout `{ w, h }` values:
 
 | Named size | `w` | `h` | ~Dimensions |
-|------------|-----|-----|-------------|
-| `compact` | 1 | 1 | 253×180px |
-| `standard` | 2 | 1 | 522×180px |
-| `tall` | 1 | 2 | 253×376px |
-| `large` | 2 | 2 | 522×376px |
-| `banner` | 4 | 1 | 1060×180px |
-| `full` | 4 | 4 | 1060×760px |
+| ---------- | --- | --- | ----------- |
+| `compact`  | 1   | 1   | 253×180px   |
+| `standard` | 2   | 1   | 522×180px   |
+| `tall`     | 1   | 2   | 253×376px   |
+| `large`    | 2   | 2   | 522×376px   |
+| `banner`   | 4   | 1   | 1060×180px  |
+| `full`     | 4   | 4   | 1060×760px  |
 
 Plugin manifests use named sizes. The shell translates to `{ w, h }` for React Grid Layout.
 Freeform sizing is not supported.
@@ -106,10 +106,10 @@ schema and API are deferred to the M1 implementation session.
 **Edit rights:**
 
 | Tier | Can edit own layout | Can edit others' layouts |
-|------|--------------------|-----------------------------|
-| 1–2 | No | No |
-| 3 | Yes | No |
-| 4 | Yes | Any family member |
+| ---- | ------------------- | ------------------------ |
+| 1–2  | No                  | No                       |
+| 3    | Yes                 | No                       |
+| 4    | Yes                 | Any family member        |
 
 New users are seeded with a tier-appropriate default layout defined in platform config —
 not hardcoded in the shell. Layout is not automatically rearranged when a user's tier

@@ -27,15 +27,15 @@ The shell runs at `http://localhost:5173`. The API runs at `http://localhost:300
 
 ## Commands
 
-| Command | What it does |
-|---------|-------------|
-| `pnpm dev` | Start all services (shell + API) in watch mode |
-| `pnpm test` | Run Vitest across all packages |
-| `pnpm typecheck` | TypeScript check across all packages |
-| `pnpm storybook` | Start the Storybook component catalog (`packages/ui`) |
-| `pnpm lint` | ESLint across all packages |
-| `pnpm format` | Prettier formatting |
-| `pnpm turbo gen plugin --args <name>` | Scaffold a new plugin under `plugins/<name>/` |
+| Command                               | What it does                                          |
+| ------------------------------------- | ----------------------------------------------------- |
+| `pnpm dev`                            | Start all services (shell + API) in watch mode        |
+| `pnpm test`                           | Run Vitest across all packages                        |
+| `pnpm typecheck`                      | TypeScript check across all packages                  |
+| `pnpm storybook`                      | Start the Storybook component catalog (`packages/ui`) |
+| `pnpm lint`                           | ESLint across all packages                            |
+| `pnpm format`                         | Prettier formatting                                   |
+| `pnpm turbo gen plugin --args <name>` | Scaffold a new plugin under `plugins/<name>/`         |
 
 ---
 
@@ -61,11 +61,11 @@ turbo/
 
 ## Documentation
 
-| Doc | What it covers |
-|-----|---------------|
-| [`docs/vision.md`](docs/vision.md) | Why this exists |
-| [`docs/architecture.md`](docs/architecture.md) | How pieces fit together |
+| Doc                                              | What it covers                            |
+| ------------------------------------------------ | ----------------------------------------- |
+| [`docs/vision.md`](docs/vision.md)               | Why this exists                           |
+| [`docs/architecture.md`](docs/architecture.md)   | How pieces fit together                   |
 | [`docs/design-system.md`](docs/design-system.md) | Visual language and component conventions |
-| [`docs/roadmap.md`](docs/roadmap.md) | Milestones and delivery status |
-| [`docs/decisions/`](docs/decisions/) | Architecture decision records |
-| [`CONTRIBUTING.md`](CONTRIBUTING.md) | Code style and git workflow |
+| [`docs/roadmap.md`](docs/roadmap.md)             | Milestones and delivery status            |
+| [`docs/decisions/`](docs/decisions/)             | Architecture decision records             |
+| [`CONTRIBUTING.md`](CONTRIBUTING.md)             | Code style and git workflow               |

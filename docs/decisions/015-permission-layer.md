@@ -5,7 +5,7 @@
 **Decision:** Trust tier (ADR 003) defines a baseline permission set.
 Individual permissions can be granted above or revoked below that
 baseline by a parent. The UI and capability checks operate on the
-*effective* permission set — never on tier alone.
+_effective_ permission set — never on tier alone.
 
 ```
 effective permissions = tier_baseline ∪ granted_permissions − revoked_permissions
@@ -15,9 +15,9 @@ The user object carries three fields:
 
 ```ts
 interface User {
-  tier: 1 | 2 | 3 | 4;
-  grantedPermissions: string[];  // above-tier grants
-  revokedPermissions: string[];  // below-tier revocations
+  tier: 1 | 2 | 3 | 4
+  grantedPermissions: string[] // above-tier grants
+  revokedPermissions: string[] // below-tier revocations
 }
 ```
 

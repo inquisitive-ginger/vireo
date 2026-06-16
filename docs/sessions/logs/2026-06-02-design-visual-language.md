@@ -1,4 +1,5 @@
 # Session Log — Visual Language Design
+
 **Date:** 2026-06-02
 **Type:** Design
 
@@ -7,16 +8,19 @@
 ## What was decided
 
 ### Typography — Classic Warmth
+
 - **Display font:** Lora (Google Fonts, weights 400/600/700)
 - **UI font:** DM Sans (Google Fonts, weights 400/500/600)
 - Lora's well-crafted serifs give headings warmth and editorial character. DM Sans is clean and legible for UI text without the generic Inter/Geist feel. The pairing reads as distinctive and warm — adult-legible but approachable for kids.
 
 ### Color palette — Terracotta & Teal
+
 - **Primary:** Terracotta `oklch(0.57 0.14 35)` — warm burnt-orange for actions and active states
 - **Accent:** Teal `oklch(0.52 0.11 190)` — calm blue-green for progress indicators and highlights
 - Deliberately two distinct hues rather than a monochromatic scale. The contrast between warm and cool provides visual variety while keeping the palette grounded.
 
 ### Dark mode strategy
+
 - `prefers-color-scheme: dark` media query — cascade-based, no JavaScript
 - Dark background is a **warm clay** `oklch(0.15 0.022 45)` — not the cold blue-black common in most apps. Intentionally earthy to match the warm character of the light palette.
 - Primaries lighten in dark mode to maintain contrast on dark surfaces.

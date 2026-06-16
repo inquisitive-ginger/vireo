@@ -11,6 +11,7 @@
 Full monorepo scaffold from a greenfield repo. All M0 dev-environment infrastructure is in place:
 
 **Root**
+
 - `package.json` (pnpm workspace root, Turborepo scripts)
 - `pnpm-workspace.yaml` — `apps/*`, `packages/*`, `plugins/*`
 - `turbo.json` — `dev`, `build`, `test`, `typecheck`, `storybook`, `lint` task pipeline
@@ -22,11 +23,13 @@ Full monorepo scaffold from a greenfield repo. All M0 dev-environment infrastruc
 - `CONTRIBUTING.md` — code style, file naming, branching + git workflow (AC 11 scope addition)
 
 **`packages/platform`** — type-only stub
+
 - `src/types.ts` — `TierLevel`, `EventName`, `Profile`, `PluginManifest` (with `widgets?: unknown[]`), `PERMISSION_REGISTRY`, `PermissionString`, `PermissionOverride`
 - `src/index.ts` — client barrel (types only; hooks added by shell-skeleton + auth-and-profiles)
 - `src/server.ts` — server barrel (`EventBus` interface; implementations added by event-bus story)
 
 **`packages/ui`** — stub + Storybook 8
+
 - `src/index.ts` — barrel stub
 - `src/styles.css` — `@import "tailwindcss"` (Tailwind v4 entrypoint)
 - `vite.config.ts` — React + Tailwind v4 plugins
@@ -35,18 +38,22 @@ Full monorepo scaffold from a greenfield repo. All M0 dev-environment infrastruc
 - `src/placeholder.stories.tsx` — Family OS Welcome story with Tailwind classes
 
 **`packages/test-utils`** — shared test utilities (ADR 026)
+
 - `src/render.tsx` — `renderWithProviders` (no-op wrapper; grows when AuthProvider lands)
 - `src/factories.ts` — `createProfile(tier, overrides)`, `profileTier1`–`profileTier4`
 - `src/event-bus-double.ts` — in-memory synchronous `EventBus` with `emitted` log + `reset()`
 - `src/test-utils.test.tsx` — 6 tests covering factories, render, event bus double
 
 **`apps/shell`** — React + Vite scaffold
+
 - Vite on port 5173, React Fast Refresh (HMR), Tailwind v4, minimal `App.tsx`
 
 **`apps/api`** — Fastify scaffold
+
 - `tsx watch` dev server on port 3000, `/health` route, TypeScript strict
 
 **`turbo/generators/`** — plugin generator
+
 - `config.ts` — plop generator with kebab-case validation
 - Templates for `package.json`, `vite.config.ts` (Module Federation), `manifest.json`, `tsconfig.json`, `src/index.ts`, `src/Plugin.tsx`
 
@@ -54,19 +61,19 @@ Full monorepo scaffold from a greenfield repo. All M0 dev-environment infrastruc
 
 ## Acceptance criteria status
 
-| AC | Status | Notes |
-|----|--------|-------|
-| 1 — Docker/PostgreSQL on 5432 | ⚠️ Needs manual verify | `docker compose up -d` then `psql -h localhost -U familyos` |
-| 2 — `pnpm dev` starts shell + API | ✅ Pass | Confirmed via Turborepo dry-run |
-| 3 — Shell at localhost:5173, no console errors | ⚠️ Needs manual verify | Needs browser |
-| 4 — Workspace deps resolve, no TS errors | ✅ Pass | All 5 packages typecheck clean |
-| 5 — `pnpm typecheck` zero errors | ✅ Pass | |
-| 6 — Hot-reload without full refresh | ⚠️ Needs manual verify | Built into Vite + React Fast Refresh |
-| 7 — Plugin generator creates 6 files | ✅ Pass | Syntax: `pnpm turbo gen plugin --args <name>` |
-| 8 — Plugin workspace auto-discovery | ✅ Pass | `plugins/*` glob in workspace file |
-| 9 — `pnpm test` passes | ✅ Pass | 6 tests in test-utils |
-| 10 — Storybook starts, placeholder renders | ✅ Pass | Full build clean; Welcome story in bundle |
-| 11 — CONTRIBUTING.md | ✅ Pass | |
+| AC                                             | Status                 | Notes                                                       |
+| ---------------------------------------------- | ---------------------- | ----------------------------------------------------------- |
+| 1 — Docker/PostgreSQL on 5432                  | ⚠️ Needs manual verify | `docker compose up -d` then `psql -h localhost -U familyos` |
+| 2 — `pnpm dev` starts shell + API              | ✅ Pass                | Confirmed via Turborepo dry-run                             |
+| 3 — Shell at localhost:5173, no console errors | ⚠️ Needs manual verify | Needs browser                                               |
+| 4 — Workspace deps resolve, no TS errors       | ✅ Pass                | All 5 packages typecheck clean                              |
+| 5 — `pnpm typecheck` zero errors               | ✅ Pass                |                                                             |
+| 6 — Hot-reload without full refresh            | ⚠️ Needs manual verify | Built into Vite + React Fast Refresh                        |
+| 7 — Plugin generator creates 6 files           | ✅ Pass                | Syntax: `pnpm turbo gen plugin --args <name>`               |
+| 8 — Plugin workspace auto-discovery            | ✅ Pass                | `plugins/*` glob in workspace file                          |
+| 9 — `pnpm test` passes                         | ✅ Pass                | 6 tests in test-utils                                       |
+| 10 — Storybook starts, placeholder renders     | ✅ Pass                | Full build clean; Welcome story in bundle                   |
+| 11 — CONTRIBUTING.md                           | ✅ Pass                |                                                             |
 
 ACs 1, 3, 6 require Docker and a browser — verify with `pnpm dev` before marking the story fully done.
 

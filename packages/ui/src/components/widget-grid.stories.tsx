@@ -1,7 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react'
 import { Rss, CheckSquare, Calendar } from 'lucide-react'
 import { WidgetGrid } from './widget-grid'
-import { WidgetSlot } from './widget-slot'
 import { PlaceholderCard } from './placeholder-card'
 
 // ─── Shared placeholder fixtures ────────────────────────────────────────────

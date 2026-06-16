@@ -20,9 +20,7 @@ export function Plugin() {
 
   return (
     <div style={{ padding: '2rem', maxWidth: '480px' }}>
-      <h1 style={{ fontSize: '1.5rem', fontWeight: 600, marginBottom: '0.5rem' }}>
-        Demo Plugin
-      </h1>
+      <h1 style={{ fontSize: '1.5rem', fontWeight: 600, marginBottom: '0.5rem' }}>Demo Plugin</h1>
       <p style={{ color: '#666', fontSize: '0.875rem', marginBottom: '1.5rem' }}>
         Active: {name} · Tier {tier}
       </p>

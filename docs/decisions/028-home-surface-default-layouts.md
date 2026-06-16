@@ -23,32 +23,32 @@ each plugin's `manifest.json`.
 
 **Family pseudo-profile** (unattended tablet):
 
-| `widgetId` | x | y | w | h | Named size |
-|-----------|---|---|---|---|------------|
-| `family-feed.feed` | 0 | 0 | 4 | 1 | `banner` |
-| `chores.today-summary` | 0 | 1 | 2 | 1 | `standard` |
-| `calendar.today` | 2 | 1 | 2 | 1 | `standard` |
+| `widgetId`             | x   | y   | w   | h   | Named size |
+| ---------------------- | --- | --- | --- | --- | ---------- |
+| `family-feed.feed`     | 0   | 0   | 4   | 1   | `banner`   |
+| `chores.today-summary` | 0   | 1   | 2   | 1   | `standard` |
+| `calendar.today`       | 2   | 1   | 2   | 1   | `standard` |
 
 Family Feed spans full width — maximally legible from across a room. Chores and
 Calendar are equal peers below it.
 
 **Tiers 1–2** (child profiles):
 
-| `widgetId` | x | y | w | h | Named size |
-|-----------|---|---|---|---|------------|
-| `chores.today-summary` | 0 | 0 | 2 | 2 | `large` |
-| `family-feed.feed` | 2 | 0 | 2 | 1 | `standard` |
-| `calendar.today` | 2 | 1 | 2 | 1 | `standard` |
+| `widgetId`             | x   | y   | w   | h   | Named size |
+| ---------------------- | --- | --- | --- | --- | ---------- |
+| `chores.today-summary` | 0   | 0   | 2   | 2   | `large`    |
+| `family-feed.feed`     | 2   | 0   | 2   | 1   | `standard` |
+| `calendar.today`       | 2   | 1   | 2   | 1   | `standard` |
 
 Chores dominates — it is the primary daily action for child profiles.
 
 **Tiers 3–4** (parent/teen profiles):
 
-| `widgetId` | x | y | w | h | Named size |
-|-----------|---|---|---|---|------------|
-| `calendar.today` | 0 | 0 | 2 | 2 | `large` |
-| `family-feed.feed` | 2 | 0 | 2 | 1 | `standard` |
-| `chores.today-summary` | 2 | 1 | 2 | 1 | `standard` |
+| `widgetId`             | x   | y   | w   | h   | Named size |
+| ---------------------- | --- | --- | --- | --- | ---------- |
+| `calendar.today`       | 0   | 0   | 2   | 2   | `large`    |
+| `family-feed.feed`     | 2   | 0   | 2   | 1   | `standard` |
+| `chores.today-summary` | 2   | 1   | 2   | 1   | `standard` |
 
 Calendar dominates — scheduling is the primary concern for parent and teen profiles.
 

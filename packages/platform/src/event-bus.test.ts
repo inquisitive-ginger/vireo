@@ -66,7 +66,10 @@ describe('createEventBus', () => {
       bus.emit('chores.task.completed', { b: 2 })
       expect(handler).toHaveBeenCalledTimes(2)
       expect(handler).toHaveBeenNthCalledWith(1, { event: 'platform.ping.sent', payload: { a: 1 } })
-      expect(handler).toHaveBeenNthCalledWith(2, { event: 'chores.task.completed', payload: { b: 2 } })
+      expect(handler).toHaveBeenNthCalledWith(2, {
+        event: 'chores.task.completed',
+        payload: { b: 2 },
+      })
     })
 
     it('returned unsubscribe stops wildcard delivery', () => {

@@ -21,6 +21,7 @@ and runtime enumeration for the parent permission management UI.
 **Permission model:**
 
 `createAbility(profile, overrides)` builds a typed CASL `AppAbility` from:
+
 1. The tier baseline rule set for `profile.tier`
 2. Per-profile grants and revocations stored in `platform.permission_overrides`
 
@@ -33,9 +34,24 @@ Actions are plain verbs: `'view'`, `'create'`, `'complete'`, `'manage'`, etc.
 
 ```typescript
 export const PERMISSION_REGISTRY = {
-  'platform.profile.view':   { label: 'View profiles',         module: 'platform', action: 'view',   subject: 'platform.Profile' },
-  'platform.profile.switch': { label: 'Switch active profile', module: 'platform', action: 'switch', subject: 'platform.Profile' },
-  'platform.plugin.view':    { label: 'Use plugins',           module: 'platform', action: 'view',   subject: 'platform.Plugin'  },
+  'platform.profile.view': {
+    label: 'View profiles',
+    module: 'platform',
+    action: 'view',
+    subject: 'platform.Profile',
+  },
+  'platform.profile.switch': {
+    label: 'Switch active profile',
+    module: 'platform',
+    action: 'switch',
+    subject: 'platform.Profile',
+  },
+  'platform.plugin.view': {
+    label: 'Use plugins',
+    module: 'platform',
+    action: 'view',
+    subject: 'platform.Plugin',
+  },
 } as const
 
 export type PermissionString = keyof typeof PERMISSION_REGISTRY
@@ -45,12 +61,12 @@ Each module adds its entries to this registry when it is implemented.
 
 **Tier baselines (M0):**
 
-| Tier | Baseline abilities |
-|------|--------------------|
-| 1 (child) | `view platform.Plugin` |
-| 2 (child, older) | `view platform.Plugin` |
-| 3 (teen) | `view platform.Plugin`, `switch platform.Profile` |
-| 4 (parent) | `manage all` |
+| Tier             | Baseline abilities                                |
+| ---------------- | ------------------------------------------------- |
+| 1 (child)        | `view platform.Plugin`                            |
+| 2 (child, older) | `view platform.Plugin`                            |
+| 3 (teen)         | `view platform.Plugin`, `switch platform.Profile` |
+| 4 (parent)       | `manage all`                                      |
 
 **`TierGate` vs `PermissionGate`:**
 

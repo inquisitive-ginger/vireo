@@ -6,12 +6,12 @@
 
 ## What Was Decided
 
-| Decision | ADR |
-|----------|-----|
-| Auth session mechanism: `@fastify/session` + `connect-pg-simple`; cookie-based server-side sessions; session stores `activeProfileId`; profile switching enforces tier-gate PIN model (switching up requires PIN) | 017 |
+| Decision                                                                                                                                                                                                               | ADR |
+| ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | --- |
+| Auth session mechanism: `@fastify/session` + `connect-pg-simple`; cookie-based server-side sessions; session stores `activeProfileId`; profile switching enforces tier-gate PIN model (switching up requires PIN)      | 017 |
 | Permission model: CASL `(action, subject)` replaces flat `module.noun.verb` strings for capability checks; `PERMISSION_REGISTRY` const object for compile-time types + runtime enumeration; ADR 015 mechanism extended | 018 |
-| ORM: Prisma; `@casl/prisma` `accessibleBy()` for automatic row-level filtering; per-plugin `schema.prisma` files aligned with ADR 009 schema isolation | 019 |
-| Plugin dev toolchain: Turborepo generator (`pnpm turbo gen plugin`); per-plugin Vite dev servers; no custom CLI | 020 |
+| ORM: Prisma; `@casl/prisma` `accessibleBy()` for automatic row-level filtering; per-plugin `schema.prisma` files aligned with ADR 009 schema isolation                                                                 | 019 |
+| Plugin dev toolchain: Turborepo generator (`pnpm turbo gen plugin`); per-plugin Vite dev servers; no custom CLI                                                                                                        | 020 |
 
 Key nuances recorded:
 
@@ -36,6 +36,6 @@ Key nuances recorded:
 ## What the Next Session Needs to Know
 
 - **Auth-and-profiles story is now unblocked.** The mechanism is settled: `@fastify/session`, CASL ability built from tier baselines + `permission_overrides` rows, `usePermissions()` returns the `AppAbility` instance.
-- The login/profile-switch UX design session (queue item 2) must still complete before auth-and-profiles is *implemented* — but the infrastructure decisions are no longer blocking the story spec.
+- The login/profile-switch UX design session (queue item 2) must still complete before auth-and-profiles is _implemented_ — but the infrastructure decisions are no longer blocking the story spec.
 - Every plugin that reads data from PostgreSQL should use `accessibleBy(request.ability, action).SubjectName` in its Prisma queries — this is the pattern, not optional.
 - The demo plugin must exercise `accessibleBy()` to validate the full CASL + Prisma integration end-to-end before M1 begins.

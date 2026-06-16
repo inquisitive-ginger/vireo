@@ -21,11 +21,7 @@ import {
   Switch,
 } from '@family-os/ui'
 import type { PermissionToggleListItem } from '@family-os/ui'
-import {
-  CreateProfileSchema,
-  type CreateProfileInput,
-  type UpdateProfileInput,
-} from '@family-os/schemas'
+import { CreateProfileSchema, type CreateProfileInput } from '@family-os/schemas'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 

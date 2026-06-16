@@ -83,12 +83,9 @@ export function Home() {
 
   return (
     <div className="flex h-full flex-col p-6">
-      <WidgetGrid
-        layout={layout ?? []}
-        children={widgetChildren}
-        flatSlots={flatSlots}
-        className="flex-1 min-h-0"
-      />
+      <WidgetGrid layout={layout ?? []} flatSlots={flatSlots} className="flex-1 min-h-0">
+        {widgetChildren}
+      </WidgetGrid>
     </div>
   )
 }

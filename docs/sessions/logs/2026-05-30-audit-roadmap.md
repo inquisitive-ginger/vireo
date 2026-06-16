@@ -14,32 +14,32 @@ session starts.
 
 ## Issues Found and Resolved
 
-| # | Issue | Fix |
-|---|-------|-----|
-| 1 | `architecture.md` profiles table had stale `pin_hash` column (removed by ADR 021) | Removed `pin_hash`; added `system_config` table with `jsonb` value column |
-| 2 | `shell-skeleton` story said nav layout was not decided; ADR 022 had since settled it | Updated story scope and ACs to reflect settled left sidebar layout |
-| 3 | `design-system.md` To Be Defined table had two settled rows still listed | Removed stale rows |
-| 4 | Plugin toolchain (ADR 020) had no story AC to build it | Added generator to `dev-environment` scope + two ACs |
-| 5 | First-run/onboarding had no milestone home | Deferred to M1 (now Platform Shell); onboarding added as M1 bullet |
-| 6 | Mobile surface (PWA + Web Push) not in any milestone | Added minimum mobile to M1 Platform Shell |
-| 7 | Profile management UI not in any milestone | Added to M1 Platform Shell |
-| 8 | Notification & States design session not queued | Added to session queue at #3, blocked on Visual Language Design |
-| 9 | XP/F$ gap across milestones undefined | Added clarifying note to Chores (M2): XP only until Finance (M6) |
-| 10 | Smart Home (M2) before Calendar (M3) — ordering questioned | Swapped: Calendar→M2, Smart Home→M3 (then renumbered further) |
-| 11 | Bulletin board had no milestone home; converged with family dashboard discussion | Resolved as Family Feed module; M1 split into Platform Shell + Chores; roadmap renumbered M1–M8 |
+| #   | Issue                                                                                | Fix                                                                                             |
+| --- | ------------------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------- |
+| 1   | `architecture.md` profiles table had stale `pin_hash` column (removed by ADR 021)    | Removed `pin_hash`; added `system_config` table with `jsonb` value column                       |
+| 2   | `shell-skeleton` story said nav layout was not decided; ADR 022 had since settled it | Updated story scope and ACs to reflect settled left sidebar layout                              |
+| 3   | `design-system.md` To Be Defined table had two settled rows still listed             | Removed stale rows                                                                              |
+| 4   | Plugin toolchain (ADR 020) had no story AC to build it                               | Added generator to `dev-environment` scope + two ACs                                            |
+| 5   | First-run/onboarding had no milestone home                                           | Deferred to M1 (now Platform Shell); onboarding added as M1 bullet                              |
+| 6   | Mobile surface (PWA + Web Push) not in any milestone                                 | Added minimum mobile to M1 Platform Shell                                                       |
+| 7   | Profile management UI not in any milestone                                           | Added to M1 Platform Shell                                                                      |
+| 8   | Notification & States design session not queued                                      | Added to session queue at #3, blocked on Visual Language Design                                 |
+| 9   | XP/F$ gap across milestones undefined                                                | Added clarifying note to Chores (M2): XP only until Finance (M6)                                |
+| 10  | Smart Home (M2) before Calendar (M3) — ordering questioned                           | Swapped: Calendar→M2, Smart Home→M3 (then renumbered further)                                   |
+| 11  | Bulletin board had no milestone home; converged with family dashboard discussion     | Resolved as Family Feed module; M1 split into Platform Shell + Chores; roadmap renumbered M1–M8 |
 
 ## Milestone renumbering (pre → post audit)
 
-| Old | New |
-|-----|-----|
-| M1 Chores | M2 Chores |
-| M2 Calendar | M3 Calendar |
-| M3 Smart Home | M4 Smart Home |
-| M4 School | M5 School |
-| M5 Finance | M6 Finance |
-| M6 Meals | M7 Meals |
-| M7 Marketplace | M8 Marketplace |
-| _(new)_ | M1 Platform Shell |
+| Old            | New               |
+| -------------- | ----------------- |
+| M1 Chores      | M2 Chores         |
+| M2 Calendar    | M3 Calendar       |
+| M3 Smart Home  | M4 Smart Home     |
+| M4 School      | M5 School         |
+| M5 Finance     | M6 Finance        |
+| M6 Meals       | M7 Meals          |
+| M7 Marketplace | M8 Marketplace    |
+| _(new)_        | M1 Platform Shell |
 
 ## Milestone reference consistency pass
 

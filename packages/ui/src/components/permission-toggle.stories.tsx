@@ -104,7 +104,7 @@ export const Disabled: ItemStory = {
 
 export const List: StoryObj = {
   name: 'PermissionToggleList — all states (interactive)',
-  render: () => {
+  render: function Render() {
     const [items, setItems] = useState([
       {
         key: 'platform.profile.view',

@@ -1,4 +1,5 @@
 # Session Log — Architecture: Testing Strategy
+
 **Date:** 2026-05-30
 **Type:** Architecture
 
@@ -18,6 +19,7 @@ Playwright, deferred to M1 shell-skeleton. No E2E scaffold in M0 — there's not
 Storybook 8 in `packages/ui`, shipping in the M0 dev-environment story. Chosen because design sessions need a living canvas — the Visual Language Design session (blocked on M0) requires somewhere to render tokens and components interactively. Storybook 8's native Vite integration makes setup trivial given ADR 007.
 
 **ADR 026 — Test conventions**
+
 - Test files colocated with source
 - No enforced coverage thresholds — `packages/platform` and permission logic are high-priority targets by convention; plugin UI tested for behavior
 - Real PostgreSQL for any test touching Prisma; test-prefixed schemas, wiped between runs
