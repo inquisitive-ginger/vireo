@@ -11,21 +11,11 @@
 
 ## Up Next
 
-### M2 Design: Chores
-
-**Type:** design
-**Kickoff:** [kickoffs/design-chores.md](kickoffs/design-chores.md)
-**Reads:** `docs/modules/chores/spec.md`, all chores story specs, `docs/design-system.md`, ADRs 003/030/032, home-surface design log
-**Produces:** Visual direction for task list (kid + parent views), create-and-assign surface, completion interaction, XP display, widget layout (standard + large); `design-system.md` updated if new patterns settle
-**Depends on:** M2 Product Planning ✅
-
----
-
 ### M2 Dev: Task Model + Creation
 
 **Type:** development
 **Kickoff:** [kickoffs/dev-chores-task-model.md](kickoffs/dev-chores-task-model.md)
-**Reads:** `docs/modules/chores/stories/task-model-creation.md`, `docs/modules/chores/spec.md`, design-chores session log
+**Reads:** `docs/modules/chores/stories/task-model-creation.md`, `docs/modules/chores/spec.md`, `docs/modules/chores/design.md` (locked UX), design-chores-ux session log
 **Produces:** `chore-engine` plugin scaffold; `tasks` table; create/assign + list routes; chores full-page task list view; `PERMISSION_REGISTRY` updated
 **Depends on:** M2 Design: Chores
 
@@ -35,7 +25,7 @@
 
 **Type:** development
 **Kickoff:** [kickoffs/dev-chores-completion.md](kickoffs/dev-chores-completion.md)
-**Reads:** `docs/modules/chores/stories/completion-flow.md`, design-chores session log, dev-chores-task-model session log
+**Reads:** `docs/modules/chores/stories/completion-flow.md`, `docs/modules/chores/design.md` §2 (XP flight), design-chores-ux session log, dev-chores-task-model session log
 **Produces:** `PATCH /api/chores/tasks/:id/complete` route; `chores.task.completed` event; completion button + optimistic UI; route tests + E2E test
 **Depends on:** M2 Dev: Task Model + Creation
 
@@ -45,7 +35,7 @@
 
 **Type:** development
 **Kickoff:** [kickoffs/dev-chores-xp-and-notification.md](kickoffs/dev-chores-xp-and-notification.md)
-**Reads:** `docs/modules/chores/stories/xp-award.md`, `docs/modules/chores/stories/parent-notification.md`, dev-chores-completion session log
+**Reads:** `docs/modules/chores/stories/xp-award.md`, `docs/modules/chores/stories/parent-notification.md`, `docs/modules/chores/design.md` (XP score plate), dev-chores-completion session log
 **Produces:** `xp_balances` table; XP event subscriber; `GET /api/chores/xp` route; XP display in chores view; parent notification event subscriber; tests for both stories
 **Depends on:** M2 Dev: Completion Flow
 
@@ -55,8 +45,8 @@
 
 **Type:** development
 **Kickoff:** [kickoffs/dev-chores-today-widget.md](kickoffs/dev-chores-today-widget.md)
-**Reads:** `docs/modules/chores/stories/today-widget.md`, design-chores session log, dev-chores-task-model session log
-**Produces:** `chores.today-summary` widget (standard + large); fills reserved home screen slot; Storybook stories
+**Reads:** `docs/modules/chores/stories/today-widget.md`, `docs/modules/chores/design.md` §4 (widget), design-chores-ux session log, dev-chores-task-model session log
+**Produces:** `chores.today-summary` widget — read-only tap-through; taskee + family framings (standard + large; compact taskee); fills reserved home screen slot; Storybook stories under a `Chores/` category
 **Depends on:** M2 Dev: Task Model + Creation; M2 Design: Chores
 
 ---
@@ -86,6 +76,10 @@ These sessions were scoped for M1 but don't map to M1's done-when criteria. Kick
 ---
 
 ## Recently Completed
+
+- **2026-06-15 — M2 Design: Chores** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
+  Full chores UX locked across 4 groups via an interactive Storybook playground. **Page layout:** two taskee variants (Focus / Agency, by a per-profile "Focus mode" setting defaulting from tier) + admin grouped-by-assignee lanes with workload meter, scope/hide-completed/pulse-filter controls. **Completion:** the "XP flight" — the gold badge lifts off the chore and arcs to the lifetime score plate (count-up on landing); `pending → inFlight → done+banked` sequencing keeps the points tethered to their chore. **Create/assign:** right drawer, one form for create / per-person prefill / edit+remove (gold reward presets). **Widget:** `chores.today-summary` read-only tap-through (inline-complete = 1.5), standard+large for taskee & family (+ compact taskee), completion surfaced in the family summary. New cross-cutting conventions added to `design-system.md` (gold/XP "treasure" semantic; status-vs-identity colour rule). Dev-facing spec in `docs/modules/chores/design.md`. Playground retained as the visual reference until real components ship. **Owed:** ADR on member capacity (gates 1.5 capacity-aware load meter).
+  _See:_ `docs/sessions/logs/2026-06-15-design-chores-ux.md`
 
 - **2026-06-15 — M2 Product Planning** ![Type](https://img.shields.io/badge/Type-Planning-orange)
   5 stories defined across the `chores` module. `docs/modules/chores/` created (spec, progress board, 5 story specs). Open questions resolved: one-shot tasks only (no recurrence), XP as running total (no levels), auto-accept completion (no approval step), one assignee per task (tier 4 assigns). XP Award + Parent Notification combined into one dev session. M2 Design: Chores queued ahead of all dev sessions.

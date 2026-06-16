@@ -17,10 +17,10 @@ with the family that runs it. See [`docs/vision.md`](docs/vision.md).
 
 ## Current Status
 
-- **Milestone:** M2 — Chores (planning complete; design + dev sessions queued)
+- **Milestone:** M2 — Chores (planning + design complete; dev not started)
 - **Active stories:** None
-- **Last session:** 2026-06-15 — Product: M2 Chores planning (5 stories defined; `docs/modules/chores/` created; open questions resolved; M2 Design: Chores queued first)
-- **Next session:** M2 Design: Chores (`docs/sessions/kickoffs/design-chores.md`)
+- **Last session:** 2026-06-15 — Design: M2 Chores UX (all 4 groups locked — page layout, completion XP-flight, create drawer, today-summary widget; `docs/modules/chores/design.md` written; `design-system.md` gained the gold/XP semantic + status-vs-identity rule; playground retained as visual reference; ADR owed on member capacity)
+- **Next session:** M2 Dev: Task Model + Creation
 
 > Update this section at the end of every session.
 
