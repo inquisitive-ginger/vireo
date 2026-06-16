@@ -11,15 +11,19 @@
 
 ## Up Next
 
-### M1 Dev: Appearance Preference Gate
+### M2 Product Planning
 
-**Type:** development
-**Kickoff:** [kickoffs/dev-appearance-preference-gate.md](kickoffs/dev-appearance-preference-gate.md)
-**Reads:** `docs/modules/platform/stories/appearance-preference-gate.md`
-**Produces:** `platform.preferences.appearance` in `PERMISSION_REGISTRY`; dark mode toggle wrapped with `PermissionGate` in Settings
-**Depends on:** settings-permissions ✅, permission-overrides ✅
+**Type:** planning
+**Kickoff:** [kickoffs/product-m2.md](kickoffs/product-m2.md)
+**Reads:** `docs/roadmap.md` (M2 Chores), `docs/vision.md`, ADRs 002/003/005/022/028/030/032
+**Produces:** M2 story list; `docs/modules/chores/` spec + progress board; queue updated with M2 sessions — **including an M2 Design: Chores session queued ahead of the dev sessions** (chores has no module design yet)
+**Depends on:** M1 Design: Mobile Surface
 
 ---
+
+## Deferred — Platform v2
+
+These sessions were scoped for M1 but don't map to M1's done-when criteria. Kickoff docs exist but should be reviewed for staleness before scheduling.
 
 ### M1 Design+Dev: Family Profile Notifications
 
@@ -28,16 +32,6 @@
 **Reads:** `docs/modules/platform/stories/family-profile-notifications.md`, ADR 029, notification-design-audit log
 **Produces:** design decision on surface shape; `FamilyNotificationStrip` component; ADR 029 amended with `audience` field
 **Depends on:** notification-infrastructure ✅, family-feed-read ✅
-
----
-
-### M1 Design: Mobile Surface
-
-**Type:** design
-**Kickoff:** [kickoffs/design-mobile-surface.md](kickoffs/design-mobile-surface.md)
-**Reads:** `docs/design-system.md` (Surfaces, Tablet Nav Layout), ADR 022, `docs/modules/platform/stories/pwa-installable.md`
-**Produces:** "Mobile Surface" section in `docs/design-system.md`; mobile nav ADR; Storybook exploration
-**Depends on:** pwa-installable ✅
 
 ---
 
@@ -52,6 +46,14 @@
 ---
 
 ## Recently Completed
+
+- **2026-06-14 — M1 Dev: mobile-surface** ![Type](https://img.shields.io/badge/Type-Development-orange)
+  `BottomTabBar` in `packages/ui` (tier filtering, profile avatar tab, safe-area insets, 10 RTL tests). Sidebar hidden `md:`. Mobile top bar (`flex md:hidden`) with page title + bell. Shell layout restructured (flex column for mobile top bar + main). Bell=Option A (top bar, always visible). Page transitions: no slide, same cross-fade as tablet. `design-system.md` updated. `MobileNav.stories.tsx` deleted; `BottomTabBar` has permanent story in `packages/ui`.
+  _See:_ `docs/sessions/logs/2026-06-14-dev-mobile-surface.md`
+
+- **2026-06-14 — M1 Design: mobile-surface** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
+  Bottom tab bar pattern settled (Frame A over hamburger drawer). `md:` (768px) as canonical tablet/mobile breakpoint. Profile avatar as rightmost tab. Single-column widget stack on mobile. `env(safe-area-inset-bottom)` on tab bar. ADR 033. Open: bell placement + page slide animations deferred to mobile dev session.
+  _See:_ `docs/sessions/logs/2026-06-14-design-mobile-surface.md`
 
 - **2026-06-13 — M1 Design: widget-slot-states** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
   `WidgetSlot flat` prop strips card chrome for non-content slots. `ErrorCard` component (Level-2 error state). `FeedPostCard variant="widget"` adds identity spine without card chrome; `FeedWidgetView` switched to it. Three-state visual language settled: elevated (live), flat muted (not installed), flat muted + AlertTriangle (error). Identity-in-widget rule documented for all future content widgets. Shell wiring (`flatSlots`) and error boundary hookup are dev follow-ons.

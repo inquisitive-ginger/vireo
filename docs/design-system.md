@@ -1,6 +1,6 @@
 # Design System
 
-> Last updated: 2026-06-13 — widget slot non-content states + identity-in-widget rule (widget-slot-states design session).
+> Last updated: 2026-06-14 — Mobile Surface section added (nav pattern, breakpoint, profile chip, widget reflow, safe-area insets).
 
 This document records settled design decisions. Deferred items are
 explicitly marked — do not treat absence of a spec as a free choice.
@@ -24,6 +24,7 @@ explicitly marked — do not treat absence of a spec as a free choice.
 - [Empty States](#empty-states)
 - [Motion & Animation](#motion--animation)
 - [Plugin Design Contract](#plugin-design-contract)
+- [Mobile Surface](#mobile-surface)
 - [To Be Defined](#to-be-defined)
 
 ---
@@ -273,8 +274,8 @@ counts and key values minimum 20px.
 
 ### Other Surfaces
 
-Mobile, TV, and Pi room display layouts are deferred to their
-respective design sessions. See `docs/sessions/queue.md`.
+Mobile surface layout is settled — see [Mobile Surface](#mobile-surface) and ADR 033.
+TV and Pi room display layouts are deferred to their respective design sessions. See `docs/sessions/queue.md`.
 
 ---
 
@@ -963,7 +964,7 @@ This is non-negotiable — every animated property must be wrapped in a
 
 ### Prohibition list — M1
 
-- No page slide animations (tablet is not a phone)
+- No page slide animations (applies to both tablet and mobile — see Mobile Surface section)
 - No spring physics
 - No stagger animations on list items
 - No entrance animations on initial widget grid render
@@ -1013,10 +1014,72 @@ Every export is a commitment plugins can depend on.
 
 ---
 
+## Mobile Surface
+
+**Settled** — design-mobile-surface session, 2026-06-14. See ADR 033.
+
+### Breakpoint
+
+`md:` (768px) is the canonical tablet/mobile split. Below this threshold the sidebar is hidden and the bottom tab bar appears. This is a settled shell convention — all responsive work keys off this breakpoint.
+
+### Nav pattern — bottom tab bar
+
+4 module tabs (Home, Feed, Chores, Calendar) + profile avatar as the rightmost (5th) tab. Always visible, thumb-friendly, 1 tap to any primary destination.
+
+```
+┌─────────────────────────────────────┐
+│         [page content]              │
+│                                     │
+├──────┬──────┬──────┬──────┬────────┤
+│ Home │ Feed │Chores│ Cal  │ Avatar │
+└──────┴──────┴──────┴──────┴────────┘
+```
+
+- **Tab height:** 56px minimum touch target
+- **Active tab:** icon + label in `--primary`
+- **Inactive tab:** icon + label in `--muted-foreground`
+- **Tier filtering:** all M1 core tabs have `minTier: 1` — every profile sees the same 4 tabs. Future tier-gated modules are filtered at the tab level using the same `minTier` convention as the sidebar.
+- **Overflow:** deferred to M8+ (marketplace). When installed modules exceed 4 a "More" tab and tab-pinning UI will be required — separate design session.
+
+### Profile chip on mobile
+
+The profile avatar is the rightmost tab. Tapping it opens the `ProfileGrid` overlay, anchored above the tab bar. No top header bar on mobile — the `MobileTopBar` carries the page title and bell instead.
+
+### Notification bell on mobile
+
+**Settled** — dev-mobile-surface session, 2026-06-14. **Option A: bell in the mobile top bar.**
+
+A minimal top bar (`min-h-[48px]`) renders on mobile only (`flex md:hidden`) with the current page title on the left and the `NotificationBell` on the right. The bell badge (unread count + severity) stays in peripheral vision on every page — same tier-2+ gate as the sidebar bell. The top bar disappears on tablet; the sidebar bell takes over.
+
+Why Option A over Option B (bell in profile sheet): the badge is the primary value of the notification bell — it delivers ambient awareness. Hiding it behind 2 taps defeats that.
+
+### Widget grid on mobile
+
+Widgets reflow to a **single-column stack** — full viewport width, ordered by tier-default priority. No carousel. Widget components use CSS container queries to adapt to their full-width rendered size; no mobile-specific widget code needed.
+
+### Safe-area insets
+
+The bottom tab bar applies `padding-bottom: env(safe-area-inset-bottom)` to clear the iPhone home indicator. All mobile layout primitives must use safe-area insets — never assume the bottom of the viewport is usable.
+
+```css
+/* Bottom tab bar */
+padding-bottom: env(safe-area-inset-bottom);
+
+/* Page content — avoid tab bar overlap */
+padding-bottom: calc(56px + env(safe-area-inset-bottom));
+```
+
+### Page transitions on mobile
+
+**Settled** — dev-mobile-surface session, 2026-06-14. **No slide animations — same rule as tablet.**
+
+The M1 prohibition list (no page slide animations) extends to mobile. Tab-to-tab transitions use the same cross-fade (`--duration-normal`, `--ease-in-out`) as all other route changes. Reasoning: slide transitions add cognitive overhead on a shared family device and require careful direction logic (back vs. forward) that isn't worth the complexity at M1. Reconsider if user testing shows disorientation navigating between tabs.
+
+---
+
 ## To Be Defined
 
 | Item                   | Deferred to        |
 | ---------------------- | ------------------ |
-| Mobile surface layout  | M1+ design session |
 | TV ambient layout      | M4+ design session |
 | Pi room display layout | M4+ design session |

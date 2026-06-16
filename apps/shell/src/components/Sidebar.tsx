@@ -1,11 +1,10 @@
-import { useState, useEffect } from 'react'
+import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { Home, Settings, ChevronRight } from 'lucide-react'
 import { useAuth } from '@family-os/platform'
-import { cn, ProfileAvatar, BellBadge, NotificationTray } from '@family-os/ui'
-import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { cn, ProfileAvatar } from '@family-os/ui'
 import { ProfileGrid } from './ProfileGrid'
-import type { NotificationEntry } from '@family-os/ui'
+import { NotificationBell } from './NotificationBell'
 
 export type PluginNavItem = {
   to: string
@@ -18,7 +17,7 @@ export function Sidebar({ pluginNavItems = [] }: { pluginNavItems?: PluginNavIte
   const { tier } = useAuth()
   const visiblePluginItems = pluginNavItems.filter((item) => !item.minTier || item.minTier <= tier)
   return (
-    <aside className="w-[220px] shrink-0 h-screen flex flex-col bg-secondary relative">
+    <aside className="hidden md:flex w-[220px] shrink-0 h-screen flex-col bg-secondary relative">
       <ProfileChip />
       <nav className="flex-1 py-2" aria-label="Main navigation">
         <NavItem to="/" icon={<Home size={18} aria-hidden />} label="Home" end />
@@ -26,7 +25,7 @@ export function Sidebar({ pluginNavItems = [] }: { pluginNavItems?: PluginNavIte
           <NavItem key={item.to} to={item.to} icon={item.icon} label={item.label} />
         ))}
       </nav>
-      <NotificationBell />
+      <NotificationBell className="px-1 py-1" />
       <SettingsNavItem />
     </aside>
   )
@@ -61,92 +60,6 @@ function ProfileChip() {
       </button>
       <ProfileGrid open={gridOpen} onClose={() => setGridOpen(false)} />
     </>
-  )
-}
-
-type UnreadData = {
-  unreadCount: number
-  maxSeverity: 'success' | 'info' | 'warning' | 'error' | null
-}
-
-function NotificationBell() {
-  const { tier } = useAuth()
-  const queryClient = useQueryClient()
-  const [trayOpen, setTrayOpen] = useState(false)
-
-  const { data: unread } = useQuery<UnreadData>({
-    queryKey: ['notifications/unread'],
-    queryFn: () => fetch('/api/notifications/unread').then((r) => r.json()) as Promise<UnreadData>,
-    enabled: tier >= 2,
-    staleTime: 30_000,
-  })
-
-  const { data: notifications = [], isFetching } = useQuery<NotificationEntry[]>({
-    queryKey: ['notifications'],
-    queryFn: () =>
-      fetch('/api/notifications').then((r) => r.json()) as Promise<NotificationEntry[]>,
-    enabled: trayOpen && tier >= 2,
-    staleTime: 0,
-  })
-
-  useEffect(() => {
-    if (tier < 2) return
-    function onNotify() {
-      queryClient.invalidateQueries({ queryKey: ['notifications/unread'] })
-    }
-    window.addEventListener('platform:notification', onNotify)
-    return () => window.removeEventListener('platform:notification', onNotify)
-  }, [tier, queryClient])
-
-  function openTray() {
-    setTrayOpen(true)
-  }
-
-  function closeTray() {
-    setTrayOpen(false)
-    // Mark all read on close — user has reviewed the list
-    fetch('/api/notifications/read', { method: 'POST', credentials: 'include' })
-      .then(() => queryClient.invalidateQueries({ queryKey: ['notifications/unread'] }))
-      .catch(() => {
-        // Badge will re-sync on next open
-      })
-  }
-
-  async function handleDeleteNotification(id: string) {
-    // Optimistic: remove from list immediately
-    queryClient.setQueryData<NotificationEntry[]>(
-      ['notifications'],
-      (prev) => prev?.filter((n) => n.id !== id) ?? []
-    )
-    await fetch(`/api/notifications/${id}`, { method: 'DELETE', credentials: 'include' })
-    queryClient.invalidateQueries({ queryKey: ['notifications/unread'] })
-  }
-
-  async function handleClearAll() {
-    // Optimistic: empty the list immediately
-    queryClient.setQueryData<NotificationEntry[]>(['notifications'], [])
-    await fetch('/api/notifications', { method: 'DELETE', credentials: 'include' })
-    queryClient.invalidateQueries({ queryKey: ['notifications/unread'] })
-  }
-
-  if (tier < 2) return null
-
-  return (
-    <div className="px-1 py-1">
-      <BellBadge
-        count={unread?.unreadCount ?? 0}
-        maxSeverity={unread?.maxSeverity ?? null}
-        onClick={openTray}
-      />
-      <NotificationTray
-        open={trayOpen}
-        onClose={closeTray}
-        notifications={notifications}
-        onDeleteNotification={handleDeleteNotification}
-        onClearAll={handleClearAll}
-        loading={isFetching}
-      />
-    </div>
   )
 }
 

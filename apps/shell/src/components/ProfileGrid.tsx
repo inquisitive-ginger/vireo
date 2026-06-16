@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
-import { Check } from 'lucide-react'
+import { Check, Settings } from 'lucide-react'
 import { ProfileAvatar, PinInput, cn } from '@family-os/ui'
 import { useAuth } from '@family-os/platform'
 
@@ -10,9 +10,11 @@ type PinPhase = 'list' | 'pin-entry' | 'pin-error'
 interface ProfileGridProps {
   open: boolean
   onClose: () => void
+  className?: string
+  onNavigate?: (to: string) => void
 }
 
-export function ProfileGrid({ open, onClose }: ProfileGridProps) {
+export function ProfileGrid({ open, onClose, className, onNavigate }: ProfileGridProps) {
   const { id: activeId, tier: activeTier, familyName } = useAuth()
   const queryClient = useQueryClient()
 
@@ -91,7 +93,10 @@ export function ProfileGrid({ open, onClose }: ProfileGridProps) {
     <>
       <div onClick={resetAndClose} className="fixed inset-0 z-30" />
       <div
-        className="absolute top-[56px] left-0 right-0 z-40 border-b border-border bg-card shadow-[var(--shadow-raised)]"
+        className={cn(
+          'absolute top-[56px] left-0 right-0 z-40 border-b border-border bg-card shadow-[var(--shadow-raised)]',
+          className
+        )}
         style={{ animation: 'expandDown 180ms var(--ease-out)' }}
       >
         <style>{`
@@ -139,6 +144,23 @@ export function ProfileGrid({ open, onClose }: ProfileGridProps) {
                 )}
               </button>
             </div>
+
+            {/* Settings — only surfaced here on mobile (sidebar not available) */}
+            {onNavigate && activeTier >= 2 && (
+              <div className="border-t border-border mt-1 pt-1">
+                <button
+                  onClick={() => onNavigate('/settings')}
+                  className={cn(
+                    'flex items-center gap-3 w-full px-3 py-2.5 rounded-md cursor-pointer',
+                    'transition-colors duration-[var(--duration-fast)]',
+                    'text-muted-foreground hover:bg-background/60'
+                  )}
+                >
+                  <Settings size={16} aria-hidden />
+                  <span className="text-sm">Settings</span>
+                </button>
+              </div>
+            )}
           </div>
         ) : (
           <div className="flex flex-col items-center gap-3 py-5 px-3">

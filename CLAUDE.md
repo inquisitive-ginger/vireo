@@ -19,7 +19,7 @@ with the family that runs it. See [`docs/vision.md`](docs/vision.md).
 
 - **Milestone:** M1 — Platform Shell (in progress)
 - **Active stories:** None
-- **Last session:** 2026-06-13 — Dev: plugin-nav-items (manifest `navItem` field; shell icon registry; Family Feed nav entry live; ADR 032)
+- **Last session:** 2026-06-14 — Dev: mobile-surface (`BottomTabBar` in `packages/ui`; sidebar hidden `md:`; mobile top bar with bell; single-column widget reflow; safe-area insets; bell=Option A; no slide transitions)
 - **Next session:** see queue
 
 > Update this section at the end of every session.
