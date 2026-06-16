@@ -19,8 +19,8 @@ with the family that runs it. See [`docs/vision.md`](docs/vision.md).
 
 - **Milestone:** M1 — Platform Shell (in progress)
 - **Active stories:** None
-- **Last session:** 2026-06-14 — Dev: mobile-surface (`BottomTabBar` in `packages/ui`; sidebar hidden `md:`; mobile top bar with bell; single-column widget reflow; safe-area insets; bell=Option A; no slide transitions)
-- **Next session:** see queue
+- **Last session:** 2026-06-15 — Dev: mobile-brand-top-bar (Option 1 chosen → ADR 034; `App.tsx` brand top bar = avatar · Family OS · bell; floating bell removed; `BottomTabBar` now nav-only; `ProfileGrid` top dropdown; UX playground deleted)
+- **Next session:** M2 Product Planning (`docs/sessions/kickoffs/product-m2.md`)
 
 > Update this section at the end of every session.
 

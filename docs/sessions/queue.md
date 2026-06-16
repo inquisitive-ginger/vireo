@@ -47,6 +47,10 @@ These sessions were scoped for M1 but don't map to M1's done-when criteria. Kick
 
 ## Recently Completed
 
+- **2026-06-15 — M1 Dev: mobile-brand-top-bar** ![Type](https://img.shields.io/badge/Type-Development-orange)
+  Settled the mobile bell/profile placement left open by ADR 033. Built a 4-option UX playground, chose **Option 1 — brand top bar** (avatar · Family OS wordmark · bell), and wired it into `App.tsx` (`grid`, `safe-area-inset-top`; floating bell removed; `ProfileGrid` re-anchored as a top dropdown). `BottomTabBar` is now nav-only (profile slot + props removed). ADR 034 added; ADR 033 superseded clauses annotated. Story gains autodocs + mobile-frame variant; tests updated; playground deleted. typecheck + 30 tests green.
+  _See:_ `docs/sessions/logs/2026-06-15-dev-mobile-brand-top-bar.md`
+
 - **2026-06-14 — M1 Dev: mobile-surface** ![Type](https://img.shields.io/badge/Type-Development-orange)
   `BottomTabBar` in `packages/ui` (tier filtering, profile avatar tab, safe-area insets, 10 RTL tests). Sidebar hidden `md:`. Mobile top bar (`flex md:hidden`) with page title + bell. Shell layout restructured (flex column for mobile top bar + main). Bell=Option A (top bar, always visible). Page transitions: no slide, same cross-fade as tablet. `design-system.md` updated. `MobileNav.stories.tsx` deleted; `BottomTabBar` has permanent story in `packages/ui`.
   _See:_ `docs/sessions/logs/2026-06-14-dev-mobile-surface.md`
