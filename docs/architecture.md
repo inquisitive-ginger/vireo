@@ -100,6 +100,11 @@ is warranted.
 | 027 | Environment configuration: `.env` files at repo root; `NODE_OPTIONS --env-file` for dev server; Vitest `envDir` for tests; `familyos` / `familyos_test` database separation                                      |
 | 028 | Home surface default layouts: three tier-appropriate defaults (family pseudo-profile, tiers 1–2, tiers 3–4); Family Feed, Chores, Calendar are reserved modules; absent reserved slots render a placeholder card |
 | 029 | All notifications flow through `platform.notify()`; platform routes to toast, tray, or Web Push based on priority and active profile tier; plugins never render their own toasts or push payloads                |
+| 030 | Member identity colors — six fixed palette hues; every family member maps to one hue used everywhere; `getIdentityHue` / `identityToken` / `identityColor` helpers; plugins never invent member colors           |
+| 031 | Interaction-state language — `--primary` owns active/hover/selected across the app; `--accent` locked to module identity only; sidebar uses lightness delta, no hairlines                                        |
+| 032 | Plugin nav-item registration — plugins declare a `navItem` (`label`, `route`, `icon`, `minTier`) in `manifest.json`; the sidebar renders tier-filtered nav from the registry                                     |
+| 033 | Mobile nav pattern — bottom tab bar (4 module tabs + profile) below the `md:` breakpoint; single-column widget reflow; `env(safe-area-inset-*)`. Profile/top-bar clauses superseded by ADR 034                   |
+| 034 | Mobile brand top bar — avatar · wordmark · bell on mobile; bottom bar is nav-only. Supersedes the "profile chip on mobile" / no-top-bar clauses of ADR 033                                                       |
 
 ---
 
@@ -146,9 +151,9 @@ API** — a typed SDK injected at mount time. Plugins may not:
       "displayName": "Today's Chores",
       "component": "./widgets/TodaySummary",
       "defaultSize": "standard",
-      "supportedSizes": ["compact", "standard"],
+      "supportedSizes": ["compact", "standard", "large"],
       "minTier": 1,
-      "requiredPermission": "chores.view",
+      "requiredPermission": "chores.task.view",
       "description": "Shows the current user's tasks due today."
     }
   ]
@@ -273,6 +278,25 @@ export const PERMISSION_REGISTRY = {
     module: 'platform',
     action: 'view',
     subject: 'platform.Plugin',
+  },
+  // Plugin modules extend the registry. Chores (M2 Task Model + Creation):
+  'chores.task.view': {
+    label: 'View chores',
+    module: 'chores',
+    action: 'view',
+    subject: 'chores.Task',
+  },
+  'chores.task.create': {
+    label: 'Create and assign chores',
+    module: 'chores',
+    action: 'create',
+    subject: 'chores.Task',
+  },
+  'chores.task.complete': {
+    label: 'Complete chores',
+    module: 'chores',
+    action: 'complete',
+    subject: 'chores.Task',
   },
 } as const
 

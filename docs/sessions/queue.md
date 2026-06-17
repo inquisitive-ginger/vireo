@@ -65,6 +65,22 @@ These sessions were scoped for M1 but don't map to M1's done-when criteria. Kick
 
 ---
 
+## Deferred — Owed ADRs
+
+> Settled-but-unscoped decisions owed by a future session. No kickoff yet — scope
+> when the dependent work is actually picked up.
+
+### Architecture: Member capacity
+
+**Type:** architecture (ADR)
+**Raised by:** M2 Design: Chores (2026-06-15)
+**Question:** Where does per-member capacity live, and who sets it?
+**Gates:** the capacity-aware admin workload meter (chores 1.5 — a post-MVP
+enhancement to the existing count + XP-load meter). Blocks none of the M2 MVP stories.
+**Reads:** `docs/modules/chores/design.md` §1 (admin lane / workload meter) + "Open / owed"
+
+---
+
 ## Recently Completed
 
 - **2026-06-16 — M2 Dev: Task Model + Creation** ![Type](https://img.shields.io/badge/Type-Development-orange)

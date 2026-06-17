@@ -6,11 +6,12 @@
 
 ## Active Milestone
 
-**M1 — Platform Shell** · 🔄 In Progress
+**M2 — Chores** · 🔄 In Progress
 
 ## Completed
 
 **M0 — Foundation** · ✅ Done (2026-06-01)
+**M1 — Platform Shell** · ✅ Done (2026-06-15)
 
 ---
 
@@ -126,6 +127,23 @@ _Added here as MVP milestones complete and v2 needs emerge._
 ---
 
 ## Completed Milestones
+
+### M1 — Platform Shell · ✅ Done (2026-06-15)
+
+The system is ready for a real family. Infrastructure and the home surface came online;
+the first module anchors the home screen.
+
+- Family onboarding (profile creation, family PIN setup)
+- Profile management (create/edit profiles, avatar, tier, permission overrides, family PIN reset)
+- Home Surface: widget grid live; default layouts with reserved core-module slots; placeholder + error slot states
+- Family Feed (MVP): family text posts as a home screen widget
+- Minimum mobile: installable PWA + Web Push; mobile surface (bottom tab bar + brand top bar)
+
+**Done when:** A family can set up the system, see a meaningful home screen, and post to a shared feed. ✅
+
+> Two M1-scoped sessions (Family Profile Notifications, Push Multi-Profile Device) were
+> deferred as Platform v2 extras — they fall outside M1's done-when criteria. See the
+> queue's "Deferred — Platform v2" section.
 
 ### M0 — Foundation · ✅ Done (2026-06-01)
 

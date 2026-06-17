@@ -1,11 +1,11 @@
 # Chores — UX Design Spec
 
 > Locked in **M2 Design: Chores** (2026-06-15). The dev-facing distillation of
-> `docs/sessions/logs/2026-06-15-design-chores-ux.md`. The interactive visual
-> reference lives in the Storybook playground
-> (`packages/ui/src/chores-playground/`) until the real `chores` components ship.
-> Cross-cutting conventions are in `docs/design-system.md` (gold/XP semantic;
-> status-vs-identity colour).
+> `docs/sessions/logs/2026-06-15-design-chores-ux.md`. The interactive Storybook
+> playground that served as the original visual reference was removed once the real
+> `chore-engine` components shipped (M2 Task Model + Creation, 2026-06-16); the live
+> reference is now the `Chores/…` Storybook stories in the plugin. Cross-cutting
+> conventions are in `docs/design-system.md` (gold/XP semantic; status-vs-identity colour).
 
 ---
 
@@ -133,12 +133,12 @@ CheckSquare + "CHORES" in `--accent`.
 
 ## Implementation note — playground vs final components
 
-The Storybook **`Chores Playground/…`** stories (`packages/ui/src/chores-playground/`)
-are an **interactive visual reference only** — exploration scaffolding, not
-shippable components. The M2 dev sessions build the **real** components in the
-`chore-engine` plugin, with their **final stories under a `Chores/…` category**
-(mirroring how `Family Feed/…` is organised). **Delete the playground** once the
-real chores stories exist.
+The Storybook **`Chores Playground/…`** stories were exploration scaffolding, not
+shippable components. They were **deleted** in M2 Task Model + Creation (2026-06-16)
+once the **real** components landed in the `chore-engine` plugin, with their final
+stories under a **`Chores/…` category** (mirroring how `Family Feed/…` is organised).
+Remaining M2 dev sessions extend that real component set — there is no playground to
+maintain in parallel.
 
 ## Open / owed
 

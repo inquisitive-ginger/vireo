@@ -524,9 +524,9 @@ Key fields:
   "displayName": "Today's Chores",
   "component": "./widgets/TodaySummary",
   "defaultSize": "standard",
-  "supportedSizes": ["compact", "standard"],
+  "supportedSizes": ["compact", "standard", "large"],
   "minTier": 1,
-  "requiredPermission": "chores.view",
+  "requiredPermission": "chores.task.view",
   "description": "Shows the current user's tasks due today."
 }
 ```
