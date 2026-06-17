@@ -1,0 +1,25 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  schemas  = ["chore_engine"]
+}
+
+model Task {
+  id          String    @id @default(uuid()) @db.Uuid
+  title       String
+  description String?
+  assigneeId  String    @map("assignee_id") @db.Uuid
+  createdBy   String    @map("created_by") @db.Uuid
+  status      String    @default("pending")
+  dueDate     DateTime? @map("due_date") @db.Date
+  xpReward    Int       @default(10) @map("xp_reward")
+  createdAt   DateTime  @default(now()) @map("created_at")
+  completedAt DateTime? @map("completed_at")
+
+  @@map("tasks")
+  @@schema("chore_engine")
+}

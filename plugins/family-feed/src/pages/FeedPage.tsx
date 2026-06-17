@@ -1,73 +1,66 @@
-import { useState, useEffect, useRef } from 'react'
+import { useState, useRef } from 'react'
 import { z } from 'zod'
 import { Loader2, PenLine } from 'lucide-react'
 import { Button, ComposeForm } from '@family-os/ui'
-import { PermissionGate, useAuth } from '@family-os/platform'
+import {
+  PermissionGate,
+  useAuth,
+  useInfiniteQuery,
+  useMutation,
+  useQueryClient,
+} from '@family-os/platform'
 import type { FeedPost, PostsResponse } from '../types'
 import { FeedPageView } from './FeedPageView'
 
 const postSchema = z.object({ body: z.string().min(1) })
+const FEED_KEY = ['family-feed/posts']
 
 export function FeedPage() {
   const { name: authorName } = useAuth()
-  const [posts, setPosts] = useState<FeedPost[]>([])
-  const [cursor, setCursor] = useState<string | null>(null)
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(false)
-  const [loadingMore, setLoadingMore] = useState(false)
+  const queryClient = useQueryClient()
   const [composing, setComposing] = useState(false)
   const feedRef = useRef<HTMLDivElement>(null)
 
-  function loadInitial() {
-    setLoading(true)
-    setError(false)
-    fetch('/api/family-feed/posts?limit=20')
-      .then((r) => {
+  // Cursor-paginated feed as an infinite query (ADR 013).
+  const feed = useInfiniteQuery({
+    queryKey: FEED_KEY,
+    queryFn: ({ pageParam }) =>
+      fetch(`/api/family-feed/posts?limit=20${pageParam ? `&cursor=${pageParam}` : ''}`).then(
+        (r) => {
+          if (!r.ok) throw new Error(String(r.status))
+          return r.json() as Promise<PostsResponse>
+        }
+      ),
+    initialPageParam: null as string | null,
+    getNextPageParam: (lastPage) => lastPage.nextCursor ?? undefined,
+  })
+
+  const createPost = useMutation({
+    mutationFn: (body: string) =>
+      fetch('/api/family-feed/posts', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ body }),
+      }).then((r) => {
         if (!r.ok) throw new Error(String(r.status))
-        return r.json()
-      })
-      .then((data: PostsResponse) => {
-        setPosts(data.posts)
-        setCursor(data.nextCursor)
-      })
-      .catch(() => setError(true))
-      .finally(() => setLoading(false))
-  }
-
-  useEffect(() => {
-    loadInitial()
-  }, [])
-
-  function loadMore() {
-    if (!cursor || loadingMore) return
-    setLoadingMore(true)
-    fetch(`/api/family-feed/posts?cursor=${cursor}&limit=20`)
-      .then((r) => r.json())
-      .then((data: PostsResponse) => {
-        setPosts((prev) => [...prev, ...data.posts])
-        setCursor(data.nextCursor)
-      })
-      .finally(() => setLoadingMore(false))
-  }
+        return r.json() as Promise<FeedPost>
+      }),
+    onSuccess: () => {
+      // Refetch from the top — the new post is newest-first.
+      queryClient.invalidateQueries({ queryKey: FEED_KEY })
+      setComposing(false)
+      feedRef.current?.focus()
+    },
+  })
 
   async function handlePost(body: string) {
     const result = postSchema.safeParse({ body })
     if (!result.success) return
-
-    const res = await fetch('/api/family-feed/posts', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ body }),
-    })
-    if (!res.ok) return
-
-    const newPost: FeedPost = await res.json()
-    setPosts((prev) => [newPost, ...prev])
-    setComposing(false)
-    feedRef.current?.focus()
+    // Swallow the rejection: onSuccess handles the happy path; the form stays open on failure.
+    await createPost.mutateAsync(body).catch(() => {})
   }
 
-  if (loading) {
+  if (feed.isLoading) {
     return (
       <div className="flex h-64 items-center justify-center">
         <Loader2 className="size-5 animate-spin" style={{ color: 'var(--muted-foreground)' }} />
@@ -75,16 +68,18 @@ export function FeedPage() {
     )
   }
 
-  if (error) {
+  if (feed.isError) {
     return (
       <div className="flex h-64 flex-col items-center justify-center gap-3">
         <p style={{ color: 'var(--muted-foreground)', fontSize: 14 }}>Could not load posts.</p>
-        <Button variant="outline" size="sm" onClick={loadInitial}>
+        <Button variant="outline" size="sm" onClick={() => feed.refetch()}>
           Try again
         </Button>
       </div>
     )
   }
+
+  const posts: FeedPost[] = feed.data?.pages.flatMap((p) => p.posts) ?? []
 
   return (
     <div ref={feedRef} tabIndex={-1} style={{ outline: 'none' }}>
@@ -118,9 +113,9 @@ export function FeedPage() {
             </PermissionGate>
           ) : null
         }
-        hasMore={Boolean(cursor)}
-        loadingMore={loadingMore}
-        onLoadMore={loadMore}
+        hasMore={feed.hasNextPage}
+        loadingMore={feed.isFetchingNextPage}
+        onLoadMore={() => feed.fetchNextPage()}
       />
     </div>
   )

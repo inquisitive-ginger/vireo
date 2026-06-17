@@ -19,3 +19,9 @@ declare module 'family-feed/widgets/FeedWidget' {
   const FeedWidget: ComponentType
   export default FeedWidget
 }
+
+declare module 'chore-engine/Plugin' {
+  import type { ComponentType } from 'react'
+  const Plugin: ComponentType
+  export default Plugin
+}

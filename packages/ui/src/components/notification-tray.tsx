@@ -2,6 +2,7 @@ import * as Dialog from '@radix-ui/react-dialog'
 import { X, Bell } from 'lucide-react'
 import { cn } from '../lib/utils'
 import { Button } from './button'
+import { EmptyState } from './empty-state'
 import { NotificationItem } from './notification-item'
 import type { NotifyVariant } from './notification-item'
 
@@ -81,10 +82,8 @@ export function NotificationTray({
                 Loading…
               </div>
             ) : notifications.length === 0 ? (
-              <div className="flex flex-col items-center justify-center gap-3 h-48 px-6 text-center">
-                <Bell size={40} className="text-muted-foreground" aria-hidden />
-                <p className="text-heading font-display text-foreground">No notifications</p>
-                <p className="text-sm text-muted-foreground">You're all caught up.</p>
+              <div className="flex h-48 items-center justify-center">
+                <EmptyState icon={Bell} heading="No notifications" body="You're all caught up." />
               </div>
             ) : (
               notifications.map((n) => (

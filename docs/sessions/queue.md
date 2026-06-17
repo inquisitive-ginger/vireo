@@ -11,16 +11,6 @@
 
 ## Up Next
 
-### M2 Dev: Task Model + Creation
-
-**Type:** development
-**Kickoff:** [kickoffs/dev-chores-task-model.md](kickoffs/dev-chores-task-model.md)
-**Reads:** `docs/modules/chores/stories/task-model-creation.md`, `docs/modules/chores/spec.md`, `docs/modules/chores/design.md` (locked UX), design-chores-ux session log
-**Produces:** `chore-engine` plugin scaffold; `tasks` table; create/assign + list routes; chores full-page task list view; `PERMISSION_REGISTRY` updated
-**Depends on:** M2 Design: Chores
-
----
-
 ### M2 Dev: Completion Flow
 
 **Type:** development
@@ -76,6 +66,10 @@ These sessions were scoped for M1 but don't map to M1's done-when criteria. Kick
 ---
 
 ## Recently Completed
+
+- **2026-06-16 — M2 Dev: Task Model + Creation** ![Type](https://img.shields.io/badge/Type-Development-orange)
+  First chores story shipped. `chore-engine` plugin scaffolded (`turbo gen` + extended to the family-feed structure) and registered (port 3012). `chore_engine.tasks` table; `POST /api/chores/tasks` (tier-4 create, validates title/assignee, emits `chores.task.created`) + `GET /api/chores/tasks`. **List scope (settled in live review):** tiers 1–3 see own tasks; tier 4 (admin) **and the family pseudo-profile** see all (explicit tier filter, **not** `accessibleBy` — namespaced subjects don't map). `/chores` view: **tier-4 admin board** (by-assignee lanes, workload meter, per-lane add, right-drawer create) / **tiers 1–3 taskee** status-encoded list (Agency variant; Focus deferred) / **family dashboard** = read-only board. `chores.task.{view,create,complete}` in `PERMISSION_REGISTRY` (`complete` rule deferred to Completion Flow). `check-square` icon; Playground deleted; real `Chores/…` stories. **Live-review fixes:** family-dashboard 500, shell `load-plugin`/federation wiring, profile-switch refetch, "Family" filtered from assignees. **Reusable `EmptyState`** added to `packages/ui` and applied across chores / family-feed / notifications tray. `db:reset --module chore-engine`. Dev session template gained a **live-app review gate** before close-out. 203 tests green. **Open:** `turbo gen plugin` generator bug; admin-completion question carried to Completion Flow.
+  _See:_ `docs/sessions/logs/2026-06-16-dev-chores-task-model.md`
 
 - **2026-06-15 — M2 Design: Chores** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
   Full chores UX locked across 4 groups via an interactive Storybook playground. **Page layout:** two taskee variants (Focus / Agency, by a per-profile "Focus mode" setting defaulting from tier) + admin grouped-by-assignee lanes with workload meter, scope/hide-completed/pulse-filter controls. **Completion:** the "XP flight" — the gold badge lifts off the chore and arcs to the lifetime score plate (count-up on landing); `pending → inFlight → done+banked` sequencing keeps the points tethered to their chore. **Create/assign:** right drawer, one form for create / per-person prefill / edit+remove (gold reward presets). **Widget:** `chores.today-summary` read-only tap-through (inline-complete = 1.5), standard+large for taskee & family (+ compact taskee), completion surfaced in the family summary. New cross-cutting conventions added to `design-system.md` (gold/XP "treasure" semantic; status-vs-identity colour rule). Dev-facing spec in `docs/modules/chores/design.md`. Playground retained as the visual reference until real components ship. **Owed:** ADR on member capacity (gates 1.5 capacity-aware load meter).

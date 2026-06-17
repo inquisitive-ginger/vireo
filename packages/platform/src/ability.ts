@@ -4,8 +4,8 @@ import type { Profile, PermissionOverride } from './types'
 
 // Subjects are namespaced strings per ADR 018.
 // 'all' is CASL's wildcard subject, used by the manage rule for tier-4.
-type Actions = 'view' | 'switch' | 'create' | 'manage'
-type Subjects = 'platform.Profile' | 'platform.Plugin' | 'family-feed.Post' | 'all'
+type Actions = 'view' | 'switch' | 'create' | 'complete' | 'manage'
+type Subjects = 'platform.Profile' | 'platform.Plugin' | 'family-feed.Post' | 'chores.Task' | 'all'
 
 export type AppAbility = PrismaAbility<[Actions, Subjects]>
 
@@ -18,11 +18,14 @@ export function createAbility(profile: Profile, overrides: PermissionOverride[])
     can('view', 'platform.Plugin')
     can('switch', 'platform.Profile')
     can('create', 'family-feed.Post')
+    can('view', 'chores.Task')
   } else if (profile.tier >= 2) {
     can('view', 'platform.Plugin')
     can('create', 'family-feed.Post')
+    can('view', 'chores.Task')
   } else {
     can('view', 'platform.Plugin')
+    can('view', 'chores.Task')
   }
 
   for (const override of overrides) {

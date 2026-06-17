@@ -73,6 +73,24 @@ export const PERMISSION_REGISTRY = {
     action: 'create',
     subject: 'family-feed.Post',
   },
+  'chores.task.view': {
+    label: 'View chores',
+    module: 'chores',
+    action: 'view',
+    subject: 'chores.Task',
+  },
+  'chores.task.create': {
+    label: 'Create and assign chores',
+    module: 'chores',
+    action: 'create',
+    subject: 'chores.Task',
+  },
+  'chores.task.complete': {
+    label: 'Complete chores',
+    module: 'chores',
+    action: 'complete',
+    subject: 'chores.Task',
+  },
 } as const
 
 export type PermissionString = keyof typeof PERMISSION_REGISTRY

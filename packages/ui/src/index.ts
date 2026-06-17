@@ -11,6 +11,8 @@ export { PlaceholderCard } from './components/placeholder-card'
 export type { PlaceholderCardProps } from './components/placeholder-card'
 export { ErrorCard } from './components/error-card'
 export type { ErrorCardProps } from './components/error-card'
+export { EmptyState } from './components/empty-state'
+export type { EmptyStateProps } from './components/empty-state'
 export { WidgetSlot } from './components/widget-slot'
 export type { WidgetSlotProps } from './components/widget-slot'
 

@@ -17,10 +17,10 @@ with the family that runs it. See [`docs/vision.md`](docs/vision.md).
 
 ## Current Status
 
-- **Milestone:** M2 — Chores (planning + design complete; dev not started)
-- **Active stories:** None
-- **Last session:** 2026-06-15 — Design: M2 Chores UX (all 4 groups locked — page layout, completion XP-flight, create drawer, today-summary widget; `docs/modules/chores/design.md` written; `design-system.md` gained the gold/XP semantic + status-vs-identity rule; playground retained as visual reference; ADR owed on member capacity)
-- **Next session:** M2 Dev: Task Model + Creation
+- **Milestone:** M2 — Chores (dev in progress — 1 of 5 stories done)
+- **Active stories:** None (Task Model + Creation ✅ closed)
+- **Last session:** 2026-06-16 — Dev: M2 Task Model + Creation (`chore-engine` plugin scaffolded + extended; `chore_engine.tasks` table; `POST`/`GET /api/chores/tasks`; `/chores` view = tier-4 admin board / tiers 1–3 taskee list; `PERMISSION_REGISTRY` + ability + `check-square` icon; playground deleted; real `Chores/…` stories. **List scope settled in live review:** tiers 1–3 see own, tier 4 + family pseudo-profile see all (family dashboard = read-only board). Live-review fixes: family-dashboard 500, shell `load-plugin`/federation wiring, profile-switch refetch, "Family" filtered from assignees. Added a shared `EmptyState` in `packages/ui` (used by chores, family-feed, notifications tray); `db:reset --module chore-engine`. Dev template gained a **live-app review gate**. 203 tests green. Open: `turbo gen plugin` generator bug; admin-completion question deferred to Completion Flow)
+- **Next session:** M2 Dev: Completion Flow
 
 > Update this section at the end of every session.
 
@@ -96,6 +96,34 @@ Statuses: ⬜ Not Started · 🔄 In Progress · ✅ Done · 🔙 Sent Back
 **Commits:** `[module/story] what changed`
 **Sessions:** scoped to one story — not "backend for chores module"
 but "backend for chores/task-completion story"
+
+---
+
+## Standing Engineering Conventions
+
+> Cross-cutting decisions that bind **every** dev session, regardless of the
+> story. Kickoffs list story-specific ADRs; these are the always-on ones a cold
+> session must not miss. Check your work against this list before closing.
+
+- **Server / plugin data → TanStack Query** (ADR 013). Never raw `fetch` + `useState`.
+  Plugins import `useQuery` / `useMutation` / `useQueryClient` / `useInfiniteQuery`
+  from `@family-os/platform` (the singleton path that shares the shell's
+  `QueryClient`). Profile-scope query keys; invalidate on mutation. Share a key
+  **prefix** across a module's page and its widget (e.g. `['chores/tasks']` +
+  `['chores/tasks', 'widget']`) so one invalidation refreshes both.
+- **UI → `@family-os/ui` (shadcn/Radix) components + design tokens** (ADR 012,
+  `design-system.md`). Use `Button`/`Badge`/`Input`/`Label`/etc. and typography
+  token utilities — never raw px font sizes, hardcoded colors, or reimplemented
+  primitives. The shell's Tailwind only scans `packages/ui` + shell, so in a
+  plugin use token `@utility` classes + inline `var(--token)` styles, not novel
+  utility classes.
+- **Member colors → identity palette helpers** (`identityColor`, ADR 030) — never
+  invent hues.
+- **Permissions → CASL namespaced subjects + `PERMISSION_REGISTRY`** (ADR 018).
+- **Events → `module.noun.verb`**; **widgets → manifest + Query cache invalidation** (ADR 022).
+- **New plugin → mirror the `family-feed` structure** (db export, prisma config,
+  federation singletons, manifest); register in `plugins.json`, `load-plugin.ts`,
+  `federation.d.ts`, and the shell `ICON_MAP`.
 
 ---
 
