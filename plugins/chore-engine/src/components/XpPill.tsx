@@ -1,3 +1,4 @@
+import { Badge } from '@family-os/ui'
 import { GOLD_INK, GOLD_TINT } from '../lib/gold'
 
 export interface XpPillProps {
@@ -6,44 +7,21 @@ export interface XpPillProps {
   earned?: boolean
 }
 
-/** The gold reward pill on a task. Gold = XP only. Once a task is done, the
-    reward reads as banked (success green). */
+/* The gold reward on a task. Gold = XP only (a treasure semantic not yet in the
+   token set — see lib/gold.ts; the XP Award story promotes it to `--gold-*`).
+   Built on the shared Badge so the pill shape/typography match the system;
+   only the gold fill is an inline override. */
 export function XpPill({ value, earned = false }: XpPillProps) {
   if (earned) {
     return (
-      <span
-        style={{
-          display: 'inline-flex',
-          alignItems: 'center',
-          gap: 4,
-          fontFamily: 'var(--font-ui)',
-          fontSize: 12,
-          fontWeight: 700,
-          color: 'var(--success)',
-          lineHeight: 1,
-        }}
-      >
+      <span className="text-sm-token" style={{ color: 'var(--success)', fontWeight: 600 }}>
         ✓ +{value} XP
       </span>
     )
   }
   return (
-    <span
-      style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: 3,
-        background: GOLD_TINT,
-        borderRadius: 9999,
-        padding: '4px 10px',
-        fontFamily: 'var(--font-ui)',
-        fontSize: 12,
-        fontWeight: 700,
-        color: GOLD_INK,
-        lineHeight: 1,
-      }}
-    >
+    <Badge style={{ background: GOLD_TINT, color: GOLD_INK, borderColor: 'transparent' }}>
       +{value} XP
-    </span>
+    </Badge>
   )
 }

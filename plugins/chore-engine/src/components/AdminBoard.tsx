@@ -1,5 +1,5 @@
 import { Plus } from 'lucide-react'
-import { identityColor } from '@family-os/ui'
+import { Badge, Button, identityColor } from '@family-os/ui'
 import type { ChoreTask } from '../types'
 import { isOverdue, dueLabel } from '../lib/dates'
 import { XpPill } from './XpPill'
@@ -92,31 +92,10 @@ function LaneHeader({
     >
       <div style={{ flex: 1, minWidth: 0 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span
-            style={{
-              fontFamily: 'var(--font-ui)',
-              fontSize: 16,
-              fontWeight: 600,
-              color: 'var(--foreground)',
-            }}
-          >
+          <span className="text-card-title" style={{ color: 'var(--foreground)' }}>
             {lane.assigneeName}
           </span>
-          {overdue > 0 && (
-            <span
-              style={{
-                background: 'var(--error)',
-                color: 'var(--error-foreground)',
-                borderRadius: 6,
-                padding: '1px 6px',
-                fontFamily: 'var(--font-ui)',
-                fontSize: 10,
-                fontWeight: 700,
-              }}
-            >
-              {overdue} overdue
-            </span>
-          )}
+          {overdue > 0 && <Badge variant="destructive">{overdue} overdue</Badge>}
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 5 }}>
           <div
@@ -132,33 +111,21 @@ function LaneHeader({
               style={{ width: `${pct}%`, height: '100%', borderRadius: 9999, background: hue }}
             />
           </div>
-          <span
-            style={{ fontFamily: 'var(--font-ui)', fontSize: 11, color: 'var(--muted-foreground)' }}
-          >
+          <span className="text-xs-token" style={{ color: 'var(--muted-foreground)' }}>
             {pending} task{pending === 1 ? '' : 's'} · {load} XP load
           </span>
         </div>
       </div>
       {onAdd && (
-        <button
+        <Button
+          variant="ghost"
+          size="icon"
           onClick={onAdd}
           aria-label={`Add task for ${lane.assigneeName}`}
           title={`Add task for ${lane.assigneeName}`}
-          style={{
-            display: 'inline-flex',
-            alignItems: 'center',
-            justifyContent: 'center',
-            width: 28,
-            height: 28,
-            borderRadius: 7,
-            border: 'none',
-            background: 'transparent',
-            color: 'var(--muted-foreground)',
-            cursor: 'pointer',
-          }}
         >
           <Plus size={16} />
-        </button>
+        </Button>
       )}
     </div>
   )
@@ -198,9 +165,8 @@ function AdminRow({ task }: { task: ChoreTask }) {
       />
       <div style={{ flex: 1, minWidth: 0, padding: '9px 0' }}>
         <span
+          className="text-base-token"
           style={{
-            fontFamily: 'var(--font-ui)',
-            fontSize: 15,
             display: 'block',
             color: done ? 'var(--muted-foreground)' : 'var(--foreground)',
             textDecoration: done ? 'line-through' : 'none',
@@ -209,11 +175,8 @@ function AdminRow({ task }: { task: ChoreTask }) {
           {task.title}
         </span>
         <span
-          style={{
-            fontFamily: 'var(--font-ui)',
-            fontSize: 12,
-            color: overdue ? 'var(--error)' : 'var(--muted-foreground)',
-          }}
+          className="text-sm-token"
+          style={{ color: overdue ? 'var(--error)' : 'var(--muted-foreground)' }}
         >
           {done ? 'Done' : overdue ? `Overdue · ${label}` : (label ?? 'No due date')}
         </span>

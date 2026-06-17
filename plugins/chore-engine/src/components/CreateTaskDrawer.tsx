@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react'
 import { Star } from 'lucide-react'
-import { Button, Drawer, identityColor } from '@family-os/ui'
+import { Button, Drawer, Input, Label, identityColor } from '@family-os/ui'
 import type { FamilyMember } from '../types'
 import { GOLD, GOLD_INK, GOLD_TINT } from '../lib/gold'
 
@@ -23,8 +23,10 @@ export interface CreateTaskDrawerProps {
   onSubmit: (input: CreateTaskInput) => Promise<void> | void
 }
 
-/* The single create surface (design §3) — a right drawer. M2 = create only;
-   edit + remove land with task-editing (out of scope here). */
+/* The single create surface (design §3) — a right Drawer (Radix Dialog). M2 =
+   create only; edit + remove land with task-editing (out of scope here).
+   Form controls use the shared Input/Label/Button; the assignee/reward toggle
+   chips are bespoke (no toggle-group primitive in @family-os/ui yet). */
 export function CreateTaskDrawer({
   open,
   onClose,
@@ -72,23 +74,12 @@ export function CreateTaskDrawer({
         <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px' }}>
           <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
             <div>
-              <FieldLabel>Task title</FieldLabel>
-              <input
+              <FieldLabel htmlFor="chore-title">Task title</FieldLabel>
+              <Input
+                id="chore-title"
                 value={title}
                 onChange={(e) => setTitle(e.target.value)}
                 placeholder="What needs doing?"
-                style={{
-                  width: '100%',
-                  border: '1px solid var(--border)',
-                  borderRadius: 8,
-                  padding: '10px 12px',
-                  fontFamily: 'var(--font-ui)',
-                  fontSize: 18,
-                  color: 'var(--foreground)',
-                  background: 'var(--background)',
-                  outline: 'none',
-                  boxSizing: 'border-box',
-                }}
               />
             </div>
 
@@ -112,37 +103,22 @@ export function CreateTaskDrawer({
                 {XP_PRESETS.map((v) => (
                   <XpChip key={v} value={v} selected={xp === v} onClick={() => setXp(v)} />
                 ))}
-                <span
-                  style={{
-                    fontFamily: 'var(--font-ui)',
-                    fontSize: 11,
-                    fontWeight: 700,
-                    letterSpacing: '0.1em',
-                    color: GOLD_INK,
-                    marginLeft: 2,
-                  }}
-                >
+                <span className="text-section-label" style={{ color: GOLD_INK, marginLeft: 2 }}>
                   XP
                 </span>
               </div>
             </div>
 
             <div>
-              <FieldLabel optional>Due date</FieldLabel>
-              <input
+              <FieldLabel htmlFor="chore-due" optional>
+                Due date
+              </FieldLabel>
+              <Input
+                id="chore-due"
                 type="date"
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}
-                style={{
-                  border: '1px solid var(--border)',
-                  borderRadius: 8,
-                  padding: '10px 12px',
-                  fontFamily: 'var(--font-ui)',
-                  fontSize: 14,
-                  color: 'var(--foreground)',
-                  background: 'var(--background)',
-                  outline: 'none',
-                }}
+                style={{ width: 'auto' }}
               />
             </div>
           </div>
@@ -157,7 +133,7 @@ export function CreateTaskDrawer({
             borderTop: '1px solid var(--border)',
           }}
         >
-          <Button onClick={handleSubmit} disabled={!canSubmit} style={{ width: '100%' }}>
+          <Button className="w-full" onClick={handleSubmit} disabled={!canSubmit}>
             {submitting ? 'Assigning…' : 'Assign task'}
           </Button>
         </div>
@@ -166,20 +142,20 @@ export function CreateTaskDrawer({
   )
 }
 
-function FieldLabel({ children, optional }: { children: string; optional?: boolean }) {
+function FieldLabel({
+  children,
+  optional,
+  htmlFor,
+}: {
+  children: string
+  optional?: boolean
+  htmlFor?: string
+}) {
   return (
-    <label
-      style={{
-        display: 'block',
-        fontFamily: 'var(--font-ui)',
-        fontSize: 13,
-        color: 'var(--muted-foreground)',
-        marginBottom: 7,
-      }}
-    >
+    <Label htmlFor={htmlFor} style={{ display: 'block', marginBottom: 7 }}>
       {children}
       {optional && <span style={{ fontWeight: 400, opacity: 0.65 }}> (optional)</span>}
-    </label>
+    </Label>
   )
 }
 
@@ -194,7 +170,9 @@ function AssigneeChip({
 }) {
   return (
     <button
+      type="button"
       onClick={onClick}
+      className="text-sm-token"
       style={{
         display: 'inline-flex',
         alignItems: 'center',
@@ -204,8 +182,6 @@ function AssigneeChip({
         border: `2px solid ${selected ? identityColor(name) : 'var(--border)'}`,
         background: selected ? identityColor(name, 'tint') : 'transparent',
         color: selected ? identityColor(name, 'ink') : 'var(--foreground)',
-        fontFamily: 'var(--font-ui)',
-        fontSize: 13,
         fontWeight: selected ? 600 : 400,
         cursor: 'pointer',
       }}
@@ -235,7 +211,9 @@ function XpChip({
 }) {
   return (
     <button
+      type="button"
       onClick={onClick}
+      className="text-sm-token"
       style={{
         display: 'inline-flex',
         alignItems: 'center',
@@ -247,8 +225,6 @@ function XpChip({
         border: `2px solid ${selected ? GOLD : 'var(--border)'}`,
         background: selected ? GOLD_TINT : 'transparent',
         color: selected ? GOLD_INK : 'var(--muted-foreground)',
-        fontFamily: 'var(--font-ui)',
-        fontSize: 13,
         fontWeight: selected ? 700 : 500,
         cursor: 'pointer',
       }}

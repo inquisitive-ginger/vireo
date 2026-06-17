@@ -12,6 +12,7 @@
   --color-accent: var(--accent);
   --color-accent-foreground: var(--accent-foreground);
   --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
   --color-border: var(--border);
   --color-input: var(--input);
   --color-ring: var(--ring);
@@ -195,6 +196,7 @@
     --error: oklch(0.5 0.17 12);
     --error-foreground: oklch(0.99 0 0);
     --destructive: var(--error);
+    --destructive-foreground: var(--error-foreground);
   }
 
   @media (prefers-color-scheme: dark) {
@@ -247,6 +249,7 @@
       --error: oklch(0.62 0.17 12);
       --error-foreground: oklch(0.99 0 0);
       --destructive: var(--error);
+      --destructive-foreground: var(--error-foreground);
     }
   }
 
@@ -299,6 +302,7 @@
     --error: oklch(0.62 0.17 12);
     --error-foreground: oklch(0.99 0 0);
     --destructive: var(--error);
+    --destructive-foreground: var(--error-foreground);
   }
 
   * {

@@ -79,7 +79,9 @@ export function ChoresPage() {
   if (error) {
     return (
       <div className="flex h-64 flex-col items-center justify-center gap-3">
-        <p style={{ color: 'var(--muted-foreground)', fontSize: 14 }}>Could not load chores.</p>
+        <p className="text-base-token" style={{ color: 'var(--muted-foreground)' }}>
+          Could not load chores.
+        </p>
         <Button variant="outline" size="sm" onClick={loadTasks}>
           Try again
         </Button>

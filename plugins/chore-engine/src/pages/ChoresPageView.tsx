@@ -52,12 +52,8 @@ export function ChoresPageView({
           </h1>
           {/* Family pulse summary — counts only, no family XP (design §1). */}
           <p
-            style={{
-              fontFamily: 'var(--font-ui)',
-              fontSize: 13,
-              color: 'var(--muted-foreground)',
-              margin: '6px 0 0',
-            }}
+            className="text-sm-token"
+            style={{ color: 'var(--muted-foreground)', margin: '6px 0 0' }}
           >
             {summaryLine({ total: tasks.length, pending, done, overdue, seesAllTasks })}
           </p>

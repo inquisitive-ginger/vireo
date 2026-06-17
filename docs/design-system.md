@@ -215,13 +215,14 @@ Each token has a paired `-foreground`. `--destructive` is a CSS alias
 for `--error` so shadcn components keep working without a separate
 value to maintain.
 
-| Token           | Value                  | Role                                           |
-| --------------- | ---------------------- | ---------------------------------------------- |
-| `--info`        | `oklch(0.45 0.09 200)` | Informational banners and badges               |
-| `--success`     | `oklch(0.44 0.10 148)` | Completion, confirmed states                   |
-| `--warning`     | `oklch(0.69 0.12 78)`  | Attention needed, soft alerts                  |
-| `--error`       | `oklch(0.50 0.17 12)`  | Failures, validation errors                    |
-| `--destructive` | `var(--error)`         | shadcn alias — do not use directly in new code |
+| Token                      | Value                     | Role                                                      |
+| -------------------------- | ------------------------- | --------------------------------------------------------- |
+| `--info`                   | `oklch(0.45 0.09 200)`    | Informational banners and badges                          |
+| `--success`                | `oklch(0.44 0.10 148)`    | Completion, confirmed states                              |
+| `--warning`                | `oklch(0.69 0.12 78)`     | Attention needed, soft alerts                             |
+| `--error`                  | `oklch(0.50 0.17 12)`     | Failures, validation errors                               |
+| `--destructive`            | `var(--error)`            | shadcn alias — do not use directly in new code            |
+| `--destructive-foreground` | `var(--error-foreground)` | shadcn alias (paired) — text/icon on destructive surfaces |
 
 ### Dark mode
 
