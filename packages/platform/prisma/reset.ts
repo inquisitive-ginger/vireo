@@ -5,6 +5,7 @@
  * Usage:
  *   pnpm db:reset                             # platform core only
  *   pnpm db:reset --module family-feed        # platform + named plugin
+ *   pnpm db:reset --module chore-engine       # platform + named plugin
  *   pnpm db:reset --all                       # platform + all known plugins
  *   pnpm db:reset --only --module family-feed # named plugin only, skip platform
  *   pnpm db:reset --only --all                # all plugins only, skip platform
@@ -14,7 +15,7 @@ import { Pool } from 'pg'
 import { PrismaPg } from '@prisma/adapter-pg'
 import { PrismaClient } from '../src/generated/prisma'
 
-const KNOWN_MODULES = ['family-feed'] as const
+const KNOWN_MODULES = ['family-feed', 'chore-engine'] as const
 type Module = (typeof KNOWN_MODULES)[number]
 
 function parseArgs(): { modules: Set<Module>; platformOnly: boolean } {
@@ -74,6 +75,10 @@ async function resetFamilyFeed() {
   await pool.query('DELETE FROM family_feed.posts')
 }
 
+async function resetChoreEngine() {
+  await pool.query('DELETE FROM chore_engine.tasks')
+}
+
 async function main() {
   const { modules, platformOnly } = parseArgs()
 
@@ -85,6 +90,11 @@ async function main() {
   if (modules.has('family-feed')) {
     await resetFamilyFeed()
     console.log('  family-feed: posts cleared')
+  }
+
+  if (modules.has('chore-engine')) {
+    await resetChoreEngine()
+    console.log('  chore-engine: tasks cleared')
   }
 
   console.log('Done. Navigate to / to start onboarding.')

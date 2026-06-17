@@ -17,10 +17,10 @@ with the family that runs it. See [`docs/vision.md`](docs/vision.md).
 
 ## Current Status
 
-- **Milestone:** M2 — Chores (planning + design complete; dev not started)
-- **Active stories:** None
-- **Last session:** 2026-06-15 — Design: M2 Chores UX (all 4 groups locked — page layout, completion XP-flight, create drawer, today-summary widget; `docs/modules/chores/design.md` written; `design-system.md` gained the gold/XP semantic + status-vs-identity rule; playground retained as visual reference; ADR owed on member capacity)
-- **Next session:** M2 Dev: Task Model + Creation
+- **Milestone:** M2 — Chores (dev in progress — 1 of 5 stories done)
+- **Active stories:** None (Task Model + Creation ✅ closed)
+- **Last session:** 2026-06-16 — Dev: M2 Task Model + Creation (`chore-engine` plugin scaffolded + extended; `chore_engine.tasks` table; `POST`/`GET /api/chores/tasks`; `/chores` view = tier-4 admin board / tiers 1–3 taskee list; `PERMISSION_REGISTRY` + ability + `check-square` icon; playground deleted; real `Chores/…` stories. **List scope settled in live review:** tiers 1–3 see own, tier 4 + family pseudo-profile see all (family dashboard = read-only board). Live-review fixes: family-dashboard 500, shell `load-plugin`/federation wiring, profile-switch refetch, "Family" filtered from assignees. Added a shared `EmptyState` in `packages/ui` (used by chores, family-feed, notifications tray); `db:reset --module chore-engine`. Dev template gained a **live-app review gate**. 203 tests green. Open: `turbo gen plugin` generator bug; admin-completion question deferred to Completion Flow)
+- **Next session:** M2 Dev: Completion Flow
 
 > Update this section at the end of every session.
 

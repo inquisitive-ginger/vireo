@@ -6,6 +6,7 @@ import { lazy, type ComponentType, type LazyExoticComponent } from 'react'
 const pluginLoaders: Record<string, () => Promise<{ default: ComponentType }>> = {
   'demo-plugin': () => import('demo-plugin/Plugin'),
   'family-feed': () => import('family-feed/Plugin'),
+  'chore-engine': () => import('chore-engine/Plugin'),
 }
 
 const widgetLoaders: Record<string, () => Promise<{ default: ComponentType }>> = {

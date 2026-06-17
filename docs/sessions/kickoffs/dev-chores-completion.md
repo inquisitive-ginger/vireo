@@ -21,6 +21,25 @@
 
 Add the `PATCH /api/chores/tasks/:id/complete` route, emit `chores.task.completed`, and wire the one-tap completion interaction in the chores task list view.
 
+## Open decisions to make (carried in from the task-model live review)
+
+- **Admin completion:** can a tier-4 parent complete _anyone's_ chore, or only
+  their own? The task-model story shipped completion-less; the admin board has no
+  completion affordance yet. Decide the scope before wiring tap targets. A simple
+  completion UX for the admin board is acceptable.
+- **`complete` ability rule is not wired yet.** `chores.task.complete` exists in
+  `PERMISSION_REGISTRY` and the `complete` action is in `ability.ts`, but **no
+  `can('complete', …)` rule** was added in task-model — wire it here (intended:
+  all tiers, own tasks via the row-level `{ assigneeId }` condition; plus whatever
+  the admin-completion decision implies).
+- **`accessibleBy()` caveat:** task-model found `@casl/prisma`'s `accessibleBy`
+  keys by Prisma model name and doesn't map to our namespaced string subjects
+  (`'chores.Task'`); it used an explicit filter instead. The implementation note
+  below assumes `accessibleBy()` — expect to use an explicit ownership check
+  (`task.assigneeId === profile.id`) unless the subject-mapping is solved.
+- **List scope is settled:** tiers 1–3 see own tasks; tier 4 + the family
+  pseudo-profile see all. Completion tap targets live on the taskee surface.
+
 ## Implementation notes
 
 - `chores.task.completed` payload must include `xpReward` from the task record so downstream subscribers don't need to re-query

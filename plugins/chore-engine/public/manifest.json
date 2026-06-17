@@ -1,0 +1,19 @@
+{
+  "name": "chore-engine",
+  "version": "0.0.1",
+  "remoteEntry": "http://localhost:3012/assets/remoteEntry.js",
+  "exposes": ["./Plugin"],
+  "routes": ["/chores"],
+  "schema": "chore_engine",
+  "events": {
+    "publishes": ["chores.task.created", "chores.task.completed"],
+    "subscribes": []
+  },
+  "widgets": [],
+  "navItem": {
+    "label": "Chores",
+    "route": "/chores",
+    "icon": "check-square",
+    "minTier": 1
+  }
+}

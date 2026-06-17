@@ -99,8 +99,33 @@ entry in `docs/sessions/queue.md` before closing — do not silently drop them.
 
 ---
 
+## Live-app review gate (before close-out)
+
+**Green tests are not a substitute for seeing the change run.** Before starting **any**
+close-out task (doc updates, status changes, session log, commit, PR), bring up the
+running app and review the change in the real shell with the user:
+
+1. **Run the app** — start the dev servers (or the relevant plugin + shell) and load the
+   actual surface this story built. For a plugin, confirm it loads through the shell
+   (nav item, route, federation), not just in Storybook isolation.
+2. **Walk the acceptance criteria live** — exercise each AC in the browser as a user
+   would (e.g. create the thing, see it render, switch profiles/tiers to confirm gating).
+3. **Get explicit sign-off** — share what you see and **wait for the user to confirm**
+   the change looks and behaves right. Treat fixes surfaced here as part of the session,
+   not a follow-on.
+4. **Only then proceed to close-out** — the Outputs checklist below is gated on this
+   sign-off. Do not commit, open a PR, or mark the story Done before it.
+
+**When to skip it:** never skip silently. Purely non-visual work (a schema-only change, an
+internal refactor with no user-facing surface) may not need a browser walk — but say so
+and get the user's agreement that a live review isn't needed before closing out.
+
+---
+
 ## Outputs (required before closing)
 
+- [ ] **Live-app review gate passed** — change reviewed running in the shell and signed
+      off by the user (see gate above). This blocks every item below.
 - [ ] All acceptance criteria verified and passing
 - [ ] `pnpm typecheck` passes with zero errors
 - [ ] Tests written for new business logic, route handlers, and interactive UI (ADR 026);

@@ -9,6 +9,7 @@ import profilesPlugin from './plugins/profiles'
 import notificationsPlugin from './plugins/notifications'
 import pushPlugin, { initVapidKeys } from './plugins/push'
 import familyFeedPlugin from './plugins/family-feed'
+import choresPlugin from './plugins/chores'
 import devPlugin from './plugins/dev'
 
 export async function buildServer() {
@@ -32,6 +33,7 @@ export async function buildServer() {
       await api.register(notificationsPlugin)
       await api.register(pushPlugin)
       await api.register(familyFeedPlugin)
+      await api.register(choresPlugin)
 
       api.get('/health', async () => ({ status: 'ok' }))
 

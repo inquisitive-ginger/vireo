@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@family-os/platform": "workspace:*",
+    "@family-os/plugin-chore-engine": "workspace:*",
     "@family-os/plugin-family-feed": "workspace:*",
     "@family-os/schemas": "workspace:*",
     "@fastify/cookie": "^11.0.2",
