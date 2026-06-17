@@ -1,7 +1,7 @@
-import { useState, useEffect, useCallback } from 'react'
+import { useState } from 'react'
 import { Loader2, Plus } from 'lucide-react'
 import { Button } from '@family-os/ui'
-import { PermissionGate, useAuth } from '@family-os/platform'
+import { PermissionGate, useAuth, useQuery, useMutation, useQueryClient } from '@family-os/platform'
 import type { ChoreTask, FamilyMember, TasksResponse } from '../types'
 import { ChoresPageView } from './ChoresPageView'
 import { CreateTaskDrawer, type CreateTaskInput } from '../components/CreateTaskDrawer'
@@ -13,62 +13,55 @@ export function ChoresPage() {
   // Tier 4 manages (create/assign). Tier 4 + the family dashboard see all tasks.
   const canManage = tier >= 4
   const seesAllTasks = canManage || id === FAMILY_PROFILE_ID
+  const queryClient = useQueryClient()
 
-  const [tasks, setTasks] = useState<ChoreTask[]>([])
-  const [members, setMembers] = useState<FamilyMember[]>([])
-  const [loading, setLoading] = useState(true)
-  const [error, setError] = useState(false)
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [prefillAssigneeId, setPrefillAssigneeId] = useState<string | null>(null)
 
-  const loadTasks = useCallback(() => {
-    setLoading(true)
-    setError(false)
-    fetch('/api/chores/tasks')
-      .then((r) => {
+  // Keyed by the active profile — a profile switch changes the key and refetches
+  // automatically (ADR 013), so no manual re-fetch on switch is needed.
+  const tasksQuery = useQuery({
+    queryKey: ['chores/tasks', id],
+    queryFn: () =>
+      fetch('/api/chores/tasks').then((r) => {
         if (!r.ok) throw new Error(String(r.status))
         return r.json() as Promise<TasksResponse>
-      })
-      .then((data) => setTasks(data.tasks))
-      .catch(() => setError(true))
-      .finally(() => setLoading(false))
-  }, [])
-
-  // Re-fetch when the active profile changes (profile switch invalidates
-  // ['api/auth/me'], so `id` updates) — otherwise the previous profile's list
-  // would persist until a full reload.
-  useEffect(() => {
-    loadTasks()
-  }, [loadTasks, id])
+      }),
+    retry: 1,
+  })
 
   // Managers need the family roster for the assignee chips. The "family"
   // pseudo-profile (the unattended dashboard) is not an assignable person.
-  useEffect(() => {
-    if (!canManage) return
-    fetch('/api/profiles')
-      .then((r) => (r.ok ? (r.json() as Promise<FamilyMember[]>) : []))
-      .then((roster) => setMembers(roster.filter((m) => m.id !== FAMILY_PROFILE_ID)))
-      .catch(() => setMembers([]))
-  }, [canManage])
+  const profilesQuery = useQuery({
+    queryKey: ['api/profiles'],
+    queryFn: () => fetch('/api/profiles').then((r) => r.json() as Promise<FamilyMember[]>),
+    enabled: canManage,
+  })
+  const members = (profilesQuery.data ?? []).filter((m) => m.id !== FAMILY_PROFILE_ID)
+
+  const createTask = useMutation({
+    mutationFn: (input: CreateTaskInput) =>
+      fetch('/api/chores/tasks', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input),
+      }).then((r) => {
+        if (!r.ok) throw new Error(String(r.status))
+        return r.json() as Promise<ChoreTask>
+      }),
+    onSuccess: () => {
+      // Refetch every profile's chores list (any assignee may have changed).
+      queryClient.invalidateQueries({ queryKey: ['chores/tasks'] })
+      setDrawerOpen(false)
+    },
+  })
 
   function openCreate(assigneeId: string | null) {
     setPrefillAssigneeId(assigneeId)
     setDrawerOpen(true)
   }
 
-  async function handleCreate(input: CreateTaskInput) {
-    const res = await fetch('/api/chores/tasks', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(input),
-    })
-    if (!res.ok) return
-    const created: ChoreTask = await res.json()
-    setTasks((prev) => [created, ...prev])
-    setDrawerOpen(false)
-  }
-
-  if (loading) {
+  if (tasksQuery.isLoading) {
     return (
       <div className="flex h-64 items-center justify-center">
         <Loader2 className="size-5 animate-spin" style={{ color: 'var(--muted-foreground)' }} />
@@ -76,18 +69,20 @@ export function ChoresPage() {
     )
   }
 
-  if (error) {
+  if (tasksQuery.isError) {
     return (
       <div className="flex h-64 flex-col items-center justify-center gap-3">
         <p className="text-base-token" style={{ color: 'var(--muted-foreground)' }}>
           Could not load chores.
         </p>
-        <Button variant="outline" size="sm" onClick={loadTasks}>
+        <Button variant="outline" size="sm" onClick={() => tasksQuery.refetch()}>
           Try again
         </Button>
       </div>
     )
   }
+
+  const tasks = tasksQuery.data?.tasks ?? []
 
   return (
     <>
@@ -120,7 +115,11 @@ export function ChoresPage() {
           onClose={() => setDrawerOpen(false)}
           members={members}
           prefillAssigneeId={prefillAssigneeId}
-          onSubmit={handleCreate}
+          onSubmit={async (input) => {
+            // Swallow the rejection: the drawer stays open on failure;
+            // onSuccess closes it.
+            await createTask.mutateAsync(input).catch(() => {})
+          }}
         />
       )}
     </>
