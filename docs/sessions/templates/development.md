@@ -15,6 +15,9 @@
 - [ ] Read the target story spec (`docs/modules/[name]/stories/[story].md`)
 - [ ] Read `docs/modules/[name]/progress.md`
 - [ ] Read all ADRs referenced in the story's Notes section
+- [ ] Re-read the **Standing Engineering Conventions** in `CLAUDE.md` — the
+      cross-cutting decisions (data fetching, components/tokens, permissions,
+      events, identity, plugin wiring) that apply regardless of this story
 - [ ] Confirm all story dependencies are Done
 - [ ] **AC audit** — review each acceptance criterion; flag any that are ambiguous,
       underspecified, or reveal a missing requirement before writing any code. Resolve
@@ -126,6 +129,12 @@ and get the user's agreement that a live review isn't needed before closing out.
 
 - [ ] **Live-app review gate passed** — change reviewed running in the shell and signed
       off by the user (see gate above). This blocks every item below.
+- [ ] **Standing-conventions conformance** — the change matches the cross-cutting
+      decisions in `CLAUDE.md` (server data via TanStack Query / ADR 013; UI via
+      `@family-os/ui` components + tokens / ADR 012 + design-system; CASL
+      permissions; identity palette; event naming; plugin wiring). This is the
+      code-level counterpart to the live-app gate, which only catches _visible_
+      misses — architectural ones (e.g. data-fetching) are invisible in the UI.
 - [ ] All acceptance criteria verified and passing
 - [ ] `pnpm typecheck` passes with zero errors
 - [ ] Tests written for new business logic, route handlers, and interactive UI (ADR 026);

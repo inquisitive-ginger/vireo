@@ -35,4 +35,4 @@ export { MockAuthProvider } from './testing'
 
 // Re-export TanStack Query via the singleton so plugins share the shell's
 // QueryClient (ADR 013 — server/plugin data is TanStack Query, per-plugin).
-export { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+export { useQuery, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query'

@@ -99,6 +99,32 @@ but "backend for chores/task-completion story"
 
 ---
 
+## Standing Engineering Conventions
+
+> Cross-cutting decisions that bind **every** dev session, regardless of the
+> story. Kickoffs list story-specific ADRs; these are the always-on ones a cold
+> session must not miss. Check your work against this list before closing.
+
+- **Server / plugin data → TanStack Query** (ADR 013). Never raw `fetch` + `useState`.
+  Plugins import `useQuery` / `useMutation` / `useQueryClient` / `useInfiniteQuery`
+  from `@family-os/platform` (the singleton path that shares the shell's
+  `QueryClient`). Profile-scope query keys; invalidate on mutation.
+- **UI → `@family-os/ui` (shadcn/Radix) components + design tokens** (ADR 012,
+  `design-system.md`). Use `Button`/`Badge`/`Input`/`Label`/etc. and typography
+  token utilities — never raw px font sizes, hardcoded colors, or reimplemented
+  primitives. The shell's Tailwind only scans `packages/ui` + shell, so in a
+  plugin use token `@utility` classes + inline `var(--token)` styles, not novel
+  utility classes.
+- **Member colors → identity palette helpers** (`identityColor`, ADR 030) — never
+  invent hues.
+- **Permissions → CASL namespaced subjects + `PERMISSION_REGISTRY`** (ADR 018).
+- **Events → `module.noun.verb`**; **widgets → manifest + Query cache invalidation** (ADR 022).
+- **New plugin → mirror the `family-feed` structure** (db export, prisma config,
+  federation singletons, manifest); register in `plugins.json`, `load-plugin.ts`,
+  `federation.d.ts`, and the shell `ICON_MAP`.
+
+---
+
 ## Session Templates
 
 `docs/sessions/templates/` — one file per type:
