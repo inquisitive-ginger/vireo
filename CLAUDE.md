@@ -108,7 +108,9 @@ but "backend for chores/task-completion story"
 - **Server / plugin data → TanStack Query** (ADR 013). Never raw `fetch` + `useState`.
   Plugins import `useQuery` / `useMutation` / `useQueryClient` / `useInfiniteQuery`
   from `@family-os/platform` (the singleton path that shares the shell's
-  `QueryClient`). Profile-scope query keys; invalidate on mutation.
+  `QueryClient`). Profile-scope query keys; invalidate on mutation. Share a key
+  **prefix** across a module's page and its widget (e.g. `['chores/tasks']` +
+  `['chores/tasks', 'widget']`) so one invalidation refreshes both.
 - **UI → `@family-os/ui` (shadcn/Radix) components + design tokens** (ADR 012,
   `design-system.md`). Use `Button`/`Badge`/`Input`/`Label`/etc. and typography
   token utilities — never raw px font sizes, hardcoded colors, or reimplemented

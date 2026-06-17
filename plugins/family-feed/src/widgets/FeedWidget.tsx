@@ -6,7 +6,10 @@ import { FeedWidgetView } from './FeedWidgetView'
 
 export default function FeedWidget() {
   const { data } = useQuery<FeedPost[]>({
-    queryKey: ['family-feed/posts/widget'],
+    // Shares the ['family-feed/posts'] prefix with the page so a post created
+    // anywhere invalidates both (prefix match) and the widget refetches on its
+    // next mount. A disjoint key would leave the widget stale until staleTime.
+    queryKey: ['family-feed/posts', 'widget'],
     queryFn: () =>
       fetch('/api/family-feed/posts?limit=5')
         .then((r) => r.json())
