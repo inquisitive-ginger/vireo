@@ -11,16 +11,6 @@
 
 ## Up Next
 
-### M2 Dev: Completion Flow
-
-**Type:** development
-**Kickoff:** [kickoffs/dev-chores-completion.md](kickoffs/dev-chores-completion.md)
-**Reads:** `docs/modules/chores/stories/completion-flow.md`, `docs/modules/chores/design.md` §2 (XP flight), design-chores-ux session log, dev-chores-task-model session log
-**Produces:** `PATCH /api/chores/tasks/:id/complete` route; `chores.task.completed` event; completion button + optimistic UI; route tests + E2E test
-**Depends on:** M2 Dev: Task Model + Creation
-
----
-
 ### M2 Dev: XP Award + Parent Notification
 
 **Type:** development
@@ -38,6 +28,17 @@
 **Reads:** `docs/modules/chores/stories/today-widget.md`, `docs/modules/chores/design.md` §4 (widget), design-chores-ux session log, dev-chores-task-model session log
 **Produces:** `chores.today-summary` widget — read-only tap-through; taskee + family framings (standard + large; compact taskee); fills reserved home screen slot; Storybook stories under a `Chores/` category
 **Depends on:** M2 Dev: Task Model + Creation; M2 Design: Chores
+
+---
+
+### M2 Dev: Focus Mode (taskee Focus view + per-profile setting)
+
+**Type:** development (+ small ADR for the setting's home)
+**Kickoff:** [kickoffs/dev-chores-focus-mode.md](kickoffs/dev-chores-focus-mode.md)
+**Reads:** `docs/modules/chores/design.md` §1 (taskee Focus vs Agency), dev-chores-task-model session log (Focus deferral + owed flag-location call), dev-chores-completion session log
+**Produces:** a per-profile **Focus mode** setting (defaults from tier; parent-overridable) + its storage decision (ADR if it lands on the profile model / a settings table); the **Focus** taskee variant (single hero "Next up" card, collapsed "Coming up"/"Done", "🎉 All done today" empty) branching off the existing Agency `TaskeeView`; reuses the shipped completion + XP flight; Storybook stories
+**Depends on:** M2 Dev: Completion Flow ✅
+**Note:** deferred from Task Model + Creation; Agency is the only taskee variant until this ships. Queued at the user's request during the Completion Flow live review (2026-06-17).
 
 ---
 
@@ -82,6 +83,10 @@ enhancement to the existing count + XP-load meter). Blocks none of the M2 MVP st
 ---
 
 ## Recently Completed
+
+- **2026-06-17 — M2 Dev: Completion Flow** ![Type](https://img.shields.io/badge/Type-Development-orange)
+  Second chores story shipped. `PATCH /api/chores/tasks/:id/complete` (assignee completes own via row-level `complete` rule — now baseline for all tiers; tier-4 completes any via `manage all`; 404/403/409) emits `chores.task.completed { taskId, assigneeId, xpReward, completedAt }`. `PATCH …/reopen` (tier-4 only; new `reopen` action; 403/409) emits `chores.task.reopened`. **Taskee XP flight** (design §2): `ScorePlate` (gold lifetime plate, grow + count-up), `FlightChip` (portal, ~760ms arc), `TaskeeView` orchestrator (`pending → inFlight → done+banked`, locked order, optimistic + revert, reduced-motion/off-screen → quiet bank). **Admin = Option A** (decided via an interactive Storybook exploration the user reviewed): tier-4 plain per-row check-off completes anyone's task (no flight); a completed row's check is the **tier-4 reopen** (resurfaces on the assignee's list; kids can't self-reverse). Row ownership enforced explicitly (typed `@casl/prisma` can't carry namespaced `subject()`). **Live-review fixes:** completion circle CSS (plugin Tailwind doesn't emit `grid`/`place-items-center` → inlined), admin order-lock (no live resort), faster flight, create-form breathing room + full-width date. **Score plate is local/optimistic** — XP Award owes the persisted balance + claw-back on reopen. E2E added (`chore-engine` preview added to Playwright `webServer`). 149 API tests + chores E2E green. **Queued at user request:** M2 Dev: Focus Mode. **Open:** `turbo gen plugin` bug.
+  _See:_ `docs/sessions/logs/2026-06-17-dev-chores-completion.md`
 
 - **2026-06-16 — M2 Dev: Task Model + Creation** ![Type](https://img.shields.io/badge/Type-Development-orange)
   First chores story shipped. `chore-engine` plugin scaffolded (`turbo gen` + extended to the family-feed structure) and registered (port 3012). `chore_engine.tasks` table; `POST /api/chores/tasks` (tier-4 create, validates title/assignee, emits `chores.task.created`) + `GET /api/chores/tasks`. **List scope (settled in live review):** tiers 1–3 see own tasks; tier 4 (admin) **and the family pseudo-profile** see all (explicit tier filter, **not** `accessibleBy` — namespaced subjects don't map). `/chores` view: **tier-4 admin board** (by-assignee lanes, workload meter, per-lane add, right-drawer create) / **tiers 1–3 taskee** status-encoded list (Agency variant; Focus deferred) / **family dashboard** = read-only board. `chores.task.{view,create,complete}` in `PERMISSION_REGISTRY` (`complete` rule deferred to Completion Flow). `check-square` icon; Playground deleted; real `Chores/…` stories. **Live-review fixes:** family-dashboard 500, shell `load-plugin`/federation wiring, profile-switch refetch, "Family" filtered from assignees. **Reusable `EmptyState`** added to `packages/ui` and applied across chores / family-feed / notifications tray. `db:reset --module chore-engine`. Dev session template gained a **live-app review gate** before close-out. 203 tests green. **Open:** `turbo gen plugin` generator bug; admin-completion question carried to Completion Flow.

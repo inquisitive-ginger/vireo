@@ -1,26 +1,47 @@
+import { useRef } from 'react'
+import { Check } from 'lucide-react'
 import { Badge } from '@family-os/ui'
 import type { ChoreTask } from '../types'
 import { isOverdue, dueLabel } from '../lib/dates'
 import { XpPill } from './XpPill'
 
+/** Display status drives the card: `inFlight` is the brief window during the XP
+    flight — the card holds its pending shape but the badge has "lifted off". */
+export type TaskDisplayStatus = 'pending' | 'inFlight' | 'completed'
+
 export interface TaskCardProps {
   task: ChoreTask
+  /** Overrides `task.status` during the optimistic flight. Defaults to it. */
+  displayStatus?: TaskDisplayStatus
+  /** When provided, a pending task shows a tappable completion circle. The rect
+      is the live position of the XP badge — the flight's launch point. */
+  onComplete?: (taskId: string, badgeRect: DOMRect) => void
 }
 
 /* Taskee card — STATUS-encoded (design-system "Status vs identity colour").
    The owner is always the viewer here, so identity hue carries no information:
    the 4px spine and accents encode status only (neutral / red=overdue /
-   green=done). The 40px circle is the completion target; the Completion Flow
-   story wires the tap + XP flight.
+   green=done). The 40px circle is the completion target; tapping it launches the
+   XP flight (design §2) — the badge lifts off and the card holds still until the
+   chip lands.
 
    Chrome (card surface, radius, shadow, dimensions) is inline `var(--token)`
    styling — the first-party-plugin convention (mirrors FeedPostCard); typography
    uses the shared scale utilities. */
-export function TaskCard({ task }: TaskCardProps) {
-  const done = task.status === 'completed'
-  const overdue = isOverdue(task.dueDate, task.status)
+export function TaskCard({ task, displayStatus, onComplete }: TaskCardProps) {
+  const status = displayStatus ?? (task.status as TaskDisplayStatus)
+  const done = status === 'completed'
+  const inFlight = status === 'inFlight'
+  const overdue = !done && !inFlight && isOverdue(task.dueDate, task.status)
   const spine = done ? 'var(--success)' : overdue ? 'var(--error)' : 'var(--border)'
   const label = dueLabel(task.dueDate)
+  const badgeRef = useRef<HTMLSpanElement>(null)
+  const completable = status === 'pending' && !!onComplete
+
+  function handleComplete() {
+    const rect = badgeRef.current?.getBoundingClientRect()
+    if (rect) onComplete?.(task.id, rect)
+  }
 
   return (
     <div
@@ -32,6 +53,7 @@ export function TaskCard({ task }: TaskCardProps) {
         boxShadow: 'var(--shadow-card)',
         padding: '14px 16px 14px 14px',
         opacity: done ? 0.66 : 1,
+        transition: 'opacity 200ms ease',
       }}
     >
       <span
@@ -60,14 +82,19 @@ export function TaskCard({ task }: TaskCardProps) {
               {label}
             </span>
           )}
-          <XpPill value={task.xpReward} earned={done} />
+          {/* Badge is the flight's launch point — hidden while airborne. */}
+          <span ref={badgeRef} style={{ visibility: inFlight ? 'hidden' : 'visible' }}>
+            <XpPill value={task.xpReward} earned={done} />
+          </span>
         </div>
       </div>
       {done ? (
         <div
           aria-hidden
-          className="flex shrink-0 items-center justify-center text-card-title"
           style={{
+            flexShrink: 0,
+            display: 'grid',
+            placeItems: 'center',
             width: 40,
             height: 40,
             borderRadius: '50%',
@@ -75,17 +102,51 @@ export function TaskCard({ task }: TaskCardProps) {
             color: 'white',
           }}
         >
-          ✓
+          <Check size={20} strokeWidth={3} />
         </div>
+      ) : completable ? (
+        <button
+          type="button"
+          onClick={handleComplete}
+          aria-label={`Mark “${task.title}” done`}
+          style={{
+            flexShrink: 0,
+            display: 'grid',
+            placeItems: 'center',
+            width: 40,
+            height: 40,
+            margin: -4,
+            padding: 4,
+            borderRadius: '50%',
+            border: '2.5px solid var(--border)',
+            background: 'transparent',
+            color: 'var(--success)',
+            cursor: 'pointer',
+            boxSizing: 'content-box',
+            transition: 'border-color 160ms ease, background 160ms ease',
+          }}
+          onMouseEnter={(e) => {
+            e.currentTarget.style.borderColor = 'var(--success)'
+            e.currentTarget.style.background =
+              'color-mix(in oklch, var(--success) 10%, transparent)'
+          }}
+          onMouseLeave={(e) => {
+            e.currentTarget.style.borderColor = 'var(--border)'
+            e.currentTarget.style.background = 'transparent'
+          }}
+        >
+          <Check size={20} strokeWidth={3} style={{ opacity: 0 }} />
+        </button>
       ) : (
         <div
           aria-hidden
-          className="shrink-0"
           style={{
+            flexShrink: 0,
             width: 40,
             height: 40,
             borderRadius: '50%',
             border: '2.5px solid var(--border)',
+            opacity: inFlight ? 0.5 : 1,
           }}
         />
       )}

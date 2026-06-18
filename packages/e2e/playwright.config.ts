@@ -49,6 +49,14 @@ export default defineConfig({
       reuseExistingServer: !process.env.CI,
     },
     {
+      // chore-engine preview (port 3012) — needed so the /chores page renders the
+      // real federated module (not the uninstalled placeholder) for completion E2E.
+      // Requires a prior `pnpm --filter @family-os/plugin-chore-engine build`.
+      command: 'pnpm --filter @family-os/plugin-chore-engine preview',
+      url: 'http://localhost:3012',
+      reuseExistingServer: !process.env.CI,
+    },
+    {
       command: 'pnpm --filter @family-os/shell dev',
       url: 'http://localhost:5173',
       reuseExistingServer: !process.env.CI,

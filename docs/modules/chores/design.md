@@ -79,14 +79,30 @@ One reward feedback across all views. Tap target is per-view (focus = green
    "All done"), XP **banks**, the score plate grows → counts up → settles, the
    circle pops its check.
 
-**Motion:** flight ~980ms ease-in-out, gentle arc (~36px lift), scales 1→0.5 +
-fades near the plate. Plate grow to 1.09 (held ~22–70%) then settle ~860ms;
-count-up easeInOutCubic ~640ms. Chip is `position: fixed` (portal) so no
+**Motion:** flight ~760ms ease-in-out, gentle arc (~36px lift), scales 1→0.5 +
+fades near the plate (tuned snappier from ~980ms in dev review). Plate grow to
+1.09 (held ~22–70%) then settle ~660ms; count-up easeInOutCubic ~500ms. Chip is
+`position: fixed` (portal) so no
 ancestor `overflow` clips it; start/end are live `getBoundingClientRect`.
 Each flight animates once (mount-only effect + onDone ref).
 
 **Edge/perf:** if the score plate is scrolled off-screen → quiet bank (no flight)
 or pin the plate. Under reduced-motion → skip flight; morph + bank + update on tap.
+
+### Admin completion (Option A — settled 2026-06-17, Completion Flow dev)
+
+The flight is a **taskee** reward; the admin board has **no score plate** (family
+surfaces carry no XP), so admin completion is a **plain check-off**, no flight.
+Settled via an interactive Storybook exploration:
+
+- **Option A:** a tier-4 parent may complete **any** task from the board (a per-row
+  completion circle on every pending row). Backed by the shipped `manage all`.
+- **Reopen:** a completed row's check is also the **un-complete** control (tier-4
+  only). Reopening resurfaces the task on the assignee's own list — kids cannot
+  reverse their own completion.
+
+**Score plate is local/optimistic in M2** (seeded from completed tasks, banks on
+completion). XP Award swaps the seed for the persisted balance (`GET /api/chores/xp`).
 
 ---
 

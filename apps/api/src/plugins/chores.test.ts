@@ -38,7 +38,10 @@ async function getCookieForProfile(profileId: string): Promise<string> {
 }
 
 async function clearTasks() {
-  await chorePrisma.task.deleteMany({ where: { assigneeId: { in: ALL_IDS } } })
+  // Clear the whole table (this is the dedicated test DB) so the "sees all" /
+  // count assertions stay deterministic regardless of rows left by other suites
+  // or the chores E2E, which writes to the same familyos_test database.
+  await chorePrisma.task.deleteMany({})
 }
 
 beforeAll(async () => {
@@ -271,5 +274,167 @@ describe('GET /api/chores/tasks', () => {
       headers: { cookie },
     })
     expect(res.json().tasks[0].assigneeName).toBe('Kid')
+  })
+})
+
+// ─── PATCH /api/chores/tasks/:id/complete ─────────────────────────────────────
+
+describe('PATCH /api/chores/tasks/:id/complete', () => {
+  async function createTask(assigneeId: string, xpReward = 10) {
+    return chorePrisma.task.create({
+      data: { title: 'Complete me', assigneeId, createdBy: PARENT_ID, xpReward },
+    })
+  }
+
+  it('completes the assignee’s own task (200) and sets status + completed_at', async () => {
+    const task = await createTask(KID_ID)
+    const cookie = await getCookieForProfile(KID_ID)
+    const res = await app.inject({
+      method: 'PATCH',
+      url: `/api/chores/tasks/${task.id}/complete`,
+      headers: { cookie },
+    })
+    expect(res.statusCode).toBe(200)
+    const body = res.json()
+    expect(body.status).toBe('completed')
+    expect(body.completedAt).toBeTruthy()
+  })
+
+  it('lets a tier-4 parent complete anyone’s task (200)', async () => {
+    const task = await createTask(KID_ID)
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const res = await app.inject({
+      method: 'PATCH',
+      url: `/api/chores/tasks/${task.id}/complete`,
+      headers: { cookie },
+    })
+    expect(res.statusCode).toBe(200)
+    expect(res.json().status).toBe('completed')
+  })
+
+  it('returns 403 when a non-assignee, non-admin tries to complete', async () => {
+    const task = await createTask(KID_ID)
+    const cookie = await getCookieForProfile(TWEEN_ID)
+    const res = await app.inject({
+      method: 'PATCH',
+      url: `/api/chores/tasks/${task.id}/complete`,
+      headers: { cookie },
+    })
+    expect(res.statusCode).toBe(403)
+  })
+
+  it('returns 409 when the task is already completed', async () => {
+    const task = await createTask(KID_ID)
+    const cookie = await getCookieForProfile(KID_ID)
+    await app.inject({
+      method: 'PATCH',
+      url: `/api/chores/tasks/${task.id}/complete`,
+      headers: { cookie },
+    })
+    const res = await app.inject({
+      method: 'PATCH',
+      url: `/api/chores/tasks/${task.id}/complete`,
+      headers: { cookie },
+    })
+    expect(res.statusCode).toBe(409)
+  })
+
+  it('returns 404 for an unknown task id', async () => {
+    const cookie = await getCookieForProfile(KID_ID)
+    const res = await app.inject({
+      method: 'PATCH',
+      url: `/api/chores/tasks/00000000-c40e-0001-0000-0000000000ee/complete`,
+      headers: { cookie },
+    })
+    expect(res.statusCode).toBe(404)
+  })
+
+  it('emits chores.task.completed with the full payload', async () => {
+    const task = await createTask(KID_ID, 15)
+    const cookie = await getCookieForProfile(KID_ID)
+    const events: unknown[] = []
+    const off = app.eventBus.on('chores.task.completed', (p) => events.push(p))
+    await app.inject({
+      method: 'PATCH',
+      url: `/api/chores/tasks/${task.id}/complete`,
+      headers: { cookie },
+    })
+    off()
+    expect(events).toHaveLength(1)
+    expect(events[0]).toMatchObject({
+      taskId: task.id,
+      assigneeId: KID_ID,
+      xpReward: 15,
+    })
+    expect((events[0] as { completedAt: string }).completedAt).toBeTruthy()
+  })
+})
+
+// ─── PATCH /api/chores/tasks/:id/reopen ───────────────────────────────────────
+
+describe('PATCH /api/chores/tasks/:id/reopen', () => {
+  async function createCompletedTask(assigneeId: string) {
+    return chorePrisma.task.create({
+      data: {
+        title: 'Reopen me',
+        assigneeId,
+        createdBy: PARENT_ID,
+        status: 'completed',
+        completedAt: new Date(),
+      },
+    })
+  }
+
+  it('lets a tier-4 parent reopen a completed task (200) — clears completed_at', async () => {
+    const task = await createCompletedTask(KID_ID)
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const res = await app.inject({
+      method: 'PATCH',
+      url: `/api/chores/tasks/${task.id}/reopen`,
+      headers: { cookie },
+    })
+    expect(res.statusCode).toBe(200)
+    const body = res.json()
+    expect(body.status).toBe('pending')
+    expect(body.completedAt).toBeNull()
+  })
+
+  it('returns 403 when the assignee (non-admin) tries to reopen', async () => {
+    const task = await createCompletedTask(KID_ID)
+    const cookie = await getCookieForProfile(KID_ID)
+    const res = await app.inject({
+      method: 'PATCH',
+      url: `/api/chores/tasks/${task.id}/reopen`,
+      headers: { cookie },
+    })
+    expect(res.statusCode).toBe(403)
+  })
+
+  it('returns 409 when the task is not completed', async () => {
+    const task = await chorePrisma.task.create({
+      data: { title: 'Still pending', assigneeId: KID_ID, createdBy: PARENT_ID },
+    })
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const res = await app.inject({
+      method: 'PATCH',
+      url: `/api/chores/tasks/${task.id}/reopen`,
+      headers: { cookie },
+    })
+    expect(res.statusCode).toBe(409)
+  })
+
+  it('emits chores.task.reopened', async () => {
+    const task = await createCompletedTask(KID_ID)
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const events: unknown[] = []
+    const off = app.eventBus.on('chores.task.reopened', (p) => events.push(p))
+    await app.inject({
+      method: 'PATCH',
+      url: `/api/chores/tasks/${task.id}/reopen`,
+      headers: { cookie },
+    })
+    off()
+    expect(events).toHaveLength(1)
+    expect(events[0]).toMatchObject({ taskId: task.id, assigneeId: KID_ID })
   })
 })
