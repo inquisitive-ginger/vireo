@@ -3,7 +3,7 @@ import { PageHeader } from './page-header'
 import { Button } from './button'
 
 const meta: Meta<typeof PageHeader> = {
-  title: 'Layout/PageHeader',
+  title: 'Platform/PageHeader',
   component: PageHeader,
   parameters: { layout: 'padded' },
   decorators: [
