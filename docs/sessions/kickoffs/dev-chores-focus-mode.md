@@ -9,7 +9,13 @@ during the Completion Flow live review (2026-06-17).
 
 - [ ] Read `CLAUDE.md`
 - [ ] Read `docs/modules/chores/design.md` §1 — **Taskee Focus vs Agency** (the
-      locked two-variant design)
+      locked two-variant design; the dev-facing spec)
+- [ ] Read `docs/sessions/logs/2026-06-15-design-chores-ux.md` (Group 1 + Group 2)
+      — the **fullest Focus-view record**: hero "Next up" + auto-promote, the
+      Focus-mode setting (defaults-from-tier + parent override), the green
+      Mark-done CTA exception, and the focus-view completion behavior. **The
+      original Storybook playground that visualized this was deleted (Task Model,
+      2026-06-16); this log + design.md §1 are the authoritative reference.**
 - [ ] Read the `dev-chores-task-model` session log — the Focus deferral + the owed
       "where does the Focus-mode flag live" call
 - [ ] Read the `dev-chores-completion` session log — the shipped `TaskeeView`
