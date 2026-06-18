@@ -42,6 +42,17 @@
 
 ---
 
+### Platform Architecture: plugin styling — inline-vs-Tailwind consistency
+
+**Type:** architecture (ADR) + dev follow-through
+**Kickoff:** [kickoffs/arch-plugin-styling.md](kickoffs/arch-plugin-styling.md)
+**Reads:** `CLAUDE.md` "Standing Engineering Conventions" (the plugin-Tailwind-scan rule), dev-chores-completion session log (the inline-vs-Tailwind audit + the `grid`/`place-items-center` silent no-op), `packages/ui/.storybook` + shell Tailwind/`@source` config, `design-system.md`, plus `plugins/family-feed` + `plugins/chore-engine` components as the inline-heavy precedent
+**Produces:** an **ADR** settling the plugin styling standard (the shell's Tailwind scans only `packages/ui` + shell, so utility classes silently no-op in plugin source → plugins currently use inline `var(--token)` chrome, inconsistent with the utility-first shell/ui); the chosen build change (e.g. point the shell's Tailwind `@source` at `plugins/*/src`, or a per-plugin Tailwind build) **or** a documented decision to keep inline + a lint guard; reconcile existing plugin components toward the standard; update the `CLAUDE.md` standing convention + `design-system.md`
+**Depends on:** none (cross-cutting; non-blocking for M2 stories)
+**Note:** raised in the Completion Flow PR review (#20) and queued at the user's request (2026-06-18). Audit table + options are in that PR thread and the completion-flow session log.
+
+---
+
 ## Deferred — Platform v2
 
 These sessions were scoped for M1 but don't map to M1's done-when criteria. Kickoff docs exist but should be reviewed for staleness before scheduling.
