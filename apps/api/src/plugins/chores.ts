@@ -104,6 +104,82 @@ const choresPlugin: FastifyPluginAsync = async (fastify) => {
       tasks: tasks.map((t) => serializeTask(t, nameById.get(t.assigneeId) ?? 'Unknown')),
     }
   })
+
+  // PATCH /chores/tasks/:id/complete — mark a task done. The assignee can complete
+  // their own task (row-level `complete` rule); a tier-4 parent can complete
+  // anyone's (manage all). Auto-accepted — no approval step.
+  fastify.patch('/chores/tasks/:id/complete', async (request, reply) => {
+    const { id } = request.params as { id: string }
+
+    const task = await chorePrisma.task.findUnique({ where: { id } })
+    if (!task) {
+      return reply.status(404).send({ error: 'Task not found' })
+    }
+
+    // Row-level ownership is enforced explicitly: @casl/prisma's typed
+    // PrismaAbility keys subject instances by Prisma model name and can't carry
+    // our namespaced string subject ('chores.Task'), so a `subject()`-tagged
+    // check doesn't type-check (same limitation task-model hit with accessibleBy).
+    // The CASL `complete` capability still gates (respecting overrides); the
+    // assignee/tier-4 ownership is the row condition.
+    const canComplete = request.ability.can('complete', 'chores.Task')
+    const isOwnOrAdmin = request.profile.tier >= 4 || task.assigneeId === request.profile.id
+    if (!canComplete || !isOwnOrAdmin) {
+      return reply.status(403).send({ error: 'Permission denied' })
+    }
+
+    if (task.status === 'completed') {
+      return reply.status(409).send({ error: 'Task already completed' })
+    }
+
+    const updated = await chorePrisma.task.update({
+      where: { id },
+      data: { status: 'completed', completedAt: new Date() },
+    })
+
+    fastify.eventBus.emit('chores.task.completed', {
+      taskId: updated.id,
+      assigneeId: updated.assigneeId,
+      xpReward: updated.xpReward,
+      completedAt: updated.completedAt?.toISOString() ?? new Date().toISOString(),
+    })
+
+    const assignee = await prisma.profile.findUnique({ where: { id: updated.assigneeId } })
+    return serializeTask(updated, assignee?.name ?? 'Unknown')
+  })
+
+  // PATCH /chores/tasks/:id/reopen — un-complete a task. Tier-4 only (manage all):
+  // a parent reverses a completion and the task resurfaces on the assignee's list.
+  fastify.patch('/chores/tasks/:id/reopen', async (request, reply) => {
+    if (!request.ability.can('reopen', 'chores.Task')) {
+      return reply.status(403).send({ error: 'Permission denied' })
+    }
+
+    const { id } = request.params as { id: string }
+
+    const task = await chorePrisma.task.findUnique({ where: { id } })
+    if (!task) {
+      return reply.status(404).send({ error: 'Task not found' })
+    }
+
+    if (task.status !== 'completed') {
+      return reply.status(409).send({ error: 'Task is not completed' })
+    }
+
+    const updated = await chorePrisma.task.update({
+      where: { id },
+      data: { status: 'pending', completedAt: null },
+    })
+
+    fastify.eventBus.emit('chores.task.reopened', {
+      taskId: updated.id,
+      assigneeId: updated.assigneeId,
+      xpReward: updated.xpReward,
+    })
+
+    const assignee = await prisma.profile.findUnique({ where: { id: updated.assigneeId } })
+    return serializeTask(updated, assignee?.name ?? 'Unknown')
+  })
 }
 
 type TaskRow = {

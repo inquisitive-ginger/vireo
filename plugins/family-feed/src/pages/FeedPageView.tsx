@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Button } from '@family-os/ui'
+import { Button, PageHeader } from '@family-os/ui'
 import type { FeedPost } from '../types'
 import { FeedPostCard } from '../components/FeedPostCard'
 import { FeedEmptyState } from '../components/FeedEmptyState'
@@ -54,17 +54,7 @@ export function FeedPageView({
 }: FeedPageViewProps) {
   return (
     <div style={{ maxWidth: 680, margin: '0 auto', padding: '28px 24px 48px' }}>
-      <header className="flex items-end justify-between gap-4" style={{ marginBottom: 24 }}>
-        <div className="min-w-0">
-          <div className="text-section-label" style={{ color: 'var(--accent)', marginBottom: 6 }}>
-            The family bulletin
-          </div>
-          <h1 className="text-page-title" style={{ color: 'var(--foreground)', margin: 0 }}>
-            Family Feed
-          </h1>
-        </div>
-        {composeButton}
-      </header>
+      <PageHeader title="Family Feed" eyebrow="The family bulletin" action={composeButton} />
 
       {composeForm && <div style={{ marginBottom: 28 }}>{composeForm}</div>}
 

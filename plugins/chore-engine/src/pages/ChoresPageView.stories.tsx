@@ -31,6 +31,8 @@ const newTaskButton = (
   </Button>
 )
 
+const resolve = () => Promise.resolve()
+
 export const Taskee: Story = {
   name: 'Taskee — own list',
   args: {
@@ -41,7 +43,7 @@ export const Taskee: Story = {
   },
   parameters: {
     annotation:
-      'tiers 1–3 · own tasks only · STATUS-encoded cards (neutral / red=overdue / green=done) · identity hue carries no info here · completion + lifetime XP plate land in later stories',
+      'tiers 1–3 · own tasks only · STATUS-encoded cards · tap a completion circle for the XP flight — the badge arcs to the lifetime score plate, which banks + counts up (design §2; runs locally here, no network)',
   },
 }
 
@@ -54,10 +56,12 @@ export const Admin: Story = {
     canManage: true,
     newTaskButton,
     onAddForAssignee: () => {},
+    onCompleteTask: resolve,
+    onReopenTask: resolve,
   },
   parameters: {
     annotation:
-      'tier 4 · all family tasks · per-assignee lanes (identity hue) + workload meter + per-lane add · New Task opens the create drawer',
+      'tier 4 · all family tasks · per-assignee lanes · tap a circle to check off ANY task (Option A, plain check-off — no flight) · a completed row’s check un-completes it (reopen)',
   },
 }
 

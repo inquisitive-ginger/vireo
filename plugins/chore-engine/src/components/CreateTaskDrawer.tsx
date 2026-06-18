@@ -71,8 +71,8 @@ export function CreateTaskDrawer({
   return (
     <Drawer open={open} onClose={onClose} title="New task">
       <div style={{ display: 'flex', height: '100%', flexDirection: 'column' }}>
-        <div style={{ flex: 1, overflowY: 'auto', padding: '20px 24px' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 18 }}>
+        <div style={{ flex: 1, overflowY: 'auto', padding: '24px 24px' }}>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
             <div>
               <FieldLabel htmlFor="chore-title">Task title</FieldLabel>
               <Input
@@ -118,7 +118,11 @@ export function CreateTaskDrawer({
                 type="date"
                 value={dueDate}
                 onChange={(e) => setDueDate(e.target.value)}
-                style={{ width: 'auto' }}
+                // Open the native picker on a click anywhere in the field, not just
+                // the calendar icon. (Proper themed picker deferred to the calendar
+                // module.) `showPicker` is recent — guard for older browsers.
+                onClick={(e) => (e.currentTarget as HTMLInputElement).showPicker?.()}
+                style={{ cursor: 'pointer' }}
               />
             </div>
           </div>

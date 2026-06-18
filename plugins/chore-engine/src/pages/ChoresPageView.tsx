@@ -1,7 +1,8 @@
 import type { ReactNode } from 'react'
+import { PageHeader } from '@family-os/ui'
 import type { ChoreTask } from '../types'
 import { isOverdue } from '../lib/dates'
-import { TaskCard } from '../components/TaskCard'
+import { TaskeeView } from '../components/TaskeeView'
 import { AdminBoard, type AdminLane } from '../components/AdminBoard'
 import { ChoresEmptyState } from '../components/ChoresEmptyState'
 
@@ -20,6 +21,10 @@ export interface ChoresPageViewProps {
   emptyAction?: ReactNode
   /** Open the create drawer prefilled to an assignee (admin per-lane "+ add"). */
   onAddForAssignee?: (assigneeId: string) => void
+  /** Persist a completion (taskee flight + admin check-off). Rejects to revert. */
+  onCompleteTask?: (taskId: string) => Promise<unknown>
+  /** Un-complete a task (tier-4 only, admin board). Rejects to revert. */
+  onReopenTask?: (taskId: string) => Promise<unknown>
 }
 
 export function ChoresPageView({
@@ -30,37 +35,27 @@ export function ChoresPageView({
   newTaskButton,
   emptyAction,
   onAddForAssignee,
+  onCompleteTask,
+  onReopenTask,
 }: ChoresPageViewProps) {
+  // Taskee, non-empty → the dedicated taskee surface (owns its header, the
+  // lifetime score plate, and the XP-flight completion — design §1/§2).
+  if (!seesAllTasks && tasks.length > 0) {
+    return <TaskeeView tasks={tasks} onCompleteTask={onCompleteTask} />
+  }
+
   const done = tasks.filter((t) => t.status === 'completed').length
   const overdue = tasks.filter((t) => isOverdue(t.dueDate, t.status)).length
   const pending = tasks.length - done
 
   return (
-    <div style={{ maxWidth: seesAllTasks ? 720 : 560, margin: '0 auto', padding: '28px 0 48px' }}>
-      <header
-        style={{
-          display: 'flex',
-          alignItems: 'flex-start',
-          justifyContent: 'space-between',
-          gap: 16,
-          padding: '0 24px 14px',
-        }}
-      >
-        <div>
-          <h1 className="text-page-title" style={{ color: 'var(--foreground)', margin: 0 }}>
-            Chores
-          </h1>
-          {/* Family pulse summary — counts only, no family XP (design §1). */}
-          <p
-            className="text-sm-token"
-            style={{ color: 'var(--muted-foreground)', margin: '6px 0 0' }}
-          >
-            {summaryLine({ total: tasks.length, pending, done, overdue, seesAllTasks })}
-          </p>
-        </div>
-        {/* Score plate (lifetime XP) lands with the XP Award story — leaving room. */}
-        {newTaskButton}
-      </header>
+    <div style={{ maxWidth: 680, margin: '0 auto', padding: '28px 24px 48px' }}>
+      {/* Family pulse summary — counts only, no family XP (design §1). */}
+      <PageHeader
+        title="Chores"
+        subtitle={summaryLine({ total: tasks.length, pending, done, overdue, seesAllTasks })}
+        action={newTaskButton}
+      />
 
       {tasks.length === 0 ? (
         <ChoresEmptyState
@@ -68,26 +63,14 @@ export function ChoresPageView({
           isAdmin={canManage}
           action={emptyAction}
         />
-      ) : seesAllTasks ? (
+      ) : (
         <AdminBoard
           lanes={toLanes(tasks)}
           showAdd={canManage}
           onAddForAssignee={onAddForAssignee ?? (() => {})}
+          onCompleteTask={canManage ? onCompleteTask : undefined}
+          onReopenTask={canManage ? onReopenTask : undefined}
         />
-      ) : (
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 10,
-            padding: '16px 24px 0',
-            borderTop: '1px solid var(--border)',
-          }}
-        >
-          {tasks.map((t) => (
-            <TaskCard key={t.id} task={t} />
-          ))}
-        </div>
       )}
     </div>
   )

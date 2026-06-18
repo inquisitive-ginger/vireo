@@ -1,5 +1,6 @@
+import { useMemo, useRef, useState } from 'react'
 import { Plus } from 'lucide-react'
-import { Badge, Button, identityColor } from '@family-os/ui'
+import { Badge, Button, CompletionToggle, identityColor } from '@family-os/ui'
 import type { ChoreTask } from '../types'
 import { isOverdue, dueLabel } from '../lib/dates'
 import { XpPill } from './XpPill'
@@ -17,26 +18,69 @@ export interface AdminBoardProps {
   /** Show the per-lane "+ add" affordance. False for read-only viewers (e.g. the
       family dashboard, which sees all tasks but cannot create). */
   showAdd?: boolean
+  /** Complete a task (tier-4 may complete anyone's — Option A). Omitted = read-only.
+      Plain check-off; no XP flight (the board carries no score plate). */
+  onCompleteTask?: (taskId: string) => Promise<unknown>
+  /** Un-complete a task (tier-4 only) — it resurfaces on the assignee's list. */
+  onReopenTask?: (taskId: string) => Promise<unknown>
 }
 
 /* By-assignee board — grouped by assignee. Identity hue does real work here (each
    person's lane). Status still wins on a row spine (done/overdue), falling back
    to identity. Gold = XP only. Sort: overdue → due-dated → undated → completed.
    Used by the tier-4 admin and the read-only family dashboard. */
-export function AdminBoard({ lanes, onAddForAssignee, showAdd = true }: AdminBoardProps) {
+export function AdminBoard({
+  lanes,
+  onAddForAssignee,
+  showAdd = true,
+  onCompleteTask,
+  onReopenTask,
+}: AdminBoardProps) {
   const maxLoad = Math.max(1, ...lanes.map(laneLoad))
+
+  // Lock lane + within-lane row order on first sight. The initial sort
+  // (overdue → due → undated → completed last) applies as rows first appear, but
+  // completing/reopening a task must not resort live — it morphs in place. A
+  // fresh page load re-sorts from scratch.
+  const orderRef = useRef<{ lanes: string[]; tasksByLane: Record<string, string[]> }>({
+    lanes: [],
+    tasksByLane: {},
+  })
+  const orderedLanes = useMemo(() => {
+    const o = orderRef.current
+    for (const lane of lanes) {
+      if (!o.lanes.includes(lane.assigneeId)) o.lanes.push(lane.assigneeId)
+      const seen = (o.tasksByLane[lane.assigneeId] ??= [])
+      for (const t of sortTasks(lane.tasks)) if (!seen.includes(t.id)) seen.push(t.id)
+    }
+    const laneById = new Map(lanes.map((l) => [l.assigneeId, l]))
+    return o.lanes
+      .map((id) => laneById.get(id))
+      .filter((l): l is AdminLane => !!l)
+      .map((lane) => ({
+        lane,
+        tasks: (o.tasksByLane[lane.assigneeId] ?? [])
+          .map((tid) => lane.tasks.find((t) => t.id === tid))
+          .filter((t): t is ChoreTask => !!t),
+      }))
+  }, [lanes])
 
   return (
     <div style={{ borderTop: '1px solid var(--border)' }}>
-      {lanes.map((lane) => (
+      {orderedLanes.map(({ lane, tasks }) => (
         <div key={lane.assigneeId}>
           <LaneHeader
             lane={lane}
             maxLoad={maxLoad}
             onAdd={showAdd ? () => onAddForAssignee(lane.assigneeId) : undefined}
           />
-          {sortTasks(lane.tasks).map((task) => (
-            <AdminRow key={task.id} task={task} />
+          {tasks.map((task) => (
+            <AdminRow
+              key={task.id}
+              task={task}
+              onComplete={onCompleteTask}
+              onReopen={onReopenTask}
+            />
           ))}
         </div>
       ))}
@@ -131,15 +175,38 @@ function LaneHeader({
   )
 }
 
-function AdminRow({ task }: { task: ChoreTask }) {
-  const done = task.status === 'completed'
-  const overdue = isOverdue(task.dueDate, task.status)
+function AdminRow({
+  task,
+  onComplete,
+  onReopen,
+}: {
+  task: ChoreTask
+  onComplete?: (taskId: string) => Promise<unknown>
+  onReopen?: (taskId: string) => Promise<unknown>
+}) {
+  // Optimistic per-row status — reverts if the mutation rejects. A query refetch
+  // (on settle) reconciles to server truth underneath.
+  const [override, setOverride] = useState<'completed' | 'pending' | null>(null)
+  const status = override ?? task.status
+  const done = status === 'completed'
+  const overdue = !done && isOverdue(task.dueDate, task.status)
   const spine = done
     ? 'var(--success)'
     : overdue
       ? 'var(--error)'
       : identityColor(task.assigneeName)
   const label = dueLabel(task.dueDate)
+
+  function complete() {
+    if (!onComplete) return
+    setOverride('completed')
+    onComplete(task.id).catch(() => setOverride(null))
+  }
+  function reopen() {
+    if (!onReopen) return
+    setOverride('pending')
+    onReopen(task.id).catch(() => setOverride(null))
+  }
 
   return (
     <div
@@ -148,7 +215,7 @@ function AdminRow({ task }: { task: ChoreTask }) {
         alignItems: 'center',
         gap: 12,
         minHeight: 54,
-        padding: '0 18px',
+        padding: '0 14px 0 18px',
         borderBottom: '1px solid var(--border)',
         opacity: done ? 0.55 : 1,
       }}
@@ -182,6 +249,25 @@ function AdminRow({ task }: { task: ChoreTask }) {
         </span>
       </div>
       {!done && <XpPill value={task.xpReward} />}
+      {/* Option A check-off (no flight — the board has no score plate). A completed
+          row's check doubles as the tier-4 reopen control; read-only viewers
+          (family dashboard) get a static check and no control on pending rows. */}
+      {done ? (
+        <CompletionToggle
+          checked
+          size={28}
+          onToggle={onReopen ? reopen : undefined}
+          label={`Reopen “${task.title}” (mark not done)`}
+          title="Mark not done"
+        />
+      ) : onComplete ? (
+        <CompletionToggle
+          checked={false}
+          size={28}
+          onToggle={complete}
+          label={`Mark “${task.title}” done`}
+        />
+      ) : null}
     </div>
   )
 }

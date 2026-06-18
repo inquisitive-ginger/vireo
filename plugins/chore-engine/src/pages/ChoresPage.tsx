@@ -56,6 +56,27 @@ export function ChoresPage() {
     },
   })
 
+  // Completion + reopen. The views own the optimistic UI (XP flight / row toggle)
+  // and revert on rejection; we invalidate on success so the board and the
+  // assignee's own list reconcile (a reopened task resurfaces on their list).
+  const completeTask = useMutation({
+    mutationFn: (taskId: string) =>
+      fetch(`/api/chores/tasks/${taskId}/complete`, { method: 'PATCH' }).then((r) => {
+        if (!r.ok) throw new Error(String(r.status))
+        return r.json() as Promise<ChoreTask>
+      }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['chores/tasks'] }),
+  })
+
+  const reopenTask = useMutation({
+    mutationFn: (taskId: string) =>
+      fetch(`/api/chores/tasks/${taskId}/reopen`, { method: 'PATCH' }).then((r) => {
+        if (!r.ok) throw new Error(String(r.status))
+        return r.json() as Promise<ChoreTask>
+      }),
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['chores/tasks'] }),
+  })
+
   function openCreate(assigneeId: string | null) {
     setPrefillAssigneeId(assigneeId)
     setDrawerOpen(true)
@@ -92,6 +113,8 @@ export function ChoresPage() {
         seesAllTasks={seesAllTasks}
         canManage={canManage}
         onAddForAssignee={(assigneeId) => openCreate(assigneeId)}
+        onCompleteTask={(taskId) => completeTask.mutateAsync(taskId)}
+        onReopenTask={(taskId) => reopenTask.mutateAsync(taskId)}
         newTaskButton={
           <PermissionGate action="create" subject="chores.Task">
             <Button onClick={() => openCreate(null)}>

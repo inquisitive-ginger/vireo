@@ -4,13 +4,18 @@ import type { Profile, PermissionOverride } from './types'
 
 // Subjects are namespaced strings per ADR 018.
 // 'all' is CASL's wildcard subject, used by the manage rule for tier-4.
-type Actions = 'view' | 'switch' | 'create' | 'complete' | 'manage'
+type Actions = 'view' | 'switch' | 'create' | 'complete' | 'reopen' | 'manage'
 type Subjects = 'platform.Profile' | 'platform.Plugin' | 'family-feed.Post' | 'chores.Task' | 'all'
 
 export type AppAbility = PrismaAbility<[Actions, Subjects]>
 
 export function createAbility(profile: Profile, overrides: PermissionOverride[]): AppAbility {
   const { can, cannot, build } = new AbilityBuilder<AppAbility>(createPrismaAbility)
+
+  // Every profile can complete its OWN assigned task (row-level). Reopening
+  // (un-completing) is a tier-4 power, granted via `manage all` below — a kid
+  // cannot reverse their own completion.
+  can('complete', 'chores.Task', { assigneeId: profile.id })
 
   if (profile.tier >= 4) {
     can('manage', 'all')
