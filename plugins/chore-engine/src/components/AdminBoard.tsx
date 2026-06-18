@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from 'react'
-import { Check, Plus } from 'lucide-react'
-import { Badge, Button, identityColor } from '@family-os/ui'
+import { Plus } from 'lucide-react'
+import { Badge, Button, CompletionToggle, identityColor } from '@family-os/ui'
 import type { ChoreTask } from '../types'
 import { isOverdue, dueLabel } from '../lib/dates'
 import { XpPill } from './XpPill'
@@ -249,116 +249,25 @@ function AdminRow({
         </span>
       </div>
       {!done && <XpPill value={task.xpReward} />}
-      <AdminCompletionControl
-        done={done}
-        canComplete={!done && !!onComplete}
-        canReopen={done && !!onReopen}
-        title={task.title}
-        onComplete={complete}
-        onReopen={reopen}
-      />
+      {/* Option A check-off (no flight — the board has no score plate). A completed
+          row's check doubles as the tier-4 reopen control; read-only viewers
+          (family dashboard) get a static check and no control on pending rows. */}
+      {done ? (
+        <CompletionToggle
+          checked
+          size={28}
+          onToggle={onReopen ? reopen : undefined}
+          label={`Reopen “${task.title}” (mark not done)`}
+          title="Mark not done"
+        />
+      ) : onComplete ? (
+        <CompletionToggle
+          checked={false}
+          size={28}
+          onToggle={complete}
+          label={`Mark “${task.title}” done`}
+        />
+      ) : null}
     </div>
   )
-}
-
-/* Plain admin check-off (Option A) — no XP flight; the board has no score plate.
-   A completed row's check is itself the un-complete (reopen) control for tier 4,
-   so a parent can reverse a completion and resurface it on the kid's list. */
-function AdminCompletionControl({
-  done,
-  canComplete,
-  canReopen,
-  title,
-  onComplete,
-  onReopen,
-}: {
-  done: boolean
-  canComplete: boolean
-  canReopen: boolean
-  title: string
-  onComplete: () => void
-  onReopen: () => void
-}) {
-  const circle = {
-    display: 'grid',
-    placeItems: 'center',
-    width: 28,
-    height: 28,
-    borderRadius: '50%',
-  } as const
-
-  // Completed but read-only (e.g. family dashboard) → a static check, no button.
-  if (done && !canReopen) {
-    return (
-      <span
-        aria-hidden
-        style={{ flexShrink: 0, ...circle, background: 'var(--success)', color: 'white' }}
-      >
-        <Check size={15} strokeWidth={3} />
-      </span>
-    )
-  }
-  if (done && canReopen) {
-    return (
-      <button
-        type="button"
-        onClick={onReopen}
-        aria-label={`Reopen “${title}” (mark not done)`}
-        title="Mark not done"
-        style={{
-          flexShrink: 0,
-          display: 'grid',
-          placeItems: 'center',
-          padding: 8,
-          margin: -8,
-          border: 'none',
-          background: 'transparent',
-          cursor: 'pointer',
-        }}
-      >
-        <span style={{ ...circle, background: 'var(--success)', color: 'white' }}>
-          <Check size={15} strokeWidth={3} />
-        </span>
-      </button>
-    )
-  }
-  if (canComplete) {
-    return (
-      <button
-        type="button"
-        onClick={onComplete}
-        aria-label={`Mark “${title}” done`}
-        style={{
-          flexShrink: 0,
-          display: 'grid',
-          placeItems: 'center',
-          padding: 8,
-          margin: -8,
-          border: 'none',
-          background: 'transparent',
-          cursor: 'pointer',
-        }}
-        onMouseEnter={(e) => {
-          const c = e.currentTarget.firstElementChild as HTMLElement | null
-          if (c) c.style.borderColor = 'var(--success)'
-        }}
-        onMouseLeave={(e) => {
-          const c = e.currentTarget.firstElementChild as HTMLElement | null
-          if (c) c.style.borderColor = 'var(--border)'
-        }}
-      >
-        <span
-          style={{
-            width: 28,
-            height: 28,
-            borderRadius: '50%',
-            border: '2.5px solid var(--border)',
-            transition: 'border-color 160ms ease',
-          }}
-        />
-      </button>
-    )
-  }
-  // Pending + read-only → no control.
-  return null
 }

@@ -1,6 +1,5 @@
 import { useRef } from 'react'
-import { Check } from 'lucide-react'
-import { Badge } from '@family-os/ui'
+import { Badge, CompletionToggle } from '@family-os/ui'
 import type { ChoreTask } from '../types'
 import { isOverdue, dueLabel } from '../lib/dates'
 import { XpPill } from './XpPill'
@@ -88,68 +87,13 @@ export function TaskCard({ task, displayStatus, onComplete }: TaskCardProps) {
           </span>
         </div>
       </div>
-      {done ? (
-        <div
-          aria-hidden
-          style={{
-            flexShrink: 0,
-            display: 'grid',
-            placeItems: 'center',
-            width: 40,
-            height: 40,
-            borderRadius: '50%',
-            background: 'var(--success)',
-            color: 'white',
-          }}
-        >
-          <Check size={20} strokeWidth={3} />
-        </div>
-      ) : completable ? (
-        <button
-          type="button"
-          onClick={handleComplete}
-          aria-label={`Mark “${task.title}” done`}
-          style={{
-            flexShrink: 0,
-            display: 'grid',
-            placeItems: 'center',
-            width: 40,
-            height: 40,
-            margin: -4,
-            padding: 4,
-            borderRadius: '50%',
-            border: '2.5px solid var(--border)',
-            background: 'transparent',
-            color: 'var(--success)',
-            cursor: 'pointer',
-            boxSizing: 'content-box',
-            transition: 'border-color 160ms ease, background 160ms ease',
-          }}
-          onMouseEnter={(e) => {
-            e.currentTarget.style.borderColor = 'var(--success)'
-            e.currentTarget.style.background =
-              'color-mix(in oklch, var(--success) 10%, transparent)'
-          }}
-          onMouseLeave={(e) => {
-            e.currentTarget.style.borderColor = 'var(--border)'
-            e.currentTarget.style.background = 'transparent'
-          }}
-        >
-          <Check size={20} strokeWidth={3} style={{ opacity: 0 }} />
-        </button>
-      ) : (
-        <div
-          aria-hidden
-          style={{
-            flexShrink: 0,
-            width: 40,
-            height: 40,
-            borderRadius: '50%',
-            border: '2.5px solid var(--border)',
-            opacity: inFlight ? 0.5 : 1,
-          }}
-        />
-      )}
+      <CompletionToggle
+        checked={done}
+        size={40}
+        muted={inFlight}
+        onToggle={completable ? handleComplete : undefined}
+        label={`Mark “${task.title}” done`}
+      />
     </div>
   )
 }
