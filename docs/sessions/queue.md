@@ -11,6 +11,18 @@
 
 ## Up Next
 
+### Platform Architecture: plugin styling — inline-vs-Tailwind consistency
+
+**Type:** architecture (ADR) + small enabling change
+**Kickoff:** [kickoffs/arch-plugin-styling.md](kickoffs/arch-plugin-styling.md)
+**Reads:** `CLAUDE.md` "Standing Engineering Conventions" (the plugin-Tailwind-scan rule), dev-chores-completion session log (the inline-vs-Tailwind audit + the `grid`/`place-items-center` silent no-op), `packages/ui/.storybook` + shell Tailwind/`@source` config, `design-system.md`, plus `plugins/family-feed` + `plugins/chore-engine` components as the inline-heavy precedent
+**Produces:** an **ADR** settling the plugin styling standard (the shell's Tailwind scans only `packages/ui` + shell, so utility classes silently no-op in plugin source → plugins currently use inline `var(--token)` chrome, inconsistent with the utility-first shell/ui); the chosen **enabling change** (e.g. point the shell's Tailwind `@source` at `plugins/*/src`, or a per-plugin Tailwind build) **or** a documented decision to keep inline + a lint guard; updated `CLAUDE.md` standing convention + `design-system.md`
+**Out (explicit fast-follow):** reconciling the existing plugin components (chore-engine, family-feed) to the new standard — this session sets the standard + enabling change so **new** UI is built right; migrating prior components is a separate follow-on.
+**Depends on:** none (cross-cutting)
+**Why first:** the next three sessions are all plugin UI — settling this now means they're built under the right standard once, instead of adding inline-style surface to migrate later (or re-hitting the silent no-op footgun). Raised in PR #20 review; sequenced ahead at the user's request (2026-06-18).
+
+---
+
 ### M2 Dev: XP Award + Parent Notification
 
 **Type:** development
@@ -39,17 +51,6 @@
 **Produces:** a per-profile **Focus mode** setting (defaults from tier; parent-overridable) + its storage decision (ADR if it lands on the profile model / a settings table); the **Focus** taskee variant (single hero "Next up" card, collapsed "Coming up"/"Done", "🎉 All done today" empty) branching off the existing Agency `TaskeeView`; reuses the shipped completion + XP flight; Storybook stories
 **Depends on:** M2 Dev: Completion Flow ✅
 **Note:** deferred from Task Model + Creation; Agency is the only taskee variant until this ships. Queued at the user's request during the Completion Flow live review (2026-06-17).
-
----
-
-### Platform Architecture: plugin styling — inline-vs-Tailwind consistency
-
-**Type:** architecture (ADR) + dev follow-through
-**Kickoff:** [kickoffs/arch-plugin-styling.md](kickoffs/arch-plugin-styling.md)
-**Reads:** `CLAUDE.md` "Standing Engineering Conventions" (the plugin-Tailwind-scan rule), dev-chores-completion session log (the inline-vs-Tailwind audit + the `grid`/`place-items-center` silent no-op), `packages/ui/.storybook` + shell Tailwind/`@source` config, `design-system.md`, plus `plugins/family-feed` + `plugins/chore-engine` components as the inline-heavy precedent
-**Produces:** an **ADR** settling the plugin styling standard (the shell's Tailwind scans only `packages/ui` + shell, so utility classes silently no-op in plugin source → plugins currently use inline `var(--token)` chrome, inconsistent with the utility-first shell/ui); the chosen build change (e.g. point the shell's Tailwind `@source` at `plugins/*/src`, or a per-plugin Tailwind build) **or** a documented decision to keep inline + a lint guard; reconcile existing plugin components toward the standard; update the `CLAUDE.md` standing convention + `design-system.md`
-**Depends on:** none (cross-cutting; non-blocking for M2 stories)
-**Note:** raised in the Completion Flow PR review (#20) and queued at the user's request (2026-06-18). Audit table + options are in that PR thread and the completion-flow session log.
 
 ---
 

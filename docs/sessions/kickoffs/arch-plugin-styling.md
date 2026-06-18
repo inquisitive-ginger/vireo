@@ -45,10 +45,22 @@ plugin loading, bundle size, isolation, dev ergonomics):
    `packages/ui` components for anything interactive/hover-y (the `CompletionToggle`
    pattern). Lowest churn; accepts the inline-heavy plugin style.
 
+## Scope
+
+In: the decision + the enabling change so **new** UI is built under the right
+standard. **Out (explicit fast-follow):** reconciling the existing plugin
+components (chore-engine, family-feed) to the new standard — don't migrate the
+back-catalog in this session; if the chosen option is additive (e.g. scanning
+`plugins/*/src`), existing inline styles keep working and migration is
+opportunistic. Verify the enabling change end-to-end (a plugin renders a
+utility-only element correctly in the real shell **and** in the plugin's own
+isolated/Storybook build) before closing.
+
 ## Required outputs
 
 - [ ] ADR (`docs/decisions/NNN-plugin-styling.md`) — decision + rationale + alternatives
-- [ ] The chosen build change implemented, **or** the documented keep-inline decision + lint guard
-- [ ] Existing plugin components reconciled toward the standard (scope the reconciliation if large)
+- [ ] The chosen enabling change implemented + verified (shell + isolated plugin build),
+      **or** the documented keep-inline decision + lint guard
 - [ ] `CLAUDE.md` standing convention + `design-system.md` updated to match
+- [ ] A queued fast-follow (or a noted TODO) for reconciling existing plugin components
 - [ ] Session log; delete this kickoff
