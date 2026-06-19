@@ -4,7 +4,6 @@ import { Loader2, Users, ClipboardList, CalendarDays } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { WidgetGrid, PlaceholderCard } from '@family-os/ui'
 import type { WidgetLayoutItem } from '@family-os/ui'
-import type { RegistryEntry } from '@family-os/platform/types'
 import { useAuth } from '@family-os/platform'
 import { getLazyWidget } from '../lib/load-plugin'
 
@@ -32,7 +31,15 @@ function moduleFromWidgetId(widgetId: string): string {
   return widgetId.split('.')[0] ?? widgetId
 }
 
-export function Home() {
+type HomeProps = {
+  /** Map of widget id → the federation remote that exposes it, built from plugin
+      manifests in main.tsx. Resolves the widget loader by remote name so a widget
+      whose id namespace differs from its remote (e.g. chores.today-summary →
+      chore-engine) still renders. */
+  widgetRemotes: Record<string, string>
+}
+
+export function Home({ widgetRemotes }: HomeProps) {
   const { id: profileId } = useAuth()
 
   const { data: layout, isLoading } = useQuery<WidgetLayoutItem[]>({
@@ -42,24 +49,16 @@ export function Home() {
     enabled: !!profileId,
   })
 
-  const { data: plugins } = useQuery<RegistryEntry[]>({
-    queryKey: ['api/plugins'],
-    queryFn: () => fetch('/api/plugins').then((r) => r.json()) as Promise<RegistryEntry[]>,
-    staleTime: 5 * 60 * 1000,
-  })
-
-  const installedModules = new Set((plugins ?? []).map((p) => p.name))
-
   const widgetChildren: Record<string, ReactNode> = {}
   const flatSlots: string[] = []
 
   for (const item of layout ?? []) {
-    const module = moduleFromWidgetId(item.widgetId)
-    const meta = WIDGET_META[module]
+    const meta = WIDGET_META[moduleFromWidgetId(item.widgetId)]
     if (!meta) continue
 
-    if (installedModules.has(module)) {
-      const Widget = getLazyWidget(module)
+    const remoteName = widgetRemotes[item.widgetId]
+    if (remoteName) {
+      const Widget = getLazyWidget(remoteName)
       widgetChildren[item.widgetId] = Widget ? (
         <Suspense fallback={<PlaceholderCard {...meta} />}>
           <Widget />

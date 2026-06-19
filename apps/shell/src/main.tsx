@@ -52,6 +52,17 @@ async function loadPlugins(): Promise<LoadedPlugin[]> {
 
 const plugins = await loadPlugins()
 
+// Resolve each widget id to the federation remote that exposes it. The widget-id
+// namespace (e.g. "chores") is not always the remote name (e.g. "chore-engine"),
+// so Home must map ownership via the manifest rather than splitting the id — the
+// prefix only coincides with the remote name for some plugins (ADR 022).
+const widgetRemotes: Record<string, string> = {}
+for (const plugin of plugins) {
+  for (const widget of (plugin.widgets ?? []) as { id: string }[]) {
+    widgetRemotes[widget.id] = plugin.remoteName
+  }
+}
+
 const pluginNavItems: PluginNavItem[] = plugins
   .filter((p) => p.navItem)
   .map((p) => {
@@ -74,7 +85,7 @@ createRoot(document.getElementById('root')!).render(
 
           <Route element={<RequireSetup />}>
             <Route element={<App pluginNavItems={pluginNavItems} />}>
-              <Route index element={<Home />} />
+              <Route index element={<Home widgetRemotes={widgetRemotes} />} />
               <Route element={<RequireTier2 />}>
                 <Route path="settings" element={<Settings />} />
               </Route>
