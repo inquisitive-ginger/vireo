@@ -25,3 +25,9 @@ declare module 'chore-engine/Plugin' {
   const Plugin: ComponentType
   export default Plugin
 }
+
+declare module 'chore-engine/widgets/TodaySummary' {
+  import type { ComponentType } from 'react'
+  const TodaySummary: ComponentType
+  export default TodaySummary
+}
