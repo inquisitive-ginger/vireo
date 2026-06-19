@@ -23,3 +23,12 @@ model Task {
   @@map("tasks")
   @@schema("chore_engine")
 }
+
+model XpBalance {
+  profileId String   @id @map("profile_id") @db.Uuid
+  totalXp   Int      @default(0) @map("total_xp")
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("xp_balances")
+  @@schema("chore_engine")
+}

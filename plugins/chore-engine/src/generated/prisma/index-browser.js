@@ -129,6 +129,12 @@ exports.Prisma.TaskScalarFieldEnum = {
   completedAt: 'completedAt',
 }
 
+exports.Prisma.XpBalanceScalarFieldEnum = {
+  profileId: 'profileId',
+  totalXp: 'totalXp',
+  updatedAt: 'updatedAt',
+}
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc',
@@ -146,6 +152,7 @@ exports.Prisma.NullsOrder = {
 
 exports.Prisma.ModelName = {
   Task: 'Task',
+  XpBalance: 'XpBalance',
 }
 
 /**

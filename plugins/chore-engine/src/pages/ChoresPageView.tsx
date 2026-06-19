@@ -25,6 +25,8 @@ export interface ChoresPageViewProps {
   onCompleteTask?: (taskId: string) => Promise<unknown>
   /** Un-complete a task (tier-4 only, admin board). Rejects to revert. */
   onReopenTask?: (taskId: string) => Promise<unknown>
+  /** Persisted lifetime XP seed from GET /api/chores/xp (taskee view only). */
+  initialXp?: number
 }
 
 export function ChoresPageView({
@@ -37,11 +39,12 @@ export function ChoresPageView({
   onAddForAssignee,
   onCompleteTask,
   onReopenTask,
+  initialXp,
 }: ChoresPageViewProps) {
   // Taskee, non-empty → the dedicated taskee surface (owns its header, the
   // lifetime score plate, and the XP-flight completion — design §1/§2).
   if (!seesAllTasks && tasks.length > 0) {
-    return <TaskeeView tasks={tasks} onCompleteTask={onCompleteTask} />
+    return <TaskeeView tasks={tasks} onCompleteTask={onCompleteTask} initialXp={initialXp} />
   }
 
   const done = tasks.filter((t) => t.status === 'completed').length
