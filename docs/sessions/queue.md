@@ -11,6 +11,39 @@
 
 ## Up Next
 
+> **Post-M2 chores triage (2026-06-19):** bugs + polish found after the agent-team
+> chores work landed. Two breakouts (mobile layout, today-widget design) + one bug bash.
+
+### Dev: Mobile App-Shell Layout (scroll + sticky chrome)
+
+**Type:** development (+ `design-system.md` standard)
+**Kickoff:** [kickoffs/dev-mobile-shell-layout.md](kickoffs/dev-mobile-shell-layout.md)
+**Reads:** `apps/shell/src/App.tsx`, `MobileBrandTopBar`, `bottom-tab-bar`, `Home.tsx`, `design-system.md`
+**Produces:** mobile home + shell views scroll under fixed top/bottom chrome (no cutoff; safe-area insets); the pattern documented in `design-system.md` and applied app-wide
+**Origin:** Post-M2 chores live review (2026-06-19).
+
+---
+
+### Dev: Bug Bash (M2 chores + shell)
+
+**Type:** development
+**Kickoff:** [kickoffs/dev-bug-bash-m2-shell.md](kickoffs/dev-bug-bash-m2-shell.md)
+**Reads:** `apps/shell/src/pages/Settings.tsx`, `usePushSubscription`, `apps/api/src/plugins/chores.ts`, `plugins/chores/src/components/CreateTaskDrawer.tsx`
+**Produces:** fixes for — settings mobile layout (#3); push toggle stuck-off in the tunneled PWA (#4); suppress parent self-notification when completer == creator (#5, + test); create-task due-date field styling (#6)
+**Origin:** Post-M2 chores live review (2026-06-19).
+
+---
+
+### Design + Dev: Today Widget Rework
+
+**Type:** design + development
+**Kickoff:** [kickoffs/design-today-widget-rework.md](kickoffs/design-today-widget-rework.md)
+**Reads:** `docs/modules/chores/design.md` §4, `plugins/chores/src/widgets/TodaySummaryView.tsx`, `docs/design-system.md`, family-feed widget
+**Produces:** the UI design gate the widget skipped (playground → sign-off → Storybook → integrate); `design.md` §4 refinements
+**Origin:** Post-M2 chores live review (2026-06-19) — shipped via the agent team without a design gate.
+
+---
+
 ### M2 Dev: Focus Mode (taskee Focus view + per-profile setting)
 
 **Type:** development (+ small ADR for the setting's home)
