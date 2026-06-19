@@ -16,10 +16,23 @@ import { PluginView } from './components/PluginView'
 import { PluginErrorBoundary } from './components/PluginErrorBoundary'
 import { PluginNotFound } from './pages/PluginNotFound'
 
-if ('serviceWorker' in navigator) {
-  window.addEventListener('load', () => {
-    navigator.serviceWorker.register('/sw.js').catch(() => {})
+if (import.meta.env.PROD) {
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js').catch(() => {})
+    })
+  }
+} else if ('serviceWorker' in navigator) {
+  // Dev: never run the cache-first service worker — it pins stale app bundles on
+  // installed PWAs across code changes. Proactively tear down any SW + caches a
+  // prior build left so the dev PWA always loads fresh. (Prod cache-strategy fix
+  // is tracked as its own story.)
+  void navigator.serviceWorker.getRegistrations().then((regs) => {
+    for (const r of regs) void r.unregister()
   })
+  if ('caches' in window) {
+    void caches.keys().then((keys) => keys.forEach((k) => void caches.delete(k)))
+  }
 }
 
 const ICON_MAP: Record<string, React.ComponentType<{ size?: number; 'aria-hidden'?: boolean }>> = {
