@@ -2,6 +2,7 @@ import fp from 'fastify-plugin'
 import type { FastifyPluginAsync } from 'fastify'
 import { prisma } from '@family-os/platform/server'
 import { chorePrisma } from '@family-os/plugin-chore-engine/db'
+import { notify } from '../lib/notify'
 
 const DEFAULT_XP_REWARD = 10
 
@@ -51,30 +52,20 @@ async function handleParentNotification(payload: unknown): Promise<void> {
     return
   }
 
-  // Look up the creator profile to check tier (tier 1 notifications are skipped
-  // by the notifications route, so we replicate that guard here to avoid a
-  // fruitless db write).
-  const creatorProfile = await prisma.profile.findUnique({ where: { id: createdBy } })
-  if (!creatorProfile) {
-    console.warn('[chores] created_by profile not found — skipping notification', { createdBy })
-    return
-  }
-  if (creatorProfile.tier < 2) return
-
   // Look up the assignee name for the notification title.
   const assigneeProfile = await prisma.profile.findUnique({ where: { id: assigneeId } })
   const assigneeName = assigneeProfile?.name ?? 'Someone'
 
   const taskTitle = title ?? 'a chore'
 
-  await prisma.notification.create({
-    data: {
-      profileId: createdBy,
-      title: `${assigneeName} completed ${taskTitle}`,
-      body: `Earned ${xpReward} XP`,
-      variant: 'info',
-      priority: 'alert',
-    },
+  // Route through the shared server notify() path so persistence, history
+  // pruning, and Web Push (priority `alert` → tier 4/3) stay consistent with
+  // POST /notifications. notify() handles the tier-1 / missing-profile skip.
+  await notify(createdBy, {
+    title: `${assigneeName} completed ${taskTitle}`,
+    body: `Earned ${xpReward} XP`,
+    variant: 'info',
+    priority: 'alert',
   })
 }
 

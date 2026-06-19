@@ -1,8 +1,9 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from 'vitest'
 import type { FastifyInstance } from 'fastify'
 import { buildServer } from '../server'
 import { prisma } from '@family-os/platform/server'
 import { chorePrisma } from '@family-os/plugin-chore-engine/db'
+import * as pushModule from './push'
 
 import type { LightMyRequestResponse } from 'fastify'
 import bcrypt from 'bcryptjs'
@@ -614,6 +615,34 @@ describe('parent notification subscriber', () => {
     expect(notifications[0].body).toBe('Earned 10 XP')
     expect(notifications[0].variant).toBe('info')
     expect(notifications[0].priority).toBe('alert')
+  })
+
+  it('dispatches a Web Push to the tier-4 creator on completion', async () => {
+    const pushSpy = vi.spyOn(pushModule, 'sendPushToProfile').mockResolvedValue()
+    try {
+      const task = await chorePrisma.task.create({
+        data: { title: 'Walk dog', assigneeId: KID_ID, createdBy: PARENT_ID, xpReward: 10 },
+      })
+      const kidCookie = await getCookieForProfile(KID_ID)
+
+      await app.inject({
+        method: 'PATCH',
+        url: `/api/chores/tasks/${task.id}/complete`,
+        headers: { cookie: kidCookie },
+      })
+
+      await new Promise((resolve) => setTimeout(resolve, 50))
+
+      // The notification is priority 'alert' and the creator is tier 4, so the
+      // shared notify() path must fire a push (regression guard: the subscriber
+      // previously raw-inserted and skipped push entirely).
+      expect(pushSpy).toHaveBeenCalledWith(
+        PARENT_ID,
+        expect.objectContaining({ title: 'Kid completed Walk dog' })
+      )
+    } finally {
+      pushSpy.mockRestore()
+    }
   })
 
   it('notification title uses the assignee name from the platform schema', async () => {
