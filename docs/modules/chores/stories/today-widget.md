@@ -1,7 +1,7 @@
 # Story: Today's Chores Widget
 
 **Module:** chores
-**Status:** ⬜ Not Started
+**Status:** ✅ Done
 
 ## User story
 

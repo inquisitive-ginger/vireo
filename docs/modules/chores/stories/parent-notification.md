@@ -1,7 +1,7 @@
 # Story: Parent Notification
 
 **Module:** chores
-**Status:** ⬜ Not Started
+**Status:** ✅ Done
 
 ## User story
 

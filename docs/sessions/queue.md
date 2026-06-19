@@ -11,26 +11,6 @@
 
 ## Up Next
 
-### M2 Dev: XP Award + Parent Notification
-
-**Type:** development
-**Kickoff:** [kickoffs/dev-chores-xp-and-notification.md](kickoffs/dev-chores-xp-and-notification.md)
-**Reads:** `docs/modules/chores/stories/xp-award.md`, `docs/modules/chores/stories/parent-notification.md`, `docs/modules/chores/design.md` (XP score plate), dev-chores-completion session log
-**Produces:** `xp_balances` table; XP event subscriber; `GET /api/chores/xp` route; XP display in chores view; parent notification event subscriber; tests for both stories
-**Depends on:** M2 Dev: Completion Flow
-
----
-
-### M2 Dev: Today Widget
-
-**Type:** development
-**Kickoff:** [kickoffs/dev-chores-today-widget.md](kickoffs/dev-chores-today-widget.md)
-**Reads:** `docs/modules/chores/stories/today-widget.md`, `docs/modules/chores/design.md` §4 (widget), design-chores-ux session log, dev-chores-task-model session log
-**Produces:** `chores.today-summary` widget — read-only tap-through; taskee + family framings (standard + large; compact taskee); fills reserved home screen slot; Storybook stories under a `Chores/` category
-**Depends on:** M2 Dev: Task Model + Creation; M2 Design: Chores
-
----
-
 ### M2 Dev: Focus Mode (taskee Focus view + per-profile setting)
 
 **Type:** development (+ small ADR for the setting's home)
@@ -39,6 +19,17 @@
 **Produces:** a per-profile **Focus mode** setting (defaults from tier; parent-overridable) + its storage decision (ADR if it lands on the profile model / a settings table); the **Focus** taskee variant (single hero "Next up" card, collapsed "Coming up"/"Done", "🎉 All done today" empty) branching off the existing Agency `TaskeeView`; reuses the shipped completion + XP flight; Storybook stories
 **Depends on:** M2 Dev: Completion Flow ✅
 **Note:** deferred from Task Model + Creation; Agency is the only taskee variant until this ships. Queued at the user's request during the Completion Flow live review (2026-06-17).
+
+---
+
+### Platform: Service Worker Cache Strategy (prod)
+
+**Type:** development (+ possible ADR if the chosen strategy warrants it)
+**Kickoff:** _to be written_
+**Reads:** `docs/modules/platform/stories/sw-cache-strategy.md`, `apps/shell/public/sw.js`, `apps/shell/src/main.tsx` (dev SW guard shipped 2026-06-19)
+**Produces:** non-stale SW caching for the app shell (network-first or build-stamped cache name); installed PWAs update without a manual cache clear
+**Depends on:** none
+**Note:** Surfaced during the M2 chores live review (2026-06-19) — cache-first `sw.js` with a static `family-os-v1` cache pinned a stale bundle on an installed PWA, making the realtime notification bell look broken. Dev mitigation already shipped; this is the production fix.
 
 ---
 
@@ -83,6 +74,10 @@ enhancement to the existing count + XP-load meter). Blocks none of the M2 MVP st
 ---
 
 ## Recently Completed
+
+- **2026-06-19 — M2 Dev: XP Award + Parent Notification + Today Widget (agent team) + rename** ![Type](https://img.shields.io/badge/Type-Development-orange)
+  Ran the last two M2 chores stories in parallel as an agent team, then renamed the plugin. **XP Award (#23):** `chores.xp_balances` + idempotent `chores.task.completed` subscriber + `GET /api/chores/xp` + lifetime gold score plate in the page header. **Parent Notification (#23):** extracted a shared server-side `notify()` helper (persist + prune-to-50 + Web Push gate) — the subscriber had raw-inserted and skipped push; both `POST /notifications` and the chores subscriber now route through it. **Realtime bell:** `notify()` emits `platform.notification.created`; `NotificationBell` subscribes via `useEventBus` (the prior `window` listener was dead — nothing dispatched it). **Today Widget (#22):** `chores.today-summary` (taskee + family framings, sizes, empty states). **Home render fix:** resolve the widget loader by federation remote name via a manifest map (was splitting the widget id; `chores.*` ≠ the remote name). **Rename (#24):** `chore-engine → chores` — remote/package (`@family-os/plugin-chores`) + Postgres schema `chore_engine → chores` (migrations rewritten; dev/test re-migrated). **Ride-alongs:** proxy `changeOrigin` (federated plugins load via Cloudflare tunnel), dev service-worker guard (stale-PWA fix). 161 API tests green. **Queued:** prod SW cache-strategy; Focus Mode.
+  _See:_ `docs/sessions/logs/2026-06-19-dev-chores-xp-widget-rename.md`
 
 - **2026-06-18 — Platform Architecture: Plugin Styling** ![Type](https://img.shields.io/badge/Type-Architecture-blue)
   Settled the plugin styling standard (raised in PR #20 review). **ADR 035 — Option 1:** first-party plugins are styled **utility-first like the shell**; the shell's `styles.css` gains `@source "plugins/*/src/**/*.{ts,tsx}"` so plugin utilities emit (they were silently no-op'ing — plugins are JS-only federated remotes rendered against the shell's single stylesheet). This brings the shell to **parity with Storybook**, which already scanned plugins — the source of the "works in a story, breaks in the shell" footgun (the `grid`/`place-items-center` completion-circle bug). **Third-party plugins → deferred Option 2** (per-plugin utilities-only Tailwind build shipped with the remote) when community distribution is scoped — named in ADR 035, not built. **Reconciliation done now** (user opted in; kickoff had scoped it as a fast-follow): migrated chore-engine (9 components) + family-feed (5) from inline `var(--token)` chrome to utilities at exact visual parity — dynamic identity/gold/animation values + `container-type: size` stay inline. `CLAUDE.md` + `design-system.md` updated (the latter's stale never-wired "plugin `@import 'tailwindcss'`" setup replaced). Verified: canary `h-64` emits with the `@source` and not without (negative test); typecheck + lint + both plugin builds green; live review confirmed parity on `/chores` + `/family-feed`. No backend change → API/E2E not rerun. **Owed:** Option 2 ADR (community plugins); keep shell + Storybook `@source` in sync. **Out:** `demo-plugin` (M0 demo, still hardcoded hex).

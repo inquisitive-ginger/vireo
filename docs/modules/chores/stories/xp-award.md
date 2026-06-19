@@ -1,7 +1,7 @@
 # Story: XP Award
 
 **Module:** chores
-**Status:** ⬜ Not Started
+**Status:** ✅ Done
 
 ## User story
 
