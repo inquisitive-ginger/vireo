@@ -6,7 +6,7 @@ export default defineConfig({
   plugins: [
     react(),
     federation({
-      name: 'chore-engine',
+      name: 'chores',
       filename: 'remoteEntry.js',
       exposes: {
         './Plugin': './src/Plugin.tsx',

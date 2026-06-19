@@ -1,8 +1,8 @@
 -- CreateSchema
-CREATE SCHEMA IF NOT EXISTS "chore_engine";
+CREATE SCHEMA IF NOT EXISTS "chores";
 
 -- CreateTable
-CREATE TABLE "chore_engine"."tasks" (
+CREATE TABLE "chores"."tasks" (
     "id" UUID NOT NULL,
     "title" TEXT NOT NULL,
     "description" TEXT,

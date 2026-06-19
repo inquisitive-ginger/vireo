@@ -12,7 +12,7 @@ export default defineConfig({
     url: connectionString,
   },
   migrate: {
-    migrationTableSchema: 'chore_engine',
+    migrationTableSchema: 'chores',
     async adapter() {
       const { Pool } = await import('pg')
       const pool = new Pool({ connectionString })

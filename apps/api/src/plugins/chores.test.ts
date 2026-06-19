@@ -2,7 +2,7 @@ import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from 'vites
 import type { FastifyInstance } from 'fastify'
 import { buildServer } from '../server'
 import { prisma } from '@family-os/platform/server'
-import { chorePrisma } from '@family-os/plugin-chore-engine/db'
+import { chorePrisma } from '@family-os/plugin-chores/db'
 import * as pushModule from './push'
 
 import type { LightMyRequestResponse } from 'fastify'

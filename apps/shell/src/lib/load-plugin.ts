@@ -6,12 +6,12 @@ import { lazy, type ComponentType, type LazyExoticComponent } from 'react'
 const pluginLoaders: Record<string, () => Promise<{ default: ComponentType }>> = {
   'demo-plugin': () => import('demo-plugin/Plugin'),
   'family-feed': () => import('family-feed/Plugin'),
-  'chore-engine': () => import('chore-engine/Plugin'),
+  chores: () => import('chores/Plugin'),
 }
 
 const widgetLoaders: Record<string, () => Promise<{ default: ComponentType }>> = {
   'family-feed': () => import('family-feed/widgets/FeedWidget'),
-  'chore-engine': () => import('chore-engine/widgets/TodaySummary'),
+  chores: () => import('chores/widgets/TodaySummary'),
 }
 
 const pluginCache = new Map<string, LazyExoticComponent<ComponentType>>()

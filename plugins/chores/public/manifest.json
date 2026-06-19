@@ -1,10 +1,10 @@
 {
-  "name": "chore-engine",
+  "name": "chores",
   "version": "0.0.1",
   "remoteEntry": "http://localhost:3012/assets/remoteEntry.js",
   "exposes": ["./Plugin", "./widgets/TodaySummary"],
   "routes": ["/chores"],
-  "schema": "chore_engine",
+  "schema": "chores",
   "events": {
     "publishes": ["chores.task.created", "chores.task.completed"],
     "subscribes": ["chores.task.completed"]

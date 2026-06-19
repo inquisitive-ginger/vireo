@@ -1,6 +1,6 @@
 /* Gold = the "treasure" XP semantic (design-system.md). Built on the system's
    marigold hue, kept clear of error-red so XP never reads as alarm. These are
-   local to chore-engine for M2; the XP Award story is expected to promote them
+   local to chores for M2; the XP Award story is expected to promote them
    to shared `--gold-*` tokens in styles.css. Gold is used ONLY for XP — never
    for status (status is neutral / red=overdue / green=done). */
 

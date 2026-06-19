@@ -29,7 +29,7 @@ const {
   Public,
   getRuntime,
   createParam,
-} = require('./runtime/client.js')
+} = require('./runtime/wasm-compiler-edge.js')
 
 const Prisma = {}
 
@@ -75,8 +75,6 @@ Prisma.JsonNull = JsonNull
 Prisma.AnyNull = AnyNull
 
 Prisma.NullTypes = NullTypes
-
-const path = require('path')
 
 /**
  * Enums
@@ -135,7 +133,7 @@ const config = {
   engineVersion: '3c6e192761c0362d496ed980de936e2f3cebcd3a',
   activeProvider: 'postgresql',
   inlineSchema:
-    'generator client {\n  provider = "prisma-client-js"\n  output   = "../src/generated/prisma"\n}\n\ndatasource db {\n  provider = "postgresql"\n  schemas  = ["chore_engine"]\n}\n\nmodel Task {\n  id          String    @id @default(uuid()) @db.Uuid\n  title       String\n  description String?\n  assigneeId  String    @map("assignee_id") @db.Uuid\n  createdBy   String    @map("created_by") @db.Uuid\n  status      String    @default("pending")\n  dueDate     DateTime? @map("due_date") @db.Date\n  xpReward    Int       @default(10) @map("xp_reward")\n  createdAt   DateTime  @default(now()) @map("created_at")\n  completedAt DateTime? @map("completed_at")\n\n  @@map("tasks")\n  @@schema("chore_engine")\n}\n\nmodel XpBalance {\n  profileId String   @id @map("profile_id") @db.Uuid\n  totalXp   Int      @default(0) @map("total_xp")\n  updatedAt DateTime @updatedAt @map("updated_at")\n\n  @@map("xp_balances")\n  @@schema("chore_engine")\n}\n',
+    'generator client {\n  provider = "prisma-client-js"\n  output   = "../src/generated/prisma"\n}\n\ndatasource db {\n  provider = "postgresql"\n  schemas  = ["chores"]\n}\n\nmodel Task {\n  id          String    @id @default(uuid()) @db.Uuid\n  title       String\n  description String?\n  assigneeId  String    @map("assignee_id") @db.Uuid\n  createdBy   String    @map("created_by") @db.Uuid\n  status      String    @default("pending")\n  dueDate     DateTime? @map("due_date") @db.Date\n  xpReward    Int       @default(10) @map("xp_reward")\n  createdAt   DateTime  @default(now()) @map("created_at")\n  completedAt DateTime? @map("completed_at")\n\n  @@map("tasks")\n  @@schema("chores")\n}\n\nmodel XpBalance {\n  profileId String   @id @map("profile_id") @db.Uuid\n  totalXp   Int      @default(0) @map("total_xp")\n  updatedAt DateTime @updatedAt @map("updated_at")\n\n  @@map("xp_balances")\n  @@schema("chores")\n}\n',
 }
 
 config.runtimeDataModel = JSON.parse(
@@ -152,13 +150,22 @@ config.parameterizationSchema = {
 config.compilerWasm = {
   getRuntime: async () => require('./query_compiler_fast_bg.js'),
   getQueryCompilerWasmModule: async () => {
-    const { Buffer } = require('node:buffer')
-    const { wasm } = require('./query_compiler_fast_bg.wasm-base64.js')
-    const queryCompilerWasmFileBytes = Buffer.from(wasm, 'base64')
-
-    return new WebAssembly.Module(queryCompilerWasmFileBytes)
+    const loader = (await import('#wasm-compiler-loader')).default
+    const compiler = (await loader).default
+    return compiler
   },
   importName: './query_compiler_fast_bg.js',
+}
+if (
+  (typeof globalThis !== 'undefined' && globalThis['DEBUG']) ||
+  (typeof process !== 'undefined' && process.env && process.env.DEBUG) ||
+  undefined
+) {
+  Debug.enable(
+    (typeof globalThis !== 'undefined' && globalThis['DEBUG']) ||
+      (typeof process !== 'undefined' && process.env && process.env.DEBUG) ||
+      undefined
+  )
 }
 
 const PrismaClient = getPrismaClient(config)

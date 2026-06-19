@@ -2,7 +2,7 @@ import fp from 'fastify-plugin'
 import type { FastifyPluginAsync } from 'fastify'
 import { prisma } from '@family-os/platform/server'
 import type { EventBus } from '@family-os/platform/server'
-import { chorePrisma } from '@family-os/plugin-chore-engine/db'
+import { chorePrisma } from '@family-os/plugin-chores/db'
 import { notify } from '../lib/notify'
 
 const DEFAULT_XP_REWARD = 10
