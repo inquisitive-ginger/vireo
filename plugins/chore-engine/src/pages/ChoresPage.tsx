@@ -30,6 +30,18 @@ export function ChoresPage() {
     retry: 1,
   })
 
+  // Persisted lifetime XP total — profile-scoped so a profile switch refetches.
+  // Only fetched for taskees (tiers 1–3); admin/family view has no score plate.
+  const xpQuery = useQuery({
+    queryKey: ['chores/xp', id],
+    queryFn: () =>
+      fetch('/api/chores/xp').then((r) => {
+        if (!r.ok) throw new Error(String(r.status))
+        return r.json() as Promise<{ totalXp: number }>
+      }),
+    enabled: !seesAllTasks,
+  })
+
   // Managers need the family roster for the assignee chips. The "family"
   // pseudo-profile (the unattended dashboard) is not an assignable person.
   const profilesQuery = useQuery({
@@ -110,6 +122,7 @@ export function ChoresPage() {
         tier={tier}
         seesAllTasks={seesAllTasks}
         canManage={canManage}
+        initialXp={xpQuery.data?.totalXp}
         onAddForAssignee={(assigneeId) => openCreate(assigneeId)}
         onCompleteTask={(taskId) => completeTask.mutateAsync(taskId)}
         onReopenTask={(taskId) => reopenTask.mutateAsync(taskId)}

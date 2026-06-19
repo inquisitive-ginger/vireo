@@ -1,9 +1,7 @@
 import fp from 'fastify-plugin'
 import type { FastifyPluginAsync } from 'fastify'
 import { prisma } from '@family-os/platform/server'
-import { sendPushToProfile } from './push'
-
-const MAX_NOTIFICATIONS = 50
+import { notify, MAX_NOTIFICATIONS } from '../lib/notify'
 
 const notificationsPlugin: FastifyPluginAsync = async (fastify) => {
   // POST /notifications — persist a notification for tier 2+ profiles
@@ -20,43 +18,15 @@ const notificationsPlugin: FastifyPluginAsync = async (fastify) => {
 
     if (!body?.title || !body?.variant) return { ok: false, error: 'title and variant required' }
 
-    const priority = body.priority ?? 'info'
-
-    const notification = await prisma.notification.create({
-      data: {
-        profileId: profile.id,
-        title: body.title,
-        body: body.body ?? null,
-        variant: body.variant,
-        priority,
-      },
+    // Persist + prune + Web Push all live in the shared server notify() path.
+    const result = await notify(fastify.eventBus, profile.id, {
+      title: body.title,
+      body: body.body,
+      variant: body.variant,
+      priority: body.priority,
     })
 
-    // Prune oldest beyond the limit
-    const count = await prisma.notification.count({ where: { profileId: profile.id } })
-    if (count > MAX_NOTIFICATIONS) {
-      const oldest = await prisma.notification.findMany({
-        where: { profileId: profile.id },
-        orderBy: { createdAt: 'asc' },
-        take: count - MAX_NOTIFICATIONS,
-        select: { id: true },
-      })
-      await prisma.notification.deleteMany({ where: { id: { in: oldest.map((n) => n.id) } } })
-    }
-
-    // Web Push: only for priority: 'alert', tier 4 always, tier 3 only when push_enabled
-    const qualifiesForPush =
-      priority === 'alert' && (profile.tier === 4 || (profile.tier === 3 && profile.pushEnabled))
-
-    if (qualifiesForPush) {
-      void sendPushToProfile(profile.id, {
-        title: body.title,
-        body: body.body ?? '',
-        variant: body.variant,
-      })
-    }
-
-    return { ok: true, id: notification.id }
+    return { ok: true, id: result?.id }
   })
 
   // GET /notifications — list for active profile, newest first

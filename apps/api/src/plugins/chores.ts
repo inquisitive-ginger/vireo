@@ -1,9 +1,74 @@
 import fp from 'fastify-plugin'
 import type { FastifyPluginAsync } from 'fastify'
 import { prisma } from '@family-os/platform/server'
+import type { EventBus } from '@family-os/platform/server'
 import { chorePrisma } from '@family-os/plugin-chore-engine/db'
+import { notify } from '../lib/notify'
 
 const DEFAULT_XP_REWARD = 10
+
+// ─── XP subscriber ───────────────────────────────────────────────────────────
+
+type TaskCompletedPayload = {
+  taskId: string
+  assigneeId: string
+  xpReward: number
+  completedAt: string
+  title?: string
+  createdBy?: string
+}
+
+/** Credits `xpReward` to the assignee's running `xp_balances` total.
+ *
+ * Idempotency guard: re-fetches the task before crediting and bails out if it
+ * is no longer `completed` (guards against replayed or reversed events). */
+async function handleXpAward(payload: unknown): Promise<void> {
+  const { taskId, assigneeId, xpReward } = payload as TaskCompletedPayload
+
+  // Idempotency guard — confirm the task is still completed.
+  const task = await chorePrisma.task.findUnique({ where: { id: taskId } })
+  if (!task || task.status !== 'completed') return
+
+  await chorePrisma.xpBalance.upsert({
+    where: { profileId: assigneeId },
+    update: { totalXp: { increment: xpReward } },
+    create: { profileId: assigneeId, totalXp: xpReward },
+  })
+}
+
+// ─── Parent-notification subscriber ──────────────────────────────────────────
+
+/** Notifies the task's creator (the assigning parent) when it is completed.
+ *
+ * Looks up the assignee name from the platform schema (the event payload carries
+ * `assigneeId` but not the name). If `createdBy` is absent the subscriber logs
+ * a warning and skips cleanly — no crash. */
+async function handleParentNotification(payload: unknown, eventBus: EventBus): Promise<void> {
+  const { taskId, assigneeId, xpReward, title, createdBy } = payload as TaskCompletedPayload
+
+  if (!createdBy) {
+    console.warn('[chores] task.completed event missing createdBy — skipping notification', {
+      taskId,
+    })
+    return
+  }
+
+  // Look up the assignee name for the notification title.
+  const assigneeProfile = await prisma.profile.findUnique({ where: { id: assigneeId } })
+  const assigneeName = assigneeProfile?.name ?? 'Someone'
+
+  const taskTitle = title ?? 'a chore'
+
+  // Route through the shared server notify() path so persistence, history
+  // pruning, and Web Push (priority `alert` → tier 4/3) stay consistent with
+  // POST /notifications. notify() handles the tier-1 / missing-profile skip.
+  await notify(eventBus, createdBy, {
+    title: `${assigneeName} completed ${taskTitle}`,
+    body: `Earned ${xpReward} XP`,
+    variant: 'info',
+    priority: 'alert',
+  })
+}
 
 // The unattended dashboard resolves to the family pseudo-profile (id "family",
 // tier 1) — a non-UUID id. It sees the whole family's chores (family framing),
@@ -142,6 +207,8 @@ const choresPlugin: FastifyPluginAsync = async (fastify) => {
       assigneeId: updated.assigneeId,
       xpReward: updated.xpReward,
       completedAt: updated.completedAt?.toISOString() ?? new Date().toISOString(),
+      title: updated.title,
+      createdBy: updated.createdBy,
     })
 
     const assignee = await prisma.profile.findUnique({ where: { id: updated.assigneeId } })
@@ -179,6 +246,27 @@ const choresPlugin: FastifyPluginAsync = async (fastify) => {
 
     const assignee = await prisma.profile.findUnique({ where: { id: updated.assigneeId } })
     return serializeTask(updated, assignee?.name ?? 'Unknown')
+  })
+
+  // GET /chores/xp — returns the active profile's lifetime XP total (all tiers).
+  fastify.get('/chores/xp', async (request) => {
+    const profileId = request.profile.id
+    const balance = await chorePrisma.xpBalance.findUnique({ where: { profileId } })
+    return { totalXp: balance?.totalXp ?? 0 }
+  })
+
+  // ─── Event subscribers ─────────────────────────────────────────────────────
+
+  // Register XP award + parent notification subscribers on plugin startup.
+  // Both listen to chores.task.completed; errors are logged and swallowed so
+  // one failing subscriber doesn't break the other.
+  fastify.eventBus.on('chores.task.completed', (payload) => {
+    void handleXpAward(payload).catch((err) =>
+      fastify.log.error({ err }, '[chores] XP award subscriber failed')
+    )
+    void handleParentNotification(payload, fastify.eventBus).catch((err) =>
+      fastify.log.error({ err }, '[chores] parent notification subscriber failed')
+    )
   })
 }
 

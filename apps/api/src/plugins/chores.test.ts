@@ -1,8 +1,9 @@
-import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest'
+import { describe, it, expect, beforeAll, afterAll, beforeEach, vi } from 'vitest'
 import type { FastifyInstance } from 'fastify'
 import { buildServer } from '../server'
 import { prisma } from '@family-os/platform/server'
 import { chorePrisma } from '@family-os/plugin-chore-engine/db'
+import * as pushModule from './push'
 
 import type { LightMyRequestResponse } from 'fastify'
 import bcrypt from 'bcryptjs'
@@ -38,9 +39,8 @@ async function getCookieForProfile(profileId: string): Promise<string> {
 }
 
 async function clearTasks() {
-  // Clear the whole table (this is the dedicated test DB) so the "sees all" /
-  // count assertions stay deterministic regardless of rows left by other suites
-  // or the chores E2E, which writes to the same familyos_test database.
+  // Clear chores tables so count assertions stay deterministic across suites.
+  await chorePrisma.xpBalance.deleteMany({})
   await chorePrisma.task.deleteMany({})
 }
 
@@ -436,5 +436,291 @@ describe('PATCH /api/chores/tasks/:id/reopen', () => {
     off()
     expect(events).toHaveLength(1)
     expect(events[0]).toMatchObject({ taskId: task.id, assigneeId: KID_ID })
+  })
+})
+
+// ─── GET /api/chores/xp ──────────────────────────────────────────────────────
+
+describe('GET /api/chores/xp', () => {
+  it('returns 0 for a profile with no completed tasks', async () => {
+    const cookie = await getCookieForProfile(KID_ID)
+    const res = await app.inject({ method: 'GET', url: '/api/chores/xp', headers: { cookie } })
+    expect(res.statusCode).toBe(200)
+    expect(res.json()).toEqual({ totalXp: 0 })
+  })
+
+  it('returns the correct cumulative total after multiple completions', async () => {
+    const cookie = await getCookieForProfile(KID_ID)
+
+    const t1 = await chorePrisma.task.create({
+      data: { title: 'Task 1', assigneeId: KID_ID, createdBy: PARENT_ID, xpReward: 10 },
+    })
+    const t2 = await chorePrisma.task.create({
+      data: { title: 'Task 2', assigneeId: KID_ID, createdBy: PARENT_ID, xpReward: 15 },
+    })
+
+    await app.inject({
+      method: 'PATCH',
+      url: `/api/chores/tasks/${t1.id}/complete`,
+      headers: { cookie },
+    })
+    await app.inject({
+      method: 'PATCH',
+      url: `/api/chores/tasks/${t2.id}/complete`,
+      headers: { cookie },
+    })
+
+    // XP subscriber is async (fire-and-forget) — wait briefly for it to settle.
+    await new Promise((resolve) => setTimeout(resolve, 50))
+
+    const res = await app.inject({
+      method: 'GET',
+      url: '/api/chores/xp',
+      headers: { cookie },
+    })
+    expect(res.statusCode).toBe(200)
+    expect(res.json().totalXp).toBe(25)
+  })
+})
+
+// ─── XP subscriber (unit) ─────────────────────────────────────────────────────
+
+describe('XP event subscriber', () => {
+  it('credits xpReward to the assignee on chores.task.completed', async () => {
+    const task = await chorePrisma.task.create({
+      data: { title: 'XP task', assigneeId: KID_ID, createdBy: PARENT_ID, xpReward: 20 },
+    })
+    const cookie = await getCookieForProfile(KID_ID)
+
+    await app.inject({
+      method: 'PATCH',
+      url: `/api/chores/tasks/${task.id}/complete`,
+      headers: { cookie },
+    })
+
+    await new Promise((resolve) => setTimeout(resolve, 50))
+
+    const balance = await chorePrisma.xpBalance.findUnique({ where: { profileId: KID_ID } })
+    expect(balance?.totalXp).toBe(20)
+  })
+
+  it('accumulates XP across multiple completions', async () => {
+    const cookie = await getCookieForProfile(KID_ID)
+
+    const t1 = await chorePrisma.task.create({
+      data: { title: 'First', assigneeId: KID_ID, createdBy: PARENT_ID, xpReward: 5 },
+    })
+    const t2 = await chorePrisma.task.create({
+      data: { title: 'Second', assigneeId: KID_ID, createdBy: PARENT_ID, xpReward: 10 },
+    })
+
+    await app.inject({
+      method: 'PATCH',
+      url: `/api/chores/tasks/${t1.id}/complete`,
+      headers: { cookie },
+    })
+    await app.inject({
+      method: 'PATCH',
+      url: `/api/chores/tasks/${t2.id}/complete`,
+      headers: { cookie },
+    })
+
+    await new Promise((resolve) => setTimeout(resolve, 50))
+
+    const balance = await chorePrisma.xpBalance.findUnique({ where: { profileId: KID_ID } })
+    expect(balance?.totalXp).toBe(15)
+  })
+
+  it('does not credit XP when the task status has been reverted to pending (reopen scenario)', async () => {
+    // The idempotency guard re-fetches the task before crediting. If the task
+    // was reopened before the handler fires, guard sees status='pending' and bails.
+    const task = await chorePrisma.task.create({
+      data: { title: 'Idempotent', assigneeId: KID_ID, createdBy: PARENT_ID, xpReward: 10 },
+    })
+
+    // Revert to pending to simulate a reopen before the event handler fires.
+    await chorePrisma.task.update({
+      where: { id: task.id },
+      data: { status: 'pending', completedAt: null },
+    })
+
+    app.eventBus.emit('chores.task.completed', {
+      taskId: task.id,
+      assigneeId: KID_ID,
+      xpReward: 10,
+      completedAt: new Date().toISOString(),
+      title: task.title,
+      createdBy: task.createdBy,
+    })
+
+    await new Promise((resolve) => setTimeout(resolve, 50))
+
+    const balance = await chorePrisma.xpBalance.findUnique({ where: { profileId: KID_ID } })
+    expect(balance).toBeNull()
+  })
+
+  it('credits XP to the assignee, not the active session profile', async () => {
+    // Parent (tier 4) completes a task on behalf of the kid.
+    const task = await chorePrisma.task.create({
+      data: { title: 'Parent completes', assigneeId: KID_ID, createdBy: PARENT_ID, xpReward: 15 },
+    })
+    const parentCookie = await getCookieForProfile(PARENT_ID)
+
+    await app.inject({
+      method: 'PATCH',
+      url: `/api/chores/tasks/${task.id}/complete`,
+      headers: { cookie: parentCookie },
+    })
+
+    await new Promise((resolve) => setTimeout(resolve, 50))
+
+    const kidBalance = await chorePrisma.xpBalance.findUnique({ where: { profileId: KID_ID } })
+    const parentBalance = await chorePrisma.xpBalance.findUnique({
+      where: { profileId: PARENT_ID },
+    })
+    expect(kidBalance?.totalXp).toBe(15)
+    expect(parentBalance).toBeNull()
+  })
+})
+
+// ─── Parent notification subscriber (integration) ────────────────────────────
+
+describe('parent notification subscriber', () => {
+  beforeEach(async () => {
+    await prisma.notification.deleteMany({ where: { profileId: { in: ALL_IDS } } })
+  })
+
+  it('creates a notification for the task creator (parent) on completion', async () => {
+    const task = await chorePrisma.task.create({
+      data: {
+        title: 'Take out trash',
+        assigneeId: KID_ID,
+        createdBy: PARENT_ID,
+        xpReward: 10,
+      },
+    })
+    const kidCookie = await getCookieForProfile(KID_ID)
+
+    await app.inject({
+      method: 'PATCH',
+      url: `/api/chores/tasks/${task.id}/complete`,
+      headers: { cookie: kidCookie },
+    })
+
+    await new Promise((resolve) => setTimeout(resolve, 50))
+
+    const notifications = await prisma.notification.findMany({ where: { profileId: PARENT_ID } })
+    expect(notifications).toHaveLength(1)
+    expect(notifications[0].title).toBe('Kid completed Take out trash')
+    expect(notifications[0].body).toBe('Earned 10 XP')
+    expect(notifications[0].variant).toBe('info')
+    expect(notifications[0].priority).toBe('alert')
+  })
+
+  it('dispatches a Web Push to the tier-4 creator on completion', async () => {
+    const pushSpy = vi.spyOn(pushModule, 'sendPushToProfile').mockResolvedValue()
+    try {
+      const task = await chorePrisma.task.create({
+        data: { title: 'Walk dog', assigneeId: KID_ID, createdBy: PARENT_ID, xpReward: 10 },
+      })
+      const kidCookie = await getCookieForProfile(KID_ID)
+
+      await app.inject({
+        method: 'PATCH',
+        url: `/api/chores/tasks/${task.id}/complete`,
+        headers: { cookie: kidCookie },
+      })
+
+      await new Promise((resolve) => setTimeout(resolve, 50))
+
+      // The notification is priority 'alert' and the creator is tier 4, so the
+      // shared notify() path must fire a push (regression guard: the subscriber
+      // previously raw-inserted and skipped push entirely).
+      expect(pushSpy).toHaveBeenCalledWith(
+        PARENT_ID,
+        expect.objectContaining({ title: 'Kid completed Walk dog' })
+      )
+    } finally {
+      pushSpy.mockRestore()
+    }
+  })
+
+  it('emits platform.notification.created so clients can refresh in realtime', async () => {
+    const events: unknown[] = []
+    const off = app.eventBus.on('platform.notification.created', (p) => events.push(p))
+    try {
+      const task = await chorePrisma.task.create({
+        data: { title: 'Feed cat', assigneeId: KID_ID, createdBy: PARENT_ID, xpReward: 10 },
+      })
+      const kidCookie = await getCookieForProfile(KID_ID)
+
+      await app.inject({
+        method: 'PATCH',
+        url: `/api/chores/tasks/${task.id}/complete`,
+        headers: { cookie: kidCookie },
+      })
+
+      await new Promise((resolve) => setTimeout(resolve, 50))
+
+      expect(events).toContainEqual(expect.objectContaining({ profileId: PARENT_ID }))
+    } finally {
+      off()
+    }
+  })
+
+  it('notification title uses the assignee name from the platform schema', async () => {
+    const task = await chorePrisma.task.create({
+      data: { title: 'Clean room', assigneeId: TEEN_ID, createdBy: PARENT_ID, xpReward: 20 },
+    })
+    const teenCookie = await getCookieForProfile(TEEN_ID)
+
+    await app.inject({
+      method: 'PATCH',
+      url: `/api/chores/tasks/${task.id}/complete`,
+      headers: { cookie: teenCookie },
+    })
+
+    await new Promise((resolve) => setTimeout(resolve, 50))
+
+    const notifications = await prisma.notification.findMany({ where: { profileId: PARENT_ID } })
+    expect(notifications[0].title).toBe('Teen completed Clean room')
+    expect(notifications[0].body).toBe('Earned 20 XP')
+  })
+
+  it('does not notify for tier-1 creator profiles', async () => {
+    // Emit directly with createdBy = KID_ID (tier 1) — subscriber should skip.
+    app.eventBus.emit('chores.task.completed', {
+      taskId: '00000000-c40e-0001-0000-0000000099aa',
+      assigneeId: TWEEN_ID,
+      xpReward: 10,
+      completedAt: new Date().toISOString(),
+      title: 'Some task',
+      createdBy: KID_ID,
+    })
+
+    await new Promise((resolve) => setTimeout(resolve, 50))
+
+    const notifications = await prisma.notification.findMany({ where: { profileId: KID_ID } })
+    expect(notifications).toHaveLength(0)
+  })
+
+  it('skips silently when createdBy is missing from the event payload', async () => {
+    const eventWithoutCreatedBy = {
+      taskId: '00000000-c40e-0001-0000-0000000099bb',
+      assigneeId: KID_ID,
+      xpReward: 10,
+      completedAt: new Date().toISOString(),
+      title: 'Orphan task',
+    }
+
+    await expect(
+      new Promise<void>((resolve) => {
+        app.eventBus.emit(
+          'chores.task.completed',
+          eventWithoutCreatedBy as Parameters<typeof app.eventBus.emit>[1]
+        )
+        setTimeout(resolve, 50)
+      })
+    ).resolves.toBeUndefined()
   })
 })

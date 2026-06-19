@@ -12,6 +12,11 @@ export interface TaskeeViewProps {
   /** Persist the completion. Resolves on success, rejects to revert the optimistic
       UI. Omitted in Storybook → the flight runs locally with no network. */
   onCompleteTask?: (taskId: string) => Promise<unknown>
+  /** Persisted lifetime XP total from GET /api/chores/xp. When provided this
+      replaces the locally-derived seed (completed tasks sum). Seeded once on
+      first render — not reactive to subsequent fetches, which would double-count
+      in-session completions. */
+  initialXp?: number
 }
 
 type Override = 'inFlight' | 'done'
@@ -27,15 +32,18 @@ interface Flight {
    the list is status-encoded cards. On tap: the badge lifts off, a portal chip
    arcs to the plate, and on landing the card morphs to done while the plate
    banks + counts up. Reduced-motion or an off-screen plate → quiet bank. */
-export function TaskeeView({ tasks, onCompleteTask }: TaskeeViewProps) {
+export function TaskeeView({ tasks, onCompleteTask, initialXp }: TaskeeViewProps) {
   const reduced = usePrefersReducedMotion()
   const plateRef = useRef<HTMLDivElement>(null)
 
-  // Lifetime XP is local/optimistic in M2: seeded from already-completed tasks,
-  // then incremented as tasks bank. XP Award swaps the seed for the persisted
-  // balance. Seeded once — refetches must not re-seed (would double-count).
-  const [lifetime, setLifetime] = useState(() =>
-    tasks.filter((t) => t.status === 'completed').reduce((sum, t) => sum + t.xpReward, 0)
+  // Seeded once on mount. When initialXp is provided (persisted balance from
+  // GET /api/chores/xp) it replaces the locally-derived fallback (sum of
+  // already-completed tasks). Subsequent refetches do not re-seed to avoid
+  // double-counting in-session completions.
+  const [lifetime, setLifetime] = useState(
+    () =>
+      initialXp ??
+      tasks.filter((t) => t.status === 'completed').reduce((sum, t) => sum + t.xpReward, 0)
   )
 
   const [overrides, setOverrides] = useState<Record<string, Override>>({})
