@@ -49,7 +49,7 @@ export function ChoresPageView({
   const pending = tasks.length - done
 
   return (
-    <div style={{ maxWidth: 680, margin: '0 auto', padding: '28px 24px 48px' }}>
+    <div className="mx-auto max-w-[680px] px-6 pt-7 pb-12">
       {/* Family pulse summary — counts only, no family XP (design §1). */}
       <PageHeader
         title="Chores"

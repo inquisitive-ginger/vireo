@@ -24,9 +24,8 @@ export interface TaskCardProps {
    XP flight (design §2) — the badge lifts off and the card holds still until the
    chip lands.
 
-   Chrome (card surface, radius, shadow, dimensions) is inline `var(--token)`
-   styling — the first-party-plugin convention (mirrors FeedPostCard); typography
-   uses the shared scale utilities. */
+   Styled utility-first like the shell (ADR 035); only genuinely dynamic values
+   (status-driven spine/text color, optimistic opacity) stay inline. */
 export function TaskCard({ task, displayStatus, onComplete }: TaskCardProps) {
   const status = displayStatus ?? (task.status as TaskDisplayStatus)
   const done = status === 'completed'
@@ -44,45 +43,29 @@ export function TaskCard({ task, displayStatus, onComplete }: TaskCardProps) {
 
   return (
     <div
-      className="flex items-center gap-3"
-      style={{
-        background: 'var(--card)',
-        border: '1px solid var(--border)',
-        borderRadius: 14,
-        boxShadow: 'var(--shadow-card)',
-        padding: '14px 16px 14px 14px',
-        opacity: done ? 0.66 : 1,
-        transition: 'opacity 200ms ease',
-      }}
+      className="flex items-center gap-3 rounded-[14px] border border-border bg-card py-3.5 pr-4 pl-3.5 shadow-[var(--shadow-card)] transition-opacity duration-200"
+      style={{ opacity: done ? 0.66 : 1 }}
     >
       <span
         aria-hidden
-        className="shrink-0"
-        style={{ width: 4, alignSelf: 'stretch', borderRadius: 2, background: spine }}
+        className="w-1 shrink-0 self-stretch rounded-sm"
+        style={{ background: spine }}
       />
       <div className="min-w-0 flex-1">
         <span
-          className="text-card-title"
-          style={{
-            display: 'block',
-            color: done ? 'var(--muted-foreground)' : 'var(--foreground)',
-            textDecoration: done ? 'line-through' : 'none',
-          }}
+          className={`text-card-title block ${done ? 'text-muted-foreground line-through' : 'text-foreground'}`}
         >
           {task.title}
         </span>
         <div className="mt-1 flex items-center gap-2">
           {overdue && <Badge variant="destructive">Overdue</Badge>}
           {label && !done && (
-            <span
-              className="text-sm-token"
-              style={{ color: overdue ? 'var(--error)' : 'var(--muted-foreground)' }}
-            >
+            <span className={`text-sm-token ${overdue ? 'text-error' : 'text-muted-foreground'}`}>
               {label}
             </span>
           )}
           {/* Badge is the flight's launch point — hidden while airborne. */}
-          <span ref={badgeRef} style={{ visibility: inFlight ? 'hidden' : 'visible' }}>
+          <span ref={badgeRef} className={inFlight ? 'invisible' : 'visible'}>
             <XpPill value={task.xpReward} earned={done} />
           </span>
         </div>

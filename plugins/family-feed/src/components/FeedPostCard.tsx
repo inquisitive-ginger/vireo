@@ -27,29 +27,25 @@ export function FeedPostCard({ post, lineClamp, variant = 'note' }: FeedPostCard
       <ProfileAvatar name={post.author.name} size="base" />
       <div className="min-w-0 flex-1">
         <div className="flex items-baseline gap-2">
-          <span
-            className="text-card-title truncate flex-1 overflow-hidden"
-            style={{ color: 'var(--card-foreground)' }}
-          >
+          <span className="text-card-title text-card-foreground truncate flex-1 overflow-hidden">
             {post.author.name}
           </span>
-          <span className="text-sm-token shrink-0" style={{ color: 'var(--muted-foreground)' }}>
+          <span className="text-sm-token text-muted-foreground shrink-0">
             {relativeTime(post.createdAt)}
           </span>
         </div>
         <p
-          className="text-prose mt-1"
-          style={{
-            color: 'var(--card-foreground)',
-            ...(lineClamp
+          className="text-prose text-card-foreground mt-1"
+          style={
+            lineClamp
               ? {
                   overflow: 'hidden',
                   display: '-webkit-box',
                   WebkitLineClamp: lineClamp,
                   WebkitBoxOrient: 'vertical',
                 }
-              : {}),
-          }}
+              : undefined
+          }
         >
           {post.body}
         </p>
@@ -61,18 +57,11 @@ export function FeedPostCard({ post, lineClamp, variant = 'note' }: FeedPostCard
 
   if (variant === 'widget') {
     return (
-      <div style={{ position: 'relative', paddingLeft: 10 }}>
+      <div className="relative pl-2.5">
         <span
           aria-hidden
-          style={{
-            position: 'absolute',
-            left: 0,
-            top: 0,
-            bottom: 0,
-            width: 4,
-            borderRadius: 2,
-            background: identityColor(post.author.name),
-          }}
+          className="absolute inset-y-0 left-0 w-1 rounded-sm"
+          style={{ background: identityColor(post.author.name) }}
         />
         {inner}
       </div>
@@ -80,28 +69,12 @@ export function FeedPostCard({ post, lineClamp, variant = 'note' }: FeedPostCard
   }
 
   return (
-    <article
-      style={{
-        position: 'relative',
-        background: 'var(--card)',
-        border: '1px solid var(--border)',
-        borderRadius: 14,
-        boxShadow: 'var(--shadow-card)',
-        padding: '16px 20px',
-        // clips the identity edge so its curve follows the card corner
-        overflow: 'hidden',
-      }}
-    >
+    // overflow-hidden clips the identity edge so its curve follows the card corner
+    <article className="relative overflow-hidden rounded-[14px] border border-border bg-card px-5 py-4 shadow-[var(--shadow-card)]">
       <span
         aria-hidden
-        style={{
-          position: 'absolute',
-          left: 0,
-          top: 0,
-          bottom: 0,
-          width: 4,
-          background: identityColor(post.author.name),
-        }}
+        className="absolute inset-y-0 left-0 w-1"
+        style={{ background: identityColor(post.author.name) }}
       />
       {inner}
     </article>

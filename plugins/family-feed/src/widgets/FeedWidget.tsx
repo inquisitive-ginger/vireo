@@ -38,7 +38,7 @@ export default function FeedWidget() {
   }
 
   return (
-    <Link to="/family-feed" style={{ textDecoration: 'none', display: 'block', height: '100%' }}>
+    <Link to="/family-feed" className="block h-full no-underline">
       <FeedWidgetView posts={posts} />
     </Link>
   )

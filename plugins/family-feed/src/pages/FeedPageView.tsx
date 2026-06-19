@@ -53,30 +53,24 @@ export function FeedPageView({
   onLoadMore,
 }: FeedPageViewProps) {
   return (
-    <div style={{ maxWidth: 680, margin: '0 auto', padding: '28px 24px 48px' }}>
+    <div className="mx-auto max-w-[680px] px-6 pt-7 pb-12">
       <PageHeader title="Family Feed" eyebrow="The family bulletin" action={composeButton} />
 
-      {composeForm && <div style={{ marginBottom: 28 }}>{composeForm}</div>}
+      {composeForm && <div className="mb-7">{composeForm}</div>}
 
       {posts.length === 0 ? (
-        <div style={{ paddingTop: 48 }}>
+        <div className="pt-12">
           <FeedEmptyState compose={emptyAction} />
         </div>
       ) : (
-        <div className="flex flex-col" style={{ gap: 28 }}>
+        <div className="flex flex-col gap-7">
           {groupByDay(posts).map((group) => (
             <section key={group.label} aria-label={group.label}>
-              <div className="flex items-center gap-3" style={{ marginBottom: 12 }}>
-                <span className="text-section-label" style={{ color: 'var(--accent)' }}>
-                  {group.label}
-                </span>
-                <span
-                  aria-hidden
-                  className="flex-1"
-                  style={{ height: 1, background: 'var(--border)' }}
-                />
+              <div className="mb-3 flex items-center gap-3">
+                <span className="text-section-label text-accent">{group.label}</span>
+                <span aria-hidden className="h-px flex-1 bg-border" />
               </div>
-              <div className="flex flex-col" style={{ gap: 12 }}>
+              <div className="flex flex-col gap-3">
                 {group.posts.map((post) => (
                   <FeedPostCard key={post.id} post={post} />
                 ))}

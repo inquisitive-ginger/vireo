@@ -85,7 +85,7 @@ export function ChoresPage() {
   if (tasksQuery.isLoading) {
     return (
       <div className="flex h-64 items-center justify-center">
-        <Loader2 className="size-5 animate-spin" style={{ color: 'var(--muted-foreground)' }} />
+        <Loader2 className="size-5 animate-spin text-muted-foreground" />
       </div>
     )
   }
@@ -93,9 +93,7 @@ export function ChoresPage() {
   if (tasksQuery.isError) {
     return (
       <div className="flex h-64 flex-col items-center justify-center gap-3">
-        <p className="text-base-token" style={{ color: 'var(--muted-foreground)' }}>
-          Could not load chores.
-        </p>
+        <p className="text-base-token text-muted-foreground">Could not load chores.</p>
         <Button variant="outline" size="sm" onClick={() => tasksQuery.refetch()}>
           Try again
         </Button>

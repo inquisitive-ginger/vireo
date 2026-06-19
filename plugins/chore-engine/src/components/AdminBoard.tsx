@@ -66,7 +66,7 @@ export function AdminBoard({
   }, [lanes])
 
   return (
-    <div style={{ borderTop: '1px solid var(--border)' }}>
+    <div className="border-t border-border">
       {orderedLanes.map(({ lane, tasks }) => (
         <div key={lane.assigneeId}>
           <LaneHeader
@@ -124,38 +124,23 @@ function LaneHeader({
 
   return (
     <div
+      className="flex items-center gap-3 border-b border-border px-[18px] py-3"
+      // tint gradient + 2px identity top-border carry the lane's identity hue.
       style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 12,
-        padding: '12px 18px',
         background: `linear-gradient(90deg, ${tint}, transparent 70%)`,
         borderTop: `2px solid ${hue}`,
-        borderBottom: '1px solid var(--border)',
       }}
     >
-      <div style={{ flex: 1, minWidth: 0 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-          <span className="text-card-title" style={{ color: 'var(--foreground)' }}>
-            {lane.assigneeName}
-          </span>
+      <div className="min-w-0 flex-1">
+        <div className="flex items-center gap-2">
+          <span className="text-card-title text-foreground">{lane.assigneeName}</span>
           {overdue > 0 && <Badge variant="destructive">{overdue} overdue</Badge>}
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 5 }}>
-          <div
-            style={{
-              flex: 1,
-              maxWidth: 120,
-              height: 5,
-              borderRadius: 9999,
-              background: 'var(--muted)',
-            }}
-          >
-            <div
-              style={{ width: `${pct}%`, height: '100%', borderRadius: 9999, background: hue }}
-            />
+        <div className="mt-[5px] flex items-center gap-2">
+          <div className="h-[5px] max-w-[120px] flex-1 rounded-full bg-muted">
+            <div className="h-full rounded-full" style={{ width: `${pct}%`, background: hue }} />
           </div>
-          <span className="text-xs-token" style={{ color: 'var(--muted-foreground)' }}>
+          <span className="text-xs-token text-muted-foreground">
             {pending} task{pending === 1 ? '' : 's'} · {load} XP load
           </span>
         </div>
@@ -210,41 +195,21 @@ function AdminRow({
 
   return (
     <div
-      style={{
-        display: 'flex',
-        alignItems: 'center',
-        gap: 12,
-        minHeight: 54,
-        padding: '0 14px 0 18px',
-        borderBottom: '1px solid var(--border)',
-        opacity: done ? 0.55 : 1,
-      }}
+      className="flex min-h-[54px] items-center gap-3 border-b border-border pr-3.5 pl-[18px]"
+      style={{ opacity: done ? 0.55 : 1 }}
     >
       <span
         aria-hidden
-        style={{
-          width: 4,
-          alignSelf: 'stretch',
-          borderRadius: 2,
-          background: spine,
-          flexShrink: 0,
-        }}
+        className="w-1 shrink-0 self-stretch rounded-sm"
+        style={{ background: spine }}
       />
-      <div style={{ flex: 1, minWidth: 0, padding: '9px 0' }}>
+      <div className="min-w-0 flex-1 py-[9px]">
         <span
-          className="text-base-token"
-          style={{
-            display: 'block',
-            color: done ? 'var(--muted-foreground)' : 'var(--foreground)',
-            textDecoration: done ? 'line-through' : 'none',
-          }}
+          className={`text-base-token block ${done ? 'text-muted-foreground line-through' : 'text-foreground'}`}
         >
           {task.title}
         </span>
-        <span
-          className="text-sm-token"
-          style={{ color: overdue ? 'var(--error)' : 'var(--muted-foreground)' }}
-        >
+        <span className={`text-sm-token ${overdue ? 'text-error' : 'text-muted-foreground'}`}>
           {done ? 'Done' : overdue ? `Overdue · ${label}` : (label ?? 'No due date')}
         </span>
       </div>

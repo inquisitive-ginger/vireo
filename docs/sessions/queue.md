@@ -11,18 +11,6 @@
 
 ## Up Next
 
-### Platform Architecture: plugin styling — inline-vs-Tailwind consistency
-
-**Type:** architecture (ADR) + small enabling change
-**Kickoff:** [kickoffs/arch-plugin-styling.md](kickoffs/arch-plugin-styling.md)
-**Reads:** `CLAUDE.md` "Standing Engineering Conventions" (the plugin-Tailwind-scan rule), dev-chores-completion session log (the inline-vs-Tailwind audit + the `grid`/`place-items-center` silent no-op), `packages/ui/.storybook` + shell Tailwind/`@source` config, `design-system.md`, plus `plugins/family-feed` + `plugins/chore-engine` components as the inline-heavy precedent
-**Produces:** an **ADR** settling the plugin styling standard (the shell's Tailwind scans only `packages/ui` + shell, so utility classes silently no-op in plugin source → plugins currently use inline `var(--token)` chrome, inconsistent with the utility-first shell/ui); the chosen **enabling change** (e.g. point the shell's Tailwind `@source` at `plugins/*/src`, or a per-plugin Tailwind build) **or** a documented decision to keep inline + a lint guard; updated `CLAUDE.md` standing convention + `design-system.md`
-**Out (explicit fast-follow):** reconciling the existing plugin components (chore-engine, family-feed) to the new standard — this session sets the standard + enabling change so **new** UI is built right; migrating prior components is a separate follow-on.
-**Depends on:** none (cross-cutting)
-**Why first:** the next three sessions are all plugin UI — settling this now means they're built under the right standard once, instead of adding inline-style surface to migrate later (or re-hitting the silent no-op footgun). Raised in PR #20 review; sequenced ahead at the user's request (2026-06-18).
-
----
-
 ### M2 Dev: XP Award + Parent Notification
 
 **Type:** development
@@ -95,6 +83,10 @@ enhancement to the existing count + XP-load meter). Blocks none of the M2 MVP st
 ---
 
 ## Recently Completed
+
+- **2026-06-18 — Platform Architecture: Plugin Styling** ![Type](https://img.shields.io/badge/Type-Architecture-blue)
+  Settled the plugin styling standard (raised in PR #20 review). **ADR 035 — Option 1:** first-party plugins are styled **utility-first like the shell**; the shell's `styles.css` gains `@source "plugins/*/src/**/*.{ts,tsx}"` so plugin utilities emit (they were silently no-op'ing — plugins are JS-only federated remotes rendered against the shell's single stylesheet). This brings the shell to **parity with Storybook**, which already scanned plugins — the source of the "works in a story, breaks in the shell" footgun (the `grid`/`place-items-center` completion-circle bug). **Third-party plugins → deferred Option 2** (per-plugin utilities-only Tailwind build shipped with the remote) when community distribution is scoped — named in ADR 035, not built. **Reconciliation done now** (user opted in; kickoff had scoped it as a fast-follow): migrated chore-engine (9 components) + family-feed (5) from inline `var(--token)` chrome to utilities at exact visual parity — dynamic identity/gold/animation values + `container-type: size` stay inline. `CLAUDE.md` + `design-system.md` updated (the latter's stale never-wired "plugin `@import 'tailwindcss'`" setup replaced). Verified: canary `h-64` emits with the `@source` and not without (negative test); typecheck + lint + both plugin builds green; live review confirmed parity on `/chores` + `/family-feed`. No backend change → API/E2E not rerun. **Owed:** Option 2 ADR (community plugins); keep shell + Storybook `@source` in sync. **Out:** `demo-plugin` (M0 demo, still hardcoded hex).
+  _See:_ `docs/sessions/logs/2026-06-18-arch-plugin-styling.md`
 
 - **2026-06-17 — M2 Dev: Completion Flow** ![Type](https://img.shields.io/badge/Type-Development-orange)
   Second chores story shipped. `PATCH /api/chores/tasks/:id/complete` (assignee completes own via row-level `complete` rule — now baseline for all tiers; tier-4 completes any via `manage all`; 404/403/409) emits `chores.task.completed { taskId, assigneeId, xpReward, completedAt }`. `PATCH …/reopen` (tier-4 only; new `reopen` action; 403/409) emits `chores.task.reopened`. **Taskee XP flight** (design §2): `ScorePlate` (gold lifetime plate, grow + count-up), `FlightChip` (portal, ~760ms arc), `TaskeeView` orchestrator (`pending → inFlight → done+banked`, locked order, optimistic + revert, reduced-motion/off-screen → quiet bank). **Admin = Option A** (decided via an interactive Storybook exploration the user reviewed): tier-4 plain per-row check-off completes anyone's task (no flight); a completed row's check is the **tier-4 reopen** (resurfaces on the assignee's list; kids can't self-reverse). Row ownership enforced explicitly (typed `@casl/prisma` can't carry namespaced `subject()`). **Live-review fixes:** completion circle CSS (plugin Tailwind doesn't emit `grid`/`place-items-center` → inlined), admin order-lock (no live resort), faster flight, create-form breathing room + full-width date. **Score plate is local/optimistic** — XP Award owes the persisted balance + claw-back on reopen. E2E added (`chore-engine` preview added to Playwright `webServer`). 149 API tests + chores E2E green. **Queued at user request:** M2 Dev: Focus Mode. **Open:** `turbo gen plugin` bug.

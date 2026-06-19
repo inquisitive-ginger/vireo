@@ -19,7 +19,7 @@ with the family that runs it. See [`docs/vision.md`](docs/vision.md).
 
 - **Milestone:** M2 — Chores (dev in progress — 2 of 5 stories done)
 - **Active stories:** None (Completion Flow ✅ closed)
-- **Last session:** 2026-06-17 — Dev: M2 Completion Flow. **`PATCH /api/chores/tasks/:id/complete`** (assignee completes own via row-level `complete` rule — now baseline for all tiers; tier-4 completes any via `manage all`; 404/403/409) emits `chores.task.completed { taskId, assigneeId, xpReward, completedAt }`; **`PATCH …/reopen`** (tier-4 only, new `reopen` action; 403/409) emits `chores.task.reopened`. **Taskee XP flight** (design §2): `ScorePlate` (gold lifetime plate, grow + count-up), `FlightChip` (portal, ~980ms arc, mount-only), `TaskeeView` orchestrator (`pending → inFlight → done+banked`, locked order, optimistic + revert, reduced-motion/off-screen → quiet bank), `usePrefersReducedMotion`. **Admin = Option A** (decided via an interactive Storybook exploration the user reviewed): tier-4 plain per-row check-off completes **anyone's** task (no flight), and a completed row's check is the **tier-4 reopen** control (resurfaces on the assignee's list; kids can't self-reverse). Row ownership enforced explicitly (typed `@casl/prisma` can't carry namespaced `subject()` — same limit as task-model). **Score plate is local/optimistic** (seeded from completed tasks) — XP Award owes the persisted balance + claw-back on reopen. E2E added (`chores-completion.spec.ts`; `chore-engine` preview added to Playwright `webServer`). 149 API tests + chores E2E green. Open: `turbo gen plugin` bug.
+- **Last session:** 2026-06-18 — Architecture: Plugin Styling (ADR 035). Settled the plugin styling standard (raised in PR #20 review). **Option 1:** first-party plugins are styled **utility-first like the shell** — the shell's `styles.css` gains `@source "../../../plugins/*/src/**/*.{ts,tsx}"` so plugin utility classes emit (plugins are JS-only federated remotes rendered against the shell's single stylesheet; their utilities were silently no-op'ing — the `grid`/`place-items-center` completion-circle bug). Brings the shell to **parity with Storybook**, which already scanned plugins. **Third-party plugins → deferred Option 2** (per-plugin utilities-only Tailwind build with the remote) when community distribution is scoped — named in ADR 035, not built. **Reconciliation done now** (user opted in; kickoff had it as a fast-follow): migrated chore-engine (9 components) + family-feed (5) from inline `var(--token)` chrome to utilities at exact visual parity — dynamic identity/gold/animation values + `container-type: size` stay inline. `CLAUDE.md` + `design-system.md` updated. Verified: canary `h-64` emits with the `@source` and not without; typecheck + lint + both plugin builds green; live review confirmed parity. No backend change. **Keep shell + Storybook `@source` in sync.** Open: `turbo gen plugin` bug; Option 2 ADR owed (community plugins).
 - **Next session:** M2 Dev: XP Award + Parent Notification
 
 > Update this section at the end of every session.
@@ -114,9 +114,12 @@ but "backend for chores/task-completion story"
 - **UI → `@family-os/ui` (shadcn/Radix) components + design tokens** (ADR 012,
   `design-system.md`). Use `Button`/`Badge`/`Input`/`Label`/etc. and typography
   token utilities — never raw px font sizes, hardcoded colors, or reimplemented
-  primitives. The shell's Tailwind only scans `packages/ui` + shell, so in a
-  plugin use token `@utility` classes + inline `var(--token)` styles, not novel
-  utility classes.
+  primitives. **Plugins are styled utility-first, same as the shell** (ADR 035):
+  the shell's Tailwind `@source`-scans `plugins/*/src`, so `className` utilities,
+  `hover:`/`focus:` variants, and container queries all emit — no per-plugin CSS
+  setup. Colors/fonts still go through tokens (`bg-primary`, `var(--token)`), never
+  hardcoded values. (First-party only; third-party plugin CSS is a future Option-2
+  per-plugin build — see ADR 035.)
 - **Member colors → identity palette helpers** (`identityColor`, ADR 030) — never
   invent hues.
 - **Permissions → CASL namespaced subjects + `PERMISSION_REGISTRY`** (ADR 018).

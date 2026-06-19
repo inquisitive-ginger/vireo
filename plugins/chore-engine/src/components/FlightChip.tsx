@@ -63,27 +63,14 @@ export function FlightChip({ from, to, value, onDone }: FlightChipProps) {
     <div
       ref={ref}
       aria-hidden
-      style={{
-        position: 'fixed',
-        left: from.left,
-        top: from.top,
-        // Centre the chip on the badge's centre regardless of its own size.
-        minWidth: from.width,
-        height: from.height,
-        display: 'grid',
-        placeItems: 'center',
-        transformOrigin: 'center',
-        pointerEvents: 'none',
-        zIndex: 9999,
-      }}
+      className="pointer-events-none fixed z-[9999] grid origin-center place-items-center"
+      // left/top/size track the badge's live rect — centre the chip on its centre.
+      style={{ left: from.left, top: from.top, minWidth: from.width, height: from.height }}
     >
       <span
-        className="text-sm-token"
+        className="text-sm-token rounded-full font-bold whitespace-nowrap"
         style={{
           padding: '2px 9px',
-          borderRadius: 999,
-          fontWeight: 700,
-          whiteSpace: 'nowrap',
           background: `linear-gradient(135deg, ${GOLD_HI}, ${GOLD_TINT})`,
           border: `1px solid ${GOLD}`,
           color: GOLD_INK,
