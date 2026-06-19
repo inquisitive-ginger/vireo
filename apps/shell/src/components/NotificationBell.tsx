@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react'
-import { useAuth } from '@family-os/platform'
+import { useAuth, useEventBus } from '@family-os/platform'
 import { BellBadge, NotificationTray } from '@family-os/ui'
 import type { NotificationEntry } from '@family-os/ui'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
@@ -16,7 +16,8 @@ export function NotificationBell({
   className?: string
   compact?: boolean
 }) {
-  const { tier } = useAuth()
+  const { id, tier } = useAuth()
+  const { subscribe } = useEventBus()
   const queryClient = useQueryClient()
   const [trayOpen, setTrayOpen] = useState(false)
 
@@ -35,14 +36,17 @@ export function NotificationBell({
     staleTime: 0,
   })
 
+  // Keep the bell live: the server emits platform.notification.created on the
+  // event bus when a notification is persisted. The bus broadcasts to every
+  // client, so refresh only when the new notification targets this profile.
   useEffect(() => {
     if (tier < 2) return
-    function onNotify() {
+    return subscribe('platform.notification.created', (payload) => {
+      if ((payload as { profileId?: string }).profileId !== id) return
       queryClient.invalidateQueries({ queryKey: ['notifications/unread'] })
-    }
-    window.addEventListener('platform:notification', onNotify)
-    return () => window.removeEventListener('platform:notification', onNotify)
-  }, [tier, queryClient])
+      queryClient.invalidateQueries({ queryKey: ['notifications'] })
+    })
+  }, [id, tier, subscribe, queryClient])
 
   function closeTray() {
     setTrayOpen(false)

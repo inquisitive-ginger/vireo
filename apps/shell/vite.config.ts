@@ -43,7 +43,15 @@ export default defineConfig({
       ...Object.fromEntries(
         registry.map((p) => [
           `/plugins/${p.name}`,
-          { target: p.baseUrl, rewrite: (path: string) => path.replace(`/plugins/${p.name}`, '') },
+          {
+            target: p.baseUrl,
+            // Rewrite the forwarded Host to the plugin's localhost target so the
+            // plugin Vite servers' allowedHosts check passes when the shell is
+            // reached via a tunnel (e.g. *.trycloudflare.com). Without this the
+            // plugin remoteEntry/manifest 403s and federated plugins won't load.
+            changeOrigin: true,
+            rewrite: (path: string) => path.replace(`/plugins/${p.name}`, ''),
+          },
         ])
       ),
     },
@@ -58,7 +66,15 @@ export default defineConfig({
       ...Object.fromEntries(
         registry.map((p) => [
           `/plugins/${p.name}`,
-          { target: p.baseUrl, rewrite: (path: string) => path.replace(`/plugins/${p.name}`, '') },
+          {
+            target: p.baseUrl,
+            // Rewrite the forwarded Host to the plugin's localhost target so the
+            // plugin Vite servers' allowedHosts check passes when the shell is
+            // reached via a tunnel (e.g. *.trycloudflare.com). Without this the
+            // plugin remoteEntry/manifest 403s and federated plugins won't load.
+            changeOrigin: true,
+            rewrite: (path: string) => path.replace(`/plugins/${p.name}`, ''),
+          },
         ])
       ),
     },

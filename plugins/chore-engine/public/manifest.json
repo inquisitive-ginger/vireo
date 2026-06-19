@@ -2,14 +2,25 @@
   "name": "chore-engine",
   "version": "0.0.1",
   "remoteEntry": "http://localhost:3012/assets/remoteEntry.js",
-  "exposes": ["./Plugin"],
+  "exposes": ["./Plugin", "./widgets/TodaySummary"],
   "routes": ["/chores"],
   "schema": "chore_engine",
   "events": {
     "publishes": ["chores.task.created", "chores.task.completed"],
     "subscribes": ["chores.task.completed"]
   },
-  "widgets": [],
+  "widgets": [
+    {
+      "id": "chores.today-summary",
+      "displayName": "Today's Chores",
+      "component": "./widgets/TodaySummary",
+      "defaultSize": "standard",
+      "supportedSizes": ["compact", "standard", "large"],
+      "minTier": 1,
+      "requiredPermission": "chores.task.view",
+      "description": "Shows the current user's tasks due today."
+    }
+  ],
   "navItem": {
     "label": "Chores",
     "route": "/chores",

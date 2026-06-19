@@ -11,6 +11,7 @@ const pluginLoaders: Record<string, () => Promise<{ default: ComponentType }>> =
 
 const widgetLoaders: Record<string, () => Promise<{ default: ComponentType }>> = {
   'family-feed': () => import('family-feed/widgets/FeedWidget'),
+  'chore-engine': () => import('chore-engine/widgets/TodaySummary'),
 }
 
 const pluginCache = new Map<string, LazyExoticComponent<ComponentType>>()
