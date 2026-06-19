@@ -33,9 +33,8 @@ function moduleFromWidgetId(widgetId: string): string {
 
 type HomeProps = {
   /** Map of widget id → the federation remote that exposes it, built from plugin
-      manifests in main.tsx. Resolves the widget loader by remote name so a widget
-      whose id namespace differs from its remote (e.g. chores.today-summary →
-      chore-engine) still renders. */
+      manifests in main.tsx. Resolves the widget loader by remote name, since a
+      widget's id namespace isn't guaranteed to match its remote name (ADR 022). */
   widgetRemotes: Record<string, string>
 }
 

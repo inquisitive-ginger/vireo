@@ -5,7 +5,7 @@ generator client {
 
 datasource db {
   provider = "postgresql"
-  schemas  = ["chore_engine"]
+  schemas  = ["chores"]
 }
 
 model Task {
@@ -21,7 +21,7 @@ model Task {
   completedAt DateTime? @map("completed_at")
 
   @@map("tasks")
-  @@schema("chore_engine")
+  @@schema("chores")
 }
 
 model XpBalance {
@@ -30,5 +30,5 @@ model XpBalance {
   updatedAt DateTime @updatedAt @map("updated_at")
 
   @@map("xp_balances")
-  @@schema("chore_engine")
+  @@schema("chores")
 }

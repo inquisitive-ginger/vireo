@@ -20,13 +20,13 @@ declare module 'family-feed/widgets/FeedWidget' {
   export default FeedWidget
 }
 
-declare module 'chore-engine/Plugin' {
+declare module 'chores/Plugin' {
   import type { ComponentType } from 'react'
   const Plugin: ComponentType
   export default Plugin
 }
 
-declare module 'chore-engine/widgets/TodaySummary' {
+declare module 'chores/widgets/TodaySummary' {
   import type { ComponentType } from 'react'
   const TodaySummary: ComponentType
   export default TodaySummary

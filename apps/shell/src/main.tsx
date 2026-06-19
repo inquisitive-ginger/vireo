@@ -65,10 +65,10 @@ async function loadPlugins(): Promise<LoadedPlugin[]> {
 
 const plugins = await loadPlugins()
 
-// Resolve each widget id to the federation remote that exposes it. The widget-id
-// namespace (e.g. "chores") is not always the remote name (e.g. "chore-engine"),
-// so Home must map ownership via the manifest rather than splitting the id — the
-// prefix only coincides with the remote name for some plugins (ADR 022).
+// Resolve each widget id to the federation remote that exposes it. A widget's id
+// namespace isn't guaranteed to match the remote name, so Home maps ownership via
+// the manifest rather than splitting the id — the prefix only coincides with the
+// remote name for some plugins (ADR 022).
 const widgetRemotes: Record<string, string> = {}
 for (const plugin of plugins) {
   for (const widget of (plugin.widgets ?? []) as { id: string }[]) {
