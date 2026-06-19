@@ -67,35 +67,29 @@ export const ScorePlate = forwardRef<HTMLDivElement, ScorePlateProps>(function S
     <div ref={ref}>
       <div
         ref={innerRef}
-        className="flex items-center gap-2"
+        className="flex items-center gap-2 rounded-full"
         style={{
           padding: '7px 13px 7px 10px',
-          borderRadius: 999,
           background: `linear-gradient(135deg, ${GOLD_HI}, ${GOLD_TINT})`,
           border: `1px solid ${GOLD}`,
           boxShadow: '0 1px 2px oklch(0 0 0 / 0.08)',
         }}
       >
         <span
+          className="grid size-[22px] shrink-0 place-items-center rounded-full"
           style={{
-            flexShrink: 0,
-            display: 'grid',
-            placeItems: 'center',
-            width: 22,
-            height: 22,
-            borderRadius: '50%',
             background: `radial-gradient(circle at 32% 30%, ${GOLD_HI}, ${GOLD} 70%, ${GOLD_DEEP})`,
             color: GOLD_DEEP,
           }}
         >
           <Coins size={13} strokeWidth={2.5} />
         </span>
-        <span className="text-metric" style={{ color: GOLD_INK, lineHeight: 1 }}>
+        <span className="text-metric leading-none" style={{ color: GOLD_INK }}>
           {displayed.toLocaleString()}
         </span>
         <span
-          className="text-xs-token"
-          style={{ color: GOLD_INK, opacity: 0.7, fontWeight: 700, letterSpacing: '0.04em' }}
+          className="text-xs-token font-bold tracking-[0.04em] opacity-70"
+          style={{ color: GOLD_INK }}
         >
           XP
         </span>

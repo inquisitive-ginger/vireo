@@ -992,23 +992,35 @@ Plugins must not:
 - Hardcode color values — use CSS custom property tokens
 - Use media queries for layout — use CSS container queries
 
-**CSS setup for first-party plugins** (monorepo):
+**Styling first-party plugins** (monorepo) — **settled by ADR 035.** First-party
+plugins are authored **utility-first, exactly like the shell**. Plugins emit
+JavaScript only (no CSS build of their own); the shell owns the single stylesheet
+and `@source`-scans `plugins/*/src`, so any `className` utility, `hover:`/`focus:`
+variant, or container query used in a plugin emits CSS. **No per-plugin CSS setup
+is required** — a plugin does not import `tailwindcss` or `styles.css`.
 
-```css
-@import 'tailwindcss';
-@import '@family-os/ui/styles.css';
+```tsx
+// Plugin component — same authoring model as the shell
+<div className="grid place-items-center bg-primary hover:bg-primary/10 rounded-lg">
 ```
 
-This gives the plugin the full token set and Tailwind utility classes
-(`bg-primary`, `text-muted-foreground`, etc.) at build time.
+Colors and fonts still flow through **tokens** (`bg-primary`, `var(--primary)`,
+`var(--font-display)`) — utilities resolve to tokens, and inline `var(--token)` is
+fine for one-off values. Hardcoded hex/px color and font values stay banned.
 
-**CSS setup for community plugins**: CSS custom properties (`var(--primary)`,
-`var(--error)`, etc.) are inherited from the shell's `:root` at runtime — no
-import required for token access. Tailwind utility classes require the
-`@theme inline` block from `@family-os/ui/styles.css`, which means the package
-must be available. Until `@family-os/ui` is published, community plugins should
-use `var(--token)` inline styles or their own CSS rather than Tailwind color
-utilities.
+> The shell `@source` and the Storybook `@source`
+> (`packages/ui/.storybook/preview-styles.css`) must point at the same plugin glob
+> — a divergence reintroduces "works in Storybook, breaks in the shell." Both carry
+> a sync comment.
+
+**Community / third-party plugins** (future): CSS custom-property tokens are
+inherited from the shell's `:root` at runtime, so `var(--primary)` etc. work with
+no import. But a third-party plugin distributed as a pre-built remote is **not** in
+the shell's build tree, so its utility classes would not be scanned. That
+distribution model isn't supported yet; when it is, the recommended path is a
+**per-plugin Tailwind build** (ADR 035, Option 2) shipping the plugin's own
+utilities-only CSS with the remote. Until then, community plugins should use
+`var(--token)` inline styles or their own CSS rather than scanned utilities.
 
 The `@family-os/ui` surface starts minimal and grows deliberately.
 Every export is a commitment plugins can depend on.

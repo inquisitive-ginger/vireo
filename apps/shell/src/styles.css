@@ -1,3 +1,9 @@
 @import 'tailwindcss';
 @source "../../../packages/ui/src";
+/* First-party plugins live in this monorepo but are built as separate federated
+   remotes (JS only — no CSS of their own). The shell owns the single stylesheet,
+   so it must scan plugin source for their utility classes to emit. Without this,
+   a utility used only in a plugin silently no-ops (see ADR 035). Mirrors the same
+   @source in packages/ui/.storybook/preview-styles.css — keep them in sync. */
+@source "../../../plugins/*/src/**/*.{ts,tsx}";
 @import '@family-os/ui/styles.css';

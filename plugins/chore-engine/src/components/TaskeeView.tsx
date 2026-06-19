@@ -107,41 +107,23 @@ export function TaskeeView({ tasks, onCompleteTask }: TaskeeViewProps) {
   const pct = total > 0 ? (done / total) * 100 : 0
 
   return (
-    <div style={{ maxWidth: 680, margin: '0 auto', padding: '28px 24px 48px' }}>
+    <div className="mx-auto max-w-[680px] px-6 pt-7 pb-12">
       <PageHeader title="Chores" action={<ScorePlate ref={plateRef} value={lifetime} />} />
 
       {/* Progress line + bar (design §1 taskee header). */}
-      <div style={{ marginBottom: 16 }}>
-        <p
-          className="text-sm-token"
-          style={{ color: 'var(--muted-foreground)', margin: '0 0 8px' }}
-        >
+      <div className="mb-4">
+        <p className="text-sm-token mb-2 text-muted-foreground">
           {done === total ? '🎉 All done today' : `${total - done} left · ${done} of ${total} done`}
         </p>
-        <div
-          style={{ height: 5, borderRadius: 9999, background: 'var(--muted)', overflow: 'hidden' }}
-        >
+        <div className="h-[5px] overflow-hidden rounded-full bg-muted">
           <div
-            style={{
-              width: `${pct}%`,
-              height: '100%',
-              borderRadius: 9999,
-              background: 'var(--success)',
-              transition: 'width 320ms ease',
-            }}
+            className="h-full rounded-full bg-success transition-[width] duration-[320ms]"
+            style={{ width: `${pct}%` }}
           />
         </div>
       </div>
 
-      <div
-        style={{
-          display: 'flex',
-          flexDirection: 'column',
-          gap: 10,
-          paddingTop: 16,
-          borderTop: '1px solid var(--border)',
-        }}
-      >
+      <div className="flex flex-col gap-2.5 border-t border-border pt-4">
         {ordered.map((t) => (
           <TaskCard
             key={t.id}

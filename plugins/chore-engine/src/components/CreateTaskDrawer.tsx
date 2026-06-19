@@ -70,9 +70,9 @@ export function CreateTaskDrawer({
 
   return (
     <Drawer open={open} onClose={onClose} title="New task">
-      <div style={{ display: 'flex', height: '100%', flexDirection: 'column' }}>
-        <div style={{ flex: 1, overflowY: 'auto', padding: '24px 24px' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: 24 }}>
+      <div className="flex h-full flex-col">
+        <div className="flex-1 overflow-y-auto p-6">
+          <div className="flex flex-col gap-6">
             <div>
               <FieldLabel htmlFor="chore-title">Task title</FieldLabel>
               <Input
@@ -85,7 +85,7 @@ export function CreateTaskDrawer({
 
             <div>
               <FieldLabel>Assign to</FieldLabel>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+              <div className="flex flex-wrap gap-2">
                 {members.map((m) => (
                   <AssigneeChip
                     key={m.id}
@@ -99,11 +99,11 @@ export function CreateTaskDrawer({
 
             <div>
               <FieldLabel>Reward</FieldLabel>
-              <div style={{ display: 'flex', gap: 8, flexWrap: 'wrap', alignItems: 'center' }}>
+              <div className="flex flex-wrap items-center gap-2">
                 {XP_PRESETS.map((v) => (
                   <XpChip key={v} value={v} selected={xp === v} onClick={() => setXp(v)} />
                 ))}
-                <span className="text-section-label" style={{ color: GOLD_INK, marginLeft: 2 }}>
+                <span className="text-section-label ml-0.5" style={{ color: GOLD_INK }}>
                   XP
                 </span>
               </div>
@@ -122,21 +122,13 @@ export function CreateTaskDrawer({
                 // the calendar icon. (Proper themed picker deferred to the calendar
                 // module.) `showPicker` is recent — guard for older browsers.
                 onClick={(e) => (e.currentTarget as HTMLInputElement).showPicker?.()}
-                style={{ cursor: 'pointer' }}
+                className="cursor-pointer"
               />
             </div>
           </div>
         </div>
 
-        <div
-          style={{
-            display: 'flex',
-            flexDirection: 'column',
-            gap: 10,
-            padding: 24,
-            borderTop: '1px solid var(--border)',
-          }}
-        >
+        <div className="flex flex-col gap-2.5 border-t border-border p-6">
           <Button className="w-full" onClick={handleSubmit} disabled={!canSubmit}>
             {submitting ? 'Assigning…' : 'Assign task'}
           </Button>
@@ -156,9 +148,9 @@ function FieldLabel({
   htmlFor?: string
 }) {
   return (
-    <Label htmlFor={htmlFor} style={{ display: 'block', marginBottom: 7 }}>
+    <Label htmlFor={htmlFor} className="mb-[7px] block">
       {children}
-      {optional && <span style={{ fontWeight: 400, opacity: 0.65 }}> (optional)</span>}
+      {optional && <span className="font-normal opacity-65"> (optional)</span>}
     </Label>
   )
 }
@@ -176,29 +168,16 @@ function AssigneeChip({
     <button
       type="button"
       onClick={onClick}
-      className="text-sm-token"
+      className="text-sm-token inline-flex cursor-pointer items-center gap-1.5 rounded-full px-3.5 py-1.5"
+      // border/background/text all carry the assignee's identity hue when selected.
       style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: 6,
-        padding: '6px 14px',
-        borderRadius: 9999,
         border: `2px solid ${selected ? identityColor(name) : 'var(--border)'}`,
         background: selected ? identityColor(name, 'tint') : 'transparent',
         color: selected ? identityColor(name, 'ink') : 'var(--foreground)',
         fontWeight: selected ? 600 : 400,
-        cursor: 'pointer',
       }}
     >
-      <span
-        style={{
-          width: 8,
-          height: 8,
-          borderRadius: '50%',
-          background: identityColor(name),
-          flexShrink: 0,
-        }}
-      />
+      <span className="size-2 shrink-0 rounded-full" style={{ background: identityColor(name) }} />
       {name}
     </button>
   )
@@ -217,20 +196,13 @@ function XpChip({
     <button
       type="button"
       onClick={onClick}
-      className="text-sm-token"
+      className="text-sm-token inline-flex min-w-[44px] cursor-pointer items-center justify-center gap-1 rounded-full px-3 py-1.5"
+      // gold "treasure" fill when selected (gold isn't in the token set — see lib/gold).
       style={{
-        display: 'inline-flex',
-        alignItems: 'center',
-        gap: 4,
-        minWidth: 44,
-        justifyContent: 'center',
-        padding: '6px 12px',
-        borderRadius: 9999,
         border: `2px solid ${selected ? GOLD : 'var(--border)'}`,
         background: selected ? GOLD_TINT : 'transparent',
         color: selected ? GOLD_INK : 'var(--muted-foreground)',
         fontWeight: selected ? 700 : 500,
-        cursor: 'pointer',
       }}
     >
       {selected && <Star size={12} fill={GOLD} style={{ color: GOLD }} />}

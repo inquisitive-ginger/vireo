@@ -63,7 +63,7 @@ export function FeedPage() {
   if (feed.isLoading) {
     return (
       <div className="flex h-64 items-center justify-center">
-        <Loader2 className="size-5 animate-spin" style={{ color: 'var(--muted-foreground)' }} />
+        <Loader2 className="size-5 animate-spin text-muted-foreground" />
       </div>
     )
   }
@@ -71,7 +71,9 @@ export function FeedPage() {
   if (feed.isError) {
     return (
       <div className="flex h-64 flex-col items-center justify-center gap-3">
-        <p style={{ color: 'var(--muted-foreground)', fontSize: 14 }}>Could not load posts.</p>
+        <p className="text-muted-foreground" style={{ fontSize: 14 }}>
+          Could not load posts.
+        </p>
         <Button variant="outline" size="sm" onClick={() => feed.refetch()}>
           Try again
         </Button>
@@ -82,7 +84,7 @@ export function FeedPage() {
   const posts: FeedPost[] = feed.data?.pages.flatMap((p) => p.posts) ?? []
 
   return (
-    <div ref={feedRef} tabIndex={-1} style={{ outline: 'none' }}>
+    <div ref={feedRef} tabIndex={-1} className="outline-none">
       <FeedPageView
         posts={posts}
         composeButton={

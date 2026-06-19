@@ -19,10 +19,8 @@ const WIDGET_STYLES = `
 function WidgetHeader() {
   return (
     <div className="flex items-center gap-1.5 shrink-0">
-      <MessagesSquare size={13} style={{ color: 'var(--muted-foreground)' }} aria-hidden />
-      <span className="text-section-label" style={{ color: 'var(--muted-foreground)' }}>
-        Family Feed
-      </span>
+      <MessagesSquare size={13} className="text-muted-foreground" aria-hidden />
+      <span className="text-section-label">Family Feed</span>
     </div>
   )
 }
@@ -37,13 +35,15 @@ export function FeedWidgetView({ posts, emptyAction }: FeedWidgetViewProps) {
   const latest = posts[0]
 
   const empty = (
-    <div style={{ flex: 1, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+    <div className="flex flex-1 items-center justify-center">
       <FeedEmptyState compose={emptyAction} compact />
     </div>
   )
 
   return (
-    <div style={{ height: '100%', containerType: 'size' } as React.CSSProperties}>
+    // containerType: size stays inline — Tailwind's @container utility only sets
+    // inline-size, but these widgets gate layout on height.
+    <div className="h-full" style={{ containerType: 'size' }}>
       <style href="family-feed-widget" precedence="default">
         {WIDGET_STYLES}
       </style>
@@ -54,9 +54,7 @@ export function FeedWidgetView({ posts, emptyAction }: FeedWidgetViewProps) {
         {!latest ? (
           empty
         ) : (
-          <div
-            style={{ flex: 1, display: 'flex', flexDirection: 'column', justifyContent: 'center' }}
-          >
+          <div className="flex flex-1 flex-col justify-center">
             <FeedPostCard post={latest} lineClamp={2} variant="widget" />
           </div>
         )}
@@ -68,13 +66,11 @@ export function FeedWidgetView({ posts, emptyAction }: FeedWidgetViewProps) {
         {posts.length === 0 ? (
           empty
         ) : (
-          <div style={{ marginTop: 28, minHeight: 0, overflow: 'hidden' }}>
+          <div className="mt-7 min-h-0 overflow-hidden">
             {posts.slice(0, 3).map((post, i, arr) => (
               <div key={post.id}>
                 <FeedPostCard post={post} lineClamp={2} variant="widget" />
-                {i < arr.length - 1 && (
-                  <div style={{ height: 1, background: 'var(--border)', margin: '22px 0' }} />
-                )}
+                {i < arr.length - 1 && <div className="my-[22px] h-px bg-border" />}
               </div>
             ))}
           </div>

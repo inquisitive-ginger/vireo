@@ -13,11 +13,7 @@ export interface XpPillProps {
    only the gold fill is an inline override. */
 export function XpPill({ value, earned = false }: XpPillProps) {
   if (earned) {
-    return (
-      <span className="text-sm-token" style={{ color: 'var(--success)', fontWeight: 600 }}>
-        ✓ +{value} XP
-      </span>
-    )
+    return <span className="text-sm-token font-semibold text-success">✓ +{value} XP</span>
   }
   return (
     <Badge style={{ background: GOLD_TINT, color: GOLD_INK, borderColor: 'transparent' }}>
