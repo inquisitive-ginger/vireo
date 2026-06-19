@@ -19,7 +19,7 @@ const notificationsPlugin: FastifyPluginAsync = async (fastify) => {
     if (!body?.title || !body?.variant) return { ok: false, error: 'title and variant required' }
 
     // Persist + prune + Web Push all live in the shared server notify() path.
-    const result = await notify(profile.id, {
+    const result = await notify(fastify.eventBus, profile.id, {
       title: body.title,
       body: body.body,
       variant: body.variant,

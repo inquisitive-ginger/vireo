@@ -1,4 +1,5 @@
 import { prisma } from '@family-os/platform/server'
+import type { EventBus } from '@family-os/platform/server'
 import { sendPushToProfile } from '../plugins/push'
 
 export const MAX_NOTIFICATIONS = 50
@@ -14,11 +15,16 @@ export type NotifyInput = {
  * prunes that profile's history to MAX_NOTIFICATIONS, and dispatches a Web Push
  * for priority `alert` (tier 4 always, tier 3 when push is enabled).
  *
+ * On success, emits `platform.notification.created` ({ profileId }) on the event
+ * bus so connected clients (e.g. the notification bell) can refresh in realtime —
+ * the bus broadcasts to all clients, which filter by profileId.
+ *
  * Returns the created notification id, or `null` when skipped (profile missing or
  * tier < 2). Both `POST /notifications` and server-side event subscribers (e.g.
  * the chores parent-notification) go through this so persistence, pruning, and
  * push stay consistent in one place. */
 export async function notify(
+  eventBus: EventBus,
   profileId: string,
   input: NotifyInput
 ): Promise<{ id: string } | null> {
@@ -60,6 +66,10 @@ export async function notify(
       variant: input.variant,
     })
   }
+
+  // Realtime signal for connected clients (bell badge / tray). Broadcast to all;
+  // clients filter by profileId.
+  eventBus.emit('platform.notification.created', { profileId })
 
   return { id: notification.id }
 }

@@ -1,6 +1,7 @@
 import fp from 'fastify-plugin'
 import type { FastifyPluginAsync } from 'fastify'
 import { prisma } from '@family-os/platform/server'
+import type { EventBus } from '@family-os/platform/server'
 import { chorePrisma } from '@family-os/plugin-chore-engine/db'
 import { notify } from '../lib/notify'
 
@@ -42,7 +43,7 @@ async function handleXpAward(payload: unknown): Promise<void> {
  * Looks up the assignee name from the platform schema (the event payload carries
  * `assigneeId` but not the name). If `createdBy` is absent the subscriber logs
  * a warning and skips cleanly — no crash. */
-async function handleParentNotification(payload: unknown): Promise<void> {
+async function handleParentNotification(payload: unknown, eventBus: EventBus): Promise<void> {
   const { taskId, assigneeId, xpReward, title, createdBy } = payload as TaskCompletedPayload
 
   if (!createdBy) {
@@ -61,7 +62,7 @@ async function handleParentNotification(payload: unknown): Promise<void> {
   // Route through the shared server notify() path so persistence, history
   // pruning, and Web Push (priority `alert` → tier 4/3) stay consistent with
   // POST /notifications. notify() handles the tier-1 / missing-profile skip.
-  await notify(createdBy, {
+  await notify(eventBus, createdBy, {
     title: `${assigneeName} completed ${taskTitle}`,
     body: `Earned ${xpReward} XP`,
     variant: 'info',
@@ -263,7 +264,7 @@ const choresPlugin: FastifyPluginAsync = async (fastify) => {
     void handleXpAward(payload).catch((err) =>
       fastify.log.error({ err }, '[chores] XP award subscriber failed')
     )
-    void handleParentNotification(payload).catch((err) =>
+    void handleParentNotification(payload, fastify.eventBus).catch((err) =>
       fastify.log.error({ err }, '[chores] parent notification subscriber failed')
     )
   })

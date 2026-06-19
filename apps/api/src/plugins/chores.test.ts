@@ -645,6 +645,29 @@ describe('parent notification subscriber', () => {
     }
   })
 
+  it('emits platform.notification.created so clients can refresh in realtime', async () => {
+    const events: unknown[] = []
+    const off = app.eventBus.on('platform.notification.created', (p) => events.push(p))
+    try {
+      const task = await chorePrisma.task.create({
+        data: { title: 'Feed cat', assigneeId: KID_ID, createdBy: PARENT_ID, xpReward: 10 },
+      })
+      const kidCookie = await getCookieForProfile(KID_ID)
+
+      await app.inject({
+        method: 'PATCH',
+        url: `/api/chores/tasks/${task.id}/complete`,
+        headers: { cookie: kidCookie },
+      })
+
+      await new Promise((resolve) => setTimeout(resolve, 50))
+
+      expect(events).toContainEqual(expect.objectContaining({ profileId: PARENT_ID }))
+    } finally {
+      off()
+    }
+  })
+
   it('notification title uses the assignee name from the platform schema', async () => {
     const task = await chorePrisma.task.create({
       data: { title: 'Clean room', assigneeId: TEEN_ID, createdBy: PARENT_ID, xpReward: 20 },
