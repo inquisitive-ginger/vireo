@@ -617,6 +617,52 @@ describe('parent notification subscriber', () => {
     expect(notifications[0].priority).toBe('alert')
   })
 
+  it('does not notify the creator when they complete their own assigned task (admin check-off)', async () => {
+    // A tier-4 parent creates a task and then checks it off themselves. The
+    // completer equals the creator, so the self-notification must be suppressed.
+    const task = await chorePrisma.task.create({
+      data: {
+        title: 'Parent self check-off',
+        assigneeId: KID_ID,
+        createdBy: PARENT_ID,
+        xpReward: 10,
+      },
+    })
+    const parentCookie = await getCookieForProfile(PARENT_ID)
+
+    await app.inject({
+      method: 'PATCH',
+      url: `/api/chores/tasks/${task.id}/complete`,
+      headers: { cookie: parentCookie },
+    })
+
+    await new Promise((resolve) => setTimeout(resolve, 50))
+
+    const notifications = await prisma.notification.findMany({ where: { profileId: PARENT_ID } })
+    expect(notifications).toHaveLength(0)
+  })
+
+  it('still notifies the creator when the assignee (a different profile) completes the task', async () => {
+    // Regression guard for the self-notification skip: when completedBy differs
+    // from createdBy, the creator must still be notified.
+    const task = await chorePrisma.task.create({
+      data: { title: 'Kid completes', assigneeId: KID_ID, createdBy: PARENT_ID, xpReward: 10 },
+    })
+    const kidCookie = await getCookieForProfile(KID_ID)
+
+    await app.inject({
+      method: 'PATCH',
+      url: `/api/chores/tasks/${task.id}/complete`,
+      headers: { cookie: kidCookie },
+    })
+
+    await new Promise((resolve) => setTimeout(resolve, 50))
+
+    const notifications = await prisma.notification.findMany({ where: { profileId: PARENT_ID } })
+    expect(notifications).toHaveLength(1)
+    expect(notifications[0].title).toBe('Kid completed Kid completes')
+  })
+
   it('dispatches a Web Push to the tier-4 creator on completion', async () => {
     const pushSpy = vi.spyOn(pushModule, 'sendPushToProfile').mockResolvedValue()
     try {
