@@ -11,10 +11,11 @@ const FAMILY_PROFILE_ID = 'family'
    is shared with the ChoresPage so a task completion on the page invalidates this
    widget too (ADR 013 prefix-match rule).
 
-   Lifetime XP is local/optimistic — seeded from completed tasks exactly as in
-   TaskeeView / ScorePlate (design §2; the XP Award story swaps this for the
-   persisted balance). No call to GET /api/chores/xp: that route is built in the
-   XP Award session, not here.
+   Lifetime XP comes from the persisted balance (GET /api/chores/xp, shipped in XP
+   Award #23) — same source as the page's ScorePlate, profile-scoped so a switch
+   refetches. Only taskees have a score; the family/admin framing carries no XP, so
+   the query is disabled there. Daily XP is the sum of today's completed-task
+   rewards (the "+N today" header signal — read-only, never grows here).
 
    Size comes from the `size` prop set by the shell's WidgetGrid — compact, standard
    or large (manifest supportedSizes). The whole tile is a deep-link to /chores
@@ -27,6 +28,7 @@ interface TodaySummaryProps {
 export default function TodaySummary({ size = 'standard' }: TodaySummaryProps) {
   const { id, tier } = useAuth()
   const isFamily = id === FAMILY_PROFILE_ID
+  const usesFamilyFraming = isFamily || tier >= 4
 
   // Profile-scoped key — changes on profile switch, triggers a refetch (ADR 013).
   // Prefix shared with ChoresPage: ['chores/tasks'] invalidation refreshes both.
@@ -41,6 +43,20 @@ export default function TodaySummary({ size = 'standard' }: TodaySummaryProps) {
     retry: 1,
   })
 
+  // Persisted lifetime XP — taskee framing only. Key prefix shared with the page's
+  // ScorePlate query (['chores/xp']) so a completion's invalidation refreshes both.
+  const { data: xp } = useQuery<{ totalXp: number }>({
+    queryKey: ['chores/xp', id],
+    queryFn: () =>
+      fetch('/api/chores/xp').then((r) => {
+        if (!r.ok) throw new Error(String(r.status))
+        return r.json() as Promise<{ totalXp: number }>
+      }),
+    enabled: !usesFamilyFraming,
+    staleTime: 60_000,
+    retry: 1,
+  })
+
   if (isLoading) {
     return (
       <div className="flex size-full items-center justify-center">
@@ -51,12 +67,14 @@ export default function TodaySummary({ size = 'standard' }: TodaySummaryProps) {
 
   const tasks = data?.tasks ?? []
 
-  // Local/optimistic lifetime XP — seeded from already-completed tasks (ScorePlate
-  // pattern). Widget is read-only so the XP never grows here; the score plate on
-  // the full page is the flight target.
-  const lifetimeXp = tasks
+  // Daily XP — sum of today's completed-task rewards (the widget's working set is
+  // "today"). Read-only: the score never grows here; the page ScorePlate is the
+  // flight target. Falls back to the completed-task sum for lifetime until the XP
+  // query resolves so the coin is never blank.
+  const dailyXp = tasks
     .filter((t) => t.status === 'completed')
     .reduce((sum, t) => sum + t.xpReward, 0)
+  const lifetimeXp = xp?.totalXp ?? dailyXp
 
   return (
     <TodaySummaryView
@@ -65,6 +83,7 @@ export default function TodaySummary({ size = 'standard' }: TodaySummaryProps) {
       isFamily={isFamily}
       size={size}
       lifetimeXp={lifetimeXp}
+      dailyXp={dailyXp}
     />
   )
 }

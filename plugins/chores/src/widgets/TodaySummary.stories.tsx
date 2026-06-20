@@ -1,4 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react'
+import { MemoryRouter } from 'react-router-dom'
 import { TodaySummaryView } from './TodaySummaryView'
 import { SAMPLE_TASKEE_TASKS, SAMPLE_FAMILY_TASKS } from '../sample-tasks'
 import { StoryAnnotation } from '../story-annotation'
@@ -20,23 +21,27 @@ const meta: Meta<typeof TodaySummaryView> = {
       const size: 'compact' | 'standard' | 'large' = ctx.args.size ?? 'standard'
       const { width, height } = SLOT_SIZE[size]
       return (
-        <div style={{ width, display: 'flex', flexDirection: 'column', gap: 12 }}>
-          <StoryAnnotation>{ctx.parameters.annotation}</StoryAnnotation>
-          {/* Mimic the live WidgetSlot chrome: card bg + border + shadow */}
-          <div
-            style={{
-              width,
-              height,
-              background: 'var(--card)',
-              border: '1px solid var(--border)',
-              boxShadow: 'var(--shadow-card)',
-              borderRadius: 16,
-              overflow: 'hidden',
-            }}
-          >
-            <Story />
+        // TodaySummaryView wraps its tile in a react-router <Link> (tap-through
+        // to /chores) — a Router context is required for it to render.
+        <MemoryRouter>
+          <div style={{ width, display: 'flex', flexDirection: 'column', gap: 12 }}>
+            <StoryAnnotation>{ctx.parameters.annotation}</StoryAnnotation>
+            {/* Mimic the live WidgetSlot chrome: card bg + border + shadow */}
+            <div
+              style={{
+                width,
+                height,
+                background: 'var(--card)',
+                border: '1px solid var(--border)',
+                boxShadow: 'var(--shadow-card)',
+                borderRadius: 16,
+                overflow: 'hidden',
+              }}
+            >
+              <Story />
+            </div>
           </div>
-        </div>
+        </MemoryRouter>
       )
     },
   ],
@@ -56,10 +61,11 @@ export const TaskeeStandard: Story = {
     isFamily: false,
     size: 'standard',
     lifetimeXp: 235,
+    dailyXp: 10,
   },
   parameters: {
     annotation:
-      'taskee · 2×1 · own tasks · status-encoded spine · mini coin score · tap deep-links to /chores (no mutation here)',
+      'taskee · 2×1 · hero split — count + daily XP left, filled +XP rows right, lifetime coin in header · tap deep-links to /chores (no mutation here)',
   },
 }
 
@@ -71,10 +77,11 @@ export const TaskeeLarge: Story = {
     isFamily: false,
     size: 'large',
     lifetimeXp: 235,
+    dailyXp: 10,
   },
   parameters: {
     annotation:
-      'taskee · 2×2 · full task list · status spines · overdue wash · progress bar + coin score at bottom',
+      'taskee · 2×2 · hero count + coin, progress, then full filled task list with +XP & overdue wash',
   },
 }
 
@@ -86,9 +93,30 @@ export const TaskeeCompact: Story = {
     isFamily: false,
     size: 'compact',
     lifetimeXp: 235,
+    dailyXp: 10,
   },
   parameters: {
-    annotation: 'taskee · 1×1 · pending count only — nice-to-have compact variant per spec',
+    annotation: 'taskee · 1×1 · hero count + progress — nice-to-have compact variant per spec',
+  },
+}
+
+export const TaskeeAllDone: Story = {
+  name: 'Taskee — All done today',
+  args: {
+    tasks: SAMPLE_TASKEE_TASKS.map((t) => ({
+      ...t,
+      status: 'completed' as const,
+      completedAt: new Date().toISOString(),
+    })),
+    tier: 2,
+    isFamily: false,
+    size: 'standard',
+    lifetimeXp: 285,
+    dailyXp: 50,
+  },
+  parameters: {
+    annotation:
+      'taskee · all tasks cleared · centered "🎉 All done today" with the lifetime coin retained in the header',
   },
 }
 
