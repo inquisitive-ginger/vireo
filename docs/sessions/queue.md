@@ -14,16 +14,6 @@
 > **Post-M2 chores triage (2026-06-19):** bugs + polish found after the agent-team
 > chores work landed. Two breakouts (mobile layout, today-widget design) + one bug bash.
 
-### Dev: Mobile App-Shell Layout (scroll + sticky chrome)
-
-**Type:** development (+ `design-system.md` standard)
-**Kickoff:** [kickoffs/dev-mobile-shell-layout.md](kickoffs/dev-mobile-shell-layout.md)
-**Reads:** `apps/shell/src/App.tsx`, `MobileBrandTopBar`, `bottom-tab-bar`, `Home.tsx`, `design-system.md`
-**Produces:** mobile home + shell views scroll under fixed top/bottom chrome (no cutoff; safe-area insets); the pattern documented in `design-system.md` and applied app-wide
-**Origin:** Post-M2 chores live review (2026-06-19).
-
----
-
 ### Dev: Bug Bash (M2 chores + shell)
 
 **Type:** development

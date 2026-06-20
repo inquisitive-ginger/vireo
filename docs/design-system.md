@@ -1,6 +1,6 @@
 # Design System
 
-> Last updated: 2026-06-14 — Mobile Surface section added (nav pattern, breakpoint, profile chip, widget reflow, safe-area insets).
+> Last updated: 2026-06-19 — App-shell scroll model added to Mobile Surface (single scroll container, sticky chrome, `h-dvh`, `md:h-full` opt-in for fill views).
 
 This document records settled design decisions. Deferred items are
 explicitly marked — do not treat absence of a spec as a free choice.
@@ -1081,6 +1081,31 @@ padding-bottom: env(safe-area-inset-bottom);
 /* Page content — avoid tab bar overlap */
 padding-bottom: calc(56px + env(safe-area-inset-bottom));
 ```
+
+### App-shell scroll model
+
+**Settled** — dev-mobile-shell-layout session, 2026-06-19.
+
+The shell renders **fixed/sticky chrome around a single scroll container**. Every
+view inherits this — pages do not manage their own scroll.
+
+- **Outer shell** is `h-dvh … overflow-hidden` — the dynamic viewport height so
+  mobile browser chrome (URL bar) never truncates the layout. `100vh` (`h-screen`)
+  must not be used for the shell frame.
+- **Chrome lives outside the scroll area.** The mobile top bar is a `shrink-0`
+  sibling above `<main>` (not in the scroll flow, so it stays put); the bottom tab
+  bar is `fixed bottom-0`. Neither scrolls.
+- **`<main>` is the one scroll container** — `flex-1 overflow-auto` with
+  `pb-[calc(56px+env(safe-area-inset-bottom))] md:pb-0` so the scrollable body
+  clears the fixed tab bar on mobile (see [Safe-area insets](#safe-area-insets)).
+- **Pages render content in natural document flow** and let `<main>` scroll under
+  the chrome. A page must **never** pin itself to a bare `h-full` — on mobile,
+  content taller than the viewport gets clipped instead of scrolling.
+- **Fill-the-viewport views opt in with `md:h-full`** (not `h-full`). The Home
+  dashboard is the canonical case: at `md:` and up it fills the frame and the
+  widget grid scales `rowHeight` to fit; below `md:` it flows as a single-column
+  stack that scrolls. Height-coupling utilities (`flex-1`, `min-h-0`) are likewise
+  gated to `md:` so they only apply in the fill case.
 
 ### Page transitions on mobile
 

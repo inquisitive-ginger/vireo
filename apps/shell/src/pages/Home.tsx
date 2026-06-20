@@ -80,8 +80,8 @@ export function Home({ widgetRemotes }: HomeProps) {
   }
 
   return (
-    <div className="flex h-full flex-col p-6">
-      <WidgetGrid layout={layout ?? []} flatSlots={flatSlots} className="flex-1 min-h-0">
+    <div className="flex flex-col p-6 md:h-full">
+      <WidgetGrid layout={layout ?? []} flatSlots={flatSlots} className="md:flex-1 md:min-h-0">
         {widgetChildren}
       </WidgetGrid>
     </div>
