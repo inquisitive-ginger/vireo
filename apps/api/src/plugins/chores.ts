@@ -16,6 +16,8 @@ type TaskCompletedPayload = {
   completedAt: string
   title?: string
   createdBy?: string
+  /** Profile that performed the completion (assignee, or a tier-4 admin check-off). */
+  completedBy?: string
 }
 
 /** Credits `xpReward` to the assignee's running `xp_balances` total.
@@ -42,9 +44,12 @@ async function handleXpAward(payload: unknown): Promise<void> {
  *
  * Looks up the assignee name from the platform schema (the event payload carries
  * `assigneeId` but not the name). If `createdBy` is absent the subscriber logs
- * a warning and skips cleanly — no crash. */
+ * a warning and skips cleanly — no crash. Skips when the creator completed the
+ * task themselves (a tier-4 admin check-off) — no point notifying you of your
+ * own action. */
 async function handleParentNotification(payload: unknown, eventBus: EventBus): Promise<void> {
-  const { taskId, assigneeId, xpReward, title, createdBy } = payload as TaskCompletedPayload
+  const { taskId, assigneeId, xpReward, title, createdBy, completedBy } =
+    payload as TaskCompletedPayload
 
   if (!createdBy) {
     console.warn('[chores] task.completed event missing createdBy — skipping notification', {
@@ -52,6 +57,9 @@ async function handleParentNotification(payload: unknown, eventBus: EventBus): P
     })
     return
   }
+
+  // The creator checked off their own assigned task — don't self-notify.
+  if (completedBy && completedBy === createdBy) return
 
   // Look up the assignee name for the notification title.
   const assigneeProfile = await prisma.profile.findUnique({ where: { id: assigneeId } })
@@ -209,6 +217,7 @@ const choresPlugin: FastifyPluginAsync = async (fastify) => {
       completedAt: updated.completedAt?.toISOString() ?? new Date().toISOString(),
       title: updated.title,
       createdBy: updated.createdBy,
+      completedBy: request.profile.id,
     })
 
     const assignee = await prisma.profile.findUnique({ where: { id: updated.assigneeId } })

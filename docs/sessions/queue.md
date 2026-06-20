@@ -14,16 +14,6 @@
 > **Post-M2 chores triage (2026-06-19):** bugs + polish found after the agent-team
 > chores work landed. Two breakouts (mobile layout, today-widget design) + one bug bash.
 
-### Dev: Bug Bash (M2 chores + shell)
-
-**Type:** development
-**Kickoff:** [kickoffs/dev-bug-bash-m2-shell.md](kickoffs/dev-bug-bash-m2-shell.md)
-**Reads:** `apps/shell/src/pages/Settings.tsx`, `usePushSubscription`, `apps/api/src/plugins/chores.ts`, `plugins/chores/src/components/CreateTaskDrawer.tsx`
-**Produces:** fixes for — settings mobile layout (#3); push toggle stuck-off in the tunneled PWA (#4); suppress parent self-notification when completer == creator (#5, + test); create-task due-date field styling (#6)
-**Origin:** Post-M2 chores live review (2026-06-19).
-
----
-
 ### Design + Dev: Today Widget Rework
 
 **Type:** design + development
@@ -50,9 +40,9 @@
 **Type:** development (+ possible ADR if the chosen strategy warrants it)
 **Kickoff:** _to be written_
 **Reads:** `docs/modules/platform/stories/sw-cache-strategy.md`, `apps/shell/public/sw.js`, `apps/shell/src/main.tsx` (dev SW guard shipped 2026-06-19)
-**Produces:** non-stale SW caching for the app shell (network-first or build-stamped cache name); installed PWAs update without a manual cache clear
+**Produces:** non-stale SW caching for the app shell (network-first or build-stamped cache name); installed PWAs update without a manual cache clear; **+ push-toggle verification (was bug #4):** confirm the Settings push toggle reads ON for an enabled subscription in the installed PWA once a SW exists
 **Depends on:** none
-**Note:** Surfaced during the M2 chores live review (2026-06-19) — cache-first `sw.js` with a static `family-os-v1` cache pinned a stale bundle on an installed PWA, making the realtime notification bell look broken. Dev mitigation already shipped; this is the production fix.
+**Note:** Surfaced during the M2 chores live review (2026-06-19) — cache-first `sw.js` with a static `family-os-v1` cache pinned a stale bundle on an installed PWA, making the realtime notification bell look broken. Dev mitigation already shipped; this is the production fix. **Bug #4 (push toggle stuck OFF in the tunneled PWA) was folded in here** — its root cause is that the dev tunnel runs the dev build, where the SW guard tears the service worker down, so push can't function and the toggle can't read ON; the hook was hardened in the Bug Bash (`getRegistration()` + refocus re-sync) but the user-facing fix needs an SW restored by this story. See `2026-06-19-dev-bug-bash-m2-shell.md`.
 
 ---
 
@@ -97,6 +87,10 @@ enhancement to the existing count + XP-load meter). Blocks none of the M2 MVP st
 ---
 
 ## Recently Completed
+
+- **2026-06-19 — Dev: Bug Bash (M2 chores + shell)** ![Type](https://img.shields.io/badge/Type-Development-orange)
+  Four post-M2 bugs. **#5 parent self-notification (logic + tests):** `chores.task.completed` now carries `completedBy`; `handleParentNotification` skips when `completedBy === createdBy` (a parent's own admin check-off). 2 tests added; 163 API tests green. **#3 settings mobile:** `SettingsLayout` padding responsive; `ProfileListItem` name truncates + Edit/Remove go icon-only below `sm` (shared `packages/ui`). **#6 due-date field:** `appearance-none` + `display:none` on the webkit picker/clear/spin pseudo-elements (kills the Chrome calendar button **and** the Android down-chevron) with one overlaid `CalendarDays` icon + `pr-10`; whole-field tap still opens the picker. **#4 push toggle — deferred:** root cause is the dev tunnel running the dev build, where the SW guard tears the service worker down → no subscription + `serviceWorker.ready` hangs → toggle stuck at a disabled OFF. Hardened the hook (`getRegistration()` instead of `.ready`; re-sync on `visibilitychange`/`focus`) but the user-facing fix needs an SW — **folded into the prod SW cache-strategy story.** #3/#5/#6 signed off live (mobile + Android).
+  _See:_ `docs/sessions/logs/2026-06-19-dev-bug-bash-m2-shell.md`
 
 - **2026-06-19 — M2 Dev: XP Award + Parent Notification + Today Widget (agent team) + rename** ![Type](https://img.shields.io/badge/Type-Development-orange)
   Ran the last two M2 chores stories in parallel as an agent team, then renamed the plugin. **XP Award (#23):** `chores.xp_balances` + idempotent `chores.task.completed` subscriber + `GET /api/chores/xp` + lifetime gold score plate in the page header. **Parent Notification (#23):** extracted a shared server-side `notify()` helper (persist + prune-to-50 + Web Push gate) — the subscriber had raw-inserted and skipped push; both `POST /notifications` and the chores subscriber now route through it. **Realtime bell:** `notify()` emits `platform.notification.created`; `NotificationBell` subscribes via `useEventBus` (the prior `window` listener was dead — nothing dispatched it). **Today Widget (#22):** `chores.today-summary` (taskee + family framings, sizes, empty states). **Home render fix:** resolve the widget loader by federation remote name via a manifest map (was splitting the widget id; `chores.*` ≠ the remote name). **Rename (#24):** `chore-engine → chores` — remote/package (`@family-os/plugin-chores`) + Postgres schema `chore_engine → chores` (migrations rewritten; dev/test re-migrated). **Ride-alongs:** proxy `changeOrigin` (federated plugins load via Cloudflare tunnel), dev service-worker guard (stale-PWA fix). 161 API tests green. **Queued:** prod SW cache-strategy; Focus Mode.

@@ -15,13 +15,18 @@ export interface ProfileListItemProps {
 
 export function ProfileListItem({ name, tier, isLast, onEdit, onRemove }: ProfileListItemProps) {
   return (
-    <div className={cn('flex items-center gap-4 px-6 py-4', !isLast && 'border-b border-border')}>
+    <div
+      className={cn(
+        'flex items-center gap-3 px-4 py-4 sm:gap-4 sm:px-6',
+        !isLast && 'border-b border-border'
+      )}
+    >
       <ProfileAvatar name={name} size="md" />
-      <span className="flex-1 text-card-title">{name}</span>
-      <span className="text-[11px] font-semibold px-2 py-0.5 rounded-full bg-secondary text-muted-foreground tracking-[0.03em]">
+      <span className="min-w-0 flex-1 truncate text-card-title">{name}</span>
+      <span className="shrink-0 rounded-full bg-secondary px-2 py-0.5 text-[11px] font-semibold tracking-[0.03em] text-muted-foreground">
         Tier {tier}
       </span>
-      <div className="flex gap-1.5">
+      <div className="flex shrink-0 gap-0.5 sm:gap-1.5">
         {onEdit && (
           <Button
             variant="ghost"
@@ -30,7 +35,8 @@ export function ProfileListItem({ name, tier, isLast, onEdit, onRemove }: Profil
             className="gap-1.5"
             aria-label={`Edit ${name}`}
           >
-            <Pencil className="size-3.5" aria-hidden /> Edit
+            <Pencil className="size-3.5" aria-hidden />
+            <span className="hidden sm:inline">Edit</span>
           </Button>
         )}
         {onRemove && (
@@ -41,7 +47,8 @@ export function ProfileListItem({ name, tier, isLast, onEdit, onRemove }: Profil
             className="gap-1.5"
             aria-label={`Remove ${name}`}
           >
-            <Trash2 className="size-3.5" aria-hidden /> Remove
+            <Trash2 className="size-3.5" aria-hidden />
+            <span className="hidden sm:inline">Remove</span>
           </Button>
         )}
       </div>

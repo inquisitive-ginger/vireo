@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Star } from 'lucide-react'
+import { CalendarDays, Star } from 'lucide-react'
 import { Button, Drawer, Input, Label, identityColor } from '@family-os/ui'
 import type { FamilyMember } from '../types'
 import { GOLD, GOLD_INK, GOLD_TINT } from '../lib/gold'
@@ -113,17 +113,29 @@ export function CreateTaskDrawer({
               <FieldLabel htmlFor="chore-due" optional>
                 Due date
               </FieldLabel>
-              <Input
-                id="chore-due"
-                type="date"
-                value={dueDate}
-                onChange={(e) => setDueDate(e.target.value)}
-                // Open the native picker on a click anywhere in the field, not just
-                // the calendar icon. (Proper themed picker deferred to the calendar
-                // module.) `showPicker` is recent — guard for older browsers.
-                onClick={(e) => (e.currentTarget as HTMLInputElement).showPicker?.()}
-                className="cursor-pointer"
-              />
+              <div className="relative">
+                <Input
+                  id="chore-due"
+                  type="date"
+                  value={dueDate}
+                  onChange={(e) => setDueDate(e.target.value)}
+                  // Open the native picker on a click anywhere in the field, not just
+                  // the calendar icon. (Proper themed picker deferred to the calendar
+                  // module.) `showPicker` is recent — guard for older browsers.
+                  onClick={(e) => (e.currentTarget as HTMLInputElement).showPicker?.()}
+                  // Strip every native affordance — Chrome's calendar button, the
+                  // Android down-chevron, spin/clear buttons — and overlay one
+                  // consistent calendar icon with proper right padding. `appearance-none`
+                  // kills the chevron; `display:none` on the picker indicator removes
+                  // the desktop calendar button (it occupies space when only faded).
+                  className="cursor-pointer appearance-none pr-10 [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-clear-button]:hidden [&::-webkit-inner-spin-button]:hidden"
+                />
+                <CalendarDays
+                  size={16}
+                  aria-hidden
+                  className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
+                />
+              </div>
             </div>
           </div>
         </div>

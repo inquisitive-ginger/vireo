@@ -27,7 +27,13 @@ export function usePushSubscription() {
   const [state, setState] = useState<PushSubscriptionState>('unknown')
   const [isLoading, setIsLoading] = useState(false)
 
-  useEffect(() => {
+  // Read the *actual* subscription state off the active service worker. The
+  // toggle must reflect the live push subscription, not a value captured once at
+  // mount — in an installed PWA the component can mount before the SW is ready,
+  // or while a stale/torn-down SW is being replaced, leaving the toggle showing
+  // OFF for a user who is in fact subscribed. We re-run this whenever the app is
+  // brought back to the foreground so it self-heals.
+  const sync = useCallback(async () => {
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
       setState('unsupported')
       return
@@ -36,13 +42,40 @@ export function usePushSubscription() {
       setState('denied')
       return
     }
-
-    navigator.serviceWorker.ready.then((reg) => {
-      reg.pushManager.getSubscription().then((sub) => {
-        setState(sub ? 'subscribed' : 'unsubscribed')
-      })
-    })
+    try {
+      // Use getRegistration(), NOT serviceWorker.ready: `.ready` never resolves
+      // when no SW is registered (e.g. dev, where the shell tears the SW down),
+      // which would pin the toggle at 'unknown' (disabled, looks OFF) forever.
+      // getRegistration() resolves immediately to undefined → an accurate,
+      // interactable 'unsubscribed'.
+      const reg = await navigator.serviceWorker.getRegistration()
+      if (!reg) {
+        setState('unsubscribed')
+        return
+      }
+      const sub = await reg.pushManager.getSubscription()
+      setState(sub ? 'subscribed' : 'unsubscribed')
+    } catch {
+      // Leave the prior state untouched on a transient failure rather than
+      // flipping the toggle to a wrong value.
+    }
   }, [])
+
+  useEffect(() => {
+    void sync()
+
+    // An installed PWA is long-lived: re-check when it regains visibility/focus
+    // so a subscription created (or lost) in another tab/session reconciles.
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') void sync()
+    }
+    document.addEventListener('visibilitychange', onVisible)
+    window.addEventListener('focus', onVisible)
+    return () => {
+      document.removeEventListener('visibilitychange', onVisible)
+      window.removeEventListener('focus', onVisible)
+    }
+  }, [sync])
 
   const subscribe = useCallback(async () => {
     if (!('serviceWorker' in navigator)) return
