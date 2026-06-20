@@ -46,6 +46,16 @@
 
 ---
 
+### Tooling: Retry Design-Sync to claude.ai/design
+
+**Type:** tooling (`/design-sync`)
+**Kickoff:** _none — re-invoke the `/design-sync` skill_
+**Target:** existing empty claude.ai/design project **"Vireo Design System"** (`projectId 2b03615c-ed0f-44cf-a83c-0a2186f31496`) — reuse it rather than creating a duplicate. Scope was **full sync, all stories** (packages/ui's 21 + apps/shell's 2 + plugins' 7).
+**Blocker to resolve first:** the converter's export detection returned **0 exports**, dropping all components as `[TITLE_UNMAPPED]`. Root cause: `@family-os/ui` is a **TS-source package** (`exports['.'] = "./src/index.ts"`, no `dist`/`.d.ts`/`types` field), so the converter's `exportedNames()` → `findTypesRoot()` falls back to a non-existent `packages/ui/index.d.ts`. Fix belongs in sync **config** (e.g. point export detection at `src/index.ts` / source-scan fallback) — do **not** hand-patch generated output. Two secondary issues seen: preview decorator bundle "Could not resolve tailwindcss" (likely needs `cfg.provider`), and verify the Storybook CSS is inlined not remote-`@import`'d.
+**Origin:** 2026-06-19 first-sync attempt cancelled mid-run; local scratch (`.ds-sync/`, `ds-bundle/`) cleaned up 2026-06-20. Nothing was uploaded (remote project is empty).
+
+---
+
 ## Deferred — Platform v2
 
 These sessions were scoped for M1 but don't map to M1's done-when criteria. Kickoff docs exist but should be reviewed for staleness before scheduling.
