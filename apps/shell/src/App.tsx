@@ -23,7 +23,7 @@ export function App({ pluginNavItems = [] }: { pluginNavItems?: PluginNavItem[] 
 
   return (
     <>
-      <div className="flex h-screen w-screen overflow-hidden">
+      <div className="flex h-dvh w-screen overflow-hidden">
         <Sidebar pluginNavItems={pluginNavItems} />
         <div className="flex-1 flex flex-col overflow-hidden">
           <MobileBrandTopBar
