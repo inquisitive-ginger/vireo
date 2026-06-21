@@ -13,8 +13,10 @@ export const UpdateProfileSchema = z
   .object({
     name: z.string().min(1).max(50).optional(),
     tier: TierSchema.optional(),
+    // Focus-mode override: null clears it (defer to tier default), true/false sets it (ADR 036).
+    focusMode: z.boolean().nullable().optional(),
   })
-  .refine((d) => d.name !== undefined || d.tier !== undefined, {
+  .refine((d) => d.name !== undefined || d.tier !== undefined || d.focusMode !== undefined, {
     message: 'At least one field is required',
   })
 

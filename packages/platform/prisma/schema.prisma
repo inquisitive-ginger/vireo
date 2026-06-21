@@ -14,6 +14,8 @@ model Profile {
   tier        Int
   avatarUrl   String?  @map("avatar_url")
   darkMode    Boolean? @map("dark_mode")
+  // Taskee surface variant: null = derive from tier (≤2 → Focus); true/false = parent override.
+  focusMode   Boolean? @map("focus_mode")
   pushEnabled Boolean  @default(false) @map("push_enabled")
   createdAt   DateTime @default(now()) @map("created_at")
 

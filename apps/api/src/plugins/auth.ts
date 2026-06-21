@@ -8,6 +8,7 @@ import { prisma } from '@family-os/platform/server'
 import { createAbility } from '@family-os/platform/server'
 import type { AppAbility } from '@family-os/platform/server'
 import type { Profile } from '@family-os/platform/types'
+import { resolveFocusMode } from '@family-os/platform/types'
 
 declare module 'fastify' {
   interface Session {
@@ -60,9 +61,17 @@ const authPlugin: FastifyPluginAsync = async (fastify) => {
           tier: row.tier as Profile['tier'],
           avatarUrl: row.avatarUrl ?? undefined,
           darkMode: row.darkMode ?? null,
+          focusMode: row.focusMode ?? null,
           pushEnabled: row.pushEnabled,
         }
-      : { id: FAMILY_PROFILE_ID, name: 'Family', tier: 1, darkMode: null, pushEnabled: false }
+      : {
+          id: FAMILY_PROFILE_ID,
+          name: 'Family',
+          tier: 1,
+          darkMode: null,
+          focusMode: null,
+          pushEnabled: false,
+        }
 
     const overrides =
       row?.permissionOverrides.map((o) => ({
@@ -85,6 +94,8 @@ const authPlugin: FastifyPluginAsync = async (fastify) => {
       name: request.profile.name,
       tier: request.profile.tier,
       darkMode: request.profile.darkMode ?? null,
+      // Effective variant — null override defers to the tier default (ADR 036).
+      focusMode: resolveFocusMode(request.profile.focusMode, request.profile.tier),
       pushEnabled: request.profile.pushEnabled ?? false,
       familyName: (familyNameConfig?.value as string | null) ?? null,
       rules: request.ability.rules,
@@ -107,7 +118,9 @@ const authPlugin: FastifyPluginAsync = async (fastify) => {
 
   fastify.get('/profiles', async () => {
     const profiles = await prisma.profile.findMany({ orderBy: { tier: 'desc' } })
-    return profiles.map((p) => ({ id: p.id, name: p.name, tier: p.tier }))
+    // focusMode is the raw nullable override (null = tier default) so the parent
+    // override UI can show "Default" vs an explicit choice (ADR 036).
+    return profiles.map((p) => ({ id: p.id, name: p.name, tier: p.tier, focusMode: p.focusMode }))
   })
 
   fastify.post<{ Body: { pin: string; targetProfileId: string } }>(

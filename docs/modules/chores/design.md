@@ -38,6 +38,15 @@ then a single hero **"Next up"** card (most urgent / overdue auto-surfaces) with
 big green **Mark done** button. "Coming up" and "Done" collapse to quiet mini-rows
 below; empties to "🎉 All done today". Minimises executive-function load.
 
+> **Shipped "Spotlight" (M2 Dev: Focus Mode, 2026-06-20).** Gated against two
+> alternatives ("peek" — next 2 always visible; "on-deck stack") via a Storybook
+> exploration; **Spotlight** (collapsed secondary sections) won as the most
+> single-focus reading. The gate is which a profile sees via the per-profile
+> **`focusMode`** setting (ADR 036): `null` → tier default (**1–2 → Focus**), a
+> parent overrides in Settings. `FocusView` shares the flight engine with the
+> Agency `TaskeeView` via the extracted **`useXpFlight`** hook; the hero promotes
+> the next task on landing.
+
 ### Taskee — Agency view (older)
 
 Same header + progress line, then the **full list** of neutral status-encoded
@@ -196,13 +205,12 @@ growing list). WidgetHeader = CheckSquare + "CHORES" in **neutral** (icon
 reference — identity is carried by the rows, not the header (optional trailing slot
 for coin / daily XP / overdue pill).
 
-> **Focus-mode widget variant owed.** The taskee widget above is the **Agency /
-> default** framing. A **Focus** variant — a single hero **"Next up"** row +
-> "+N more" + progress, mirroring the Focus page language (§1) — was explored and
-> approved in principle during the gate (playground direction "C"). It is **owed
-> to M2 Dev: Focus Mode**, which introduces the per-profile `focusMode` setting
-> the widget must branch on. The widget reads the same setting to pick
-> Agency-vs-Focus.
+> **Focus-mode widget variant — shipped (M2 Dev: Focus Mode, 2026-06-20).** The
+> taskee widget above is the **Agency / default** framing. The **Focus** variant —
+> a single hero **"Next up"** row + "+N more" + progress, mirroring the Focus page
+> language (§1) — ships across all three sizes, branching on the same per-profile
+> **`focusMode`** setting (ADR 036) the widget reads from `/auth/me`. Taskee
+> framing + Focus on → the "Next up" variant; off → the Agency Hero split.
 
 ---
 

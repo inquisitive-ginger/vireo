@@ -459,6 +459,172 @@ function TaskeeLarge({
 }
 
 /* ============================================================================ */
+/* Taskee — Focus framing (focusMode on) — single hero "Next up" + "+N more"    */
+/* ============================================================================ */
+
+/* The most urgent pending task auto-surfaces as the hero (overdue → earliest due
+   → undated), mirroring the Focus page (design §1/§4). */
+function focusSort(a: ChoreTask, b: ChoreTask): number {
+  const oa = isOverdue(a.dueDate, a.status) ? 0 : 1
+  const ob = isOverdue(b.dueDate, b.status) ? 0 : 1
+  if (oa !== ob) return oa - ob
+  if (a.dueDate && b.dueDate) return a.dueDate.localeCompare(b.dueDate)
+  if (a.dueDate) return -1
+  if (b.dueDate) return 1
+  return 0
+}
+
+/* The hero "Next up" row — one prominent filled pill (status spine + title + XP).
+   `large` bumps the title for the tall slot. */
+function NextUpRow({ task, large = false }: { task: ChoreTask; large?: boolean }) {
+  const overdue = isOverdue(task.dueDate, task.status)
+  return (
+    <div
+      className="flex items-center gap-2.5 rounded-[12px] px-3.5"
+      style={{ minHeight: large ? 56 : 48, background: overdue ? OVERDUE_WASH : 'var(--muted)' }}
+    >
+      <span
+        aria-hidden
+        className="shrink-0 self-stretch rounded-sm"
+        style={{ width: 4, margin: '10px 0', background: spineColor(task) }}
+      />
+      <span
+        className={`min-w-0 flex-1 truncate font-medium text-foreground ${large ? 'text-card-title' : 'text-base-token'}`}
+      >
+        {task.title}
+      </span>
+      {overdue && (
+        <span className="text-xs-token shrink-0 font-bold" style={{ color: 'var(--error)' }}>
+          Overdue
+        </span>
+      )}
+      <span className="text-sm-token shrink-0 font-bold" style={{ color: GOLD_INK }}>
+        +{task.xpReward}
+      </span>
+    </div>
+  )
+}
+
+/* "+N more today" — the collapsed remainder (Focus never lists the full set). */
+function MoreLine({ n }: { n: number }) {
+  if (n <= 0) return null
+  return <span className="text-sm-token text-muted-foreground">+{n} more today</span>
+}
+
+function NextUpLabel() {
+  return <span className="text-section-label text-muted-foreground">Next up</span>
+}
+
+function FocusCompact({ tasks, tier }: { tasks: ChoreTask[]; lifetimeXp: number; tier: number }) {
+  const pending = todayPending(tasks).sort(focusSort)
+  const done = todayCompleted(tasks).length
+  const total = tasks.length
+
+  if (total === 0) return <CenteredState heading={tier === 1 ? 'All done!' : 'No tasks'} />
+  if (pending.length === 0) return <TaskeeAllDone compact />
+
+  const [hero, ...rest] = pending
+  return (
+    <div className="flex size-full flex-col p-4" style={{ containerType: 'size' }}>
+      <WidgetHeader />
+      <div className="mt-2 flex flex-1 flex-col justify-between gap-2">
+        <div className="flex flex-col gap-1.5">
+          <NextUpLabel />
+          <NextUpRow task={hero} />
+        </div>
+        <div className="flex flex-col gap-1.5">
+          <MoreLine n={rest.length} />
+          <ProgressBar done={done} total={total} />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function FocusStandard({
+  tasks,
+  lifetimeXp,
+  dailyXp,
+  tier,
+}: {
+  tasks: ChoreTask[]
+  lifetimeXp: number
+  dailyXp: number
+  tier: number
+}) {
+  const pending = todayPending(tasks).sort(focusSort)
+  const done = todayCompleted(tasks).length
+  const total = tasks.length
+
+  if (total === 0)
+    return (
+      <CenteredState
+        heading={tier === 1 ? 'All done!' : 'No tasks today'}
+        trailing={<CoinScore value={lifetimeXp} />}
+      />
+    )
+  if (pending.length === 0) return <TaskeeAllDone lifetimeXp={lifetimeXp} dailyXp={dailyXp} />
+
+  const [hero, ...rest] = pending
+  return (
+    <div className="flex size-full flex-col p-4" style={{ containerType: 'size' }}>
+      <WidgetHeader trailing={<CoinScore value={lifetimeXp} />} />
+      <div className="mt-3 flex min-h-0 flex-1 flex-col justify-center gap-2.5">
+        <NextUpLabel />
+        <NextUpRow task={hero} large />
+        <div className="flex items-center justify-between">
+          <MoreLine n={rest.length} />
+          {dailyXp > 0 && <DailyXp earned={dailyXp} />}
+        </div>
+        <ProgressBar done={done} total={total} />
+      </div>
+    </div>
+  )
+}
+
+function FocusLarge({
+  tasks,
+  lifetimeXp,
+  dailyXp,
+  tier,
+}: {
+  tasks: ChoreTask[]
+  lifetimeXp: number
+  dailyXp: number
+  tier: number
+}) {
+  const pending = todayPending(tasks).sort(focusSort)
+  const done = todayCompleted(tasks).length
+  const total = tasks.length
+
+  if (total === 0)
+    return (
+      <CenteredState
+        heading={tier === 1 ? 'All done!' : 'No tasks scheduled today'}
+        trailing={<CoinScore value={lifetimeXp} />}
+      />
+    )
+  if (pending.length === 0) return <TaskeeAllDone lifetimeXp={lifetimeXp} dailyXp={dailyXp} />
+
+  const [hero, ...rest] = pending
+  return (
+    <div className="flex size-full flex-col p-4" style={{ containerType: 'size' }}>
+      <WidgetHeader
+        trailing={dailyXp > 0 ? <DailyXp earned={dailyXp} /> : <CoinScore value={lifetimeXp} />}
+      />
+      <div className="mt-3 flex min-h-0 flex-1 flex-col gap-2.5">
+        <NextUpLabel />
+        <NextUpRow task={hero} large />
+        <MoreLine n={rest.length} />
+        <div className="mt-auto">
+          <ProgressBar done={done} total={total} />
+        </div>
+      </div>
+    </div>
+  )
+}
+
+/* ============================================================================ */
 /* Family framing (tier 4 / family pseudo-profile) — Hero split                 */
 /* ============================================================================ */
 
@@ -567,6 +733,9 @@ export interface TodaySummaryViewProps {
   lifetimeXp?: number
   /** XP earned today — sum of today's completed task rewards (tiers 1–3 only). */
   dailyXp?: number
+  /** Effective Focus-mode setting (ADR 036). Taskee framing + on → the Focus
+      "Next up" variant; off → the Agency Hero-split variant. */
+  focusMode?: boolean
 }
 
 /* Container-query density toggle. The widget ships every variant's markup and CSS
@@ -619,16 +788,25 @@ export function TodaySummaryView({
   size,
   lifetimeXp = 0,
   dailyXp = 0,
+  focusMode = false,
 }: TodaySummaryViewProps) {
   const usesFamilyFraming = isFamily || tier >= 4
 
-  const taskeeStandard = (
+  // Taskee framing → Focus ("Next up") or Agency (Hero split) per the setting.
+  // Both reuse the same cw-* container-query slots; only the content differs.
+  const taskeeStandard = focusMode ? (
+    <FocusStandard tasks={tasks} lifetimeXp={lifetimeXp} dailyXp={dailyXp} tier={tier} />
+  ) : (
     <TaskeeStandard tasks={tasks} lifetimeXp={lifetimeXp} dailyXp={dailyXp} tier={tier} />
   )
-  const taskeeLarge = (
+  const taskeeLarge = focusMode ? (
+    <FocusLarge tasks={tasks} lifetimeXp={lifetimeXp} dailyXp={dailyXp} tier={tier} />
+  ) : (
     <TaskeeLarge tasks={tasks} lifetimeXp={lifetimeXp} dailyXp={dailyXp} tier={tier} />
   )
-  const taskeeCompact = (
+  const taskeeCompact = focusMode ? (
+    <FocusCompact tasks={tasks} lifetimeXp={lifetimeXp} tier={tier} />
+  ) : (
     <TaskeeCompact tasks={tasks} lifetimeXp={lifetimeXp} dailyXp={dailyXp} tier={tier} />
   )
   const familyCompact = <FamilyCompact tasks={tasks} />

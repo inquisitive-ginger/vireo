@@ -153,6 +153,79 @@ export const TaskeeEmptyNeutral: Story = {
   },
 }
 
+/* ── Taskee Focus framing (focusMode on) — single hero "Next up" + "+N more" ── */
+
+export const FocusCompact: Story = {
+  name: 'Focus — Compact',
+  args: {
+    tasks: SAMPLE_TASKEE_TASKS,
+    tier: 1,
+    isFamily: false,
+    focusMode: true,
+    size: 'compact',
+    lifetimeXp: 120,
+    dailyXp: 10,
+  },
+  parameters: {
+    annotation:
+      'focus · short/narrow-slot · "Next up" hero row + "+N more today" + progress — one obvious next action',
+  },
+}
+
+export const FocusStandard: Story = {
+  name: 'Focus — Standard (2×1)',
+  args: {
+    tasks: SAMPLE_TASKEE_TASKS,
+    tier: 1,
+    isFamily: false,
+    focusMode: true,
+    size: 'standard',
+    lifetimeXp: 120,
+    dailyXp: 10,
+  },
+  parameters: {
+    annotation:
+      'focus · wide + short · centered "Next up" hero + "+N more" / daily XP + progress · coin in header · tap deep-links to /chores',
+  },
+}
+
+export const FocusLarge: Story = {
+  name: 'Focus — Large (2×2)',
+  args: {
+    tasks: SAMPLE_TASKEE_TASKS,
+    tier: 1,
+    isFamily: false,
+    focusMode: true,
+    size: 'large',
+    lifetimeXp: 120,
+    dailyXp: 10,
+  },
+  parameters: {
+    annotation:
+      'focus · tall · prominent "Next up" hero + "+N more today", progress anchored at the foot · daily XP in header',
+  },
+}
+
+export const FocusAllDone: Story = {
+  name: 'Focus — All done',
+  args: {
+    tasks: SAMPLE_TASKEE_TASKS.map((t) => ({
+      ...t,
+      status: 'completed' as const,
+      completedAt: new Date().toISOString(),
+    })),
+    tier: 1,
+    isFamily: false,
+    focusMode: true,
+    size: 'standard',
+    lifetimeXp: 170,
+    dailyXp: 50,
+  },
+  parameters: {
+    annotation: 'focus · all cleared · shares the taskee 🎉 "All done today" payoff',
+  },
+}
+
 /* ── Family framing (tier 4 / family pseudo-profile) — identity rows, no XP ──── */
 
 export const FamilyCompact: Story = {

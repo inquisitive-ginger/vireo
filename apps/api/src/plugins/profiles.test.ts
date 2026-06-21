@@ -175,6 +175,33 @@ describe('PATCH /api/profiles/:id', () => {
     expect(res.json<{ tier: number }>().tier).toBe(3)
   })
 
+  it('sets and clears the focusMode override (ADR 036)', async () => {
+    const cookie = await getTier4Cookie()
+    const created = await prisma.profile.create({ data: { name: 'Riley', tier: 3 } })
+
+    // Set an explicit override.
+    const setRes = await app.inject({
+      method: 'PATCH',
+      url: `/api/profiles/${created.id}`,
+      headers: { cookie },
+      payload: { focusMode: true },
+    })
+    expect(setRes.statusCode).toBe(200)
+    expect(setRes.json<{ focusMode: boolean | null }>().focusMode).toBe(true)
+
+    // Clear it back to the tier default (null).
+    const clearRes = await app.inject({
+      method: 'PATCH',
+      url: `/api/profiles/${created.id}`,
+      headers: { cookie },
+      payload: { focusMode: null },
+    })
+    expect(clearRes.statusCode).toBe(200)
+    expect(clearRes.json<{ focusMode: boolean | null }>().focusMode).toBeNull()
+
+    await prisma.profile.delete({ where: { id: created.id } })
+  })
+
   it('returns 400 when editing the family profile', async () => {
     const cookie = await getTier4Cookie()
 

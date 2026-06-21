@@ -3,6 +3,7 @@ import { PageHeader } from '@family-os/ui'
 import type { ChoreTask } from '../types'
 import { isOverdue } from '../lib/dates'
 import { TaskeeView } from '../components/TaskeeView'
+import { FocusView } from '../components/FocusView'
 import { AdminBoard, type AdminLane } from '../components/AdminBoard'
 import { ChoresEmptyState } from '../components/ChoresEmptyState'
 
@@ -31,6 +32,9 @@ export interface ChoresPageViewProps {
   onRemoveTask?: (task: ChoreTask) => void
   /** Persisted lifetime XP seed from GET /api/chores/xp (taskee view only). */
   initialXp?: number
+  /** Effective Focus-mode setting (ADR 036). Taskee + on → the Focus variant;
+      off → the Agency `TaskeeView`. Ignored by the admin/family board. */
+  focusMode?: boolean
 }
 
 export function ChoresPageView({
@@ -46,11 +50,15 @@ export function ChoresPageView({
   onEditTask,
   onRemoveTask,
   initialXp,
+  focusMode,
 }: ChoresPageViewProps) {
   // Taskee, non-empty → the dedicated taskee surface (owns its header, the
-  // lifetime score plate, and the XP-flight completion — design §1/§2).
+  // lifetime score plate, and the XP-flight completion — design §1/§2). The
+  // Focus-mode setting picks the variant: Focus (hero "Next up") vs Agency (the
+  // full status-encoded list); both share the flight engine (ADR 036).
   if (!seesAllTasks && tasks.length > 0) {
-    return <TaskeeView tasks={tasks} onCompleteTask={onCompleteTask} initialXp={initialXp} />
+    const TaskeeSurface = focusMode ? FocusView : TaskeeView
+    return <TaskeeSurface tasks={tasks} onCompleteTask={onCompleteTask} initialXp={initialXp} />
   }
 
   const done = tasks.filter((t) => t.status === 'completed').length

@@ -55,6 +55,21 @@ export const Taskee: Story = {
   },
 }
 
+export const TaskeeFocus: Story = {
+  name: 'Taskee — Focus view',
+  args: {
+    tasks: SAMPLE_TASKEE_TASKS,
+    tier: 1,
+    seesAllTasks: false,
+    canManage: false,
+    focusMode: true,
+  },
+  parameters: {
+    annotation:
+      'tiers 1–2 default (or a parent override) · Focus variant · one hero "Next up" card with a big green Mark done — tap it for the XP flight; "Coming up" / "Done" collapse below; promotes the next task on landing (design §1 Spotlight; runs locally here)',
+  },
+}
+
 export const Admin: Story = {
   name: 'Admin — grouped by assignee',
   args: {

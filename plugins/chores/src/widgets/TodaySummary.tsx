@@ -28,7 +28,7 @@ interface TodaySummaryProps {
 }
 
 export default function TodaySummary({ size }: TodaySummaryProps) {
-  const { id, tier } = useAuth()
+  const { id, tier, focusMode } = useAuth()
   const isFamily = id === FAMILY_PROFILE_ID
   const usesFamilyFraming = isFamily || tier >= 4
 
@@ -86,6 +86,7 @@ export default function TodaySummary({ size }: TodaySummaryProps) {
       size={size}
       lifetimeXp={lifetimeXp}
       dailyXp={dailyXp}
+      focusMode={focusMode}
     />
   )
 }

@@ -39,6 +39,54 @@ describe('GET /api/auth/me', () => {
   })
 })
 
+describe('GET /api/auth/me — focusMode (effective, ADR 036)', () => {
+  it('defaults a tier-2 profile (null override) to Focus on', async () => {
+    const p = await prisma.profile.create({ data: { name: 'Olderkid', tier: 2 } })
+    const switchRes = await app.inject({
+      method: 'POST',
+      url: '/api/auth/switch',
+      payload: { targetProfileId: p.id },
+    })
+    const cookie = getCookie(switchRes)
+
+    const res = await app.inject({ method: 'GET', url: '/api/auth/me', headers: { cookie } })
+    expect(res.json<{ focusMode: boolean }>().focusMode).toBe(true)
+
+    await prisma.profile.delete({ where: { id: p.id } })
+  })
+
+  it('defaults a tier-3 profile (null override) to Agency (Focus off)', async () => {
+    const p = await prisma.profile.create({ data: { name: 'Teenager', tier: 3 } })
+    const switchRes = await app.inject({
+      method: 'POST',
+      url: '/api/auth/switch',
+      payload: { targetProfileId: p.id },
+    })
+    const cookie = getCookie(switchRes)
+
+    const res = await app.inject({ method: 'GET', url: '/api/auth/me', headers: { cookie } })
+    expect(res.json<{ focusMode: boolean }>().focusMode).toBe(false)
+
+    await prisma.profile.delete({ where: { id: p.id } })
+  })
+
+  it('honours an explicit parent override over the tier default', async () => {
+    // A tier-3 teen the parent has explicitly switched into Focus.
+    const p = await prisma.profile.create({ data: { name: 'Scattered', tier: 3, focusMode: true } })
+    const switchRes = await app.inject({
+      method: 'POST',
+      url: '/api/auth/switch',
+      payload: { targetProfileId: p.id },
+    })
+    const cookie = getCookie(switchRes)
+
+    const res = await app.inject({ method: 'GET', url: '/api/auth/me', headers: { cookie } })
+    expect(res.json<{ focusMode: boolean }>().focusMode).toBe(true)
+
+    await prisma.profile.delete({ where: { id: p.id } })
+  })
+})
+
 describe('POST /api/auth/switch', () => {
   it('allows switching down from parent (tier 4) to child (tier 1)', async () => {
     // First switch up to the parent via the family session — family is tier 1

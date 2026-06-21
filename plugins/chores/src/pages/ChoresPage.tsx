@@ -9,7 +9,7 @@ import { CreateTaskDrawer, type CreateTaskInput } from '../components/CreateTask
 const FAMILY_PROFILE_ID = 'family'
 
 export function ChoresPage() {
-  const { id, tier } = useAuth()
+  const { id, tier, focusMode } = useAuth()
   // Tier 4 manages (create/assign). Tier 4 + the family dashboard see all tasks.
   const canManage = tier >= 4
   const seesAllTasks = canManage || id === FAMILY_PROFILE_ID
@@ -163,6 +163,7 @@ export function ChoresPage() {
         tier={tier}
         seesAllTasks={seesAllTasks}
         canManage={canManage}
+        focusMode={focusMode}
         initialXp={xpQuery.data?.totalXp}
         onAddForAssignee={(assigneeId) => openCreate(assigneeId)}
         onCompleteTask={(taskId) => completeTask.mutateAsync(taskId)}
