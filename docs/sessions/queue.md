@@ -14,16 +14,10 @@
 > **Post-M2 chores triage (2026-06-19):** bugs + polish found after the agent-team
 > chores work landed. Two breakouts (mobile layout, today-widget design) + one bug bash.
 
-### M2 Dev: Focus Mode (taskee Focus view + per-profile setting)
-
-**Type:** development (+ small ADR for the setting's home)
-**Kickoff:** [kickoffs/dev-chores-focus-mode.md](kickoffs/dev-chores-focus-mode.md)
-**Reads:** `docs/modules/chores/design.md` §1 (taskee Focus vs Agency), dev-chores-task-model session log (Focus deferral + owed flag-location call), dev-chores-completion session log
-**Produces:** a per-profile **Focus mode** setting (defaults from tier; parent-overridable) + its storage decision (ADR if it lands on the profile model / a settings table); the **Focus** taskee variant (single hero "Next up" card, collapsed "Coming up"/"Done", "🎉 All done today" empty) branching off the existing Agency `TaskeeView`; reuses the shipped completion + XP flight; Storybook stories
-**Depends on:** M2 Dev: Completion Flow ✅
-**Note:** deferred from Task Model + Creation; Agency is the only taskee variant until this ships. Queued at the user's request during the Completion Flow live review (2026-06-17).
-
----
+> **M2 Dev: Focus Mode — ✅ shipped 2026-06-20** (ADR 036; `FocusView` "Spotlight"
+>
+> - per-profile `focusMode` setting + widget Focus variant). Closed the last queued
+>   M2 chores enhancement. See `logs/2026-06-20-dev-chores-focus-mode.md`.
 
 ### Platform: Service Worker Cache Strategy (prod)
 

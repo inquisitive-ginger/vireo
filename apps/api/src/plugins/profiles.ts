@@ -64,11 +64,16 @@ const profilesPlugin: FastifyPluginAsync = async (fastify) => {
         prisma.permissionOverride.deleteMany({ where: { profileId: id } }),
         prisma.profile.update({ where: { id }, data: result.data }),
       ])
-      return { id: updated.id, name: updated.name, tier: updated.tier }
+      return {
+        id: updated.id,
+        name: updated.name,
+        tier: updated.tier,
+        focusMode: updated.focusMode,
+      }
     }
 
     const updated = await prisma.profile.update({ where: { id }, data: result.data })
-    return { id: updated.id, name: updated.name, tier: updated.tier }
+    return { id: updated.id, name: updated.name, tier: updated.tier, focusMode: updated.focusMode }
   })
 
   // DELETE /profiles/:id — delete a profile (tier 4 only)

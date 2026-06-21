@@ -5,7 +5,7 @@ import type { LucideIcon } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { useAuth, TierGate, usePushSubscription } from '@family-os/platform'
+import { useAuth, TierGate, usePushSubscription, resolveFocusMode } from '@family-os/platform'
 import {
   Button,
   Input,
@@ -25,7 +25,13 @@ import { CreateProfileSchema, type CreateProfileInput } from '@family-os/schemas
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
-type ProfileRow = { id: string; name: string; tier: 1 | 2 | 3 | 4 }
+type ProfileRow = {
+  id: string
+  name: string
+  tier: 1 | 2 | 3 | 4
+  // Raw Focus-mode override: null = tier default, true/false = explicit (ADR 036).
+  focusMode?: boolean | null
+}
 type DarkModeValue = boolean | null
 type PinResetPhase = 'idle' | 'current' | 'current-error' | 'new' | 'confirm' | 'mismatch'
 
@@ -340,6 +346,86 @@ function ProfileRoleField({ profile }: { profile: ProfileRow }) {
   )
 }
 
+// ─── Focus-mode field (autosave, lives inside Role & Capabilities section) ────
+
+const FOCUS_OPTS = [
+  { value: null, label: 'Default' },
+  { value: true, label: 'Focus' },
+  { value: false, label: 'Agency' },
+] as const
+
+/* Per-profile Focus-mode override (ADR 036). "Default" defers to the tier (the
+   hint shows what that resolves to); Focus / Agency pin the taskee variant. */
+function FocusModeField({ profile }: { profile: ProfileRow }) {
+  const queryClient = useQueryClient()
+  const [value, setValue] = useState<boolean | null>(profile.focusMode ?? null)
+  const saved = useRef<boolean | null>(profile.focusMode ?? null)
+  const [errorMsg, setErrorMsg] = useState<string | null>(null)
+
+  const saveMutation = useMutation({
+    mutationFn: (next: boolean | null) =>
+      fetch(`/api/profiles/${profile.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ focusMode: next }),
+      }).then((r) => {
+        if (!r.ok) return r.json().then((e) => Promise.reject(e))
+        return r.json()
+      }),
+    onSuccess: (_, next) => {
+      saved.current = next
+      setErrorMsg(null)
+      queryClient.invalidateQueries({ queryKey: ['api/profiles'] })
+      // The active profile's own view branches on /auth/me's effective value.
+      queryClient.invalidateQueries({ queryKey: ['api/auth/me'] })
+    },
+    onError: (err: unknown) => {
+      setValue(saved.current)
+      setErrorMsg((err as { error?: string })?.error ?? 'Failed to save — try again')
+    },
+  })
+
+  function handleChange(next: boolean | null) {
+    if (next === value) return
+    setValue(next)
+    setErrorMsg(null)
+    saveMutation.mutate(next)
+  }
+
+  const tierDefault = resolveFocusMode(null, profile.tier) ? 'Focus' : 'Agency'
+
+  return (
+    <div className="flex flex-col gap-1.5 px-6 py-5">
+      <Label>Chores view</Label>
+      <div className="flex gap-2">
+        {FOCUS_OPTS.map(({ value: v, label }) => (
+          <button
+            key={label}
+            type="button"
+            onClick={() => handleChange(v)}
+            className={cn(
+              'flex-1 rounded-lg border py-1.5 text-xs font-medium transition-colors',
+              value === v
+                ? 'border-primary bg-primary/10 text-primary'
+                : 'border-border text-muted-foreground hover:bg-muted'
+            )}
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+      <p className="text-xs text-muted-foreground">
+        {value === null
+          ? `Default for this tier → ${tierDefault}`
+          : value
+            ? 'Focus — one task at a time'
+            : 'Agency — the full task list'}
+      </p>
+      {errorMsg && <FieldError message={errorMsg} />}
+    </div>
+  )
+}
+
 // ─── Profile edit drawer ──────────────────────────────────────────────────────
 
 function ProfileEditDrawer({
@@ -365,6 +451,9 @@ function ProfileEditDrawer({
               </h3>
             </div>
             <ProfileRoleField profile={profile} />
+            <div className="border-t border-border">
+              <FocusModeField profile={profile} />
+            </div>
             {!isOwnProfile && (
               <div className="border-t border-border">
                 <CapabilitiesPanel profileId={profile.id} />

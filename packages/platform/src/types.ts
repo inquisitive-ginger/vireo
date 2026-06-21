@@ -16,7 +16,16 @@ export type Profile = {
   tier: TierLevel
   avatarUrl?: string
   darkMode?: boolean | null
+  /** Taskee surface variant. null = derive from tier; true/false = parent override. */
+  focusMode?: boolean | null
   pushEnabled?: boolean
+}
+
+/** Resolve the effective Focus-mode setting for a profile. The stored value is a
+    nullable override: null defers to the tier default (tiers 1–2 → Focus on;
+    decided in M2 Dev: Focus Mode, 2026-06-20), true/false is a parent override. */
+export function resolveFocusMode(focusMode: boolean | null | undefined, tier: number): boolean {
+  return focusMode ?? tier <= 2
 }
 
 export type PermissionOverride = {

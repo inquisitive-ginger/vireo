@@ -1,10 +1,10 @@
-import { useCallback, useMemo, useRef, useState } from 'react'
+import { useMemo, useRef } from 'react'
 import { PageHeader } from '@family-os/ui'
 import type { ChoreTask } from '../types'
-import { TaskCard, type TaskDisplayStatus } from './TaskCard'
+import { TaskCard } from './TaskCard'
 import { ScorePlate } from './ScorePlate'
 import { FlightChip } from './FlightChip'
-import { usePrefersReducedMotion } from '../lib/use-reduced-motion'
+import { useXpFlight } from '../lib/use-xp-flight'
 
 export interface TaskeeViewProps {
   /** The active profile's own tasks. */
@@ -19,37 +19,14 @@ export interface TaskeeViewProps {
   initialXp?: number
 }
 
-type Override = 'inFlight' | 'done'
-interface Flight {
-  taskId: string
-  from: DOMRect
-  to: DOMRect
-  value: number
-}
-
-/* The taskee surface (tiers 1–3, Agency variant) — owns the XP flight (design
-   §2). Header carries the lifetime score plate (the flight's landing target);
-   the list is status-encoded cards. On tap: the badge lifts off, a portal chip
-   arcs to the plate, and on landing the card morphs to done while the plate
-   banks + counts up. Reduced-motion or an off-screen plate → quiet bank. */
+/* The taskee surface (tiers 1–3, Agency variant) — renders the full status-encoded
+   list and the shared XP flight (design §2; the engine lives in `useXpFlight`).
+   Header carries the lifetime score plate (the flight's landing target). On tap:
+   the badge lifts off, a portal chip arcs to the plate, and on landing the card
+   morphs to done while the plate banks + counts up. */
 export function TaskeeView({ tasks, onCompleteTask, initialXp }: TaskeeViewProps) {
-  const reduced = usePrefersReducedMotion()
-  const plateRef = useRef<HTMLDivElement>(null)
-
-  // Seeded once on mount. When initialXp is provided (persisted balance from
-  // GET /api/chores/xp) it replaces the locally-derived fallback (sum of
-  // already-completed tasks). Subsequent refetches do not re-seed to avoid
-  // double-counting in-session completions.
-  const [lifetime, setLifetime] = useState(
-    () =>
-      initialXp ??
-      tasks.filter((t) => t.status === 'completed').reduce((sum, t) => sum + t.xpReward, 0)
-  )
-
-  const [overrides, setOverrides] = useState<Record<string, Override>>({})
-  const overridesRef = useRef(overrides)
-  overridesRef.current = overrides
-  const [flights, setFlights] = useState<Flight[]>([])
+  const { plateRef, lifetime, flights, handleComplete, onFlightDone, effectiveStatus } =
+    useXpFlight({ tasks, onCompleteTask, initialXp })
 
   // Lock card order on first sight so a just-completed task morphs in place
   // (design §2 "the card does not reorder during the flight") even if a refetch
@@ -61,56 +38,7 @@ export function TaskeeView({ tasks, onCompleteTask, initialXp }: TaskeeViewProps
     return orderRef.current.map((id) => byId.get(id)).filter((t): t is ChoreTask => !!t)
   }, [tasks])
 
-  const setOverride = useCallback((id: string, value: Override | undefined) => {
-    setOverrides((prev) => {
-      const next = { ...prev }
-      if (value) next[id] = value
-      else delete next[id]
-      return next
-    })
-  }, [])
-
-  const handleComplete = useCallback(
-    (taskId: string, badgeRect: DOMRect) => {
-      const task = tasks.find((t) => t.id === taskId)
-      if (!task) return
-      const xp = task.xpReward
-
-      const plateRect = plateRef.current?.getBoundingClientRect()
-      const offscreen = !plateRect || plateRect.bottom < 0 || plateRect.top > window.innerHeight
-
-      // Optimistic persistence — revert everything on failure.
-      const persist = onCompleteTask?.(taskId) ?? Promise.resolve()
-      persist.catch(() => {
-        // If we'd already banked (quiet path or chip already landed), claw it back.
-        if (overridesRef.current[taskId] === 'done') setLifetime((l) => l - xp)
-        setOverride(taskId, undefined)
-        setFlights((fs) => fs.filter((f) => f.taskId !== taskId))
-      })
-
-      if (reduced || offscreen) {
-        // Quiet bank — morph + bank on tap, no airborne chip (design §2 edge).
-        setOverride(taskId, 'done')
-        setLifetime((l) => l + xp)
-        return
-      }
-
-      setOverride(taskId, 'inFlight')
-      setFlights((fs) => [...fs, { taskId, from: badgeRect, to: plateRect, value: xp }])
-    },
-    [tasks, onCompleteTask, reduced, setOverride]
-  )
-
-  const onFlightDone = useCallback(
-    (flight: Flight) => {
-      setOverride(flight.taskId, 'done')
-      setLifetime((l) => l + flight.value)
-      setFlights((fs) => fs.filter((f) => f !== flight))
-    },
-    [setOverride]
-  )
-
-  const done = ordered.filter((t) => effectiveStatus(t, overrides) === 'completed').length
+  const done = ordered.filter((t) => effectiveStatus(t) === 'completed').length
   const total = ordered.length
   const pct = total > 0 ? (done / total) * 100 : 0
 
@@ -136,7 +64,7 @@ export function TaskeeView({ tasks, onCompleteTask, initialXp }: TaskeeViewProps
           <TaskCard
             key={t.id}
             task={t}
-            displayStatus={effectiveStatus(t, overrides)}
+            displayStatus={effectiveStatus(t)}
             onComplete={handleComplete}
           />
         ))}
@@ -153,11 +81,4 @@ export function TaskeeView({ tasks, onCompleteTask, initialXp }: TaskeeViewProps
       ))}
     </div>
   )
-}
-
-function effectiveStatus(task: ChoreTask, overrides: Record<string, Override>): TaskDisplayStatus {
-  const o = overrides[task.id]
-  if (o === 'done') return 'completed'
-  if (o === 'inFlight') return 'inFlight'
-  return task.status as TaskDisplayStatus
 }
