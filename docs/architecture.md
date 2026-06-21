@@ -1,6 +1,6 @@
 # Architecture
 
-> Last updated: 2026-06-07 — packages/schemas added; packages/e2e creation milestone corrected.
+> Last updated: 2026-06-21 — profiles schema synced (dark_mode / focus_mode / push_enabled); manifest example renamed chore-engine → chores.
 
 ---
 
@@ -135,12 +135,12 @@ API** — a typed SDK injected at mount time. Plugins may not:
 
 ```json
 {
-  "name": "chore-engine",
+  "name": "chores",
   "version": "1.0.0",
-  "remoteEntry": "http://localhost:3001/remoteEntry.js",
+  "remoteEntry": "http://localhost:3012/remoteEntry.js",
   "exposes": ["./ChoreModule"],
   "routes": ["/chores"],
-  "schema": "chore_engine",
+  "schema": "chores",
   "events": {
     "publishes": ["chores.task.completed", "chores.task.created"],
     "subscribes": ["calendar.event.added"]
@@ -352,11 +352,14 @@ proxy: {
 
 ```
 profiles
-  id          uuid  PK
-  name        text
-  tier        integer (1–4)
-  avatar_url  text  nullable
-  created_at  timestamptz
+  id           uuid  PK
+  name         text
+  tier         integer (1–4)
+  avatar_url   text     nullable
+  dark_mode    boolean  nullable          -- display pref; null = follow prefers-color-scheme (M1 home-surface)
+  focus_mode   boolean  nullable          -- chores taskee variant; null = derive from tier (ADR 036)
+  push_enabled boolean  default false     -- Web Push opt-in (M1 web-push)
+  created_at   timestamptz
 
 permission_overrides
   id           uuid  PK

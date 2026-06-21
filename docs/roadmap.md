@@ -6,12 +6,15 @@
 
 ## Active Milestone
 
-**M2 — Chores** · 🔄 In Progress
+**None active** — M2 — Chores ✅ done (2026-06-20). Next: Platform cleanup
+(Service Worker cache strategy — see `docs/sessions/queue.md`), then M3 — Calendar
+product planning.
 
 ## Completed
 
 **M0 — Foundation** · ✅ Done (2026-06-01)
 **M1 — Platform Shell** · ✅ Done (2026-06-15)
+**M2 — Chores** · ✅ Done (2026-06-20)
 
 ---
 
@@ -127,6 +130,22 @@ _Added here as MVP milestones complete and v2 needs emerge._
 ---
 
 ## Completed Milestones
+
+### M2 — Chores · ✅ Done (2026-06-20)
+
+The first feature module. Parents assign chores; kids complete them and earn XP;
+parents are notified.
+
+- Task creation and assignment (tier-4 creates; one assignee; one-shot) + ad-hoc edit/remove
+- Completion flow (kid marks done; XP flight; tier-4 admin check-off + reopen)
+- XP + gamification basics (running-total XP balance; lifetime score plate)
+- Parent notification on completion (shared server `notify()` → tray + Web Push)
+- `chores.today-summary` widget (taskee + family framings) + Focus Mode taskee variant (ADR 036)
+
+**Done when:** A kid completes a chore and a parent sees it happen. ✅
+
+> Shipped beyond MVP scope: ad-hoc Task Editing and per-profile Focus Mode (ADR 036).
+> Plugin renamed `chore-engine → chores` mid-milestone (#24).
 
 ### M1 — Platform Shell · ✅ Done (2026-06-15)
 

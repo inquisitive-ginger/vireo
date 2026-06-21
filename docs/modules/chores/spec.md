@@ -37,10 +37,11 @@ The chores module lets parents assign tasks to family members, tracks kid comple
 
 `chores.task.*`
 
-| Event                   | Published by                   | Payload                                         |
-| ----------------------- | ------------------------------ | ----------------------------------------------- |
-| `chores.task.created`   | chore-engine on POST success   | `{ taskId, assigneeId, createdBy, title }`      |
-| `chores.task.completed` | chore-engine on PATCH complete | `{ taskId, assigneeId, xpReward, completedAt }` |
+| Event                   | Published by             | Payload                                                                        |
+| ----------------------- | ------------------------ | ------------------------------------------------------------------------------ |
+| `chores.task.created`   | chores on POST success   | `{ taskId, assigneeId, createdBy, title }`                                     |
+| `chores.task.completed` | chores on PATCH complete | `{ taskId, assigneeId, xpReward, completedAt, title, createdBy, completedBy }` |
+| `chores.task.reopened`  | chores on PATCH reopen   | `{ taskId, assigneeId, xpReward }`                                             |
 
 ---
 
@@ -51,6 +52,17 @@ The chores module lets parents assign tasks to family members, tracks kid comple
 | `chores.task.view`     | `can('view', 'chores.Task')`     | Tier 1+                             |
 | `chores.task.create`   | `can('create', 'chores.Task')`   | Tier 4                              |
 | `chores.task.complete` | `can('complete', 'chores.Task')` | Tier 1+ (row-level: own tasks only) |
+
+Only `view` / `create` / `complete` are registered in `PERMISSION_REGISTRY` (the
+grant-/revoke-able set). The tier-4 management actions below are CASL baseline rules
+on `chores.Task` (`manage`/`all`) — enforced in the routes but **not** individually
+toggleable, so they have no registry key:
+
+| CASL action                    | Route                            | Default baseline              |
+| ------------------------------ | -------------------------------- | ----------------------------- |
+| `can('reopen', 'chores.Task')` | `PATCH /chores/tasks/:id/reopen` | Tier 4 (un-complete any task) |
+| `can('update', 'chores.Task')` | `PATCH /chores/tasks/:id`        | Tier 4 (edit any task)        |
+| `can('delete', 'chores.Task')` | `DELETE /chores/tasks/:id`       | Tier 4 (remove any task)      |
 
 ---
 
@@ -74,11 +86,11 @@ The chores module lets parents assign tasks to family members, tracks kid comple
 
 ```json
 {
-  "name": "chore-engine",
-  "schema": "chore_engine",
+  "name": "chores",
+  "schema": "chores",
   "events": {
-    "publishes": ["chores.task.created", "chores.task.completed"],
-    "subscribes": []
+    "publishes": ["chores.task.created", "chores.task.completed", "chores.task.reopened"],
+    "subscribes": ["chores.task.completed"]
   },
   "routes": ["/chores"],
   "navItem": {
@@ -104,7 +116,7 @@ The chores module lets parents assign tasks to family members, tracks kid comple
 
 ---
 
-## Database schema (`chore_engine`)
+## Database schema (`chores`)
 
 ```
 tasks
