@@ -48,9 +48,18 @@ on the Agency `TaskeeView` — Focus reuses all of it.
   mini-rows, empties to "🎉 All done today". Branch off the existing `TaskeeView`
   (which is the Agency variant); **reuse the shipped completion + XP flight**
   (`ScorePlate` / `FlightChip`).
-- Storybook stories for the Focus variant under `Chores/`.
+- **Today widget — Focus variant (folded in from Today Widget Rework, 2026-06-20).**
+  The widget currently ships the **Agency / default** "Hero split" framing
+  (`TodaySummaryView` taskee path). Add a **Focus** branch — a single hero
+  **"Next up"** row + "+N more" + progress (design.md §4 "Focus-mode widget variant
+  owed"; the gate approved direction "C" in principle). Gate it on the **same
+  per-profile `focusMode` setting** this session introduces; the widget reads it via
+  the same profile payload as the page. No new data; reuses `TodaySummaryView`'s
+  existing helpers/tokens.
+- Storybook stories for the Focus variant (page + widget) under `Chores/`.
 
-**Out:** any change to Agency, admin, or widget; new completion mechanics.
+**Out:** any change to Agency, admin, or the family widget framing; new completion
+mechanics.
 
 ## Required outputs
 

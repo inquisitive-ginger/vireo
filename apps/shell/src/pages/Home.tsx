@@ -60,6 +60,8 @@ export function Home({ widgetRemotes }: HomeProps) {
       const Widget = getLazyWidget(remoteName)
       widgetChildren[item.widgetId] = Widget ? (
         <Suspense fallback={<PlaceholderCard {...meta} />}>
+          {/* No size prop — content widgets self-size to their slot via CSS
+              container queries (design-system.md). */}
           <Widget />
         </Suspense>
       ) : (

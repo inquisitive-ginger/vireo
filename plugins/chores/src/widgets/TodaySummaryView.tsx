@@ -1,9 +1,21 @@
-import { CheckSquare } from 'lucide-react'
+import type { ReactNode } from 'react'
+import { CheckSquare, Star, TrendingUp } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { EmptyState, ProfileAvatar, getIdentityHue, identityColor } from '@family-os/ui'
+import { EmptyState, getIdentityHue, identityToken } from '@family-os/ui'
 import type { ChoreTask } from '../types'
 import { isOverdue } from '../lib/dates'
 import { GOLD, GOLD_DEEP, GOLD_HI, GOLD_INK, GOLD_TINT } from '../lib/gold'
+
+/* `chores.today-summary` — taskee + family framings, three sizes.
+
+   Visual direction: "Hero split" (design.md §4, gated 2026-06-20 Today Widget
+   Rework). A big text-metric count anchors the glance; the taskee framing carries
+   per-task +XP on filled rows, daily XP in the header, and the lifetime coin
+   score; the family framing keeps identity (avatars/hues) and labelled chips, no
+   XP. The Focus-mode "Next up" widget variant is owed to the Focus Mode session
+   (it needs the per-profile focusMode setting to branch on). */
+
+const OVERDUE_WASH = 'color-mix(in oklch, var(--error) 8%, transparent)'
 
 /* ---- helpers ---------------------------------------------------------------- */
 
@@ -19,369 +31,233 @@ function overdueCount(tasks: ChoreTask[]): number {
   return tasks.filter((t) => isOverdue(t.dueDate, t.status)).length
 }
 
-/* ---- widget header ---------------------------------------------------------- */
+function spineColor(t: ChoreTask): string {
+  if (t.status === 'completed') return 'var(--success)'
+  return isOverdue(t.dueDate, t.status) ? 'var(--error)' : 'var(--border)'
+}
 
-/* CheckSquare + "CHORES" in --accent (widget identity header — design-system.md). */
-function WidgetHeader() {
+/* Urgency order so that when a list is taller than the slot, the most important
+   rows survive the clip: overdue → other pending → completed. */
+function byUrgency(a: ChoreTask, b: ChoreTask): number {
+  const rank = (t: ChoreTask) =>
+    t.status === 'completed' ? 2 : isOverdue(t.dueDate, t.status) ? 0 : 1
+  return rank(a) - rank(b)
+}
+
+/* Members with overdue work first, then most-pending — never hides anyone. */
+function byMemberUrgency(a: { tasks: ChoreTask[] }, b: { tasks: ChoreTask[] }): number {
+  const od = overdueCount(b.tasks) - overdueCount(a.tasks)
+  if (od !== 0) return od
+  const pending = (g: { tasks: ChoreTask[] }) =>
+    g.tasks.filter((t) => t.status === 'pending').length
+  return pending(b) - pending(a)
+}
+
+/* ---- shared chrome ---------------------------------------------------------- */
+
+/* CheckSquare + "CHORES" widget identity header — neutral, matching family-feed
+   (icon muted, label inherits foreground). With an optional trailing slot for the
+   score / daily XP / overdue pill. */
+function WidgetHeader({ trailing }: { trailing?: ReactNode }) {
   return (
-    <div className="mb-2 flex items-center gap-1.5">
-      <CheckSquare size={13} style={{ color: 'var(--accent)' }} aria-hidden />
-      <span className="text-section-label" style={{ color: 'var(--accent)' }}>
-        Chores
+    <div className="flex shrink-0 items-center gap-1.5">
+      <CheckSquare size={13} className="text-muted-foreground" aria-hidden />
+      <span className="text-section-label flex-1">Chores</span>
+      {trailing}
+    </div>
+  )
+}
+
+/* The hero count — text-metric (the sanctioned widget-count token). */
+function HeroCount({ value, label }: { value: number; label: string }) {
+  return (
+    <div className="flex flex-col gap-0.5">
+      <span className="text-metric text-foreground">{value}</span>
+      <span className="text-sm-token text-muted-foreground">{label}</span>
+    </div>
+  )
+}
+
+function ProgressBar({ done, total }: { done: number; total: number }) {
+  const pct = total > 0 ? Math.round((done / total) * 100) : 0
+  return (
+    <div className="flex flex-col gap-1.5">
+      <div className="h-[6px] overflow-hidden rounded-full bg-muted">
+        <div
+          className="h-full rounded-full bg-success"
+          style={{ width: `${pct}%` }}
+          role="progressbar"
+          aria-valuenow={pct}
+          aria-valuemin={0}
+          aria-valuemax={100}
+          aria-label={`${done} of ${total} tasks done`}
+        />
+      </div>
+      <span className="text-xs-token text-muted-foreground">
+        {done} of {total} done today
       </span>
     </div>
   )
 }
 
-/* ---- mini score plate ------------------------------------------------------- */
-
-/* Compact coin for the taskee widget — same gold semantic as ScorePlate on the
-   full page (design §4 "gold coin score"). No animation in the widget (read-only
-   MVP); the flight target lives on the full-page score plate. */
-function MiniCoinScore({ value }: { value: number }) {
+/* Lifetime XP coin (design §4 "gold coin score"). No animation in the read-only
+   widget; the full-page ScorePlate is the flight target. */
+function CoinScore({ value }: { value: number }) {
   return (
-    <div
-      className="flex items-center gap-1.5 rounded-full"
-      style={{
-        padding: '4px 10px 4px 8px',
-        background: `linear-gradient(135deg, ${GOLD_HI}, ${GOLD_TINT})`,
-        border: `1px solid ${GOLD}`,
-        boxShadow: '0 1px 2px oklch(0 0 0 / 0.06)',
-      }}
+    <span
+      className="inline-flex items-center gap-1.5 rounded-full"
+      style={{ background: GOLD_TINT, padding: '4px 10px 4px 4px', border: `1px solid ${GOLD}` }}
     >
       <span
-        className="grid size-[16px] shrink-0 place-items-center rounded-full"
+        className="grid size-5 shrink-0 place-items-center rounded-full"
         style={{
-          background: `radial-gradient(circle at 32% 30%, ${GOLD_HI}, ${GOLD} 70%, ${GOLD_DEEP})`,
-          color: GOLD_DEEP,
+          background: `radial-gradient(circle at 34% 28%, ${GOLD_HI}, ${GOLD} 62%, ${GOLD_DEEP})`,
+          boxShadow: 'inset 0 1px 1px oklch(1 0 0 / 0.4)',
         }}
         aria-hidden
       >
-        <span style={{ fontSize: 8, fontWeight: 700 }}>★</span>
+        <Star size={10} fill="white" style={{ color: 'white' }} />
       </span>
-      <span className="text-card-title leading-none" style={{ color: GOLD_INK, fontWeight: 700 }}>
-        {value.toLocaleString()}
+      <span className="inline-flex items-baseline gap-0.5">
+        <span style={{ fontSize: 15, fontWeight: 700, color: GOLD_DEEP, lineHeight: 1 }}>
+          {value.toLocaleString()}
+        </span>
+        <span className="font-bold tracking-[0.04em]" style={{ color: GOLD_INK, fontSize: 9 }}>
+          XP
+        </span>
       </span>
-      <span
-        className="text-xs-token font-bold tracking-[0.04em] opacity-70"
-        style={{ color: GOLD_INK }}
-      >
-        XP
-      </span>
-    </div>
+    </span>
   )
 }
 
-/* ---- count chip ------------------------------------------------------------- */
+/* Daily XP earned today (design §4 "daily XP (header)"). */
+function DailyXp({ earned }: { earned: number }) {
+  return (
+    <span className="inline-flex items-center gap-1.5">
+      <TrendingUp size={13} style={{ color: GOLD_DEEP }} aria-hidden />
+      <span className="text-sm-token" style={{ color: GOLD_INK, lineHeight: 1 }}>
+        <span className="font-bold">+{earned}</span> today
+      </span>
+    </span>
+  )
+}
 
-/* Labelled count chip used in the family framing (design §4 "labelled count chips
-   — no bare trailing numbers"). The chip text is always label + count together. */
-function CountChip({
-  label,
-  count,
-  variant = 'neutral',
-}: {
-  label: string
-  count: number
-  variant?: 'neutral' | 'error' | 'success'
-}) {
-  const bg =
-    variant === 'error'
-      ? 'color-mix(in oklch, var(--error) 10%, transparent)'
-      : variant === 'success'
-        ? 'color-mix(in oklch, var(--success) 10%, transparent)'
-        : 'var(--muted)'
-  const fg =
-    variant === 'error'
-      ? 'var(--error)'
-      : variant === 'success'
-        ? 'var(--success)'
-        : 'var(--muted-foreground)'
+function OverduePill({ n, soft = false }: { n: number; soft?: boolean }) {
   return (
     <span
-      className="text-xs-token inline-flex items-center gap-0.5 rounded-full px-2 py-0.5 font-semibold"
-      style={{ background: bg, color: fg }}
+      className="text-xs-token inline-flex items-center rounded-full px-2 py-0.5 font-bold"
+      style={{
+        background: soft ? OVERDUE_WASH : 'var(--error)',
+        color: soft ? 'var(--error)' : 'var(--error-foreground)',
+      }}
     >
+      {n} overdue
+    </span>
+  )
+}
+
+/* Labelled count chip (design §4 "no bare trailing numbers"). */
+function CountChip({ label, count }: { label: string; count: number }) {
+  return (
+    <span className="text-xs-token inline-flex items-center rounded-full bg-muted px-2 py-0.5 font-semibold text-muted-foreground">
       {count} {label}
     </span>
   )
 }
 
-/* ---- progress bar ----------------------------------------------------------- */
-
-function ProgressBar({ done, total }: { done: number; total: number }) {
-  const pct = total > 0 ? Math.round((done / total) * 100) : 0
+function AllDoneChip() {
   return (
-    <div className="h-[4px] overflow-hidden rounded-full bg-muted">
-      <div
-        className="h-full rounded-full bg-success"
-        style={{ width: `${pct}%` }}
-        role="progressbar"
-        aria-valuenow={pct}
-        aria-valuemin={0}
-        aria-valuemax={100}
-        aria-label={`${done} of ${total} tasks done`}
+    <span
+      className="text-xs-token inline-flex items-center rounded-full px-2 py-0.5 font-bold"
+      style={{
+        background: 'color-mix(in oklch, var(--success) 12%, transparent)',
+        color: 'var(--success)',
+      }}
+    >
+      ✓ all done
+    </span>
+  )
+}
+
+/* ---- rows ------------------------------------------------------------------- */
+
+/* Taskee task row — filled (muted / overdue-wash) pill, status spine, +XP. */
+function TaskRow({ task }: { task: ChoreTask }) {
+  const done = task.status === 'completed'
+  const overdue = isOverdue(task.dueDate, task.status)
+  return (
+    <div
+      className="flex items-center gap-2.5 rounded-[11px] px-3"
+      style={{
+        minHeight: 44,
+        background: overdue ? OVERDUE_WASH : 'var(--muted)',
+        opacity: done ? 0.6 : 1,
+      }}
+    >
+      <span
+        aria-hidden
+        className="shrink-0 self-stretch rounded-sm"
+        style={{ width: 4, margin: '9px 0', background: spineColor(task) }}
       />
-    </div>
-  )
-}
-
-/* ============================================================================ */
-/* Taskee framing (tiers 1–3)                                                   */
-/* ============================================================================ */
-
-/* Compact 1×1 — just the count + empty signal. Nice-to-have per spec. */
-function TaskeeCompact({ pending, total, tier }: { pending: number; total: number; tier: number }) {
-  if (total === 0) {
-    return (
-      <div className="flex size-full flex-col" style={{ containerType: 'size' }}>
-        <WidgetHeader />
-        <div className="flex flex-1 items-center justify-center">
-          <EmptyState heading={tier === 1 ? 'All done!' : 'No tasks'} compact />
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <div className="flex size-full flex-col" style={{ containerType: 'size' }}>
-      <WidgetHeader />
-      <div className="flex flex-1 flex-col items-center justify-center gap-1">
-        <span className="text-metric leading-none text-foreground">{pending}</span>
-        <span className="text-sm-token text-muted-foreground">
-          {pending === 1 ? 'task left' : 'tasks left'}
+      <span
+        className={`text-sm-token min-w-0 flex-1 truncate ${done ? 'text-muted-foreground line-through' : 'text-foreground'}`}
+      >
+        {task.title}
+      </span>
+      {overdue && (
+        <span className="text-xs-token shrink-0 font-bold" style={{ color: 'var(--error)' }}>
+          Overdue
         </span>
-      </div>
+      )}
+      <span className="text-sm-token shrink-0 font-bold" style={{ color: GOLD_INK }}>
+        +{task.xpReward}
+      </span>
     </div>
   )
 }
 
-/* Standard 2×1 — count + peek (first 1-2 tasks) + progress bar + coin score. */
-function TaskeeStandard({
-  tasks,
-  lifetimeXp,
-  tier,
-}: {
-  tasks: ChoreTask[]
-  lifetimeXp: number
-  tier: number
-}) {
-  const pending = todayPending(tasks)
-  const done = todayCompleted(tasks).length
-  const total = tasks.length
-
-  if (total === 0) {
-    return (
-      <div className="flex size-full flex-col p-4" style={{ containerType: 'size' }}>
-        <WidgetHeader />
-        <div className="flex flex-1 items-center justify-center">
-          <EmptyState
-            heading={tier === 1 ? 'All done!' : 'No tasks today'}
-            body={tier === 1 ? 'Nothing today!' : undefined}
-            compact
-          />
-        </div>
-      </div>
-    )
-  }
-
-  /* Peek: show up to 2 pending tasks (or done tasks if all done). */
-  const peekTasks = pending.length > 0 ? pending.slice(0, 2) : tasks.slice(0, 2)
-
-  return (
-    <div className="flex size-full flex-col p-4" style={{ containerType: 'size' }}>
-      <div className="mb-2 flex items-start justify-between gap-2">
-        <WidgetHeader />
-        <MiniCoinScore value={lifetimeXp} />
-      </div>
-
-      {/* Count headline */}
-      <p className="text-card-title mb-2 text-foreground">
-        {pending.length === 0
-          ? '🎉 All done today'
-          : `${pending.length} ${pending.length === 1 ? 'task' : 'tasks'} left today`}
-      </p>
-
-      {/* Task peek — status spine + title */}
-      <div className="mb-3 flex flex-col gap-1.5">
-        {peekTasks.map((t) => {
-          const overdue = isOverdue(t.dueDate, t.status)
-          const spine =
-            t.status === 'completed' ? 'var(--success)' : overdue ? 'var(--error)' : 'var(--border)'
-          return (
-            <div key={t.id} className="flex items-center gap-2">
-              <span
-                aria-hidden
-                className="shrink-0 self-stretch rounded-sm"
-                style={{ width: 4, background: spine }}
-              />
-              <span
-                className={`text-sm-token min-w-0 truncate ${t.status === 'completed' ? 'text-muted-foreground line-through' : 'text-foreground'}`}
-              >
-                {t.title}
-              </span>
-            </div>
-          )
-        })}
-      </div>
-
-      {/* Progress bar */}
-      <div className="mt-auto">
-        <p className="text-xs-token mb-1 text-muted-foreground">
-          {done} of {total} done
-        </p>
-        <ProgressBar done={done} total={total} />
-      </div>
-    </div>
-  )
-}
-
-/* Large 2×2 — full task list + progress bar + coin score. Fills height. */
-function TaskeeLarge({
-  tasks,
-  lifetimeXp,
-  tier,
-}: {
-  tasks: ChoreTask[]
-  lifetimeXp: number
-  tier: number
-}) {
-  const pending = todayPending(tasks)
-  const done = todayCompleted(tasks).length
-  const total = tasks.length
-
-  if (total === 0) {
-    return (
-      <div className="flex size-full flex-col p-4" style={{ containerType: 'size' }}>
-        <WidgetHeader />
-        <div className="flex flex-1 items-center justify-center">
-          <EmptyState
-            heading={tier === 1 ? 'All done! Nothing today!' : 'No tasks scheduled today'}
-            compact
-          />
-        </div>
-      </div>
-    )
-  }
-
-  return (
-    <div className="flex size-full flex-col p-4" style={{ containerType: 'size' }}>
-      {/* Header row: identity + score */}
-      <div className="mb-3 flex items-start justify-between gap-2">
-        <WidgetHeader />
-        <MiniCoinScore value={lifetimeXp} />
-      </div>
-
-      {/* Count headline */}
-      <p className="text-card-title mb-3 text-foreground">
-        {pending.length === 0
-          ? '🎉 All done today'
-          : `${pending.length} ${pending.length === 1 ? 'task' : 'tasks'} left today`}
-      </p>
-
-      {/* Task list — fills remaining height; shows up to ~5 without scroll */}
-      <div className="mb-3 flex flex-col gap-2 overflow-hidden">
-        {tasks.map((t) => {
-          const overdue = isOverdue(t.dueDate, t.status)
-          const spine =
-            t.status === 'completed' ? 'var(--success)' : overdue ? 'var(--error)' : 'var(--border)'
-          const rowBg = overdue
-            ? 'color-mix(in oklch, var(--error) 8%, transparent)'
-            : 'transparent'
-          return (
-            <div
-              key={t.id}
-              className="flex items-center gap-2.5 rounded-lg py-2 pr-2 pl-2"
-              style={{ background: rowBg }}
-            >
-              <span
-                aria-hidden
-                className="h-full shrink-0 self-stretch rounded-sm"
-                style={{ width: 4, minHeight: 20, background: spine }}
-              />
-              <div className="min-w-0 flex-1">
-                <span
-                  className={`text-base-token block truncate ${t.status === 'completed' ? 'text-muted-foreground line-through' : 'text-foreground'}`}
-                >
-                  {t.title}
-                </span>
-              </div>
-              {overdue && (
-                <span
-                  className="text-xs-token shrink-0 font-semibold"
-                  style={{ color: 'var(--error)' }}
-                >
-                  Overdue
-                </span>
-              )}
-            </div>
-          )
-        })}
-      </div>
-
-      {/* Progress: grows to fill the bottom */}
-      <div className="mt-auto">
-        <p className="text-xs-token mb-1 text-muted-foreground">
-          {done} of {total} done
-        </p>
-        <ProgressBar done={done} total={total} />
-      </div>
-    </div>
-  )
-}
-
-/* ============================================================================ */
-/* Family framing (tier 4 / family pseudo-profile)                              */
-/* ============================================================================ */
-
-/* Per-person row in the family summary. */
-function FamilyPersonRow({ name, tasks }: { name: string; tasks: ChoreTask[] }) {
+/* Family person tile — identity avatar + name + count chips, filled bg. */
+function PersonTile({ name, tasks }: { name: string; tasks: ChoreTask[] }) {
   const pending = tasks.filter((t) => t.status === 'pending').length
-  const done = tasks.filter((t) => t.status === 'completed').length
   const overdue = overdueCount(tasks)
   const allDone = pending === 0 && tasks.length > 0
   const hue = getIdentityHue(name)
 
   return (
     <div
-      className="flex items-center gap-2.5 rounded-lg px-2 py-2"
-      style={
-        overdue > 0
-          ? { background: 'color-mix(in oklch, var(--error) 8%, transparent)' }
-          : undefined
-      }
+      className="flex items-center gap-2.5 rounded-[11px] px-3"
+      style={{
+        minHeight: 48,
+        background: overdue > 0 ? OVERDUE_WASH : 'var(--muted)',
+        opacity: allDone ? 0.78 : 1,
+      }}
     >
-      {/* Identity spine */}
       <span
-        aria-hidden
-        className="shrink-0 self-stretch rounded-sm"
+        className="inline-flex size-7 shrink-0 items-center justify-center rounded-full font-bold"
         style={{
-          width: 4,
-          minHeight: 20,
-          background: identityColor(name, 'base'),
+          background: identityToken(hue, 'tint'),
+          color: identityToken(hue, 'ink'),
+          fontSize: 12,
         }}
-      />
-
-      {/* Avatar + name */}
-      <ProfileAvatar name={name} size="sm" identity={hue} />
+        aria-hidden
+      >
+        {name[0]}
+      </span>
       <span className="text-base-token min-w-0 flex-1 truncate font-medium text-foreground">
         {name}
       </span>
-
-      {/* Count chips or "all done" state */}
       {allDone ? (
-        <CountChip label="all done" count={done} variant="success" />
+        <AllDoneChip />
       ) : (
-        <div className="flex items-center gap-1.5">
-          {overdue > 0 && <CountChip label="overdue" count={overdue} variant="error" />}
-          {pending > 0 && <CountChip label="left" count={pending} variant="neutral" />}
-        </div>
+        <>
+          {overdue > 0 && <OverduePill n={overdue} soft />}
+          {pending > 0 && <CountChip label="left" count={pending} />}
+        </>
       )}
     </div>
   )
 }
 
-/* Groups tasks by assignee. Returns [{name, tasks}] in insertion order. */
 function groupByAssignee(tasks: ChoreTask[]): { name: string; tasks: ChoreTask[] }[] {
   const map = new Map<string, ChoreTask[]>()
   for (const t of tasks) {
@@ -392,93 +268,279 @@ function groupByAssignee(tasks: ChoreTask[]): { name: string; tasks: ChoreTask[]
   return Array.from(map.entries()).map(([name, ts]) => ({ name, tasks: ts }))
 }
 
-/* Standard 2×1 family — summary headline + up to 2 per-person rows. */
-function FamilyStandard({ tasks }: { tasks: ChoreTask[] }) {
+/* Shared empty frame: header (keeps the coin) + centered signal. */
+function CenteredState({
+  heading,
+  body,
+  trailing,
+}: {
+  heading: string
+  body?: string
+  trailing?: ReactNode
+}) {
+  return (
+    <div className="flex size-full flex-col p-4" style={{ containerType: 'size' }}>
+      <WidgetHeader trailing={trailing} />
+      <div className="flex flex-1 items-center justify-center">
+        <EmptyState heading={heading} body={body} compact />
+      </div>
+    </div>
+  )
+}
+
+/* Taskee all-done — the daily payoff. A centered celebration that anchors the
+   vertical center (slots fill height, so a bare label looked marooned), with the
+   XP banked today. Compact drops the coin + earned line to fit the small slot. */
+function TaskeeAllDone({
+  lifetimeXp = 0,
+  dailyXp = 0,
+  compact = false,
+}: {
+  lifetimeXp?: number
+  dailyXp?: number
+  compact?: boolean
+}) {
+  return (
+    <div className="flex size-full flex-col p-4" style={{ containerType: 'size' }}>
+      <WidgetHeader trailing={compact ? undefined : <CoinScore value={lifetimeXp} />} />
+      <div className="flex flex-1 flex-col items-center justify-center gap-2 text-center">
+        <span style={{ fontSize: compact ? 26 : 34, lineHeight: 1 }} aria-hidden>
+          🎉
+        </span>
+        <span className="text-card-title text-foreground">All done today</span>
+        {!compact && dailyXp > 0 && (
+          <span
+            className="inline-flex items-center gap-1.5 rounded-full"
+            style={{ background: GOLD_TINT, border: `1px solid ${GOLD}`, padding: '4px 12px' }}
+          >
+            <TrendingUp size={14} style={{ color: GOLD_DEEP }} aria-hidden />
+            <span className="text-sm-token font-bold" style={{ color: GOLD_INK }}>
+              +{dailyXp} XP earned today
+            </span>
+          </span>
+        )}
+      </div>
+    </div>
+  )
+}
+
+/* ============================================================================ */
+/* Taskee framing (tiers 1–3) — Hero split                                      */
+/* ============================================================================ */
+
+function TaskeeCompact({
+  tasks,
+  tier,
+}: {
+  tasks: ChoreTask[]
+  lifetimeXp: number
+  dailyXp: number
+  tier: number
+}) {
+  const pending = todayPending(tasks).length
   const done = todayCompleted(tasks).length
   const total = tasks.length
-  const overdue = overdueCount(tasks)
-  const groups = groupByAssignee(tasks)
 
   if (total === 0) {
-    return (
-      <div className="flex size-full flex-col p-4" style={{ containerType: 'size' }}>
-        <WidgetHeader />
-        <div className="flex flex-1 items-center justify-center">
-          <EmptyState heading="No tasks today" compact />
-        </div>
-      </div>
-    )
+    return <CenteredState heading={tier === 1 ? 'All done!' : 'No tasks'} />
   }
-
-  /* Show up to 2 person rows in standard height. */
-  const visibleGroups = groups.slice(0, 2)
+  if (pending === 0) {
+    return <TaskeeAllDone compact />
+  }
 
   return (
     <div className="flex size-full flex-col p-4" style={{ containerType: 'size' }}>
       <WidgetHeader />
-
-      {/* Summary headline */}
-      <div className="mb-2 flex flex-wrap items-center gap-2">
-        <p className="text-card-title text-foreground">
-          {done} of {total} done today
-        </p>
-        {overdue > 0 && <CountChip label="overdue" count={overdue} variant="error" />}
-      </div>
-
-      {/* Progress bar */}
-      <div className="mb-3">
+      <div className="mt-2 flex flex-1 flex-col justify-between">
+        <HeroCount value={pending} label={pending === 1 ? 'task left today' : 'tasks left today'} />
         <ProgressBar done={done} total={total} />
       </div>
+    </div>
+  )
+}
 
-      {/* Per-person rows */}
-      <div className="flex flex-col gap-1">
-        {visibleGroups.map(({ name, tasks: memberTasks }) => (
-          <FamilyPersonRow key={name} name={name} tasks={memberTasks} />
+function TaskeeStandard({
+  tasks,
+  lifetimeXp,
+  dailyXp,
+  tier,
+}: {
+  tasks: ChoreTask[]
+  lifetimeXp: number
+  dailyXp: number
+  tier: number
+}) {
+  const pending = todayPending(tasks)
+  const total = tasks.length
+
+  if (total === 0) {
+    return (
+      <CenteredState
+        heading={tier === 1 ? 'All done!' : 'No tasks today'}
+        trailing={<CoinScore value={lifetimeXp} />}
+      />
+    )
+  }
+  if (pending.length === 0) {
+    return <TaskeeAllDone lifetimeXp={lifetimeXp} dailyXp={dailyXp} />
+  }
+
+  return (
+    <div className="flex size-full flex-col p-4" style={{ containerType: 'size' }}>
+      <WidgetHeader trailing={<CoinScore value={lifetimeXp} />} />
+      <div className="mt-3 flex min-h-0 flex-1 gap-4">
+        <div className="flex w-[140px] shrink-0 flex-col gap-2">
+          <HeroCount
+            value={pending.length}
+            label={pending.length === 1 ? 'task left today' : 'tasks left today'}
+          />
+          {dailyXp > 0 && <DailyXp earned={dailyXp} />}
+        </div>
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-1.5 overflow-hidden">
+          {[...pending].sort(byUrgency).map((t) => (
+            <TaskRow key={t.id} task={t} />
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function TaskeeLarge({
+  tasks,
+  lifetimeXp,
+  dailyXp,
+  tier,
+}: {
+  tasks: ChoreTask[]
+  lifetimeXp: number
+  dailyXp: number
+  tier: number
+}) {
+  const pending = todayPending(tasks)
+  const done = todayCompleted(tasks).length
+  const total = tasks.length
+
+  if (total === 0) {
+    return (
+      <CenteredState
+        heading={tier === 1 ? 'All done!' : 'No tasks scheduled today'}
+        trailing={<CoinScore value={lifetimeXp} />}
+      />
+    )
+  }
+
+  const allDone = pending.length === 0
+
+  return (
+    <div className="flex size-full flex-col p-4" style={{ containerType: 'size' }}>
+      <WidgetHeader trailing={dailyXp > 0 ? <DailyXp earned={dailyXp} /> : undefined} />
+      <div className="mt-2 mb-3 flex items-end justify-between gap-4">
+        {allDone ? (
+          <span className="flex items-center gap-2">
+            <span style={{ fontSize: 22, lineHeight: 1 }} aria-hidden>
+              🎉
+            </span>
+            <span className="text-card-title text-foreground">All done today</span>
+          </span>
+        ) : (
+          <HeroCount value={pending.length} label="tasks left today" />
+        )}
+        <CoinScore value={lifetimeXp} />
+      </div>
+      <ProgressBar done={done} total={total} />
+      <div className="mt-3 flex min-h-0 flex-1 flex-col gap-1.5 overflow-hidden">
+        {[...tasks].sort(byUrgency).map((t) => (
+          <TaskRow key={t.id} task={t} />
         ))}
       </div>
     </div>
   )
 }
 
-/* Large 2×2 family — full per-person list, fills height. */
-function FamilyLarge({ tasks }: { tasks: ChoreTask[] }) {
+/* ============================================================================ */
+/* Family framing (tier 4 / family pseudo-profile) — Hero split                 */
+/* ============================================================================ */
+
+/* Short / narrow family slot — a summary glance (count + progress + overdue), no
+   per-person rows (they need height). Per-person detail is one tap away. Added for
+   the responsive reflow: a family slot can be short (e.g. an h=1 slot is 180px on
+   the mobile stack) where the stacked list would clip mid-tile. */
+function FamilyCompact({ tasks }: { tasks: ChoreTask[] }) {
   const done = todayCompleted(tasks).length
   const total = tasks.length
+  const pending = total - done
   const overdue = overdueCount(tasks)
-  const groups = groupByAssignee(tasks)
 
   if (total === 0) {
-    return (
-      <div className="flex size-full flex-col p-4" style={{ containerType: 'size' }}>
-        <WidgetHeader />
-        <div className="flex flex-1 items-center justify-center">
-          <EmptyState heading="No tasks today" compact />
-        </div>
-      </div>
-    )
+    return <CenteredState heading="No tasks today" />
   }
 
   return (
     <div className="flex size-full flex-col p-4" style={{ containerType: 'size' }}>
-      <WidgetHeader />
-
-      {/* Summary headline */}
-      <div className="mb-2 flex flex-wrap items-center gap-2">
-        <p className="text-card-title text-foreground">
-          {done} of {total} done today
-        </p>
-        {overdue > 0 && <CountChip label="overdue" count={overdue} variant="error" />}
-      </div>
-
-      {/* Progress bar */}
-      <div className="mb-3">
+      <WidgetHeader trailing={overdue > 0 ? <OverduePill n={overdue} /> : undefined} />
+      <div className="mt-2 flex flex-1 flex-col justify-between">
+        <HeroCount value={pending} label={pending === 0 ? '🎉 all done today' : 'pending today'} />
         <ProgressBar done={done} total={total} />
       </div>
+    </div>
+  )
+}
 
-      {/* Per-person rows — grows to fill */}
-      <div className="flex flex-col gap-1.5 overflow-hidden">
-        {groups.map(({ name, tasks: memberTasks }) => (
-          <FamilyPersonRow key={name} name={name} tasks={memberTasks} />
+function FamilyStandard({ tasks }: { tasks: ChoreTask[] }) {
+  const done = todayCompleted(tasks).length
+  const total = tasks.length
+  const pending = total - done
+  const overdue = overdueCount(tasks)
+  const groups = groupByAssignee(tasks)
+
+  if (total === 0) {
+    return <CenteredState heading="No tasks today" />
+  }
+
+  /* Every member shows, urgent-first; the list fills height and only clips if it
+     genuinely overflows the slot (overdue members survive the clip). */
+  return (
+    <div className="flex size-full flex-col p-4" style={{ containerType: 'size' }}>
+      <WidgetHeader trailing={overdue > 0 ? <OverduePill n={overdue} /> : undefined} />
+      <div className="mt-3 flex min-h-0 flex-1 gap-4">
+        <div className="flex w-[140px] shrink-0 flex-col gap-1">
+          <HeroCount value={pending} label="pending today" />
+          <span className="text-xs-token text-muted-foreground">
+            {done} of {total} done
+          </span>
+        </div>
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-1.5 overflow-hidden">
+          {[...groups].sort(byMemberUrgency).map(({ name, tasks: memberTasks }) => (
+            <PersonTile key={name} name={name} tasks={memberTasks} />
+          ))}
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function FamilyLarge({ tasks }: { tasks: ChoreTask[] }) {
+  const done = todayCompleted(tasks).length
+  const total = tasks.length
+  const pending = total - done
+  const overdue = overdueCount(tasks)
+  const groups = groupByAssignee(tasks)
+
+  if (total === 0) {
+    return <CenteredState heading="No tasks today" />
+  }
+
+  return (
+    <div className="flex size-full flex-col p-4" style={{ containerType: 'size' }}>
+      <WidgetHeader trailing={overdue > 0 ? <OverduePill n={overdue} /> : undefined} />
+      <div className="mt-2 mb-3 flex items-end gap-4">
+        <HeroCount value={pending} label={pending === 0 ? '🎉 all done today' : 'pending today'} />
+      </div>
+      <ProgressBar done={done} total={total} />
+      <div className="mt-3 flex min-h-0 flex-1 flex-col gap-1.5 overflow-hidden">
+        {[...groups].sort(byMemberUrgency).map(({ name, tasks: memberTasks }) => (
+          <PersonTile key={name} name={name} tasks={memberTasks} />
         ))}
       </div>
     </div>
@@ -497,40 +559,119 @@ export interface TodaySummaryViewProps {
   tier: number
   /** Whether the active profile is the family pseudo-profile (shows family framing). */
   isFamily?: boolean
-  size: WidgetSize
-  /** Lifetime XP — local/optimistic via ScorePlate pattern (tiers 1–3 only). */
+  /** Optional explicit density override (Storybook / fixed hosts). When omitted the
+      widget **self-sizes via CSS container queries** to its rendered box — the
+      standard for content widgets (design-system.md; mirrors family-feed). */
+  size?: WidgetSize
+  /** Lifetime XP balance from GET /api/chores/xp (tiers 1–3 only). */
   lifetimeXp?: number
+  /** XP earned today — sum of today's completed task rewards (tiers 1–3 only). */
+  dailyXp?: number
 }
+
+/* Container-query density toggle. The widget ships every variant's markup and CSS
+   reveals the one that fits the rendered box (`containerType: size` on the wrapper;
+   `@container` rules gate on width/height). Mirrors `FeedWidget`'s single/multi
+   pattern.
+
+   The **two-column "standard"** is a *wide-and-short* layout, so it only engages
+   when the slot is both wide (≥440px) and short (≤299px). Everything narrower
+   reflows to a **single column** (design-system.md mobile rule): taskee → compact
+   (short) / large (tall); family → compact (short — count + progress, no per-person
+   rows since they'd clip) / large (tall — full-width stacked list). Tall slots →
+   large at any width. */
+const WIDGET_STYLES = `
+  .cw-compact, .cw-standard, .cw-large,
+  .cwf-compact, .cwf-standard, .cwf-large { height: 100%; }
+  .cw-compact  { display: block; }
+  .cw-standard { display: none; }
+  .cw-large    { display: none; }
+  @container (min-height: 300px) {
+    .cw-compact  { display: none; }
+    .cw-large    { display: block; }
+  }
+  @container (min-width: 440px) and (max-height: 299px) {
+    .cw-compact  { display: none; }
+    .cw-large    { display: none; }
+    .cw-standard { display: block; }
+  }
+  .cwf-compact  { display: block; }
+  .cwf-standard { display: none; }
+  .cwf-large    { display: none; }
+  @container (min-height: 300px) {
+    .cwf-compact { display: none; }
+    .cwf-large   { display: block; }
+  }
+  @container (min-width: 440px) and (max-height: 299px) {
+    .cwf-compact  { display: none; }
+    .cwf-large    { display: none; }
+    .cwf-standard { display: block; }
+  }
+`
 
 /* The pure view for `chores.today-summary`. No data fetching — the container
    (`TodaySummary.tsx`) owns that. The whole tile is wrapped in a Link so any tap
-   deep-links into /chores (design §4 "read-only + tap-through in MVP").
-
-   Size is conveyed via props rather than CSS container queries at this layer
-   because the shell passes explicit size strings. The outermost `div` uses
-   `container-type: size` so any future inner container queries work. */
+   deep-links into /chores (design §4 "read-only + tap-through in MVP"). */
 export function TodaySummaryView({
   tasks,
   tier,
   isFamily = false,
   size,
   lifetimeXp = 0,
+  dailyXp = 0,
 }: TodaySummaryViewProps) {
   const usesFamilyFraming = isFamily || tier >= 4
 
-  const inner = usesFamilyFraming ? (
-    size === 'large' ? (
-      <FamilyLarge tasks={tasks} />
-    ) : (
-      <FamilyStandard tasks={tasks} />
-    )
-  ) : size === 'compact' ? (
-    <TaskeeCompact pending={todayPending(tasks).length} total={tasks.length} tier={tier} />
-  ) : size === 'large' ? (
-    <TaskeeLarge tasks={tasks} lifetimeXp={lifetimeXp} tier={tier} />
-  ) : (
-    <TaskeeStandard tasks={tasks} lifetimeXp={lifetimeXp} tier={tier} />
+  const taskeeStandard = (
+    <TaskeeStandard tasks={tasks} lifetimeXp={lifetimeXp} dailyXp={dailyXp} tier={tier} />
   )
+  const taskeeLarge = (
+    <TaskeeLarge tasks={tasks} lifetimeXp={lifetimeXp} dailyXp={dailyXp} tier={tier} />
+  )
+  const taskeeCompact = (
+    <TaskeeCompact tasks={tasks} lifetimeXp={lifetimeXp} dailyXp={dailyXp} tier={tier} />
+  )
+  const familyCompact = <FamilyCompact tasks={tasks} />
+  const familyStandard = <FamilyStandard tasks={tasks} />
+  const familyLarge = <FamilyLarge tasks={tasks} />
+
+  let inner: ReactNode
+  if (size) {
+    /* Explicit override — render the single requested variant. */
+    inner = usesFamilyFraming
+      ? size === 'large'
+        ? familyLarge
+        : size === 'compact'
+          ? familyCompact
+          : familyStandard
+      : size === 'compact'
+        ? taskeeCompact
+        : size === 'large'
+          ? taskeeLarge
+          : taskeeStandard
+  } else {
+    /* Self-size: ship every variant, let container queries reveal the right one. */
+    inner = (
+      <div className="size-full" style={{ containerType: 'size' }}>
+        <style href="chores-today-widget" precedence="default">
+          {WIDGET_STYLES}
+        </style>
+        {usesFamilyFraming ? (
+          <>
+            <div className="cwf-compact">{familyCompact}</div>
+            <div className="cwf-standard">{familyStandard}</div>
+            <div className="cwf-large">{familyLarge}</div>
+          </>
+        ) : (
+          <>
+            <div className="cw-compact">{taskeeCompact}</div>
+            <div className="cw-standard">{taskeeStandard}</div>
+            <div className="cw-large">{taskeeLarge}</div>
+          </>
+        )}
+      </div>
+    )
+  }
 
   return (
     <Link to="/chores" className="block size-full no-underline" aria-label="Open Chores">

@@ -130,20 +130,66 @@ beneath (edit only). Remove needs a confirm step.
 Inline-complete = 1.5 fast-follow (the widget's mini score plate becomes the
 flight target then).
 
-**Sizes:** standard 2×1 + large 2×2 for both framings; **compact 1×1 taskee**
-nice-to-have; no compact family. **Framing by viewing profile** (same widget id):
+**Visual direction: "Hero split"** — gated in **Today Widget Rework**
+(2026-06-20). The widget originally shipped via the agent team (#22) without the
+UI gate and quietly simplified the locked exploration to a flat sentence-headline
+peek (and dropped daily XP entirely). The gate restored the richer direction:
 
-- **Taskee** — "N tasks left today", task peek, success progress bar, daily XP
-  (header) + gold **coin score** (lifetime). Status-only colour.
-- **Family** — pending headline + **"X of Y done today"** progress + overdue
-  pill; per-person rows with **identity avatars** + labelled count chips. **No XP.**
-  Completion surfaced at summary level + a per-person green **"✓ all done"** state.
+- **A big `text-metric` count anchors the glance** (left column / hero row), not a
+  sentence headline. Label below ("N tasks left today" / "N pending today").
+- **Taskee rows are filled pills** (muted bg, overdue → error wash) carrying the
+  4px status spine + title + **per-task `+XP`** in gold ink.
+- **Daily XP is back in the header** (`+N today`, gold) alongside the lifetime
+  **coin score** — the two are distinct (daily = today's banked rewards; lifetime
+  = persisted `GET /api/chores/xp` balance, the same source as the page ScorePlate).
+
+**Sizes:** standard 2×1 + large 2×2 for both framings, plus a **compact** short/
+narrow-slot fallback for each — taskee shows count and progress; family shows count,
+progress, and the overdue pill (no per-person rows, which need height). The family
+compact was added in the responsive-reflow pass (2026-06-20): a family slot can be
+short (an h=1 slot is 180px on the mobile stack) where the stacked list would clip.
+**Framing by viewing profile** (same widget id):
+
+- **Taskee** — header (coin score, or daily XP on 2×2) → hero count + daily XP
+  (left) / filled `+XP` task rows (right) on 2×1; hero + coin + progress + full
+  filled list on 2×2. Status-only colour. **All-done** → centered "🎉 All done
+  today" (coin retained in header). Empty → tier-aware EmptyState.
+- **Family** — `+N pending today` hero + **"X of Y done"** sub + overdue pill;
+  per-person **filled tiles** with **identity avatars** + labelled count chips,
+  **No XP.** **Every member shows, urgent-first** (overdue → most-pending) and the
+  list **fills the slot height** — it only clips if it genuinely overflows, and the
+  clip drops the least-urgent member last (no hard 2-row cap; never hides
+  non-overdue members). Per-person green **"✓ all done"** state when someone
+  clears their list.
+
+> **Slots fill height; the widget self-sizes.** The home grid sizes each row to
+> fill the viewport (clamped 180–400px/row), so a 2-row-tall slot is ~600–800px —
+> the fixed 180/376 only holds in Storybook. The widget **self-sizes to its
+> rendered box via CSS container queries** (the content-widget standard; mirrors
+> family-feed). The two-column **standard** is a _wide-and-short_ layout — it only
+> engages when the slot is both wide (`≥440px`) and short (`≤299px`); a **tall**
+> slot → large at any width; anything **narrower** (mobile full-width stack) reflows
+> to a **single column** (design-system mobile rule): taskee → compact (short) /
+> large (tall); family → the full-width stacked list (so the per-person chips get
+> room instead of clipping). Every list (`flex-1`, all items, urgent-first sort)
+> grows to fill and clips on overflow rather than capping at a fixed count. The
+> `size` prop remains an optional explicit override (Storybook / fixed hosts).
 
 **Conventions:** soft rounded, gap-separated rows (no full-width dividers);
 overdue **wash** via `color-mix(in oklch, var(--error) 8%, transparent)`;
 labelled count chips (no bare trailing numbers); 2×2s fill height (hero +
-growing list); staggered row rise on load (reduced-motion aware). WidgetHeader =
-CheckSquare + "CHORES" in `--accent`.
+growing list). WidgetHeader = CheckSquare + "CHORES" in **neutral** (icon
+`--muted-foreground`, label inherits `--foreground`), matching the family-feed
+reference — identity is carried by the rows, not the header (optional trailing slot
+for coin / daily XP / overdue pill).
+
+> **Focus-mode widget variant owed.** The taskee widget above is the **Agency /
+> default** framing. A **Focus** variant — a single hero **"Next up"** row +
+> "+N more" + progress, mirroring the Focus page language (§1) — was explored and
+> approved in principle during the gate (playground direction "C"). It is **owed
+> to M2 Dev: Focus Mode**, which introduces the per-profile `focusMode` setting
+> the widget must branch on. The widget reads the same setting to pick
+> Agency-vs-Focus.
 
 ---
 

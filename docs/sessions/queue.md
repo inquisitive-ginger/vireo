@@ -14,16 +14,6 @@
 > **Post-M2 chores triage (2026-06-19):** bugs + polish found after the agent-team
 > chores work landed. Two breakouts (mobile layout, today-widget design) + one bug bash.
 
-### Design + Dev: Today Widget Rework
-
-**Type:** design + development
-**Kickoff:** [kickoffs/design-today-widget-rework.md](kickoffs/design-today-widget-rework.md)
-**Reads:** `docs/modules/chores/design.md` §4, `plugins/chores/src/widgets/TodaySummaryView.tsx`, `docs/design-system.md`, family-feed widget
-**Produces:** the UI design gate the widget skipped (playground → sign-off → Storybook → integrate); `design.md` §4 refinements
-**Origin:** Post-M2 chores live review (2026-06-19) — shipped via the agent team without a design gate.
-
----
-
 ### M2 Dev: Focus Mode (taskee Focus view + per-profile setting)
 
 **Type:** development (+ small ADR for the setting's home)
@@ -97,6 +87,10 @@ enhancement to the existing count + XP-load meter). Blocks none of the M2 MVP st
 ---
 
 ## Recently Completed
+
+- **2026-06-20 — Design + Dev: Today Widget Rework** ![Type](https://img.shields.io/badge/Type-Development-orange)
+  Ran the UI design gate the `chores.today-summary` widget skipped when it shipped via the agent team (#22). Restored the deleted exploration as a Storybook playground, gated **"Hero split"** (direction A) for both framings, then integrated and deleted the playground. **`TodaySummaryView` rebuilt:** hero `text-metric` count, filled `+XP` task rows, **daily XP restored** (the §4 element the agent build dropped) beside the lifetime coin. **Real XP wiring:** lifetime now reads the persisted `GET /api/chores/xp` (the container's "no /xp call" comment was stale post-#23). **Shell widget sizing:** the grid sizes rows to fill the viewport (180–400px/row) so an `h=2` slot is ~600–800px — Home rendered `<Widget />` with no `size`, so it fell back to `standard` and scattered; Home now derives `size` from the layout cell (`h≥2 → large`) via a typed `WidgetProps`. **Family data bug fixed:** the standard layout's 2-row cap + "overdue-priority" filter was **hiding every non-overdue member**; all members now render, sorted urgent-first, in fill-height/clip lists. **All-done celebration** added (🎉 + gold earned-XP pill). **Bug fix:** `MemoryRouter` added to the Today Widget stories (they'd thrown `LinkWithRef … basename of null` since the widget shipped without the gate). **Typography aligned:** all-done headings moved off `display-lg` (Lora, reserved for full-size empty states) to `card-title` per `design-system.md`. **Focus widget variant (direction C, "Next up") folded into M2 Dev: Focus Mode** — needs the `focusMode` setting to branch on. typecheck/lint/builds green; 163 API tests pass; live-review signed off.
+  _See:_ `docs/sessions/logs/2026-06-20-design-dev-today-widget-rework.md`
 
 - **2026-06-19 — Dev: Bug Bash (M2 chores + shell)** ![Type](https://img.shields.io/badge/Type-Development-orange)
   Four post-M2 bugs. **#5 parent self-notification (logic + tests):** `chores.task.completed` now carries `completedBy`; `handleParentNotification` skips when `completedBy === createdBy` (a parent's own admin check-off). 2 tests added; 163 API tests green. **#3 settings mobile:** `SettingsLayout` padding responsive; `ProfileListItem` name truncates + Edit/Remove go icon-only below `sm` (shared `packages/ui`). **#6 due-date field:** `appearance-none` + `display:none` on the webkit picker/clear/spin pseudo-elements (kills the Chrome calendar button **and** the Android down-chevron) with one overlaid `CalendarDays` icon + `pr-10`; whole-field tap still opens the picker. **#4 push toggle — deferred:** root cause is the dev tunnel running the dev build, where the SW guard tears the service worker down → no subscription + `serviceWorker.ready` hangs → toggle stuck at a disabled OFF. Hardened the hook (`getRegistration()` instead of `.ready`; re-sync on `visibilitychange`/`focus`) but the user-facing fix needs an SW — **folded into the prod SW cache-strategy story.** #3/#5/#6 signed off live (mobile + Android).
