@@ -55,15 +55,14 @@ function byMemberUrgency(a: { tasks: ChoreTask[] }, b: { tasks: ChoreTask[] }): 
 
 /* ---- shared chrome ---------------------------------------------------------- */
 
-/* CheckSquare + "CHORES" in --accent (widget identity header — design-system.md),
-   with an optional trailing slot for the score / daily XP / overdue pill. */
+/* CheckSquare + "CHORES" widget identity header — neutral, matching family-feed
+   (icon muted, label inherits foreground). With an optional trailing slot for the
+   score / daily XP / overdue pill. */
 function WidgetHeader({ trailing }: { trailing?: ReactNode }) {
   return (
     <div className="flex shrink-0 items-center gap-1.5">
-      <CheckSquare size={13} style={{ color: 'var(--accent)' }} aria-hidden />
-      <span className="text-section-label flex-1" style={{ color: 'var(--accent)' }}>
-        Chores
-      </span>
+      <CheckSquare size={13} className="text-muted-foreground" aria-hidden />
+      <span className="text-section-label flex-1">Chores</span>
       {trailing}
     </div>
   )
@@ -463,6 +462,31 @@ function TaskeeLarge({
 /* Family framing (tier 4 / family pseudo-profile) — Hero split                 */
 /* ============================================================================ */
 
+/* Short / narrow family slot — a summary glance (count + progress + overdue), no
+   per-person rows (they need height). Per-person detail is one tap away. Added for
+   the responsive reflow: a family slot can be short (e.g. an h=1 slot is 180px on
+   the mobile stack) where the stacked list would clip mid-tile. */
+function FamilyCompact({ tasks }: { tasks: ChoreTask[] }) {
+  const done = todayCompleted(tasks).length
+  const total = tasks.length
+  const pending = total - done
+  const overdue = overdueCount(tasks)
+
+  if (total === 0) {
+    return <CenteredState heading="No tasks today" />
+  }
+
+  return (
+    <div className="flex size-full flex-col p-4" style={{ containerType: 'size' }}>
+      <WidgetHeader trailing={overdue > 0 ? <OverduePill n={overdue} /> : undefined} />
+      <div className="mt-2 flex flex-1 flex-col justify-between">
+        <HeroCount value={pending} label={pending === 0 ? '🎉 all done today' : 'pending today'} />
+        <ProgressBar done={done} total={total} />
+      </div>
+    </div>
+  )
+}
+
 function FamilyStandard({ tasks }: { tasks: ChoreTask[] }) {
   const done = todayCompleted(tasks).length
   const total = tasks.length
@@ -535,12 +559,55 @@ export interface TodaySummaryViewProps {
   tier: number
   /** Whether the active profile is the family pseudo-profile (shows family framing). */
   isFamily?: boolean
-  size: WidgetSize
+  /** Optional explicit density override (Storybook / fixed hosts). When omitted the
+      widget **self-sizes via CSS container queries** to its rendered box — the
+      standard for content widgets (design-system.md; mirrors family-feed). */
+  size?: WidgetSize
   /** Lifetime XP balance from GET /api/chores/xp (tiers 1–3 only). */
   lifetimeXp?: number
   /** XP earned today — sum of today's completed task rewards (tiers 1–3 only). */
   dailyXp?: number
 }
+
+/* Container-query density toggle. The widget ships every variant's markup and CSS
+   reveals the one that fits the rendered box (`containerType: size` on the wrapper;
+   `@container` rules gate on width/height). Mirrors `FeedWidget`'s single/multi
+   pattern.
+
+   The **two-column "standard"** is a *wide-and-short* layout, so it only engages
+   when the slot is both wide (≥440px) and short (≤299px). Everything narrower
+   reflows to a **single column** (design-system.md mobile rule): taskee → compact
+   (short) / large (tall); family → compact (short — count + progress, no per-person
+   rows since they'd clip) / large (tall — full-width stacked list). Tall slots →
+   large at any width. */
+const WIDGET_STYLES = `
+  .cw-compact, .cw-standard, .cw-large,
+  .cwf-compact, .cwf-standard, .cwf-large { height: 100%; }
+  .cw-compact  { display: block; }
+  .cw-standard { display: none; }
+  .cw-large    { display: none; }
+  @container (min-height: 300px) {
+    .cw-compact  { display: none; }
+    .cw-large    { display: block; }
+  }
+  @container (min-width: 440px) and (max-height: 299px) {
+    .cw-compact  { display: none; }
+    .cw-large    { display: none; }
+    .cw-standard { display: block; }
+  }
+  .cwf-compact  { display: block; }
+  .cwf-standard { display: none; }
+  .cwf-large    { display: none; }
+  @container (min-height: 300px) {
+    .cwf-compact { display: none; }
+    .cwf-large   { display: block; }
+  }
+  @container (min-width: 440px) and (max-height: 299px) {
+    .cwf-compact  { display: none; }
+    .cwf-large    { display: none; }
+    .cwf-standard { display: block; }
+  }
+`
 
 /* The pure view for `chores.today-summary`. No data fetching — the container
    (`TodaySummary.tsx`) owns that. The whole tile is wrapped in a Link so any tap
@@ -555,19 +622,56 @@ export function TodaySummaryView({
 }: TodaySummaryViewProps) {
   const usesFamilyFraming = isFamily || tier >= 4
 
-  const inner = usesFamilyFraming ? (
-    size === 'large' ? (
-      <FamilyLarge tasks={tasks} />
-    ) : (
-      <FamilyStandard tasks={tasks} />
-    )
-  ) : size === 'compact' ? (
-    <TaskeeCompact tasks={tasks} lifetimeXp={lifetimeXp} dailyXp={dailyXp} tier={tier} />
-  ) : size === 'large' ? (
-    <TaskeeLarge tasks={tasks} lifetimeXp={lifetimeXp} dailyXp={dailyXp} tier={tier} />
-  ) : (
+  const taskeeStandard = (
     <TaskeeStandard tasks={tasks} lifetimeXp={lifetimeXp} dailyXp={dailyXp} tier={tier} />
   )
+  const taskeeLarge = (
+    <TaskeeLarge tasks={tasks} lifetimeXp={lifetimeXp} dailyXp={dailyXp} tier={tier} />
+  )
+  const taskeeCompact = (
+    <TaskeeCompact tasks={tasks} lifetimeXp={lifetimeXp} dailyXp={dailyXp} tier={tier} />
+  )
+  const familyCompact = <FamilyCompact tasks={tasks} />
+  const familyStandard = <FamilyStandard tasks={tasks} />
+  const familyLarge = <FamilyLarge tasks={tasks} />
+
+  let inner: ReactNode
+  if (size) {
+    /* Explicit override — render the single requested variant. */
+    inner = usesFamilyFraming
+      ? size === 'large'
+        ? familyLarge
+        : size === 'compact'
+          ? familyCompact
+          : familyStandard
+      : size === 'compact'
+        ? taskeeCompact
+        : size === 'large'
+          ? taskeeLarge
+          : taskeeStandard
+  } else {
+    /* Self-size: ship every variant, let container queries reveal the right one. */
+    inner = (
+      <div className="size-full" style={{ containerType: 'size' }}>
+        <style href="chores-today-widget" precedence="default">
+          {WIDGET_STYLES}
+        </style>
+        {usesFamilyFraming ? (
+          <>
+            <div className="cwf-compact">{familyCompact}</div>
+            <div className="cwf-standard">{familyStandard}</div>
+            <div className="cwf-large">{familyLarge}</div>
+          </>
+        ) : (
+          <>
+            <div className="cw-compact">{taskeeCompact}</div>
+            <div className="cw-standard">{taskeeStandard}</div>
+            <div className="cw-large">{taskeeLarge}</div>
+          </>
+        )}
+      </div>
+    )
+  }
 
   return (
     <Link to="/chores" className="block size-full no-underline" aria-label="Open Chores">

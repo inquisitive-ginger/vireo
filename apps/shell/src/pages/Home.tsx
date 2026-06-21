@@ -5,7 +5,7 @@ import type { LucideIcon } from 'lucide-react'
 import { WidgetGrid, PlaceholderCard } from '@family-os/ui'
 import type { WidgetLayoutItem } from '@family-os/ui'
 import { useAuth } from '@family-os/platform'
-import { getLazyWidget, type WidgetProps } from '../lib/load-plugin'
+import { getLazyWidget } from '../lib/load-plugin'
 
 type WidgetMeta = { moduleName: string; description: string; icon: LucideIcon }
 
@@ -29,15 +29,6 @@ const WIDGET_META: Record<string, WidgetMeta> = {
 
 function moduleFromWidgetId(widgetId: string): string {
   return widgetId.split('.')[0] ?? widgetId
-}
-
-/** Map a layout cell to a widget density. A 2-row-tall cell gets the `large`
-    (fills-height) layout; a single-row multi-column cell gets `standard`; a 1×1
-    gets `compact`. Widgets that self-size via container queries ignore this. */
-function sizeForCell(w: number, h: number): WidgetProps['size'] {
-  if (h >= 2) return 'large'
-  if (w >= 2) return 'standard'
-  return 'compact'
 }
 
 type HomeProps = {
@@ -69,7 +60,9 @@ export function Home({ widgetRemotes }: HomeProps) {
       const Widget = getLazyWidget(remoteName)
       widgetChildren[item.widgetId] = Widget ? (
         <Suspense fallback={<PlaceholderCard {...meta} />}>
-          <Widget size={sizeForCell(item.w, item.h)} />
+          {/* No size prop — content widgets self-size to their slot via CSS
+              container queries (design-system.md). */}
+          <Widget />
         </Suspense>
       ) : (
         <PlaceholderCard {...meta} />

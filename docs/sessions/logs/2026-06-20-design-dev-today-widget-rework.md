@@ -45,12 +45,22 @@ in `design.md` §4 ("Focus-mode widget variant owed") and the Focus Mode kickoff
   call" comment was stale post-#23, the XP-query prefix `['chores/xp']` is shared
   with the page so a completion's invalidation refreshes both). Daily XP =
   sum of today's completed-task rewards — distinct from lifetime.
-- **Shell sizes widgets from the layout cell** (`Home.tsx` + `load-plugin.ts`):
-  the grid sizes each row to fill the viewport (clamped 180–400px/row), so the
-  `h=2` Home slot is ~600–800px tall — but Home rendered `<Widget />` with **no
-  size**, so the widget fell back to `standard` and its `justify-*` layout
-  scattered across the tall box. Home now derives `size` (`h≥2 → large`,
-  `w≥2 → standard`, else `compact`) and passes it via a new typed `WidgetProps`.
+- **Widget self-sizes via CSS container queries** (`TodaySummaryView`): the grid
+  sizes each row to fill the viewport (clamped 180–400px/row), so the `h=2` Home
+  slot is ~600–800px tall — the widget had rendered a fixed `standard` and its
+  `justify-*` layout scattered across the tall box. _First pass_ derived a `size`
+  from the layout cell in the shell (`Home.tsx` + a typed `WidgetProps`); **on PR
+  review (#25) this was reverted to self-sizing via CSS container queries** — the
+  content-widget standard documented in `design-system.md` and already used by
+  `family-feed` (the shell-delegated prop was a lossy proxy for the dynamic row
+  height and coupled shell↔widget). The widget now ships every variant's markup and
+  `@container` rules reveal the fit. The two-column **standard** is gated as a
+  _wide-and-short_ layout (`≥440px` wide **and** `≤299px` tall); a tall slot → large
+  at any width; **narrower slots (mobile full-width stack) reflow to a single
+  column** per the design-system mobile rule (taskee → compact/large; family → the
+  full-width stacked list, so the per-person chips stop clipping — caught in mobile
+  live review). `size` stays as an optional override for Storybook / fixed hosts;
+  `Home.tsx`/`load-plugin.ts` reverted to `<Widget />`.
 - **Lists fill height + sort urgent-first.** Dropped the family **2-row cap** and
   the "overdue-priority" filter that had been **hiding every non-overdue member**
   (only the one overdue person showed). All members/tasks now render, sorted
@@ -58,9 +68,18 @@ in `design.md` §4 ("Focus-mode widget variant owed") and the Focus Mode kickoff
   fill and only clip on true overflow (the clip drops the least-urgent row).
 - **All-done celebration.** Standard → centered 🎉 + "All done today" + gold
   **earned-XP pill**; large → celebratory hero + the completed-task list retained.
-- **Storybook:** `Chores/Today Widget` is now the final story set (added an
-  **All done today** story; refreshed annotations + `dailyXp` args). Playground
+- **Storybook:** `Chores/Today Widget` is the final story set — **one per unique
+  enumerable variant**, size-ascending: taskee compact/standard/large/all-done +
+  two tier-aware empties; family compact/standard/large/all-done. Removed the
+  duplicative **Family Dashboard** story (the `isFamily` pseudo-profile renders
+  identically to Family Standard — folded into its annotation). Playground
   (`TodayWidget.playground.stories.tsx`) deleted after the gate.
+- **Family compact variant added** (responsive-reflow follow-up): a family slot can
+  be **short** (an `h=1` slot is 180px on the mobile stack) where the stacked list
+  clipped mid-tile. `FamilyCompact` = count + progress + overdue, no per-person rows
+  (detail is one tap away). Container queries: family short+narrow → compact,
+  short+wide → standard, tall → large. (The grid's fixed `MIN_ROW_HEIGHT` is a
+  deliberate mobile choice, so the fix is widget-level, not a grid change.)
 
 ### Bug fixes folded in
 

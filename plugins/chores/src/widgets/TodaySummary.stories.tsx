@@ -50,8 +50,27 @@ const meta: Meta<typeof TodaySummaryView> = {
 export default meta
 type Story = StoryObj<typeof TodaySummaryView>
 
-/* Taskee framing (tiers 1–3) is the more common path — the widget is seeded on
-   every tier-1-2 default layout as `large`. Standard and compact also ship per spec. */
+/* One story per unique enumerable variant. Live, the widget self-sizes via
+   container queries; here each story passes an explicit `size` to pin the variant.
+   Framing (taskee vs family) is the other axis — tiers 1–3 vs tier 4 / the family
+   pseudo-profile (which renders identically, so it isn't a separate story). */
+
+/* ── Taskee framing (tiers 1–3) — status-encoded, gold XP ──────────────────── */
+
+export const TaskeeCompact: Story = {
+  name: 'Taskee — Compact',
+  args: {
+    tasks: SAMPLE_TASKEE_TASKS,
+    tier: 2,
+    isFamily: false,
+    size: 'compact',
+    lifetimeXp: 235,
+    dailyXp: 10,
+  },
+  parameters: {
+    annotation: 'taskee · short/narrow-slot fallback · hero count + progress only',
+  },
+}
 
 export const TaskeeStandard: Story = {
   name: 'Taskee — Standard (2×1)',
@@ -65,7 +84,7 @@ export const TaskeeStandard: Story = {
   },
   parameters: {
     annotation:
-      'taskee · 2×1 · hero split — count + daily XP left, filled +XP rows right, lifetime coin in header · tap deep-links to /chores (no mutation here)',
+      'taskee · wide + short · hero split — count + daily XP left, filled +XP rows right, lifetime coin in header · tap deep-links to /chores',
   },
 }
 
@@ -81,27 +100,12 @@ export const TaskeeLarge: Story = {
   },
   parameters: {
     annotation:
-      'taskee · 2×2 · hero count + coin, progress, then full filled task list with +XP & overdue wash',
-  },
-}
-
-export const TaskeeCompact: Story = {
-  name: 'Taskee — Compact (1×1)',
-  args: {
-    tasks: SAMPLE_TASKEE_TASKS,
-    tier: 2,
-    isFamily: false,
-    size: 'compact',
-    lifetimeXp: 235,
-    dailyXp: 10,
-  },
-  parameters: {
-    annotation: 'taskee · 1×1 · hero count + progress — nice-to-have compact variant per spec',
+      'taskee · tall · hero count + coin, progress, then the full filled task list with +XP & overdue wash',
   },
 }
 
 export const TaskeeAllDone: Story = {
-  name: 'Taskee — All done today',
+  name: 'Taskee — All done',
   args: {
     tasks: SAMPLE_TASKEE_TASKS.map((t) => ({
       ...t,
@@ -116,11 +120,11 @@ export const TaskeeAllDone: Story = {
   },
   parameters: {
     annotation:
-      'taskee · all tasks cleared · centered "🎉 All done today" with the lifetime coin retained in the header',
+      'taskee · all tasks cleared · centered 🎉 "All done today" + gold earned-XP pill · lifetime coin retained in header',
   },
 }
 
-export const TaskeeEmptyTier1: Story = {
+export const TaskeeEmptyWarm: Story = {
   name: 'Taskee — Empty (tier 1, warm)',
   args: {
     tasks: [],
@@ -130,12 +134,11 @@ export const TaskeeEmptyTier1: Story = {
     lifetimeXp: 0,
   },
   parameters: {
-    annotation:
-      'tier 1 · empty state · warm encouraging copy ("All done!") · compact variant (fits 180px slot)',
+    annotation: 'taskee · no tasks · tier-1 warm copy ("All done!") — tier-aware empty tone',
   },
 }
 
-export const TaskeeEmptyTier2: Story = {
+export const TaskeeEmptyNeutral: Story = {
   name: 'Taskee — Empty (tier 2+, neutral)',
   args: {
     tasks: [],
@@ -146,11 +149,25 @@ export const TaskeeEmptyTier2: Story = {
   },
   parameters: {
     annotation:
-      'tier 2+ · empty state · neutral functional copy ("No tasks today") · no CTA in widget (task creation is on the page)',
+      'taskee · no tasks · tier-2+ neutral copy ("No tasks today") · no CTA (creation is on the page)',
   },
 }
 
-/* Family framing (tier 4 / family pseudo-profile) — per-person rows, no XP. */
+/* ── Family framing (tier 4 / family pseudo-profile) — identity rows, no XP ──── */
+
+export const FamilyCompact: Story = {
+  name: 'Family — Compact',
+  args: {
+    tasks: SAMPLE_FAMILY_TASKS,
+    tier: 4,
+    isFamily: false,
+    size: 'compact',
+  },
+  parameters: {
+    annotation:
+      'family · short/narrow-slot fallback (e.g. an h=1 mobile slot) · count + progress + overdue · no per-person rows (they need height); tap for detail',
+  },
+}
 
 export const FamilyStandard: Story = {
   name: 'Family — Standard (2×1)',
@@ -162,7 +179,7 @@ export const FamilyStandard: Story = {
   },
   parameters: {
     annotation:
-      'family framing (tier 4) · 2×1 · "X of Y done today" headline · overdue pill · up to 2 per-person rows with identity avatars + labelled count chips · no XP',
+      'family (tier 4 or the family pseudo-profile) · wide + short · pending hero + "X of Y done" + overdue pill / per-person tiles (identity avatars + labelled chips), urgent-first · no XP',
   },
 }
 
@@ -176,26 +193,12 @@ export const FamilyLarge: Story = {
   },
   parameters: {
     annotation:
-      'family framing (tier 4) · 2×2 · full per-person list · overdue wash + error chips · identity avatars · "✓ all done" chip when a person clears their list',
-  },
-}
-
-export const FamilyDashboard: Story = {
-  name: 'Family — Dashboard pseudo-profile',
-  args: {
-    tasks: SAMPLE_FAMILY_TASKS,
-    tier: 1,
-    isFamily: true,
-    size: 'standard',
-  },
-  parameters: {
-    annotation:
-      'family pseudo-profile (isFamily=true, tier 1) — still shows family framing; unattended tablet slot for the whole household',
+      'family · tall · pending hero + progress, then the full per-person list (every member, urgent-first) · overdue wash + chips · "✓ all done" when a person clears',
   },
 }
 
 export const FamilyAllDone: Story = {
-  name: 'Family — All done state',
+  name: 'Family — All done',
   args: {
     tasks: SAMPLE_FAMILY_TASKS.map((t) => ({
       ...t,
@@ -208,6 +211,6 @@ export const FamilyAllDone: Story = {
   },
   parameters: {
     annotation:
-      'family large · all tasks completed · every person shows "✓ all done" chip (green) · "N of N done today" headline',
+      'family · all tasks completed · every person shows the green "✓ all done" chip · "N of N done today"',
   },
 }

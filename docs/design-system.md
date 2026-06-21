@@ -540,14 +540,22 @@ at a glance (the tablet is often viewed across a room, and an unlabeled
 widget is anonymous):
 
 ```
-[icon 13px, --accent]  MODULE NAME        ← text-section-label, --accent
+[icon 13px, muted]  MODULE NAME        ← text-section-label, neutral
 ```
 
-- Lucide icon representing the module, 13px, `--accent`
-- Label: `text-section-label` in `--accent` (the sanctioned accent use of
-  section-label — see Typography usage notes)
+- Lucide icon representing the module, 13px, `--muted-foreground`
+- Label: `text-section-label` neutral — the icon in `--muted-foreground`, the
+  label inheriting `--foreground` (it sets no color of its own). Identity colour is
+  **not** spent on the header; it's carried by the content rows (per-row spines /
+  avatars — see _Identity in widget slots_).
 - Placeholder cards and error cards are exempt (they carry their own anatomy and
   do not label an active module surface)
+
+> **Reconciled 2026-06-20.** This entry previously specified `--accent`, but the
+> `family-feed` reference widget (from the session that settled this) renders
+> **neutral**, and the chores widget was aligned to match. Module identity lives in
+> the rows, not the header. (Feed day markers / page-header eyebrows still use the
+> sanctioned `--accent` section-label — that's a separate surface.)
 
 ### Identity in widget slots
 

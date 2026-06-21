@@ -21,11 +21,13 @@ const FAMILY_PROFILE_ID = 'family'
    or large (manifest supportedSizes). The whole tile is a deep-link to /chores
    (read-only MVP; inline-complete is 1.5). */
 interface TodaySummaryProps {
-  /** Injected by WidgetGrid from the layout record. Defaults to 'standard'. */
+  /** Optional explicit density override. Normally omitted — the view self-sizes to
+      its rendered box via CSS container queries (the content-widget standard;
+      mirrors family-feed). */
   size?: WidgetSize
 }
 
-export default function TodaySummary({ size = 'standard' }: TodaySummaryProps) {
+export default function TodaySummary({ size }: TodaySummaryProps) {
   const { id, tier } = useAuth()
   const isFamily = id === FAMILY_PROFILE_ID
   const usesFamilyFraming = isFamily || tier >= 4

@@ -143,8 +143,12 @@ peek (and dropped daily XP entirely). The gate restored the richer direction:
   **coin score** — the two are distinct (daily = today's banked rewards; lifetime
   = persisted `GET /api/chores/xp` balance, the same source as the page ScorePlate).
 
-**Sizes:** standard 2×1 + large 2×2 for both framings; **compact 1×1 taskee**
-nice-to-have; no compact family. **Framing by viewing profile** (same widget id):
+**Sizes:** standard 2×1 + large 2×2 for both framings, plus a **compact** short/
+narrow-slot fallback for each — taskee shows count and progress; family shows count,
+progress, and the overdue pill (no per-person rows, which need height). The family
+compact was added in the responsive-reflow pass (2026-06-20): a family slot can be
+short (an h=1 slot is 180px on the mobile stack) where the stacked list would clip.
+**Framing by viewing profile** (same widget id):
 
 - **Taskee** — header (coin score, or daily XP on 2×2) → hero count + daily XP
   (left) / filled `+XP` task rows (right) on 2×1; hero + coin + progress + full
@@ -158,18 +162,26 @@ nice-to-have; no compact family. **Framing by viewing profile** (same widget id)
   non-overdue members). Per-person green **"✓ all done"** state when someone
   clears their list.
 
-> **Slots fill height.** The home grid sizes each row to fill the viewport
-> (clamped 180–400px/row), so a 2-row-tall slot is ~600–800px — the fixed
-> 180/376 only holds in Storybook. The shell derives the widget `size` from the
-> layout cell (`h≥2 → large`, `w≥2 → standard`, else `compact`) and passes it;
-> every list (`flex-1`, all items, urgent-first sort) grows to fill and clips on
-> overflow rather than capping at a fixed count.
+> **Slots fill height; the widget self-sizes.** The home grid sizes each row to
+> fill the viewport (clamped 180–400px/row), so a 2-row-tall slot is ~600–800px —
+> the fixed 180/376 only holds in Storybook. The widget **self-sizes to its
+> rendered box via CSS container queries** (the content-widget standard; mirrors
+> family-feed). The two-column **standard** is a _wide-and-short_ layout — it only
+> engages when the slot is both wide (`≥440px`) and short (`≤299px`); a **tall**
+> slot → large at any width; anything **narrower** (mobile full-width stack) reflows
+> to a **single column** (design-system mobile rule): taskee → compact (short) /
+> large (tall); family → the full-width stacked list (so the per-person chips get
+> room instead of clipping). Every list (`flex-1`, all items, urgent-first sort)
+> grows to fill and clips on overflow rather than capping at a fixed count. The
+> `size` prop remains an optional explicit override (Storybook / fixed hosts).
 
 **Conventions:** soft rounded, gap-separated rows (no full-width dividers);
 overdue **wash** via `color-mix(in oklch, var(--error) 8%, transparent)`;
 labelled count chips (no bare trailing numbers); 2×2s fill height (hero +
-growing list). WidgetHeader = CheckSquare + "CHORES" in `--accent` (optional
-trailing slot for coin / daily XP / overdue pill).
+growing list). WidgetHeader = CheckSquare + "CHORES" in **neutral** (icon
+`--muted-foreground`, label inherits `--foreground`), matching the family-feed
+reference — identity is carried by the rows, not the header (optional trailing slot
+for coin / daily XP / overdue pill).
 
 > **Focus-mode widget variant owed.** The taskee widget above is the **Agency /
 > default** framing. A **Focus** variant — a single hero **"Next up"** row +
