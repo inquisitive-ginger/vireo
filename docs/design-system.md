@@ -925,6 +925,11 @@ absent).
 - Empty states are informational, never apologetic
 - The icon must represent the module/category — not a generic empty box
 - No animated illustrations in M1
+- **The empty state owns the primary CTA.** When a page is empty, suppress the
+  persistent header action so there is a single focal CTA (no duplicate primary).
+  The header action returns once content exists. The empty-state CTA is `size="sm"`;
+  the header action is default size. (Added 2026-06-20 — Task Editing; applied to
+  chores + family-feed.)
 
 ---
 

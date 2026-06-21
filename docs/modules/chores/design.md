@@ -48,9 +48,18 @@ standing; the kid chooses where to start.
 
 Each person is a **lane**: 2px hue top-border + left→right hue-tint gradient
 header (DM Sans name), per-lane **workload meter** (count + summed XP "load") and
-a per-lane **"+ add"** (prefills assignee). Rows: faint **drag handle** (hover) +
-kebab (edit/remove), status spine, per-task gold XP. Sort: overdue → due-dated →
-undated → completed last.
+a per-lane **"+ add"** (prefills assignee). Rows: status spine, per-task gold XP,
+and **edit / remove** row actions. Sort: overdue → due-dated → undated → completed
+last.
+
+> **Row actions — reconciled in Task Editing (2026-06-20).** Originally specced as
+> a hover **kebab**; shipped instead as the **settings → profiles** inline pattern,
+> because a kebab leans on hover (absent on touch) and the app already established
+> inline edit/remove there. **Edit = tap the row** (the whole row is the edit target,
+> design §3) with an explicit **pencil on `sm+`** (hidden on mobile, where tap-row is
+> the affordance); **Remove = inline trash at every width** → confirm dialog. Both are
+> 44px touch targets and tier-4 only. The faint **drag handle** (hover) is still owed
+> to 1.5 drag-to-reassign.
 
 Controls: segmented **Today / Week / All** scope (S1; week-strip layered later);
 **hide-completed** toggle (shared with taskee); **family pulse filter chips**
@@ -113,14 +122,18 @@ single surface for every entry point:
 
 - **Create · global** — admin "New Task" (blank).
 - **Create · per-person** — group-header "+ add" → assignee prefilled.
-- **Edit** — admin taps a task → fields prefilled; CTA "Save changes"; a
-  destructive **Remove task** below the CTA.
+- **Edit** — admin taps a task → fields prefilled; CTA "Save changes". (Reuses the
+  create drawer; see Task Editing, 2026-06-20.)
 
 **Form (M2 fields):** title (required); identity-hue **assignee chips** (required,
 single-select); gold **Reward** row — preset chips 5/10/15/20/25, default 10,
 selected chip gets the gold treatment + star; optional due date. Header
-"New task" / "Edit task" + close (X). Footer: **full-width** primary CTA, Remove
-beneath (edit only). Remove needs a confirm step.
+"New task" / "Edit task" + close (X). Footer: **full-width** primary CTA only.
+
+> **Remove placement — reconciled in Task Editing (2026-06-20).** Originally specced
+> as a destructive **Remove** beneath the CTA in the drawer's edit mode; shipped
+> instead as a **row action** (inline trash + confirm dialog — §1), so the drawer
+> footer carries only the primary CTA. Remove still needs the confirm step.
 
 ---
 

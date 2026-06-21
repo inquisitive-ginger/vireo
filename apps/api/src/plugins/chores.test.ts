@@ -439,6 +439,140 @@ describe('PATCH /api/chores/tasks/:id/reopen', () => {
   })
 })
 
+// ─── PATCH /api/chores/tasks/:id (edit) ──────────────────────────────────────
+
+describe('PATCH /api/chores/tasks/:id', () => {
+  async function createTask(assigneeId = KID_ID) {
+    return chorePrisma.task.create({
+      data: { title: 'Original', assigneeId, createdBy: PARENT_ID, xpReward: 10 },
+    })
+  }
+
+  it('updates a task’s fields and returns 200 for a tier-4 profile', async () => {
+    const task = await createTask()
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const res = await app.inject({
+      method: 'PATCH',
+      url: `/api/chores/tasks/${task.id}`,
+      headers: { cookie },
+      payload: { title: 'Edited', assigneeId: TWEEN_ID, xpReward: 25, dueDate: '2026-07-01' },
+    })
+    expect(res.statusCode).toBe(200)
+    const body = res.json()
+    expect(body.title).toBe('Edited')
+    expect(body.assigneeId).toBe(TWEEN_ID)
+    expect(body.assigneeName).toBe('Tween')
+    expect(body.xpReward).toBe(25)
+    expect(body.dueDate).toBe('2026-07-01')
+  })
+
+  it('returns 403 for a tier-3 profile', async () => {
+    const task = await createTask()
+    const cookie = await getCookieForProfile(TEEN_ID)
+    const res = await app.inject({
+      method: 'PATCH',
+      url: `/api/chores/tasks/${task.id}`,
+      headers: { cookie },
+      payload: { title: 'Nope', assigneeId: KID_ID },
+    })
+    expect(res.statusCode).toBe(403)
+  })
+
+  it('returns 404 for an unknown task id', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const res = await app.inject({
+      method: 'PATCH',
+      url: '/api/chores/tasks/00000000-c40e-0001-0000-0000000000ee',
+      headers: { cookie },
+      payload: { title: 'Ghost', assigneeId: KID_ID },
+    })
+    expect(res.statusCode).toBe(404)
+  })
+
+  it('returns 400 when title is empty', async () => {
+    const task = await createTask()
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const res = await app.inject({
+      method: 'PATCH',
+      url: `/api/chores/tasks/${task.id}`,
+      headers: { cookie },
+      payload: { title: '   ', assigneeId: KID_ID },
+    })
+    expect(res.statusCode).toBe(400)
+  })
+
+  it('returns 404 when the new assignee does not exist', async () => {
+    const task = await createTask()
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const res = await app.inject({
+      method: 'PATCH',
+      url: `/api/chores/tasks/${task.id}`,
+      headers: { cookie },
+      payload: { title: 'Edited', assigneeId: '00000000-c40e-0001-0000-0000000000ff' },
+    })
+    expect(res.statusCode).toBe(404)
+  })
+
+  it('clears the due date when an empty string is sent', async () => {
+    const task = await chorePrisma.task.create({
+      data: { title: 'Dated', assigneeId: KID_ID, createdBy: PARENT_ID, dueDate: new Date() },
+    })
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const res = await app.inject({
+      method: 'PATCH',
+      url: `/api/chores/tasks/${task.id}`,
+      headers: { cookie },
+      payload: { title: 'Dated', assigneeId: KID_ID, dueDate: '' },
+    })
+    expect(res.statusCode).toBe(200)
+    expect(res.json().dueDate).toBeNull()
+  })
+})
+
+// ─── DELETE /api/chores/tasks/:id ────────────────────────────────────────────
+
+describe('DELETE /api/chores/tasks/:id', () => {
+  async function createTask(assigneeId = KID_ID) {
+    return chorePrisma.task.create({
+      data: { title: 'Remove me', assigneeId, createdBy: PARENT_ID },
+    })
+  }
+
+  it('removes a task and returns 204 for a tier-4 profile', async () => {
+    const task = await createTask()
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const res = await app.inject({
+      method: 'DELETE',
+      url: `/api/chores/tasks/${task.id}`,
+      headers: { cookie },
+    })
+    expect(res.statusCode).toBe(204)
+    expect(await chorePrisma.task.findUnique({ where: { id: task.id } })).toBeNull()
+  })
+
+  it('returns 403 for a tier-3 profile and leaves the task intact', async () => {
+    const task = await createTask()
+    const cookie = await getCookieForProfile(TEEN_ID)
+    const res = await app.inject({
+      method: 'DELETE',
+      url: `/api/chores/tasks/${task.id}`,
+      headers: { cookie },
+    })
+    expect(res.statusCode).toBe(403)
+    expect(await chorePrisma.task.findUnique({ where: { id: task.id } })).not.toBeNull()
+  })
+
+  it('returns 404 for an unknown task id', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const res = await app.inject({
+      method: 'DELETE',
+      url: '/api/chores/tasks/00000000-c40e-0001-0000-0000000000ee',
+      headers: { cookie },
+    })
+    expect(res.statusCode).toBe(404)
+  })
+})
+
 // ─── GET /api/chores/xp ──────────────────────────────────────────────────────
 
 describe('GET /api/chores/xp', () => {

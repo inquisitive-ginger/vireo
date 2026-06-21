@@ -25,6 +25,10 @@ export interface ChoresPageViewProps {
   onCompleteTask?: (taskId: string) => Promise<unknown>
   /** Un-complete a task (tier-4 only, admin board). Rejects to revert. */
   onReopenTask?: (taskId: string) => Promise<unknown>
+  /** Edit a task (tier-4 only) — opens the drawer prefilled. */
+  onEditTask?: (task: ChoreTask) => void
+  /** Remove a task (tier-4 only) — container confirms then deletes. */
+  onRemoveTask?: (task: ChoreTask) => void
   /** Persisted lifetime XP seed from GET /api/chores/xp (taskee view only). */
   initialXp?: number
 }
@@ -39,6 +43,8 @@ export function ChoresPageView({
   onAddForAssignee,
   onCompleteTask,
   onReopenTask,
+  onEditTask,
+  onRemoveTask,
   initialXp,
 }: ChoresPageViewProps) {
   // Taskee, non-empty → the dedicated taskee surface (owns its header, the
@@ -53,11 +59,13 @@ export function ChoresPageView({
 
   return (
     <div className="mx-auto max-w-[680px] px-6 pt-7 pb-12">
-      {/* Family pulse summary — counts only, no family XP (design §1). */}
+      {/* Family pulse summary — counts only, no family XP (design §1). When the
+          board is empty the empty-state owns the primary CTA, so the header action
+          is suppressed (avoids a duplicate "New Task" primary action). */}
       <PageHeader
         title="Chores"
         subtitle={summaryLine({ total: tasks.length, pending, done, overdue, seesAllTasks })}
-        action={newTaskButton}
+        action={tasks.length > 0 ? newTaskButton : undefined}
       />
 
       {tasks.length === 0 ? (
@@ -73,6 +81,8 @@ export function ChoresPageView({
           onAddForAssignee={onAddForAssignee ?? (() => {})}
           onCompleteTask={canManage ? onCompleteTask : undefined}
           onReopenTask={canManage ? onReopenTask : undefined}
+          onEditTask={canManage ? onEditTask : undefined}
+          onRemoveTask={canManage ? onRemoveTask : undefined}
         />
       )}
     </div>

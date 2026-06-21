@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Loader2, Plus } from 'lucide-react'
-import { Button } from '@family-os/ui'
+import { Button, ConfirmDialog } from '@family-os/ui'
 import { PermissionGate, useAuth, useQuery, useMutation, useQueryClient } from '@family-os/platform'
 import type { ChoreTask, FamilyMember, TasksResponse } from '../types'
 import { ChoresPageView } from './ChoresPageView'
@@ -17,6 +17,10 @@ export function ChoresPage() {
 
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [prefillAssigneeId, setPrefillAssigneeId] = useState<string | null>(null)
+  // Set → the drawer opens in edit mode; null → create mode.
+  const [editingTask, setEditingTask] = useState<ChoreTask | null>(null)
+  // Set → the remove-confirm dialog is open for this task.
+  const [removeTarget, setRemoveTarget] = useState<ChoreTask | null>(null)
 
   // Keyed by the active profile — a profile switch changes the key and refetches
   // automatically (ADR 013), so no manual re-fetch on switch is needed.
@@ -68,6 +72,36 @@ export function ChoresPage() {
     },
   })
 
+  // Edit a task (tier 4) — same field set as create; assignee may change.
+  const updateTask = useMutation({
+    mutationFn: ({ taskId, input }: { taskId: string; input: CreateTaskInput }) =>
+      fetch(`/api/chores/tasks/${taskId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input),
+      }).then((r) => {
+        if (!r.ok) throw new Error(String(r.status))
+        return r.json() as Promise<ChoreTask>
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['chores/tasks'] })
+      setDrawerOpen(false)
+      setEditingTask(null)
+    },
+  })
+
+  // Remove a task (tier 4) — confirmed via the dialog below.
+  const deleteTask = useMutation({
+    mutationFn: (taskId: string) =>
+      fetch(`/api/chores/tasks/${taskId}`, { method: 'DELETE' }).then((r) => {
+        if (!r.ok) throw new Error(String(r.status))
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['chores/tasks'] })
+      setRemoveTarget(null)
+    },
+  })
+
   // Completion + reopen. The views own the optimistic UI (XP flight / row toggle)
   // and revert on rejection; we invalidate on success so the board and the
   // assignee's own list reconcile (a reopened task resurfaces on their list).
@@ -90,7 +124,14 @@ export function ChoresPage() {
   })
 
   function openCreate(assigneeId: string | null) {
+    setEditingTask(null)
     setPrefillAssigneeId(assigneeId)
+    setDrawerOpen(true)
+  }
+
+  function openEdit(task: ChoreTask) {
+    setEditingTask(task)
+    setPrefillAssigneeId(null)
     setDrawerOpen(true)
   }
 
@@ -126,6 +167,8 @@ export function ChoresPage() {
         onAddForAssignee={(assigneeId) => openCreate(assigneeId)}
         onCompleteTask={(taskId) => completeTask.mutateAsync(taskId)}
         onReopenTask={(taskId) => reopenTask.mutateAsync(taskId)}
+        onEditTask={openEdit}
+        onRemoveTask={(task) => setRemoveTarget(task)}
         newTaskButton={
           <PermissionGate action="create" subject="chores.Task">
             <Button onClick={() => openCreate(null)}>
@@ -135,8 +178,10 @@ export function ChoresPage() {
           </PermissionGate>
         }
         emptyAction={
+          // sm matches the empty-state CTA convention (EmptyState stories + family-feed);
+          // the header "New Task" keeps the default size when the board has tasks.
           <PermissionGate action="create" subject="chores.Task">
-            <Button onClick={() => openCreate(null)}>
+            <Button size="sm" onClick={() => openCreate(null)}>
               <Plus size={16} />
               New Task
             </Button>
@@ -146,14 +191,33 @@ export function ChoresPage() {
       {canManage && (
         <CreateTaskDrawer
           open={drawerOpen}
-          onClose={() => setDrawerOpen(false)}
+          onClose={() => {
+            setDrawerOpen(false)
+            setEditingTask(null)
+          }}
           members={members}
           prefillAssigneeId={prefillAssigneeId}
+          editingTask={editingTask}
           onSubmit={async (input) => {
             // Swallow the rejection: the drawer stays open on failure;
             // onSuccess closes it.
-            await createTask.mutateAsync(input).catch(() => {})
+            if (editingTask) {
+              await updateTask.mutateAsync({ taskId: editingTask.id, input }).catch(() => {})
+            } else {
+              await createTask.mutateAsync(input).catch(() => {})
+            }
           }}
+        />
+      )}
+      {canManage && (
+        <ConfirmDialog
+          open={!!removeTarget}
+          title={`Remove “${removeTarget?.title ?? ''}”?`}
+          description="This task will be permanently deleted. This can't be undone."
+          confirmLabel="Remove"
+          onConfirm={() => removeTarget && deleteTask.mutate(removeTarget.id)}
+          onCancel={() => setRemoveTarget(null)}
+          isPending={deleteTask.isPending}
         />
       )}
     </>

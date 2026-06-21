@@ -1,6 +1,6 @@
 import type { Meta, StoryObj } from '@storybook/react'
 import { CreateTaskDrawer } from './CreateTaskDrawer'
-import { SAMPLE_MEMBERS } from '../sample-tasks'
+import { SAMPLE_MEMBERS, SAMPLE_FAMILY_TASKS } from '../sample-tasks'
 
 const meta: Meta<typeof CreateTaskDrawer> = {
   title: 'Chores/Create Task Drawer',
@@ -27,6 +27,18 @@ export const PrefilledAssignee: Story = {
     open: true,
     members: SAMPLE_MEMBERS,
     prefillAssigneeId: 'm-zach',
+    onClose: () => {},
+    onSubmit: () => {},
+  },
+}
+
+export const Edit: Story = {
+  name: 'Edit — prefilled from task',
+  args: {
+    open: true,
+    members: SAMPLE_MEMBERS,
+    // "Mow the lawn" — Emma, due in 2 days, 25 XP — exercises every prefilled field.
+    editingTask: SAMPLE_FAMILY_TASKS.find((t) => t.id === 'f5'),
     onClose: () => {},
     onSubmit: () => {},
   },

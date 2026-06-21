@@ -151,6 +151,75 @@ const choresPlugin: FastifyPluginAsync = async (fastify) => {
     return reply.status(201).send(serializeTask(task, assignee.name))
   })
 
+  // PATCH /chores/tasks/:id — edit a task's fields (tier 4 only / manage). Mirrors
+  // the create validation; the edit drawer always submits the full field set.
+  fastify.patch('/chores/tasks/:id', async (request, reply) => {
+    if (!request.ability.can('update', 'chores.Task')) {
+      return reply.status(403).send({ error: 'Permission denied' })
+    }
+
+    const { id } = request.params as { id: string }
+    const existing = await chorePrisma.task.findUnique({ where: { id } })
+    if (!existing) {
+      return reply.status(404).send({ error: 'Task not found' })
+    }
+
+    const body = (request.body ?? {}) as CreateTaskBody
+
+    const title = typeof body.title === 'string' ? body.title.trim() : ''
+    if (title.length === 0) {
+      return reply.status(400).send({ error: 'title is required' })
+    }
+
+    if (typeof body.assigneeId !== 'string' || body.assigneeId.length === 0) {
+      return reply.status(400).send({ error: 'assigneeId is required' })
+    }
+
+    const assignee = await prisma.profile.findUnique({ where: { id: body.assigneeId } })
+    if (!assignee) {
+      return reply.status(404).send({ error: 'Assignee not found' })
+    }
+
+    const description =
+      typeof body.description === 'string' && body.description.trim().length > 0
+        ? body.description.trim()
+        : null
+
+    const dueDate =
+      typeof body.dueDate === 'string' && body.dueDate.length > 0 ? new Date(body.dueDate) : null
+    if (dueDate && isNaN(dueDate.getTime())) {
+      return reply.status(400).send({ error: 'Invalid dueDate' })
+    }
+
+    const xpReward =
+      typeof body.xpReward === 'number' && Number.isInteger(body.xpReward) && body.xpReward >= 0
+        ? body.xpReward
+        : existing.xpReward
+
+    const task = await chorePrisma.task.update({
+      where: { id },
+      data: { title, description, assigneeId: assignee.id, dueDate, xpReward },
+    })
+
+    return serializeTask(task, assignee.name)
+  })
+
+  // DELETE /chores/tasks/:id — remove a task (tier 4 only / manage).
+  fastify.delete('/chores/tasks/:id', async (request, reply) => {
+    if (!request.ability.can('delete', 'chores.Task')) {
+      return reply.status(403).send({ error: 'Permission denied' })
+    }
+
+    const { id } = request.params as { id: string }
+    const existing = await chorePrisma.task.findUnique({ where: { id } })
+    if (!existing) {
+      return reply.status(404).send({ error: 'Task not found' })
+    }
+
+    await chorePrisma.task.delete({ where: { id } })
+    return reply.status(204).send()
+  })
+
   // GET /chores/tasks — tiers 1–3 see their own assigned tasks; tier 4 (admin)
   // and the family pseudo-profile see the whole family's tasks.
   fastify.get('/chores/tasks', async (request) => {

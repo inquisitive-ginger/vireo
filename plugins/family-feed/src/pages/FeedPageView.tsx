@@ -54,7 +54,13 @@ export function FeedPageView({
 }: FeedPageViewProps) {
   return (
     <div className="mx-auto max-w-[680px] px-6 pt-7 pb-12">
-      <PageHeader title="Family Feed" eyebrow="The family bulletin" action={composeButton} />
+      {/* When the feed is empty the empty-state owns the primary CTA, so the header
+          action is suppressed (avoids a duplicate compose action — mirrors chores). */}
+      <PageHeader
+        title="Family Feed"
+        eyebrow="The family bulletin"
+        action={posts.length > 0 ? composeButton : undefined}
+      />
 
       {composeForm && <div className="mb-7">{composeForm}</div>}
 
