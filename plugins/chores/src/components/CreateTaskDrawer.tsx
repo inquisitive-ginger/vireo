@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react'
 import { CalendarDays, Star } from 'lucide-react'
 import { Button, Drawer, Input, Label, identityColor } from '@family-os/ui'
-import type { FamilyMember } from '../types'
+import type { ChoreTask, FamilyMember } from '../types'
 import { GOLD, GOLD_INK, GOLD_TINT } from '../lib/gold'
 
 const XP_PRESETS = [5, 10, 15, 20, 25]
@@ -18,38 +18,46 @@ export interface CreateTaskDrawerProps {
   open: boolean
   onClose: () => void
   members: FamilyMember[]
-  /** Prefill the assignee (per-person "+ add" entry point). */
+  /** Prefill the assignee (per-person "+ add" entry point). Ignored in edit mode. */
   prefillAssigneeId?: string | null
+  /** When set, the drawer opens in edit mode: fields prefilled from this task,
+      header "Edit task", CTA "Save changes". Absent → create mode. */
+  editingTask?: ChoreTask | null
   onSubmit: (input: CreateTaskInput) => Promise<void> | void
 }
 
-/* The single create surface (design §3) — a right Drawer (Radix Dialog). M2 =
-   create only; edit + remove land with task-editing (out of scope here).
-   Form controls use the shared Input/Label/Button; the assignee/reward toggle
-   chips are bespoke (no toggle-group primitive in @family-os/ui yet). */
+/* The single create/edit surface (design §3) — a right Drawer (Radix Dialog).
+   Create mode = blank (or assignee-prefilled); edit mode prefills from
+   `editingTask` and swaps the header + CTA copy. Remove is a row-level action
+   (settings → profiles pattern), not in this footer. Form controls use the
+   shared Input/Label/Button; the assignee/reward toggle chips are bespoke (no
+   toggle-group primitive in @family-os/ui yet). */
 export function CreateTaskDrawer({
   open,
   onClose,
   members,
   prefillAssigneeId,
+  editingTask,
   onSubmit,
 }: CreateTaskDrawerProps) {
+  const isEdit = Boolean(editingTask)
   const [title, setTitle] = useState('')
   const [assigneeId, setAssigneeId] = useState<string | null>(null)
   const [xp, setXp] = useState(DEFAULT_XP)
   const [dueDate, setDueDate] = useState('')
   const [submitting, setSubmitting] = useState(false)
 
-  // Reset the form each time the drawer opens; apply any prefilled assignee.
+  // Reset the form each time the drawer opens: prefill from the task in edit
+  // mode, otherwise blank with any prefilled assignee.
   useEffect(() => {
     if (open) {
-      setTitle('')
-      setAssigneeId(prefillAssigneeId ?? null)
-      setXp(DEFAULT_XP)
-      setDueDate('')
+      setTitle(editingTask?.title ?? '')
+      setAssigneeId(editingTask?.assigneeId ?? prefillAssigneeId ?? null)
+      setXp(editingTask?.xpReward ?? DEFAULT_XP)
+      setDueDate(editingTask?.dueDate ?? '')
       setSubmitting(false)
     }
-  }, [open, prefillAssigneeId])
+  }, [open, prefillAssigneeId, editingTask])
 
   const canSubmit = title.trim().length > 0 && Boolean(assigneeId) && !submitting
 
@@ -69,7 +77,7 @@ export function CreateTaskDrawer({
   }
 
   return (
-    <Drawer open={open} onClose={onClose} title="New task">
+    <Drawer open={open} onClose={onClose} title={isEdit ? 'Edit task' : 'New task'}>
       <div className="flex h-full flex-col">
         <div className="flex-1 overflow-y-auto p-6">
           <div className="flex flex-col gap-6">
@@ -142,7 +150,13 @@ export function CreateTaskDrawer({
 
         <div className="flex flex-col gap-2.5 border-t border-border p-6">
           <Button className="w-full" onClick={handleSubmit} disabled={!canSubmit}>
-            {submitting ? 'Assigning…' : 'Assign task'}
+            {isEdit
+              ? submitting
+                ? 'Saving…'
+                : 'Save changes'
+              : submitting
+                ? 'Assigning…'
+                : 'Assign task'}
           </Button>
         </div>
       </div>

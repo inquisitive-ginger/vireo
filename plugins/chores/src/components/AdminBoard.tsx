@@ -1,5 +1,5 @@
 import { useMemo, useRef, useState } from 'react'
-import { Plus } from 'lucide-react'
+import { Pencil, Plus, Trash2 } from 'lucide-react'
 import { Badge, Button, CompletionToggle, identityColor } from '@family-os/ui'
 import type { ChoreTask } from '../types'
 import { isOverdue, dueLabel } from '../lib/dates'
@@ -23,6 +23,10 @@ export interface AdminBoardProps {
   onCompleteTask?: (taskId: string) => Promise<unknown>
   /** Un-complete a task (tier-4 only) — it resurfaces on the assignee's list. */
   onReopenTask?: (taskId: string) => Promise<unknown>
+  /** Edit a task (tier-4 only) — opens the drawer prefilled. Omitted = no edit action. */
+  onEditTask?: (task: ChoreTask) => void
+  /** Remove a task (tier-4 only) — host confirms then deletes. Omitted = no remove action. */
+  onRemoveTask?: (task: ChoreTask) => void
 }
 
 /* By-assignee board — grouped by assignee. Identity hue does real work here (each
@@ -35,6 +39,8 @@ export function AdminBoard({
   showAdd = true,
   onCompleteTask,
   onReopenTask,
+  onEditTask,
+  onRemoveTask,
 }: AdminBoardProps) {
   const maxLoad = Math.max(1, ...lanes.map(laneLoad))
 
@@ -80,6 +86,8 @@ export function AdminBoard({
               task={task}
               onComplete={onCompleteTask}
               onReopen={onReopenTask}
+              onEdit={onEditTask}
+              onRemove={onRemoveTask}
             />
           ))}
         </div>
@@ -164,10 +172,14 @@ function AdminRow({
   task,
   onComplete,
   onReopen,
+  onEdit,
+  onRemove,
 }: {
   task: ChoreTask
   onComplete?: (taskId: string) => Promise<unknown>
   onReopen?: (taskId: string) => Promise<unknown>
+  onEdit?: (task: ChoreTask) => void
+  onRemove?: (task: ChoreTask) => void
 }) {
   // Optimistic per-row status — reverts if the mutation rejects. A query refetch
   // (on settle) reconciles to server truth underneath.
@@ -195,7 +207,9 @@ function AdminRow({
 
   return (
     <div
-      className="flex min-h-[54px] items-center gap-3 border-b border-border pr-3.5 pl-[18px]"
+      className={`relative flex min-h-[54px] items-center gap-3 border-b border-border pr-1.5 pl-[18px] ${
+        onEdit ? 'transition-colors hover:bg-secondary/40' : ''
+      }`}
       style={{ opacity: done ? 0.55 : 1 }}
     >
       <span
@@ -213,25 +227,75 @@ function AdminRow({
           {done ? 'Done' : overdue ? `Overdue · ${label}` : (label ?? 'No due date')}
         </span>
       </div>
+      {/* Tap-row-to-edit (design §3 "admin taps a task → drawer"). A stretched
+          transparent button covers the row's passive area (spine, title, XP pill);
+          the real controls below sit above it (z-20) so they stay clickable. This is
+          the primary edit affordance on mobile, where the explicit pencil is hidden. */}
+      {onEdit && (
+        <button
+          type="button"
+          onClick={() => onEdit(task)}
+          aria-label={`Edit “${task.title}”`}
+          className="absolute inset-0 z-10 cursor-pointer rounded-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
+        />
+      )}
       {!done && <XpPill value={task.xpReward} />}
+      {/* Edit / remove — inline row actions (settings → profiles pattern), 44px touch
+          targets. Above the stretched edit button (z-20). The pencil is redundant with
+          tap-row-to-edit, so it only shows on sm+ (a visible desktop affordance);
+          Remove stays inline at every width. Remove is confirmed by the host. */}
+      {(onEdit || onRemove) && (
+        <div className="relative z-20 flex shrink-0 items-center gap-0.5">
+          {onEdit && (
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={() => onEdit(task)}
+              aria-label={`Edit “${task.title}”`}
+              title="Edit task"
+              className="hidden h-11 w-11 sm:inline-flex"
+            >
+              <Pencil className="size-3.5" aria-hidden />
+            </Button>
+          )}
+          {onRemove && (
+            <Button
+              variant="ghost-destructive"
+              size="icon"
+              onClick={() => onRemove(task)}
+              aria-label={`Remove “${task.title}”`}
+              title="Remove task"
+              className="h-11 w-11"
+            >
+              <Trash2 className="size-3.5" aria-hidden />
+            </Button>
+          )}
+        </div>
+      )}
       {/* Option A check-off (no flight — the board has no score plate). A completed
           row's check doubles as the tier-4 reopen control; read-only viewers
-          (family dashboard) get a static check and no control on pending rows. */}
-      {done ? (
-        <CompletionToggle
-          checked
-          size={28}
-          onToggle={onReopen ? reopen : undefined}
-          label={`Reopen “${task.title}” (mark not done)`}
-          title="Mark not done"
-        />
-      ) : onComplete ? (
-        <CompletionToggle
-          checked={false}
-          size={28}
-          onToggle={complete}
-          label={`Mark “${task.title}” done`}
-        />
+          (family dashboard) get a static check and no control on pending rows.
+          Kept above the stretched edit button (z-20) so it stays tappable + a
+          touch-padded wrapper gives it a 44px target away from Remove. */}
+      {done || onComplete ? (
+        <div className="relative z-20 flex size-11 shrink-0 items-center justify-center">
+          {done ? (
+            <CompletionToggle
+              checked
+              size={28}
+              onToggle={onReopen ? reopen : undefined}
+              label={`Reopen “${task.title}” (mark not done)`}
+              title="Mark not done"
+            />
+          ) : (
+            <CompletionToggle
+              checked={false}
+              size={28}
+              onToggle={complete}
+              label={`Mark “${task.title}” done`}
+            />
+          )}
+        </div>
       ) : null}
     </div>
   )

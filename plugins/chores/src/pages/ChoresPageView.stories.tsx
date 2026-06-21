@@ -31,6 +31,14 @@ const newTaskButton = (
   </Button>
 )
 
+// Empty-state CTA — sm per the empty-state convention (EmptyState stories + family-feed).
+const emptyNewTaskButton = (
+  <Button size="sm">
+    <Plus size={16} />
+    New Task
+  </Button>
+)
+
 const resolve = () => Promise.resolve()
 
 export const Taskee: Story = {
@@ -58,10 +66,12 @@ export const Admin: Story = {
     onAddForAssignee: () => {},
     onCompleteTask: resolve,
     onReopenTask: resolve,
+    onEditTask: () => {},
+    onRemoveTask: () => {},
   },
   parameters: {
     annotation:
-      'tier 4 · all family tasks · per-assignee lanes · tap a circle to check off ANY task (Option A, plain check-off — no flight) · a completed row’s check un-completes it (reopen)',
+      'tier 4 · all family tasks · per-assignee lanes · tap a row to edit (drawer prefills) — pencil affordance on sm+, hidden on mobile · inline Remove (confirm) at every width, 44px targets · tap a circle to check off ANY task (Option A, plain check-off — no flight) · a completed row’s check un-completes it (reopen)',
   },
 }
 
@@ -97,7 +107,7 @@ export const AdminEmpty: Story = {
     tier: 4,
     seesAllTasks: true,
     canManage: true,
-    emptyAction: newTaskButton,
+    emptyAction: emptyNewTaskButton,
   },
   parameters: { annotation: 'admin · no tasks yet — empty-state CTA prompts the first assignment' },
 }
