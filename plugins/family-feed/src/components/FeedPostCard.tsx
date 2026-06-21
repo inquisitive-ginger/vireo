@@ -57,7 +57,7 @@ export function FeedPostCard({ post, lineClamp, variant = 'note' }: FeedPostCard
 
   if (variant === 'widget') {
     return (
-      <div className="relative pl-2.5">
+      <div className="relative pl-4">
         <span
           aria-hidden
           className="absolute inset-y-0 left-0 w-1 rounded-sm"
