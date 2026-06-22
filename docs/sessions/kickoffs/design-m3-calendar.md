@@ -4,9 +4,26 @@
 **Origin:** 2026-06-21 queue rework — M3 — Calendar opened.
 
 > Driving doc for the session. Follows `docs/sessions/templates/design.md`.
-> **Stub** — precise decisions firm up once **M3 Product Planning: Calendar**
-> defines the stories. Tighten this kickoff at the end of the planning session
-> before scheduling. Delete after the session closes.
+> **Tightened 2026-06-21** against the stories defined in M3 Product Planning.
+> Delete after the session closes.
+
+## Product constraints locked in planning (do NOT re-open)
+
+The product session settled these via interactive gates — they bound the design
+space; design works within them, it does not revisit them:
+
+- **One shared family calendar** (not per-member composited).
+- **One owner per event** (owner's identity hue colors it) **or a Family tag**
+  (neutral/multi). This is the design's central color problem to solve.
+- **Simple weekly recurrence** only (per-occurrence edits deferred).
+- **Recurring activities are first-class** — a named "Activity" surface to design.
+- **Tablet month view is the default** (the hero); week/day are drill-ins.
+- **Tier 4 creates/edits**; tiers 1–3 view (teen propose-flow deferred).
+- **Email/newsletter parsing is the deferred north star** — design need only leave
+  room for a future `suggested` event treatment, not design the inbox now.
+- The hero bar is **across-the-room legibility** of the month mirror — the main
+  user prefers paper and is a self-described technophobe; the twin must out-glance
+  nothing and match the paper's at-a-glance quality.
 
 ## Pre-session checklist
 
@@ -15,8 +32,9 @@
 - [ ] Read `docs/architecture.md`
 - [ ] Read ADR 003 (tier model) — role-aware rendering depends on it
 - [ ] Read ADR 030 (member identity colors) + `design-system.md` "people are color"
-- [ ] Read `docs/modules/calendar/` — the spec + stories produced by M3 planning
-- [ ] Read `docs/modules/chores/design.md` as the reference for a feature module's design doc + the XP-flight gate pattern
+- [ ] Read ADR 028 (reserved home slots — Calendar slot already exists)
+- [ ] Read `docs/modules/calendar/` — the spec + 8 stories produced by M3 planning
+- [ ] Read `docs/modules/chores/design.md` as the reference for a feature module's design doc, the status-vs-identity color rule, and the two-framing widget pattern
 
 ## Session scope
 
@@ -35,15 +53,27 @@ Tablet (primary calendar view) · mobile (event creation) · home-screen widget.
 
 ## Decisions to make
 
-_Confirmed against the stories once planning lands. Expected set:_
+_Confirmed against the defined stories. The framing (month default) and surfaces
+are settled — these are the UX calls within them:_
 
-1. **Calendar framing** — month / week / day (and/or agenda list); which is the tablet default; how the others are reached.
-2. **Event create/edit surface** — drawer vs. dialog vs. dedicated page; one form reused for create/edit (as chores did); the mobile create path.
-3. **Identity on events** — how member identity color reads on an event block without fighting status/category color (carry the chores status-vs-identity rule forward).
-4. **Density & overlap** — how concurrent/overlapping events render; all-day vs. timed rows; multi-day spans.
-5. **`calendar.*` widget** — today/up-next framing(s), taskee vs. family, sizes, empty + all-clear states.
+1. **Month-cell layout** (story #2) — how a day cell renders its event chips; the
+   `+N more` truncation + the drill-into-day/week detail; month navigation chrome.
+2. **Identity on events** (#2) — how the owner identity hue reads on an event chip,
+   and how a **Family** event reads distinctly without inventing a hue; carry the
+   chores status-vs-identity rule forward.
+3. **Density, overlap & multi-day spans** (#2) — concurrent/overlapping events;
+   all-day vs. timed; the continuous **multi-day span bar** (the paper "→" arrows).
+4. **Event create/edit drawer** (#3) — one reused drawer for create/edit/per-day
+   prefill (as chores did): owner/Family picker, all-day toggle, start/end time,
+   weekly-repeat + until, multi-day. Plus the **mobile** adaptation of the same form (#4).
+5. **Activities surface** (#5) — how standing recurring activities are listed and
+   managed (grouped/colored by owner) as first-class commitments.
+6. **`calendar.up-next` widget** (#7) — the **family** vs. **mine** framings, the
+   three sizes, tap-through, and the empty/all-clear state. Follow the
+   `chores.today-summary` two-framing precedent.
 
-For each: confirm it holds across the surfaces in scope and at all trust tiers, and reads at a glance.
+For each: confirm it holds across tablet + mobile and at all trust tiers, and
+**reads at a glance from across the room** (the hero bar).
 
 ## Outputs (required before closing)
 

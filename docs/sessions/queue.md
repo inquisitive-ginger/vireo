@@ -11,31 +11,39 @@
 
 ## Up Next
 
-> **Queue reworked (2026-06-21):** M2 Chores is closed. The two prod/tooling
-> follow-ons that were up next (SW cache strategy, design-sync retry) are not
-> milestone work and have been pushed to **Deferred — Platform v2**. The next
-> active milestone is **M3 — Calendar**, opened here with its product-planning and
-> UX-design sessions.
+> **M3 Product Planning: Calendar ran 2026-06-21** (opened by a requirements
+> brainstorm against the family's real paper wall calendar). `docs/modules/calendar/`
+> is stood up: spec, progress board, 8 dependency-ordered stories. **M3 Design:
+> Calendar is next**, then the dev stories. MVP thesis: a glanceable tablet twin of
+> the paper calendar + mobile capture + reminders. Three owed ADRs logged below
+> gate specific dev stories. See `logs/2026-06-21-product-m3.md`.
 
-### M3 Product Planning: Calendar
+### M3 Design: Calendar ← next
 
-**Type:** product (planning)
-**Kickoff:** [kickoffs/product-m3-calendar.md](kickoffs/product-m3-calendar.md)
-**Reads:** `CLAUDE.md`, `docs/vision.md`, `docs/roadmap.md` (M3 scope + done-when), `docs/architecture.md`, `docs/modules/chores/` (as the template for a feature module's spec/progress/story shape)
-**Produces:** `docs/modules/calendar/` (module spec, progress board, story specs); M3 stories defined and ordered by dependency; any unsettled architectural questions logged as owed ADRs; the queue updated with M3 dev sessions; **M3 Design: Calendar** kickoff scope confirmed against the defined stories
-**Depends on:** none — this opens M3
-**Note:** First feature module after Chores. Roadmap scope: family calendar view on the tablet, event creation from mobile, activity tracking. Done-when: _the family stops using a separate calendar for day-to-day scheduling._ Resolve the open product questions (recurrence? event model — single vs. multi-day / all-day? who can create/edit at which tier? whose calendars/visibility? activity-tracking shape?) the way M2 did before any design or dev work. M5 School depends on M3 surfacing events into the family calendar — keep that downstream consumer in mind when shaping the event model.
+**Type:** design
+**Kickoff:** [kickoffs/design-m3-calendar.md](kickoffs/design-m3-calendar.md) (tightened against the defined stories 2026-06-21)
+**Reads:** `docs/modules/calendar/` (the spec + 8 stories), `docs/design-system.md`, ADR 003 (tier model), ADR 030 (identity colors), ADR 028 (reserved home slots), `docs/modules/chores/design.md` (reference for a feature module's design doc + the two-framing widget pattern)
+**Produces:** locked calendar UX — the **tablet month view** (default; week/day drill-in), the event **create/edit drawer** (owner/Family picker, all-day/timed, weekly repeat, multi-day span; reused on mobile), **identity-on-events** treatment (owner hue vs. Family neutral; carry the chores status-vs-identity rule), **density/overlap + multi-day span** rendering, the **Activities** management surface, and the **`calendar.up-next`** widget (family + mine framings, sizes, empty/all-clear); decisions in `docs/design-system.md` (+ `docs/modules/calendar/design.md`); any new ADR if a structural constraint emerges
+**Depends on:** **M3 Product Planning: Calendar** ✅ (stories exist)
+**Note:** Runs the **visual option gate** (ASCII wireframes via an interactive Storybook playground, user sign-off) before finalizing any major UX call — same gate M2 Design: Chores used. **Constraints locked in planning — do not re-open:** one shared calendar; one owner per event + a Family tag; simple weekly recurrence; month default; recurring activities first-class; tier-4 creates. The hero surface is the across-the-room-legible month mirror (the main user is a self-described technophobe; paper wins on glance).
 
 ---
 
-### M3 Design: Calendar
+### M3 Dev sessions: Calendar (dependency-ordered; kickoffs written after Design)
 
-**Type:** design
-**Kickoff:** [kickoffs/design-m3-calendar.md](kickoffs/design-m3-calendar.md)
-**Reads:** `docs/modules/calendar/` (the spec + stories produced by M3 planning), `docs/design-system.md`, ADR 003 (tier model), ADR 030 (identity colors), `docs/modules/chores/design.md` (as the reference for a feature module's design doc)
-**Produces:** locked calendar UX — tablet calendar view (month/week/day framing), the event create/edit surface, mobile event creation, how member identity colors express on events, and the `calendar.*` home-screen widget; decisions recorded in `docs/design-system.md` (+ a `docs/modules/calendar/design.md` dev-facing spec); any new ADR if a structural constraint emerges
-**Depends on:** **M3 Product Planning: Calendar** (stories must exist first)
-**Note:** Runs the **visual option gate** (ASCII wireframes via an interactive Storybook playground, user sign-off) before finalizing any major UX call — same gate M2 Design: Chores used. Precise scope firms up once planning defines the stories; the kickoff is a stub to be tightened then.
+> Scope per the story specs in `docs/modules/calendar/stories/`. Each is a dev
+> session. Kickoffs are written just-in-time **after M3 Design lands** (the design
+> session firms up the surfaces these build). Stories 1–7 are M3 MVP; story 8 is
+> the deferred north star.
+
+1. **Event Model + Plugin Scaffold** — [stories/event-model.md](../modules/calendar/stories/event-model.md). `calendar` plugin + `events` table + weekly recurrence + owner/Family + all-day/timed/multi-day + CRUD API + events/permissions namespaces. **Gated by the recurrence-storage owed ADR.** _Depends on: none (opens M3 dev)._
+2. **Tablet Month View** — [stories/tablet-month-view.md](../modules/calendar/stories/tablet-month-view.md). The hero glanceable month grid; color-by-owner; truncation; drill to week/day. _Depends on #1 + Design._
+3. **Event Create / Edit** — [stories/event-create-edit.md](../modules/calendar/stories/event-create-edit.md). One reused drawer (owner/Family, time, weekly repeat, span); tier 4. _Depends on #1, #2 + Design._
+4. **Mobile Event Creation** — [stories/mobile-event-creation.md](../modules/calendar/stories/mobile-event-creation.md). The create form on the mobile PWA + a mobile read surface. _Depends on #3._
+5. **Recurring Activities** — [stories/recurring-activities.md](../modules/calendar/stories/recurring-activities.md). Recurring series surfaced/managed as named Activities (`is_activity`). _Depends on #1, #3._
+6. **Event Reminders** — [stories/event-reminders.md](../modules/calendar/stories/event-reminders.md). Time-based reminders via `platform.notify()` + Web Push. **Gated by the reminder-scheduling owed ADR.** _Depends on #1, #3._
+7. **Up Next Widget** — [stories/up-next-widget.md](../modules/calendar/stories/up-next-widget.md). `calendar.up-next` (family + mine framings, sizes, empty states); fills the reserved slot. _Depends on #1 (#2 ideal) + Design._
+8. **Suggested Events Inbox** — [stories/suggested-events-inbox.md](../modules/calendar/stories/suggested-events-inbox.md). ⬜ **Deferred north star.** Model reserved in #1 (`status`/`source`); email/newsletter parsing build is post-MVP. **Gated by the external-ingest owed ADR.** _Schedule after the MVP is in daily use._
 
 ---
 
@@ -103,7 +111,53 @@ enhancement to the existing count + XP-load meter). Blocks none of the M2 MVP st
 
 ---
 
+### Architecture: Calendar recurrence storage model
+
+**Type:** architecture (ADR)
+**Raised by:** M3 Product Planning: Calendar (2026-06-21)
+**Question:** How are weekly-recurring events stored and expanded — materialized
+`occurrences` rows vs. a single canonical event computed-on-read for a queried date
+range? Where do per-occurrence exceptions eventually attach, and does an Activity
+ever warrant its own table vs. the `is_activity` flag?
+**Gates:** **Event Model + Plugin Scaffold** (#1) — settle before implementing the
+`GET …?from=&to=` weekly expansion. Also informs **Recurring Activities** (#5).
+**Reads:** `docs/modules/calendar/spec.md` (schema + "Owed architecture"), ADR 009 (per-plugin schemas / JSONB)
+
+---
+
+### Architecture: Time-based reminder scheduling
+
+**Type:** architecture (ADR)
+**Raised by:** M3 Product Planning: Calendar (2026-06-21)
+**Question:** How does a "remind me N minutes before" fire? The event bus is an
+in-process `EventEmitter` with no timer/cron primitive (ADR 008), so the mechanism
+(a scheduler tick, a DB-backed due-queue poll, a job table, …) must be chosen —
+including durability across server restarts.
+**Gates:** **Event Reminders** (#6). Blocks no earlier calendar story.
+**Reads:** `docs/modules/calendar/stories/event-reminders.md`, ADR 008 (event bus), ADR 029 (notification routing)
+
+---
+
+### Architecture: External-ingest / suggested-events extension point
+
+**Type:** architecture (ADR)
+**Raised by:** M3 Product Planning: Calendar (2026-06-21)
+**Question:** What's the contract by which an external source (email/newsletter
+parsing first; iCal/Google sync later) lands events as `status: 'suggested'` with
+a `source` provenance, for human review/confirm? Keep it source-agnostic, not
+email-only.
+**Gates:** **Suggested Events Inbox** (#8, the deferred north star). The `status`/
+`source` columns ship in #1, but the ingest contract is settled here when #8 is
+scheduled.
+**Reads:** `docs/modules/calendar/stories/suggested-events-inbox.md`, `docs/modules/calendar/spec.md` (deferred / north star)
+
+---
+
 ## Recently Completed
+
+- **2026-06-21 — M3 Product Planning: Calendar** ![Type](https://img.shields.io/badge/Type-Planning-orange)
+  Opened M3 with a **requirements brainstorm** against the family's real paper wall calendar (photo). Read the analog system: the **recurring activity backbone** (T&T/gymnastics/karate weekly) dwarfs one-offs; **color = person** (= ADR 030); **multi-day spans** (travel/camp arrows) are first-class; tracking woven in (antibiotics-checkmark — left out of MVP). Strategic read: the "separate calendar" being retired (Google) is really a **notification engine** — events are duplicated there "to capture the notification aspect." **8 decisions settled via gates:** glanceable tablet mirror leads (augment, don't replace — main user is a technophobe); **simple weekly recurrence**; **recurring activities first-class**; email/newsletter parsing is the **north star** (model reserved now, build deferred); **month** tablet default w/ week/day drill-in; **one shared calendar, one owner per event + Family tag**; **mobile capture + reminders ship in M3** so Google can actually be retired; **tier-4 creates** (teen propose-flow deferred, mirroring chores). Stood up `docs/modules/calendar/` (spec + progress + **8 dependency-ordered stories**). **3 owed ADRs logged** (recurrence storage, reminder scheduling, external-ingest). Queue updated: **M3 Design: Calendar** next (kickoff tightened), then the 7 MVP dev stories; story 8 deferred. `CLAUDE.md` status updated.
+  _See:_ `docs/sessions/logs/2026-06-21-product-m3.md`
 
 - **2026-06-20 — Design + Dev: Today Widget Rework** ![Type](https://img.shields.io/badge/Type-Development-orange)
   Ran the UI design gate the `chores.today-summary` widget skipped when it shipped via the agent team (#22). Restored the deleted exploration as a Storybook playground, gated **"Hero split"** (direction A) for both framings, then integrated and deleted the playground. **`TodaySummaryView` rebuilt:** hero `text-metric` count, filled `+XP` task rows, **daily XP restored** (the §4 element the agent build dropped) beside the lifetime coin. **Real XP wiring:** lifetime now reads the persisted `GET /api/chores/xp` (the container's "no /xp call" comment was stale post-#23). **Shell widget sizing:** the grid sizes rows to fill the viewport (180–400px/row) so an `h=2` slot is ~600–800px — Home rendered `<Widget />` with no `size`, so it fell back to `standard` and scattered; Home now derives `size` from the layout cell (`h≥2 → large`) via a typed `WidgetProps`. **Family data bug fixed:** the standard layout's 2-row cap + "overdue-priority" filter was **hiding every non-overdue member**; all members now render, sorted urgent-first, in fill-height/clip lists. **All-done celebration** added (🎉 + gold earned-XP pill). **Bug fix:** `MemoryRouter` added to the Today Widget stories (they'd thrown `LinkWithRef … basename of null` since the widget shipped without the gate). **Typography aligned:** all-done headings moved off `display-lg` (Lora, reserved for full-size empty states) to `card-title` per `design-system.md`. **Focus widget variant (direction C, "Next up") folded into M2 Dev: Focus Mode** — needs the `focusMode` setting to branch on. typecheck/lint/builds green; 163 API tests pass; live-review signed off.
