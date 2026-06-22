@@ -6,9 +6,10 @@
 
 ## Active Milestone
 
-**None active** — M2 — Chores ✅ done (2026-06-20). Next: Platform cleanup
-(Service Worker cache strategy — see `docs/sessions/queue.md`), then M3 — Calendar
-product planning.
+**M3 — Calendar** is the next active milestone, opening with product planning then
+UX design (see `docs/sessions/queue.md`). M2 — Chores ✅ done (2026-06-20). Platform
+cleanup (Service Worker cache strategy) and the design-sync retry were deferred to
+**Platform v2** on 2026-06-21 so M3 can run uninterrupted.
 
 ## Completed
 

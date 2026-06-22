@@ -11,13 +11,40 @@
 
 ## Up Next
 
-> **Post-M2 chores triage (2026-06-19):** bugs + polish found after the agent-team
-> chores work landed. Two breakouts (mobile layout, today-widget design) + one bug bash.
+> **Queue reworked (2026-06-21):** M2 Chores is closed. The two prod/tooling
+> follow-ons that were up next (SW cache strategy, design-sync retry) are not
+> milestone work and have been pushed to **Deferred — Platform v2**. The next
+> active milestone is **M3 — Calendar**, opened here with its product-planning and
+> UX-design sessions.
 
-> **M2 Dev: Focus Mode — ✅ shipped 2026-06-20** (ADR 036; `FocusView` "Spotlight"
->
-> - per-profile `focusMode` setting + widget Focus variant). Closed the last queued
->   M2 chores enhancement. See `logs/2026-06-20-dev-chores-focus-mode.md`.
+### M3 Product Planning: Calendar
+
+**Type:** product (planning)
+**Kickoff:** [kickoffs/product-m3-calendar.md](kickoffs/product-m3-calendar.md)
+**Reads:** `CLAUDE.md`, `docs/vision.md`, `docs/roadmap.md` (M3 scope + done-when), `docs/architecture.md`, `docs/modules/chores/` (as the template for a feature module's spec/progress/story shape)
+**Produces:** `docs/modules/calendar/` (module spec, progress board, story specs); M3 stories defined and ordered by dependency; any unsettled architectural questions logged as owed ADRs; the queue updated with M3 dev sessions; **M3 Design: Calendar** kickoff scope confirmed against the defined stories
+**Depends on:** none — this opens M3
+**Note:** First feature module after Chores. Roadmap scope: family calendar view on the tablet, event creation from mobile, activity tracking. Done-when: _the family stops using a separate calendar for day-to-day scheduling._ Resolve the open product questions (recurrence? event model — single vs. multi-day / all-day? who can create/edit at which tier? whose calendars/visibility? activity-tracking shape?) the way M2 did before any design or dev work. M5 School depends on M3 surfacing events into the family calendar — keep that downstream consumer in mind when shaping the event model.
+
+---
+
+### M3 Design: Calendar
+
+**Type:** design
+**Kickoff:** [kickoffs/design-m3-calendar.md](kickoffs/design-m3-calendar.md)
+**Reads:** `docs/modules/calendar/` (the spec + stories produced by M3 planning), `docs/design-system.md`, ADR 003 (tier model), ADR 030 (identity colors), `docs/modules/chores/design.md` (as the reference for a feature module's design doc)
+**Produces:** locked calendar UX — tablet calendar view (month/week/day framing), the event create/edit surface, mobile event creation, how member identity colors express on events, and the `calendar.*` home-screen widget; decisions recorded in `docs/design-system.md` (+ a `docs/modules/calendar/design.md` dev-facing spec); any new ADR if a structural constraint emerges
+**Depends on:** **M3 Product Planning: Calendar** (stories must exist first)
+**Note:** Runs the **visual option gate** (ASCII wireframes via an interactive Storybook playground, user sign-off) before finalizing any major UX call — same gate M2 Design: Chores used. Precise scope firms up once planning defines the stories; the kickoff is a stub to be tightened then.
+
+---
+
+## Deferred — Platform v2
+
+Platform/tooling follow-ons that aren't milestone work. The first two were scoped
+for M1 but don't map to M1's done-when criteria (kickoff docs exist — review for
+staleness before scheduling); the last two were deferred out of the post-M2 "Up
+Next" on 2026-06-21 so M3 — Calendar can run uninterrupted.
 
 ### Platform: Service Worker Cache Strategy (prod)
 
@@ -39,10 +66,6 @@
 **Origin:** 2026-06-19 first-sync attempt cancelled mid-run; local scratch (`.ds-sync/`, `ds-bundle/`) cleaned up 2026-06-20. Nothing was uploaded (remote project is empty).
 
 ---
-
-## Deferred — Platform v2
-
-These sessions were scoped for M1 but don't map to M1's done-when criteria. Kickoff docs exist but should be reviewed for staleness before scheduling.
 
 ### M1 Design+Dev: Family Profile Notifications
 
