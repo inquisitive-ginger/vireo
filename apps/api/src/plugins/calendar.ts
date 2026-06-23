@@ -1,9 +1,9 @@
 import fp from 'fastify-plugin'
 import type { FastifyPluginAsync } from 'fastify'
 import { prisma } from '@family-os/platform/server'
+import { EventInputSchema, type EventInput } from '@family-os/schemas'
 import { calendarPrisma } from '@family-os/plugin-calendar/db'
 
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i
 const DAY_MS = 24 * 60 * 60 * 1000
 const WEEK_MS = 7 * DAY_MS
 const MAX_OCCURRENCES = 520 // ~10 years of weeks — a hard guard against runaway expansion
@@ -35,19 +35,6 @@ type EventRow = {
 
 // ─── Validation ─────────────────────────────────────────────────────────────────
 
-type EventBody = {
-  title?: unknown
-  description?: unknown
-  attendeeIds?: unknown
-  startsAt?: unknown
-  endsAt?: unknown
-  allDay?: unknown
-  location?: unknown
-  recurrence?: unknown
-  recurrenceUntil?: unknown
-  reminderMinutes?: unknown
-}
-
 type ParsedEvent = {
   title: string
   description: string | null
@@ -62,39 +49,19 @@ type ParsedEvent = {
   isActivity: boolean
 }
 
-type ParseResult = { ok: true; data: ParsedEvent } | { ok: false; status: number; error: string }
+type ParseResult = { ok: true; data: ParsedEvent } | { ok: false; status: number; error: unknown }
 
-/** Validates and normalizes a create/edit body. Attendee ids are checked against
- *  the platform profiles (an unknown id → 404, per AC2). Ownership lives entirely
- *  in the attendee set; `isActivity` is derived (weekly + exactly one owner). */
-async function parseEventBody(body: EventBody): Promise<ParseResult> {
-  const title = typeof body.title === 'string' ? body.title.trim() : ''
-  if (title.length === 0) return { ok: false, status: 400, error: 'title is required' }
+/** Validates a create/edit body against the shared Zod schema (ADR convention —
+ *  schemas live in `@family-os/schemas` so the story-3 drawer reuses this one),
+ *  then resolves attendee existence against the platform profiles (an unknown id
+ *  → 404, separate from the 400 shape check) and derives `isActivity`/`ownerId`. */
+async function parseEventBody(body: unknown): Promise<ParseResult> {
+  const result = EventInputSchema.safeParse(body)
+  if (!result.success) return { ok: false, status: 400, error: result.error.flatten() }
+  const input: EventInput = result.data
 
-  if (typeof body.startsAt !== 'string' || body.startsAt.length === 0) {
-    return { ok: false, status: 400, error: 'startsAt is required' }
-  }
-  const startsAt = new Date(body.startsAt)
-  if (isNaN(startsAt.getTime())) return { ok: false, status: 400, error: 'Invalid startsAt' }
-
-  let endsAt: Date | null = null
-  if (typeof body.endsAt === 'string' && body.endsAt.length > 0) {
-    endsAt = new Date(body.endsAt)
-    if (isNaN(endsAt.getTime())) return { ok: false, status: 400, error: 'Invalid endsAt' }
-    if (endsAt.getTime() < startsAt.getTime()) {
-      return { ok: false, status: 400, error: 'endsAt must not be before startsAt' }
-    }
-  }
-
-  // Attendees: 0+ profile ids. Dedupe, validate format, then confirm they exist.
-  const rawIds = Array.isArray(body.attendeeIds) ? body.attendeeIds : []
-  const attendeeIds = [...new Set(rawIds.filter((id): id is string => typeof id === 'string'))]
-  if (attendeeIds.length !== rawIds.length && rawIds.some((id) => typeof id !== 'string')) {
-    return { ok: false, status: 400, error: 'attendeeIds must be an array of profile ids' }
-  }
-  if (attendeeIds.some((id) => !UUID_RE.test(id))) {
-    return { ok: false, status: 404, error: 'Attendee not found' }
-  }
+  // Dedupe then confirm every attendee is a real profile.
+  const attendeeIds = [...new Set(input.attendeeIds)]
   if (attendeeIds.length > 0) {
     const found = await prisma.profile.findMany({
       where: { id: { in: attendeeIds } },
@@ -105,42 +72,7 @@ async function parseEventBody(body: EventBody): Promise<ParseResult> {
     }
   }
 
-  const description =
-    typeof body.description === 'string' && body.description.trim().length > 0
-      ? body.description.trim()
-      : null
-
-  const location =
-    typeof body.location === 'string' && body.location.trim().length > 0
-      ? body.location.trim()
-      : null
-
-  const allDay = body.allDay === true
-
-  let recurrence: 'weekly' | null = null
-  if (body.recurrence != null && body.recurrence !== '') {
-    if (body.recurrence !== 'weekly') {
-      return { ok: false, status: 400, error: "recurrence must be 'weekly' or null" }
-    }
-    recurrence = 'weekly'
-  }
-
-  let recurrenceUntil: Date | null = null
-  if (recurrence && typeof body.recurrenceUntil === 'string' && body.recurrenceUntil.length > 0) {
-    recurrenceUntil = new Date(body.recurrenceUntil)
-    if (isNaN(recurrenceUntil.getTime())) {
-      return { ok: false, status: 400, error: 'Invalid recurrenceUntil' }
-    }
-  }
-
-  let reminderMinutes: number | null = null
-  if (typeof body.reminderMinutes === 'number') {
-    if (!Number.isInteger(body.reminderMinutes) || body.reminderMinutes < 0) {
-      return { ok: false, status: 400, error: 'reminderMinutes must be a non-negative integer' }
-    }
-    reminderMinutes = body.reminderMinutes
-  }
-
+  const recurrence = input.recurrence ?? null
   // Derived, never user-chosen (ADR 038): a weekly event owned by exactly one
   // person is that person's standing Activity.
   const isActivity = recurrence === 'weekly' && attendeeIds.length === 1
@@ -148,16 +80,17 @@ async function parseEventBody(body: EventBody): Promise<ParseResult> {
   return {
     ok: true,
     data: {
-      title,
-      description,
+      title: input.title,
+      description: input.description,
       attendeeIds,
-      startsAt,
-      endsAt,
-      allDay,
-      location,
+      startsAt: new Date(input.startsAt),
+      endsAt: input.endsAt ? new Date(input.endsAt) : null,
+      allDay: input.allDay,
+      location: input.location,
       recurrence,
-      recurrenceUntil,
-      reminderMinutes,
+      // recurrence_until is only meaningful for a recurring series.
+      recurrenceUntil: recurrence && input.recurrenceUntil ? new Date(input.recurrenceUntil) : null,
+      reminderMinutes: input.reminderMinutes ?? null,
       isActivity,
     },
   }
@@ -294,7 +227,7 @@ const calendarPlugin: FastifyPluginAsync = async (fastify) => {
       return reply.status(403).send({ error: 'Permission denied' })
     }
 
-    const parsed = await parseEventBody((request.body ?? {}) as EventBody)
+    const parsed = await parseEventBody(request.body)
     if (!parsed.ok) return reply.status(parsed.status).send({ error: parsed.error })
     const d = parsed.data
 
@@ -341,7 +274,7 @@ const calendarPlugin: FastifyPluginAsync = async (fastify) => {
     const existing = await calendarPrisma.event.findUnique({ where: { id } })
     if (!existing) return reply.status(404).send({ error: 'Event not found' })
 
-    const parsed = await parseEventBody((request.body ?? {}) as EventBody)
+    const parsed = await parseEventBody(request.body)
     if (!parsed.ok) return reply.status(parsed.status).send({ error: parsed.error })
     const d = parsed.data
 

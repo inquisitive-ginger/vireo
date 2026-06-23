@@ -185,7 +185,7 @@ describe('POST /calendar/events — create & authorization', () => {
     expect(body.ownerId).toBeNull()
   })
 
-  it('returns 404 for an unknown attendee id', async () => {
+  it('returns 404 for a well-formed but unknown attendee id', async () => {
     const cookie = await getCookieForProfile(PARENT_ID)
     const res = await createEvent(cookie, {
       title: 'Ghost',
@@ -193,6 +193,16 @@ describe('POST /calendar/events — create & authorization', () => {
       attendeeIds: ['00000000-0000-0000-0000-0000000000ff'],
     })
     expect(res.statusCode).toBe(404)
+  })
+
+  it('returns 400 for a malformed attendee id (Zod shape check)', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const res = await createEvent(cookie, {
+      title: 'Malformed',
+      startsAt: '2026-07-02T15:00:00.000Z',
+      attendeeIds: ['not-a-uuid'],
+    })
+    expect(res.statusCode).toBe(400)
   })
 
   it('emits calendar.event.created with the published payload', async () => {
