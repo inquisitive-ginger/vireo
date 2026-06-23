@@ -1,6 +1,6 @@
 # Design System
 
-> Last updated: 2026-06-19 — App-shell scroll model added to Mobile Surface (single scroll container, sticky chrome, `h-dvh`, `md:h-full` opt-in for fill views).
+> Last updated: 2026-06-22 — Calendar (M3 Design): multi-person **split-fill** identity treatment + Family neutral pill added to the identity palette; shared date-picker components (react-day-picker, ADR 037) noted in the stack.
 
 This document records settled design decisions. Deferred items are
 explicitly marked — do not treat absence of a spec as a free choice.
@@ -59,6 +59,7 @@ directly from the project vision.
 | Component library    | shadcn/ui — copy-paste model, owned by this repo |
 | Styling              | Tailwind CSS v4 — CSS variable tokens            |
 | Icons                | Lucide                                           |
+| Date inputs          | react-day-picker v10 — themed by token (ADR 037) |
 
 Components live in `packages/ui/` once the monorepo is scaffolded.
 Adding a component means running the shadcn CLI and editing the
@@ -208,6 +209,18 @@ Assignment is currently a name hash (collisions possible); explicit
 per-profile assignment is the planned evolution (ADR 030). Components
 accept an explicit hue (`ProfileAvatar identity` prop) so the upgrade is
 non-breaking. Plugins must never invent member colors outside this palette.
+
+#### Multiple people & no-owner (settled — Calendar M3 Design, 2026-06-22)
+
+When an item belongs to **2+ specific members** (a shared calendar event, a
+multi-assignee task later), express it as a **split fill** — hard-stop segments of
+each member's `tint`, one per person — not a gradient (two tints blended read as a
+single new muddy hue) and not a dot cluster (abandons the colour fill). Text uses
+neutral `--foreground` (legible on any pale tint). When it belongs to **no one**
+(a whole-house "Family" item), use a **neutral** surface (`--secondary`) + a small
+`Users` glyph, so it reads as _family_, not as an uncolored/disabled item. In a
+**widget-slot spine**, the same logic applies vertically (single hue · split
+segments · neutral for Family).
 
 ### Semantic status tokens — light mode
 
@@ -562,23 +575,36 @@ widget is anonymous):
 **Settled** — widget-slot-states design session, 2026-06-13.
 
 "People are color" (ADR 030) must hold in widget slots, not just on full-page views.
-In the feed widget, each post row carries a **4px left spine** in the author's identity
-hue (`--identity-{hue}`), with `border-radius: 2px`, using a `position: relative`
-container wrapper (not a card border — no card chrome in widget context).
+Each authored/assigned row carries a **4px leading spine** in the relevant hue.
+
+**The spine is a shared primitive — `<Spine>` (`@family-os/ui`).** Do not hand-roll
+the `<span>`; every row surface (chores, feed, calendar) renders `<Spine>` as the
+first child of a `flex` row. It is **shape only** — 4px wide, `rounded-sm` (2px
+radius), a flex child that `self-stretch`es to the content box. It takes a single
+`color` prop and **carries no semantic of its own**; the call site decides the hue
+(see _Status vs identity colour_ below). The `inset` prop floats the spine shorter
+than the row (the dense filled-pill recipe for widget rows); the default stretches
+the full content box (card/list rows).
+
+> **Reconciled 2026-06-22 (Spine token).** Previously each surface re-implemented
+> the spine inline, and the feed page card drew it as a **flush corner-to-corner
+> edge** (`position: absolute` + `overflow: hidden` clip). Both feed variants moved
+> to the **inset** `<Spine>` so all row surfaces share one placement. The feed page
+> card is now a `flex` row with an internal floating color pill, not a colored edge.
 
 **General rule for all content widgets:** when a widget row is authored by or
-assigned to a specific family member, it expresses that member's identity hue as
-a left spine on the row. The spine is always `4px wide`, `border-radius: 2px`.
-Chores widget: assignee hue on each task row. Calendar widget: organizer/assignee
-hue on each event row. The spine does not appear on unassigned or multi-person items.
+assigned to a specific family member, it expresses that member's identity hue via
+`<Spine>`. Chores widget: assignee hue on each task row. Calendar widget:
+organizer/assignee hue on each event row. The spine does not appear on unassigned
+items; a multi-person (shared) item uses a split spine, a Family item a neutral one.
 
 `FeedPostCard` ships three variants:
 
-| Variant  | Chrome                                                      | Identity       | Use                                   |
-| -------- | ----------------------------------------------------------- | -------------- | ------------------------------------- |
-| `note`   | `--card` bg + border + `--shadow-card` + `overflow: hidden` | 4px left spine | Feed page — standalone elevated cards |
-| `widget` | None                                                        | 4px left spine | Feed widget — dense list rows         |
-| `plain`  | None                                                        | None           | Surfaces that manage their own chrome |
+| Variant  | Chrome                                 | Identity        | Use                                   |
+| -------- | -------------------------------------- | --------------- | ------------------------------------- |
+| `note`   | `--card` bg + border + `--shadow-card` | inset `<Spine>` | Feed page — standalone elevated cards |
+| `widget` | None                                   | inset `<Spine>` | Feed widget — dense list rows         |
+| `plain`  | None                                   | None            | Surfaces that manage their own chrome |
 
 ### Role-aware composition
 
@@ -1173,6 +1199,14 @@ avatars.
 
 > Corollary: **red is reserved for overdue/error**, never identity. The
 > terracotta identity hue ≠ the error red.
+
+The `<Spine>` primitive (see _Identity in widget slots_) is deliberately
+**color-agnostic** so this rule lives at the call site, not the component: a
+single-person surface passes a status color (`spineColor(task)`), a multi-person
+one passes `identityColor(name)`. The admin chores board sits on the seam — it
+groups by member, so **identity is carried by the lane header** (tint gradient +
+2px top-border), which frees the row `<Spine>` to encode **status** (done/overdue),
+falling back to the assignee hue at rest.
 
 ## To Be Defined
 

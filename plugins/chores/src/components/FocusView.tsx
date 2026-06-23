@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { Check, ChevronDown, ChevronRight } from 'lucide-react'
-import { PageHeader } from '@family-os/ui'
+import { PageHeader, Spine } from '@family-os/ui'
 import type { ChoreTask } from '../types'
 import { isOverdue, dueLabel } from '../lib/dates'
 import { ScorePlate } from './ScorePlate'
@@ -206,11 +206,7 @@ function MiniRow({ task }: { task: ChoreTask }) {
       className="flex items-center gap-2.5 rounded-xl px-3 py-2.5"
       style={{ background: 'var(--muted)' }}
     >
-      <span
-        aria-hidden
-        className="w-1 shrink-0 self-stretch rounded-sm"
-        style={{ background: spine }}
-      />
+      <Spine color={spine} />
       <span
         className={`text-sm-token min-w-0 flex-1 truncate ${done ? 'text-muted-foreground line-through' : 'text-foreground'}`}
       >

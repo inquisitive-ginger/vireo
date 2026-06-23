@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { Badge, CompletionToggle } from '@family-os/ui'
+import { Badge, CompletionToggle, Spine } from '@family-os/ui'
 import type { ChoreTask } from '../types'
 import { isOverdue, dueLabel } from '../lib/dates'
 import { XpPill } from './XpPill'
@@ -46,11 +46,7 @@ export function TaskCard({ task, displayStatus, onComplete }: TaskCardProps) {
       className="flex items-center gap-3 rounded-[14px] border border-border bg-card py-3.5 pr-4 pl-3.5 shadow-[var(--shadow-card)] transition-opacity duration-200"
       style={{ opacity: done ? 0.66 : 1 }}
     >
-      <span
-        aria-hidden
-        className="w-1 shrink-0 self-stretch rounded-sm"
-        style={{ background: spine }}
-      />
+      <Spine color={spine} />
       <div className="min-w-0 flex-1">
         <span
           className={`text-card-title block ${done ? 'text-muted-foreground line-through' : 'text-foreground'}`}

@@ -1,8 +1,12 @@
 @import 'tailwindcss';
 @import '../src/styles.css';
 
-/* Explicit source scan for shell and plugin files whose classes would otherwise
-   miss Tailwind's transform-time detection in the Storybook Vite context */
+/* Explicit source scan for files whose classes would otherwise miss Tailwind's
+   transform-time detection in the Storybook Vite context. ui's own src is
+   included so novel utilities (e.g. grid-cols-7, arbitrary values) used only in
+   a single component/story reliably emit on a fresh build — auto-detection alone
+   silently drops them when the dev server starts before the file exists. */
+@source "../src/**/*.{ts,tsx}";
 @source "../../../apps/shell/src/**/*.{ts,tsx}";
 @source "../../../plugins/*/src/**/*.{ts,tsx}";
 

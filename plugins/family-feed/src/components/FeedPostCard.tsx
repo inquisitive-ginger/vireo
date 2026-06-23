@@ -1,4 +1,4 @@
-import { ProfileAvatar, identityColor } from '@family-os/ui'
+import { ProfileAvatar, Spine, identityColor } from '@family-os/ui'
 import type { FeedPost } from '../types'
 
 function relativeTime(isoString: string): string {
@@ -15,8 +15,8 @@ function relativeTime(isoString: string): string {
 export interface FeedPostCardProps {
   post: FeedPost
   lineClamp?: number
-  /** `note` — elevated card with identity spine (feed page).
-      `widget` — identity spine without card chrome (dense widget slots).
+  /** `note` — elevated card with inset identity spine (feed page).
+      `widget` — inset identity spine without card chrome (dense widget slots).
       `plain` — bare layout, no spine, for surfaces that handle their own card chrome. */
   variant?: 'note' | 'widget' | 'plain'
 }
@@ -57,25 +57,16 @@ export function FeedPostCard({ post, lineClamp, variant = 'note' }: FeedPostCard
 
   if (variant === 'widget') {
     return (
-      <div className="relative pl-4">
-        <span
-          aria-hidden
-          className="absolute inset-y-0 left-0 w-1 rounded-sm"
-          style={{ background: identityColor(post.author.name) }}
-        />
+      <div className="flex items-stretch gap-3">
+        <Spine color={identityColor(post.author.name)} />
         {inner}
       </div>
     )
   }
 
   return (
-    // overflow-hidden clips the identity edge so its curve follows the card corner
-    <article className="relative overflow-hidden rounded-[14px] border border-border bg-card px-5 py-4 shadow-[var(--shadow-card)]">
-      <span
-        aria-hidden
-        className="absolute inset-y-0 left-0 w-1"
-        style={{ background: identityColor(post.author.name) }}
-      />
+    <article className="flex items-stretch gap-3 rounded-[14px] border border-border bg-card px-5 py-4 shadow-[var(--shadow-card)]">
+      <Spine color={identityColor(post.author.name)} />
       {inner}
     </article>
   )

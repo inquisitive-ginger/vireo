@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { CheckSquare, Star, TrendingUp } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { EmptyState, getIdentityHue, identityToken } from '@family-os/ui'
+import { EmptyState, Spine, getIdentityHue, identityToken } from '@family-os/ui'
 import type { ChoreTask } from '../types'
 import { isOverdue } from '../lib/dates'
 import { GOLD, GOLD_DEEP, GOLD_HI, GOLD_INK, GOLD_TINT } from '../lib/gold'
@@ -194,11 +194,7 @@ function TaskRow({ task }: { task: ChoreTask }) {
         opacity: done ? 0.6 : 1,
       }}
     >
-      <span
-        aria-hidden
-        className="shrink-0 self-stretch rounded-sm"
-        style={{ width: 4, margin: '9px 0', background: spineColor(task) }}
-      />
+      <Spine color={spineColor(task)} inset />
       <span
         className={`text-sm-token min-w-0 flex-1 truncate ${done ? 'text-muted-foreground line-through' : 'text-foreground'}`}
       >
@@ -483,11 +479,7 @@ function NextUpRow({ task, large = false }: { task: ChoreTask; large?: boolean }
       className="flex items-center gap-2.5 rounded-[12px] px-3.5"
       style={{ minHeight: large ? 56 : 48, background: overdue ? OVERDUE_WASH : 'var(--muted)' }}
     >
-      <span
-        aria-hidden
-        className="shrink-0 self-stretch rounded-sm"
-        style={{ width: 4, margin: '10px 0', background: spineColor(task) }}
-      />
+      <Spine color={spineColor(task)} inset />
       <span
         className={`min-w-0 flex-1 truncate font-medium text-foreground ${large ? 'text-card-title' : 'text-base-token'}`}
       >

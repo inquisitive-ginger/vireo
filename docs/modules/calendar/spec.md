@@ -23,16 +23,34 @@ paper beautifully + capture-once + remind_, not a from-scratch interaction model
 
 - **One shared family calendar** (not per-member calendars) — mirrors the single
   paper surface
-- **Event ownership:** every event has **one owner** (a profile, whose identity hue
-  colors the event) **or** is tagged **Family** (whole-house — neutral/multi). This
-  reproduces the highlighter color-coding 1:1
+- **Event ownership / attendees:** an event has **0+ attendees**. **One** → that
+  member's identity hue fills the event; **2+** (a couple's date night, siblings'
+  shared appointment, a multi-kid camp) → a **split fill** of each attendee's hue
+  (hard-stop segments — pulled into M3 scope 2026-06-22 via the design gate, having
+  been deferred at planning); **none** → a **Family** event (whole-house, neutral
+  pill + a people glyph). Reproduces the highlighter color-coding 1:1.
 - **Event shape:** all-day **and** timed events; **multi-day spanning** events
   (the travel/camp arrows — "Zach to London →", "FISW camp") are first-class
 - **Simple weekly recurrence:** "every Tuesday at 5:15" with an optional end date.
   Per-occurrence edits/skips are deferred
-- **Recurring activities are first-class:** a recurring series is surfaced and
-  managed as a named **Activity** (T&T, gymnastics, karate) — a standing
-  commitment concept, not just repeated rows
+- **Recurring activities are first-class — as a _load lens_, not just a list**
+  (refined in M3 Design, 2026-06-22). An **Activity** is not "an event that
+  repeats" (events repeat too); it's a **standing commitment a specific person
+  has taken on, over a season, that counts toward how busy they are** — T&T,
+  gymnastics, **Vision Therapy**, speech/OT. A recurring _event_ (trash day,
+  Sunday dinner) just lands on the calendar again and nobody carries it as load.
+  - **Derive, don't categorize:** users never choose "event vs activity." Any
+    **weekly-recurring event owned by a person** _is_ an activity and appears in
+    their roster automatically; Family / un-owned / one-off recurring things do
+    not. The Activities surface is a **lens** on the calendar, not a separate
+    object type. ("Add activity" just opens the event drawer with repeat-weekly on.)
+  - **Why it earns its keep** (what paper/month-grid can't answer): a per-person
+    **weekday-load** read (committed days filled in their hue → over/under-booking
+    at a glance) and a family **season timeline** (bars to each activity's end →
+    "what frees up in November / can we start something new?"). This is the unique
+    value over the analog calendar. _Connects to the owed **member-capacity ADR**
+    (chores): a child's true load is chores + activities; Activities is capacity's
+    first consumer._
 - **Tablet month view** (primary): glanceable month grid, color-by-owner, crowded
   days truncate (`+N more`) and drill into week/day
 - **Event create/edit:** one reused form (drawer, chores pattern); tier 4 creates/edits
@@ -60,7 +78,6 @@ paper beautifully + capture-once + remind_, not a from-scratch interaction model
   pattern) — closer to a chores/health concern; not a calendar MVP feature.
 - **Per-member calendars composited with show/hide toggles** — single shared
   calendar in MVP.
-- **Multiple attendees per event** (color stack) — one owner or Family in MVP.
 - **Teen self-creation / propose flow** (tier 3) — parents create in MVP, exactly
   as Chores deferred tier-3 self-assignment.
 - **External two-way sync** (Google/iCal import/export) — the suggested-events /
@@ -186,7 +203,11 @@ events
   id              uuid  PK
   title           text
   description     text  nullable
-  owner_id        uuid  nullable  FK → platform.profiles.id   -- null = Family event
+  -- ownership is 0+ attendees, modeled as an `event_attendees` join
+  -- (event_id, profile_id): 0 rows = Family · 1 = solo (owner hue) · 2+ = shared
+  -- (split fill). Supersedes a single owner_id; exact shape settled in the Event
+  -- Model story (an owner_id shortcut for the 0/1 case may still be kept).
+  owner_id        uuid  nullable  FK → platform.profiles.id   -- null = Family (solo-case shortcut)
   created_by      uuid  FK → platform.profiles.id
   starts_at       timestamptz                                 -- start instant; date@00:00 if all_day
   ends_at         timestamptz  nullable                        -- end; carries multi-day spans
@@ -205,9 +226,12 @@ events
 - A **recurring event** is the canonical row; its weekly occurrences are derived
   for the view within the queried date range (subject to the owed recurrence ADR).
 - An **Activity** is a recurring event with `is_activity = true` — same table,
-  surfaced and managed as a named standing commitment.
-- `owner_id = null` renders as a **Family** event (neutral chrome / multi-hue, per
-  the design session).
+  surfaced and managed as a named standing commitment. `is_activity` is **derived,
+  not user-chosen**: a weekly-recurring event owned by a person sets it true
+  (Family / un-owned recurring events stay false). The Activities surface filters
+  on it and adds the load lens (weekday-load + season timeline).
+- **Attendees drive the fill** (design session): no attendee → **Family** (neutral
+  pill + people glyph); one → solo tint; 2+ → **split fill** of each attendee's hue.
 - `status = 'suggested'` rows are the landing zone for the deferred email north
   star — not created by users in MVP.
 

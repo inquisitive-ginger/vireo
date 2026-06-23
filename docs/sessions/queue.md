@@ -11,34 +11,26 @@
 
 ## Up Next
 
-> **M3 Product Planning: Calendar ran 2026-06-21** (opened by a requirements
-> brainstorm against the family's real paper wall calendar). `docs/modules/calendar/`
-> is stood up: spec, progress board, 8 dependency-ordered stories. **M3 Design:
-> Calendar is next**, then the dev stories. MVP thesis: a glanceable tablet twin of
-> the paper calendar + mobile capture + reminders. Three owed ADRs logged below
-> gate specific dev stories. See `logs/2026-06-21-product-m3.md`.
+> **M3 Design: Calendar landed 2026-06-22** — all six surfaces locked against the
+> real design system in a Storybook playground (`Calendar Exploration/…`), captured
+> in `docs/modules/calendar/design.md`. **Dev is now unblocked** (start with #1).
+> Two scope/decision changes from design: **multi-person events were pulled into
+> M3** (split fill; needs an `event_attendees` join — folded into the recurrence
+> ADR), and **react-day-picker** was adopted as the shared date picker (ADR 037,
+> components already in `@family-os/ui`; #3 retrofits chores). See
+> `logs/2026-06-22-design-calendar.md`.
 
-### M3 Design: Calendar ← next
+### M3 Dev sessions: Calendar ← next (dependency-ordered; kickoffs written just-in-time)
 
-**Type:** design
-**Kickoff:** [kickoffs/design-m3-calendar.md](kickoffs/design-m3-calendar.md) (tightened against the defined stories 2026-06-21)
-**Reads:** `docs/modules/calendar/` (the spec + 8 stories), `docs/design-system.md`, ADR 003 (tier model), ADR 030 (identity colors), ADR 028 (reserved home slots), `docs/modules/chores/design.md` (reference for a feature module's design doc + the two-framing widget pattern)
-**Produces:** locked calendar UX — the **tablet month view** (default; week/day drill-in), the event **create/edit drawer** (owner/Family picker, all-day/timed, weekly repeat, multi-day span; reused on mobile), **identity-on-events** treatment (owner hue vs. Family neutral; carry the chores status-vs-identity rule), **density/overlap + multi-day span** rendering, the **Activities** management surface, and the **`calendar.up-next`** widget (family + mine framings, sizes, empty/all-clear); decisions in `docs/design-system.md` (+ `docs/modules/calendar/design.md`); any new ADR if a structural constraint emerges
-**Depends on:** **M3 Product Planning: Calendar** ✅ (stories exist)
-**Note:** Runs the **visual option gate** (ASCII wireframes via an interactive Storybook playground, user sign-off) before finalizing any major UX call — same gate M2 Design: Chores used. **Constraints locked in planning — do not re-open:** one shared calendar; one owner per event + a Family tag; simple weekly recurrence; month default; recurring activities first-class; tier-4 creates. The hero surface is the across-the-room-legible month mirror (the main user is a self-described technophobe; paper wins on glance).
+> Scope per the story specs in `docs/modules/calendar/stories/` **+ the locked UX in
+> `docs/modules/calendar/design.md`** and the `Calendar Exploration/` Storybook
+> stories (delete those once the real components land). Each is a dev session.
+> **Resolve each story's owed ADR first.** Stories 1–7 are M3 MVP; story 8 is the
+> deferred north star.
 
----
-
-### M3 Dev sessions: Calendar (dependency-ordered; kickoffs written after Design)
-
-> Scope per the story specs in `docs/modules/calendar/stories/`. Each is a dev
-> session. Kickoffs are written just-in-time **after M3 Design lands** (the design
-> session firms up the surfaces these build). Stories 1–7 are M3 MVP; story 8 is
-> the deferred north star.
-
-1. **Event Model + Plugin Scaffold** — [stories/event-model.md](../modules/calendar/stories/event-model.md). `calendar` plugin + `events` table + weekly recurrence + owner/Family + all-day/timed/multi-day + CRUD API + events/permissions namespaces. **Gated by the recurrence-storage owed ADR.** _Depends on: none (opens M3 dev)._
+1. **Event Model + Plugin Scaffold** — [stories/event-model.md](../modules/calendar/stories/event-model.md). `calendar` plugin + `events` table + weekly recurrence + **multi-person attendees (`event_attendees` join: 0 = Family · 1 = solo · 2+ = shared)** + all-day/timed/multi-day + CRUD API + events/permissions namespaces. **Gated by the recurrence-storage owed ADR** (now also settles the attendees join + any solo `owner_id` shortcut). _Depends on: none (opens M3 dev)._
 2. **Tablet Month View** — [stories/tablet-month-view.md](../modules/calendar/stories/tablet-month-view.md). The hero glanceable month grid; color-by-owner; truncation; drill to week/day. _Depends on #1 + Design._
-3. **Event Create / Edit** — [stories/event-create-edit.md](../modules/calendar/stories/event-create-edit.md). One reused drawer (owner/Family, time, weekly repeat, span); tier 4. _Depends on #1, #2 + Design._
+3. **Event Create / Edit** — [stories/event-create-edit.md](../modules/calendar/stories/event-create-edit.md). One reused drawer — **multi-select** owner picker (members + Family, required), inline Multiple-days→range, inline All-day, weekly repeat + "(Every Tuesday)", 30m default reminder; **wires the shared react-day-picker `DatePicker`/`DateRangePicker` (ADR 037) and retrofits the chores due-date field onto them**; tier 4. _Depends on #1, #2 + Design._
 4. **Mobile Event Creation** — [stories/mobile-event-creation.md](../modules/calendar/stories/mobile-event-creation.md). The create form on the mobile PWA + a mobile read surface. _Depends on #3._
 5. **Recurring Activities** — [stories/recurring-activities.md](../modules/calendar/stories/recurring-activities.md). Recurring series surfaced/managed as named Activities (`is_activity`). _Depends on #1, #3._
 6. **Event Reminders** — [stories/event-reminders.md](../modules/calendar/stories/event-reminders.md). Time-based reminders via `platform.notify()` + Web Push. **Gated by the reminder-scheduling owed ADR.** _Depends on #1, #3._
@@ -72,6 +64,17 @@ Next" on 2026-06-21 so M3 — Calendar can run uninterrupted.
 **Target:** existing empty claude.ai/design project **"Vireo Design System"** (`projectId 2b03615c-ed0f-44cf-a83c-0a2186f31496`) — reuse it rather than creating a duplicate. Scope was **full sync, all stories** (packages/ui's 21 + apps/shell's 2 + plugins' 7).
 **Blocker to resolve first:** the converter's export detection returned **0 exports**, dropping all components as `[TITLE_UNMAPPED]`. Root cause: `@family-os/ui` is a **TS-source package** (`exports['.'] = "./src/index.ts"`, no `dist`/`.d.ts`/`types` field), so the converter's `exportedNames()` → `findTypesRoot()` falls back to a non-existent `packages/ui/index.d.ts`. Fix belongs in sync **config** (e.g. point export detection at `src/index.ts` / source-scan fallback) — do **not** hand-patch generated output. Two secondary issues seen: preview decorator bundle "Could not resolve tailwindcss" (likely needs `cfg.provider`), and verify the Storybook CSS is inlined not remote-`@import`'d.
 **Origin:** 2026-06-19 first-sync attempt cancelled mid-run; local scratch (`.ds-sync/`, `ds-bundle/`) cleaned up 2026-06-20. Nothing was uploaded (remote project is empty).
+
+---
+
+### Tooling: Storybook stories → Tailwind utilities
+
+**Type:** tooling / chore
+**Kickoff:** _to be written_
+**Reads:** `packages/ui/.storybook/preview-styles.css` (the `@source` scan), `docs/decisions/035-*` (utility-first standard), `packages/ui/src/components/color-tokens.stories.tsx` + `typography.stories.tsx` + `elevation.stories.tsx` (the heaviest offenders)
+**Produces:** existing stories migrated from hand-rolled inline `style={{}}` layout (grid/flex/spacing/sizing) to **Tailwind utilities**, matching how the app actually runs (ADR 035) and how the calendar exploration is authored. **Keep inline `style` only for genuinely dynamic token values** (e.g. `identityToken()` → `var(--identity-…)`, container-query sizes) per ADR 035 — this is not a blanket "remove all inline styles." Heaviest first: `color-tokens` (23), `form-primitives` (22), `typography` (19), `elevation` (19), `profile-avatar` (18), `motion` (17), `profile-list-item` (13); decorator-level `background`/`padding` wrappers are fine to leave.
+**Depends on:** none — unblocked by the 2026-06-22 fix below.
+**Origin:** Raised in **M3 Design: Calendar** (2026-06-22). The calendar exploration's `grid-cols-7` silently failed to emit because `preview-styles.css` `@source`-scanned the shell + plugins but **not `packages/ui/src` itself** — ui's own source rode on Tailwind auto-detection, which drops novel single-use utilities when the dev server starts before the file exists. **Fixed now** (added `@source "../src/**/*.{ts,tsx}"`), so utilities in ui stories/components emit reliably; this session capitalizes on that by moving the legacy inline-style stories onto the standard authoring model.
 
 ---
 
@@ -154,6 +157,10 @@ scheduled.
 ---
 
 ## Recently Completed
+
+- **2026-06-22 — M3 Design: Calendar** ![Type](https://img.shields.io/badge/Type-Design-blueviolet)
+  Locked all six calendar surfaces via an interactive Storybook playground built against the **real design system** (`Calendar Exploration/…`). **Month view (hero):** filled hue pills (highlighter analog), continuous multi-day **span bars** (flush + ←/→), today = filled `--primary` date circle, past = **dim-events**, `+N more` density → day/week drill-in; across-the-room legibility is carried by **colour, not text**. **Multi-person events pulled INTO M3** (was deferred): 2+ owners → **split fill** (gradient/dots compared on the grid and rejected) — needs an `event_attendees` join, folded into the recurrence ADR. **Event drawer:** reshaped so each modifier sits on its field (inline Multiple-days→range, inline All-day, +60m end default, "(Every Tuesday)" inline); **multi-select** owner picker, **required, never defaulted to Family**; **30m default reminder** (the point of retiring Google). **Date picker → ADR 037:** adopted **react-day-picker v10** themed by token — shipped `Calendar`/`Popover`/`DatePicker`/`DateRangePicker` to `@family-os/ui` (chores due-date retrofits). **Activities → a _load lens_:** Activity = a person's standing seasonal commitment (derive, don't categorize); grouped-by-owner roster + per-kid **weekday-load** + family **season timeline** ("what frees up in November?"); first consumer of the owed member-capacity ADR. **`calendar.up-next` widget:** two framings (Family/Mine), three sizes, owner-hue spine (split/neutral), day-grouped agenda, all-clear empty. **Two engineering fixes shipped:** `cn` registers `text-*-token` as font-size in tailwind-merge (size was being dropped beside `text-{color}`); Storybook `preview-styles.css` `@source`-scans `../src`. `design.md` + `design-system.md` + `spec.md` updated. **Dev unblocked** (start #1; resolve owed ADRs first).
+  _See:_ `docs/sessions/logs/2026-06-22-design-calendar.md`
 
 - **2026-06-21 — M3 Product Planning: Calendar** ![Type](https://img.shields.io/badge/Type-Planning-orange)
   Opened M3 with a **requirements brainstorm** against the family's real paper wall calendar (photo). Read the analog system: the **recurring activity backbone** (T&T/gymnastics/karate weekly) dwarfs one-offs; **color = person** (= ADR 030); **multi-day spans** (travel/camp arrows) are first-class; tracking woven in (antibiotics-checkmark — left out of MVP). Strategic read: the "separate calendar" being retired (Google) is really a **notification engine** — events are duplicated there "to capture the notification aspect." **8 decisions settled via gates:** glanceable tablet mirror leads (augment, don't replace — main user is a technophobe); **simple weekly recurrence**; **recurring activities first-class**; email/newsletter parsing is the **north star** (model reserved now, build deferred); **month** tablet default w/ week/day drill-in; **one shared calendar, one owner per event + Family tag**; **mobile capture + reminders ship in M3** so Google can actually be retired; **tier-4 creates** (teen propose-flow deferred, mirroring chores). Stood up `docs/modules/calendar/` (spec + progress + **8 dependency-ordered stories**). **3 owed ADRs logged** (recurrence storage, reminder scheduling, external-ingest). Queue updated: **M3 Design: Calendar** next (kickoff tightened), then the 7 MVP dev stories; story 8 deferred. `CLAUDE.md` status updated.

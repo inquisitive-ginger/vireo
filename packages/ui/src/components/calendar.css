@@ -1,0 +1,14 @@
+/* Selected-day fill for the Calendar (react-day-picker v10).
+
+   rdp only draws a ring (+ bold) on a single selected day by default; we fill it
+   in --primary so a single selection reads with the same weight as range
+   endpoints. Targeting the real structure (.rdp-selected .rdp-day_button)
+   directly is more reliable than an arbitrary Tailwind descendant variant, which
+   tailwind-merge can mangle. Range *middle* days are excluded via :not so they
+   keep their light --primary wash. Loaded after react-day-picker/style.css, so
+   this wins by source order at equal specificity. */
+.rdp-selected:not(.rdp-range_middle) .rdp-day_button {
+  background-color: var(--rdp-accent-color);
+  color: var(--primary-foreground);
+  border-color: transparent;
+}

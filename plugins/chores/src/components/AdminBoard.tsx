@@ -1,6 +1,6 @@
 import { useMemo, useRef, useState } from 'react'
 import { Pencil, Plus, Trash2 } from 'lucide-react'
-import { Badge, Button, CompletionToggle, identityColor } from '@family-os/ui'
+import { Badge, Button, CompletionToggle, Spine, identityColor } from '@family-os/ui'
 import type { ChoreTask } from '../types'
 import { isOverdue, dueLabel } from '../lib/dates'
 import { XpPill } from './XpPill'
@@ -212,11 +212,7 @@ function AdminRow({
       }`}
       style={{ opacity: done ? 0.55 : 1 }}
     >
-      <span
-        aria-hidden
-        className="w-1 shrink-0 self-stretch rounded-sm"
-        style={{ background: spine }}
-      />
+      <Spine color={spine} />
       <div className="min-w-0 flex-1 py-[9px]">
         <span
           className={`text-base-token block ${done ? 'text-muted-foreground line-through' : 'text-foreground'}`}
