@@ -1,0 +1,30 @@
+{
+  "name": "calendar",
+  "version": "0.0.1",
+  "remoteEntry": "http://localhost:3013/assets/remoteEntry.js",
+  "exposes": ["./Plugin", "./widgets/UpNext"],
+  "routes": ["/calendar"],
+  "schema": "calendar",
+  "events": {
+    "publishes": ["calendar.event.created", "calendar.event.updated", "calendar.event.deleted"],
+    "subscribes": []
+  },
+  "widgets": [
+    {
+      "id": "calendar.up-next",
+      "displayName": "Up Next",
+      "component": "./widgets/UpNext",
+      "defaultSize": "standard",
+      "supportedSizes": ["compact", "standard", "large"],
+      "minTier": 1,
+      "requiredPermission": "calendar.event.view",
+      "description": "Today + the next few events."
+    }
+  ],
+  "navItem": {
+    "label": "Calendar",
+    "route": "/calendar",
+    "icon": "calendar-days",
+    "minTier": 1
+  }
+}

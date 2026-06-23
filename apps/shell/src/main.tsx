@@ -1,7 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import { Rss, CheckSquare } from 'lucide-react'
+import { Rss, CheckSquare, CalendarDays } from 'lucide-react'
 import { AuthProvider } from '@family-os/platform'
 import type { RegistryEntry, PluginManifest } from '@family-os/platform'
 import './styles.css'
@@ -38,6 +38,7 @@ if (import.meta.env.PROD) {
 const ICON_MAP: Record<string, React.ComponentType<{ size?: number; 'aria-hidden'?: boolean }>> = {
   rss: Rss,
   'check-square': CheckSquare,
+  'calendar-days': CalendarDays,
 }
 
 type LoadedPlugin = PluginManifest & { remoteName: string }

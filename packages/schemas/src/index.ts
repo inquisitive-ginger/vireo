@@ -78,3 +78,45 @@ export const SetPinSchema = z.object({
 export type FamilySetupInput = z.infer<typeof FamilySetupSchema>
 export type CreateFamilyMembersInput = z.infer<typeof CreateFamilyMembersSchema>
 export type SetPinInput = z.infer<typeof SetPinSchema>
+
+// ─── Calendar events ──────────────────────────────────────────────────────────
+
+const UuidSchema = z
+  .string()
+  .regex(/^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$/i, 'Invalid id')
+
+// Any value `new Date()` can parse — keeps timed, all-day, and offset inputs lenient.
+const IsoDateTimeSchema = z.string().refine((s) => !Number.isNaN(Date.parse(s)), 'Invalid datetime')
+const IsoDateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, 'Expected YYYY-MM-DD')
+
+// Optional free-text: blanks collapse to null so the route never stores empty strings.
+const OptionalText = z
+  .string()
+  .nullish()
+  .transform((v) => {
+    const trimmed = v?.trim()
+    return trimmed && trimmed.length > 0 ? trimmed : null
+  })
+
+// The create + edit drawer submits the full field set, so one schema covers both.
+// Ownership is the `attendeeIds` set (0 = Family · 1 = solo · 2+ = shared); the
+// route resolves existence (→ 404) and derives `isActivity`/`ownerId` (ADR 038).
+export const EventInputSchema = z
+  .object({
+    title: z.string().trim().min(1, 'title is required'),
+    description: OptionalText,
+    location: OptionalText,
+    attendeeIds: z.array(UuidSchema).optional().default([]),
+    startsAt: IsoDateTimeSchema,
+    endsAt: IsoDateTimeSchema.nullish(),
+    allDay: z.boolean().optional().default(false),
+    recurrence: z.literal('weekly').nullish(),
+    recurrenceUntil: IsoDateSchema.nullish(),
+    reminderMinutes: z.number().int().min(0).nullish(),
+  })
+  .refine((d) => !d.endsAt || Date.parse(d.endsAt) >= Date.parse(d.startsAt), {
+    message: 'endsAt must not be before startsAt',
+    path: ['endsAt'],
+  })
+
+export type EventInput = z.infer<typeof EventInputSchema>

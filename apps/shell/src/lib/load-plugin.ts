@@ -7,11 +7,13 @@ const pluginLoaders: Record<string, () => Promise<{ default: ComponentType }>> =
   'demo-plugin': () => import('demo-plugin/Plugin'),
   'family-feed': () => import('family-feed/Plugin'),
   chores: () => import('chores/Plugin'),
+  calendar: () => import('calendar/Plugin'),
 }
 
 const widgetLoaders: Record<string, () => Promise<{ default: ComponentType }>> = {
   'family-feed': () => import('family-feed/widgets/FeedWidget'),
   chores: () => import('chores/widgets/TodaySummary'),
+  calendar: () => import('calendar/widgets/UpNext'),
 }
 
 const pluginCache = new Map<string, LazyExoticComponent<ComponentType>>()
