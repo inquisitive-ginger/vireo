@@ -100,6 +100,18 @@ export const PERMISSION_REGISTRY = {
     action: 'complete',
     subject: 'chores.Task',
   },
+  'calendar.event.view': {
+    label: 'View the calendar',
+    module: 'calendar',
+    action: 'view',
+    subject: 'calendar.Event',
+  },
+  'calendar.event.create': {
+    label: 'Create and edit events',
+    module: 'calendar',
+    action: 'create',
+    subject: 'calendar.Event',
+  },
 } as const
 
 export type PermissionString = keyof typeof PERMISSION_REGISTRY

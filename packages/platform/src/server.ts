@@ -7,6 +7,7 @@ export type {
   BusMessage,
   EventName,
 } from './types'
+export { PERMISSION_REGISTRY } from './types'
 export { createEventBus } from './event-bus'
 export { createAbility, type AppAbility } from './ability'
 export { prisma } from './db'

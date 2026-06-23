@@ -1,0 +1,46 @@
+{
+  "name": "@family-os/plugin-calendar",
+  "version": "0.0.1",
+  "private": true,
+  "exports": {
+    "./db": "./src/db.ts"
+  },
+  "scripts": {
+    "dev": "vite build && concurrently \"vite build --watch\" \"vite preview\"",
+    "preview": "vite preview",
+    "build": "vite build",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "lint": "eslint src",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev"
+  },
+  "prisma": {
+    "schema": "prisma/schema.prisma"
+  },
+  "dependencies": {
+    "@family-os/platform": "workspace:*",
+    "@family-os/ui": "workspace:*",
+    "@prisma/adapter-pg": "^7.8.0",
+    "@prisma/client": "^7.8.0",
+    "lucide-react": "^0.469.0",
+    "pg": "^8.21.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0",
+    "react-router-dom": "^7.0.0",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@originjs/vite-plugin-federation": "^1.4.1",
+    "@storybook/react": "^8.6.12",
+    "@types/pg": "^8.20.0",
+    "@types/react": "^19.0.7",
+    "@types/react-dom": "^19.0.3",
+    "@vitejs/plugin-react": "^4.3.4",
+    "concurrently": "^10.0.1",
+    "prisma": "^7.8.0",
+    "typescript": "^5.7.2",
+    "vite": "^6.0.7",
+    "vitest": "^2.1.9"
+  }
+}

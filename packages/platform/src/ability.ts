@@ -5,7 +5,13 @@ import type { Profile, PermissionOverride } from './types'
 // Subjects are namespaced strings per ADR 018.
 // 'all' is CASL's wildcard subject, used by the manage rule for tier-4.
 type Actions = 'view' | 'switch' | 'create' | 'update' | 'delete' | 'complete' | 'reopen' | 'manage'
-type Subjects = 'platform.Profile' | 'platform.Plugin' | 'family-feed.Post' | 'chores.Task' | 'all'
+type Subjects =
+  | 'platform.Profile'
+  | 'platform.Plugin'
+  | 'family-feed.Post'
+  | 'chores.Task'
+  | 'calendar.Event'
+  | 'all'
 
 export type AppAbility = PrismaAbility<[Actions, Subjects]>
 
@@ -17,6 +23,9 @@ export function createAbility(profile: Profile, overrides: PermissionOverride[])
   // cannot reverse their own completion.
   can('complete', 'chores.Task', { assigneeId: profile.id })
 
+  // Calendar is one shared family surface — every tier reads it (tier-4 creates/
+  // edits/deletes via `manage all`). The view grant is duplicated across the
+  // lower-tier branches below, like chores.
   if (profile.tier >= 4) {
     can('manage', 'all')
   } else if (profile.tier >= 3) {
@@ -24,13 +33,16 @@ export function createAbility(profile: Profile, overrides: PermissionOverride[])
     can('switch', 'platform.Profile')
     can('create', 'family-feed.Post')
     can('view', 'chores.Task')
+    can('view', 'calendar.Event')
   } else if (profile.tier >= 2) {
     can('view', 'platform.Plugin')
     can('create', 'family-feed.Post')
     can('view', 'chores.Task')
+    can('view', 'calendar.Event')
   } else {
     can('view', 'platform.Plugin')
     can('view', 'chores.Task')
+    can('view', 'calendar.Event')
   }
 
   for (const override of overrides) {

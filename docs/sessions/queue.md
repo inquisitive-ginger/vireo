@@ -78,6 +78,34 @@ Next" on 2026-06-21 so M3 — Calendar can run uninterrupted.
 
 ---
 
+### Tooling: Harden the plugin generator (`turbo gen plugin`)
+
+**Type:** tooling / chore
+**Kickoff:** _to be written_
+**Reads:** `turbo/generators/config.ts` + `templates/plugin/*`, a data-backed plugin
+for the target shape (`plugins/chores`), the standing "new plugin" conventions in `CLAUDE.md`.
+**Produces:** a generator that scaffolds a _working_ plugin, not a frontend-only remote.
+Gaps found while scaffolding `calendar` (2026-06-23), in priority order:
+
+1. **No data layer.** Template emits no `prisma/schema.prisma`, `prisma.config.ts`, or
+   `src/db.ts`, and `package.json` lacks the `"exports": { "./db": … }` subpath, the
+   `prisma` block, prisma/pg deps, and `db:generate`/`db:migrate` scripts — so an API
+   route's `import { …Prisma } from '@family-os/plugin-x/db'` can't resolve. Add these
+   behind a **"needs a database?" prompt**.
+2. **Federation `shared` is the wrong shape.** Template uses the array form
+   (`shared: ['react', …]`) — needs the **singleton object** form
+   (`react: { singleton: true, requiredVersion: '^19.0.0' }`) and is missing
+   `react-router-dom`, or React duplicates across remotes (silent runtime break).
+3. **`dev` script can't serve a federated remote** (`vite` → no `remoteEntry.js` until
+   build); needs the `vite build && concurrently "vite build --watch" "vite preview"` form.
+4. **Backend wiring is manual.** Generator only patches `plugins.json`; auto-patch the
+   other four registration points (`apps/api/src/server.ts`, the API route file,
+   `apps/shell/src/lib/load-plugin.ts`, `federation.d.ts`, shell `ICON_MAP` in `main.tsx`).
+   **Depends on:** none. **Origin:** the gap was flagged in M2 (chores scaffold, 2026-06-16/17)
+   and re-confirmed scaffolding `calendar` — each data-backed plugin has hand-patched around it.
+
+---
+
 ### M1 Design+Dev: Family Profile Notifications
 
 **Type:** design + development
@@ -114,17 +142,12 @@ enhancement to the existing count + XP-load meter). Blocks none of the M2 MVP st
 
 ---
 
-### Architecture: Calendar recurrence storage model
+### Architecture: Calendar recurrence storage model ✅ RESOLVED → ADR 038 (2026-06-23)
 
-**Type:** architecture (ADR)
-**Raised by:** M3 Product Planning: Calendar (2026-06-21)
-**Question:** How are weekly-recurring events stored and expanded — materialized
-`occurrences` rows vs. a single canonical event computed-on-read for a queried date
-range? Where do per-occurrence exceptions eventually attach, and does an Activity
-ever warrant its own table vs. the `is_activity` flag?
-**Gates:** **Event Model + Plugin Scaffold** (#1) — settle before implementing the
-`GET …?from=&to=` weekly expansion. Also informs **Recurring Activities** (#5).
-**Reads:** `docs/modules/calendar/spec.md` (schema + "Owed architecture"), ADR 009 (per-plugin schemas / JSONB)
+**Resolved** in the Event Model dev session (2026-06-23): canonical event row +
+computed-on-read weekly expansion (no `occurrences` table); per-occurrence skip via
+an `event_exceptions` overlay (`kind = 'cancelled'`); attendees via a join (no
+`owner_id` column); `is_activity` derived on write. See `docs/decisions/038-recurrence-storage.md`.
 
 ---
 

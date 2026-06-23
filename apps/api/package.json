@@ -11,6 +11,7 @@
   },
   "dependencies": {
     "@family-os/platform": "workspace:*",
+    "@family-os/plugin-calendar": "workspace:*",
     "@family-os/plugin-chores": "workspace:*",
     "@family-os/plugin-family-feed": "workspace:*",
     "@family-os/schemas": "workspace:*",

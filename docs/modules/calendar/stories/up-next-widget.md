@@ -59,3 +59,10 @@ widget framings, sizes, and empty states.
 
 - Follows the `chores.today-summary` precedent (two framings, container-query
   self-sizing, read-only tap-through). Reuse that shape; don't reinvent.
+- **Rename the seeded home slot** `calendar.today` → `calendar.up-next` in
+  `packages/platform/prisma/seed.ts` **and** `apps/api/src/plugins/dev.ts` (both
+  default layouts). The Event Model story (#1) shipped the widget id as
+  `calendar.up-next` (per spec/manifest), but the layout seeds still reference the
+  legacy ADR-028 placeholder id `calendar.today`, so the reserved Calendar slot
+  renders the placeholder card until this rename lands. A re-seed updates existing
+  profiles.

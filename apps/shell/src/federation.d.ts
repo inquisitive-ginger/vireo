@@ -31,3 +31,15 @@ declare module 'chores/widgets/TodaySummary' {
   const TodaySummary: ComponentType
   export default TodaySummary
 }
+
+declare module 'calendar/Plugin' {
+  import type { ComponentType } from 'react'
+  const Plugin: ComponentType
+  export default Plugin
+}
+
+declare module 'calendar/widgets/UpNext' {
+  import type { ComponentType } from 'react'
+  const UpNext: ComponentType
+  export default UpNext
+}
