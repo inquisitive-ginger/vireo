@@ -23,6 +23,6 @@ deferred north star (its model lands in story 1; the build is later).
 | 7   | [Up Next Widget](stories/up-next-widget.md)                 | ⬜ Not Started | `calendar.up-next` (family + mine framings, sizes, empty states); fills the reserved slot                                                                                                                                 |
 | 8   | [Suggested Events Inbox](stories/suggested-events-inbox.md) | ⬜ Deferred    | North star — model lands in #1; email/newsletter parsing build is post-MVP                                                                                                                                                |
 
-> **Owed ADRs** (logged in the queue): recurrence storage model (gates #1),
-> reminder scheduling mechanism (gates #6), external-ingest extension point
-> (gates #8). Resolve each before the dependent dev story opens.
+> **Owed ADRs** (logged in the queue): ~~recurrence storage model (gates #1)~~ →
+> **resolved, ADR 038**; reminder scheduling mechanism (gates #6), external-ingest
+> extension point (gates #8). Resolve each before the dependent dev story opens.
