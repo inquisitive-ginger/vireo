@@ -190,6 +190,53 @@ export function eventsForDay(events: CalendarEvent[], date: Date): CalendarEvent
     .sort(byStart)
 }
 
+// ─── Agenda (mobile forward-looking list) ────────────────────────────────────
+
+export interface AgendaDay {
+  date: Date
+  events: CalendarEvent[]
+}
+
+/** Inclusive `[from, to]` for the mobile agenda — start of today through `days`
+ *  ahead — driving the same `['calendar/events', { from, to }]` query the tablet
+ *  surfaces use. */
+export function agendaRange(from: Date, days = 42): { from: string; to: string } {
+  const first = startOfDay(from)
+  const lastExclusive = addDays(first, days)
+  return { from: first.toISOString(), to: new Date(lastExclusive.getTime() - 1).toISOString() }
+}
+
+/** Forward day buckets from `from`: each day in `[from, from + horizon)` that has
+ *  at least one event, date-ordered, events sorted by start. */
+export function upcomingByDay(events: CalendarEvent[], from: Date, horizon = 42): AgendaDay[] {
+  const out: AgendaDay[] = []
+  for (let i = 0; i < horizon; i++) {
+    const date = addDays(startOfDay(from), i)
+    const dayEvents = eventsForDay(events, date)
+    if (dayEvents.length) out.push({ date, events: dayEvents })
+  }
+  return out
+}
+
+/** When an event stops being "current" — its end, or end-of-day for a bare
+ *  all-day event, or its start for a zero-length one. */
+function eventEnd(e: CalendarEvent): Date {
+  if (e.endsAt) return new Date(e.endsAt)
+  if (e.allDay) return addDays(new Date(e.startsAt), 1)
+  return new Date(e.startsAt)
+}
+
+/** The next event still relevant at `now` (hasn't ended) across the forward
+ *  buckets — the agenda hero. Falls back to the first upcoming event. */
+export function pickNextUp(days: AgendaDay[], now: Date): CalendarEvent | null {
+  for (const { events } of days) {
+    for (const e of events) {
+      if (eventEnd(e).getTime() >= now.getTime()) return e
+    }
+  }
+  return days[0]?.events[0] ?? null
+}
+
 // ─── Time / range formatting ─────────────────────────────────────────────────
 
 /** Terse `h:mm` (12-hour, no meridiem) for month chips — matches the locked
@@ -208,6 +255,14 @@ export function formatTime(iso: string): string {
   let h = d.getHours() % 12
   if (h === 0) h = 12
   return `${h}:${pad(d.getMinutes())} ${meridiem}`
+}
+
+/** The agenda's "when" label: `All day` / `Until <date>` (span) / `h:mm AM/PM`. */
+export function agendaWhenLabel(event: CalendarEvent): string {
+  if (event.allDay && !isMultiDay(event)) return 'All day'
+  if (isMultiDay(event))
+    return `Until ${spanEndDate(event).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}`
+  return formatTime(event.startsAt)
 }
 
 const MONTHS = [
