@@ -221,7 +221,13 @@ export function CalendarPage() {
         </div>
       ) : view === 'month' ? (
         <>
-          <MonthGrid weeks={weeks} membersById={membersById} today={today} onDrillDay={drillDay} />
+          <MonthGrid
+            weeks={weeks}
+            membersById={membersById}
+            today={today}
+            onDrillDay={drillDay}
+            onQuickAdd={canManage ? (date) => openCreate(date) : undefined}
+          />
           {events.length === 0 && (
             <p className="mt-4 text-center text-sm-token text-muted-foreground">
               Nothing on the calendar this month.

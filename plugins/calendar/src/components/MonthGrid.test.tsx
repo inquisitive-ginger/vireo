@@ -87,6 +87,31 @@ describe('MonthGrid', () => {
     expect(container.querySelector('.lucide-users')).toBeInTheDocument()
   })
 
+  it('quick-adds on a cell without drilling in (tier-4 hover "+")', () => {
+    const onDrill = vi.fn()
+    const onQuickAdd = vi.fn()
+    render(
+      <MonthGrid
+        weeks={layoutMonth([], 2026, 5)}
+        membersById={members}
+        today={new Date(2026, 5, 22)}
+        onDrillDay={onDrill}
+        onQuickAdd={onQuickAdd}
+      />
+    )
+    const label = `Add event on ${new Date(2026, 5, 9).toDateString()}`
+    fireEvent.click(screen.getByRole('button', { name: label }))
+    expect(onQuickAdd).toHaveBeenCalledTimes(1)
+    expect(onQuickAdd.mock.calls[0][0].getDate()).toBe(9)
+    // The "+" stops propagation — it must not also drill into the day.
+    expect(onDrill).not.toHaveBeenCalled()
+  })
+
+  it('omits the quick-add "+" when onQuickAdd is absent (tiers < 4)', () => {
+    renderGrid([])
+    expect(screen.queryByRole('button', { name: /Add event on/ })).not.toBeInTheDocument()
+  })
+
   it('renders a multi-day event as a single span bar (not one chip per day)', () => {
     renderGrid([
       evt({

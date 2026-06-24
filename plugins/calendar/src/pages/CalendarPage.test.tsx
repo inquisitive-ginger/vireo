@@ -46,14 +46,17 @@ describe('CalendarPage', () => {
     vi.stubGlobal('fetch', mockFetch([]))
     renderPage(4)
     await waitFor(() => expect(screen.getByText('Sun')).toBeInTheDocument())
-    expect(screen.getByRole('button', { name: /Add event/ })).toBeEnabled()
+    // Exact name — the per-cell quick-add buttons are "Add event on <date>".
+    expect(screen.getByRole('button', { name: 'Add event' })).toBeEnabled()
   })
 
   it('hides the Add-event CTA below tier 4', async () => {
     vi.stubGlobal('fetch', mockFetch([]))
     renderPage(3)
     await waitFor(() => expect(screen.getByText('Sun')).toBeInTheDocument())
-    expect(screen.queryByRole('button', { name: /Add event/ })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Add event' })).not.toBeInTheDocument()
+    // Below tier 4 the per-cell quick-add "+" is absent too.
+    expect(screen.queryByRole('button', { name: /Add event on/ })).not.toBeInTheDocument()
   })
 
   it('shows the empty-month note when there are no events', async () => {
