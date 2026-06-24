@@ -87,24 +87,15 @@ Next" on 2026-06-21 so M3 — Calendar can run uninterrupted.
 
 ---
 
-### Design+Dev: Shared `ItemCard` + `SegmentedControl` primitives
+### Design+Dev: Shared `ItemCard` + `SegmentedControl` primitives — ✅ Done 2026-06-23 (PR #29)
 
-**Type:** design + development (new `@family-os/ui` components + cross-plugin retrofit)
-**Kickoff:** _to be written_
-**Reads:** `packages/ui/src/components/spine.tsx` (compose this), `plugins/family-feed/src/components/FeedPostCard.tsx` (note/widget/plain variants), `plugins/chores/src/components/TaskCard.tsx` (trailing slot + dimmed), `plugins/calendar/src/components/EventRow.tsx` + `pages/CalendarPage.tsx` (the hand-rolled view switch), `docs/design-system.md` (Spine token + identity-in-widget rule)
-**Produces:** an `ItemCard` in `@family-os/ui` composing `<Spine>` + card chrome
-(props sketch: `spine` color | none, `chrome` card|bare, `align` center|stretch,
-`dimmed`, `trailing`) that absorbs the three surfaces' duplicated
-`flex + Spine + rounded/border/bg-card/shadow-card` skeleton (standardizing the
-drifted radius/padding); a `SegmentedControl` (or Radix `Tabs`) for the
-Month/Week/Day switch and future toggles; retrofit `FeedPostCard` / `TaskCard` /
-`EventRow` + the calendar view-switch; design-system.md entry; stories + tests;
-**a visual-parity + live-review gate** (chores/feed must not regress).
-**Depends on:** none.
-**Origin:** PR #28 review (Tablet Month View, 2026-06-23). EventRow's hand-rolled
-spine was corrected to the shared `<Spine>` in-PR; the larger card/segmented-control
-extraction was audited and deferred here so a read-only month-view story didn't
-balloon into a 3-plugin refactor.
+`ItemCard` + `SegmentedControl` + `--radius-card` (8px) token in `@family-os/ui`;
+`Spine` extended to `color: string | string[]` (multi-member vertical split);
+retrofit `FeedPostCard` / `TaskCard` / `EventRow` (split spine on the **base**
+identity layer) + the calendar Month/Week/Day switch. Gated decisions: 8px radius,
+single `px-4 py-3` padding, custom SegmentedControl. Stories + RTL tests (UI 46,
+calendar 25), design-system.md entry, live-reviewed. See
+`logs/2026-06-23-dev-itemcard-segmented-control.md`.
 
 ---
 
