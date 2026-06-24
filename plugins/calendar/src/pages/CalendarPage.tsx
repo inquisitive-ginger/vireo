@@ -1,6 +1,6 @@
 import { useMemo, useState } from 'react'
 import { CalendarDays, ChevronLeft, ChevronRight, Plus } from 'lucide-react'
-import { Button, EmptyState, cn } from '@family-os/ui'
+import { Button, EmptyState, SegmentedControl } from '@family-os/ui'
 import { useQuery } from '@family-os/platform'
 import type { Profile } from '@family-os/platform/types'
 import type { CalendarEvent, CalendarView, EventsResponse } from '../types'
@@ -16,7 +16,11 @@ import {
 import { MonthGrid } from '../components/MonthGrid'
 import { DetailView } from '../components/DetailView'
 
-const VIEWS: CalendarView[] = ['month', 'week', 'day']
+const VIEW_OPTIONS: { value: CalendarView; label: string }[] = [
+  { value: 'month', label: 'Month' },
+  { value: 'week', label: 'Week' },
+  { value: 'day', label: 'Day' },
+]
 
 export function CalendarPage() {
   const [view, setView] = useState<CalendarView>('month')
@@ -96,23 +100,12 @@ export function CalendarPage() {
         </div>
 
         <div className="flex items-center gap-2">
-          {/* View switch */}
-          <div className="flex items-center rounded-md border border-border p-0.5">
-            {VIEWS.map((v) => (
-              <button
-                key={v}
-                onClick={() => setView(v)}
-                className={cn(
-                  'rounded px-3 py-1 text-sm-token font-medium capitalize transition-colors',
-                  v === view
-                    ? 'bg-primary text-primary-foreground'
-                    : 'text-muted-foreground hover:bg-muted'
-                )}
-              >
-                {v}
-              </button>
-            ))}
-          </div>
+          <SegmentedControl
+            aria-label="Calendar view"
+            options={VIEW_OPTIONS}
+            value={view}
+            onChange={setView}
+          />
           {/* Inert until story #3 wires the create drawer. */}
           <Button size="sm" disabled title="Adding events arrives in the next calendar story">
             <Plus className="mr-1 h-4 w-4" /> Add event

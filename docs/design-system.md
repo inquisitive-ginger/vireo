@@ -580,11 +580,14 @@ Each authored/assigned row carries a **4px leading spine** in the relevant hue.
 **The spine is a shared primitive — `<Spine>` (`@family-os/ui`).** Do not hand-roll
 the `<span>`; every row surface (chores, feed, calendar) renders `<Spine>` as the
 first child of a `flex` row. It is **shape only** — 4px wide, `rounded-sm` (2px
-radius), a flex child that `self-stretch`es to the content box. It takes a single
-`color` prop and **carries no semantic of its own**; the call site decides the hue
-(see _Status vs identity colour_ below). The `inset` prop floats the spine shorter
-than the row (the dense filled-pill recipe for widget rows); the default stretches
-the full content box (card/list rows).
+radius), a flex child that `self-stretch`es to the content box. Its `color` prop
+takes **one color or an array** and **carries no semantic of its own**; the call
+site decides the hue (see _Status vs identity colour_ below). A single color paints
+a solid bar; **multiple colors paint a vertical hard-stop split — one band per
+member, top to bottom** — the shared-event recipe, mirroring the month-grid lane
+fills (`lib/hues`). The `inset` prop floats the spine shorter than the row (the
+dense filled-pill recipe for widget rows); the default stretches the full content
+box (card/list rows).
 
 > **Reconciled 2026-06-22 (Spine token).** Previously each surface re-implemented
 > the spine inline, and the feed page card drew it as a **flush corner-to-corner
@@ -605,6 +608,55 @@ items; a multi-person (shared) item uses a split spine, a Family item a neutral 
 | `note`   | `--card` bg + border + `--shadow-card` | inset `<Spine>` | Feed page — standalone elevated cards |
 | `widget` | None                                   | inset `<Spine>` | Feed widget — dense list rows         |
 | `plain`  | None                                   | None            | Surfaces that manage their own chrome |
+
+### The card-row primitive — `ItemCard`
+
+**Settled** — ItemCard + SegmentedControl session, 2026-06-23.
+
+The `flex` row that hangs a `<Spine>`, a content column, and an optional trailing
+control off card chrome recurs across **every** content surface — feed posts,
+chore tasks, calendar event rows. It is a shared primitive: **`<ItemCard>`
+(`@family-os/ui`)**. Do not hand-roll the `flex + Spine + rounded/border/bg-card/
+shadow-card` skeleton; it had drifted (three radii, three paddings) before being
+standardized here.
+
+| Prop       | Values                 | Default   | Role                                                                                        |
+| ---------- | ---------------------- | --------- | ------------------------------------------------------------------------------------------- |
+| `spine`    | color · color[] · omit | omit      | Leading `<Spine>` hue; an array splits it per member; omit for no spine                     |
+| `chrome`   | `card` · `bare`        | `card`    | `card` = radius/border/`--card`/shadow/padding; `bare` = layout only (the slot owns chrome) |
+| `align`    | `stretch` · `center`   | `stretch` | Cross-axis; `center` for a single line + trailing control                                   |
+| `dimmed`   | boolean                | `false`   | Dim the row (completed task); pair with `transition-opacity` on `className` to animate      |
+| `trailing` | `ReactNode`            | —         | Control pinned to the row's trailing edge                                                   |
+| `as`       | `div` · `article`      | `div`     | Wrapper tag (feed posts use `article`)                                                      |
+
+The content column is the caller's `children` — provide your own `min-w-0 flex-1`
+wrapper so the row truncates; `ItemCard` owns the spine/chrome/trailing, not the
+content's internal layout. The spine still **carries no semantic of its own** — the
+call site passes an identity hue (multi-person surfaces) or a status color
+(single-person ones), per _Status vs identity colour_.
+
+**Card-row radius is one token.** `--radius-card` (`0.5rem`, Tailwind `rounded-card`)
+is the canonical corner for every card-chrome row. `ItemCard` applies it; don't
+reach for `rounded-[14px]`/`rounded-lg` on a card row.
+
+> **Reconciled 2026-06-23.** Feed (`FeedPostCard`), chores (`TaskCard`), and
+> calendar (`EventRow`) each hand-rolled this skeleton with drifted radii (14px vs
+> 8px) and paddings. All three now compose `<ItemCard>` on a single `--radius-card`
+>
+> - `px-4 py-3`. `FeedPostCard`'s three variants map to chrome: `note` →
+>   `card`/`article`, `widget` → `bare`, `plain` → returns its inner layout directly.
+
+### View switches — `SegmentedControl`
+
+**Settled** — same session, 2026-06-23.
+
+A compact single-select switch (Month/Week/Day on the calendar, and future
+two-/three-way toggles): **`<SegmentedControl>` (`@family-os/ui`)**. A bordered
+track where the active segment fills with `--primary`; under the hood a `radiogroup`
+with roving `tabindex` + arrow-key navigation, so it reads as **one** control, not N
+buttons. Generic over a string-union value (`options`/`value`/`onChange` +
+`aria-label`). Use it instead of hand-rolling a button group; the calendar's
+hand-rolled Month/Week/Day switch was its first adopter.
 
 ### Role-aware composition
 

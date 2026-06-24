@@ -1,8 +1,8 @@
 import { MapPin, Repeat, Users } from 'lucide-react'
-import { Spine } from '@family-os/ui'
+import { ItemCard } from '@family-os/ui'
 import type { CalendarEvent } from '../types'
 import { formatTime, isMultiDay, spanEndDate } from '../lib/grid'
-import { fillForHues, huesForEvent } from '../lib/hues'
+import { huesForEvent, spineColorsForEvent } from '../lib/hues'
 
 /* A drill-in agenda row: an owner-hue spine (split for shared, neutral for
    Family) + the time, title, and any location — the higher-density read behind
@@ -15,7 +15,7 @@ export function EventRow({
   membersById: Map<string, string>
 }) {
   const hues = huesForEvent(event.attendeeIds, membersById)
-  const { background } = fillForHues(hues)
+  const spineColors = spineColorsForEvent(hues)
   const ownerNames = event.attendeeIds
     .map((id) => membersById.get(id))
     .filter((n): n is string => Boolean(n))
@@ -30,11 +30,10 @@ export function EventRow({
   }
 
   return (
-    <div className="flex items-stretch gap-3 rounded-lg border border-border bg-card px-3 py-2.5 shadow-[var(--shadow-card)]">
-      {/* Shared identity spine (design-system "Spine token"). On a calendar
-          surface the hue carries the owner; a shared event passes its split-fill
-          gradient straight through. */}
-      <Spine color={background} />
+    // Identity spine (design-system "Spine token"): on a calendar surface the hue
+    // carries the owner; a shared event passes one base hue per attendee so
+    // <Spine> paints a vertical split (solo → solid, Family → neutral).
+    <ItemCard spine={spineColors}>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <span className="text-sm-token font-semibold text-foreground">{when}</span>
@@ -61,6 +60,6 @@ export function EventRow({
           )}
         </div>
       </div>
-    </div>
+    </ItemCard>
   )
 }
