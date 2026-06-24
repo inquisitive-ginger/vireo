@@ -1,13 +1,18 @@
 import { useState } from 'react'
 import { Loader2, Plus } from 'lucide-react'
 import { Button, ConfirmDialog } from '@family-os/ui'
-import { PermissionGate, useAuth, useQuery, useMutation, useQueryClient } from '@family-os/platform'
+import {
+  FAMILY_PROFILE_ID,
+  PermissionGate,
+  useAuth,
+  useQuery,
+  useMutation,
+  useQueryClient,
+} from '@family-os/platform'
 import type { Profile } from '@family-os/platform/types'
 import type { ChoreTask, TasksResponse } from '../types'
 import { ChoresPageView } from './ChoresPageView'
 import { CreateTaskDrawer, type CreateTaskInput } from '../components/CreateTaskDrawer'
-
-const FAMILY_PROFILE_ID = 'family'
 
 export function ChoresPage() {
   const { id, tier, focusMode } = useAuth()

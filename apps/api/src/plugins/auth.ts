@@ -8,7 +8,7 @@ import { prisma } from '@family-os/platform/server'
 import { createAbility } from '@family-os/platform/server'
 import type { AppAbility } from '@family-os/platform/server'
 import type { Profile } from '@family-os/platform/types'
-import { resolveFocusMode } from '@family-os/platform/types'
+import { resolveFocusMode, FAMILY_PROFILE_ID } from '@family-os/platform/types'
 
 declare module 'fastify' {
   interface Session {
@@ -23,8 +23,6 @@ declare module 'fastify' {
 // connect-pg-simple uses express-session's SessionData; @fastify/session expects Session.
 // Same shape at runtime — this bridges the structural mismatch at the type level.
 type FastifySessionStore = Exclude<Parameters<typeof fastifySession>[1]['store'], undefined>
-
-const FAMILY_PROFILE_ID = 'family'
 
 const authPlugin: FastifyPluginAsync = async (fastify) => {
   await fastify.register(fastifyCookie)

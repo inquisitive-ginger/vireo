@@ -1,7 +1,13 @@
 import { useMemo, useState } from 'react'
 import { CalendarDays, ChevronLeft, ChevronRight, Plus } from 'lucide-react'
 import { Button, ConfirmDialog, EmptyState, SegmentedControl } from '@family-os/ui'
-import { useAuth, useMutation, useQuery, useQueryClient } from '@family-os/platform'
+import {
+  FAMILY_PROFILE_ID,
+  useAuth,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@family-os/platform'
 import type { Profile } from '@family-os/platform/types'
 import type { CalendarEvent, CalendarView, EventsResponse } from '../types'
 import {
@@ -16,8 +22,6 @@ import {
 import { MonthGrid } from '../components/MonthGrid'
 import { DetailView } from '../components/DetailView'
 import { CreateEventDrawer, type CreateEventInput } from '../components/CreateEventDrawer'
-
-const FAMILY_PROFILE_ID = 'family'
 
 const VIEW_OPTIONS: { value: CalendarView; label: string }[] = [
   { value: 'month', label: 'Month' },

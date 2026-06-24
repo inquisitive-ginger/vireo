@@ -1,6 +1,7 @@
 import fp from 'fastify-plugin'
 import type { FastifyPluginAsync } from 'fastify'
 import { prisma } from '@family-os/platform/server'
+import { FAMILY_PROFILE_ID } from '@family-os/platform/types'
 
 const preferencesPlugin: FastifyPluginAsync = async (fastify) => {
   fastify.put<{ Body: { darkMode: boolean | null } }>(
@@ -8,7 +9,7 @@ const preferencesPlugin: FastifyPluginAsync = async (fastify) => {
     async (request, reply) => {
       const profileId = request.profile.id
 
-      if (profileId === 'family') {
+      if (profileId === FAMILY_PROFILE_ID) {
         return reply.status(403).send({ error: 'Family pseudo-profile follows system preference' })
       }
 

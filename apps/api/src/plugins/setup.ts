@@ -2,10 +2,9 @@ import fp from 'fastify-plugin'
 import type { FastifyPluginAsync } from 'fastify'
 import bcrypt from 'bcryptjs'
 import { prisma } from '@family-os/platform/server'
+import { FAMILY_PROFILE_ID } from '@family-os/platform/types'
 import { FamilySetupSchema, CreateFamilyMembersSchema, SetPinSchema } from '@family-os/schemas'
 import { seedWidgetLayout } from '../lib/seed-layout'
-
-const FAMILY_PROFILE_ID = 'family'
 
 const setupPlugin: FastifyPluginAsync = async (fastify) => {
   // GET /setup/status

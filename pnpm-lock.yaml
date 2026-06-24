@@ -425,6 +425,9 @@ importers:
       '@family-os/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@hookform/resolvers':
+        specifier: ^5.4.0
+        version: 5.4.0(react-hook-form@7.77.0(react@19.2.6))
       '@prisma/adapter-pg':
         specifier: ^7.8.0
         version: 7.8.0
@@ -443,6 +446,9 @@ importers:
       react-dom:
         specifier: ^19.0.0
         version: 19.2.6(react@19.2.6)
+      react-hook-form:
+        specifier: ^7.77.0
+        version: 7.77.0(react@19.2.6)
       react-router-dom:
         specifier: ^7.0.0
         version: 7.16.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6)
@@ -501,6 +507,9 @@ importers:
       '@family-os/ui':
         specifier: workspace:*
         version: link:../../packages/ui
+      '@hookform/resolvers':
+        specifier: ^5.4.0
+        version: 5.4.0(react-hook-form@7.77.0(react@19.2.6))
       '@prisma/adapter-pg':
         specifier: ^7.8.0
         version: 7.8.0
@@ -519,6 +528,9 @@ importers:
       react-dom:
         specifier: ^19.0.0
         version: 19.2.6(react@19.2.6)
+      react-hook-form:
+        specifier: ^7.77.0
+        version: 7.77.0(react@19.2.6)
       react-router-dom:
         specifier: ^7.0.0
         version: 7.16.0(react-dom@19.2.6(react@19.2.6))(react@19.2.6)

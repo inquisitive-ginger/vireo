@@ -1,9 +1,7 @@
 import { Loader2 } from 'lucide-react'
-import { useAuth, useQuery } from '@family-os/platform'
+import { FAMILY_PROFILE_ID, useAuth, useQuery } from '@family-os/platform'
 import type { TasksResponse } from '../types'
 import { TodaySummaryView, type WidgetSize } from './TodaySummaryView'
-
-const FAMILY_PROFILE_ID = 'family'
 
 /* `chores.today-summary` widget — registered in manifest.json `widgets[]`.
    Reads from GET /api/chores/tasks (same endpoint as the page; CASL filtering

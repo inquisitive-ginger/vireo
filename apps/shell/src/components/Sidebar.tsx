@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { Home, Settings, ChevronRight } from 'lucide-react'
-import { useAuth } from '@family-os/platform'
+import { FAMILY_PROFILE_ID, useAuth } from '@family-os/platform'
 import { cn, ProfileAvatar } from '@family-os/ui'
 import { ProfileGrid } from './ProfileGrid'
 import { NotificationBell } from './NotificationBell'
@@ -34,7 +34,7 @@ export function Sidebar({ pluginNavItems = [] }: { pluginNavItems?: PluginNavIte
 function ProfileChip() {
   const { id, name, familyName } = useAuth()
   const [gridOpen, setGridOpen] = useState(false)
-  const displayName = id === 'family' ? (familyName ?? name) : name
+  const displayName = id === FAMILY_PROFILE_ID ? (familyName ?? name) : name
 
   return (
     <>

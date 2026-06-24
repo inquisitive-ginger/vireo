@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Check, Settings } from 'lucide-react'
 import { ProfileAvatar, PinInput, cn } from '@family-os/ui'
-import { useAuth } from '@family-os/platform'
+import { FAMILY_PROFILE_ID, useAuth } from '@family-os/platform'
 
 type ProfileRow = { id: string; name: string; tier: number }
 type PinPhase = 'list' | 'pin-entry' | 'pin-error'
@@ -29,7 +29,7 @@ export function ProfileGrid({ open, onClose, className, onNavigate }: ProfileGri
   })
 
   // Exclude active profile and the family pseudo-profile (shown as dedicated item below)
-  const switchableProfiles = profiles.filter((p) => p.id !== activeId && p.id !== 'family')
+  const switchableProfiles = profiles.filter((p) => p.id !== activeId && p.id !== FAMILY_PROFILE_ID)
 
   async function switchTo(target: ProfileRow) {
     const needsPin = target.tier === 4 && activeTier < 4
@@ -126,11 +126,11 @@ export function ProfileGrid({ open, onClose, className, onNavigate }: ProfileGri
             {/* Family view — always shown, switches to the family pseudo-profile */}
             <div className="border-t border-border mt-1 pt-1">
               <button
-                onClick={() => doSwitch('family')}
+                onClick={() => doSwitch(FAMILY_PROFILE_ID)}
                 className={cn(
                   'flex items-center gap-2 w-full px-3 py-2.5 rounded-md cursor-pointer',
                   'transition-colors duration-[var(--duration-fast)]',
-                  activeId === 'family'
+                  activeId === FAMILY_PROFILE_ID
                     ? 'bg-primary/10 pointer-events-none'
                     : 'hover:bg-background/60'
                 )}
@@ -139,7 +139,7 @@ export function ProfileGrid({ open, onClose, className, onNavigate }: ProfileGri
                 <span className="text-sm text-muted-foreground leading-none">
                   {familyName ?? 'Family view'}
                 </span>
-                {activeId === 'family' && (
+                {activeId === FAMILY_PROFILE_ID && (
                   <Check size={13} className="text-primary shrink-0 ml-auto" />
                 )}
               </button>

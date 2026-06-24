@@ -13,7 +13,7 @@ export type {
   NotificationRecord,
 } from './types'
 
-export { PERMISSION_REGISTRY, resolveFocusMode } from './types'
+export { PERMISSION_REGISTRY, resolveFocusMode, FAMILY_PROFILE_ID } from './types'
 
 export type { AppAbility } from './ability'
 export { createAbility } from './ability'

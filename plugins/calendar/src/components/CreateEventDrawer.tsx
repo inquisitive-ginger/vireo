@@ -1,14 +1,19 @@
-import { useEffect, useRef, useState, type ReactNode } from 'react'
+import { useEffect, useRef } from 'react'
+import { Controller, useForm } from 'react-hook-form'
+import { zodResolver } from '@hookform/resolvers/zod'
+import { z } from 'zod'
 import { Bell, Trash2, Users } from 'lucide-react'
 import {
   Button,
+  Chip,
   DatePicker,
   DateRangePicker,
   Drawer,
+  FieldLabel,
   Input,
   Label,
+  MemberChip,
   Switch,
-  identityColor,
   type DateRange,
 } from '@family-os/ui'
 import type { Profile } from '@family-os/platform/types'
@@ -21,7 +26,12 @@ import { addDays, isMultiDay, localDateKey, spanEndDate, startOfDay } from '../l
    times + repeat); "All day" hides the time inputs; "Repeat weekly" reveals an
    optional "until". Owner is a multi-select of members + a mutually-exclusive
    Family chip, and a pick is REQUIRED (an event always carries identity). Edit
-   mode prefills from the event, swaps the header + CTA copy, and adds Remove. */
+   mode prefills from the event, swaps the header + CTA copy, and adds Remove.
+
+   Form state is React Hook Form + a zodResolver (the shell's form standard —
+   Onboarding/Settings) over the UI-shaped `EventFormSchema`; on submit the valid
+   values are transformed to the wire body (which the API re-validates against the
+   shared `EventInputSchema`). */
 
 const REMINDER_PRESETS: { label: string; value: number | null }[] = [
   { label: 'None', value: null },
@@ -46,22 +56,6 @@ export interface CreateEventInput {
   reminderMinutes: number | null
 }
 
-export interface CreateEventDrawerProps {
-  open: boolean
-  onClose: () => void
-  members: Profile[]
-  /** Prefill the date in create mode (the agenda's per-day "+ Add"). Ignored in
-      edit mode; defaults to today when absent. */
-  prefillDate?: Date | null
-  /** Set → edit mode: fields prefilled, header "Edit event", CTA "Save changes",
-      Remove shown. Absent → create mode. */
-  editingEvent?: CalendarEvent | null
-  onSubmit: (input: CreateEventInput) => Promise<void> | void
-  /** Request removal of the event being edited — the parent owns the confirm
-      dialog (recurring → "Just this week" vs "All events"). */
-  onRemove?: () => void
-}
-
 const pad = (n: number) => String(n).padStart(2, '0')
 const toHM = (d: Date) => `${pad(d.getHours())}:${pad(d.getMinutes())}`
 const addMinutesHM = (hm: string, mins: number) => {
@@ -79,6 +73,148 @@ const parseDateKey = (key: string) => {
   return new Date(y, m - 1, d)
 }
 
+// The UI-shaped form (Date objects + the modifier toggles), distinct from the
+// wire body. Cross-field rules live in the refinement so the resolver gates the
+// submit + drives the disabled state.
+const EventFormSchema = z
+  .object({
+    title: z.string().trim().min(1),
+    ownerIds: z.array(z.string()),
+    family: z.boolean(),
+    multiDay: z.boolean(),
+    date: z.date().optional(),
+    range: z.object({ from: z.date().optional(), to: z.date().optional() }).optional(),
+    allDay: z.boolean(),
+    startTime: z.string(),
+    endTime: z.string(),
+    repeatWeekly: z.boolean(),
+    until: z.date().optional(),
+    location: z.string(),
+    description: z.string(),
+    reminderMinutes: z.number().nullable(),
+  })
+  .superRefine((v, ctx) => {
+    if (!v.family && v.ownerIds.length === 0) {
+      ctx.addIssue({ code: 'custom', path: ['ownerIds'], message: 'Pick at least one owner' })
+    }
+    if (v.multiDay) {
+      if (!v.range?.from || !v.range?.to) {
+        ctx.addIssue({ code: 'custom', path: ['range'], message: 'Pick a start and end date' })
+      }
+    } else {
+      if (!v.date) {
+        ctx.addIssue({ code: 'custom', path: ['date'], message: 'Pick a date' })
+      } else if (!v.allDay && combine(v.date, v.endTime) <= combine(v.date, v.startTime)) {
+        ctx.addIssue({ code: 'custom', path: ['endTime'], message: 'End must be after the start' })
+      }
+    }
+  })
+
+type EventForm = z.input<typeof EventFormSchema>
+
+function blankDefaults(prefillDate?: Date | null): EventForm {
+  return {
+    title: '',
+    ownerIds: [],
+    family: false,
+    multiDay: false,
+    date: prefillDate ? startOfDay(prefillDate) : startOfDay(new Date()),
+    range: undefined,
+    allDay: false,
+    startTime: '09:00',
+    endTime: '10:00',
+    repeatWeekly: false,
+    until: undefined,
+    location: '',
+    description: '',
+    reminderMinutes: DEFAULT_REMINDER,
+  }
+}
+
+function editDefaults(event: CalendarEvent): EventForm {
+  const start = new Date(event.startsAt)
+  const span = isMultiDay(event)
+  return {
+    title: event.title,
+    ownerIds: event.attendeeIds.length === 0 ? [] : event.attendeeIds,
+    family: event.attendeeIds.length === 0,
+    multiDay: span,
+    date: startOfDay(start),
+    range: span ? { from: startOfDay(start), to: spanEndDate(event) } : undefined,
+    allDay: event.allDay,
+    startTime: toHM(start),
+    endTime: event.endsAt ? toHM(new Date(event.endsAt)) : addMinutesHM(toHM(start), 60),
+    repeatWeekly: event.recurrence === 'weekly',
+    until: event.recurrenceUntil ? parseDateKey(event.recurrenceUntil) : undefined,
+    location: event.location ?? '',
+    description: event.description ?? '',
+    reminderMinutes: event.reminderMinutes ?? null,
+  }
+}
+
+/** Transform validated form values into the wire body. */
+function toInput(v: EventForm): CreateEventInput {
+  const attendeeIds = v.family ? [] : v.ownerIds
+  const base = {
+    title: v.title.trim(),
+    attendeeIds,
+    location: v.location.trim() || null,
+    description: v.description.trim() || null,
+  }
+  if (v.multiDay) {
+    // A span is all-day and carries no times/repeat. The exclusive end bound
+    // (start of the day after the last day) is what `lib/grid` reads back as an
+    // inclusive last day.
+    return {
+      ...base,
+      startsAt: startOfDay(v.range!.from!).toISOString(),
+      endsAt: startOfDay(addDays(v.range!.to!, 1)).toISOString(),
+      allDay: true,
+      recurrence: null,
+      recurrenceUntil: null,
+      reminderMinutes: null,
+    }
+  }
+  const recurrence = v.repeatWeekly ? ('weekly' as const) : null
+  const recurrenceUntil = recurrence && v.until ? localDateKey(v.until) : null
+  if (v.allDay) {
+    return {
+      ...base,
+      startsAt: startOfDay(v.date!).toISOString(),
+      endsAt: null,
+      allDay: true,
+      recurrence,
+      recurrenceUntil,
+      reminderMinutes: null,
+    }
+  }
+  return {
+    ...base,
+    startsAt: combine(v.date!, v.startTime).toISOString(),
+    endsAt: combine(v.date!, v.endTime).toISOString(),
+    allDay: false,
+    recurrence,
+    recurrenceUntil,
+    reminderMinutes: v.reminderMinutes,
+  }
+}
+
+export interface CreateEventDrawerProps {
+  open: boolean
+  onClose: () => void
+  members: Profile[]
+  /** Prefill the date in create mode (the agenda's per-day "+ Add"). Ignored in
+      edit mode; defaults to today when absent. */
+  prefillDate?: Date | null
+  /** Set → edit mode: fields prefilled, header "Edit event", CTA "Save changes",
+      Remove shown. Absent → create mode. */
+  editingEvent?: CalendarEvent | null
+  onSubmit: (input: CreateEventInput) => Promise<void> | void
+  /** Request removal of the event being edited — the parent owns the confirm
+      dialog (recurring → "Just this week" vs "All events"). */
+  onRemove?: () => void
+}
+
 export function CreateEventDrawer({
   open,
   onClose,
@@ -89,169 +225,78 @@ export function CreateEventDrawer({
   onRemove,
 }: CreateEventDrawerProps) {
   const isEdit = Boolean(editingEvent)
-
-  const [title, setTitle] = useState('')
-  const [ownerIds, setOwnerIds] = useState<string[]>([])
-  const [family, setFamily] = useState(false)
-  const [multiDay, setMultiDay] = useState(false)
-  const [date, setDate] = useState<Date | undefined>(undefined)
-  const [range, setRange] = useState<DateRange | undefined>(undefined)
-  const [allDay, setAllDay] = useState(false)
-  const [startTime, setStartTime] = useState('09:00')
-  const [endTime, setEndTime] = useState('10:00')
+  // Tracks whether the user has overridden the end time — until then it follows
+  // the start by +60m.
   const endTouched = useRef(false)
-  const [repeatWeekly, setRepeatWeekly] = useState(false)
-  const [until, setUntil] = useState<Date | undefined>(undefined)
-  const [location, setLocation] = useState('')
-  const [description, setDescription] = useState('')
-  const [reminderMinutes, setReminderMinutes] = useState<number | null>(DEFAULT_REMINDER)
-  const [submitting, setSubmitting] = useState(false)
 
-  // Reset the form each time the drawer opens — prefill from the event in edit
-  // mode, otherwise blank with the prefilled (or today's) date.
+  const {
+    control,
+    register,
+    handleSubmit,
+    reset,
+    setValue,
+    watch,
+    formState: { isSubmitting },
+  } = useForm<EventForm>({
+    resolver: zodResolver(EventFormSchema),
+    mode: 'onChange',
+    defaultValues: blankDefaults(prefillDate),
+  })
+
+  // Reset each time the drawer opens — prefill from the event in edit mode,
+  // otherwise blank with the prefilled (or today's) date.
   useEffect(() => {
     if (!open) return
-    setSubmitting(false)
     endTouched.current = false
+    reset(editingEvent ? editDefaults(editingEvent) : blankDefaults(prefillDate))
+  }, [open, editingEvent, prefillDate, reset])
 
-    if (editingEvent) {
-      const start = new Date(editingEvent.startsAt)
-      const attendees = editingEvent.attendeeIds
-      setTitle(editingEvent.title)
-      setFamily(attendees.length === 0)
-      setOwnerIds(attendees.length === 0 ? [] : attendees)
-      setAllDay(editingEvent.allDay)
-      const span = isMultiDay(editingEvent)
-      setMultiDay(span)
-      setDate(startOfDay(start))
-      setRange(span ? { from: startOfDay(start), to: spanEndDate(editingEvent) } : undefined)
-      setStartTime(toHM(start))
-      setEndTime(
-        editingEvent.endsAt ? toHM(new Date(editingEvent.endsAt)) : addMinutesHM(toHM(start), 60)
-      )
-      setRepeatWeekly(editingEvent.recurrence === 'weekly')
-      setUntil(
-        editingEvent.recurrenceUntil ? parseDateKey(editingEvent.recurrenceUntil) : undefined
-      )
-      setLocation(editingEvent.location ?? '')
-      setDescription(editingEvent.description ?? '')
-      setReminderMinutes(editingEvent.reminderMinutes ?? null)
-    } else {
-      const d = prefillDate ? startOfDay(prefillDate) : startOfDay(new Date())
-      setTitle('')
-      setFamily(false)
-      setOwnerIds([])
-      setAllDay(false)
-      setMultiDay(false)
-      setDate(d)
-      setRange(undefined)
-      setStartTime('09:00')
-      setEndTime('10:00')
-      setRepeatWeekly(false)
-      setUntil(undefined)
-      setLocation('')
-      setDescription('')
-      setReminderMinutes(DEFAULT_REMINDER)
-    }
-  }, [open, editingEvent, prefillDate])
+  const title = watch('title')
+  const family = watch('family')
+  const ownerIds = watch('ownerIds')
+  const multiDay = watch('multiDay')
+  const allDay = watch('allDay')
+  const repeatWeekly = watch('repeatWeekly')
+  const date = watch('date')
+  const range = watch('range')
+  const startTime = watch('startTime')
+  const endTime = watch('endTime')
+  const timed = !multiDay && !allDay
+
+  // The submit gate mirrors the schema's cross-field rules, derived synchronously
+  // from the current values so the button toggles immediately (zodResolver is the
+  // async re-check at submit time, but `isValid` lands a tick late for a click).
+  const ownerChosen = family || ownerIds.length > 0
+  const datesValid = multiDay ? Boolean(range?.from && range?.to) : Boolean(date)
+  const endOk = !timed || (date ? combine(date, endTime) > combine(date, startTime) : false)
+  const canSubmit = title.trim().length > 0 && ownerChosen && datesValid && endOk
 
   function toggleOwner(id: string) {
-    setFamily(false)
-    setOwnerIds((prev) => (prev.includes(id) ? prev.filter((x) => x !== id) : [...prev, id]))
+    setValue('family', false, { shouldValidate: true })
+    const next = ownerIds.includes(id) ? ownerIds.filter((x) => x !== id) : [...ownerIds, id]
+    setValue('ownerIds', next, { shouldValidate: true })
   }
   function pickFamily() {
-    setFamily(true)
-    setOwnerIds([])
+    setValue('ownerIds', [], { shouldValidate: true })
+    setValue('family', true, { shouldValidate: true })
   }
-  function changeStart(v: string) {
-    setStartTime(v)
-    if (!endTouched.current) setEndTime(addMinutesHM(v, 60))
-  }
-
-  const ownerChosen = family || ownerIds.length > 0
-  const timed = !multiDay && !allDay
-  const endAfterStart = !timed || !date || combine(date, endTime) > combine(date, startTime)
-  const datesValid = multiDay ? Boolean(range?.from && range?.to) : Boolean(date)
-  const canSubmit =
-    title.trim().length > 0 && ownerChosen && datesValid && endAfterStart && !submitting
 
   // The weekday label for "(Every Tuesday)" — derived from the start date.
   const weekday = date?.toLocaleDateString(undefined, { weekday: 'long' })
 
-  function buildInput(): CreateEventInput | null {
-    if (!canSubmit) return null
-    const attendeeIds = family ? [] : ownerIds
-    const base = {
-      title: title.trim(),
-      attendeeIds,
-      location: location.trim() || null,
-      description: description.trim() || null,
-    }
-    if (multiDay) {
-      if (!range?.from || !range?.to) return null
-      return {
-        ...base,
-        // A span is all-day and carries no times/repeat. The exclusive end bound
-        // (start of the day after the last day) is what `lib/grid` reads back as
-        // an inclusive last day.
-        startsAt: startOfDay(range.from).toISOString(),
-        endsAt: startOfDay(addDays(range.to, 1)).toISOString(),
-        allDay: true,
-        recurrence: null,
-        recurrenceUntil: null,
-        reminderMinutes: null,
-      }
-    }
-    if (!date) return null
-    const recurrence = repeatWeekly ? ('weekly' as const) : null
-    const recurrenceUntil = recurrence && until ? localDateKey(until) : null
-    if (allDay) {
-      return {
-        ...base,
-        startsAt: startOfDay(date).toISOString(),
-        endsAt: null,
-        allDay: true,
-        recurrence,
-        recurrenceUntil,
-        reminderMinutes: null,
-      }
-    }
-    return {
-      ...base,
-      startsAt: combine(date, startTime).toISOString(),
-      endsAt: combine(date, endTime).toISOString(),
-      allDay: false,
-      recurrence,
-      recurrenceUntil,
-      reminderMinutes,
-    }
-  }
-
-  async function handleSubmit() {
-    const input = buildInput()
-    if (!input) return
-    setSubmitting(true)
-    try {
-      await onSubmit(input)
-    } finally {
-      setSubmitting(false)
-    }
-  }
+  const submit = handleSubmit(async (values) => {
+    await onSubmit(toInput(values))
+  })
 
   return (
     <Drawer open={open} onClose={onClose} title={isEdit ? 'Edit event' : 'Add event'}>
-      <div className="flex h-full flex-col">
+      <form onSubmit={submit} className="flex h-full flex-col">
         <div className="flex-1 overflow-y-auto p-6">
           <div className="flex flex-col gap-6">
             {/* Title */}
             <div>
               <FieldLabel htmlFor="event-title">Title</FieldLabel>
-              <Input
-                id="event-title"
-                value={title}
-                onChange={(e) => setTitle(e.target.value)}
-                placeholder="What's happening?"
-              />
+              <Input id="event-title" placeholder="What's happening?" {...register('title')} />
             </div>
 
             {/* Owner — multi-select members + mutually-exclusive Family */}
@@ -259,7 +304,7 @@ export function CreateEventDrawer({
               <FieldLabel>For</FieldLabel>
               <div className="flex flex-wrap gap-2">
                 {members.map((m) => (
-                  <OwnerChip
+                  <MemberChip
                     key={m.id}
                     name={m.name}
                     selected={!family && ownerIds.includes(m.id)}
@@ -283,15 +328,30 @@ export function CreateEventDrawer({
                   label: 'Multiple days',
                   checked: multiDay,
                   onChange: (v) => {
-                    setMultiDay(v)
-                    if (v && date && !range) setRange({ from: date, to: undefined })
+                    setValue('multiDay', v, { shouldValidate: true })
+                    if (v && date) setValue('range', { from: date, to: undefined })
                   },
                 }}
               />
               {multiDay ? (
-                <DateRangePicker value={range} onChange={setRange} />
+                <Controller
+                  control={control}
+                  name="range"
+                  render={({ field }) => (
+                    <DateRangePicker
+                      value={field.value as DateRange | undefined}
+                      onChange={field.onChange}
+                    />
+                  )}
+                />
               ) : (
-                <DatePicker value={date} onChange={setDate} />
+                <Controller
+                  control={control}
+                  name="date"
+                  render={({ field }) => (
+                    <DatePicker value={field.value} onChange={field.onChange} />
+                  )}
+                />
               )}
             </div>
 
@@ -300,34 +360,52 @@ export function CreateEventDrawer({
               <div>
                 <FieldHeader
                   label="Time"
-                  toggle={{ label: 'All day', checked: allDay, onChange: setAllDay }}
+                  toggle={{
+                    label: 'All day',
+                    checked: allDay,
+                    onChange: (v) => setValue('allDay', v, { shouldValidate: true }),
+                  }}
                 />
                 {!allDay && (
                   <div className="flex items-center gap-2">
-                    <Input
-                      type="time"
-                      aria-label="Start time"
-                      value={startTime}
-                      onChange={(e) => changeStart(e.target.value)}
-                      className="min-w-0 flex-1 appearance-none [&::-webkit-calendar-picker-indicator]:hidden"
+                    <Controller
+                      control={control}
+                      name="startTime"
+                      render={({ field }) => (
+                        <Input
+                          type="time"
+                          aria-label="Start time"
+                          value={field.value}
+                          onChange={(e) => {
+                            field.onChange(e.target.value)
+                            if (!endTouched.current) {
+                              setValue('endTime', addMinutesHM(e.target.value, 60), {
+                                shouldValidate: true,
+                              })
+                            }
+                          }}
+                          className="min-w-0 flex-1 appearance-none [&::-webkit-calendar-picker-indicator]:hidden"
+                        />
+                      )}
                     />
                     <span className="text-sm-token text-muted-foreground">–</span>
-                    <Input
-                      type="time"
-                      aria-label="End time"
-                      value={endTime}
-                      onChange={(e) => {
-                        endTouched.current = true
-                        setEndTime(e.target.value)
-                      }}
-                      className="min-w-0 flex-1 appearance-none [&::-webkit-calendar-picker-indicator]:hidden"
+                    <Controller
+                      control={control}
+                      name="endTime"
+                      render={({ field }) => (
+                        <Input
+                          type="time"
+                          aria-label="End time"
+                          value={field.value}
+                          onChange={(e) => {
+                            endTouched.current = true
+                            field.onChange(e.target.value)
+                          }}
+                          className="min-w-0 flex-1 appearance-none [&::-webkit-calendar-picker-indicator]:hidden"
+                        />
+                      )}
                     />
                   </div>
-                )}
-                {!allDay && !endAfterStart && (
-                  <p className="mt-1.5 text-sm-token text-destructive">
-                    End time must be after the start.
-                  </p>
                 )}
               </div>
             )}
@@ -345,7 +423,7 @@ export function CreateEventDrawer({
                   <Switch
                     aria-label="Repeat weekly"
                     checked={repeatWeekly}
-                    onCheckedChange={setRepeatWeekly}
+                    onCheckedChange={(v) => setValue('repeatWeekly', v, { shouldValidate: true })}
                   />
                 </div>
                 {repeatWeekly && (
@@ -353,12 +431,18 @@ export function CreateEventDrawer({
                     <FieldLabel htmlFor="event-until" optional>
                       Until
                     </FieldLabel>
-                    <DatePicker
-                      id="event-until"
-                      value={until}
-                      onChange={setUntil}
-                      placeholder="No end date"
-                      fromDate={date}
+                    <Controller
+                      control={control}
+                      name="until"
+                      render={({ field }) => (
+                        <DatePicker
+                          id="event-until"
+                          value={field.value}
+                          onChange={field.onChange}
+                          placeholder="No end date"
+                          fromDate={date}
+                        />
+                      )}
                     />
                   </div>
                 )}
@@ -369,16 +453,22 @@ export function CreateEventDrawer({
             {timed && (
               <div>
                 <FieldLabel>Reminder</FieldLabel>
-                <div className="flex flex-wrap items-center gap-2">
-                  {REMINDER_PRESETS.map((p) => (
-                    <ReminderChip
-                      key={p.label}
-                      label={p.label}
-                      selected={reminderMinutes === p.value}
-                      onClick={() => setReminderMinutes(p.value)}
-                    />
-                  ))}
-                </div>
+                <Controller
+                  control={control}
+                  name="reminderMinutes"
+                  render={({ field }) => (
+                    <div className="flex flex-wrap items-center gap-2">
+                      {REMINDER_PRESETS.map((p) => (
+                        <ReminderChip
+                          key={p.label}
+                          label={p.label}
+                          selected={field.value === p.value}
+                          onClick={() => field.onChange(p.value)}
+                        />
+                      ))}
+                    </div>
+                  )}
+                />
               </div>
             )}
 
@@ -387,12 +477,7 @@ export function CreateEventDrawer({
               <FieldLabel htmlFor="event-location" optional>
                 Location
               </FieldLabel>
-              <Input
-                id="event-location"
-                value={location}
-                onChange={(e) => setLocation(e.target.value)}
-                placeholder="Where?"
-              />
+              <Input id="event-location" placeholder="Where?" {...register('location')} />
             </div>
             <div>
               <FieldLabel htmlFor="event-notes" optional>
@@ -400,11 +485,10 @@ export function CreateEventDrawer({
               </FieldLabel>
               <textarea
                 id="event-notes"
-                value={description}
-                onChange={(e) => setDescription(e.target.value)}
                 placeholder="Anything else?"
                 rows={2}
                 className="w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                {...register('description')}
               />
             </div>
           </div>
@@ -412,18 +496,19 @@ export function CreateEventDrawer({
 
         {/* Footer */}
         <div className="flex flex-col gap-2.5 border-t border-border p-6">
-          <Button className="w-full" onClick={handleSubmit} disabled={!canSubmit}>
+          <Button type="submit" className="w-full" disabled={!canSubmit || isSubmitting}>
             {isEdit
-              ? submitting
+              ? isSubmitting
                 ? 'Saving…'
                 : 'Save changes'
-              : submitting
+              : isSubmitting
                 ? 'Adding…'
                 : 'Add event'}
           </Button>
 
           {isEdit && onRemove && (
             <Button
+              type="button"
               variant="ghost"
               className="w-full text-destructive hover:bg-destructive/10 hover:text-destructive"
               onClick={onRemove}
@@ -432,7 +517,7 @@ export function CreateEventDrawer({
             </Button>
           )}
         </div>
-      </div>
+      </form>
     </Drawer>
   )
 }
@@ -446,7 +531,7 @@ function FieldHeader({
   label,
   toggle,
 }: {
-  label: ReactNode
+  label: string
   toggle?: { label: string; checked: boolean; onChange: (v: boolean) => void }
 }) {
   return (
@@ -466,69 +551,23 @@ function FieldHeader({
   )
 }
 
-function FieldLabel({
-  children,
-  optional,
-  htmlFor,
-}: {
-  children: string
-  optional?: boolean
-  htmlFor?: string
-}) {
-  return (
-    <Label htmlFor={htmlFor} className="mb-[7px] block">
-      {children}
-      {optional && <span className="font-normal opacity-65"> (optional)</span>}
-    </Label>
-  )
-}
-
-/* A compact pill toggle for the inline field modifiers (Multiple days / All day /
-   Repeat weekly). `role="switch"` so it's operable + queryable by name. */
-
-function OwnerChip({
-  name,
-  selected,
-  onClick,
-}: {
-  name: string
-  selected: boolean
-  onClick: () => void
-}) {
-  return (
-    <button
-      type="button"
-      onClick={onClick}
-      className="text-sm-token inline-flex cursor-pointer items-center gap-1.5 rounded-full px-3.5 py-1.5"
-      style={{
-        border: `2px solid ${selected ? identityColor(name) : 'var(--border)'}`,
-        background: selected ? identityColor(name, 'tint') : 'transparent',
-        color: selected ? identityColor(name, 'ink') : 'var(--foreground)',
-        fontWeight: selected ? 600 : 400,
-      }}
-    >
-      <span className="size-2 shrink-0 rounded-full" style={{ background: identityColor(name) }} />
-      {name}
-    </button>
-  )
-}
-
+// The owner picker's Family option — neutral chip (Users glyph) composed on the
+// shared Chip; mutually exclusive with the member chips.
 function FamilyChip({ selected, onClick }: { selected: boolean; onClick: () => void }) {
   return (
-    <button
-      type="button"
+    <Chip
+      selected={selected}
       onClick={onClick}
-      className={`text-sm-token inline-flex cursor-pointer items-center gap-1.5 rounded-full border-2 px-3.5 py-1.5 ${
-        selected
-          ? 'border-foreground bg-secondary font-semibold text-secondary-foreground'
-          : 'border-border font-normal text-foreground'
-      }`}
+      leading={<Users className="h-3.5 w-3.5" />}
+      selectedClassName="border-foreground bg-secondary text-secondary-foreground"
+      idleClassName="text-foreground"
     >
-      <Users className="h-3.5 w-3.5" /> Family
-    </button>
+      Family
+    </Chip>
   )
 }
 
+// A reminder-offset preset chip — primary-toned, on the shared Chip.
 function ReminderChip({
   label,
   selected,
@@ -539,17 +578,14 @@ function ReminderChip({
   onClick: () => void
 }) {
   return (
-    <button
-      type="button"
+    <Chip
+      selected={selected}
       onClick={onClick}
-      className={`text-sm-token inline-flex cursor-pointer items-center gap-1 rounded-full border-2 px-3 py-1.5 ${
-        selected
-          ? 'border-primary bg-primary/10 font-semibold text-primary'
-          : 'border-border font-normal text-muted-foreground'
-      }`}
+      leading={selected && label !== 'None' ? <Bell className="h-3 w-3" /> : undefined}
+      selectedClassName="border-primary bg-primary/10 text-primary"
+      idleClassName="text-muted-foreground"
     >
-      {selected && label !== 'None' && <Bell className="h-3 w-3" />}
       {label}
-    </button>
+    </Chip>
   )
 }
