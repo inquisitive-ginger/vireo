@@ -7,15 +7,26 @@ export interface SwitchProps {
   onCheckedChange: (checked: boolean) => void
   disabled?: boolean
   className?: string
+  /** Accessible name when there's no associated `<label htmlFor>` — e.g. the
+      switch sits beside a plain text label (the calendar drawer's field toggles). */
+  'aria-label'?: string
 }
 
-export function Switch({ id, checked, onCheckedChange, disabled, className }: SwitchProps) {
+export function Switch({
+  id,
+  checked,
+  onCheckedChange,
+  disabled,
+  className,
+  'aria-label': ariaLabel,
+}: SwitchProps) {
   return (
     <SwitchPrimitive.Root
       id={id}
       checked={checked}
       onCheckedChange={onCheckedChange}
       disabled={disabled}
+      aria-label={ariaLabel}
       className={cn(
         'relative inline-flex h-[22px] w-10 shrink-0 cursor-pointer items-center rounded-full border-0',
         'bg-muted transition-colors duration-200',

@@ -1,12 +1,21 @@
 import { useEffect, useState } from 'react'
-import { CalendarDays, Star } from 'lucide-react'
-import { Button, Drawer, Input, Label, identityColor } from '@family-os/ui'
+import { Star } from 'lucide-react'
+import { Button, DatePicker, Drawer, Input, Label, identityColor } from '@family-os/ui'
 import type { Profile } from '@family-os/platform/types'
 import type { ChoreTask } from '../types'
 import { GOLD, GOLD_INK, GOLD_TINT } from '../lib/gold'
 
 const XP_PRESETS = [5, 10, 15, 20, 25]
 const DEFAULT_XP = 10
+
+// The due date is persisted as `YYYY-MM-DD`; the shared DatePicker works in Date,
+// so convert at the field boundary (local components, no UTC day-shift).
+const pad = (n: number) => String(n).padStart(2, '0')
+const toDateKey = (d: Date) => `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
+const fromDateKey = (key: string) => {
+  const [y, m, d] = key.split('-').map(Number)
+  return new Date(y, m - 1, d)
+}
 
 export interface CreateTaskInput {
   title: string
@@ -122,29 +131,14 @@ export function CreateTaskDrawer({
               <FieldLabel htmlFor="chore-due" optional>
                 Due date
               </FieldLabel>
-              <div className="relative">
-                <Input
-                  id="chore-due"
-                  type="date"
-                  value={dueDate}
-                  onChange={(e) => setDueDate(e.target.value)}
-                  // Open the native picker on a click anywhere in the field, not just
-                  // the calendar icon. (Proper themed picker deferred to the calendar
-                  // module.) `showPicker` is recent — guard for older browsers.
-                  onClick={(e) => (e.currentTarget as HTMLInputElement).showPicker?.()}
-                  // Strip every native affordance — Chrome's calendar button, the
-                  // Android down-chevron, spin/clear buttons — and overlay one
-                  // consistent calendar icon with proper right padding. `appearance-none`
-                  // kills the chevron; `display:none` on the picker indicator removes
-                  // the desktop calendar button (it occupies space when only faded).
-                  className="cursor-pointer appearance-none pr-10 [&::-webkit-calendar-picker-indicator]:hidden [&::-webkit-clear-button]:hidden [&::-webkit-inner-spin-button]:hidden"
-                />
-                <CalendarDays
-                  size={16}
-                  aria-hidden
-                  className="pointer-events-none absolute right-3 top-1/2 -translate-y-1/2 text-muted-foreground"
-                />
-              </div>
+              {/* The shared themed picker (ADR 037), replacing the stripped-native
+                  <input type=date> — one component, calendar + chores. */}
+              <DatePicker
+                id="chore-due"
+                value={dueDate ? fromDateKey(dueDate) : undefined}
+                onChange={(d) => setDueDate(d ? toDateKey(d) : '')}
+                placeholder="No due date"
+              />
             </div>
           </div>
         </div>

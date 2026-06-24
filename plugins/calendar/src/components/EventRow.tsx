@@ -1,4 +1,4 @@
-import { MapPin, Repeat, Users } from 'lucide-react'
+import { ChevronRight, MapPin, Repeat, Users } from 'lucide-react'
 import { ItemCard } from '@family-os/ui'
 import type { CalendarEvent } from '../types'
 import { formatTime, isMultiDay, spanEndDate } from '../lib/grid'
@@ -10,9 +10,13 @@ import { huesForEvent, spineColorsForEvent } from '../lib/hues'
 export function EventRow({
   event,
   membersById,
+  onClick,
 }: {
   event: CalendarEvent
   membersById: Map<string, string>
+  /** Tap-to-edit (tier 4). When set the row becomes a button (design decision:
+      events are edited from the agenda, not the month chips). */
+  onClick?: () => void
 }) {
   const hues = huesForEvent(event.attendeeIds, membersById)
   const spineColors = spineColorsForEvent(hues)
@@ -29,11 +33,23 @@ export function EventRow({
     when = formatTime(event.startsAt)
   }
 
-  return (
+  const card = (
     // Identity spine (design-system "Spine token"): on a calendar surface the hue
     // carries the owner; a shared event passes one base hue per attendee so
     // <Spine> paints a vertical split (solo → solid, Family → neutral).
-    <ItemCard spine={spineColors}>
+    <ItemCard
+      spine={spineColors}
+      className={
+        onClick
+          ? 'transition-colors group-hover:border-primary/50 group-hover:bg-muted/40'
+          : undefined
+      }
+      trailing={
+        onClick ? (
+          <ChevronRight className="h-4 w-4 shrink-0 self-center text-muted-foreground/40 transition-colors group-hover:text-foreground" />
+        ) : undefined
+      }
+    >
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <span className="text-sm-token font-semibold text-foreground">{when}</span>
@@ -61,5 +77,17 @@ export function EventRow({
         </div>
       </div>
     </ItemCard>
+  )
+
+  if (!onClick) return card
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={`Edit ${event.title}`}
+      className="group block w-full cursor-pointer text-left"
+    >
+      {card}
+    </button>
   )
 }

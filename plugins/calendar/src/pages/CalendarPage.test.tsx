@@ -1,6 +1,7 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import { QueryClient, QueryClientProvider } from '@family-os/platform'
+import { QueryClient, QueryClientProvider, MockAuthProvider } from '@family-os/platform'
+import type { Profile } from '@family-os/platform/types'
 import { CalendarPage } from './CalendarPage'
 
 function jsonResponse(data: unknown) {
@@ -21,11 +22,14 @@ function mockFetch(events: unknown[]) {
   })
 }
 
-function renderPage() {
+function renderPage(tier = 4) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
+  const profile = { id: 'me', name: 'Parent', tier } as Profile
   return render(
     <QueryClientProvider client={client}>
-      <CalendarPage />
+      <MockAuthProvider profile={profile}>
+        <CalendarPage />
+      </MockAuthProvider>
     </QueryClientProvider>
   )
 }
@@ -38,11 +42,18 @@ afterEach(() => {
 })
 
 describe('CalendarPage', () => {
-  it('renders the month grid and an inert Add-event CTA', async () => {
+  it('renders the month grid with an Add-event CTA for tier 4', async () => {
     vi.stubGlobal('fetch', mockFetch([]))
-    renderPage()
+    renderPage(4)
     await waitFor(() => expect(screen.getByText('Sun')).toBeInTheDocument())
-    expect(screen.getByRole('button', { name: /Add event/ })).toBeDisabled()
+    expect(screen.getByRole('button', { name: /Add event/ })).toBeEnabled()
+  })
+
+  it('hides the Add-event CTA below tier 4', async () => {
+    vi.stubGlobal('fetch', mockFetch([]))
+    renderPage(3)
+    await waitFor(() => expect(screen.getByText('Sun')).toBeInTheDocument())
+    expect(screen.queryByRole('button', { name: /Add event/ })).not.toBeInTheDocument()
   })
 
   it('shows the empty-month note when there are no events', async () => {
