@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import { CalendarDays, Star } from 'lucide-react'
 import { Button, Drawer, Input, Label, identityColor } from '@family-os/ui'
-import type { ChoreTask, FamilyMember } from '../types'
+import type { Profile } from '@family-os/platform/types'
+import type { ChoreTask } from '../types'
 import { GOLD, GOLD_INK, GOLD_TINT } from '../lib/gold'
 
 const XP_PRESETS = [5, 10, 15, 20, 25]
@@ -17,7 +18,7 @@ export interface CreateTaskInput {
 export interface CreateTaskDrawerProps {
   open: boolean
   onClose: () => void
-  members: FamilyMember[]
+  members: Profile[]
   /** Prefill the assignee (per-person "+ add" entry point). Ignored in edit mode. */
   prefillAssigneeId?: string | null
   /** When set, the drawer opens in edit mode: fields prefilled from this task,

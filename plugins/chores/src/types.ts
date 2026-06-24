@@ -17,9 +17,3 @@ export interface ChoreTask {
 export interface TasksResponse {
   tasks: ChoreTask[]
 }
-
-export interface FamilyMember {
-  id: string
-  name: string
-  tier: number
-}

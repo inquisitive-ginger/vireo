@@ -36,3 +36,6 @@ export { MockAuthProvider } from './testing'
 // Re-export TanStack Query via the singleton so plugins share the shell's
 // QueryClient (ADR 013 — server/plugin data is TanStack Query, per-plugin).
 export { useQuery, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+// QueryClient + Provider from the same singleton path — plugin tests wrap with the
+// identical instance the hooks resolve against (no second react-query copy).
+export { QueryClient, QueryClientProvider } from '@tanstack/react-query'
