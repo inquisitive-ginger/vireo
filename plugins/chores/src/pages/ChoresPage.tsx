@@ -2,7 +2,8 @@ import { useState } from 'react'
 import { Loader2, Plus } from 'lucide-react'
 import { Button, ConfirmDialog } from '@family-os/ui'
 import { PermissionGate, useAuth, useQuery, useMutation, useQueryClient } from '@family-os/platform'
-import type { ChoreTask, FamilyMember, TasksResponse } from '../types'
+import type { Profile } from '@family-os/platform/types'
+import type { ChoreTask, TasksResponse } from '../types'
 import { ChoresPageView } from './ChoresPageView'
 import { CreateTaskDrawer, type CreateTaskInput } from '../components/CreateTaskDrawer'
 
@@ -50,7 +51,7 @@ export function ChoresPage() {
   // pseudo-profile (the unattended dashboard) is not an assignable person.
   const profilesQuery = useQuery({
     queryKey: ['api/profiles'],
-    queryFn: () => fetch('/api/profiles').then((r) => r.json() as Promise<FamilyMember[]>),
+    queryFn: () => fetch('/api/profiles').then((r) => r.json() as Promise<Profile[]>),
     enabled: canManage,
   })
   const members = (profilesQuery.data ?? []).filter((m) => m.id !== FAMILY_PROFILE_ID)

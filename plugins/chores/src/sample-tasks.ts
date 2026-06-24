@@ -1,4 +1,5 @@
-import type { ChoreTask, FamilyMember } from './types'
+import type { Profile } from '@family-os/platform/types'
+import type { ChoreTask } from './types'
 
 function isoDay(offsetDays: number): string {
   const d = new Date()
@@ -6,7 +7,7 @@ function isoDay(offsetDays: number): string {
   return d.toISOString().slice(0, 10)
 }
 
-export const SAMPLE_MEMBERS: FamilyMember[] = [
+export const SAMPLE_MEMBERS: Profile[] = [
   { id: 'm-maya', name: 'Maya', tier: 1 },
   { id: 'm-zach', name: 'Zach', tier: 2 },
   { id: 'm-emma', name: 'Emma', tier: 3 },
