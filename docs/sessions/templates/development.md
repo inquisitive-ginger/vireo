@@ -37,6 +37,24 @@ _List ADRs or prior decisions that bound implementation choices. Do not re-litig
 
 ---
 
+## Pre-implementation gate (before writing any code)
+
+**Do not start implementation until the user signs off on a plan summary.** Once the
+pre-session reads and AC audit are done, post a **succinct** summary and wait for explicit
+approval. Keep it tight — this is a confirmation checkpoint, not a design doc:
+
+1. **What's being built** — 2–4 sentences on the surface(s) and behavior this session delivers.
+2. **Key requirements** — the bulleted list of requirements gathered from the story, ACs,
+   and AC audit, including anything clarified or newly surfaced.
+3. **Core decisions** — the handful of implementation choices that shape the work (data model,
+   component reuse, where it wires in, ADRs being applied). Flag any open questions here.
+
+Get explicit approval before proceeding. If the user redirects, fold it in and re-confirm.
+This gate is about scope and direction; the UI design gate below still governs visual sign-off
+for new surfaces.
+
+---
+
 ## During the session
 
 Work through acceptance criteria in order as a guide. Verify as you go where it's
@@ -150,6 +168,11 @@ and get the user's agreement that a live review isn't needed before closing out.
 - [ ] PR opened against `main` following conventions in `CONTRIBUTING.md`
 
 ## Session log format
+
+**Keep it a succinct recap, not a wall of text.** The log is a quick-reference handoff for the
+next session — favor terse bullets over prose. Capture decisions, outcomes, and what the next
+session needs; skip blow-by-blow narration, code dumps, and anything reconstructable from the
+diff or PR. Aim for something a reader can skim in under a minute.
 
 ```
 ## What was built
