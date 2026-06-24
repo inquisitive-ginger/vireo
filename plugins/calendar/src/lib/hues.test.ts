@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
 import { getIdentityHue } from '@family-os/ui'
-import { fillForHues, huesForEvent } from './hues'
+import { fillForHues, huesForEvent, spineColorsForEvent } from './hues'
 
 const members = new Map([
   ['p1', 'Zoe'],
@@ -36,5 +36,20 @@ describe('fillForHues', () => {
     expect(background).toContain('linear-gradient(90deg')
     expect(background).toContain('var(--identity-teal-tint) 0% 50%')
     expect(background).toContain('var(--identity-plum-tint) 50% 100%')
+  })
+})
+
+describe('spineColorsForEvent', () => {
+  it('Family (no hue) → a single neutral secondary band', () => {
+    expect(spineColorsForEvent([])).toEqual(['var(--secondary)'])
+  })
+  it('solo → a single base identity hue (the full-strength spine layer)', () => {
+    expect(spineColorsForEvent(['teal'])).toEqual(['var(--identity-teal)'])
+  })
+  it('shared → one base identity hue per attendee, in order (Spine splits them)', () => {
+    expect(spineColorsForEvent(['teal', 'plum'])).toEqual([
+      'var(--identity-teal)',
+      'var(--identity-plum)',
+    ])
   })
 })

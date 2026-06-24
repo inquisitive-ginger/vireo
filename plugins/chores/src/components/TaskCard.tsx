@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { Badge, CompletionToggle, Spine } from '@family-os/ui'
+import { Badge, CompletionToggle, ItemCard } from '@family-os/ui'
 import type { ChoreTask } from '../types'
 import { isOverdue, dueLabel } from '../lib/dates'
 import { XpPill } from './XpPill'
@@ -42,11 +42,21 @@ export function TaskCard({ task, displayStatus, onComplete }: TaskCardProps) {
   }
 
   return (
-    <div
-      className="flex items-center gap-3 rounded-[14px] border border-border bg-card py-3.5 pr-4 pl-3.5 shadow-[var(--shadow-card)] transition-opacity duration-200"
-      style={{ opacity: done ? 0.66 : 1 }}
+    <ItemCard
+      spine={spine}
+      align="center"
+      dimmed={done}
+      className="transition-opacity duration-200"
+      trailing={
+        <CompletionToggle
+          checked={done}
+          size={40}
+          muted={inFlight}
+          onToggle={completable ? handleComplete : undefined}
+          label={`Mark “${task.title}” done`}
+        />
+      }
     >
-      <Spine color={spine} />
       <div className="min-w-0 flex-1">
         <span
           className={`text-card-title block ${done ? 'text-muted-foreground line-through' : 'text-foreground'}`}
@@ -66,13 +76,6 @@ export function TaskCard({ task, displayStatus, onComplete }: TaskCardProps) {
           </span>
         </div>
       </div>
-      <CompletionToggle
-        checked={done}
-        size={40}
-        muted={inFlight}
-        onToggle={completable ? handleComplete : undefined}
-        label={`Mark “${task.title}” done`}
-      />
-    </div>
+    </ItemCard>
   )
 }

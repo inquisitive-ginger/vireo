@@ -25,6 +25,17 @@ export function huesForEvent(
     .map((name) => getIdentityHue(name))
 }
 
+/** Per-attendee spine colors for an event row — one identity hue per person, so
+ *  `<Spine>`/`<ItemCard spine>` paints a vertical split for shared events (and a
+ *  solid bar for solo ones). Uses the **base** identity layer (`--identity-{hue}`,
+ *  the documented spine/marker layer — see design-system.md), not the soft `tint`
+ *  the wide pills use, so the bar reads at full identity strength. Family events
+ *  (no attendees) get the neutral `--secondary`. */
+export function spineColorsForEvent(hues: IdentityHue[]): string[] {
+  if (hues.length === 0) return ['var(--secondary)']
+  return hues.map((h) => identityToken(h, 'base'))
+}
+
 export function fillForHues(hues: IdentityHue[]): Fill {
   if (hues.length === 0) {
     return { background: 'var(--secondary)', color: 'var(--secondary-foreground)' }

@@ -24,6 +24,11 @@
   --color-warning-foreground: var(--warning-foreground);
   --color-error: var(--error);
   --color-error-foreground: var(--error-foreground);
+
+  /* Canonical card-row corner radius. Standardizes the drift between the feed/
+     chores 14px and the calendar 8px onto one token (→ `rounded-card`). The
+     `ItemCard` primitive and every card-chrome row use this. */
+  --radius-card: 0.5rem;
 }
 
 /* Font family utilities */
