@@ -268,8 +268,10 @@ export function CreateEventDrawer({
   // async re-check at submit time, but `isValid` lands a tick late for a click).
   const ownerChosen = family || ownerIds.length > 0
   const datesValid = multiDay ? Boolean(range?.from && range?.to) : Boolean(date)
-  const endOk = !timed || (date ? combine(date, endTime) > combine(date, startTime) : false)
-  const canSubmit = title.trim().length > 0 && ownerChosen && datesValid && endOk
+  const endBeforeStart = Boolean(
+    timed && date && combine(date, endTime) <= combine(date, startTime)
+  )
+  const canSubmit = title.trim().length > 0 && ownerChosen && datesValid && !endBeforeStart
 
   function toggleOwner(id: string) {
     setValue('family', false, { shouldValidate: true })
@@ -406,6 +408,11 @@ export function CreateEventDrawer({
                       )}
                     />
                   </div>
+                )}
+                {endBeforeStart && (
+                  <p className="mt-1.5 text-sm-token text-destructive">
+                    End time must be after the start.
+                  </p>
                 )}
               </div>
             )}

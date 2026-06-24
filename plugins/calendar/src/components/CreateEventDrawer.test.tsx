@@ -125,6 +125,16 @@ describe('CreateEventDrawer — create', () => {
     fireEvent.change(screen.getByLabelText('Start time'), { target: { value: '14:00' } })
     expect(end.value).toBe('15:00')
   })
+
+  it('warns and blocks submit when the end time is before the start', () => {
+    renderDrawer()
+    fireEvent.click(screen.getByRole('button', { name: 'Zoe' }))
+    // Override the end first (marks it touched), then push the start past it.
+    fireEvent.change(screen.getByLabelText('End time'), { target: { value: '08:00' } })
+    fireEvent.change(screen.getByLabelText('Start time'), { target: { value: '14:00' } })
+    expect(screen.getByText(/End time must be after the start/)).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Add event' })).toBeDisabled()
+  })
 })
 
 describe('CreateEventDrawer — edit', () => {
