@@ -1,5 +1,11 @@
 export type TierLevel = 1 | 2 | 3 | 4
 
+/** The reserved id of the "family" pseudo-profile — the unattended family
+    dashboard (tier 1, read-only; ADR 021). It's not an assignable person, so
+    rosters filter it out. Centralized here (React-free, imported by both the
+    plugins/shell and the API) — was previously redefined per file. */
+export const FAMILY_PROFILE_ID = 'family'
+
 export type EventName = `${string}.${string}.${string}`
 
 export type BusMessage = { event: EventName; payload: unknown }

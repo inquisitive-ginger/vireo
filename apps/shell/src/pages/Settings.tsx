@@ -5,7 +5,13 @@ import type { LucideIcon } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
-import { useAuth, TierGate, usePushSubscription, resolveFocusMode } from '@family-os/platform'
+import {
+  FAMILY_PROFILE_ID,
+  useAuth,
+  TierGate,
+  usePushSubscription,
+  resolveFocusMode,
+} from '@family-os/platform'
 import {
   Button,
   Input,
@@ -480,7 +486,7 @@ function ProfilesSection() {
     staleTime: 30_000,
   })
 
-  const nonFamily = profiles.filter((p) => p.id !== 'family')
+  const nonFamily = profiles.filter((p) => p.id !== FAMILY_PROFILE_ID)
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ['api/profiles'] })
 
@@ -829,7 +835,7 @@ function PinResetRow() {
 function AppearanceRow() {
   const { id: profileId, darkMode } = useAuth()
   const queryClient = useQueryClient()
-  const isFamily = profileId === 'family' || !profileId
+  const isFamily = profileId === FAMILY_PROFILE_ID || !profileId
   const activeValue: DarkModeValue = darkMode === undefined ? null : (darkMode ?? null)
 
   const { mutate } = useMutation({

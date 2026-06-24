@@ -2,6 +2,7 @@ import fp from 'fastify-plugin'
 import type { FastifyPluginAsync } from 'fastify'
 import { prisma } from '@family-os/platform/server'
 import type { EventBus } from '@family-os/platform/server'
+import { FAMILY_PROFILE_ID } from '@family-os/platform/types'
 import { chorePrisma } from '@family-os/plugin-chores/db'
 import { notify } from '../lib/notify'
 
@@ -81,7 +82,6 @@ async function handleParentNotification(payload: unknown, eventBus: EventBus): P
 // The unattended dashboard resolves to the family pseudo-profile (id "family",
 // tier 1) — a non-UUID id. It sees the whole family's chores (family framing),
 // and the non-UUID id must never reach the uuid assignee_id filter (P2007).
-const FAMILY_PROFILE_ID = 'family'
 
 type CreateTaskBody = {
   title?: unknown

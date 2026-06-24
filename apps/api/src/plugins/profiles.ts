@@ -2,7 +2,7 @@ import fp from 'fastify-plugin'
 import type { FastifyPluginAsync } from 'fastify'
 import bcrypt from 'bcryptjs'
 import { prisma, createAbility } from '@family-os/platform/server'
-import { PERMISSION_REGISTRY } from '@family-os/platform/types'
+import { PERMISSION_REGISTRY, FAMILY_PROFILE_ID } from '@family-os/platform/types'
 import type { TierLevel } from '@family-os/platform/types'
 import {
   CreateProfileSchema,
@@ -13,8 +13,6 @@ import {
   PermissionOverrideCreateSchema,
 } from '@family-os/schemas'
 import { seedWidgetLayout } from '../lib/seed-layout'
-
-const FAMILY_PROFILE_ID = 'family'
 
 function requireTier4(tier: number): { error: string } | null {
   return tier < 4 ? { error: 'Requires tier 4' } : null

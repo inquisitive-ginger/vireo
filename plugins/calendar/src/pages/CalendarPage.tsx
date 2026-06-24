@@ -1,7 +1,13 @@
 import { useMemo, useState } from 'react'
 import { CalendarDays, ChevronLeft, ChevronRight, Plus } from 'lucide-react'
-import { Button, EmptyState, SegmentedControl } from '@family-os/ui'
-import { useQuery } from '@family-os/platform'
+import { Button, ConfirmDialog, EmptyState, SegmentedControl } from '@family-os/ui'
+import {
+  FAMILY_PROFILE_ID,
+  useAuth,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from '@family-os/platform'
 import type { Profile } from '@family-os/platform/types'
 import type { CalendarEvent, CalendarView, EventsResponse } from '../types'
 import {
@@ -15,6 +21,7 @@ import {
 } from '../lib/grid'
 import { MonthGrid } from '../components/MonthGrid'
 import { DetailView } from '../components/DetailView'
+import { CreateEventDrawer, type CreateEventInput } from '../components/CreateEventDrawer'
 
 const VIEW_OPTIONS: { value: CalendarView; label: string }[] = [
   { value: 'month', label: 'Month' },
@@ -23,10 +30,25 @@ const VIEW_OPTIONS: { value: CalendarView; label: string }[] = [
 ]
 
 export function CalendarPage() {
+  const { tier } = useAuth()
+  // Create / edit / remove are tier-4 only (matches the API's `calendar.Event`
+  // write rule and the locked design).
+  const canManage = tier >= 4
+  const queryClient = useQueryClient()
+
   const [view, setView] = useState<CalendarView>('month')
   const [cursor, setCursor] = useState<Date>(() => new Date())
   // Stable "now" for the session so the today-circle/dim treatment doesn't churn.
   const today = useMemo(() => new Date(), [])
+
+  // Drawer state: set `editingEvent` → edit mode; `prefillDate` seeds a new
+  // event's date (the agenda's per-day "+ Add").
+  const [drawerOpen, setDrawerOpen] = useState(false)
+  const [editingEvent, setEditingEvent] = useState<CalendarEvent | null>(null)
+  const [prefillDate, setPrefillDate] = useState<Date | null>(null)
+  // Set → the remove-confirm dialog is open for this event (recurring → a
+  // "Just this week" vs "All events" choice).
+  const [removeTarget, setRemoveTarget] = useState<CalendarEvent | null>(null)
 
   const range = useMemo(() => rangeFor(view, cursor), [view, cursor])
 
@@ -48,11 +70,87 @@ export function CalendarPage() {
       }),
   })
 
+  // The owner chips need the roster; the "family" pseudo-profile isn't a person.
+  const members = useMemo(
+    () => (profilesQuery.data ?? []).filter((m) => m.id !== FAMILY_PROFILE_ID),
+    [profilesQuery.data]
+  )
   const membersById = useMemo(() => {
     const map = new Map<string, string>()
     for (const m of profilesQuery.data ?? []) map.set(m.id, m.name)
     return map
   }, [profilesQuery.data])
+
+  // One invalidation refreshes the month view + (story 7) the up-next widget,
+  // which share the `['calendar/events']` prefix (ADR 013).
+  const invalidate = () => queryClient.invalidateQueries({ queryKey: ['calendar/events'] })
+
+  const createEvent = useMutation({
+    mutationFn: (input: CreateEventInput) =>
+      fetch('/api/calendar/events', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input),
+      }).then((r) => {
+        if (!r.ok) throw new Error(String(r.status))
+        return r.json() as Promise<CalendarEvent>
+      }),
+    onSuccess: () => {
+      invalidate()
+      closeDrawer()
+    },
+  })
+
+  const updateEvent = useMutation({
+    mutationFn: ({ id, input }: { id: string; input: CreateEventInput }) =>
+      fetch(`/api/calendar/events/${id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(input),
+      }).then((r) => {
+        if (!r.ok) throw new Error(String(r.status))
+        return r.json() as Promise<CalendarEvent>
+      }),
+    onSuccess: () => {
+      invalidate()
+      closeDrawer()
+    },
+  })
+
+  // `series` deletes the whole event; `occurrence` skips just that week of a
+  // recurring series (story-1 `?occurrence=` support).
+  const deleteEvent = useMutation({
+    mutationFn: ({ event, scope }: { event: CalendarEvent; scope: 'series' | 'occurrence' }) => {
+      const qs =
+        scope === 'occurrence' && event.occurrenceDate ? `?occurrence=${event.occurrenceDate}` : ''
+      return fetch(`/api/calendar/events/${event.seriesId}${qs}`, { method: 'DELETE' }).then(
+        (r) => {
+          if (!r.ok) throw new Error(String(r.status))
+        }
+      )
+    },
+    onSuccess: () => {
+      invalidate()
+      setRemoveTarget(null)
+      closeDrawer()
+    },
+  })
+
+  function openCreate(date: Date | null) {
+    setEditingEvent(null)
+    setPrefillDate(date)
+    setDrawerOpen(true)
+  }
+  function openEdit(event: CalendarEvent) {
+    setEditingEvent(event)
+    setPrefillDate(null)
+    setDrawerOpen(true)
+  }
+  function closeDrawer() {
+    setDrawerOpen(false)
+    setEditingEvent(null)
+    setPrefillDate(null)
+  }
 
   const events: CalendarEvent[] = useMemo(() => eventsQuery.data?.events ?? [], [eventsQuery.data])
   const weeks = useMemo(
@@ -106,10 +204,11 @@ export function CalendarPage() {
             value={view}
             onChange={setView}
           />
-          {/* Inert until story #3 wires the create drawer. */}
-          <Button size="sm" disabled title="Adding events arrives in the next calendar story">
-            <Plus className="mr-1 h-4 w-4" /> Add event
-          </Button>
+          {canManage && (
+            <Button size="sm" onClick={() => openCreate(null)}>
+              <Plus className="mr-1 h-4 w-4" /> Add event
+            </Button>
+          )}
         </div>
       </div>
 
@@ -126,7 +225,13 @@ export function CalendarPage() {
         </div>
       ) : view === 'month' ? (
         <>
-          <MonthGrid weeks={weeks} membersById={membersById} today={today} onDrillDay={drillDay} />
+          <MonthGrid
+            weeks={weeks}
+            membersById={membersById}
+            today={today}
+            onDrillDay={drillDay}
+            onQuickAdd={canManage ? (date) => openCreate(date) : undefined}
+          />
           {events.length === 0 && (
             <p className="mt-4 text-center text-sm-token text-muted-foreground">
               Nothing on the calendar this month.
@@ -140,6 +245,49 @@ export function CalendarPage() {
           events={events}
           membersById={membersById}
           today={today}
+          onEditEvent={canManage ? openEdit : undefined}
+          onAddOnDay={canManage ? (date) => openCreate(date) : undefined}
+        />
+      )}
+
+      {canManage && (
+        <CreateEventDrawer
+          open={drawerOpen}
+          onClose={closeDrawer}
+          members={members}
+          prefillDate={prefillDate}
+          editingEvent={editingEvent}
+          onSubmit={async (input) => {
+            // Swallow rejection so the drawer stays open on failure; onSuccess closes it.
+            if (editingEvent) {
+              await updateEvent.mutateAsync({ id: editingEvent.seriesId, input }).catch(() => {})
+            } else {
+              await createEvent.mutateAsync(input).catch(() => {})
+            }
+          }}
+          onRemove={() => editingEvent && setRemoveTarget(editingEvent)}
+        />
+      )}
+
+      {canManage && removeTarget && (
+        <ConfirmDialog
+          open
+          title={`Remove “${removeTarget.title}”?`}
+          description={
+            removeTarget.recurrence === 'weekly'
+              ? 'This event repeats weekly. Remove just this week, or the whole series?'
+              : 'This event will be permanently deleted. This can’t be undone.'
+          }
+          confirmLabel={removeTarget.recurrence === 'weekly' ? 'All events' : 'Remove'}
+          onConfirm={() => deleteEvent.mutate({ event: removeTarget, scope: 'series' })}
+          secondaryLabel={removeTarget.recurrence === 'weekly' ? 'Just this week' : undefined}
+          onSecondary={
+            removeTarget.recurrence === 'weekly'
+              ? () => deleteEvent.mutate({ event: removeTarget, scope: 'occurrence' })
+              : undefined
+          }
+          onCancel={() => setRemoveTarget(null)}
+          isPending={deleteEvent.isPending}
         />
       )}
     </div>

@@ -1,3 +1,4 @@
+import { Plus } from 'lucide-react'
 import { cn } from '@family-os/ui'
 import type { LaidOutWeek } from '../lib/grid'
 import { WEEKDAY_LABELS, isSameDay, dayDiff } from '../lib/grid'
@@ -19,11 +20,16 @@ export function MonthGrid({
   membersById,
   today,
   onDrillDay,
+  onQuickAdd,
 }: {
   weeks: LaidOutWeek[]
   membersById: Map<string, string>
   today: Date
   onDrillDay: (date: Date) => void
+  /** Tier-4 quick-add: a "+" revealed on cell hover (hover-capable devices only)
+      that creates an event prefilled to that day. Touch devices never see it —
+      they reach the same add via tap → day agenda → "+ Add". */
+  onQuickAdd?: (date: Date) => void
 }) {
   return (
     <div className="overflow-hidden rounded-xl border border-border bg-card shadow-[var(--shadow-card)]">
@@ -56,13 +62,13 @@ export function MonthGrid({
                     if (e.key === 'Enter' || e.key === ' ') onDrillDay(cell.date)
                   }}
                   className={cn(
-                    'min-h-[128px] cursor-pointer border-b border-r border-border px-1.5 pb-1.5 pt-1.5 transition-colors last:border-r-0 hover:bg-muted/40 focus:outline-none focus-visible:ring-1 focus-visible:ring-ring',
+                    'group min-h-[128px] cursor-pointer border-b border-r border-border px-1.5 pb-1.5 pt-1.5 transition-colors last:border-r-0 hover:bg-muted/40 focus:outline-none focus-visible:ring-1 focus-visible:ring-ring',
                     ci === 6 && 'border-r-0',
                     !cell.inMonth && 'bg-muted/30'
                   )}
                 >
                   {/* date number — today gets the filled primary circle */}
-                  <div className="flex h-5 items-center">
+                  <div className="flex h-5 items-center justify-between">
                     <span
                       className={cn(
                         'flex h-6 w-6 items-center justify-center rounded-full text-sm-token',
@@ -75,6 +81,21 @@ export function MonthGrid({
                     >
                       {cell.date.getDate()}
                     </span>
+                    {onQuickAdd && (
+                      // Hover-only quick-add (hover-capable devices); revealed on
+                      // cell hover or keyboard focus. Hidden entirely on touch.
+                      <button
+                        type="button"
+                        aria-label={`Add event on ${cell.date.toDateString()}`}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          onQuickAdd(cell.date)
+                        }}
+                        className="hidden size-6 items-center justify-center rounded-full text-muted-foreground opacity-0 transition-opacity hover:bg-muted hover:text-foreground focus-visible:opacity-100 group-hover:opacity-100 [@media(hover:hover)]:flex"
+                      >
+                        <Plus className="h-4 w-4" />
+                      </button>
+                    )}
                   </div>
                   {/* reserved space: gap below the number + the span band */}
                   <div style={{ height: NUM_GAP + spanBandH }} />
