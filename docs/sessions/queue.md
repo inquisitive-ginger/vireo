@@ -32,8 +32,14 @@
    plugin + `events`/`event_attendees`/`event_exceptions` + computed-on-read weekly
    recurrence + per-occurrence skip + CRUD API + events/permissions namespaces.
    Settled **ADR 038** (recurrence storage). See `logs/2026-06-23-dev-calendar-event-model.md`.
-2. **Tablet Month View** ← **next.** [stories/tablet-month-view.md](../modules/calendar/stories/tablet-month-view.md). The hero glanceable month grid; color-by-owner; truncation; drill to week/day. Renders the occurrences from `GET /api/calendar/events?from=&to=`. _Depends on #1 ✅ + Design._
-3. **Event Create / Edit** — [stories/event-create-edit.md](../modules/calendar/stories/event-create-edit.md). One reused drawer — **multi-select** owner picker (members + Family, required), inline Multiple-days→range, inline All-day, weekly repeat + "(Every Tuesday)", 30m default reminder; **wires the shared react-day-picker `DatePicker`/`DateRangePicker` (ADR 037) and retrofits the chores due-date field onto them**; tier 4. _Depends on #1, #2 + Design._
+2. **Tablet Month View** — ✅ **Done 2026-06-23 (PR #28).** Glanceable month grid
+   (color-by-owner pills, split/Family fills, multi-day span bars, today/past
+   treatment), `+N more` → day/week drill-in (internal view state), full-grid-range
+   TanStack query. First plugin RTL infra (22 tests). PR-review fixes: shared
+   `<Spine>`, platform `Profile` (chores migrated too), real `Calendar/…` stories.
+   Queued the `ItemCard`/`SegmentedControl` extraction. See
+   `logs/2026-06-23-dev-calendar-tablet-month-view.md`.
+3. **Event Create / Edit** ← **next.** [stories/event-create-edit.md](../modules/calendar/stories/event-create-edit.md). One reused drawer — **multi-select** owner picker (members + Family, required), inline Multiple-days→range, inline All-day, weekly repeat + "(Every Tuesday)", 30m default reminder; **wires the shared react-day-picker `DatePicker`/`DateRangePicker` (ADR 037) and retrofits the chores due-date field onto them**; tier 4. Wires the month view's **inert "Add event" CTA** and invalidates the shared `['calendar/events']` prefix the month view already reads. _Depends on #1, #2 + Design._
 4. **Mobile Event Creation** — [stories/mobile-event-creation.md](../modules/calendar/stories/mobile-event-creation.md). The create form on the mobile PWA + a mobile read surface. _Depends on #3._
 5. **Recurring Activities** — [stories/recurring-activities.md](../modules/calendar/stories/recurring-activities.md). Recurring series surfaced/managed as named Activities (`is_activity`). _Depends on #1, #3._
 6. **Event Reminders** — [stories/event-reminders.md](../modules/calendar/stories/event-reminders.md). Time-based reminders via `platform.notify()` + Web Push. **Gated by the reminder-scheduling owed ADR.** _Depends on #1, #3._
@@ -78,6 +84,27 @@ Next" on 2026-06-21 so M3 — Calendar can run uninterrupted.
 **Produces:** existing stories migrated from hand-rolled inline `style={{}}` layout (grid/flex/spacing/sizing) to **Tailwind utilities**, matching how the app actually runs (ADR 035) and how the calendar exploration is authored. **Keep inline `style` only for genuinely dynamic token values** (e.g. `identityToken()` → `var(--identity-…)`, container-query sizes) per ADR 035 — this is not a blanket "remove all inline styles." Heaviest first: `color-tokens` (23), `form-primitives` (22), `typography` (19), `elevation` (19), `profile-avatar` (18), `motion` (17), `profile-list-item` (13); decorator-level `background`/`padding` wrappers are fine to leave.
 **Depends on:** none — unblocked by the 2026-06-22 fix below.
 **Origin:** Raised in **M3 Design: Calendar** (2026-06-22). The calendar exploration's `grid-cols-7` silently failed to emit because `preview-styles.css` `@source`-scanned the shell + plugins but **not `packages/ui/src` itself** — ui's own source rode on Tailwind auto-detection, which drops novel single-use utilities when the dev server starts before the file exists. **Fixed now** (added `@source "../src/**/*.{ts,tsx}"`), so utilities in ui stories/components emit reliably; this session capitalizes on that by moving the legacy inline-style stories onto the standard authoring model.
+
+---
+
+### Design+Dev: Shared `ItemCard` + `SegmentedControl` primitives
+
+**Type:** design + development (new `@family-os/ui` components + cross-plugin retrofit)
+**Kickoff:** _to be written_
+**Reads:** `packages/ui/src/components/spine.tsx` (compose this), `plugins/family-feed/src/components/FeedPostCard.tsx` (note/widget/plain variants), `plugins/chores/src/components/TaskCard.tsx` (trailing slot + dimmed), `plugins/calendar/src/components/EventRow.tsx` + `pages/CalendarPage.tsx` (the hand-rolled view switch), `docs/design-system.md` (Spine token + identity-in-widget rule)
+**Produces:** an `ItemCard` in `@family-os/ui` composing `<Spine>` + card chrome
+(props sketch: `spine` color | none, `chrome` card|bare, `align` center|stretch,
+`dimmed`, `trailing`) that absorbs the three surfaces' duplicated
+`flex + Spine + rounded/border/bg-card/shadow-card` skeleton (standardizing the
+drifted radius/padding); a `SegmentedControl` (or Radix `Tabs`) for the
+Month/Week/Day switch and future toggles; retrofit `FeedPostCard` / `TaskCard` /
+`EventRow` + the calendar view-switch; design-system.md entry; stories + tests;
+**a visual-parity + live-review gate** (chores/feed must not regress).
+**Depends on:** none.
+**Origin:** PR #28 review (Tablet Month View, 2026-06-23). EventRow's hand-rolled
+spine was corrected to the shared `<Spine>` in-PR; the larger card/segmented-control
+extraction was audited and deferred here so a read-only month-view story didn't
+balloon into a 3-plugin refactor.
 
 ---
 
@@ -194,6 +221,10 @@ scheduled.
 ---
 
 ## Recently Completed
+
+- **2026-06-23 — M3 Dev: Calendar Tablet Month View (story 2)** ![Type](https://img.shields.io/badge/Type-Development-orange)
+  The hero glanceable `/calendar` month grid, wired to the live `GET /api/calendar/events?from=&to=` occurrences from story 1. **`MonthGrid`:** 7-col Sunday-start, color-by-owner filled pills, **split fill** (shared) / **neutral + `Users` glyph** (Family), **lane-packed multi-day span bars** with flush `←/→` week-wrap caps, today `--primary` circle, dim past days; layout/lane math ported from the locked exploration into pure `lib/grid.ts` helpers. **Density + drill-in:** 3 chips then `+N more` → a day/week agenda (`DetailView` + `EventRow`) via internal view state (`month|week|day` + cursor; no nested routes). **Data:** TanStack Query keyed `['calendar/events', { from, to }]` over the full 6-week grid range + `/api/profiles` → identity-hue map; loading skeleton, empty/error states; **inert "Add event" CTA** (wired in #3). **Tests = RTL (user's call):** stood up the **first plugin DOM-test infra** (jsdom + `@testing-library/react`); 22 tests. `platform` now re-exports `QueryClient`/`QueryClientProvider` from the singleton path for plugin tests. **PR #28 review course-corrections:** `EventRow` → shared `<Spine>` (design-system mandate); dropped the duplicated `FamilyMember` for platform's `Profile` (**chores migrated too**); deleted exploration replaced with real `Calendar/…` stories on a shared fixture. **Queued** the cross-cutting `ItemCard` + `SegmentedControl` extraction (the spine/card skeleton recurs across feed/chores/calendar). Live-reviewed in the real shell against 17 seeded demo events; signed off.
+  _See:_ `docs/sessions/logs/2026-06-23-dev-calendar-tablet-month-view.md`
 
 - **2026-06-23 — M3 Dev: Calendar Event Model + Plugin Scaffold (story 1)** ![Type](https://img.shields.io/badge/Type-Development-orange)
   Opened M3 dev. Scaffolded `@family-os/plugin-calendar` (mirroring `chores` — the `turbo gen plugin` generator is known-incomplete, so a **generator-hardening** chore is queued) with the full data backbone: `events` + `event_attendees` + `event_exceptions`, CRUD API, CASL subject `calendar.Event` (view tier 1+, write tier 4), registry keys, and `calendar.event.{created,updated,deleted}` emits. **ADR 038 — recurrence storage:** a recurring event is one canonical row, **expanded computed-on-read** within `GET ?from=&to=` (no `occurrences` table); synthetic occurrence id `{eventId}:{date}`. **Per-occurrence skip pulled into MVP** (the one scope change, at the user's call) via an `event_exceptions` overlay — `DELETE …?occurrence=YYYY-MM-DD` cancels one week (idempotent), bare `DELETE` removes the series; per-occurrence **field edits** stay deferred. **Attendees = join-only** (no `owner_id`): API takes `attendeeIds[]` (0 = Family · 1 = solo · 2+ = shared), payload `ownerId` derived; `is_activity` derived on write. **PR-review course-correction:** validation realigned to the established **shared-Zod** pattern (`EventInputSchema` in `@family-os/schemas`, `safeParse` → `400 flatten()`) — chores' hand-rolled parsing was the outlier, so a **validation audit** chore is queued to back-fill it. 24 calendar tests; full API suite **200** green; typecheck/lint/federation build clean. Migration applied **non-destructively** (shared `public._prisma_migrations` → `migrate diff` + `db execute` + `migrate resolve`, no reset). `/calendar` placeholder + `calendar.up-next` widget **stub** (real surfaces are stories 2 + 7); story 7 owes the `calendar.today → calendar.up-next` home-slot rename. PR #27 merged.
