@@ -1,4 +1,5 @@
 import { MapPin, Repeat, Users } from 'lucide-react'
+import { Spine } from '@family-os/ui'
 import type { CalendarEvent } from '../types'
 import { formatTime, isMultiDay, spanEndDate } from '../lib/grid'
 import { fillForHues, huesForEvent } from '../lib/hues'
@@ -30,7 +31,10 @@ export function EventRow({
 
   return (
     <div className="flex items-stretch gap-3 rounded-lg border border-border bg-card px-3 py-2.5 shadow-[var(--shadow-card)]">
-      <span className="w-1.5 shrink-0 rounded-full" style={{ background }} aria-hidden />
+      {/* Shared identity spine (design-system "Spine token"). On a calendar
+          surface the hue carries the owner; a shared event passes its split-fill
+          gradient straight through. */}
+      <Spine color={background} />
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <span className="text-sm-token font-semibold text-foreground">{when}</span>

@@ -30,12 +30,4 @@ export interface EventsResponse {
   events: CalendarEvent[]
 }
 
-/** Platform profile, as returned by `GET /api/profiles` (the roster the month
- *  view maps attendee ids → identity hue against). */
-export interface FamilyMember {
-  id: string
-  name: string
-  tier: number
-}
-
 export type CalendarView = 'month' | 'week' | 'day'

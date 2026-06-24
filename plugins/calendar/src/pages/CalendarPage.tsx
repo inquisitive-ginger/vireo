@@ -2,7 +2,8 @@ import { useMemo, useState } from 'react'
 import { CalendarDays, ChevronLeft, ChevronRight, Plus } from 'lucide-react'
 import { Button, EmptyState, cn } from '@family-os/ui'
 import { useQuery } from '@family-os/platform'
-import type { CalendarEvent, CalendarView, EventsResponse, FamilyMember } from '../types'
+import type { Profile } from '@family-os/platform/types'
+import type { CalendarEvent, CalendarView, EventsResponse } from '../types'
 import {
   addDays,
   buildWeek,
@@ -39,7 +40,7 @@ export function CalendarPage() {
     queryFn: () =>
       fetch('/api/profiles').then((r) => {
         if (!r.ok) throw new Error('Failed to load profiles')
-        return r.json() as Promise<FamilyMember[]>
+        return r.json() as Promise<Profile[]>
       }),
   })
 
