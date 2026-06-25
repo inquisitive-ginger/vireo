@@ -19,13 +19,16 @@ export function Drawer({ open, onClose, title, children, className }: DrawerProp
         <Dialog.Overlay className="fixed inset-0 z-40 bg-black/15 backdrop-blur-[1px]" />
         <Dialog.Content
           className={cn(
-            'fixed inset-y-0 right-0 z-50 flex w-[440px] flex-col',
-            'bg-card border-l border-border shadow-[var(--shadow-raised)]',
+            // Full-width sheet on mobile (the calendar/chores capture surface);
+            // the 440px right rail returns at `md:`+.
+            'fixed inset-y-0 right-0 z-50 flex w-full flex-col md:w-[440px]',
+            'bg-card shadow-[var(--shadow-raised)] md:border-l md:border-border',
             'focus:outline-none',
             className
           )}
         >
-          <div className="flex shrink-0 items-center justify-between border-b border-border px-6 py-5">
+          {/* Safe-area top clears the notch when the sheet is full-screen on mobile. */}
+          <div className="flex shrink-0 items-center justify-between border-b border-border px-6 pb-5 pt-[calc(env(safe-area-inset-top)+1.25rem)]">
             <Dialog.Title className="text-card-title">{title}</Dialog.Title>
             <Dialog.Close asChild>
               <Button variant="ghost" size="sm" className="size-8 p-0" aria-label="Close">

@@ -12,6 +12,7 @@ import type { Profile } from '@family-os/platform/types'
 import type { CalendarEvent, CalendarView, EventsResponse } from '../types'
 import {
   addDays,
+  agendaRange,
   buildWeek,
   dayTitle,
   layoutMonth,
@@ -19,8 +20,10 @@ import {
   rangeFor,
   weekTitle,
 } from '../lib/grid'
+import { useIsTabletUp } from '../lib/use-is-tablet'
 import { MonthGrid } from '../components/MonthGrid'
 import { DetailView } from '../components/DetailView'
+import { AgendaView } from '../components/AgendaView'
 import { CreateEventDrawer, type CreateEventInput } from '../components/CreateEventDrawer'
 
 const VIEW_OPTIONS: { value: CalendarView; label: string }[] = [
@@ -36,6 +39,11 @@ export function CalendarPage() {
   const canManage = tier >= 4
   const queryClient = useQueryClient()
 
+  // Below `md:` the page is the forward-looking agenda (story #4); at `md:`+ it's
+  // the glanceable month grid + week/day drill-ins. The surface and its query
+  // range both follow this, so only one query runs per device.
+  const isTabletUp = useIsTabletUp()
+
   const [view, setView] = useState<CalendarView>('month')
   const [cursor, setCursor] = useState<Date>(() => new Date())
   // Stable "now" for the session so the today-circle/dim treatment doesn't churn.
@@ -50,7 +58,10 @@ export function CalendarPage() {
   // "Just this week" vs "All events" choice).
   const [removeTarget, setRemoveTarget] = useState<CalendarEvent | null>(null)
 
-  const range = useMemo(() => rangeFor(view, cursor), [view, cursor])
+  const range = useMemo(
+    () => (isTabletUp ? rangeFor(view, cursor) : agendaRange(today)),
+    [isTabletUp, view, cursor, today]
+  )
 
   const eventsQuery = useQuery({
     queryKey: ['calendar/events', { from: range.from, to: range.to }],
@@ -178,7 +189,47 @@ export function CalendarPage() {
 
   const isLoading = eventsQuery.isLoading || profilesQuery.isLoading
 
-  return (
+  const errorCard = (
+    <div className="rounded-xl border border-border bg-card py-6 shadow-[var(--shadow-card)]">
+      <EmptyState
+        icon={CalendarDays}
+        heading="Couldn't load the calendar"
+        body="Something went wrong fetching events. Try again in a moment."
+      />
+    </div>
+  )
+
+  // Below `md:` — the forward-looking agenda (story #4): a mobile header with the
+  // tier-4 Add CTA, then the "Up next" hero + day-grouped rows.
+  const mobileSurface = (
+    <div className="w-full pt-5">
+      <div className="flex items-center justify-between gap-3 px-4 pb-3">
+        <h1 className="text-page-title text-foreground">Calendar</h1>
+        {canManage && (
+          <Button size="sm" className="h-10 shrink-0" onClick={() => openCreate(null)}>
+            <Plus className="mr-1 h-4 w-4" /> Add event
+          </Button>
+        )}
+      </div>
+      <div className="px-4 pb-10 pt-1">
+        {isLoading ? (
+          <AgendaSkeleton />
+        ) : eventsQuery.isError ? (
+          errorCard
+        ) : (
+          <AgendaView
+            events={events}
+            membersById={membersById}
+            now={today}
+            onEditEvent={canManage ? openEdit : undefined}
+            onAdd={canManage ? () => openCreate(null) : undefined}
+          />
+        )}
+      </div>
+    </div>
+  )
+
+  const tabletSurface = (
     <div className="mx-auto w-full max-w-[1100px] px-4 pb-12 pt-6 sm:px-6">
       {/* Chrome */}
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -216,13 +267,7 @@ export function CalendarPage() {
       {isLoading ? (
         <MonthSkeleton />
       ) : eventsQuery.isError ? (
-        <div className="rounded-xl border border-border bg-card py-6 shadow-[var(--shadow-card)]">
-          <EmptyState
-            icon={CalendarDays}
-            heading="Couldn't load the calendar"
-            body="Something went wrong fetching events. Try again in a moment."
-          />
-        </div>
+        errorCard
       ) : view === 'month' ? (
         <>
           <MonthGrid
@@ -249,6 +294,12 @@ export function CalendarPage() {
           onAddOnDay={canManage ? (date) => openCreate(date) : undefined}
         />
       )}
+    </div>
+  )
+
+  return (
+    <>
+      {isTabletUp ? tabletSurface : mobileSurface}
 
       {canManage && (
         <CreateEventDrawer
@@ -290,6 +341,33 @@ export function CalendarPage() {
           isPending={deleteEvent.isPending}
         />
       )}
+    </>
+  )
+}
+
+/* The mobile agenda's loading state: a hero block + a few pulsing rows, so the
+   surface doesn't jump when data lands. */
+function AgendaSkeleton() {
+  return (
+    <div className="flex flex-col gap-7">
+      <div className="h-28 rounded-2xl bg-muted/60 animate-pulse" />
+      <div className="flex flex-col gap-2.5">
+        <div className="mb-1 h-5 w-28 rounded bg-muted" />
+        {Array.from({ length: 3 }).map((_, i) => (
+          <div
+            key={i}
+            className="h-16 rounded-card border border-border bg-card shadow-[var(--shadow-card)]"
+          >
+            <div className="flex h-full items-center gap-3 px-4">
+              <div className="h-9 w-1 rounded-full bg-muted" />
+              <div className="flex flex-col gap-1.5">
+                <div className="h-4 w-40 rounded bg-muted/70 animate-pulse" />
+                <div className="h-3 w-24 rounded bg-muted/50 animate-pulse" />
+              </div>
+            </div>
+          </div>
+        ))}
+      </div>
     </div>
   )
 }

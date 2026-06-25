@@ -501,8 +501,9 @@ export function CreateEventDrawer({
           </div>
         </div>
 
-        {/* Footer */}
-        <div className="flex flex-col gap-2.5 border-t border-border p-6">
+        {/* Footer — safe-area bottom clears the home indicator on a full-screen
+            mobile sheet. */}
+        <div className="flex flex-col gap-2.5 border-t border-border p-6 pb-[calc(env(safe-area-inset-bottom)+1.5rem)]">
           <Button type="submit" className="w-full" disabled={!canSubmit || isSubmitting}>
             {isEdit
               ? isSubmitting
