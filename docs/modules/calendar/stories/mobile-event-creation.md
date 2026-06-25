@@ -1,7 +1,7 @@
 # Story: Mobile Event Creation
 
 **Module:** calendar
-**Status:** ⬜ Not Started
+**Status:** ✅ Done — 2026-06-24 (PR #31)
 
 ## User story
 
