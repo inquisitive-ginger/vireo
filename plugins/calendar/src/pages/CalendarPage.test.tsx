@@ -10,16 +10,49 @@ function jsonResponse(data: unknown) {
 
 // Capture the `from` of every events fetch so we can prove a nav refetch.
 let eventFroms: string[] = []
+// Set when the Activities lens fetches its series.
+let activitiesFetched = false
 
-function mockFetch(events: unknown[]) {
+function mockFetch(events: unknown[], activities: unknown[] = []) {
   return vi.fn((url: string) => {
     if (url.startsWith('/api/profiles')) {
       return jsonResponse([{ id: 'p1', name: 'Zoe', tier: 1 }])
+    }
+    if (url.startsWith('/api/calendar/activities')) {
+      activitiesFetched = true
+      return jsonResponse({ activities })
     }
     const from = new URL(url, 'http://x').searchParams.get('from') ?? ''
     eventFroms.push(from)
     return jsonResponse({ events })
   })
+}
+
+// A standing activity owned by p1 (Zoe, from the profiles mock).
+function anActivity() {
+  return {
+    id: 'act-1',
+    seriesId: 'act-1',
+    occurrenceDate: null,
+    isOccurrence: false,
+    title: 'Gymnastics',
+    description: null,
+    attendeeIds: ['p1'],
+    ownerId: 'p1',
+    createdBy: 'p1',
+    startsAt: new Date(2026, 6, 6, 16, 0).toISOString(),
+    endsAt: null,
+    allDay: false,
+    location: null,
+    recurrence: 'weekly',
+    recurrenceUntil: null,
+    isActivity: true,
+    status: 'confirmed',
+    source: 'manual',
+    reminderMinutes: null,
+    createdAt: '',
+    updatedAt: '',
+  }
 }
 
 // jsdom has no matchMedia; the surface hook reads it. Stub it to drive the
@@ -80,6 +113,7 @@ function renderPage(tier = 4) {
 
 beforeEach(() => {
   eventFroms = []
+  activitiesFetched = false
 })
 afterEach(() => {
   vi.unstubAllGlobals()
@@ -119,6 +153,44 @@ describe('CalendarPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Next' }))
     // A new range → a new query key → a fetch with a different `from`.
     await waitFor(() => expect(eventFroms.some((f) => f !== firstFrom)).toBe(true))
+  })
+
+  describe('activities lens (tablet)', () => {
+    it('switches to the Activities surface and lazily fetches the series', async () => {
+      vi.stubGlobal('fetch', mockFetch([], [anActivity()]))
+      renderPage(4)
+      await waitFor(() => expect(screen.getByText('Sun')).toBeInTheDocument())
+      // Lens is lazy — nothing fetched until the tab is opened.
+      expect(activitiesFetched).toBe(false)
+
+      fireEvent.click(screen.getByRole('tab', { name: 'Activities' }))
+      // Wait for the series to land → the roster renders.
+      expect(await screen.findByText('Gymnastics')).toBeInTheDocument()
+      expect(activitiesFetched).toBe(true)
+      expect(screen.getByRole('button', { name: 'Add activity' })).toBeInTheDocument()
+      // The month grid is gone (no weekday header).
+      expect(screen.queryByText('Sun')).not.toBeInTheDocument()
+    })
+
+    it('hides the Add-activity CTA below tier 4', async () => {
+      vi.stubGlobal('fetch', mockFetch([], []))
+      renderPage(3)
+      await waitFor(() => expect(screen.getByText('Sun')).toBeInTheDocument())
+      fireEvent.click(screen.getByRole('tab', { name: 'Activities' }))
+      await waitFor(() => expect(screen.getByText('No activities yet')).toBeInTheDocument())
+      expect(screen.queryByRole('button', { name: 'Add activity' })).not.toBeInTheDocument()
+    })
+
+    it('opens the create drawer in activity framing from Add activity', async () => {
+      vi.stubGlobal('fetch', mockFetch([], [anActivity()]))
+      renderPage(4)
+      await waitFor(() => expect(screen.getByText('Sun')).toBeInTheDocument())
+      fireEvent.click(screen.getByRole('tab', { name: 'Activities' }))
+      fireEvent.click(await screen.findByRole('button', { name: 'Add activity' }))
+      // The reused drawer opened with the "Add activity" header + repeat-weekly on.
+      expect(await screen.findByRole('heading', { name: 'Add activity' })).toBeInTheDocument()
+      expect(screen.getByRole('switch', { name: 'Repeat weekly' })).toBeChecked()
+    })
   })
 
   describe('mobile (below md:)', () => {
@@ -161,6 +233,18 @@ describe('CalendarPage', () => {
       const start = new Date()
       start.setHours(0, 0, 0, 0)
       expect(eventFroms[0]).toBe(start.toISOString())
+    })
+
+    it('reaches the Activities lens from the mobile tab bar', async () => {
+      stubViewport(false)
+      vi.stubGlobal('fetch', mockFetch([todayEvent()], [anActivity()]))
+      renderPage(4)
+      await waitFor(() => expect(screen.getByText('Soccer game')).toBeInTheDocument())
+      // The Calendar ⇄ Activities tier is present on mobile too.
+      fireEvent.click(screen.getByRole('tab', { name: 'Activities' }))
+      expect(await screen.findByText('Gymnastics')).toBeInTheDocument()
+      expect(activitiesFetched).toBe(true)
+      expect(screen.getByRole('button', { name: 'Add activity' })).toBeInTheDocument()
     })
   })
 })

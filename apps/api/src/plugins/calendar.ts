@@ -221,6 +221,27 @@ const calendarPlugin: FastifyPluginAsync = async (fastify) => {
     return { events: result }
   })
 
+  // GET /calendar/activities — the Activities lens (story #5). Returns each
+  // standing activity as its canonical series (NOT expanded into occurrences):
+  // an activity is a weekly-recurring event owned by exactly one person, derived
+  // as `is_activity` on write (ADR 038). Same shared-calendar view rule as events
+  // (tier 1+ sees them; management stays tier-4 on the event routes). The client
+  // derives weekday + time from `startsAt` and the season end from
+  // `recurrenceUntil`, so no range is needed here.
+  fastify.get('/calendar/activities', async (request, reply) => {
+    if (!request.ability.can('view', 'calendar.Event')) {
+      return reply.status(403).send({ error: 'Permission denied' })
+    }
+
+    const events = (await calendarPrisma.event.findMany({
+      where: { isActivity: true },
+      include: { attendees: true, exceptions: true },
+      orderBy: { startsAt: 'asc' },
+    })) as unknown as EventRow[]
+
+    return { activities: events.map((event) => serializeEvent(event)) }
+  })
+
   // POST /calendar/events — create an event (tier 4).
   fastify.post('/calendar/events', async (request, reply) => {
     if (!request.ability.can('create', 'calendar.Event')) {

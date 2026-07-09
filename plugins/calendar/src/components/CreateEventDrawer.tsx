@@ -112,18 +112,24 @@ const EventFormSchema = z
 
 type EventForm = z.input<typeof EventFormSchema>
 
-function blankDefaults(prefillDate?: Date | null): EventForm {
+function blankDefaults(opts?: {
+  prefillDate?: Date | null
+  ownerId?: string | null
+  asActivity?: boolean
+}): EventForm {
   return {
     title: '',
-    ownerIds: [],
+    // Activities are single-owner by definition; the per-person "+ Add" seeds it.
+    ownerIds: opts?.ownerId ? [opts.ownerId] : [],
     family: false,
     multiDay: false,
-    date: prefillDate ? startOfDay(prefillDate) : startOfDay(new Date()),
+    date: opts?.prefillDate ? startOfDay(opts.prefillDate) : startOfDay(new Date()),
     range: undefined,
     allDay: false,
     startTime: '09:00',
     endTime: '10:00',
-    repeatWeekly: false,
+    // An activity is a weekly commitment — repeat-weekly is implied (design.md §4).
+    repeatWeekly: Boolean(opts?.asActivity),
     until: undefined,
     location: '',
     description: '',
@@ -206,6 +212,12 @@ export interface CreateEventDrawerProps {
   /** Prefill the date in create mode (the agenda's per-day "+ Add"). Ignored in
       edit mode; defaults to today when absent. */
   prefillDate?: Date | null
+  /** Preselect a single owner in create mode (the roster's per-person "+ Add").
+      Ignored in edit mode. */
+  prefillOwnerId?: string | null
+  /** Activity framing (story #5): create seeds repeat-weekly on; the header, CTA,
+      and Remove copy swap "event" → "activity". */
+  activityContext?: boolean
   /** Set → edit mode: fields prefilled, header "Edit event", CTA "Save changes",
       Remove shown. Absent → create mode. */
   editingEvent?: CalendarEvent | null
@@ -220,11 +232,16 @@ export function CreateEventDrawer({
   onClose,
   members,
   prefillDate,
+  prefillOwnerId,
+  activityContext = false,
   editingEvent,
   onSubmit,
   onRemove,
 }: CreateEventDrawerProps) {
   const isEdit = Boolean(editingEvent)
+  // Copy noun — an activity is still an event under the hood, just framed as a
+  // standing commitment on this surface.
+  const noun = activityContext ? 'activity' : 'event'
   // Tracks whether the user has overridden the end time — until then it follows
   // the start by +60m.
   const endTouched = useRef(false)
@@ -240,16 +257,24 @@ export function CreateEventDrawer({
   } = useForm<EventForm>({
     resolver: zodResolver(EventFormSchema),
     mode: 'onChange',
-    defaultValues: blankDefaults(prefillDate),
+    defaultValues: blankDefaults({
+      prefillDate,
+      ownerId: prefillOwnerId,
+      asActivity: activityContext,
+    }),
   })
 
   // Reset each time the drawer opens — prefill from the event in edit mode,
-  // otherwise blank with the prefilled (or today's) date.
+  // otherwise blank with the prefilled date / owner / activity framing.
   useEffect(() => {
     if (!open) return
     endTouched.current = false
-    reset(editingEvent ? editDefaults(editingEvent) : blankDefaults(prefillDate))
-  }, [open, editingEvent, prefillDate, reset])
+    reset(
+      editingEvent
+        ? editDefaults(editingEvent)
+        : blankDefaults({ prefillDate, ownerId: prefillOwnerId, asActivity: activityContext })
+    )
+  }, [open, editingEvent, prefillDate, prefillOwnerId, activityContext, reset])
 
   const title = watch('title')
   const family = watch('family')
@@ -291,7 +316,7 @@ export function CreateEventDrawer({
   })
 
   return (
-    <Drawer open={open} onClose={onClose} title={isEdit ? 'Edit event' : 'Add event'}>
+    <Drawer open={open} onClose={onClose} title={`${isEdit ? 'Edit' : 'Add'} ${noun}`}>
       <form onSubmit={submit} className="flex h-full flex-col">
         <div className="flex-1 overflow-y-auto p-6">
           <div className="flex flex-col gap-6">
@@ -511,7 +536,7 @@ export function CreateEventDrawer({
                 : 'Save changes'
               : isSubmitting
                 ? 'Adding…'
-                : 'Add event'}
+                : `Add ${noun}`}
           </Button>
 
           {isEdit && onRemove && (
@@ -521,7 +546,7 @@ export function CreateEventDrawer({
               className="w-full text-destructive hover:bg-destructive/10 hover:text-destructive"
               onClick={onRemove}
             >
-              <Trash2 className="mr-1.5 h-4 w-4" /> Remove event
+              <Trash2 className="mr-1.5 h-4 w-4" /> Remove {noun}
             </Button>
           )}
         </div>

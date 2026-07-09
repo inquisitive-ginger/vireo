@@ -119,6 +119,21 @@ describe('CreateEventDrawer — create', () => {
     expect(lastInput(onSubmit).recurrence).toBe('weekly')
   })
 
+  it('activity framing seeds repeat-weekly + a preselected owner and swaps the copy', async () => {
+    const { onSubmit } = renderDrawer({ activityContext: true, prefillOwnerId: 'p2' })
+    // Copy swaps event → activity, and repeat-weekly is implied.
+    expect(screen.getByRole('heading', { name: 'Add activity' })).toBeInTheDocument()
+    expect(screen.getByRole('switch', { name: 'Repeat weekly' })).toBeChecked()
+
+    fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'T&T' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Add activity' }))
+
+    await waitFor(() => expect(onSubmit).toHaveBeenCalled())
+    const input = lastInput(onSubmit)
+    expect(input.attendeeIds).toEqual(['p2']) // the per-person "+ Add" owner
+    expect(input.recurrence).toBe('weekly')
+  })
+
   it('end time auto-follows the start by +60m until overridden', () => {
     renderDrawer()
     const end = screen.getByLabelText('End time') as HTMLInputElement

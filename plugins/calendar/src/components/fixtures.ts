@@ -67,6 +67,85 @@ function weekly(
   return out
 }
 
+// ─── Activities lens fixtures (story #5) ─────────────────────────────────────────
+// Standing activities as their canonical weekly series (NOT expanded occurrences —
+// the Activities lens reads series, unlike the month grid). `isActivity` is the
+// derived weekly + single-owner case.
+
+export const STORY_SEASON_END = '2026-08-25'
+
+function activity(o: {
+  title: string
+  ownerId: string
+  weekday: number
+  h: number
+  m: number
+  location?: string
+  until?: string | null
+}): CalendarEvent {
+  // The first June-2026 date matching the weekday — the series anchor the client
+  // reads weekday + time from.
+  let start = new Date(2026, 5, 1, o.h, o.m)
+  while (start.getDay() !== o.weekday) start = new Date(2026, 5, start.getDate() + 1, o.h, o.m)
+  const id = `act-${seq++}`
+  return {
+    id,
+    seriesId: id,
+    occurrenceDate: null,
+    isOccurrence: false,
+    title: o.title,
+    description: null,
+    attendeeIds: [o.ownerId],
+    ownerId: o.ownerId,
+    createdBy: 'p1',
+    startsAt: start.toISOString(),
+    endsAt: null,
+    allDay: false,
+    location: o.location ?? null,
+    recurrence: 'weekly',
+    recurrenceUntil: o.until ?? null,
+    isActivity: true,
+    status: 'confirmed',
+    source: 'manual',
+    reminderMinutes: null,
+    createdAt: '',
+    updatedAt: '',
+  }
+}
+
+export const STORY_ACTIVITIES: CalendarEvent[] = [
+  activity({
+    title: 'Gymnastics',
+    ownerId: 'p3',
+    weekday: 1,
+    h: 16,
+    m: 0,
+    location: 'Flips Gym',
+    until: STORY_SEASON_END,
+  }),
+  activity({
+    title: 'Karate',
+    ownerId: 'p3',
+    weekday: 3,
+    h: 16,
+    m: 30,
+    location: 'Dojo',
+    until: STORY_SEASON_END,
+  }),
+  activity({ title: 'Piano', ownerId: 'p3', weekday: 5, h: 15, m: 30 }),
+  activity({
+    title: 'T&T',
+    ownerId: 'p4',
+    weekday: 2,
+    h: 17,
+    m: 15,
+    location: 'Flips Gym',
+    until: STORY_SEASON_END,
+  }),
+  activity({ title: 'Swim', ownerId: 'p4', weekday: 4, h: 18, m: 0, location: 'Rec Center' }),
+  activity({ title: 'Yoga', ownerId: 'p2', weekday: 2, h: 18, m: 0 }),
+]
+
 export const STORY_EVENTS: CalendarEvent[] = [
   // Recurring activity backbone (solo).
   ...weekly('Gymnastics', ['p3'], 1, 16, 0),

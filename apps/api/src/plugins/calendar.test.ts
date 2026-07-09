@@ -335,6 +335,71 @@ describe('GET /calendar/events — list & weekly expansion', () => {
   })
 })
 
+// ─── Activities lens ─────────────────────────────────────────────────────────
+
+async function listActivities(cookie: string) {
+  return app.inject({ method: 'GET', url: '/api/calendar/activities', headers: { cookie } })
+}
+
+describe('GET /calendar/activities — the Activities lens', () => {
+  it('returns only weekly single-owner series (not one-offs, Family, or shared)', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    // An activity: weekly + exactly one owner.
+    await createEvent(cookie, {
+      title: 'Gymnastics',
+      startsAt: '2026-07-07T17:15:00.000Z',
+      attendeeIds: [KID_ID],
+      recurrence: 'weekly',
+      recurrenceUntil: '2026-08-25',
+    })
+    // Not activities: one-off owned, Family weekly (no owner), shared weekly (2 owners).
+    await createEvent(cookie, {
+      title: 'Haircut',
+      startsAt: '2026-07-02T15:00:00.000Z',
+      attendeeIds: [KID_ID],
+    })
+    await createEvent(cookie, {
+      title: 'Trash day',
+      startsAt: '2026-07-01T12:00:00.000Z',
+      recurrence: 'weekly',
+    })
+    await createEvent(cookie, {
+      title: 'Date night',
+      startsAt: '2026-07-04T23:00:00.000Z',
+      attendeeIds: [PARENT_ID, TEEN_ID],
+      recurrence: 'weekly',
+    })
+
+    const res = await listActivities(cookie)
+    expect(res.statusCode).toBe(200)
+    const acts = res.json().activities as Record<string, unknown>[]
+    expect(acts.map((a) => a.title)).toEqual(['Gymnastics'])
+    // Canonical series (not an expanded occurrence) carrying the lens's fields.
+    expect(acts[0]).toMatchObject({
+      isActivity: true,
+      ownerId: KID_ID,
+      recurrenceUntil: '2026-08-25',
+      isOccurrence: false,
+    })
+    expect(acts[0].seriesId).toBe(acts[0].id)
+  })
+
+  it('is readable by any tier 1+ (shared calendar)', async () => {
+    const parent = await getCookieForProfile(PARENT_ID)
+    await createEvent(parent, {
+      title: 'Swim',
+      startsAt: '2026-07-09T18:00:00.000Z',
+      attendeeIds: [KID_ID],
+      recurrence: 'weekly',
+    })
+    const kid = await getCookieForProfile(KID_ID)
+    const res = await listActivities(kid)
+    expect(res.statusCode).toBe(200)
+    const titles = (res.json().activities as { title: string }[]).map((a) => a.title)
+    expect(titles).toContain('Swim')
+  })
+})
+
 // ─── Update ──────────────────────────────────────────────────────────────────
 
 describe('PATCH /calendar/events/:id', () => {
