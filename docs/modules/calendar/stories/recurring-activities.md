@@ -1,7 +1,7 @@
 # Story: Recurring Activities (first-class)
 
 **Module:** calendar
-**Status:** ⬜ Not Started
+**Status:** ✅ Done — 2026-07-09 (PR #32)
 
 ## User story
 

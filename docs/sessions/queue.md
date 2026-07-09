@@ -54,8 +54,17 @@
    tier-4 Add CTA. Shared `Drawer` → full-width on mobile; new reusable
    `MobileCanvas` Storybook device canvas. Removed the leftover story-3 drawer
    exploration. See `logs/2026-06-24-dev-calendar-mobile-event-creation.md`.
-5. **Recurring Activities** ← **next.** [stories/recurring-activities.md](../modules/calendar/stories/recurring-activities.md). Recurring series surfaced/managed as named Activities (`is_activity`). _Depends on #1, #3._
-6. **Event Reminders** — [stories/event-reminders.md](../modules/calendar/stories/event-reminders.md). Time-based reminders via `platform.notify()` + Web Push. **Gated by the reminder-scheduling owed ADR.** _Depends on #1, #3._
+5. **Recurring Activities** — ✅ **Done 2026-07-09 (PR #32).** Activities **lens**
+   (`is_activity` series): `GET /calendar/activities`; `ActivitiesView` with
+   `[Roster · Seasons]` sub-tabs (owner roster + weekday-load; season Gantt);
+   two-tier `Calendar ⇄ Activities` chrome (tablet + mobile); reused drawer w/
+   activity framing. New reusable `TabBar` primitive; `cursor`/44px-row-action/`ItemCard`
+   convention alignments. See `logs/2026-07-09-dev-recurring-activities.md`.
+6. **Event Reminders** ← **next (resolve the reminder-scheduling ADR first).**
+   [stories/event-reminders.md](../modules/calendar/stories/event-reminders.md).
+   Time-based reminders via `platform.notify()` + Web Push. **Gated by the
+   reminder-scheduling owed ADR.** _Depends on #1, #3._ (Or **#7 Up Next Widget** —
+   unblocked now.)
 7. **Up Next Widget** — [stories/up-next-widget.md](../modules/calendar/stories/up-next-widget.md). `calendar.up-next` (family + mine framings, sizes, empty states); fills the reserved slot. _Depends on #1 (#2 ideal) + Design._
 8. **Suggested Events Inbox** — [stories/suggested-events-inbox.md](../modules/calendar/stories/suggested-events-inbox.md). ⬜ **Deferred north star.** Model reserved in #1 (`status`/`source`); email/newsletter parsing build is post-MVP. **Gated by the external-ingest owed ADR.** _Schedule after the MVP is in daily use._
 
@@ -225,6 +234,10 @@ scheduled.
 ---
 
 ## Recently Completed
+
+- **2026-07-09 — M3 Dev: Calendar Recurring Activities (story 5)** ![Type](https://img.shields.io/badge/Type-Development-orange)
+  A first-class **Activities lens** — standing commitments (weekly-recurring + single owner, the derived `is_activity`) surfaced/managed as named activities, grouped by owner. **`GET /calendar/activities`** returns each activity as its canonical **series** (no occurrence expansion; tier 1+). **`ActivitiesView`** splits two questions behind a **`[Roster · Seasons]`** sub-switch: **Roster** = owner-grouped list (color = person) + per-kid **weekday-load strip** ("is Teddy overbooked?"), tier-4 per-person **+ Add** / row **edit·remove**; **Seasons** = a schematic Gantt to each activity's end. **Two-tier chrome** — a primary **`Calendar ⇄ Activities`** tier over Month/Week/Day, on **both tablet and mobile** (lazy `['calendar/activities']` query). Reused **`CreateEventDrawer`** with activity framing (repeat-weekly implied, per-person owner prefill, `event → activity` copy); edit/remove reuse the story-1 series PATCH/DELETE. **UX gate:** co-existence = **Frame B (two-tier tabs)**, Roster/Seasons = **sub-tabs** (approved via live playground frames). **New primitive `TabBar`** (`@family-os/ui`) — underline ARIA tablist, roving tabindex + arrow-key nav + `tabpanel` association (kept custom, not `@radix-ui/react-tabs`, per the `SegmentedControl` precedent); story + 7 tests. **Live-review course-corrections, all folded in:** Activities on **mobile** (was tablet-only) + responsive roster header; `cursor-pointer` on `TabBar` **and** `SegmentedControl`; **44px** `ghost`/`ghost-destructive` row actions (pencil hidden on mobile, tap-row edits); Activities row → **`ItemCard`** (was hand-rolled). Deleted the superseded **Activities exploration** story (real component shipped). All 7 ACs ✅; typecheck (10 pkgs) + lint clean; API calendar **26** (2 new) · calendar **58** · ui incl. `TabBar` **7** green; live-reviewed + signed off.
+  _See:_ `docs/sessions/logs/2026-07-09-dev-recurring-activities.md`
 
 - **2026-06-24 — M3 Dev: Calendar Mobile Event Creation (story 4)** ![Type](https://img.shields.io/badge/Type-Development-orange)
   The mobile PWA calendar surface — capture-once. **`AgendaView`** (calendar plugin): a forward-looking, day-grouped read surface led by an **"Up next" hero** (owner-colour wash) + full-width **`AgendaRow`** `ItemCard`s with a **leading time column**; warm Today / Later today / Tomorrow / weekday headers; tap-to-edit (tier 4); empty + read-only states. **`CalendarPage` branches by viewport** (`useIsTabletUp`, `md:`/768px): **agenda below `md:`**, the existing **month/week/day at `md:`+**, each with its own query range (`agendaRange` vs `rangeFor`) so **one query runs per device**; tier-4 **Add** CTA in the mobile header opens the reused **`CreateEventDrawer`**. Shared **`Drawer`** → **full-width sheet below `md:`** (440px rail at `md:`+) + safe-area insets (chores' drawer inherits it). New reusable **`MobileCanvas`** Storybook canvas composes the **real** `MobileBrandTopBar` + `BottomTabBar` at a phone viewport. **UX gate:** phone-frame playground → **"Up Next hero"** approved; rows reuse `ItemCard` full-width; one Lora moment per route (page title), hero on DM Sans `text-heading`. Removed the leftover **story-3 event-drawer exploration** (missed at #3). typecheck (10 pkgs) + lint clean; calendar **47** + ui **52** green; federated build green; live-reviewed + signed off. ADR 037 supersedes the story's "native date pickers" wording (the #3 form is reused, not forked).

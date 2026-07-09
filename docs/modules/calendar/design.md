@@ -2,11 +2,11 @@
 
 > Locked in **M3 Design: Calendar** (2026-06-22). The dev-facing distillation of
 > `docs/sessions/logs/2026-06-22-design-calendar.md`. The interactive Storybook
-> playground that served as the visual reference lives under **`Calendar Exploration/…`**
-> (Month Grid · Event Drawer · Activities · Up Next Widget) plus the real
-> **`Primitives/DatePicker`** — retained until the real calendar-plugin components
-> ship, then deleted (same lifecycle as the M2 Chores Playground). Cross-cutting
-> conventions are in `docs/design-system.md`.
+> playground that served as the visual reference lived under **`Calendar Exploration/…`**;
+> each exploration is deleted as its real component ships (same lifecycle as the M2
+> Chores Playground). **Only `Up Next Widget` remains** — Month Grid (#2), Event Drawer
+> (#3/#4), and Activities (#5) shipped as real `calendar`-plugin components (+ the real
+> **`Primitives/DatePicker`**). Cross-cutting conventions are in `docs/design-system.md`.
 
 > **Product constraints (locked in planning, honored here):** one shared calendar;
 > tier-4 creates/edits; simple weekly recurrence; month default with week/day
