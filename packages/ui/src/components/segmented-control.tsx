@@ -71,7 +71,7 @@ export function SegmentedControl<T extends string>({
             tabIndex={selected ? 0 : -1}
             onClick={() => onChange(option.value)}
             className={cn(
-              'rounded px-3 py-1 text-sm-token font-medium transition-colors',
+              'cursor-pointer rounded px-3 py-1 text-sm-token font-medium transition-colors',
               selected
                 ? 'bg-primary text-primary-foreground'
                 : 'text-muted-foreground hover:bg-muted'

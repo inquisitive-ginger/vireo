@@ -30,4 +30,14 @@ export interface EventsResponse {
   events: CalendarEvent[]
 }
 
+/** `GET /api/calendar/activities` — standing activities as canonical series (not
+ *  expanded into occurrences). See `apps/api/src/plugins/calendar.ts`. */
+export interface ActivitiesResponse {
+  activities: CalendarEvent[]
+}
+
 export type CalendarView = 'month' | 'week' | 'day'
+
+/** The calendar's primary surface tier: the time grid (month/week/day) vs. the
+ *  Activities lens (grouped by person). See design.md §4. */
+export type CalendarLens = 'calendar' | 'activities'
