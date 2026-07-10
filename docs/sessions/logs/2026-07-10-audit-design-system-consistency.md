@@ -435,6 +435,43 @@ Atomic tasks, grouped by axis. "Parallel" means no shared files / no ordering co
 - Should the Radix-backing question for TabBar/SegmentedControl (#7, #8) become a small ADR? Both components are complete and well-built; the real decision is policy ("hand-rolled focus management is acceptable when X") rather than per-component.
 - The widget-slot error boundary (#3) is arguably an unshipped M1 story remnant rather than an audit-scoped cleanup — it may deserve its own queue entry rather than a slot in the fix workflow.
 
+## Execution addendum — fixes applied same day (2026-07-10)
+
+The Part C plan was executed in this same session on branch `audit/design-system-fixes`
+(6 parallel/sequential fix agents in disjoint file territories), live-reviewed,
+signed off, and **fast-forward merged to main** — 74 files, 4 commits:
+
+1. `[platform/design-audit]` — tokens + design-system.md §Spacing + this report
+2. `[ui/design-audit]` — a11y + token compliance + shared primitives in packages/ui
+3. `[shell/design-audit]` — WidgetErrorBoundary/ErrorCard wiring, Level-3 route errors, Settings SegmentedControls, shell migration
+4. `[plugins/design-audit]` — spacing/radius/type migration + DRY consolidation across chores/calendar/family-feed
+
+**Verification:** typecheck + lint clean on all 5 packages; tests green (ui 81 —
+14 new; calendar 66; shell 3 — WidgetErrorBoundary new; chores/feed have no test
+files); Storybook builds; shell builds with all 12 new token utilities confirmed
+emitting; the arbitrary-`[Npx]` sweep returns only the documented exemption list.
+
+**Task-level outcomes vs the Part C plan:**
+
+- Executed in full: every task except the two below.
+- `settings-segmented-controls` — 3 of 4 groups converted. The Appearance
+  (light/system/dark) control needs an optional per-option icon slot on
+  `SegmentedControl` before it can convert without dropping its icons.
+  **Follow-up.**
+- Radix-decision tasks (`tabbar-radix-decision`, `segmented-radix-decision`) —
+  resolved as "complete + document" (Home/End added, header comments record the
+  deliberate hand-roll); no Radix rebuild, no new deps.
+- Deliberate exemptions recorded in code: the TodaySummary coin numeral inline
+  15px (geometry-coupled to the coin composite), FlightChip gold glow shadow
+  (awaits `--reward-*` promotion), profile-avatar 22px initials (size-coupled).
+- Extra fixes found during execution: bell-badge severity bubble used hardcoded
+  `text-white` — a latent contrast bug on `--warning` (dark foreground token);
+  now uses the paired `-foreground` tokens.
+
+**Open follow-ups:** SegmentedControl icon slot → convert Settings Appearance;
+`--reward-*` gold token promotion (second consumer rule); optional ADR for the
+"hand-rolled focus management is acceptable when…" policy (#7/#8).
+
 ## What the next session needs to know
 
 - This was read-only: no code, docs (other than this log), or config changed; nothing committed by the audit itself.
