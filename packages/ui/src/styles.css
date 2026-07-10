@@ -31,6 +31,29 @@
   --radius-card: 0.5rem;
 }
 
+/* Spacing & dimension tokens (design-system.md §Spacing; settled 2026-07-10
+   design-system audit). Plain @theme (not inline) so the custom properties
+   also exist at runtime for calc() safe-area expressions. Rhythm spacing uses
+   the base-4 numeric scale (p-2, px-4, my-6, …) — these tokens name the fixed
+   UI dimensions that are not rhythm. */
+@theme {
+  /* Corner radii for surfaces larger than a row.
+     panel: panels, widget pills, compose chrome. hero: hero cards. */
+  --radius-panel: 0.75rem;
+  --radius-hero: 1rem;
+
+  --spacing-touch: 48px; /* minimum touch target */
+  --spacing-row-touch: 64px; /* minimum interactive card/list-item height */
+  --spacing-tab-bar: 56px; /* mobile bottom tab bar */
+  --spacing-top-bar: 52px; /* mobile brand top bar */
+  --spacing-sidebar: 220px; /* tablet sidebar (settled, ADR 022) */
+  --spacing-meter: 6px; /* progress-meter bar height */
+
+  /* Fixed content widths (→ max-w-content, w-drawer) */
+  --container-content: 680px;
+  --container-drawer: 440px;
+}
+
 /* Font family utilities */
 @utility font-display {
   font-family: var(--font-display);
@@ -57,6 +80,15 @@
   line-height: 1.4;
   letter-spacing: 0.1em;
   text-transform: uppercase;
+}
+
+/* 11px regular — the settled placeholder/error-card description size,
+   which the scale previously had no token for (xs is 600-weight). */
+@utility text-xs-body {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.4;
 }
 
 @utility text-sm-token {

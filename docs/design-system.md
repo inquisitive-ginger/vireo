@@ -13,6 +13,7 @@ explicitly marked — do not treat absence of a spec as a free choice.
 - [Technology Stack](#technology-stack)
 - [Typography](#typography)
 - [Color & Tokens](#color--tokens)
+- [Spacing](#spacing)
 - [Surfaces](#surfaces)
 - [Role-Aware Rendering](#role-aware-rendering)
 - [Login / Profile Switch](#login--profile-switch)
@@ -100,6 +101,7 @@ All tokens are defined as CSS utilities in `packages/ui/src/styles.css` and are 
 | Token           | Utility class        | px  | Weight | Line-height | Tracking | Font                       |
 | --------------- | -------------------- | --- | ------ | ----------- | -------- | -------------------------- |
 | `xs`            | `text-xs-token`      | 10  | 600    | 1.4         | 0        | DM Sans                    |
+| `xs-body`       | `text-xs-body`       | 11  | 400    | 1.4         | 0        | DM Sans                    |
 | `section-label` | `text-section-label` | 11  | 700    | 1.4         | 0.1em    | DM Sans · always uppercase |
 | `sm`            | `text-sm-token`      | 13  | 400    | 1.5         | 0        | DM Sans                    |
 | `base`          | `text-base-token`    | 14  | 400    | 1.5         | 0        | DM Sans                    |
@@ -114,6 +116,7 @@ All tokens are defined as CSS utilities in `packages/ui/src/styles.css` and are 
 
 **Usage notes:**
 
+- `xs-body` — smallest regular-weight text: placeholder/error-card descriptions, tier pills, meta captions (added 2026-07-10 audit — the settled placeholder/error anatomies specified 11px/400 with no token to express it)
 - `section-label` — `--muted-foreground` by default; `--accent` when naming a module surface (widget identity headers, feed day markers); uppercase is baked into the utility
 - `prose` — user-authored content only (feed posts, notes, messages). The family's own words get the warmth of the display face; text _about_ the UI never does. Same 18px viewing-distance floor as `body`
 - `page-title` — one per route; renders in Lora
@@ -260,6 +263,71 @@ A manual dark mode toggle is available to all tiers in display preferences.
 The preference is stored per-profile and overrides `prefers-color-scheme` on
 load. The family pseudo-profile always follows `prefers-color-scheme`.
 Implemented in the M1 home-surface story.
+
+---
+
+## Spacing
+
+**Settled** — design-system audit, 2026-07-10 (decisions recorded in
+`docs/sessions/logs/2026-07-10-audit-design-system-consistency.md`, Part B).
+
+Spacing is either a **numeric step on the base-4 grid** or a **semantic
+dimension token** — never a bracket-arbitrary `[Npx]` value. Tailwind v4
+derives every numeric utility from the `--spacing: 0.25rem` base, so the
+rhythm scale is a convention, not CSS.
+
+### Rhythm scale
+
+| Step | Example utility             | px  | Role                                             |
+| ---- | --------------------------- | --- | ------------------------------------------------ |
+| 0.5  | `gap-0.5`                   | 2   | hairline gaps                                    |
+| 1    | `w-1`                       | 4   | Spine width, tight inline gaps                   |
+| 1.5  | `gap-1.5`                   | 6   | icon–label gaps, chip padding                    |
+| 2    | `p-2`                       | 8   | dense row padding, field-label gap               |
+| 2.5  | `px-2.5`                    | 10  | compact controls                                 |
+| 3    | `py-3`                      | 12  | row padding (`ItemCard` `py`)                    |
+| 3.5  | `px-3.5`                    | 14  | —                                                |
+| 4    | `px-4`                      | 16  | card padding (`ItemCard` `px`), grid gap, insets |
+| 5    | `p-5`                       | 20  | —                                                |
+| 6    | `p-6`                       | 24  | panel padding, widget section rhythm             |
+| 8    | `p-8`                       | 32  | page-level breathing room                        |
+| 12+  | `w-18`, `min-h-32`, `w-35`… | 4×N | larger fixed dimensions stay on the grid         |
+
+No custom off-grid steps exist — 7/18/22px legacy values were snapped to the
+grid (2026-07-10 decision a).
+
+### Semantic dimension tokens
+
+Defined in `packages/ui/src/styles.css` (`@theme`).
+
+| Token                 | Value | Utility                     | Role                                            |
+| --------------------- | ----- | --------------------------- | ----------------------------------------------- |
+| `--spacing-touch`     | 48px  | `min-h-touch`/`min-w-touch` | Minimum touch target                            |
+| `--spacing-row-touch` | 64px  | `min-h-row-touch`           | Minimum interactive card/list-item height       |
+| `--spacing-tab-bar`   | 56px  | `h-tab-bar`, safe-area calc | Mobile bottom tab bar + anything anchored to it |
+| `--spacing-top-bar`   | 52px  | `min-h-top-bar`             | Mobile brand top bar                            |
+| `--spacing-sidebar`   | 220px | `w-sidebar`                 | Tablet sidebar (ADR 022)                        |
+| `--spacing-meter`     | 6px   | `h-meter`                   | Progress-meter bar height                       |
+| `--container-content` | 680px | `max-w-content`             | Single-column content pages                     |
+| `--container-drawer`  | 440px | `md:w-drawer`               | Side-drawer width                               |
+
+### Radius family
+
+| Token            | Value          | Utility         | Surfaces                              |
+| ---------------- | -------------- | --------------- | ------------------------------------- |
+| `--radius-card`  | 0.5rem (8px)   | `rounded-card`  | Card rows (`ItemCard`)                |
+| `--radius-panel` | 0.75rem (12px) | `rounded-panel` | Panels, widget pills, compose chrome  |
+| `--radius-hero`  | 1rem (16px)    | `rounded-hero`  | Hero cards (FocusView, NextEventHero) |
+
+### Rules
+
+- Bracket-arbitrary `[Npx]` spacing/size values are banned. Exemptions:
+  component-internal geometry (switch thumb travel, stroke widths, focus
+  offsets, hairline indicators) and safe-area `calc()` expressions — which
+  must derive from the tokens (`calc(var(--spacing-tab-bar) + env(…))`).
+- One-off fixed widths with a single consumer (confirm dialog, notification
+  tray, wide calendar canvas) stay local; promote to a `--container-*` token
+  when a second consumer appears.
 
 ---
 
@@ -637,7 +705,16 @@ call site passes an identity hue (multi-person surfaces) or a status color
 
 **Card-row radius is one token.** `--radius-card` (`0.5rem`, Tailwind `rounded-card`)
 is the canonical corner for every card-chrome row. `ItemCard` applies it; don't
-reach for `rounded-[14px]`/`rounded-lg` on a card row.
+reach for `rounded-[14px]`/`rounded-lg` on a card row. Surfaces larger than a row
+use `--radius-panel` / `--radius-hero` — see [Spacing](#spacing).
+
+> **Sanctioned exception — chores AdminBoard (recorded 2026-07-10, design-system
+> audit).** A dense, divider-separated lane list whose rows need affordances
+> `ItemCard` doesn't model (a stretched tap-to-edit overlay button, a
+> multi-control trailing cluster) may hand-roll the row flex scaffold. It must
+> still compose `<Spine>` and follow _Status vs identity colour_, and its rows
+> must meet `--spacing-row-touch`. The AdminBoard is the reference case; a new
+> surface claiming this exception should be added to this note.
 
 > **Reconciled 2026-06-23.** Feed (`FeedPostCard`), chores (`TaskCard`), and
 > calendar (`EventRow`) each hand-rolled this skeleton with drifted radii (14px vs
