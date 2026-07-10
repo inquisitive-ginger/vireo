@@ -63,9 +63,16 @@
 6. **Event Reminders** ← **next (resolve the reminder-scheduling ADR first).**
    [stories/event-reminders.md](../modules/calendar/stories/event-reminders.md).
    Time-based reminders via `platform.notify()` + Web Push. **Gated by the
-   reminder-scheduling owed ADR.** _Depends on #1, #3._ (Or **#7 Up Next Widget** —
-   unblocked now.)
-7. **Up Next Widget** — [stories/up-next-widget.md](../modules/calendar/stories/up-next-widget.md). `calendar.up-next` (family + mine framings, sizes, empty states); fills the reserved slot. _Depends on #1 (#2 ideal) + Design._
+   reminder-scheduling owed ADR.** _Depends on #1, #3._ **Last MVP story standing.**
+7. **Up Next Widget** — ✅ **Done 2026-07-10 (PR #33).** `calendar.up-next`
+   (Frame C "Next Hero"): a shared `NextEventHero` over a **height-aware**
+   day-grouped agenda (whole-rows fit + "+N more", `ResizeObserver`); Family/Mine
+   framings; **container-query self-sizing**; shared `['calendar/events']` key so a
+   page mutation refreshes the widget. Extracted `NextEventHero` from the mobile
+   agenda (`AgendaView` reuses it); added `relativeWhen()` to `lib/grid`. Renamed
+   the seeded slot `calendar.today`→`calendar.up-next` (seed + dev + 2 API tests).
+   Drive-by: fixed `FeedPostCard` timestamp alignment. See
+   `logs/2026-07-10-dev-up-next-widget.md`.
 8. **Suggested Events Inbox** — [stories/suggested-events-inbox.md](../modules/calendar/stories/suggested-events-inbox.md). ⬜ **Deferred north star.** Model reserved in #1 (`status`/`source`); email/newsletter parsing build is post-MVP. **Gated by the external-ingest owed ADR.** _Schedule after the MVP is in daily use._
 
 ---

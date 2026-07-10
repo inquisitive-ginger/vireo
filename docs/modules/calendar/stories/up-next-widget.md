@@ -1,7 +1,7 @@
 # Story: Up Next Widget
 
 **Module:** calendar
-**Status:** ⬜ Not Started
+**Status:** ✅ Done
 
 ## User story
 
