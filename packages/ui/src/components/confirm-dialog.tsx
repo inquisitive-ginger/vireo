@@ -31,10 +31,7 @@ export function ConfirmDialog({
   return (
     <AlertDialog.Root open={open} onOpenChange={(isOpen) => !isOpen && onCancel()}>
       <AlertDialog.Portal>
-        <AlertDialog.Overlay
-          className="fixed inset-0 z-[60]"
-          style={{ background: 'oklch(0.18 0.04 50 / 0.35)', backdropFilter: 'blur(3px)' }}
-        />
+        <AlertDialog.Overlay className="fixed inset-0 z-[60] bg-black/15 backdrop-blur-[1px]" />
         <AlertDialog.Content
           className="fixed left-1/2 top-1/2 z-[60] -translate-x-1/2 -translate-y-1/2 bg-card border border-border rounded-xl p-6 w-[340px] focus:outline-none"
           style={{ boxShadow: 'var(--shadow-raised)' }}
@@ -43,7 +40,7 @@ export function ConfirmDialog({
           <AlertDialog.Title className="text-card-title mb-2 text-foreground">
             {title}
           </AlertDialog.Title>
-          <AlertDialog.Description className="text-[13px] text-muted-foreground leading-relaxed mb-5">
+          <AlertDialog.Description className="text-sm-token text-muted-foreground leading-relaxed mb-5">
             {description}
           </AlertDialog.Description>
           {hasSecondary ? (

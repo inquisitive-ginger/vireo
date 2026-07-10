@@ -15,7 +15,7 @@ export interface FieldLabelProps {
 
 export function FieldLabel({ children, htmlFor, optional, className }: FieldLabelProps) {
   return (
-    <Label htmlFor={htmlFor} className={cn('mb-[7px] block', className)}>
+    <Label htmlFor={htmlFor} className={cn('mb-2 block', className)}>
       {children}
       {optional && <span className="font-normal opacity-65"> (optional)</span>}
     </Label>

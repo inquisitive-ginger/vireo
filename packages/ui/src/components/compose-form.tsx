@@ -32,15 +32,7 @@ export function ComposeForm({
   }
 
   return (
-    <div
-      style={{
-        background: 'var(--card)',
-        border: '1px solid var(--border)',
-        borderRadius: 14,
-        padding: '16px 18px',
-        boxShadow: 'var(--shadow-raised)',
-      }}
-    >
+    <div className="rounded-panel border border-border bg-card px-4 py-4 shadow-[var(--shadow-raised)]">
       <div className="flex gap-3 items-start">
         <ProfileAvatar name={authorName} size="base" />
         <Textarea
@@ -53,7 +45,7 @@ export function ComposeForm({
           className="text-prose border-none bg-transparent shadow-none focus-visible:ring-0 px-0 py-1.5"
         />
       </div>
-      <div style={{ height: 1, background: 'var(--border)', margin: '12px 0' }} />
+      <div className="my-3 h-px bg-border" />
       <div className="flex gap-2 justify-end">
         <Button size="sm" variant="ghost" onClick={onCancel} disabled={isSubmitting}>
           Cancel

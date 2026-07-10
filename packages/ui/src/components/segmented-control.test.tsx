@@ -63,4 +63,12 @@ describe('SegmentedControl', () => {
     fireEvent.keyDown(screen.getByRole('radiogroup'), { key: 'ArrowLeft' })
     expect(onChange).toHaveBeenCalledWith('day')
   })
+
+  it('jumps to the first option on Home and the last on End', () => {
+    const { onChange } = setup('week')
+    fireEvent.keyDown(screen.getByRole('radiogroup'), { key: 'Home' })
+    expect(onChange).toHaveBeenCalledWith('month')
+    fireEvent.keyDown(screen.getByRole('radiogroup'), { key: 'End' })
+    expect(onChange).toHaveBeenCalledWith('day')
+  })
 })

@@ -29,14 +29,8 @@ export function EmptyState({
   if (compact) {
     return (
       <div className="flex flex-col items-center justify-center gap-2 px-6 py-3 text-center">
-        <h2 className="text-card-title" style={{ color: 'var(--foreground)', margin: 0 }}>
-          {heading}
-        </h2>
-        {body && (
-          <p className="text-sm-token" style={{ color: 'var(--muted-foreground)', margin: 0 }}>
-            {body}
-          </p>
-        )}
+        <h2 className="text-card-title m-0 text-foreground">{heading}</h2>
+        {body && <p className="text-sm-token m-0 text-muted-foreground">{body}</p>}
         {action}
       </div>
     )
@@ -48,18 +42,12 @@ export function EmptyState({
         <Icon
           size={36}
           strokeWidth={1.5}
-          style={{ color: 'var(--muted-foreground)', opacity: 0.4 }}
+          className="text-muted-foreground opacity-40"
           aria-hidden
         />
       )}
-      <h2 className="text-display-lg" style={{ color: 'var(--foreground)', margin: 0 }}>
-        {heading}
-      </h2>
-      {body && (
-        <p className="text-body" style={{ color: 'var(--muted-foreground)', margin: 0 }}>
-          {body}
-        </p>
-      )}
+      <h2 className="text-display-lg m-0 text-foreground">{heading}</h2>
+      {body && <p className="text-body m-0 text-muted-foreground">{body}</p>}
       {action}
     </div>
   )

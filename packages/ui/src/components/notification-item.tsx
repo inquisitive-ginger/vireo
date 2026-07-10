@@ -58,7 +58,6 @@ export function NotificationItem({
   className,
 }: NotificationItemProps) {
   const Icon = VARIANT_ICON[variant]
-  const [hovered, setHovered] = useState(false)
   const [anim, setAnim] = useState<{ x: number; easing: AnimEasing }>({ x: 0, easing: 'none' })
   const dismissingRef = useRef(false)
 
@@ -86,9 +85,9 @@ export function NotificationItem({
 
   const transitionStyle: string =
     anim.easing === 'dismiss'
-      ? 'transform 180ms ease-in'
+      ? 'transform var(--duration-normal) var(--ease-in)'
       : anim.easing === 'snap'
-        ? 'transform 300ms cubic-bezier(0.34, 1.56, 0.64, 1)'
+        ? 'transform var(--duration-slow) var(--ease-out)'
         : 'none'
 
   const backdropOpacity = Math.min(1, Math.abs(anim.x) / DISMISS_THRESHOLD)
@@ -104,9 +103,10 @@ export function NotificationItem({
 
   return (
     <div
-      className={cn('relative overflow-hidden border-b border-border last:border-0', className)}
-      onMouseEnter={() => setHovered(true)}
-      onMouseLeave={() => setHovered(false)}
+      className={cn(
+        'group relative overflow-hidden border-b border-border last:border-0',
+        className
+      )}
     >
       {/* swipe backdrop — red strip revealed as item slides left */}
       {onDelete && (
@@ -141,7 +141,7 @@ export function NotificationItem({
         <div className="flex-1 min-w-0">
           <div className="flex items-baseline justify-between gap-2">
             <p
-              className="text-sm leading-snug truncate"
+              className="text-base-token leading-snug truncate"
               style={{
                 fontWeight: isRead ? 400 : 600,
                 color: isRead ? 'var(--muted-foreground)' : 'var(--foreground)',
@@ -151,12 +151,12 @@ export function NotificationItem({
             </p>
             <div className="flex items-center gap-1.5 shrink-0">
               <span
-                className="text-xs text-muted-foreground"
+                className="text-sm-token text-muted-foreground"
                 style={{ opacity: isRead ? 0.6 : 0.85 }}
               >
                 {formatRelativeTime(createdAt)}
               </span>
-              {onDelete && hovered && (
+              {onDelete && (
                 <Button
                   variant="ghost"
                   size="icon-sm"
@@ -165,6 +165,7 @@ export function NotificationItem({
                     onDelete()
                   }}
                   aria-label={`Delete notification: ${title}`}
+                  className="opacity-0 transition-opacity duration-[var(--duration-fast)] group-hover:opacity-100 focus-visible:opacity-100"
                 >
                   <X size={10} />
                 </Button>
@@ -172,7 +173,9 @@ export function NotificationItem({
             </div>
           </div>
           {body && (
-            <p className="text-sm text-muted-foreground leading-snug mt-0.5 line-clamp-2">{body}</p>
+            <p className="text-sm-token text-muted-foreground leading-snug mt-0.5 line-clamp-2">
+              {body}
+            </p>
           )}
         </div>
       </div>

@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, useState } from 'react'
 import { cn } from '../lib/utils'
 
 export type PinInputSize = 'sm' | 'md'
@@ -26,7 +26,9 @@ export function PinInput({
   className,
 }: PinInputProps) {
   const inputRef = useRef<HTMLInputElement>(null)
+  const [focused, setFocused] = useState(false)
   const s = SIZE[size]
+  const activeIndex = Math.min(value.length, 3)
 
   return (
     <div className={cn('flex flex-col items-center gap-4', className)}>
@@ -36,6 +38,8 @@ export function PinInput({
         inputMode="numeric"
         value={value}
         onChange={(e) => onChange(e.target.value.replace(/\D/g, '').slice(0, 4))}
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
         className="sr-only"
         aria-label="PIN entry"
         autoFocus={autoFocus}
@@ -57,10 +61,10 @@ export function PinInput({
               error
                 ? 'border-destructive'
                 : i < value.length
-                  ? 'border-primary'
-                  : 'border-border bg-background'
+                  ? 'border-primary bg-primary/8'
+                  : 'border-border bg-background',
+              focused && i === activeIndex && 'ring-2 ring-ring'
             )}
-            style={!error && i < value.length ? { background: 'oklch(0.57 0.14 35 / 0.08)' } : {}}
           >
             {i < value.length && (
               <div className={cn(s.dot, 'rounded-full', error ? 'bg-destructive' : 'bg-primary')} />

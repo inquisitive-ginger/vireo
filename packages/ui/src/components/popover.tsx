@@ -12,6 +12,7 @@ import { cn } from '../lib/utils'
 
 export const Popover = PopoverPrimitive.Root
 export const PopoverTrigger = PopoverPrimitive.Trigger
+// Retained for shadcn API completeness — no in-repo consumer yet.
 export const PopoverAnchor = PopoverPrimitive.Anchor
 
 export interface PopoverContentProps extends ComponentProps<typeof PopoverPrimitive.Content> {

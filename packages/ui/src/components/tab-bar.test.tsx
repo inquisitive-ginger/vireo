@@ -62,6 +62,14 @@ describe('TabBar', () => {
     expect(onChange).toHaveBeenCalledWith('activities') // wraps first → last
   })
 
+  it('jumps to the first tab on Home and the last on End', () => {
+    const { onChange } = setup('activities')
+    fireEvent.keyDown(screen.getByRole('tablist'), { key: 'Home' })
+    expect(onChange).toHaveBeenCalledWith('calendar')
+    fireEvent.keyDown(screen.getByRole('tablist'), { key: 'End' })
+    expect(onChange).toHaveBeenCalledWith('activities')
+  })
+
   it('emits tab ids from idBase so a tabpanel can be associated', () => {
     setup('calendar', vi.fn(), 'surface')
     expect(screen.getByRole('tab', { name: 'Calendar' })).toHaveAttribute(

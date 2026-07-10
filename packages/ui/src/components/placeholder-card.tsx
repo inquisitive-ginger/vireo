@@ -45,14 +45,14 @@ export function PlaceholderCard({
           '@[600px]:flex-row @[600px]:text-left @[600px]:gap-3.5'
         )}
       >
-        <div className="flex size-10 shrink-0 items-center justify-center rounded-[10px] bg-muted-foreground/10">
+        <div className="flex size-10 shrink-0 items-center justify-center rounded-panel bg-muted-foreground/10">
           <Icon className="size-5 text-muted-foreground" strokeWidth={1.5} aria-hidden="true" />
         </div>
         <div className="flex flex-col gap-0.5">
-          <span className="text-[13px] font-medium leading-none tracking-[0.01em] text-muted-foreground">
+          <span className="text-sm-token font-medium leading-none tracking-[0.01em] text-muted-foreground">
             {moduleName}
           </span>
-          <span className="text-[11px] leading-[1.4] text-muted-foreground/70">{description}</span>
+          <span className="text-xs-body text-muted-foreground/70">{description}</span>
         </div>
       </div>
     </div>

@@ -23,7 +23,7 @@ export function ProfileListItem({ name, tier, isLast, onEdit, onRemove }: Profil
     >
       <ProfileAvatar name={name} size="md" />
       <span className="min-w-0 flex-1 truncate text-card-title">{name}</span>
-      <span className="shrink-0 rounded-full bg-secondary px-2 py-0.5 text-[11px] font-semibold tracking-[0.03em] text-muted-foreground">
+      <span className="shrink-0 rounded-full bg-secondary px-2 py-0.5 text-xs-body font-semibold tracking-[0.03em] text-muted-foreground">
         Tier {tier}
       </span>
       <div className="flex shrink-0 gap-0.5 sm:gap-1.5">

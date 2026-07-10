@@ -21,7 +21,7 @@ export function Drawer({ open, onClose, title, children, className }: DrawerProp
           className={cn(
             // Full-width sheet on mobile (the calendar/chores capture surface);
             // the 440px right rail returns at `md:`+.
-            'fixed inset-y-0 right-0 z-50 flex w-full flex-col md:w-[440px]',
+            'fixed inset-y-0 right-0 z-50 flex w-full flex-col md:w-drawer',
             'bg-card shadow-[var(--shadow-raised)] md:border-l md:border-border',
             'focus:outline-none',
             className

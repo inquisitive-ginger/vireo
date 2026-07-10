@@ -32,14 +32,10 @@ export const PermissionToggleItem = memo(function PermissionToggleItem({
       </label>
 
       {override === 'grant' && (
-        <span className="text-[10px] font-semibold uppercase tracking-[0.06em] text-[oklch(0.58_0.13_160)]">
-          Granted
-        </span>
+        <span className="text-xs-token uppercase tracking-[0.06em] text-success">Granted</span>
       )}
       {override === 'revocation' && (
-        <span className="text-[10px] font-semibold uppercase tracking-[0.06em] text-destructive">
-          Revoked
-        </span>
+        <span className="text-xs-token uppercase tracking-[0.06em] text-destructive">Revoked</span>
       )}
 
       <Switch

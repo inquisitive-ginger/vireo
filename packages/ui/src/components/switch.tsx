@@ -29,7 +29,7 @@ export function Switch({
       aria-label={ariaLabel}
       className={cn(
         'relative inline-flex h-[22px] w-10 shrink-0 cursor-pointer items-center rounded-full border-0',
-        'bg-muted transition-colors duration-200',
+        'bg-muted transition-colors duration-[var(--duration-normal)]',
         'data-[state=checked]:bg-primary',
         'focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-primary focus-visible:ring-offset-2 focus-visible:ring-offset-background',
         'disabled:cursor-not-allowed disabled:opacity-45',
@@ -38,8 +38,8 @@ export function Switch({
     >
       <SwitchPrimitive.Thumb
         className={cn(
-          'pointer-events-none block h-4 w-4 rounded-full bg-white shadow-sm',
-          'translate-x-[3px] transition-transform duration-180',
+          'pointer-events-none block h-4 w-4 rounded-full bg-primary-foreground shadow-sm',
+          'translate-x-[3px] transition-transform duration-[var(--duration-normal)]',
           'data-[state=checked]:translate-x-[21px]'
         )}
       />

@@ -93,7 +93,7 @@ describe('NotificationTray', () => {
     expect(onClearAll).toHaveBeenCalledOnce()
   })
 
-  it('shows per-item delete button on hover when onDeleteNotification is provided', () => {
+  it('renders a keyboard-reachable per-item delete button when onDeleteNotification is provided', () => {
     const onDeleteNotification = vi.fn()
     render(
       <NotificationTray
@@ -103,11 +103,8 @@ describe('NotificationTray', () => {
         onDeleteNotification={onDeleteNotification}
       />
     )
-    expect(screen.queryByLabelText(/delete notification/i)).not.toBeInTheDocument()
-
-    const container = screen.getByText('Chore completed').closest('.relative')!
-    fireEvent.mouseEnter(container)
-
+    // In the DOM without hover so it stays in the tab order; hover/focus only
+    // reveals it visually via CSS.
     const btn = screen.getByLabelText('Delete notification: Chore completed')
     fireEvent.click(btn)
     expect(onDeleteNotification).toHaveBeenCalledWith('1')

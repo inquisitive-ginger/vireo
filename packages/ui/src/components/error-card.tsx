@@ -25,14 +25,14 @@ export function ErrorCard({ moduleName, onRetry, className }: ErrorCardProps) {
         aria-hidden="true"
       />
       <div className="flex flex-col items-center gap-2">
-        <span className="text-[13px] font-medium leading-none tracking-[0.01em] text-muted-foreground">
+        <span className="text-sm-token font-medium leading-none tracking-[0.01em] text-muted-foreground">
           {moduleName} couldn't load
         </span>
         {onRetry && (
           <Button
             variant="ghost"
             size="sm"
-            className="h-7 px-2 text-[11px] text-muted-foreground hover:text-foreground"
+            className="h-7 px-2 text-xs-body text-muted-foreground hover:text-foreground"
             onClick={onRetry}
           >
             Retry

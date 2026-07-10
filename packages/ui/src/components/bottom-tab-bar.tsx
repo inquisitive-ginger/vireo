@@ -32,12 +32,12 @@ function TabItem({
       onClick={onClick}
       aria-current={active ? 'page' : undefined}
       className={cn(
-        'flex-1 flex flex-col items-center justify-center gap-0.5 min-h-[56px] cursor-pointer transition-colors duration-[var(--duration-fast)]',
+        'flex-1 flex flex-col items-center justify-center gap-0.5 min-h-tab-bar cursor-pointer transition-colors duration-[var(--duration-fast)]',
         active ? 'text-primary' : 'text-muted-foreground'
       )}
     >
       {icon}
-      <span className="text-[10px] font-medium leading-none">{label}</span>
+      <span className="text-xs-token font-medium leading-none">{label}</span>
     </button>
   )
 }

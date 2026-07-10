@@ -3,21 +3,24 @@ import { Slot } from '@radix-ui/react-slot'
 import { cva, type VariantProps } from 'class-variance-authority'
 import { cn } from '../lib/utils'
 
+// `focus-visible:ring-1 ring-ring` is the sanctioned focus treatment across the UI kit.
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-sm font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 cursor-pointer',
+  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-base-token font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 cursor-pointer',
   {
     variants: {
       variant: {
-        default: 'bg-primary text-primary-foreground shadow hover:bg-primary/90',
+        default:
+          'bg-primary text-primary-foreground shadow-[var(--shadow-card)] hover:bg-primary/90',
         outline:
-          'border border-input bg-background shadow-sm hover:bg-accent hover:text-accent-foreground',
+          'border border-input bg-background shadow-[var(--shadow-card)] hover:bg-accent hover:text-accent-foreground',
         ghost: 'hover:bg-accent hover:text-accent-foreground',
         'ghost-destructive': 'text-muted-foreground hover:bg-destructive/10 hover:text-destructive',
-        secondary: 'bg-secondary text-secondary-foreground shadow-sm hover:bg-secondary/80',
+        secondary:
+          'bg-secondary text-secondary-foreground shadow-[var(--shadow-card)] hover:bg-secondary/80',
       },
       size: {
         default: 'h-9 px-4 py-2',
-        sm: 'h-8 rounded-md px-3 text-xs',
+        sm: 'h-8 rounded-md px-3 text-sm-token',
         lg: 'h-10 rounded-md px-8',
         icon: 'h-9 w-9',
         'icon-sm': 'h-4 w-4 rounded p-0',

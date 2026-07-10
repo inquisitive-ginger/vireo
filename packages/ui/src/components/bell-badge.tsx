@@ -14,9 +14,10 @@ export interface BellBadgeProps {
 }
 
 function severityClass(severity: BadgeSeverity): string {
-  if (!severity || severity === 'success' || severity === 'info') return 'bg-accent'
-  if (severity === 'warning') return 'bg-warning'
-  return 'bg-error'
+  if (!severity || severity === 'success' || severity === 'info')
+    return 'bg-accent text-accent-foreground'
+  if (severity === 'warning') return 'bg-warning text-warning-foreground'
+  return 'bg-error text-error-foreground'
 }
 
 export function BellBadge({ count, maxSeverity, onClick, className, compact }: BellBadgeProps) {
@@ -36,7 +37,7 @@ export function BellBadge({ count, maxSeverity, onClick, className, compact }: B
         {count > 0 && (
           <span
             className={cn(
-              'absolute top-1.5 right-1.5 w-[7px] h-[7px] rounded-full',
+              'absolute top-1.5 right-1.5 size-2 rounded-full',
               severityClass(maxSeverity)
             )}
             aria-hidden
@@ -52,7 +53,7 @@ export function BellBadge({ count, maxSeverity, onClick, className, compact }: B
       onClick={onClick}
       aria-label={ariaLabel}
       className={cn(
-        'w-full justify-start gap-3 px-3 py-2.5 min-h-[48px] h-auto',
+        'w-full justify-start gap-3 px-3 py-2.5 min-h-touch h-auto',
         'text-muted-foreground hover:bg-secondary hover:text-foreground',
         className
       )}
@@ -62,8 +63,8 @@ export function BellBadge({ count, maxSeverity, onClick, className, compact }: B
       {count > 0 && (
         <span
           className={cn(
-            'flex items-center justify-center min-w-[18px] h-[18px] rounded-full px-1',
-            'text-xs font-bold text-white leading-none shrink-0',
+            'flex items-center justify-center min-w-4 h-4 rounded-full px-1',
+            'text-xs-token font-bold leading-none shrink-0',
             severityClass(maxSeverity)
           )}
           aria-hidden

@@ -17,9 +17,7 @@ export function SettingsSection({ title, action, children, className }: Settings
       )}
     >
       <div className="flex items-center justify-between px-6 py-4 border-b border-border">
-        <h2 className="text-[11px] font-bold uppercase tracking-[0.1em] text-muted-foreground">
-          {title}
-        </h2>
+        <h2 className="text-section-label text-muted-foreground">{title}</h2>
         {action && <div>{action}</div>}
       </div>
       {children}

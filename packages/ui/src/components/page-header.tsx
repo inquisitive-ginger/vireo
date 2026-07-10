@@ -20,27 +20,11 @@ export interface PageHeaderProps {
    header and the content below share the same 24px inset. */
 export function PageHeader({ title, eyebrow, subtitle, action, className }: PageHeaderProps) {
   return (
-    <header
-      className={cn('flex items-start justify-between gap-4', className)}
-      style={{ marginBottom: 24 }}
-    >
+    <header className={cn('mb-6 flex items-start justify-between gap-4', className)}>
       <div className="min-w-0">
-        {eyebrow && (
-          <div className="text-section-label" style={{ color: 'var(--accent)', marginBottom: 6 }}>
-            {eyebrow}
-          </div>
-        )}
-        <h1 className="text-page-title" style={{ color: 'var(--foreground)', margin: 0 }}>
-          {title}
-        </h1>
-        {subtitle && (
-          <p
-            className="text-sm-token"
-            style={{ color: 'var(--muted-foreground)', margin: '6px 0 0' }}
-          >
-            {subtitle}
-          </p>
-        )}
+        {eyebrow && <div className="text-section-label mb-1.5 text-accent">{eyebrow}</div>}
+        <h1 className="text-page-title m-0 text-foreground">{title}</h1>
+        {subtitle && <p className="text-sm-token mt-1.5 text-muted-foreground">{subtitle}</p>}
       </div>
       {action && <div className="shrink-0">{action}</div>}
     </header>

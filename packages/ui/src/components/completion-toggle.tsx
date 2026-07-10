@@ -39,6 +39,8 @@ export function CompletionToggle({
     return (
       <button
         type="button"
+        role="checkbox"
+        aria-checked={checked}
         onClick={onToggle}
         aria-label={label}
         title={title}

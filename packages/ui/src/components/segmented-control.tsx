@@ -17,10 +17,12 @@ export interface SegmentedControlProps<T extends string> {
 }
 
 /* A compact single-select view/mode switch: a bordered track of segments where
-   the active one fills with `--primary`. A radio group under the hood (roving
-   tabindex + arrow-key navigation), so it reads as one control, not N buttons.
-   Standardizes the Month/Week/Day switch the calendar hand-rolled and any future
-   toggle of the same shape.
+   the active one fills with `--primary`. A deliberately hand-rolled radio group —
+   kept off @radix-ui/react-radio-group so it needs no extra dependency and stays a
+   self-contained token-styled primitive (roving tabindex + arrow/Home/End
+   navigation), so it reads as one control, not N buttons. Standardizes the
+   Month/Week/Day switch the calendar hand-rolled and any future toggle of the same
+   shape.
 
    Styled utility-first like the shell (ADR 035) — token classes only. Generic
    over a string-union value so call sites stay type-safe. */
@@ -34,10 +36,13 @@ export function SegmentedControl<T extends string>({
   const refs = useRef<(HTMLButtonElement | null)[]>([])
   const activeIndex = options.findIndex((o) => o.value === value)
 
+  function select(index: number) {
+    onChange(options[index].value)
+    refs.current[index]?.focus()
+  }
+
   function move(delta: 1 | -1) {
-    const next = (activeIndex + delta + options.length) % options.length
-    onChange(options[next].value)
-    refs.current[next]?.focus()
+    select((activeIndex + delta + options.length) % options.length)
   }
 
   function handleKeyDown(event: React.KeyboardEvent) {
@@ -47,6 +52,12 @@ export function SegmentedControl<T extends string>({
     } else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
       event.preventDefault()
       move(-1)
+    } else if (event.key === 'Home') {
+      event.preventDefault()
+      select(0)
+    } else if (event.key === 'End') {
+      event.preventDefault()
+      select(options.length - 1)
     }
   }
 

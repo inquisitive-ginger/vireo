@@ -21,10 +21,14 @@ export interface TabBarProps<T extends string> {
   idBase?: string
 }
 
-/* A primary "tab bar" — underlined tabs on a hairline rule, for switching between
-   peer surfaces (e.g. the calendar's Calendar ⇄ Activities tier). A proper ARIA
-   tablist: roving tabindex + arrow-key navigation with automatic activation, so it
-   reads as one control rather than N buttons.
+/* A deliberately hand-rolled ARIA tablist — kept off @radix-ui/react-tabs on
+   purpose: it needs no extra dependency, and panel wiring stays consumer-owned
+   via `idBase` (a consumer points its own `role="tabpanel"` at the active tab).
+
+   A primary "tab bar" — underlined tabs on a hairline rule, for switching between
+   peer surfaces (e.g. the calendar's Calendar ⇄ Activities tier): roving tabindex
+   + arrow/Home/End navigation with automatic activation, so it reads as one
+   control rather than N buttons.
 
    Distinct from `SegmentedControl` (a filled-pill radiogroup) on purpose — use a
    TabBar for the top-level split between surfaces, the SegmentedControl for a
@@ -42,10 +46,13 @@ export function TabBar<T extends string>({
   const refs = useRef<(HTMLButtonElement | null)[]>([])
   const activeIndex = options.findIndex((o) => o.value === value)
 
+  function select(index: number) {
+    onChange(options[index].value)
+    refs.current[index]?.focus()
+  }
+
   function move(delta: 1 | -1) {
-    const next = (activeIndex + delta + options.length) % options.length
-    onChange(options[next].value)
-    refs.current[next]?.focus()
+    select((activeIndex + delta + options.length) % options.length)
   }
 
   function handleKeyDown(event: KeyboardEvent) {
@@ -55,6 +62,12 @@ export function TabBar<T extends string>({
     } else if (event.key === 'ArrowLeft' || event.key === 'ArrowUp') {
       event.preventDefault()
       move(-1)
+    } else if (event.key === 'Home') {
+      event.preventDefault()
+      select(0)
+    } else if (event.key === 'End') {
+      event.preventDefault()
+      select(options.length - 1)
     }
   }
 
