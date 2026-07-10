@@ -85,8 +85,10 @@ export function CalendarPage() {
   // Set → the remove-confirm dialog is open for this event (recurring → a
   // "Just this week" vs "All events" choice).
   const [removeTarget, setRemoveTarget] = useState<CalendarEvent | null>(null)
-  // Removing a whole activity is always a series delete (no per-occurrence choice)
-  // — a distinct, simpler confirm from the event remove above.
+  // Removing an activity from the Activities lens — a standing series with no
+  // occurrence context, so always a whole-series delete (no per-occurrence choice).
+  // The edit-drawer path routes through `removeTarget`, which offers the
+  // this-week/series choice when the target is a concrete grid occurrence.
   const [activityToRemove, setActivityToRemove] = useState<CalendarEvent | null>(null)
 
   const range = useMemo(
@@ -462,37 +464,42 @@ export function CalendarPage() {
               await createEvent.mutateAsync(input).catch(() => {})
             }
           }}
-          onRemove={() => {
-            if (!editingEvent) return
-            // An activity always removes as a whole series (its own confirm); a
-            // plain event may offer the this-week/series choice.
-            if (editingEvent.isActivity) setActivityToRemove(editingEvent)
-            else setRemoveTarget(editingEvent)
-          }}
+          onRemove={() => editingEvent && setRemoveTarget(editingEvent)}
         />
       )}
 
-      {canManage && removeTarget && (
-        <ConfirmDialog
-          open
-          title={`Remove “${removeTarget.title}”?`}
-          description={
-            removeTarget.recurrence === 'weekly'
-              ? 'This event repeats weekly. Remove just this week, or the whole series?'
-              : 'This event will be permanently deleted. This can’t be undone.'
-          }
-          confirmLabel={removeTarget.recurrence === 'weekly' ? 'All events' : 'Remove'}
-          onConfirm={() => deleteEvent.mutate({ event: removeTarget, scope: 'series' })}
-          secondaryLabel={removeTarget.recurrence === 'weekly' ? 'Just this week' : undefined}
-          onSecondary={
-            removeTarget.recurrence === 'weekly'
-              ? () => deleteEvent.mutate({ event: removeTarget, scope: 'occurrence' })
-              : undefined
-          }
-          onCancel={() => setRemoveTarget(null)}
-          isPending={deleteEvent.isPending}
-        />
-      )}
+      {canManage &&
+        removeTarget &&
+        (() => {
+          // Offer "just this week" vs "the whole series" only when there's a
+          // concrete occurrence to skip — a weekly event/activity opened from the
+          // grid carries `occurrenceDate`. A bare series (e.g. an activity edited
+          // from the Activities lens) has none, so "just this week" would silently
+          // fall back to a series delete — collapse to a plain series confirm.
+          const noun = removeTarget.isActivity ? 'activity' : 'event'
+          const offersChoice = removeTarget.recurrence === 'weekly' && !!removeTarget.occurrenceDate
+          return (
+            <ConfirmDialog
+              open
+              title={`Remove “${removeTarget.title}”?`}
+              description={
+                offersChoice
+                  ? `This ${noun} repeats weekly. Remove just this week, or the whole series?`
+                  : `This ${noun} will be permanently deleted. This can’t be undone.`
+              }
+              confirmLabel={offersChoice ? 'All events' : 'Remove'}
+              onConfirm={() => deleteEvent.mutate({ event: removeTarget, scope: 'series' })}
+              secondaryLabel={offersChoice ? 'Just this week' : undefined}
+              onSecondary={
+                offersChoice
+                  ? () => deleteEvent.mutate({ event: removeTarget, scope: 'occurrence' })
+                  : undefined
+              }
+              onCancel={() => setRemoveTarget(null)}
+              isPending={deleteEvent.isPending}
+            />
+          )
+        })()}
 
       {canManage && activityToRemove && (
         <ConfirmDialog
