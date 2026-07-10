@@ -265,6 +265,21 @@ export function agendaWhenLabel(event: CalendarEvent): string {
   return formatTime(event.startsAt)
 }
 
+/* A proximity phrase for the "up next" surfaces — "Now" while the event is in
+   progress, a countdown ("in 30 min" / "in 2h 15m") for a same-day future
+   event, else the clock/date label. The value a family actually wants from a
+   glance is *how soon*, not the wall-clock time. */
+export function relativeWhen(event: CalendarEvent, now: Date): string {
+  const start = new Date(event.startsAt)
+  if (now >= start && now < eventEnd(event)) return 'Now'
+  if (!isSameDay(start, now)) return agendaWhenLabel(event)
+  const mins = Math.round((start.getTime() - now.getTime()) / 60_000)
+  if (mins < 60) return `in ${mins} min`
+  const h = Math.floor(mins / 60)
+  const m = mins % 60
+  return m ? `in ${h}h ${m}m` : `in ${h} hr`
+}
+
 const MONTHS = [
   'January',
   'February',
