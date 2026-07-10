@@ -1,17 +1,9 @@
-import type { CSSProperties } from 'react'
-import { CalendarDays, MapPin, Plus, Users } from 'lucide-react'
+import { CalendarDays, Plus } from 'lucide-react'
 import { Button, EmptyState } from '@family-os/ui'
 import type { CalendarEvent } from '../types'
-import {
-  addDays,
-  agendaWhenLabel,
-  isSameDay,
-  pickNextUp,
-  startOfDay,
-  upcomingByDay,
-} from '../lib/grid'
-import { fillForHues, huesForEvent, spineColorsForEvent } from '../lib/hues'
+import { addDays, isSameDay, pickNextUp, startOfDay, upcomingByDay } from '../lib/grid'
 import { AgendaRow } from './AgendaRow'
+import { NextEventHero } from './NextEventHero'
 
 /* The mobile read surface (story #4): a forward-looking, day-grouped agenda led
    by an "Up next" hero — the one thing a parent opens the phone to check —
@@ -62,7 +54,7 @@ export function AgendaView({
   return (
     <div className="flex flex-col gap-7">
       {hero && (
-        <HeroNext
+        <NextEventHero
           event={hero}
           membersById={membersById}
           onClick={onEditEvent ? () => onEditEvent(hero) : undefined}
@@ -99,89 +91,6 @@ export function AgendaView({
       })}
     </div>
   )
-}
-
-/* The next-up event, washed in its owner's identity colour. Tappable (edit) for
-   tier 4, mirroring the rows. */
-function HeroNext({
-  event,
-  membersById,
-  onClick,
-}: {
-  event: CalendarEvent
-  membersById: Map<string, string>
-  onClick?: () => void
-}) {
-  const hues = huesForEvent(event.attendeeIds, membersById)
-  const fill = fillForHues(hues)
-  const ownerNames = event.attendeeIds
-    .map((id) => membersById.get(id))
-    .filter((n): n is string => Boolean(n))
-
-  const body = (
-    <>
-      <div className="flex items-center gap-2 text-section-label text-foreground/60">
-        <span className="size-2 rounded-full" style={dotStyle(spineColorsForEvent(hues))} />
-        Up next
-      </div>
-      <div className="mt-2.5 flex items-end justify-between gap-3">
-        <div className="min-w-0">
-          <div className="text-heading text-foreground">{event.title}</div>
-          <div className="mt-1.5 flex items-center gap-1.5 text-sm-token text-foreground/70">
-            {ownerNames.length === 0 ? (
-              <>
-                <Users className="h-3.5 w-3.5" /> Family
-              </>
-            ) : (
-              ownerNames.join(' · ')
-            )}
-          </div>
-        </div>
-        <div className="shrink-0 text-right">
-          <div className="text-card-title font-semibold tabular-nums text-foreground">
-            {agendaWhenLabel(event)}
-          </div>
-          {event.location && (
-            <div className="mt-0.5 flex items-center justify-end gap-1 text-xs-token text-foreground/70">
-              <MapPin className="h-3 w-3" /> {event.location}
-            </div>
-          )}
-        </div>
-      </div>
-    </>
-  )
-
-  const className =
-    'block w-full rounded-2xl border border-border/60 p-4 text-left shadow-[var(--shadow-card)]'
-  if (onClick) {
-    return (
-      <button
-        type="button"
-        onClick={onClick}
-        aria-label={`Edit ${event.title}`}
-        className={`${className} cursor-pointer`}
-        style={{ background: fill.background }}
-      >
-        {body}
-      </button>
-    )
-  }
-  return (
-    <div className={className} style={{ background: fill.background }}>
-      {body}
-    </div>
-  )
-}
-
-// A dot echoing the row spine: solid for solo, vertical split for shared.
-function dotStyle(colors: string[]): CSSProperties {
-  if (colors.length === 1) return { background: colors[0] }
-  const n = colors.length
-  return {
-    background: `linear-gradient(180deg, ${colors
-      .map((c, i) => `${c} ${Math.round((i / n) * 100)}% ${Math.round(((i + 1) / n) * 100)}%`)
-      .join(', ')})`,
-  }
 }
 
 /* "Today" / "Later today" (when the hero is today) / "Tomorrow" / weekday, plus a

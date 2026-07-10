@@ -10,10 +10,10 @@ const DEFAULT_LAYOUTS = {
   default_layout_tier_1_2: [
     { widgetId: 'chores.today-summary', x: 0, y: 0, w: 2, h: 2 },
     { widgetId: 'family-feed.feed', x: 2, y: 0, w: 2, h: 1 },
-    { widgetId: 'calendar.today', x: 2, y: 1, w: 2, h: 1 },
+    { widgetId: 'calendar.up-next', x: 2, y: 1, w: 2, h: 1 },
   ],
   default_layout_tier_3_4: [
-    { widgetId: 'calendar.today', x: 0, y: 0, w: 2, h: 2 },
+    { widgetId: 'calendar.up-next', x: 0, y: 0, w: 2, h: 2 },
     { widgetId: 'family-feed.feed', x: 2, y: 0, w: 2, h: 1 },
     { widgetId: 'chores.today-summary', x: 2, y: 1, w: 2, h: 1 },
   ],
@@ -113,7 +113,7 @@ describe('POST /api/setup/family', () => {
     const layouts = await prisma.widgetLayout.findMany({ where: { profileId: parent!.id } })
     expect(layouts.length).toBeGreaterThan(0)
     const widgetIds = layouts.map((l) => l.widgetId)
-    expect(widgetIds).toContain('calendar.today')
+    expect(widgetIds).toContain('calendar.up-next')
   })
 
   it('returns 400 when familyName is missing', async () => {
