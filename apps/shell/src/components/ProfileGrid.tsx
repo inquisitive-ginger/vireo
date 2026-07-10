@@ -94,10 +94,10 @@ export function ProfileGrid({ open, onClose, className, onNavigate }: ProfileGri
       <div onClick={resetAndClose} className="fixed inset-0 z-30" />
       <div
         className={cn(
-          'absolute top-[56px] left-0 right-0 z-40 border-b border-border bg-card shadow-[var(--shadow-raised)]',
+          'absolute top-14 left-0 right-0 z-40 border-b border-border bg-card shadow-[var(--shadow-raised)]',
           className
         )}
-        style={{ animation: 'expandDown 180ms var(--ease-out)' }}
+        style={{ animation: 'expandDown var(--duration-normal) var(--ease-out)' }}
       >
         <style>{`
           @keyframes expandDown {

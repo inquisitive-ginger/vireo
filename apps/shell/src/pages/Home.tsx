@@ -1,4 +1,4 @@
-import { type ReactNode, Suspense } from 'react'
+import { type ReactNode, Suspense, useCallback, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Loader2, Users, ClipboardList, CalendarDays } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
@@ -6,6 +6,7 @@ import { WidgetGrid, PlaceholderCard } from '@family-os/ui'
 import type { WidgetLayoutItem } from '@family-os/ui'
 import { useAuth } from '@family-os/platform'
 import { getLazyWidget } from '../lib/load-plugin'
+import { WidgetErrorBoundary } from '../components/WidgetErrorBoundary'
 
 type WidgetMeta = { moduleName: string; description: string; icon: LucideIcon }
 
@@ -40,6 +41,17 @@ type HomeProps = {
 
 export function Home({ widgetRemotes }: HomeProps) {
   const { id: profileId } = useAuth()
+  const [erroredWidgets, setErroredWidgets] = useState<ReadonlySet<string>>(new Set())
+
+  const handleErrorChange = useCallback((widgetId: string, hasError: boolean) => {
+    setErroredWidgets((prev) => {
+      if (hasError === prev.has(widgetId)) return prev
+      const next = new Set(prev)
+      if (hasError) next.add(widgetId)
+      else next.delete(widgetId)
+      return next
+    })
+  }, [])
 
   const { data: layout, isLoading } = useQuery<WidgetLayoutItem[]>({
     queryKey: ['api/home/layout', profileId],
@@ -59,14 +71,21 @@ export function Home({ widgetRemotes }: HomeProps) {
     if (remoteName) {
       const Widget = getLazyWidget(remoteName)
       widgetChildren[item.widgetId] = Widget ? (
-        <Suspense fallback={<PlaceholderCard {...meta} />}>
-          {/* No size prop — content widgets self-size to their slot via CSS
-              container queries (design-system.md). */}
-          <Widget />
-        </Suspense>
+        <WidgetErrorBoundary
+          moduleName={meta.moduleName}
+          onErrorChange={(hasError) => handleErrorChange(item.widgetId, hasError)}
+        >
+          <Suspense fallback={<PlaceholderCard {...meta} />}>
+            {/* No size prop — content widgets self-size to their slot via CSS
+                container queries (design-system.md). */}
+            <Widget />
+          </Suspense>
+        </WidgetErrorBoundary>
       ) : (
         <PlaceholderCard {...meta} />
       )
+      // A caught widget renders ErrorCard in a flat slot (no card chrome).
+      if (erroredWidgets.has(item.widgetId)) flatSlots.push(item.widgetId)
     } else {
       widgetChildren[item.widgetId] = <PlaceholderCard {...meta} />
       flatSlots.push(item.widgetId)

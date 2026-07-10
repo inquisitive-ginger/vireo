@@ -17,7 +17,7 @@ export function Sidebar({ pluginNavItems = [] }: { pluginNavItems?: PluginNavIte
   const { tier } = useAuth()
   const visiblePluginItems = pluginNavItems.filter((item) => !item.minTier || item.minTier <= tier)
   return (
-    <aside className="hidden md:flex w-[220px] shrink-0 h-screen flex-col bg-secondary relative">
+    <aside className="hidden md:flex w-sidebar shrink-0 h-screen flex-col bg-secondary relative">
       <ProfileChip />
       <nav className="flex-1 py-2" aria-label="Main navigation">
         <NavItem to="/" icon={<Home size={18} aria-hidden />} label="Home" end />
@@ -41,7 +41,7 @@ function ProfileChip() {
       <button
         onClick={() => setGridOpen((v) => !v)}
         className={cn(
-          'flex items-center gap-3 px-4 py-3 min-h-[56px] w-full text-left mb-1 cursor-pointer',
+          'flex items-center gap-3 px-4 py-3 min-h-14 w-full text-left mb-1 cursor-pointer',
           'transition-colors duration-[var(--duration-fast)]',
           gridOpen ? 'bg-primary/15' : 'hover:bg-primary/10'
         )}
@@ -90,7 +90,7 @@ function NavItem({
       end={end}
       className={({ isActive }) =>
         cn(
-          'relative overflow-hidden flex items-center gap-3 px-3 py-2.5 mx-1 rounded-md text-sm transition-colors min-h-[48px]',
+          'relative overflow-hidden flex items-center gap-3 px-3 py-2.5 mx-1 rounded-md text-sm transition-colors min-h-touch',
           isActive
             ? 'bg-primary/15 text-primary font-medium'
             : 'text-muted-foreground hover:bg-primary/8 hover:text-foreground'

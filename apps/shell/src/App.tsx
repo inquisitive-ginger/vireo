@@ -31,7 +31,7 @@ export function App({ pluginNavItems = [] }: { pluginNavItems?: PluginNavItem[] 
             profileOpen={profileGridOpen}
             onProfileClick={() => setProfileGridOpen((v) => !v)}
           />
-          <main className="flex-1 overflow-auto pb-[calc(56px+env(safe-area-inset-bottom))] md:pb-0">
+          <main className="flex-1 overflow-auto pb-[calc(var(--spacing-tab-bar)+env(safe-area-inset-bottom))] md:pb-0">
             <Outlet />
           </main>
         </div>
@@ -49,7 +49,7 @@ export function App({ pluginNavItems = [] }: { pluginNavItems?: PluginNavItem[] 
           navigate(to)
           setProfileGridOpen(false)
         }}
-        className="fixed top-[calc(52px+env(safe-area-inset-top))] left-0 right-0"
+        className="fixed top-[calc(var(--spacing-top-bar)+env(safe-area-inset-top))] left-0 right-0"
       />
       <Toast />
     </>

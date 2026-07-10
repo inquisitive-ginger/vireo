@@ -67,7 +67,7 @@ export function MobileCanvas({
             profileOpen={profileOpen}
             onProfileClick={() => setProfileOpen((v) => !v)}
           />
-          <main className="flex-1 overflow-auto pb-[calc(56px+env(safe-area-inset-bottom))]">
+          <main className="flex-1 overflow-auto pb-[calc(var(--spacing-tab-bar)+env(safe-area-inset-bottom))]">
             {children}
           </main>
           {/* Real nav-only bottom bar — `fixed`, pins to the viewport bottom. */}

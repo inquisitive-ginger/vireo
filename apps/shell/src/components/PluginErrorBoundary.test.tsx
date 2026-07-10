@@ -26,7 +26,7 @@ describe('PluginErrorBoundary', () => {
       </PluginErrorBoundary>
     )
 
-    expect(screen.getByText('Plugin failed to load')).toBeDefined()
+    expect(screen.getByText('Something went wrong')).toBeDefined()
     console.error = consoleError
   })
 })

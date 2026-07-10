@@ -12,7 +12,7 @@ export function MobileBrandTopBar({
 }) {
   return (
     <header
-      className="grid grid-cols-[1fr_auto_1fr] items-center md:hidden px-3 min-h-[52px] bg-secondary border-b border-border shrink-0"
+      className="grid grid-cols-[1fr_auto_1fr] items-center md:hidden px-3 min-h-top-bar bg-secondary border-b border-border shrink-0"
       style={{ paddingTop: 'env(safe-area-inset-top)' }}
     >
       <button
@@ -24,7 +24,7 @@ export function MobileBrandTopBar({
       >
         <ProfileAvatar name={name} size="sm" active={profileOpen} />
       </button>
-      <span className="justify-self-center text-[15px] font-semibold tracking-tight text-foreground">
+      <span className="justify-self-center text-base-token font-semibold tracking-tight text-foreground">
         Family OS
       </span>
       <NotificationBell className="justify-self-end" compact />

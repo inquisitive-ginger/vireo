@@ -25,6 +25,7 @@ import {
   PermissionToggleList,
   Drawer,
   Switch,
+  SegmentedControl,
 } from '@family-os/ui'
 import type { PermissionToggleListItem } from '@family-os/ui'
 import { CreateProfileSchema, type CreateProfileInput } from '@family-os/schemas'
@@ -119,23 +120,12 @@ function ProfileForm({
 
       <div className="flex flex-col gap-1.5">
         <Label>Role</Label>
-        <div className="flex gap-2">
-          {TIER_OPTS.map(({ tier: t, label }) => (
-            <button
-              key={t}
-              type="button"
-              onClick={() => setValue('tier', t)}
-              className={cn(
-                'flex-1 py-1.5 rounded-lg border text-xs font-medium transition-colors',
-                tier === t
-                  ? 'bg-primary/10 text-primary border-primary'
-                  : 'border-border text-muted-foreground hover:bg-muted'
-              )}
-            >
-              {label}
-            </button>
-          ))}
-        </div>
+        <SegmentedControl
+          aria-label="Role"
+          options={TIER_OPTS.map(({ tier: t, label }) => ({ value: String(t), label }))}
+          value={String(tier)}
+          onChange={(v) => setValue('tier', Number(v) as 1 | 2 | 3 | 4)}
+        />
       </div>
 
       <div className="flex gap-2 justify-end pt-1">
@@ -330,23 +320,12 @@ function ProfileRoleField({ profile }: { profile: ProfileRow }) {
 
   return (
     <div className="flex flex-col gap-1.5 px-6 pb-5">
-      <div className="flex gap-2">
-        {TIER_OPTS.map(({ tier: t, label }) => (
-          <button
-            key={t}
-            type="button"
-            onClick={() => handleTierChange(t)}
-            className={cn(
-              'flex-1 py-1.5 rounded-lg border text-xs font-medium transition-colors',
-              tier === t
-                ? 'bg-primary/10 text-primary border-primary'
-                : 'border-border text-muted-foreground hover:bg-muted'
-            )}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+      <SegmentedControl
+        aria-label="Role"
+        options={TIER_OPTS.map(({ tier: t, label }) => ({ value: String(t), label }))}
+        value={String(tier)}
+        onChange={(v) => handleTierChange(Number(v) as 1 | 2 | 3 | 4)}
+      />
       {tierErrorMsg && <FieldError message={tierErrorMsg} />}
     </div>
   )
@@ -354,11 +333,20 @@ function ProfileRoleField({ profile }: { profile: ProfileRow }) {
 
 // ─── Focus-mode field (autosave, lives inside Role & Capabilities section) ────
 
-const FOCUS_OPTS = [
-  { value: null, label: 'Default' },
-  { value: true, label: 'Focus' },
-  { value: false, label: 'Agency' },
-] as const
+type FocusChoice = 'default' | 'focus' | 'agency'
+const FOCUS_SEG_OPTIONS: { value: FocusChoice; label: string }[] = [
+  { value: 'default', label: 'Default' },
+  { value: 'focus', label: 'Focus' },
+  { value: 'agency', label: 'Agency' },
+]
+const FOCUS_TO_OVERRIDE: Record<FocusChoice, boolean | null> = {
+  default: null,
+  focus: true,
+  agency: false,
+}
+function focusToChoice(v: boolean | null): FocusChoice {
+  return v === null ? 'default' : v ? 'focus' : 'agency'
+}
 
 /* Per-profile Focus-mode override (ADR 036). "Default" defers to the tier (the
    hint shows what that resolves to); Focus / Agency pin the taskee variant. */
@@ -403,23 +391,12 @@ function FocusModeField({ profile }: { profile: ProfileRow }) {
   return (
     <div className="flex flex-col gap-1.5 px-6 py-5">
       <Label>Chores view</Label>
-      <div className="flex gap-2">
-        {FOCUS_OPTS.map(({ value: v, label }) => (
-          <button
-            key={label}
-            type="button"
-            onClick={() => handleChange(v)}
-            className={cn(
-              'flex-1 rounded-lg border py-1.5 text-xs font-medium transition-colors',
-              value === v
-                ? 'border-primary bg-primary/10 text-primary'
-                : 'border-border text-muted-foreground hover:bg-muted'
-            )}
-          >
-            {label}
-          </button>
-        ))}
-      </div>
+      <SegmentedControl
+        aria-label="Chores view"
+        options={FOCUS_SEG_OPTIONS}
+        value={focusToChoice(value)}
+        onChange={(v) => handleChange(FOCUS_TO_OVERRIDE[v])}
+      />
       <p className="text-xs text-muted-foreground">
         {value === null
           ? `Default for this tier → ${tierDefault}`
@@ -452,9 +429,7 @@ function ProfileEditDrawer({
 
           <div className="border-t-2 border-border">
             <div className="px-6 pt-5 pb-3">
-              <h3 className="text-[11px] font-bold uppercase tracking-[0.1em] text-muted-foreground">
-                Role & Capabilities
-              </h3>
+              <h3 className="text-section-label text-muted-foreground">Role & Capabilities</h3>
             </div>
             <ProfileRoleField profile={profile} />
             <div className="border-t border-border">
