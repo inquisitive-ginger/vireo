@@ -215,7 +215,7 @@ function XpChip({
       selectedStyle={{ borderColor: GOLD, background: GOLD_TINT, color: GOLD_INK }}
       selectedClassName="font-bold"
       idleClassName="font-medium text-muted-foreground"
-      className="min-w-[44px] justify-center gap-1 px-3"
+      className="min-w-touch justify-center gap-1 px-3"
     >
       {value}
     </Chip>

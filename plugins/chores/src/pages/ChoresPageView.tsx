@@ -66,7 +66,7 @@ export function ChoresPageView({
   const pending = tasks.length - done
 
   return (
-    <div className="mx-auto max-w-[680px] px-6 pt-7 pb-12">
+    <div className="mx-auto max-w-content px-6 pt-7 pb-12">
       {/* Family pulse summary — counts only, no family XP (design §1). When the
           board is empty the empty-state owns the primary CTA, so the header action
           is suppressed (avoids a duplicate "New Task" primary action). */}

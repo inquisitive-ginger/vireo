@@ -43,7 +43,7 @@ export function TaskeeView({ tasks, onCompleteTask, initialXp }: TaskeeViewProps
   const pct = total > 0 ? (done / total) * 100 : 0
 
   return (
-    <div className="mx-auto max-w-[680px] px-6 pt-7 pb-12">
+    <div className="mx-auto max-w-content px-6 pt-7 pb-12">
       <PageHeader title="Chores" action={<ScorePlate ref={plateRef} value={lifetime} />} />
 
       {/* Progress line + bar (design §1 taskee header). */}
@@ -51,9 +51,9 @@ export function TaskeeView({ tasks, onCompleteTask, initialXp }: TaskeeViewProps
         <p className="text-sm-token mb-2 text-muted-foreground">
           {done === total ? '🎉 All done today' : `${total - done} left · ${done} of ${total} done`}
         </p>
-        <div className="h-[5px] overflow-hidden rounded-full bg-muted">
+        <div className="h-meter overflow-hidden rounded-full bg-muted">
           <div
-            className="h-full rounded-full bg-success transition-[width] duration-[320ms]"
+            className="h-full rounded-full bg-success transition-[width] duration-[var(--duration-slow)]"
             style={{ width: `${pct}%` }}
           />
         </div>

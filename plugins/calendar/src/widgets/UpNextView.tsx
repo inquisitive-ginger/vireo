@@ -1,9 +1,15 @@
 import { useCallback, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react'
 import { CalendarDays } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { EmptyState, Spine } from '@family-os/ui'
+import {
+  EmptyState,
+  Spine,
+  WidgetHeader as UiWidgetHeader,
+  WIDGET_CQ,
+  relativeDayLabel,
+} from '@family-os/ui'
 import type { CalendarEvent } from '../types'
-import { addDays, formatTime, isSameDay, pickNextUp, startOfDay, upcomingByDay } from '../lib/grid'
+import { formatTime, isSameDay, pickNextUp, upcomingByDay } from '../lib/grid'
 import { huesForEvent, spineColorsForEvent } from '../lib/hues'
 import { NextEventHero } from '../components/NextEventHero'
 
@@ -29,7 +35,7 @@ export interface UpNextViewProps {
   size?: WidgetSize
 }
 
-// ─── helpers ─────────────────────────────────────────────────────────────────
+// helpers
 
 function ownerNamesOf(event: CalendarEvent, membersById: Map<string, string>): string[] {
   return event.attendeeIds.map((id) => membersById.get(id)).filter((n): n is string => Boolean(n))
@@ -50,27 +56,12 @@ function spineFor(event: CalendarEvent, membersById: Map<string, string>): strin
   return spineColorsForEvent(huesForEvent(event.attendeeIds, membersById))
 }
 
-function dayLead(date: Date, now: Date): string {
-  if (isSameDay(date, now)) return 'Today'
-  if (isSameDay(date, addDays(startOfDay(now), 1))) return 'Tomorrow'
-  return date.toLocaleDateString(undefined, { weekday: 'long' })
-}
+// shared pieces
 
-function fmtDate(date: Date): string {
-  return date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' })
-}
-
-// ─── shared pieces ───────────────────────────────────────────────────────────
-
-/* CalendarDays + "Calendar" neutral widget identity header — matches chores /
-   family-feed (icon muted, label inherits foreground). */
+/* CalendarDays + "Calendar" widget identity — the shared `WidgetHeader` primitive
+   supplied with this module's glyph + label. */
 function WidgetHeader() {
-  return (
-    <div className="flex shrink-0 items-center gap-1.5">
-      <CalendarDays size={13} className="text-muted-foreground" aria-hidden />
-      <span className="text-section-label flex-1">Calendar</span>
-    </div>
-  )
+  return <UiWidgetHeader icon={CalendarDays} label="Calendar" />
 }
 
 /* Day heading — the mobile agenda's treatment: a bold `text-card-title` lead in
@@ -102,7 +93,7 @@ function QuietEventRow({
   return (
     <div className="flex items-center gap-2.5 py-1">
       <Spine color={spineFor(event, membersById)} />
-      <span className="text-sm-token w-[68px] shrink-0 whitespace-nowrap font-medium tabular-nums text-muted-foreground">
+      <span className="text-sm-token w-18 shrink-0 whitespace-nowrap font-medium tabular-nums text-muted-foreground">
         {formatTime(event.startsAt)}
       </span>
       <span className="text-sm-token min-w-0 flex-1 truncate text-foreground">{event.title}</span>
@@ -133,7 +124,7 @@ function AllClear({ withBody = false }: { withBody?: boolean }) {
   )
 }
 
-// ─── the "then" agenda (height-aware) ────────────────────────────────────────
+// the "then" agenda (height-aware)
 
 type Block =
   | { kind: 'heading'; key: string; lead: string; sub?: string }
@@ -148,12 +139,13 @@ function buildBlocks(events: CalendarEvent[], now: Date, heroId: string): Block[
   const blocks: Block[] = []
   for (const d of days) {
     const today = isSameDay(d.date, now)
-    blocks.push({
-      kind: 'heading',
-      key: `h-${d.date.toISOString()}`,
-      lead: today ? 'Later today' : dayLead(d.date, now),
-      sub: today ? undefined : fmtDate(d.date),
-    })
+    // Today's follow-on group reads "Later today"; other days keep the mobile
+    // agenda's weekday lead + muted date (weekday even past a week — the date
+    // disambiguates).
+    const { lead, sub } = today
+      ? { lead: 'Later today', sub: undefined }
+      : relativeDayLabel(d.date, now, { distant: 'weekday', sub: true })
+    blocks.push({ kind: 'heading', key: `h-${d.date.toISOString()}`, lead, sub })
     for (const e of d.events) blocks.push({ kind: 'event', key: e.id, event: e })
   }
   return blocks
@@ -162,12 +154,12 @@ function buildBlocks(events: CalendarEvent[], now: Date, heroId: string): Block[
 /* Vertical spacing carried as margins so the measured geometry matches what's
    drawn. A new day (a non-first heading) gets a full-width hairline divider above
    it so days read as distinct bands; rows sit tight under their heading. The
-   divider rhythm (22px above + line + 22px below) matches the family-feed
-   widget's inter-post divider (`my-[22px] h-px bg-border`) for cross-widget
+   divider rhythm (24px above + line + 24px below) matches the family-feed
+   widget's inter-post divider (`my-6 h-px bg-border`) for cross-widget
    consistency. */
 function blockSpacing(blocks: Block[], i: number): string {
   if (i === 0) return ''
-  if (blocks[i].kind === 'heading') return 'mt-[22px] border-t border-border pt-[22px]'
+  if (blocks[i].kind === 'heading') return 'mt-6 border-t border-border pt-6'
   return blocks[i - 1].kind === 'heading' ? 'mt-1.5' : 'mt-0.5'
 }
 
@@ -273,7 +265,7 @@ function ThenAgenda({
   )
 }
 
-// ─── size variants ───────────────────────────────────────────────────────────
+// size variants
 
 function Compact({ events, membersById, now, framing }: Required<Omit<UpNextViewProps, 'size'>>) {
   const upcoming = upcomingByDay(events, now).flatMap((d) => d.events)
@@ -377,11 +369,11 @@ const WIDGET_STYLES = `
   .cun-compact  { display: block; }
   .cun-standard { display: none; }
   .cun-large    { display: none; }
-  @container (min-height: 300px) {
+  @container (min-height: ${WIDGET_CQ.tallMinHeight}) {
     .cun-compact  { display: none; }
     .cun-large    { display: block; }
   }
-  @container (min-width: 440px) and (max-height: 299px) {
+  @container (min-width: ${WIDGET_CQ.wideMinWidth}) and (max-height: ${WIDGET_CQ.shortMaxHeight}) {
     .cun-compact  { display: none; }
     .cun-large    { display: none; }
     .cun-standard { display: block; }

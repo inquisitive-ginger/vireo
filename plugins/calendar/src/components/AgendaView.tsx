@@ -1,7 +1,7 @@
 import { CalendarDays, Plus } from 'lucide-react'
-import { Button, EmptyState } from '@family-os/ui'
+import { Button, EmptyState, relativeDayLabel } from '@family-os/ui'
 import type { CalendarEvent } from '../types'
-import { addDays, isSameDay, pickNextUp, startOfDay, upcomingByDay } from '../lib/grid'
+import { isSameDay, pickNextUp, upcomingByDay } from '../lib/grid'
 import { AgendaRow } from './AgendaRow'
 import { NextEventHero } from './NextEventHero'
 
@@ -31,7 +31,7 @@ export function AgendaView({
 
   if (days.length === 0) {
     return (
-      <div className="rounded-xl border border-border bg-card py-6 shadow-[var(--shadow-card)]">
+      <div className="rounded-panel border border-border bg-card py-6 shadow-[var(--shadow-card)]">
         <EmptyState
           icon={CalendarDays}
           heading="Nothing scheduled"
@@ -94,24 +94,9 @@ export function AgendaView({
 }
 
 /* "Today" / "Later today" (when the hero is today) / "Tomorrow" / weekday, plus a
-   secondary date — the warm header treatment that replaces an all-caps label. */
+   secondary date — the warm header treatment that replaces an all-caps label. The
+   hero already carries today's next event, so today's remainder reads "Later today". */
 function sectionLabel(date: Date, now: Date, heroIsToday: boolean): { lead: string; sub?: string } {
-  if (isSameDay(date, now)) {
-    return heroIsToday
-      ? { lead: 'Later today' }
-      : {
-          lead: 'Today',
-          sub: date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
-        }
-  }
-  if (isSameDay(date, addDays(startOfDay(now), 1))) {
-    return {
-      lead: 'Tomorrow',
-      sub: date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
-    }
-  }
-  return {
-    lead: date.toLocaleDateString(undefined, { weekday: 'long' }),
-    sub: date.toLocaleDateString(undefined, { month: 'short', day: 'numeric' }),
-  }
+  if (heroIsToday && isSameDay(date, now)) return { lead: 'Later today' }
+  return relativeDayLabel(date, now, { distant: 'weekday', sub: true })
 }

@@ -1,3 +1,4 @@
+import { addDays, dayDiff, isSameDay, startOfDay } from '@family-os/ui'
 import type { CalendarEvent } from '../types'
 
 /* Month-grid layout math, ported from the locked `calendar-month.stories.tsx`
@@ -9,7 +10,11 @@ import type { CalendarEvent } from '../types'
 
 export const WEEKDAY_LABELS = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat']
 
-// ─── Date helpers ────────────────────────────────────────────────────────────
+// Date helpers
+
+// The date-only primitives live in `@family-os/ui`; re-exported so calendar's many
+// `../lib/grid` importers keep a single import site.
+export { addDays, dayDiff, isSameDay, startOfDay }
 
 const pad = (n: number) => String(n).padStart(2, '0')
 
@@ -18,25 +23,7 @@ export function localDateKey(d: Date): string {
   return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`
 }
 
-/** Midnight (local) on the same day — the canonical date-only value for a day. */
-export function startOfDay(d: Date): Date {
-  return new Date(d.getFullYear(), d.getMonth(), d.getDate())
-}
-
-export function addDays(d: Date, n: number): Date {
-  return new Date(d.getFullYear(), d.getMonth(), d.getDate() + n)
-}
-
-export function isSameDay(a: Date, b: Date): boolean {
-  return localDateKey(a) === localDateKey(b)
-}
-
-/** Whole local days from `a` to `b` (b − a), date-only. */
-export function dayDiff(a: Date, b: Date): number {
-  return Math.round((startOfDay(b).getTime() - startOfDay(a).getTime()) / 86_400_000)
-}
-
-// ─── Span detection ──────────────────────────────────────────────────────────
+// Span detection
 
 /** The inclusive last day an event covers. An end at exactly local midnight is
  *  treated as the prior day (exclusive bound) so a 6pm→midnight event stays
@@ -63,9 +50,9 @@ export function isMultiDay(event: CalendarEvent): boolean {
   return !isSameDay(new Date(event.startsAt), spanEndDate(event))
 }
 
-// ─── Grid build ──────────────────────────────────────────────────────────────
+// Grid build
 
-export interface DayCell {
+interface DayCell {
   date: Date
   inMonth: boolean
 }
@@ -94,7 +81,7 @@ export function buildWeek(date: Date): Date[] {
   return Array.from({ length: 7 }, (_, i) => addDays(sunday, i))
 }
 
-// ─── Layout ──────────────────────────────────────────────────────────────────
+// Layout
 
 export interface PlacedSpan {
   event: CalendarEvent
@@ -105,7 +92,7 @@ export interface PlacedSpan {
   lane: number
 }
 
-export interface LaidOutCell {
+interface LaidOutCell {
   date: Date
   inMonth: boolean
   events: CalendarEvent[] // single-day events on this cell, time-sorted
@@ -190,9 +177,9 @@ export function eventsForDay(events: CalendarEvent[], date: Date): CalendarEvent
     .sort(byStart)
 }
 
-// ─── Agenda (mobile forward-looking list) ────────────────────────────────────
+// Agenda (mobile forward-looking list)
 
-export interface AgendaDay {
+interface AgendaDay {
   date: Date
   events: CalendarEvent[]
 }
@@ -237,7 +224,7 @@ export function pickNextUp(days: AgendaDay[], now: Date): CalendarEvent | null {
   return days[0]?.events[0] ?? null
 }
 
-// ─── Time / range formatting ─────────────────────────────────────────────────
+// Time / range formatting
 
 /** Terse `h:mm` (12-hour, no meridiem) for month chips — matches the locked
  *  exploration's across-the-room density. */

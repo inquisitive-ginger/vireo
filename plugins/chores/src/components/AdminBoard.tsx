@@ -132,7 +132,7 @@ function LaneHeader({
 
   return (
     <div
-      className="flex items-center gap-3 border-b border-border px-[18px] py-3"
+      className="flex items-center gap-3 border-b border-border px-4 py-3"
       // tint gradient + 2px identity top-border carry the lane's identity hue.
       style={{
         background: `linear-gradient(90deg, ${tint}, transparent 70%)`,
@@ -144,8 +144,8 @@ function LaneHeader({
           <span className="text-card-title text-foreground">{lane.assigneeName}</span>
           {overdue > 0 && <Badge variant="destructive">{overdue} overdue</Badge>}
         </div>
-        <div className="mt-[5px] flex items-center gap-2">
-          <div className="h-[5px] max-w-[120px] flex-1 rounded-full bg-muted">
+        <div className="mt-1 flex items-center gap-2">
+          <div className="h-meter max-w-30 flex-1 rounded-full bg-muted">
             <div className="h-full rounded-full" style={{ width: `${pct}%`, background: hue }} />
           </div>
           <span className="text-xs-token text-muted-foreground">
@@ -207,13 +207,13 @@ function AdminRow({
 
   return (
     <div
-      className={`relative flex min-h-[54px] items-center gap-3 border-b border-border pr-1.5 pl-[18px] ${
+      className={`relative flex min-h-row-touch items-center gap-3 border-b border-border pr-1.5 pl-4 ${
         onEdit ? 'transition-colors hover:bg-secondary/40' : ''
       }`}
       style={{ opacity: done ? 0.55 : 1 }}
     >
       <Spine color={spine} />
-      <div className="min-w-0 flex-1 py-[9px]">
+      <div className="min-w-0 flex-1 py-2">
         <span
           className={`text-base-token block ${done ? 'text-muted-foreground line-through' : 'text-foreground'}`}
         >

@@ -8,7 +8,7 @@ import { getIdentityHue, identityToken, type IdentityHue } from '@family-os/ui'
  *                    person — reads as two highlighters, not a blended hue).
  *  Ported verbatim from `calendar-month.stories.tsx` (the locked reference). */
 
-export interface Fill {
+interface Fill {
   background: string
   color: string
 }

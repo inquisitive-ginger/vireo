@@ -90,7 +90,7 @@ export function DetailView({
   // Day view with nothing scheduled gets the full design-system empty state.
   if (view === 'day' && eventsForDay(events, cursor).length === 0) {
     return (
-      <div className="rounded-xl border border-border bg-card py-6 shadow-[var(--shadow-card)]">
+      <div className="rounded-panel border border-border bg-card py-6 shadow-[var(--shadow-card)]">
         <EmptyState
           icon={CalendarDays}
           heading="Nothing scheduled"

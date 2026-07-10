@@ -1,7 +1,14 @@
 import type { ReactNode } from 'react'
 import { CheckSquare, Star, TrendingUp } from 'lucide-react'
 import { Link } from 'react-router-dom'
-import { EmptyState, Spine, getIdentityHue, identityToken } from '@family-os/ui'
+import {
+  EmptyState,
+  Spine,
+  WidgetHeader as UiWidgetHeader,
+  WIDGET_CQ,
+  getIdentityHue,
+  identityToken,
+} from '@family-os/ui'
 import type { ChoreTask } from '../types'
 import { isOverdue } from '../lib/dates'
 import { GOLD, GOLD_DEEP, GOLD_HI, GOLD_INK, GOLD_TINT } from '../lib/gold'
@@ -17,7 +24,7 @@ import { GOLD, GOLD_DEEP, GOLD_HI, GOLD_INK, GOLD_TINT } from '../lib/gold'
 
 const OVERDUE_WASH = 'color-mix(in oklch, var(--error) 8%, transparent)'
 
-/* ---- helpers ---------------------------------------------------------------- */
+/* Helpers */
 
 function todayPending(tasks: ChoreTask[]): ChoreTask[] {
   return tasks.filter((t) => t.status === 'pending')
@@ -53,19 +60,13 @@ function byMemberUrgency(a: { tasks: ChoreTask[] }, b: { tasks: ChoreTask[] }): 
   return pending(b) - pending(a)
 }
 
-/* ---- shared chrome ---------------------------------------------------------- */
+/* Shared chrome */
 
-/* CheckSquare + "CHORES" widget identity header — neutral, matching family-feed
-   (icon muted, label inherits foreground). With an optional trailing slot for the
+/* CheckSquare + "Chores" widget identity — the shared `WidgetHeader` primitive
+   supplied with this module's glyph + label; the optional trailing slot carries the
    score / daily XP / overdue pill. */
 function WidgetHeader({ trailing }: { trailing?: ReactNode }) {
-  return (
-    <div className="flex shrink-0 items-center gap-1.5">
-      <CheckSquare size={13} className="text-muted-foreground" aria-hidden />
-      <span className="text-section-label flex-1">Chores</span>
-      {trailing}
-    </div>
-  )
+  return <UiWidgetHeader icon={CheckSquare} label="Chores" trailing={trailing} />
 }
 
 /* The hero count — text-metric (the sanctioned widget-count token). */
@@ -82,7 +83,7 @@ function ProgressBar({ done, total }: { done: number; total: number }) {
   const pct = total > 0 ? Math.round((done / total) * 100) : 0
   return (
     <div className="flex flex-col gap-1.5">
-      <div className="h-[6px] overflow-hidden rounded-full bg-muted">
+      <div className="h-meter overflow-hidden rounded-full bg-muted">
         <div
           className="h-full rounded-full bg-success"
           style={{ width: `${pct}%` }}
@@ -119,10 +120,11 @@ function CoinScore({ value }: { value: number }) {
         <Star size={10} fill="white" style={{ color: 'white' }} />
       </span>
       <span className="inline-flex items-baseline gap-0.5">
+        {/* Geometry-coupled: bold gold numeral, tight line-height, baseline-aligned to the coin. */}
         <span style={{ fontSize: 15, fontWeight: 700, color: GOLD_DEEP, lineHeight: 1 }}>
           {value.toLocaleString()}
         </span>
-        <span className="font-bold tracking-[0.04em]" style={{ color: GOLD_INK, fontSize: 9 }}>
+        <span className="text-xs-token font-bold tracking-[0.04em]" style={{ color: GOLD_INK }}>
           XP
         </span>
       </span>
@@ -179,7 +181,7 @@ function AllDoneChip() {
   )
 }
 
-/* ---- rows ------------------------------------------------------------------- */
+/* Rows */
 
 /* Taskee task row — filled (muted / overdue-wash) pill, status spine, +XP. */
 function TaskRow({ task }: { task: ChoreTask }) {
@@ -187,7 +189,7 @@ function TaskRow({ task }: { task: ChoreTask }) {
   const overdue = isOverdue(task.dueDate, task.status)
   return (
     <div
-      className="flex items-center gap-2.5 rounded-[11px] px-3"
+      className="flex items-center gap-2.5 rounded-panel px-3"
       style={{
         minHeight: 44,
         background: overdue ? OVERDUE_WASH : 'var(--muted)',
@@ -221,7 +223,7 @@ function PersonTile({ name, tasks }: { name: string; tasks: ChoreTask[] }) {
 
   return (
     <div
-      className="flex items-center gap-2.5 rounded-[11px] px-3"
+      className="flex items-center gap-2.5 rounded-panel px-3"
       style={{
         minHeight: 48,
         background: overdue > 0 ? OVERDUE_WASH : 'var(--muted)',
@@ -229,11 +231,10 @@ function PersonTile({ name, tasks }: { name: string; tasks: ChoreTask[] }) {
       }}
     >
       <span
-        className="inline-flex size-7 shrink-0 items-center justify-center rounded-full font-bold"
+        className="text-sm-token inline-flex size-7 shrink-0 items-center justify-center rounded-full font-bold"
         style={{
           background: identityToken(hue, 'tint'),
           color: identityToken(hue, 'ink'),
-          fontSize: 12,
         }}
         aria-hidden
       >
@@ -320,9 +321,7 @@ function TaskeeAllDone({
   )
 }
 
-/* ============================================================================ */
-/* Taskee framing (tiers 1–3) — Hero split                                      */
-/* ============================================================================ */
+/* Taskee framing (tiers 1–3) — Hero split */
 
 function TaskeeCompact({
   tasks,
@@ -385,7 +384,7 @@ function TaskeeStandard({
     <div className="flex size-full flex-col p-4" style={{ containerType: 'size' }}>
       <WidgetHeader trailing={<CoinScore value={lifetimeXp} />} />
       <div className="mt-3 flex min-h-0 flex-1 gap-4">
-        <div className="flex w-[140px] shrink-0 flex-col gap-2">
+        <div className="flex w-35 shrink-0 flex-col gap-2">
           <HeroCount
             value={pending.length}
             label={pending.length === 1 ? 'task left today' : 'tasks left today'}
@@ -454,9 +453,7 @@ function TaskeeLarge({
   )
 }
 
-/* ============================================================================ */
-/* Taskee — Focus framing (focusMode on) — single hero "Next up" + "+N more"    */
-/* ============================================================================ */
+/* Taskee — Focus framing (focusMode on) — single hero "Next up" + "+N more" */
 
 /* The most urgent pending task auto-surfaces as the hero (overdue → earliest due
    → undated), mirroring the Focus page (design §1/§4). */
@@ -476,7 +473,7 @@ function NextUpRow({ task, large = false }: { task: ChoreTask; large?: boolean }
   const overdue = isOverdue(task.dueDate, task.status)
   return (
     <div
-      className="flex items-center gap-2.5 rounded-[12px] px-3.5"
+      className="flex items-center gap-2.5 rounded-panel px-3.5"
       style={{ minHeight: large ? 56 : 48, background: overdue ? OVERDUE_WASH : 'var(--muted)' }}
     >
       <Spine color={spineColor(task)} inset />
@@ -616,9 +613,7 @@ function FocusLarge({
   )
 }
 
-/* ============================================================================ */
-/* Family framing (tier 4 / family pseudo-profile) — Hero split                 */
-/* ============================================================================ */
+/* Family framing (tier 4 / family pseudo-profile) — Hero split */
 
 /* Short / narrow family slot — a summary glance (count + progress + overdue), no
    per-person rows (they need height). Per-person detail is one tap away. Added for
@@ -662,7 +657,7 @@ function FamilyStandard({ tasks }: { tasks: ChoreTask[] }) {
     <div className="flex size-full flex-col p-4" style={{ containerType: 'size' }}>
       <WidgetHeader trailing={overdue > 0 ? <OverduePill n={overdue} /> : undefined} />
       <div className="mt-3 flex min-h-0 flex-1 gap-4">
-        <div className="flex w-[140px] shrink-0 flex-col gap-1">
+        <div className="flex w-35 shrink-0 flex-col gap-1">
           <HeroCount value={pending} label="pending today" />
           <span className="text-xs-token text-muted-foreground">
             {done} of {total} done
@@ -705,9 +700,7 @@ function FamilyLarge({ tasks }: { tasks: ChoreTask[] }) {
   )
 }
 
-/* ============================================================================ */
-/* Public: TodaySummaryView                                                     */
-/* ============================================================================ */
+/* Public: TodaySummaryView */
 
 export type WidgetSize = 'compact' | 'standard' | 'large'
 
@@ -747,11 +740,11 @@ const WIDGET_STYLES = `
   .cw-compact  { display: block; }
   .cw-standard { display: none; }
   .cw-large    { display: none; }
-  @container (min-height: 300px) {
+  @container (min-height: ${WIDGET_CQ.tallMinHeight}) {
     .cw-compact  { display: none; }
     .cw-large    { display: block; }
   }
-  @container (min-width: 440px) and (max-height: 299px) {
+  @container (min-width: ${WIDGET_CQ.wideMinWidth}) and (max-height: ${WIDGET_CQ.shortMaxHeight}) {
     .cw-compact  { display: none; }
     .cw-large    { display: none; }
     .cw-standard { display: block; }
@@ -759,11 +752,11 @@ const WIDGET_STYLES = `
   .cwf-compact  { display: block; }
   .cwf-standard { display: none; }
   .cwf-large    { display: none; }
-  @container (min-height: 300px) {
+  @container (min-height: ${WIDGET_CQ.tallMinHeight}) {
     .cwf-compact { display: none; }
     .cwf-large   { display: block; }
   }
-  @container (min-width: 440px) and (max-height: 299px) {
+  @container (min-width: ${WIDGET_CQ.wideMinWidth}) and (max-height: ${WIDGET_CQ.shortMaxHeight}) {
     .cwf-compact  { display: none; }
     .cwf-large    { display: none; }
     .cwf-standard { display: block; }

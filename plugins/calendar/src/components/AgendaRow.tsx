@@ -39,7 +39,7 @@ export function AgendaRow({
         ) : undefined
       }
     >
-      <span className="w-[72px] shrink-0 text-sm-token font-semibold tabular-nums text-muted-foreground">
+      <span className="w-18 shrink-0 text-sm-token font-semibold tabular-nums text-muted-foreground">
         {agendaWhenLabel(event)}
       </span>
       <div className="min-w-0 flex-1">

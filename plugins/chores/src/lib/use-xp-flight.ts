@@ -5,14 +5,14 @@ import { usePrefersReducedMotion } from './use-reduced-motion'
 
 type Override = 'inFlight' | 'done'
 
-export interface Flight {
+interface Flight {
   taskId: string
   from: DOMRect
   to: DOMRect
   value: number
 }
 
-export interface UseXpFlightOptions {
+interface UseXpFlightOptions {
   tasks: ChoreTask[]
   /** Persist the completion. Resolves on success, rejects to revert the optimistic
       UI. Omitted in Storybook → the flight runs locally with no network. */

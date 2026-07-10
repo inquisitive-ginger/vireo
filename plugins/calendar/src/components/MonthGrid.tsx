@@ -32,7 +32,7 @@ export function MonthGrid({
   onQuickAdd?: (date: Date) => void
 }) {
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-card shadow-[var(--shadow-card)]">
+    <div className="overflow-hidden rounded-panel border border-border bg-card shadow-[var(--shadow-card)]">
       {/* Weekday header */}
       <div className="grid grid-cols-7 border-b border-border">
         {WEEKDAY_LABELS.map((d) => (
@@ -62,7 +62,7 @@ export function MonthGrid({
                     if (e.key === 'Enter' || e.key === ' ') onDrillDay(cell.date)
                   }}
                   className={cn(
-                    'group min-h-[128px] cursor-pointer border-b border-r border-border px-1.5 pb-1.5 pt-1.5 transition-colors last:border-r-0 hover:bg-muted/40 focus:outline-none focus-visible:ring-1 focus-visible:ring-ring',
+                    'group min-h-32 cursor-pointer border-b border-r border-border px-1.5 pb-1.5 pt-1.5 transition-colors last:border-r-0 hover:bg-muted/40 focus:outline-none focus-visible:ring-1 focus-visible:ring-ring',
                     ci === 6 && 'border-r-0',
                     !cell.inMonth && 'bg-muted/30'
                   )}

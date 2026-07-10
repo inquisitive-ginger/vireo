@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { MessagesSquare } from 'lucide-react'
+import { WidgetHeader as UiWidgetHeader, WIDGET_CQ } from '@family-os/ui'
 import type { FeedPost } from '../types'
 import { FeedPostCard } from '../components/FeedPostCard'
 import { FeedEmptyState } from '../components/FeedEmptyState'
@@ -10,19 +11,16 @@ import { FeedEmptyState } from '../components/FeedEmptyState'
 const WIDGET_STYLES = `
   .ffeed-single { display: flex; height: 100%; flex-direction: column; }
   .ffeed-multi  { display: none;  height: 100%; flex-direction: column; }
-  @container (min-height: 300px) {
+  @container (min-height: ${WIDGET_CQ.tallMinHeight}) {
     .ffeed-single { display: none; }
     .ffeed-multi  { display: flex; }
   }
 `
 
+/* MessagesSquare + "Family Feed" widget identity — the shared `WidgetHeader`
+   primitive supplied with this module's glyph + label. */
 function WidgetHeader() {
-  return (
-    <div className="flex items-center gap-1.5 shrink-0">
-      <MessagesSquare size={13} className="text-muted-foreground" aria-hidden />
-      <span className="text-section-label">Family Feed</span>
-    </div>
-  )
+  return <UiWidgetHeader icon={MessagesSquare} label="Family Feed" />
 }
 
 export interface FeedWidgetViewProps {
@@ -70,7 +68,7 @@ export function FeedWidgetView({ posts, emptyAction }: FeedWidgetViewProps) {
             {posts.slice(0, 3).map((post, i, arr) => (
               <div key={post.id}>
                 <FeedPostCard post={post} lineClamp={2} variant="widget" />
-                {i < arr.length - 1 && <div className="my-[22px] h-px bg-border" />}
+                {i < arr.length - 1 && <div className="my-6 h-px bg-border" />}
               </div>
             ))}
           </div>

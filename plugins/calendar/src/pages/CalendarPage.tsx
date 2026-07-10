@@ -255,7 +255,7 @@ export function CalendarPage() {
   const isLoading = eventsQuery.isLoading || profilesQuery.isLoading
 
   const errorCard = (
-    <div className="rounded-xl border border-border bg-card py-6 shadow-[var(--shadow-card)]">
+    <div className="rounded-panel border border-border bg-card py-6 shadow-[var(--shadow-card)]">
       <EmptyState
         icon={CalendarDays}
         heading="Couldn't load the calendar"
@@ -341,7 +341,6 @@ export function CalendarPage() {
   // The time grid (month/week/day) — the calendar lens's chrome + body.
   const calendarLens = (
     <>
-      {/* Chrome */}
       <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
         <div className="flex items-center gap-2">
           <h1 className="text-page-title text-foreground">{title}</h1>
@@ -373,7 +372,6 @@ export function CalendarPage() {
         </div>
       </div>
 
-      {/* Body */}
       {isLoading ? (
         <MonthSkeleton />
       ) : eventsQuery.isError ? (
@@ -548,7 +546,7 @@ function ActivitiesSkeleton() {
 function AgendaSkeleton() {
   return (
     <div className="flex flex-col gap-7">
-      <div className="h-28 rounded-2xl bg-muted/60 animate-pulse" />
+      <div className="h-28 rounded-hero bg-muted/60 animate-pulse" />
       <div className="flex flex-col gap-2.5">
         <div className="mb-1 h-5 w-28 rounded bg-muted" />
         {Array.from({ length: 3 }).map((_, i) => (
@@ -574,7 +572,7 @@ function AgendaSkeleton() {
    cells, so the layout doesn't jump when data lands. */
 function MonthSkeleton() {
   return (
-    <div className="overflow-hidden rounded-xl border border-border bg-card shadow-[var(--shadow-card)]">
+    <div className="overflow-hidden rounded-panel border border-border bg-card shadow-[var(--shadow-card)]">
       <div className="grid grid-cols-7 border-b border-border">
         {Array.from({ length: 7 }).map((_, i) => (
           <div key={i} className="px-2 py-1.5">
@@ -584,10 +582,7 @@ function MonthSkeleton() {
       </div>
       <div className="grid grid-cols-7">
         {Array.from({ length: 35 }).map((_, i) => (
-          <div
-            key={i}
-            className="min-h-[128px] border-b border-r border-border p-2 last:border-r-0"
-          >
+          <div key={i} className="min-h-32 border-b border-r border-border p-2 last:border-r-0">
             <div className="h-6 w-6 rounded-full bg-muted" />
             <div className="mt-3 flex flex-col gap-1">
               <div className="h-4 w-full rounded bg-muted/70 animate-pulse" />

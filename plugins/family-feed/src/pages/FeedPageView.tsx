@@ -1,22 +1,16 @@
 import type { ReactNode } from 'react'
-import { Button, PageHeader } from '@family-os/ui'
+import { Button, PageHeader, relativeDayLabel } from '@family-os/ui'
 import type { FeedPost } from '../types'
 import { FeedPostCard } from '../components/FeedPostCard'
 import { FeedEmptyState } from '../components/FeedEmptyState'
 
-const DAY_MS = 86_400_000
-
+/* Feed groups look backward: near-past days earn a weekday name, older posts a full
+   "Month D". */
 function dayLabel(isoString: string): string {
-  const date = new Date(isoString)
-  const startOfToday = new Date()
-  startOfToday.setHours(0, 0, 0, 0)
-  const startOfDay = new Date(date)
-  startOfDay.setHours(0, 0, 0, 0)
-  const daysAgo = Math.round((startOfToday.getTime() - startOfDay.getTime()) / DAY_MS)
-  if (daysAgo <= 0) return 'Today'
-  if (daysAgo === 1) return 'Yesterday'
-  if (daysAgo < 7) return date.toLocaleDateString(undefined, { weekday: 'long' })
-  return date.toLocaleDateString(undefined, { month: 'long', day: 'numeric' })
+  return relativeDayLabel(new Date(isoString), new Date(), {
+    direction: 'backward',
+    month: 'long',
+  }).lead
 }
 
 function groupByDay(posts: FeedPost[]): Array<{ label: string; posts: FeedPost[] }> {
@@ -53,7 +47,7 @@ export function FeedPageView({
   onLoadMore,
 }: FeedPageViewProps) {
   return (
-    <div className="mx-auto max-w-[680px] px-6 pt-7 pb-12">
+    <div className="mx-auto max-w-content px-6 pt-7 pb-12">
       {/* When the feed is empty the empty-state owns the primary CTA, so the header
           action is suppressed (avoids a duplicate compose action — mirrors chores). */}
       <PageHeader

@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { Check, ChevronDown, ChevronRight } from 'lucide-react'
-import { PageHeader, Spine } from '@family-os/ui'
+import { Button, PageHeader, Spine } from '@family-os/ui'
 import type { ChoreTask } from '../types'
 import { isOverdue, dueLabel } from '../lib/dates'
 import { ScorePlate } from './ScorePlate'
@@ -9,7 +9,6 @@ import { useXpFlight } from '../lib/use-xp-flight'
 import { GOLD_INK, GOLD_TINT } from '../lib/gold'
 
 export interface FocusViewProps {
-  /** The active profile's own tasks. */
   tasks: ChoreTask[]
   /** Persist the completion. Rejects to revert the optimistic flight. Omitted in
       Storybook → the flight runs locally with no network. */
@@ -52,7 +51,7 @@ export function FocusView({ tasks, onCompleteTask, initialXp }: FocusViewProps) 
   const pct = total > 0 ? (done / total) * 100 : 0
 
   return (
-    <div className="mx-auto max-w-[680px] px-6 pt-7 pb-12">
+    <div className="mx-auto max-w-content px-6 pt-7 pb-12">
       <PageHeader title="Chores" action={<ScorePlate ref={plateRef} value={lifetime} />} />
 
       {/* Progress line + bar (design §1 taskee header — shared with Agency). */}
@@ -60,9 +59,9 @@ export function FocusView({ tasks, onCompleteTask, initialXp }: FocusViewProps) 
         <p className="text-sm-token mb-2 text-muted-foreground">
           {done === total ? '🎉 All done today' : `${total - done} left · ${done} of ${total} done`}
         </p>
-        <div className="h-[5px] overflow-hidden rounded-full bg-muted">
+        <div className="h-meter overflow-hidden rounded-full bg-muted">
           <div
-            className="h-full rounded-full bg-success transition-[width] duration-[320ms]"
+            className="h-full rounded-full bg-success transition-[width] duration-[var(--duration-slow)]"
             style={{ width: `${pct}%` }}
           />
         </div>
@@ -118,7 +117,7 @@ function HeroCard({
 
   return (
     <div
-      className="rounded-[18px] border bg-card p-[22px] shadow-[var(--shadow-card)]"
+      className="rounded-hero border bg-card p-6 shadow-[var(--shadow-card)]"
       style={{
         borderColor: overdue
           ? 'color-mix(in oklch, var(--error) 35%, var(--border))'
@@ -127,8 +126,8 @@ function HeroCard({
     >
       <span className="text-section-label text-muted-foreground">Next up</span>
       <h2
-        className="mt-1.5 font-semibold text-foreground"
-        style={{ fontSize: 26, lineHeight: 1.15 }}
+        className="text-page-title mt-1.5 font-semibold text-foreground"
+        style={{ lineHeight: 1.15 }}
       >
         {task.title}
       </h2>
@@ -155,16 +154,16 @@ function HeroCard({
           +{task.xpReward} XP
         </span>
       </div>
-      <button
+      <Button
         type="button"
         onClick={inFlight ? undefined : handleClick}
         disabled={inFlight}
-        className="flex w-full items-center justify-center gap-2 rounded-2xl bg-success py-4 text-base font-semibold text-success-foreground shadow-[var(--shadow-card)] transition-transform active:scale-[0.98] disabled:opacity-60"
+        className="h-auto w-full rounded-hero bg-success py-4 font-semibold text-success-foreground transition-transform hover:bg-success/90 active:scale-[0.98] disabled:opacity-60"
         aria-label={`Mark “${task.title}” done`}
       >
         <Check size={20} strokeWidth={3} />
         Mark done
-      </button>
+      </Button>
     </div>
   )
 }
@@ -203,7 +202,7 @@ function MiniRow({ task }: { task: ChoreTask }) {
   const label = dueLabel(task.dueDate)
   return (
     <div
-      className="flex items-center gap-2.5 rounded-xl px-3 py-2.5"
+      className="flex items-center gap-2.5 rounded-panel px-3 py-2.5"
       style={{ background: 'var(--muted)' }}
     >
       <Spine color={spine} />
@@ -232,7 +231,7 @@ function MiniRow({ task }: { task: ChoreTask }) {
 /* Empty payoff — the hero is replaced by the celebration (design §1). */
 function AllDone() {
   return (
-    <div className="flex flex-col items-center justify-center gap-2 rounded-[18px] border border-border bg-card py-14 text-center shadow-[var(--shadow-card)]">
+    <div className="flex flex-col items-center justify-center gap-2 rounded-hero border border-border bg-card py-14 text-center shadow-[var(--shadow-card)]">
       <span style={{ fontSize: 40 }} aria-hidden>
         🎉
       </span>

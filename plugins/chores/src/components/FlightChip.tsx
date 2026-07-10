@@ -74,6 +74,7 @@ export function FlightChip({ from, to, value, onDone }: FlightChipProps) {
           background: `linear-gradient(135deg, ${GOLD_HI}, ${GOLD_TINT})`,
           border: `1px solid ${GOLD}`,
           color: GOLD_INK,
+          // Gold reward-glow — inline until the --reward-* tokens are promoted.
           boxShadow: '0 2px 8px oklch(0.74 0.13 80 / 0.4)',
         }}
       >

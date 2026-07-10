@@ -50,7 +50,6 @@ export const ScorePlate = forwardRef<HTMLDivElement, ScorePlateProps>(function S
       { duration: 660, easing: 'ease-out' }
     )
 
-    // Count-up.
     const start = performance.now()
     const dur = 500
     const tick = (now: number) => {
@@ -72,11 +71,11 @@ export const ScorePlate = forwardRef<HTMLDivElement, ScorePlateProps>(function S
           padding: '7px 13px 7px 10px',
           background: `linear-gradient(135deg, ${GOLD_HI}, ${GOLD_TINT})`,
           border: `1px solid ${GOLD}`,
-          boxShadow: '0 1px 2px oklch(0 0 0 / 0.08)',
+          boxShadow: 'var(--shadow-card)',
         }}
       >
         <span
-          className="grid size-[22px] shrink-0 place-items-center rounded-full"
+          className="grid size-6 shrink-0 place-items-center rounded-full"
           style={{
             background: `radial-gradient(circle at 32% 30%, ${GOLD_HI}, ${GOLD} 70%, ${GOLD_DEEP})`,
             color: GOLD_DEEP,

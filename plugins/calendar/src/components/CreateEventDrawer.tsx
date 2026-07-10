@@ -320,7 +320,6 @@ export function CreateEventDrawer({
       <form onSubmit={submit} className="flex h-full flex-col">
         <div className="flex-1 overflow-y-auto p-6">
           <div className="flex flex-col gap-6">
-            {/* Title */}
             <div>
               <FieldLabel htmlFor="event-title">Title</FieldLabel>
               <Input id="event-title" placeholder="What's happening?" {...register('title')} />
@@ -504,7 +503,6 @@ export function CreateEventDrawer({
               </div>
             )}
 
-            {/* Location + Notes */}
             <div>
               <FieldLabel htmlFor="event-location" optional>
                 Location
@@ -555,8 +553,6 @@ export function CreateEventDrawer({
   )
 }
 
-/* ── Field bits ──────────────────────────────────────────────────────────── */
-
 /* A field's label row with an optional inline modifier toggle on the right
    (Multiple days / All day) — the shared Switch keeps it on-brand and accessible
    (`aria-label` names the switch for AT + tests). */
@@ -568,7 +564,7 @@ function FieldHeader({
   toggle?: { label: string; checked: boolean; onChange: (v: boolean) => void }
 }) {
   return (
-    <div className="mb-[7px] flex items-center justify-between gap-3">
+    <div className="mb-2 flex items-center justify-between gap-3">
       <Label className="cursor-default">{label}</Label>
       {toggle && (
         <div className="flex items-center gap-2">

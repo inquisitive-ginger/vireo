@@ -107,7 +107,7 @@ export function NextEventHero({
     </>
   )
 
-  const className = `block w-full rounded-2xl border border-border/60 text-left shadow-[var(--shadow-card)] ${
+  const className = `block w-full rounded-hero border border-border/60 text-left shadow-[var(--shadow-card)] ${
     compact ? 'p-3.5' : 'p-4'
   }`
   if (onClick) {

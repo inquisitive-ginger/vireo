@@ -123,7 +123,7 @@ export function ActivitiesView({
 
   if (groups.length === 0) {
     return (
-      <div className="rounded-xl border border-border bg-card py-8 shadow-[var(--shadow-card)]">
+      <div className="rounded-panel border border-border bg-card py-8 shadow-[var(--shadow-card)]">
         <EmptyState
           icon={Repeat}
           heading="No activities yet"
@@ -179,7 +179,7 @@ export function ActivitiesView({
   )
 }
 
-// ─── Roster ─────────────────────────────────────────────────────────────────────
+// Roster
 
 function OwnerRoster({
   group,
@@ -350,7 +350,7 @@ function ActivityRow({
   )
 }
 
-// ─── Season timeline (family-wide) ──────────────────────────────────────────────
+// Season timeline (family-wide)
 // Schematic Gantt: each activity runs from the axis start to its season end
 // (ongoing → runs the full width). Months are equal cells; gridlines are drawn
 // once as a full-height overlay so they stay aligned. Answers "what frees up?".
@@ -385,7 +385,7 @@ function SeasonTimeline({ groups, now }: { groups: OwnerGroup[]; now: Date }) {
   )
 
   return (
-    <section className="flex flex-col gap-4 rounded-xl border border-border bg-card p-6 shadow-[var(--shadow-card)]">
+    <section className="flex flex-col gap-4 rounded-panel border border-border bg-card p-6 shadow-[var(--shadow-card)]">
       <div>
         <h2 className="text-heading text-foreground">Seasons</h2>
         <p className="text-sm-token text-muted-foreground">
