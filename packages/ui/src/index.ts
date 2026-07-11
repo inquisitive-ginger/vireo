@@ -22,7 +22,7 @@ export type { CompletionToggleProps } from './components/completion-toggle'
 export { PageHeader } from './components/page-header'
 export type { PageHeaderProps } from './components/page-header'
 export { WidgetSlot } from './components/widget-slot'
-export type { WidgetSlotProps } from './components/widget-slot'
+export type { WidgetSlotProps, WidgetProminence } from './components/widget-slot'
 
 export { WidgetGrid } from './components/widget-grid'
 export type { WidgetGridProps, WidgetLayoutItem } from './components/widget-grid'

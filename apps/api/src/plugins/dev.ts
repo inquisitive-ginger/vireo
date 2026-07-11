@@ -3,19 +3,7 @@ import type { FastifyPluginAsync } from 'fastify'
 import { prisma } from '@family-os/platform/server'
 import { FAMILY_PROFILE_ID } from '@family-os/platform/types'
 import { seedWidgetLayout } from '../lib/seed-layout'
-
-const DEFAULT_LAYOUTS = {
-  default_layout_tier_1_2: [
-    { widgetId: 'chores.today-summary', x: 0, y: 0, w: 2, h: 2 },
-    { widgetId: 'family-feed.feed', x: 2, y: 0, w: 2, h: 1 },
-    { widgetId: 'calendar.up-next', x: 2, y: 1, w: 2, h: 1 },
-  ],
-  default_layout_tier_3_4: [
-    { widgetId: 'calendar.up-next', x: 0, y: 0, w: 2, h: 2 },
-    { widgetId: 'family-feed.feed', x: 2, y: 0, w: 2, h: 1 },
-    { widgetId: 'chores.today-summary', x: 2, y: 1, w: 2, h: 1 },
-  ],
-}
+import { DEFAULT_LAYOUTS } from '../lib/default-layouts'
 
 const devPlugin: FastifyPluginAsync = async (fastify) => {
   fastify.post('/dev/reset', async () => {

@@ -64,12 +64,13 @@ function WidgetHeader() {
   return <UiWidgetHeader icon={CalendarDays} label="Calendar" />
 }
 
-/* Day heading — the mobile agenda's treatment: a bold `text-card-title` lead in
-   the foreground with a muted secondary date (never a coloured label). */
+/* Day heading — a `text-base-token` semibold lead in the foreground with a muted
+   secondary date (never a coloured label). Sized below the hero so the next event
+   stays the one element with weight. */
 function DayHeading({ lead, sub }: { lead: string; sub?: string }) {
   return (
     <div className="flex items-baseline gap-2">
-      <span className="text-card-title text-foreground">{lead}</span>
+      <span className="text-base-token font-semibold text-foreground">{lead}</span>
       {sub && <span className="text-sm-token text-muted-foreground">{sub}</span>}
     </div>
   )
@@ -152,14 +153,12 @@ function buildBlocks(events: CalendarEvent[], now: Date, heroId: string): Block[
 }
 
 /* Vertical spacing carried as margins so the measured geometry matches what's
-   drawn. A new day (a non-first heading) gets a full-width hairline divider above
-   it so days read as distinct bands; rows sit tight under their heading. The
-   divider rhythm (24px above + line + 24px below) matches the family-feed
-   widget's inter-post divider (`my-6 h-px bg-border`) for cross-widget
-   consistency. */
+   drawn. A new day (a non-first heading) is set apart by space, not a rule —
+   depth/spacing, not lines (design-system.md §Principles); rows sit tight under
+   their heading. */
 function blockSpacing(blocks: Block[], i: number): string {
   if (i === 0) return ''
-  if (blocks[i].kind === 'heading') return 'mt-6 border-t border-border pt-6'
+  if (blocks[i].kind === 'heading') return 'mt-5'
   return blocks[i - 1].kind === 'heading' ? 'mt-1.5' : 'mt-0.5'
 }
 

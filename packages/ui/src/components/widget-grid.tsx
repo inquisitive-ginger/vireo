@@ -1,7 +1,7 @@
 import { type ReactNode, useState, useEffect } from 'react'
 import { GridLayout, noCompactor, useContainerWidth } from 'react-grid-layout'
 import 'react-grid-layout/css/styles.css'
-import { WidgetSlot } from './widget-slot'
+import { WidgetSlot, type WidgetProminence } from './widget-slot'
 import { cn } from '../lib/utils'
 
 export interface WidgetLayoutItem {
@@ -10,6 +10,8 @@ export interface WidgetLayoutItem {
   y: number
   w: number
   h: number
+  /** Elevation-ladder rung (feature/card/quiet). Defaults to `card` when absent. */
+  prominence?: WidgetProminence
 }
 
 export interface WidgetGridProps {
@@ -43,6 +45,7 @@ function stackHeight(h: number, rowHeight: number) {
 
 export function WidgetGrid({ layout, children, className, flatSlots }: WidgetGridProps) {
   const flatSet = new Set(flatSlots ?? [])
+  const prominenceById = new Map(layout.map((item) => [item.widgetId, item.prominence]))
   const { containerRef, width } = useContainerWidth()
   const [height, setHeight] = useState(0)
 
@@ -82,9 +85,11 @@ export function WidgetGrid({ layout, children, className, flatSlots }: WidgetGri
       {width > 0 &&
         (isNarrow ? (
           <div className="flex flex-col" style={{ gap: GAP }}>
-            {layout.map(({ widgetId, h }) => (
+            {layout.map(({ widgetId, h, prominence }) => (
               <div key={widgetId} style={{ height: stackHeight(h, MIN_ROW_HEIGHT) }}>
-                <WidgetSlot flat={flatSet.has(widgetId)}>{children[widgetId]}</WidgetSlot>
+                <WidgetSlot prominence={prominence} flat={flatSet.has(widgetId)}>
+                  {children[widgetId]}
+                </WidgetSlot>
               </div>
             ))}
           </div>
@@ -99,7 +104,9 @@ export function WidgetGrid({ layout, children, className, flatSlots }: WidgetGri
           >
             {rglLayout.map(({ i }) => (
               <div key={i}>
-                <WidgetSlot flat={flatSet.has(i)}>{children[i]}</WidgetSlot>
+                <WidgetSlot prominence={prominenceById.get(i)} flat={flatSet.has(i)}>
+                  {children[i]}
+                </WidgetSlot>
               </div>
             ))}
           </GridLayout>
