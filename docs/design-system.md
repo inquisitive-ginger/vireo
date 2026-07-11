@@ -187,11 +187,11 @@ Rules:
 
 Where each level applies:
 
-| Level             | Surfaces                                                                                                              |
-| ----------------- | --------------------------------------------------------------------------------------------------------------------- |
-| `--shadow-card`   | Live widget slots, feed post cards, settings sections — content at rest                                               |
-| `--shadow-raised` | Compose forms, notification tray, drawers, dialogs, toasts, profile picker, onboarding card — surfaces above the page |
-| No shadow (flat)  | Sidebar, nav, inset rows, placeholder slots, error slots — structural chrome is never elevated                        |
+| Level             | Surfaces                                                                                                                                                             |
+| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--shadow-card`   | Live widget slots, feed post cards, settings sections, sidebar profile chip — content at rest                                                                        |
+| `--shadow-raised` | Compose forms, notification tray, drawers, dialogs, toasts, profile picker, onboarding card — surfaces above the page                                                |
+| No shadow (flat)  | Sidebar rail + nav items, inset rows, placeholder slots, error slots — structural chrome is flat (the profile chip is the one elevated exception, ADR 031 amendment) |
 
 ### Member identity palette
 
@@ -497,27 +497,44 @@ UI-layer swap. No architectural accommodation needed now.
 
 ## Tablet Nav Layout
 
-**Settled** — see ADR 022.
+**Settled** — see ADR 022. **Surface + fold amended** — sidebar-refresh session,
+2026-07-11 (ADR 031 amendment).
 
-Left sidebar, always visible, 220px wide. No top header bar.
+Left sidebar, always visible, on the `--background` plane (no colored wall) with a hairline
+`border-r` seam. It **folds responsively**: a slim label-under-icon rail below `xl`,
+expanding to the full label-beside rail at `xl`+.
 
 ```
-┌──────────┬────────────────────────────────────┐
-│ Sidebar  │                                    │
-│  220px   │         Main content area          │
-│          │                                    │
-│          │                                    │
-└──────────┴────────────────────────────────────┘
+   < xl  (w-sidebar-rail, 96px)        xl+  (w-sidebar, 220px)
+┌──────┬─────────────────────┐    ┌──────────┬──────────────────┐
+│  ▢   │                     │    │ (Z) Zach▸│                  │
+│ Home │    Main content     │    │ ▨ Home   │   Main content   │
+│  ▢   │    (cards float)    │    │ ▢ Feed   │   (cards float)  │
+│ Feed │                     │    │ ▢ Chores │                  │
+└──────┴─────────────────────┘    └──────────┴──────────────────┘
+   icon over centered label          label beside icon
 ```
 
 ### Sidebar structure (top to bottom)
 
-1. **Profile chip** — avatar + active profile name. Tap opens the profile grid overlay
-   (per ADR 021). Always visible. This is what ADR 021 calls the "corner chip in the
-   shell header" — functionally identical, repositioned to the sidebar top.
-2. **Nav items** — icon + label. Tier-filtered: items the active profile can't access
-   are hidden. Minimum 48px touch target height per item.
-3. **Settings** — bottom of sidebar. Visible to tier 4 only.
+1. **Profile chip** — an **elevated `--card` chip** (`border` + `--shadow-card`, lifting to
+   `--shadow-raised` on hover/open) so it reads as a header control, not a fourth nav item.
+   Tap opens the profile-switch menu (per ADR 021) as a **floating dropdown just below the
+   chip** — edge-aligned to the chip at `xl`, a fixed `w-64` overhang in the slim rail.
+   **Avatar-only in the slim rail** (below `xl`); avatar + active profile name + chevron
+   when expanded (`xl`+).
+2. **Nav items** — icon + label (label _under_ the icon when slim, _beside_ it when
+   expanded). Labels are **`text-xs-body` (11px) slim / `text-sm` (14px) expanded**.
+   Tier-filtered: items the active profile can't access are hidden. Minimum 48px
+   (`min-h-touch`) target per item. The nav scrolls internally (`overflow-y-auto`) so the
+   pinned utility group survives short viewports and long nav lists.
+3. **Notification bell + Settings** — bottom utility group, separated from the nav by an
+   inset `border-t` hairline, same fold treatment. Tier-2+ only — the group **and its
+   divider** render only when populated, so the family pseudo-profile gets neither. The
+   bell label reads "Alerts" slim / "Notifications" expanded.
+
+The fold breakpoint is `xl` (1280px); widths are the `--spacing-sidebar-rail` (96px) and
+`--spacing-sidebar` (220px) tokens.
 
 ### Nav item visibility
 
@@ -529,15 +546,27 @@ The family pseudo-profile (tier 1, no writes) sees only tier-1-appropriate nav i
 
 ### Sidebar surface
 
-**Settled** — shell-chrome-interaction-states design session, 2026-06-13.
+**Amended** — sidebar-refresh session, 2026-07-11 (ADR 031 amendment). _Supersedes the
+2026-06-13 `--secondary` rule below._
 
-The sidebar renders on `--secondary`. No `border-r` separator between sidebar and main
-content — the lightness delta (`--secondary` 0.93 L vs. `--background` 0.985 L in light
-mode; 0.22 vs. 0.15 in dark mode) creates the seam naturally. This applies the "depth,
-not lines, creates hierarchy" principle to the nav rail as much as to content cards.
+The sidebar renders on **`--background`** — no colored fill. Once the home widgets float as
+`--card`+shadow surfaces (ADR 039), a `--secondary` sidebar read as a _colored wall_
+competing with content; on the shared `--background` canvas the cards lift and the rail
+recedes. Two hairlines give the recessive rail just enough edge (a fully-bare rail read too
+dissolved in review):
 
-No internal hairlines within the sidebar. Vertical spacing groups the profile chip, nav
-items, notification bell, and settings entry.
+- **`border-r border-border/60`** — the rail↔content seam the `--secondary` lightness delta
+  used to provide.
+- inset **`border-t border-border/60`** — separates the bottom utility group from the nav.
+  Rendered **only when the group is populated** (tier 2+), so no stray rule appears for the
+  family profile.
+
+The **profile chip is the one elevated element** — a `--card` chip with `--shadow-card`
+(→ `--shadow-raised` on hover/open), per the ADR-039 ladder. Everything else stays flat.
+
+> _Historical (pre-2026-07-11): the sidebar rendered on `--secondary`, relying on the
+> lightness delta vs. `--background` to seam. Dropped — the colored wall competed with the
+> floating content cards; the rail now recedes on `--background` with hairline edges._
 
 ### Interaction states
 
@@ -557,12 +586,16 @@ and must never appear on navigation state (active, hover, selected).
 
 #### Nav state classes
 
-| State              | Classes                                     | Notes                                        |
-| ------------------ | ------------------------------------------- | -------------------------------------------- |
-| Active nav item    | `bg-primary/20 text-primary font-medium`    | "You are here" — warm terracotta tint + text |
-| Nav hover          | `hover:bg-primary/10 hover:text-foreground` | Directional hint toward active               |
-| Profile chip hover | `hover:bg-primary/10`                       | Matches nav hover                            |
-| Profile chip open  | `bg-primary/15`                             | Expanded / profile grid open                 |
+_Amended 2026-07-11 (ADR 031 amendment) — active softened to `/10` on the seamless
+`--background` rail; hover moved to the reused `--secondary` surface so it stays distinct
+from the primary-tinted active._
+
+| State                   | Classes                                       | Notes                                                                 |
+| ----------------------- | --------------------------------------------- | --------------------------------------------------------------------- |
+| Active nav item         | `bg-primary/10 text-primary font-medium`      | "You are here" — soft terracotta tint on the bare `--background` rail |
+| Nav hover               | `hover:bg-secondary/70 hover:text-foreground` | The retired sidebar surface, reused as the hover wash                 |
+| Profile chip rest       | `bg-card border shadow-[var(--shadow-card)]`  | Elevated header chip (ADR 039 ladder), not a nav item                 |
+| Profile chip hover/open | `shadow-[var(--shadow-raised)]`               | Lifts on hover and while the switch menu is open                      |
 
 The active profile avatar uses a `--primary` ring (ADR 030). Ring (circular, avatar-level)
 and fill (rectangular, item-level) are visually distinct shapes of the same

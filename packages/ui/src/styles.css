@@ -46,7 +46,8 @@
   --spacing-row-touch: 64px; /* minimum interactive card/list-item height */
   --spacing-tab-bar: 56px; /* mobile bottom tab bar */
   --spacing-top-bar: 52px; /* mobile brand top bar */
-  --spacing-sidebar: 220px; /* tablet sidebar (settled, ADR 022) */
+  --spacing-sidebar: 220px; /* tablet sidebar — expanded, label-beside (ADR 022/031) */
+  --spacing-sidebar-rail: 96px; /* sidebar — collapsed slim rail, label-under-icon (ADR 031) */
   --spacing-meter: 6px; /* progress-meter bar height */
 
   /* Fixed content widths (→ max-w-content, w-drawer) */
