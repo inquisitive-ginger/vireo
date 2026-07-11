@@ -13,11 +13,12 @@ export type PluginNavItem = {
   minTier?: 1 | 2 | 3 | 4
 }
 
-// ADR 031 (amended, sidebar-refresh session): the sidebar is a seamless rail on
-// `--background` — no colored wall, no border. It folds responsively: a slim
-// label-under-icon rail (`w-sidebar-rail`) below `xl`, expanding to the full
-// label-beside rail (`w-sidebar`) at `xl`+. `--primary` still owns active; the old
-// `--secondary` surface is reused as the transient hover wash.
+// ADR 031 (amended, sidebar-refresh session): the sidebar recedes on `--background`
+// — no colored wall — with a hairline `border-r` seam and an inset `border-t` above
+// the utility group. It folds responsively: a slim label-under-icon rail
+// (`w-sidebar-rail`) below `xl`, expanding to the full label-beside rail (`w-sidebar`)
+// at `xl`+. `--primary` still owns active; the old `--secondary` surface is reused as
+// the transient hover wash.
 export function Sidebar({ pluginNavItems = [] }: { pluginNavItems?: PluginNavItem[] }) {
   const { tier } = useAuth()
   const visiblePluginItems = pluginNavItems.filter((item) => !item.minTier || item.minTier <= tier)
