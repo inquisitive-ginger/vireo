@@ -90,22 +90,16 @@ function NavItem({
       end={end}
       className={({ isActive }) =>
         cn(
-          'relative overflow-hidden flex items-center gap-3 px-3 py-2.5 mx-1 rounded-md text-sm transition-colors min-h-touch',
+          'flex items-center gap-3 px-3 py-2.5 mx-1 rounded-md text-sm transition-colors min-h-touch',
+          // ADR 031: `--primary` fill owns active; no left-bar indicator.
           isActive
-            ? 'bg-primary/15 text-primary font-medium'
-            : 'text-muted-foreground hover:bg-primary/8 hover:text-foreground'
+            ? 'bg-primary/20 text-primary font-medium'
+            : 'text-muted-foreground hover:bg-primary/10 hover:text-foreground'
         )
       }
     >
-      {({ isActive }: { isActive: boolean }) => (
-        <>
-          {isActive && (
-            <span aria-hidden className="absolute left-0 top-0 bottom-0 w-[3px] bg-primary" />
-          )}
-          {icon}
-          <span>{label}</span>
-        </>
-      )}
+      {icon}
+      <span>{label}</span>
     </NavLink>
   )
 }

@@ -19,9 +19,12 @@ export interface FeedPostCardProps {
       `widget` — inset identity spine without card chrome (dense widget slots).
       `plain` — bare layout, no spine, for surfaces that handle their own card chrome. */
   variant?: 'note' | 'widget' | 'plain'
+  /** Dense widget rows render the body at `text-prose-sm` (15px) rather than the
+      roomy `text-prose` (18px) — same Lora family voice, sized for a tight list. */
+  dense?: boolean
 }
 
-export function FeedPostCard({ post, lineClamp, variant = 'note' }: FeedPostCardProps) {
+export function FeedPostCard({ post, lineClamp, variant = 'note', dense }: FeedPostCardProps) {
   const inner = (
     <div className="flex min-w-0 flex-1 gap-3">
       <ProfileAvatar name={post.author.name} size="base" />
@@ -35,7 +38,7 @@ export function FeedPostCard({ post, lineClamp, variant = 'note' }: FeedPostCard
           </span>
         </div>
         <p
-          className="text-prose text-card-foreground mt-1"
+          className={`${dense ? 'text-prose-sm' : 'text-prose'} text-card-foreground mt-1`}
           style={
             lineClamp
               ? {

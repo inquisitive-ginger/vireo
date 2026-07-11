@@ -65,7 +65,7 @@
 
 /* Typography scale — major 2nd (1.125), base 16px
    Use these token classes instead of raw size/weight utilities.
-   Lora tokens: page-title, display-lg, display-xl              */
+   Lora tokens: page-title, display-lg, display-xl, prose, prose-sm  */
 @utility text-xs-token {
   font-family: var(--font-ui);
   font-size: 10px;
@@ -159,13 +159,21 @@
   letter-spacing: -0.01em;
 }
 
-/* Prose — user-authored content (posts, notes, messages).
-   The only Lora token below display sizes: family voice, not UI chrome. */
+/* Prose — user-authored content (posts, notes, messages): family voice, not UI
+   chrome. Two sizes for two reading distances — `text-prose` for roomy surfaces
+   (feed page, across-room banner), `text-prose-sm` for dense widget rows. */
 @utility text-prose {
   font-family: var(--font-display);
   font-size: 18px;
   font-weight: 400;
   line-height: 1.65;
+}
+
+@utility text-prose-sm {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.5;
 }
 
 @layer base {

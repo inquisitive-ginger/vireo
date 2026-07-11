@@ -1,8 +1,27 @@
 import type { CSSProperties, ReactNode } from 'react'
-import { Clock, MapPin, Users } from 'lucide-react'
+import { MapPin, Users } from 'lucide-react'
+import { identityToken, type IdentityHue } from '@family-os/ui'
 import type { CalendarEvent } from '../types'
 import { agendaWhenLabel, formatTime, isMultiDay, relativeWhen } from '../lib/grid'
 import { fillForHues, huesForEvent, spineColorsForEvent } from '../lib/hues'
+
+/* Static identity pill for the compact hero owner — the member's soft `tint`/`ink`
+   with a hue ring so it reads against the same-hue wash. Display only (not the
+   interactive `MemberChip` picker). */
+function MemberPill({ name, hue }: { name: string; hue: IdentityHue }) {
+  return (
+    <span
+      className="rounded-full px-2 py-0.5 text-xs-token font-semibold"
+      style={{
+        background: identityToken(hue, 'tint'),
+        color: identityToken(hue, 'ink'),
+        boxShadow: `inset 0 0 0 1px color-mix(in oklch, ${identityToken(hue, 'base')} 32%, transparent)`,
+      }}
+    >
+      {name}
+    </span>
+  )
+}
 
 /* The "Up next" hero — the single next event, washed in its owner's identity
    colour (a split fill for a shared event, neutral for Family). Established on
@@ -51,6 +70,18 @@ export function NextEventHero({
     ) : showSoloOwner ? (
       ownerNames.join(' · ')
     ) : null
+  // Compact hero renders owner(s) as identity pills; a Family event gets a neutral pill.
+  const ownerPills: ReactNode =
+    ownerNames.length === 0 ? (
+      <span
+        className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs-token font-semibold"
+        style={{ background: 'var(--secondary)', color: 'var(--muted-foreground)' }}
+      >
+        <Users className="h-3 w-3" /> Family
+      </span>
+    ) : showSoloOwner ? (
+      ownerNames.map((name, i) => <MemberPill key={name} name={name} hue={hues[i]} />)
+    ) : null
 
   const body = compact ? (
     <>
@@ -62,22 +93,17 @@ export function NextEventHero({
         {now && <span className="text-foreground/80">· {when}</span>}
       </div>
       <div className="text-heading mt-2 truncate text-foreground">{event.title}</div>
-      {/* Meta order: time → place → owner. Time anchors the countdown eyebrow;
-          place is the next logistic; owner comes last since the wash already
-          codes identity. */}
-      <div className="mt-1 flex flex-wrap items-center gap-x-2.5 gap-y-0.5 text-xs-token text-foreground/70">
-        {hasClock && (
-          <span className="inline-flex items-center gap-1 tabular-nums">
-            <Clock className="h-3 w-3" /> {formatTime(event.startsAt)}
-          </span>
-        )}
+      {/* Meta: time (plain, no clock icon) → place → owner pill. The wash already
+          codes identity, so the owner reads as a pill, not a labelled field. */}
+      <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm-token text-foreground/75">
+        {hasClock && <span className="tabular-nums">{formatTime(event.startsAt)}</span>}
         {event.location && (
           <span className="inline-flex min-w-0 items-center gap-1">
-            <MapPin className="h-3 w-3 shrink-0" />{' '}
+            <MapPin className="h-3.5 w-3.5 shrink-0" />
             <span className="truncate">{event.location}</span>
           </span>
         )}
-        {owner && <span className="inline-flex items-center gap-1">{owner}</span>}
+        {ownerPills}
       </div>
     </>
   ) : (

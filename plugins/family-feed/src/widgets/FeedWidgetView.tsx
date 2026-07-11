@@ -5,11 +5,11 @@ import type { FeedPost } from '../types'
 import { FeedPostCard } from '../components/FeedPostCard'
 import { FeedEmptyState } from '../components/FeedEmptyState'
 
-// CSS container queries gate single-post vs multi-post layout by height.
-// standard (2×1) and banner (4×1) are 180px tall → single post.
-// large (2×2) is 376px tall → multi post with dividers.
+// CSS container queries pick the layout by the slot's height:
+//   short → single latest post; tall → dense multi-post list. Body drops to
+//   text-prose-sm in the multi list so a tall column doesn't crowd.
 const WIDGET_STYLES = `
-  .ffeed-single { display: flex; height: 100%; flex-direction: column; }
+  .ffeed-single { display: flex;  height: 100%; flex-direction: column; }
   .ffeed-multi  { display: none;  height: 100%; flex-direction: column; }
   @container (min-height: ${WIDGET_CQ.tallMinHeight}) {
     .ffeed-single { display: none; }
@@ -46,7 +46,7 @@ export function FeedWidgetView({ posts, emptyAction }: FeedWidgetViewProps) {
         {WIDGET_STYLES}
       </style>
 
-      {/* Standard / banner — latest post, centered */}
+      {/* Short — latest post, centered */}
       <div className="ffeed-single" style={{ padding: '14px 18px 16px' }}>
         <WidgetHeader />
         {!latest ? (
@@ -58,7 +58,7 @@ export function FeedWidgetView({ posts, emptyAction }: FeedWidgetViewProps) {
         )}
       </div>
 
-      {/* Large (2×2) — up to 3 posts with dividers */}
+      {/* Tall — up to 3 posts, denser body */}
       <div className="ffeed-multi" style={{ padding: '14px 18px 16px' }}>
         <WidgetHeader />
         {posts.length === 0 ? (
@@ -67,7 +67,7 @@ export function FeedWidgetView({ posts, emptyAction }: FeedWidgetViewProps) {
           <div className="mt-7 min-h-0 overflow-hidden">
             {posts.slice(0, 3).map((post, i, arr) => (
               <div key={post.id}>
-                <FeedPostCard post={post} lineClamp={2} variant="widget" />
+                <FeedPostCard post={post} lineClamp={2} variant="widget" dense />
                 {i < arr.length - 1 && <div className="my-6 h-px bg-border" />}
               </div>
             ))}

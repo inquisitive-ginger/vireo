@@ -1,6 +1,6 @@
 # Design System
 
-> Last updated: 2026-06-22 — Calendar (M3 Design): multi-person **split-fill** identity treatment + Family neutral pill added to the identity palette; shared date-picker components (react-day-picker, ADR 037) noted in the stack.
+> Last updated: 2026-07-10 — Home-dashboard hierarchy: **widget prominence / elevation ladder** (feature · card · quiet rungs) added to Widget Composition; `WidgetSlot` contract migrated off the single `flat` boolean; uniform widget border dropped.
 
 This document records settled design decisions. Deferred items are
 explicitly marked — do not treat absence of a spec as a free choice.
@@ -105,6 +105,7 @@ All tokens are defined as CSS utilities in `packages/ui/src/styles.css` and are 
 | `section-label` | `text-section-label` | 11  | 700    | 1.4         | 0.1em    | DM Sans · always uppercase |
 | `sm`            | `text-sm-token`      | 13  | 400    | 1.5         | 0        | DM Sans                    |
 | `base`          | `text-base-token`    | 14  | 400    | 1.5         | 0        | DM Sans                    |
+| `prose-sm`      | `text-prose-sm`      | 15  | 400    | 1.5         | 0        | **Lora**                   |
 | `card-title`    | `text-card-title`    | 16  | 600    | 1.3         | 0        | DM Sans                    |
 | `body`          | `text-body`          | 18  | 400    | 1.6         | 0        | DM Sans                    |
 | `prose`         | `text-prose`         | 18  | 400    | 1.65        | 0        | **Lora**                   |
@@ -119,6 +120,7 @@ All tokens are defined as CSS utilities in `packages/ui/src/styles.css` and are 
 - `xs-body` — smallest regular-weight text: placeholder/error-card descriptions, tier pills, meta captions (added 2026-07-10 audit — the settled placeholder/error anatomies specified 11px/400 with no token to express it)
 - `section-label` — `--muted-foreground` by default; `--accent` when naming a module surface (widget identity headers, feed day markers); uppercase is baked into the utility
 - `prose` — user-authored content only (feed posts, notes, messages). The family's own words get the warmth of the display face; text _about_ the UI never does. Same 18px viewing-distance floor as `body`
+- `prose-sm` — the family voice at 15px for **dense** contexts (multi-post feed widget rows) where 18px crowds. Same Lora face; use `prose` on roomy surfaces (feed page, across-room banner). Not for UI chrome
 - `page-title` — one per route; renders in Lora
 - `display-lg` — empty state headings, error page headings
 - `display-xl` — greeting text ("Good morning, Zach"), hero moments
@@ -735,6 +737,55 @@ buttons. Generic over a string-union value (`options`/`value`/`onChange` +
 `aria-label`). Use it instead of hand-rolling a button group; the calendar's
 hand-rolled Month/Week/Day switch was its first adopter.
 
+### Widget prominence — the elevation ladder
+
+**Settled** — home-dashboard hierarchy exploration, 2026-07-10
+(`logs/2026-07-10-design-home-dashboard-hierarchy.md`).
+
+Widget slots were uniform — every live widget got `--card` + `--shadow-card` +
+`border` + `rounded-xl`, so nothing was a focal point and the surface read as three
+equal boxes. Hierarchy on the home surface is now carried by **elevation**, not size
+alone: the shell assigns each slot one of **three prominence rungs**. This is the
+"depth, not lines, creates hierarchy" principle applied to the widget grid.
+
+| Rung        | Shell chrome                                          | Radius                  | Role                                                                                 |
+| ----------- | ----------------------------------------------------- | ----------------------- | ------------------------------------------------------------------------------------ |
+| **Feature** | `--shadow-raised`, **no border**                      | `--radius-hero` (16px)  | The surface's one focal point; holds the module's hero. **Exactly one per surface.** |
+| **Card**    | `--shadow-card`, soft hairline (`border-border/45`)   | `--radius-panel` (12px) | Resting secondary widget.                                                            |
+| **Quiet**   | recessed `--secondary` tint, **no shadow**, soft edge | `--radius-panel` (12px) | Fully live — keeps its identity header + content — but recedes _into_ the page.      |
+
+**The uniform border is gone.** A hard outline on every slot cancels the
+(deliberately subtle) `--shadow-card` and flattens the ladder. Rungs are told apart
+by **surface + depth**; only the quiet rung carries a soft edge, and the feature
+rung carries none.
+
+**One feature per surface, re-ranked per profile.** The rung assignment expresses
+the ADR 028 tier-dominance that size used to carry alone: parent → **Calendar**
+features · kid (tier 1–2) → **Chores** features · family pseudo-profile → **Feed**
+features (a full-width banner, read across a room). The same three widgets, same
+code — only the rung differs.
+
+**Quiet ≠ flat.** The quiet rung is a **live** state and must never be confused with
+the dashed-outline not-installed placeholder or the `--muted` error slot (both also
+without shadow — see [Home Surface](#home-surface)). Quiet keeps a real surface tint,
+its identity header, and live content; the flats carry their own not-content anatomy.
+This distinction is load-bearing — if quiet reads as "broken," the ladder fails.
+
+**Feature hero title stays DM Sans.** The calendar up-next hero title renders in
+`text-heading` (DM Sans) — the serif treatment (`text-page-title`) was evaluated
+against it and not adopted; the hero earns its weight from the wash + raised rung,
+not a face change. (Lora as a hero option remains in the `Home Surface/Elevation
+Ladder` playground for revisiting.)
+
+**Widgets separate internal groups by spacing, not rules.** The calendar widget
+sets day bands apart with space, not a hairline divider — "depth, not lines" holds
+inside a widget too.
+
+> **Wiring (ADR 039).** A slot's rung is a property of the **layout composition**,
+> resolved on read (`GET /home/layout` carries `prominence` per item), not a widget
+> manifest field — the same widget features for one profile and recedes for another.
+> Not yet a persisted column; see ADR 039.
+
 ### Role-aware composition
 
 Two levels:
@@ -888,12 +939,21 @@ affordance. Both are flat — the absence of elevation is the shared "non-conten
 
 **Settled** — widget-slot-states design session, 2026-06-13.
 
-`WidgetSlot` accepts a `flat` boolean prop:
+`WidgetSlot` carries a slot's prominence rung (see
+[Widget prominence](#widget-composition-system)) plus the not-content flat:
 
-| `flat`            | Chrome                                                     | Use                          |
-| ----------------- | ---------------------------------------------------------- | ---------------------------- |
-| `false` (default) | `bg-card border border-border shadow-[var(--shadow-card)]` | Live widgets                 |
-| `true`            | None — shape only (`rounded-xl overflow-hidden`)           | Placeholder and error states |
+| Rung / state           | Chrome                                                    | Use                           |
+| ---------------------- | --------------------------------------------------------- | ----------------------------- |
+| **Feature**            | `--shadow-raised`, no border, `rounded-hero`              | The one focal widget          |
+| **Card** (resting)     | `--shadow-card`, `border-border/45`, `rounded-panel`      | Secondary live widgets        |
+| **Quiet** (recessed)   | `--secondary` tint, no shadow, soft edge, `rounded-panel` | De-emphasized **live** widget |
+| **Flat** (not-content) | None — shape only (`rounded-xl overflow-hidden`)          | Placeholder and error states  |
+
+> **Migrated 2026-07-10 (elevation ladder).** The prior contract was a single `flat`
+> boolean (`false` = one uniform live card; `true` = placeholder/error). The uniform
+> live card is replaced by the three prominence rungs above; `flat` (dashed/muted)
+> remains **only** for the not-installed and error states. The quiet rung is live and
+> must not be confused with flat.
 
 `WidgetGrid` accepts `flatSlots?: string[]` — a list of widget IDs that should render
 flat. The shell passes this when it determines a slot holds a non-content state.
