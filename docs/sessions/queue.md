@@ -95,6 +95,17 @@ Next" on 2026-06-21 so M3 — Calendar can run uninterrupted.
 
 ---
 
+### Design+Dev: Family-wall feed typography (widget-prominence context)
+
+**Type:** development (small)
+**Kickoff:** _to be written_
+**Reads:** `plugins/family-feed/src/widgets/FeedWidgetView.tsx`, `packages/ui/src/components/widget-slot.tsx` + `widget-grid.tsx`, ADR 039, `logs/2026-07-10-design-dev-home-dashboard-elevation-ladder.md`
+**Produces:** the family pseudo-profile's feed **banner** rendering its body at the roomy across-room **`text-prose` (18px)** instead of the dense **`text-prose-sm` (15px)** it falls to today.
+**Why it's deferred:** the banner's tall slot trips the multi-post height gate, and a container-query **width** heuristic can't reliably tell the 4-col banner from a 2-col widget across device sizes (a 4-col banner on a 1024px wall tablet is _narrower_ than a 2-col widget on a 1920px laptop). The robust fix is **passing prominence into the widget** — e.g. a `useWidgetProminence()` context provided by `WidgetSlot` — which the feed reads to pick its across-room typography. 15px Lora reads fine in the interim, so this is a polish follow-up, not a blocker.
+**Depends on:** none (ADR 039 already anticipates prominence being available to widgets).
+
+---
+
 ### Tooling: Retry Design-Sync to claude.ai/design
 
 **Type:** tooling (`/design-sync`)
@@ -241,6 +252,10 @@ scheduled.
 ---
 
 ## Recently Completed
+
+- **2026-07-10 — Design + Dev: Home Dashboard Elevation Ladder (PR #34)** ![Type](https://img.shields.io/badge/Type-Development-orange)
+  Reworked the home dashboard so its three widgets stop reading as equal peers. Locked **Option C — the Elevation Ladder** from a rendered four-direction exploration, then shipped it: a shell-applied **three-rung prominence scale** on `WidgetSlot` — **feature** (`--shadow-raised` · `rounded-hero` · **no border**) / **card** (resting `--shadow-card` + hairline) / **quiet** (recessed `--secondary` tint, no shadow, still fully live, distinct from the not-installed/error flats). **One feature per surface, re-ranked per profile** (parent→Calendar · kid→Chores · family→Feed banner) — elevation expresses ADR 028 dominance, not just `{w,h}`. Prominence is **derived on read** from a single **`apps/api/src/lib/default-layouts.ts`** composition (which also fixed the **never-seeded `default_layout_family`** — family had been getting the tier*1_2 layout), **not a persisted column** — **ADR 039** (amends 022/028) anticipates promoting it. Ground-plane fixes shipped with the ladder: **dropped the uniform widget border** ("depth, not lines") + a density pass. Calendar hero refined via live iteration (**no clock icon**, owner in an **identity pill**, title in **DM Sans not Lora** — user tested serif live and chose sans, smaller day headings, **spacing not divider rules**); family-feed widget gained a **dense body mode** (new **`text-prose-sm`** token, family voice stays Lora). **Sidebar ADR-031 tidy** (dropped the 3px left-bar the ADR rejected; active `bg-primary/20`, hover `/10`). `design-system.md` §Widget prominence + migrated `WidgetSlot` contract. Storybook: the exploration playground was removed post-approval and the essential rung demo folded into **`Foundation/Elevation`**; a **typography audit** added the 3 scale tokens the story was missing (`xs-body`/`prose`/`prose-sm`). Green: ui 85 · api 206 · calendar 66; typecheck/lint + Storybook build clean; live-reviewed + signed off. **Owed follow-up:** family-wall feed typography (see below).
+  \_See:* `docs/sessions/logs/2026-07-10-design-dev-home-dashboard-elevation-ladder.md`
 
 - **2026-07-09 — M3 Dev: Calendar Recurring Activities (story 5)** ![Type](https://img.shields.io/badge/Type-Development-orange)
   A first-class **Activities lens** — standing commitments (weekly-recurring + single owner, the derived `is_activity`) surfaced/managed as named activities, grouped by owner. **`GET /calendar/activities`** returns each activity as its canonical **series** (no occurrence expansion; tier 1+). **`ActivitiesView`** splits two questions behind a **`[Roster · Seasons]`** sub-switch: **Roster** = owner-grouped list (color = person) + per-kid **weekday-load strip** ("is Teddy overbooked?"), tier-4 per-person **+ Add** / row **edit·remove**; **Seasons** = a schematic Gantt to each activity's end. **Two-tier chrome** — a primary **`Calendar ⇄ Activities`** tier over Month/Week/Day, on **both tablet and mobile** (lazy `['calendar/activities']` query). Reused **`CreateEventDrawer`** with activity framing (repeat-weekly implied, per-person owner prefill, `event → activity` copy); edit/remove reuse the story-1 series PATCH/DELETE. **UX gate:** co-existence = **Frame B (two-tier tabs)**, Roster/Seasons = **sub-tabs** (approved via live playground frames). **New primitive `TabBar`** (`@family-os/ui`) — underline ARIA tablist, roving tabindex + arrow-key nav + `tabpanel` association (kept custom, not `@radix-ui/react-tabs`, per the `SegmentedControl` precedent); story + 7 tests. **Live-review course-corrections, all folded in:** Activities on **mobile** (was tablet-only) + responsive roster header; `cursor-pointer` on `TabBar` **and** `SegmentedControl`; **44px** `ghost`/`ghost-destructive` row actions (pencil hidden on mobile, tap-row edits); Activities row → **`ItemCard`** (was hand-rolled). Deleted the superseded **Activities exploration** story (real component shipped). All 7 ACs ✅; typecheck (10 pkgs) + lint clean; API calendar **26** (2 new) · calendar **58** · ui incl. `TabBar` **7** green; live-reviewed + signed off.
