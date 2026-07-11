@@ -4,6 +4,7 @@ import { FAMILY_PROFILE_ID, useAuth, useQuery } from '@family-os/platform'
 import type { Profile } from '@family-os/platform/types'
 import type { EventsResponse } from '../types'
 import { agendaRange } from '../lib/grid'
+import { WEEK_WINDOW_DAYS } from '../lib/week'
 import { UpNextView, type UpNextFraming } from './UpNextView'
 
 /* `calendar.up-next` widget — registered in manifest.json `widgets[]`. Reads the
@@ -23,7 +24,11 @@ export default function UpNext() {
 
   // Stable "now" for the render so the countdown / day labels don't churn.
   const now = useMemo(() => new Date(), [])
-  const range = useMemo(() => agendaRange(now), [now])
+  // One week, not the agenda's 42 days. The widget only ever renders today + 6,
+  // so a deeper fetch bought nothing but a "+40 more" line that read as a backlog.
+  // A multi-day span that STARTED before today still arrives: the API returns any
+  // event overlapping the range, and `buildWeek` keeps the ones still running.
+  const range = useMemo(() => agendaRange(now, WEEK_WINDOW_DAYS), [now])
 
   // Profile-scoped key — changes on profile switch (ADR 013). Prefix shared with
   // CalendarPage: a `['calendar/events']` invalidation refreshes both.

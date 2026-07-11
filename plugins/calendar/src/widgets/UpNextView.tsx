@@ -1,24 +1,47 @@
 import { useCallback, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { CalendarDays } from 'lucide-react'
+import { CalendarDays, Users } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import {
   EmptyState,
-  Spine,
+  ProfileAvatar,
   WidgetHeader as UiWidgetHeader,
   WIDGET_CQ,
+  WIDGET_INSET,
+  cn,
+  isSameDay,
   relativeDayLabel,
 } from '@family-os/ui'
 import type { CalendarEvent } from '../types'
-import { formatTime, isSameDay, pickNextUp, upcomingByDay } from '../lib/grid'
+import { formatTime } from '../lib/grid'
+import { buildWeek, spanWhenLabel, type WeekDay, type WeekModel } from '../lib/week'
 import { huesForEvent, spineColorsForEvent } from '../lib/hues'
 import { NextEventHero } from '../components/NextEventHero'
 
-/* `calendar.up-next` — the pure view (data comes from `UpNext.tsx`). The chosen
-   design (Frame C, "Next Hero"): one washed, dominant `NextEventHero` over a
-   quiet, fill-less agenda of what's after it. Two framings (owner names shown for
-   Family, dropped for Mine), three sizes that **self-size via CSS container
-   queries** (the shell renders `<Widget />` with no size prop). The whole tile
-   deep-links to `/calendar` (read-only MVP). */
+/* `calendar.up-next` — the pure view (data comes from `UpNext.tsx`).
+
+   THREE ZONES, THREE RANKS (2026-07-11 design pass). The tile is a hierarchy, not
+   a list, and each zone wears a different SURFACE so none can be mistaken for a
+   peer of the others:
+
+     1. HERO — raised. The next event, washed in its owner's identity hue on a
+        `--radius-hero` card. A moment.
+     2. ALL-WEEK BAND — recessed. Multi-day events, cut into the tile as a
+        full-bleed groove (`--surface-sunken` + `--shadow-inset`, ADR 040). A
+        condition. It is the one element that touches both edges — which is
+        exactly what a multi-day event does to a day-by-day view: runs past the
+        frame.
+     3. DAY LIST — flat. Appointments on the tile's own ground plane, in a day
+        gutter. A sequence.
+
+   Two structural fixes came with it. Multi-day events used to be bucketed by
+   every day they TOUCHED, so one week-long camp claimed five rows and swamped the
+   appointments; they now leave the list entirely for the band (`lib/week.ts`). And
+   the window is one week, not 42 days, so the old "+40 more" — which read as a
+   backlog rather than an offer — is now a "+2" or nothing at all.
+
+   Two framings (owner avatars shown for Family, dropped for Mine), three sizes
+   that self-size via CSS container queries (the shell renders `<Widget />` with no
+   size prop). The whole tile deep-links to `/calendar` (read-only MVP). */
 
 export type WidgetSize = 'compact' | 'standard' | 'large'
 export type UpNextFraming = 'family' | 'mine'
@@ -28,91 +51,335 @@ export interface UpNextViewProps {
   membersById: Map<string, string>
   /** Current time — drives the countdown, "Later today", and day labels. */
   now: Date
-  /** Family → owner names shown; Mine → dropped (all theirs), Family events tagged. */
+  /** Family → owner avatars shown; Mine → dropped (all theirs), Family events tagged. */
   framing: UpNextFraming
   /** Explicit density override (Storybook / fixed hosts). Omitted in the shell —
       the view self-sizes to its rendered box via container queries. */
   size?: WidgetSize
 }
 
-// helpers
-
-function ownerNamesOf(event: CalendarEvent, membersById: Map<string, string>): string[] {
-  return event.attendeeIds.map((id) => membersById.get(id)).filter((n): n is string => Boolean(n))
+interface ZoneProps {
+  week: WeekModel
+  membersById: Map<string, string>
+  now: Date
+  framing: UpNextFraming
 }
 
-function ownerLabel(
-  event: CalendarEvent,
-  framing: UpNextFraming,
-  membersById: Map<string, string>
-): string | undefined {
-  const names = ownerNamesOf(event, membersById)
-  if (names.length === 0) return 'Family'
-  if (framing === 'mine') return undefined // all theirs
-  return names.join(' & ')
+// shared pieces
+
+// The slot-scaled widget inset (`WIDGET_INSET`, design-system.md §Spacing). Any
+// full-bleed child must negate the matching value — see `AllWeekBand`'s `-mx-6`.
+const INSET = WIDGET_INSET
+
+function WidgetHeader() {
+  return <UiWidgetHeader icon={CalendarDays} label="Calendar" />
 }
 
 function spineFor(event: CalendarEvent, membersById: Map<string, string>): string[] {
   return spineColorsForEvent(huesForEvent(event.attendeeIds, membersById))
 }
 
-// shared pieces
-
-/* CalendarDays + "Calendar" widget identity — the shared `WidgetHeader` primitive
-   supplied with this module's glyph + label. */
-function WidgetHeader() {
-  return <UiWidgetHeader icon={CalendarDays} label="Calendar" />
+function namesOf(event: CalendarEvent, membersById: Map<string, string>): string[] {
+  return event.attendeeIds.map((id) => membersById.get(id)).filter((n): n is string => Boolean(n))
 }
 
-/* Day heading — a `text-base-token` semibold lead in the foreground with a muted
-   secondary date (never a coloured label). Sized below the hero so the next event
-   stays the one element with weight. */
-function DayHeading({ lead, sub }: { lead: string; sub?: string }) {
-  return (
-    <div className="flex items-baseline gap-2">
-      <span className="text-base-token font-semibold text-foreground">{lead}</span>
-      {sub && <span className="text-sm-token text-muted-foreground">{sub}</span>}
-    </div>
-  )
-}
-
-/* A quiet, fill-less agenda row — leading owner-hue spine + time + title + owner.
-   No fill, so the washed hero above stays the only element with weight.
-   `showOwner=false` in tight columns (the spine already codes owner). */
-function QuietEventRow({
+/* Owners as avatars, not names. "Zoe & Teddy" costs a third of a row; two 28px
+   circles cost nothing and carry strictly more — the avatar already IS the
+   identity hue a spine would paint, plus the initial that disambiguates it, so
+   the row needs only one of the two markers. In the Mine framing they're dropped
+   entirely (everything is theirs); a no-owner Family event still gets its glyph
+   in both framings. */
+function Owners({
   event,
   membersById,
   framing,
-  showOwner = true,
 }: {
   event: CalendarEvent
   membersById: Map<string, string>
   framing: UpNextFraming
-  showOwner?: boolean
 }) {
-  const label = showOwner ? ownerLabel(event, framing, membersById) : undefined
-  return (
-    <div className="flex items-center gap-2.5 py-1">
-      <Spine color={spineFor(event, membersById)} />
-      <span className="text-sm-token w-18 shrink-0 whitespace-nowrap font-medium tabular-nums text-muted-foreground">
-        {formatTime(event.startsAt)}
+  const names = namesOf(event, membersById)
+  if (names.length === 0) {
+    return (
+      <span
+        className="flex size-7 shrink-0 items-center justify-center rounded-full bg-secondary text-muted-foreground"
+        aria-label="Family"
+        role="img"
+      >
+        <Users className="size-3.5" aria-hidden />
       </span>
-      <span className="text-sm-token min-w-0 flex-1 truncate text-foreground">{event.title}</span>
-      {label && (
-        <span className="text-xs-token shrink-0 truncate text-muted-foreground">{label}</span>
-      )}
+    )
+  }
+  if (framing === 'mine') return null
+  return (
+    <span className="flex shrink-0 -space-x-1.5">
+      {names.slice(0, 3).map((name) => (
+        <ProfileAvatar
+          key={name}
+          name={name}
+          size="sm"
+          className="size-7 text-xs-body ring-2 ring-card"
+        />
+      ))}
+    </span>
+  )
+}
+
+/* Every row — appointment or "nothing else scheduled" — is exactly one ROW_BAND
+   tall: 48px (a 28px avatar between 10px of padding), so its text always centres
+   on y=24. The `min-h-12` floor is what holds that when there's no avatar to set
+   the height (the Mine framing, an empty day) — otherwise those rows collapse to
+   their text height and the day label drifts off them.
+
+   Note `min-height` is border-box: the floor has to be the FULL 48, not the 28px
+   content band, or the padding eats into it and the label rides ~5px high. */
+const ROW_BAND = 'flex min-h-12 items-center py-2.5'
+
+/* The gutter's day label MIRRORS the row's geometry rather than approximating it:
+   the same 10px top inset, then the same 28px band, centred the same way. So the
+   lead lands on the row's centre line exactly — by construction, not by
+   arithmetic — and stays there if a line-height ever moves. The date then hangs
+   below the band, which is why a day's first row runs taller than the ones under
+   it: days get a little air, for free.
+
+   (Two earlier attempts computed an inset from the lead's line box and missed by
+   a few px each way. The line box is 21px, not the 17.5px `leading-tight` implies
+   — the `text-*-token` utilities bake their own line-height and win the cascade,
+   so that class is silently dead. Don't reach for it; mirror the band instead.) */
+const GUTTER_INSET = 'pt-2.5'
+const GUTTER_LEAD = 'flex h-7 items-center'
+
+/** An appointment row: time · title · owners. */
+function EventRow({
+  event,
+  membersById,
+  framing,
+  showOwners = true,
+}: {
+  event: CalendarEvent
+  membersById: Map<string, string>
+  framing: UpNextFraming
+  showOwners?: boolean
+}) {
+  return (
+    <div className={cn(ROW_BAND, 'gap-3')}>
+      <span className="text-sm-token w-16 shrink-0 tabular-nums text-muted-foreground">
+        {formatTime(event.startsAt).toLowerCase()}
+      </span>
+      <span className="text-base-token min-w-0 flex-1 truncate text-foreground">{event.title}</span>
+      {showOwners && <Owners event={event} membersById={membersById} framing={framing} />}
     </div>
   )
 }
 
-function MoreLine({ n }: { n: number }) {
-  return <div className="mt-1.5 text-sm-token text-muted-foreground">+{n} more</div>
+// ZONE 2 — the all-week band
+
+/* The groove. Full-bleed (`-mx-6` against the tile's `p-6`), recessed into the
+   card with the sunken plane + its inner shadow — never `--secondary`, which in
+   this palette is the FAMILY fill and would merge with a Family-owned hero
+   directly above it (ADR 040). Renders nothing at all when there are no spans:
+   an empty groove would be a hole. */
+function AllWeekBand({ week, membersById, now, framing }: ZoneProps) {
+  if (week.spans.length === 0) return null
+  return (
+    <div
+      // The bleed margin has to track the tile's inset (`INSET.large`) exactly, or
+      // the groove stops reaching the edges — which is the whole point of it.
+      className="-mx-6 mt-3.5 bg-surface-sunken px-6 py-2.5 shadow-[var(--shadow-inset)]"
+      data-testid="all-week-band"
+    >
+      <div className="text-section-label mb-0.5 text-muted-foreground">All week</div>
+      {week.spans.map((event) => (
+        <div key={event.id} className="flex items-center gap-3 py-1.5">
+          <span className="text-base-token shrink-0 truncate font-semibold text-foreground">
+            {event.title}
+          </span>
+          <span className="text-sm-token min-w-0 flex-1 truncate text-muted-foreground">
+            {spanWhenLabel(event, now)}
+          </span>
+          <Owners event={event} membersById={membersById} framing={framing} />
+        </div>
+      ))}
+    </div>
+  )
 }
 
-/* The all-clear empty state — "Nothing scheduled" always; body at large only. */
+/** The band, compressed to one line — for the narrow sizes, which have no room
+    for a full-bleed groove but still must not drop the week's standing facts. */
+function AllWeekLine({ week, membersById, now }: ZoneProps) {
+  if (week.spans.length === 0) return null
+  return (
+    <div className="flex flex-wrap items-center gap-x-3 gap-y-0.5">
+      <span className="text-section-label shrink-0 text-muted-foreground">All week</span>
+      {week.spans.map((event) => (
+        <span key={event.id} className="flex min-w-0 items-center gap-1.5">
+          <span
+            aria-hidden
+            className="size-2 shrink-0 rounded-full"
+            style={{ background: spineFor(event, membersById)[0] }}
+          />
+          <span className="text-sm-token truncate text-foreground">{event.title}</span>
+          <span className="text-sm-token shrink-0 text-muted-foreground">
+            {spanWhenLabel(event, now).toLowerCase()}
+          </span>
+        </span>
+      ))}
+    </div>
+  )
+}
+
+// ZONE 3 — the day list (height-aware)
+
+/* One row of the gutter list. A day's label is printed on its FIRST row only, so
+   the whole list stays a flat sequence of equal-height rows — which is what lets
+   the height clamp below measure and cut at row granularity instead of dropping a
+   whole day. */
+interface Row {
+  key: string
+  lead?: string
+  sub?: string
+  event?: CalendarEvent
+}
+
+function buildRows(days: WeekDay[], now: Date): Row[] {
+  const rows: Row[] = []
+  for (const { date, events } of days) {
+    const today = isSameDay(date, now)
+    // An empty weekday is news ("nothing else scheduled"); an empty *today* is
+    // just noise, so it doesn't get a band at all.
+    if (today && events.length === 0) continue
+    const { lead, sub } = today
+      ? { lead: 'Later today', sub: undefined }
+      : relativeDayLabel(date, now, { distant: 'weekday', sub: true })
+    if (events.length === 0) {
+      rows.push({ key: `empty-${date.toISOString()}`, lead, sub })
+      continue
+    }
+    events.forEach((event, i) => {
+      rows.push(i === 0 ? { key: event.id, lead, sub, event } : { key: event.id, event })
+    })
+  }
+  return rows
+}
+
+// Reserve for the "+N more" line when the list is truncated.
+const MORE_RESERVE = 26
+
+/* Renders only the whole rows that fit the slot height, then a "+N more" line —
+   never a partial row, never a scrollbar. A measuring pass renders every row once
+   and caches its bottom offset (rows are single-line, so heights don't change with
+   width); a ResizeObserver re-clamps from that cache. New data → a fresh pass. */
+function DayList({
+  week,
+  membersById,
+  now,
+  framing,
+  showOwners = true,
+}: ZoneProps & { showOwners?: boolean }) {
+  const rows = useMemo(() => buildRows(week.days, now), [week.days, now])
+  const boxRef = useRef<HTMLDivElement | null>(null)
+  const listRef = useRef<HTMLDivElement | null>(null)
+  const bottomsRef = useRef<number[]>([])
+  const [cut, setCut] = useState(rows.length)
+  const [hidden, setHidden] = useState(0)
+  const [measured, setMeasured] = useState<Row[] | null>(null)
+  const measuring = measured !== rows
+
+  const clamp = useCallback(
+    (avail: number) => {
+      const bottoms = bottomsRef.current
+      if (avail <= 0 || bottoms.length !== rows.length || bottoms[rows.length - 1] <= avail) {
+        setCut(rows.length)
+        setHidden(0)
+        return
+      }
+      const limit = avail - MORE_RESERVE
+      let c = rows.length
+      for (let i = 0; i < rows.length; i++) {
+        if (bottoms[i] > limit) {
+          c = i
+          break
+        }
+      }
+      setCut(c)
+      setHidden(rows.slice(c).filter((r) => r.event).length)
+    },
+    [rows]
+  )
+
+  useLayoutEffect(() => {
+    if (!measuring) return
+    const box = boxRef.current
+    const list = listRef.current
+    if (!box || !list) return
+    const kids = Array.from(list.children) as HTMLElement[]
+    bottomsRef.current = kids.slice(0, rows.length).map((el) => el.offsetTop + el.offsetHeight)
+    setMeasured(rows)
+    clamp(box.clientHeight)
+  }, [measuring, rows, clamp])
+
+  useLayoutEffect(() => {
+    const box = boxRef.current
+    if (!box) return
+    const ro = new ResizeObserver(() => {
+      if (!measuring) clamp(box.clientHeight)
+    })
+    ro.observe(box)
+    return () => ro.disconnect()
+  }, [measuring, rows, clamp])
+
+  const shown = measuring ? rows : rows.slice(0, cut)
+  // Everything the tile isn't showing: rows clipped by the clamp, plus the
+  // appointments that fall past the week's edge entirely.
+  const more = hidden + week.beyond
+
+  return (
+    <div ref={boxRef} className="relative min-h-0 flex-1 overflow-hidden">
+      <div ref={listRef} className="flex flex-col">
+        {shown.map((row, i) => (
+          <div key={row.key} className="grid grid-cols-[84px_1fr] gap-x-4">
+            <div className={cn(row.lead && GUTTER_INSET)}>
+              {row.lead && (
+                <>
+                  <div className={GUTTER_LEAD}>
+                    <span className="text-base-token font-semibold text-foreground">
+                      {row.lead}
+                    </span>
+                  </div>
+                  {row.sub && <div className="text-sm-token text-muted-foreground">{row.sub}</div>}
+                </>
+              )}
+            </div>
+            <div className={cn(i > 0 && 'border-t border-border/50')}>
+              {row.event ? (
+                <EventRow
+                  event={row.event}
+                  membersById={membersById}
+                  framing={framing}
+                  showOwners={showOwners}
+                />
+              ) : (
+                <div className={cn(ROW_BAND, 'text-sm-token text-muted-foreground/70')}>
+                  Nothing else scheduled
+                </div>
+              )}
+            </div>
+          </div>
+        ))}
+        {!measuring && more > 0 && (
+          <div className="text-sm-token mt-2 text-muted-foreground">
+            <span className="underline underline-offset-4">Show {more} more</span>
+          </div>
+        )}
+      </div>
+    </div>
+  )
+}
+
+/* The all-clear — "Nothing scheduled" always; body at large only. */
 function AllClear({ withBody = false }: { withBody?: boolean }) {
   return (
-    <div className="flex size-full flex-col p-4">
+    <div className={cn('flex size-full flex-col', withBody ? INSET.large : INSET.compact)}>
       <WidgetHeader />
       <div className="flex flex-1 items-center justify-center">
         <EmptyState
@@ -125,188 +392,18 @@ function AllClear({ withBody = false }: { withBody?: boolean }) {
   )
 }
 
-// the "then" agenda (height-aware)
-
-type Block =
-  | { kind: 'heading'; key: string; lead: string; sub?: string }
-  | { kind: 'event'; key: string; event: CalendarEvent }
-
-/* The upcoming events (hero excluded) grouped by day into a flat block list —
-   a day heading then its rows, rolling forward across days. */
-function buildBlocks(events: CalendarEvent[], now: Date, heroId: string): Block[] {
-  const days = upcomingByDay(events, now)
-    .map((d) => ({ date: d.date, events: d.events.filter((e) => e.id !== heroId) }))
-    .filter((d) => d.events.length > 0)
-  const blocks: Block[] = []
-  for (const d of days) {
-    const today = isSameDay(d.date, now)
-    // Today's follow-on group reads "Later today"; other days keep the mobile
-    // agenda's weekday lead + muted date (weekday even past a week — the date
-    // disambiguates).
-    const { lead, sub } = today
-      ? { lead: 'Later today', sub: undefined }
-      : relativeDayLabel(d.date, now, { distant: 'weekday', sub: true })
-    blocks.push({ kind: 'heading', key: `h-${d.date.toISOString()}`, lead, sub })
-    for (const e of d.events) blocks.push({ kind: 'event', key: e.id, event: e })
-  }
-  return blocks
-}
-
-/* Vertical spacing carried as margins so the measured geometry matches what's
-   drawn. A new day (a non-first heading) is set apart by space, not a rule —
-   depth/spacing, not lines (design-system.md §Principles); rows sit tight under
-   their heading. */
-function blockSpacing(blocks: Block[], i: number): string {
-  if (i === 0) return ''
-  if (blocks[i].kind === 'heading') return 'mt-5'
-  return blocks[i - 1].kind === 'heading' ? 'mt-1.5' : 'mt-0.5'
-}
-
-// Reserve for the "+N more" line when the list is truncated.
-const MORE_RESERVE = 26
-
-/* Renders only the whole blocks that fit the slot height, then a "+N more" line —
-   never a partial row, never a scrollbar. A measuring pass renders all blocks
-   once, caches each block's bottom offset (heights are single-line, so they don't
-   change with width), then clamps; a ResizeObserver re-clamps from the cache on
-   resize. New data → a fresh measuring pass. */
-function ThenAgenda({
-  events,
-  now,
-  heroId,
-  membersById,
-  framing,
-  showOwner = true,
-}: {
-  events: CalendarEvent[]
-  now: Date
-  heroId: string
-  membersById: Map<string, string>
-  framing: UpNextFraming
-  showOwner?: boolean
-}) {
-  const blocks = useMemo(() => buildBlocks(events, now, heroId), [events, now, heroId])
-  const boxRef = useRef<HTMLDivElement | null>(null)
-  const listRef = useRef<HTMLDivElement | null>(null)
-  const bottomsRef = useRef<number[]>([])
-  const [cut, setCut] = useState(blocks.length)
-  const [hidden, setHidden] = useState(0)
-  // A fresh block list needs a full-render measuring pass before we can clamp.
-  const [measured, setMeasured] = useState<Block[] | null>(null)
-  const measuring = measured !== blocks
-
-  const clamp = useCallback(
-    (avail: number) => {
-      const bottoms = bottomsRef.current
-      if (avail <= 0 || bottoms.length !== blocks.length || bottoms[blocks.length - 1] <= avail) {
-        setCut(blocks.length)
-        setHidden(0)
-        return
-      }
-      const limit = avail - MORE_RESERVE
-      let c = blocks.length
-      for (let i = 0; i < blocks.length; i++) {
-        if (bottoms[i] > limit) {
-          c = i
-          break
-        }
-      }
-      // Never end on a dangling day heading.
-      while (c > 0 && blocks[c - 1].kind === 'heading') c--
-      setCut(c)
-      setHidden(blocks.slice(c).filter((b) => b.kind === 'event').length)
-    },
-    [blocks]
-  )
-
-  useLayoutEffect(() => {
-    if (!measuring) return
-    const box = boxRef.current
-    const list = listRef.current
-    if (!box || !list) return
-    const kids = Array.from(list.children) as HTMLElement[]
-    bottomsRef.current = kids.slice(0, blocks.length).map((el) => el.offsetTop + el.offsetHeight)
-    setMeasured(blocks)
-    clamp(box.clientHeight)
-  }, [measuring, blocks, clamp])
-
-  useLayoutEffect(() => {
-    const box = boxRef.current
-    if (!box) return
-    const ro = new ResizeObserver(() => {
-      if (!measuring) clamp(box.clientHeight)
-    })
-    ro.observe(box)
-    return () => ro.disconnect()
-  }, [measuring, blocks, clamp])
-
-  const shown = measuring ? blocks : blocks.slice(0, cut)
-  return (
-    <div ref={boxRef} className="relative min-h-0 flex-1 overflow-hidden">
-      <div ref={listRef} className="flex flex-col">
-        {shown.map((b, i) => (
-          <div key={b.key} className={blockSpacing(blocks, i)}>
-            {b.kind === 'heading' ? (
-              <DayHeading lead={b.lead} sub={b.sub} />
-            ) : (
-              <QuietEventRow
-                event={b.event}
-                membersById={membersById}
-                framing={framing}
-                showOwner={showOwner}
-              />
-            )}
-          </div>
-        ))}
-        {!measuring && hidden > 0 && <MoreLine n={hidden} />}
-      </div>
-    </div>
-  )
-}
-
 // size variants
 
-function Compact({ events, membersById, now, framing }: Required<Omit<UpNextViewProps, 'size'>>) {
-  const upcoming = upcomingByDay(events, now).flatMap((d) => d.events)
-  if (upcoming.length === 0) return <AllClear />
-  const hero = pickNextUp(upcomingByDay(events, now), now) ?? upcoming[0]
-  const rest = upcoming.filter((e) => e.id !== hero.id)
+/* Compact (1×1): the hero and one line of what follows. The groove needs width
+   this size hasn't got, so spans collapse into the same trailing line. */
+function Compact({ week, membersById, now, framing }: ZoneProps) {
+  const { hero, spans, days } = week
+  const rest = days.flatMap((d) => d.events)
   return (
-    <div className="flex size-full flex-col p-4">
+    <div className={cn('flex size-full flex-col', INSET.compact)}>
       <WidgetHeader />
       <div className="mt-2.5 flex flex-1 flex-col justify-between gap-2">
-        <NextEventHero
-          compact
-          event={hero}
-          membersById={membersById}
-          now={now}
-          showSoloOwner={framing === 'family'}
-        />
-        {rest.length > 0 && (
-          <span className="text-sm-token truncate text-muted-foreground">
-            Then{' '}
-            {rest
-              .slice(0, 2)
-              .map((e) => `${formatTime(e.startsAt)} ${e.title}`)
-              .join(' · ')}
-          </span>
-        )}
-      </div>
-    </div>
-  )
-}
-
-function Standard({ events, membersById, now, framing }: Required<Omit<UpNextViewProps, 'size'>>) {
-  const upcoming = upcomingByDay(events, now).flatMap((d) => d.events)
-  if (upcoming.length === 0) return <AllClear />
-  const hero = pickNextUp(upcomingByDay(events, now), now) ?? upcoming[0]
-  // Hero nudged narrower and the list flexes so titles breathe; owner drops to the
-  // hue spine in this tight column.
-  return (
-    <div className="flex size-full flex-col p-4">
-      <WidgetHeader />
-      <div className="mt-3 flex min-h-0 flex-1 items-stretch gap-5">
-        <div className="min-w-0 flex-[1.15]">
+        {hero && (
           <NextEventHero
             compact
             event={hero}
@@ -314,46 +411,77 @@ function Standard({ events, membersById, now, framing }: Required<Omit<UpNextVie
             now={now}
             showSoloOwner={framing === 'family'}
           />
+        )}
+        {spans.length > 0 ? (
+          <span className="text-sm-token truncate text-muted-foreground">
+            All week · {spans.map((s) => s.title).join(' · ')}
+          </span>
+        ) : (
+          rest.length > 0 && (
+            <span className="text-sm-token truncate text-muted-foreground">
+              Then{' '}
+              {rest
+                .slice(0, 2)
+                .map((e) => `${formatTime(e.startsAt)} ${e.title}`)
+                .join(' · ')}
+            </span>
+          )
+        )}
+      </div>
+    </div>
+  )
+}
+
+/* Standard (2×1, wide and short): hero beside the list. Too narrow for the
+   full-bleed groove, so the band compresses to its one-line form under the hero,
+   and the list drops owner avatars (the column is tight). */
+function Standard(props: ZoneProps) {
+  const { week, membersById, now, framing } = props
+  return (
+    <div className={cn('flex size-full flex-col', INSET.standard)}>
+      <WidgetHeader />
+      <div className="mt-3 flex min-h-0 flex-1 items-stretch gap-5">
+        <div className="flex min-w-0 flex-[1.15] flex-col gap-2">
+          {week.hero && (
+            <NextEventHero
+              compact
+              event={week.hero}
+              membersById={membersById}
+              now={now}
+              showSoloOwner={framing === 'family'}
+            />
+          )}
+          <AllWeekLine {...props} />
         </div>
         <div className="flex min-w-0 flex-1 flex-col">
-          <ThenAgenda
-            events={events}
-            now={now}
-            heroId={hero.id}
-            membersById={membersById}
-            framing={framing}
-            showOwner={false}
-          />
+          <DayList {...props} showOwners={false} />
         </div>
       </div>
     </div>
   )
 }
 
-function Large({ events, membersById, now, framing }: Required<Omit<UpNextViewProps, 'size'>>) {
-  const upcoming = upcomingByDay(events, now).flatMap((d) => d.events)
-  if (upcoming.length === 0) return <AllClear withBody />
-  const hero = pickNextUp(upcomingByDay(events, now), now) ?? upcoming[0]
+/* Large (2×2): the full three-zone hierarchy — raised hero, recessed all-week
+   groove, flat day list. */
+function Large(props: ZoneProps) {
+  const { week, membersById, now, framing } = props
   return (
-    <div className="flex size-full flex-col p-4">
+    <div className={cn('flex size-full flex-col', INSET.large)}>
       <WidgetHeader />
       <div className="mt-3">
-        <NextEventHero
-          compact
-          event={hero}
-          membersById={membersById}
-          now={now}
-          showSoloOwner={framing === 'family'}
-        />
+        {week.hero && (
+          <NextEventHero
+            compact
+            event={week.hero}
+            membersById={membersById}
+            now={now}
+            showSoloOwner={framing === 'family'}
+          />
+        )}
       </div>
-      <div className="mt-4 flex min-h-0 flex-1 flex-col">
-        <ThenAgenda
-          events={events}
-          now={now}
-          heroId={hero.id}
-          membersById={membersById}
-          framing={framing}
-        />
+      <AllWeekBand {...props} />
+      <div className="mt-3.5 flex min-h-0 flex-1 flex-col">
+        <DayList {...props} />
       </div>
     </div>
   )
@@ -380,23 +508,39 @@ const WIDGET_STYLES = `
 `
 
 export function UpNextView({ events, membersById, now, framing, size }: UpNextViewProps) {
-  const shared = { events, membersById, now, framing }
-  const compact = <Compact {...shared} />
-  const standard = <Standard {...shared} />
-  const large = <Large {...shared} />
+  const week = useMemo(() => buildWeek(events, now), [events, now])
+  const zones: ZoneProps = { week, membersById, now, framing }
+
+  // Nothing at all this week — not even a running span.
+  const empty = !week.hero && week.spans.length === 0
 
   let inner: ReactNode
-  if (size) {
-    inner = size === 'compact' ? compact : size === 'standard' ? standard : large
+  if (empty) {
+    inner = <AllClear withBody={size === 'large' || size === undefined} />
+  } else if (size) {
+    inner =
+      size === 'compact' ? (
+        <Compact {...zones} />
+      ) : size === 'standard' ? (
+        <Standard {...zones} />
+      ) : (
+        <Large {...zones} />
+      )
   } else {
     inner = (
       <div className="size-full" style={{ containerType: 'size' }}>
         <style href="calendar-up-next-widget" precedence="default">
           {WIDGET_STYLES}
         </style>
-        <div className="cun-compact">{compact}</div>
-        <div className="cun-standard">{standard}</div>
-        <div className="cun-large">{large}</div>
+        <div className="cun-compact">
+          <Compact {...zones} />
+        </div>
+        <div className="cun-standard">
+          <Standard {...zones} />
+        </div>
+        <div className="cun-large">
+          <Large {...zones} />
+        </div>
       </div>
     )
   }
