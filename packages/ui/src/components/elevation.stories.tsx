@@ -1,6 +1,8 @@
 import type { Meta, StoryObj } from '@storybook/react'
-import { ClipboardList } from 'lucide-react'
+import { CalendarDays, ClipboardList } from 'lucide-react'
 import { Button } from './button'
+import { WidgetSlot, type WidgetProminence } from './widget-slot'
+import { WidgetHeader } from './widget-header'
 
 const meta: Meta = {
   title: 'Foundation/Elevation',
@@ -141,6 +143,62 @@ export const ShadowTokens: Story = {
         Light-mode shadows are warm-tinted (<code>oklch(0.35 0.06 50 / …)</code>) — never neutral
         gray, which goes cold against the warm palette. Dark mode deepens to black. Use the tokens;
         never hardcode <code>box-shadow</code>.
+      </Footnote>
+    </div>
+  ),
+}
+
+/* Identical content in every rung — the ONLY thing that changes is the
+   WidgetSlot chrome, so elevation (not the content) is what marks prominence. */
+function LadderSample() {
+  return (
+    <div className="flex size-full flex-col p-4">
+      <WidgetHeader icon={CalendarDays} label="Calendar" />
+      <div className="mt-3">
+        <div className="text-metric tabular-nums text-foreground">4:45</div>
+        <div className="text-sm-token text-muted-foreground">Vision Therapy · Teddy</div>
+      </div>
+    </div>
+  )
+}
+
+const RUNGS: { rung: WidgetProminence; chrome: string }[] = [
+  { rung: 'feature', chrome: '--shadow-raised · rounded-hero · no border' },
+  { rung: 'card', chrome: '--shadow-card · soft hairline' },
+  { rung: 'quiet', chrome: '--secondary tint · no shadow' },
+]
+
+export const WidgetProminenceLadder: Story = {
+  name: 'Widget prominence ladder',
+  render: () => (
+    <div style={{ maxWidth: 820 }}>
+      <SectionLabel>
+        Widget prominence — one feature per home surface, re-ranked per profile
+      </SectionLabel>
+      <div className="flex flex-wrap gap-4">
+        {RUNGS.map(({ rung, chrome }) => (
+          <div key={rung} style={{ width: 236 }}>
+            <div className="mb-2 flex items-baseline gap-2">
+              <span className="text-xs-token font-bold uppercase tracking-wide text-foreground">
+                {rung}
+              </span>
+              <code style={{ fontSize: 10, color: 'var(--muted-foreground)' }}>{chrome}</code>
+            </div>
+            <div style={{ height: 148 }}>
+              <WidgetSlot prominence={rung}>
+                <LadderSample />
+              </WidgetSlot>
+            </div>
+          </div>
+        ))}
+      </div>
+      <Footnote>
+        The home surface ranks exactly one widget <strong>feature</strong> and re-ranks per profile
+        — parent → Calendar, kid → Chores, family → Feed banner. The rung is a composition of the
+        two shadow tokens above plus a recessed tint: elevation carries the hierarchy, not the
+        numeral or a coloured border. Prominence is <code>WidgetSlot</code>’s{' '}
+        <code>prominence</code> prop (derived on read from layout composition). See design-system.md
+        §Widget prominence · ADR 039.
       </Footnote>
     </div>
   ),
