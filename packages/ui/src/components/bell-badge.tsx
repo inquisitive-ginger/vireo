@@ -11,6 +11,10 @@ export interface BellBadgeProps {
   className?: string
   /** Icon-only mode — hides the label and count bubble; shows a small dot indicator instead. Use in compact surfaces like a top bar. */
   compact?: boolean
+  /** Fold mode — matches the responsive sidebar rail: icon-over-label (centered)
+   * below `xl`, label-beside at `xl`+. Count sits as a corner badge when slim,
+   * inline at the row end when expanded. Use only inside the shell sidebar. */
+  fold?: boolean
 }
 
 function severityClass(severity: BadgeSeverity): string {
@@ -20,9 +24,50 @@ function severityClass(severity: BadgeSeverity): string {
   return 'bg-error text-error-foreground'
 }
 
-export function BellBadge({ count, maxSeverity, onClick, className, compact }: BellBadgeProps) {
+export function BellBadge({
+  count,
+  maxSeverity,
+  onClick,
+  className,
+  compact,
+  fold,
+}: BellBadgeProps) {
   const ariaLabel =
     count > 0 ? `${count} unread notification${count > 1 ? 's' : ''}` : 'Notifications'
+
+  if (fold) {
+    return (
+      <Button
+        variant="ghost"
+        onClick={onClick}
+        aria-label={ariaLabel}
+        className={cn(
+          'relative flex flex-col xl:flex-row items-center justify-center xl:justify-start',
+          'gap-1 xl:gap-3 w-full py-2 xl:py-2.5 xl:px-3 min-h-touch h-auto rounded-panel',
+          'text-muted-foreground hover:bg-secondary/70 hover:text-foreground',
+          className
+        )}
+      >
+        <Bell size={18} aria-hidden />
+        <span className="text-xs-body xl:text-sm leading-tight xl:flex-1 xl:text-left font-normal">
+          <span className="xl:hidden">Alerts</span>
+          <span className="hidden xl:inline">Notifications</span>
+        </span>
+        {count > 0 && (
+          <span
+            className={cn(
+              'absolute top-1 right-1 xl:static flex items-center justify-center',
+              'min-w-4 h-4 rounded-full px-1 text-xs-token font-bold leading-none shrink-0',
+              severityClass(maxSeverity)
+            )}
+            aria-hidden
+          >
+            {count > 99 ? '99+' : count}
+          </span>
+        )}
+      </Button>
+    )
+  }
 
   if (compact) {
     return (

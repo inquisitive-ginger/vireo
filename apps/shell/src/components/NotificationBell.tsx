@@ -12,9 +12,11 @@ type UnreadData = {
 export function NotificationBell({
   className,
   compact,
+  fold,
 }: {
   className?: string
   compact?: boolean
+  fold?: boolean
 }) {
   const { id, tier } = useAuth()
   const { subscribe } = useEventBus()
@@ -79,6 +81,7 @@ export function NotificationBell({
         maxSeverity={unread?.maxSeverity ?? null}
         onClick={() => setTrayOpen(true)}
         compact={compact}
+        fold={fold}
       />
       <NotificationTray
         open={trayOpen}
