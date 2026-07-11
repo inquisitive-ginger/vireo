@@ -166,12 +166,14 @@ The original token set had no depth layer — `--secondary` (oklch 0.93) on
 `--background` (oklch 0.985) read as nearly flat, which made every surface
 look like the same beige. Elevation now carries surface hierarchy:
 
-| Token               | Light                   | Dark                   | Role                                     |
-| ------------------- | ----------------------- | ---------------------- | ---------------------------------------- |
-| `--card`            | `oklch(0.999 0.004 80)` | `oklch(0.21 0.022 47)` | Content cards — lifts _above_ background |
-| `--card-foreground` | `var(--foreground)`     | `var(--foreground)`    | Text on cards                            |
-| `--shadow-card`     | warm-tinted, subtle     | deep black, subtle     | Resting cards, widget slots              |
-| `--shadow-raised`   | warm-tinted, pronounced | deep black, pronounced | Compose forms, overlays, pickers         |
+| Token               | Light                   | Dark                    | Role                                       |
+| ------------------- | ----------------------- | ----------------------- | ------------------------------------------ |
+| `--surface-sunken`  | `oklch(0.955 0.006 75)` | `oklch(0.175 0.008 47)` | A recess cut _into_ a card (ADR 040)       |
+| `--shadow-inset`    | warm inner shadow       | deep inner shadow       | The depth cue that makes the tint a groove |
+| `--card`            | `oklch(0.999 0.004 80)` | `oklch(0.21 0.022 47)`  | Content cards — lifts _above_ background   |
+| `--card-foreground` | `var(--foreground)`     | `var(--foreground)`     | Text on cards                              |
+| `--shadow-card`     | warm-tinted, subtle     | deep black, subtle      | Resting cards, widget slots                |
+| `--shadow-raised`   | warm-tinted, pronounced | deep black, pronounced  | Compose forms, overlays, pickers           |
 
 Rules:
 
@@ -187,11 +189,33 @@ Rules:
 
 Where each level applies:
 
-| Level             | Surfaces                                                                                                                                                             |
-| ----------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| `--shadow-card`   | Live widget slots, feed post cards, settings sections, sidebar profile chip — content at rest                                                                        |
-| `--shadow-raised` | Compose forms, notification tray, drawers, dialogs, toasts, profile picker, onboarding card — surfaces above the page                                                |
-| No shadow (flat)  | Sidebar rail + nav items, inset rows, placeholder slots, error slots — structural chrome is flat (the profile chip is the one elevated exception, ADR 031 amendment) |
+| Level              | Surfaces                                                                                                                                                             |
+| ------------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `--shadow-raised`  | Compose forms, notification tray, drawers, dialogs, toasts, profile picker, onboarding card — surfaces above the page                                                |
+| `--shadow-card`    | Live widget slots, feed post cards, settings sections, sidebar profile chip — content at rest                                                                        |
+| No shadow (flat)   | Sidebar rail + nav items, inset rows, placeholder slots, error slots — structural chrome is flat (the profile chip is the one elevated exception, ADR 031 amendment) |
+| `--surface-sunken` | Recesses cut into a card — the calendar widget's "all week" span band. The one step _down_                                                                           |
+
+#### The sunken plane (settled — ADR 040, 2026-07-11)
+
+The ladder used to have no bottom rung, so anything needing to read as
+_recessed_ reached for `--secondary`. That stopped being safe once
+`--secondary` picked up a second meaning: under the identity palette it is
+the fill a **no-owner (Family) event** wears (see [Multiple people &
+no-owner](#multiple-people--no-owner-settled--calendar-m3-design-2026-06-22)).
+A `--secondary` band beneath a Family-owned hero is the _same beige_ as the
+hero — one surface saying "belongs to everyone", the other "sits underneath",
+with no seam between them.
+
+- **Always pair `--surface-sunken` with `--shadow-inset`.** The tint alone is a
+  grey rectangle; the inner shadow at the top lip is what makes it a groove.
+- **Only inside a card.** A recess needs something to be recessed into —
+  sunken surfaces are illegal directly on `--background`.
+- **The near-achromatic chroma (0.006) is load-bearing.** Every identity fill
+  is chromatic by construction, so a deliberately desaturated plane can never
+  be mistaken for one, whichever member's hue lands beside it. Don't "warm it
+  up" to match the palette; that's the property being bought.
+- **It marks depth, nothing else** — never a hover, active, or disabled state.
 
 ### Member identity palette
 
@@ -320,6 +344,25 @@ Defined in `packages/ui/src/styles.css` (`@theme`).
 | `--radius-card`  | 0.5rem (8px)   | `rounded-card`  | Card rows (`ItemCard`)                |
 | `--radius-panel` | 0.75rem (12px) | `rounded-panel` | Panels, widget pills, compose chrome  |
 | `--radius-hero`  | 1rem (16px)    | `rounded-hero`  | Hero cards (FocusView, NextEventHero) |
+
+### Widget inset (settled — 2026-07-11)
+
+`WidgetSlot` contributes **no padding**: it is chrome (radius, fill, shadow)
+only, so each widget owns its own inset. One value can't serve every slot — a
+1×1 has ~148px of content height at 16px padding, so the 24px that lets the 2×2
+feature tile breathe would cost the small tile an eighth of its height. The
+inset therefore **scales with the size variant**, exported as `WIDGET_INSET`
+from `@family-os/ui` so the widgets can't drift apart:
+
+| Variant    | Utility | px  | Slot                    |
+| ---------- | ------- | --- | ----------------------- |
+| `compact`  | `p-4`   | 16  | 1×1 — can't afford more |
+| `standard` | `p-5`   | 20  | 2×1                     |
+| `large`    | `p-6`   | 24  | 2×2 — the feature rung  |
+
+A **full-bleed child must negate the matching value** (`-mx-6` under `large`) —
+the calendar widget's "all week" groove is the current one. Retired
+family-feed's hand-rolled `14px 18px 16px`.
 
 ### Rules
 

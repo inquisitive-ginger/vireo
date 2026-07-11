@@ -1,9 +1,9 @@
-import type { CSSProperties, ReactNode } from 'react'
+import type { ReactNode } from 'react'
 import { MapPin, Users } from 'lucide-react'
 import { identityToken, type IdentityHue } from '@family-os/ui'
 import type { CalendarEvent } from '../types'
 import { agendaWhenLabel, formatTime, isMultiDay, relativeWhen } from '../lib/grid'
-import { fillForHues, huesForEvent, spineColorsForEvent } from '../lib/hues'
+import { fillForHues, huesForEvent } from '../lib/hues'
 
 /* Static identity pill for the compact hero owner — the member's soft `tint`/`ink`
    with a hue ring so it reads against the same-hue wash. Display only (not the
@@ -11,7 +11,9 @@ import { fillForHues, huesForEvent, spineColorsForEvent } from '../lib/hues'
 function MemberPill({ name, hue }: { name: string; hue: IdentityHue }) {
   return (
     <span
-      className="rounded-full px-2 py-0.5 text-xs-token font-semibold"
+      // `text-sm-token` — the same size as the location beside it. The meta line is
+      // one register; a 10px bold pill next to 13px regular text read as a mistake.
+      className="rounded-full px-2 py-0.5 text-sm-token font-semibold"
       style={{
         background: identityToken(hue, 'tint'),
         color: identityToken(hue, 'ink'),
@@ -61,7 +63,6 @@ export function NextEventHero({
   const when = now ? relativeWhen(event, now) : agendaWhenLabel(event)
   const hasClock = !event.allDay && !isMultiDay(event)
 
-  const dot = <span className="size-2 rounded-full" style={dotStyle(spineColorsForEvent(hues))} />
   const owner: ReactNode =
     ownerNames.length === 0 ? (
       <span className="inline-flex items-center gap-1">
@@ -70,14 +71,21 @@ export function NextEventHero({
     ) : showSoloOwner ? (
       ownerNames.join(' · ')
     ) : null
-  // Compact hero renders owner(s) as identity pills; a Family event gets a neutral pill.
+  /* Owner(s) as identity pills. The Family pill carries a hairline ring rather
+     than leaning on its `--secondary` fill: a no-owner event's WASH is also
+     `--secondary` (the same collision ADR 040 names), so an unringed neutral pill
+     dissolves into its own hero and reads as bare text. */
   const ownerPills: ReactNode =
     ownerNames.length === 0 ? (
       <span
-        className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-xs-token font-semibold"
-        style={{ background: 'var(--secondary)', color: 'var(--muted-foreground)' }}
+        className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-sm-token font-semibold"
+        style={{
+          background: 'var(--secondary)',
+          color: 'var(--muted-foreground)',
+          boxShadow: 'inset 0 0 0 1px color-mix(in oklch, var(--foreground) 12%, transparent)',
+        }}
       >
-        <Users className="h-3 w-3" /> Family
+        <Users className="h-3.5 w-3.5" /> Family
       </span>
     ) : showSoloOwner ? (
       ownerNames.map((name, i) => <MemberPill key={name} name={name} hue={hues[i]} />)
@@ -86,9 +94,11 @@ export function NextEventHero({
   const body = compact ? (
     <>
       {/* Header line: "Up next" and the countdown read together, not in opposite
-          corners — and both stay smaller than the title below. */}
+          corners — and both stay smaller than the title below. No identity dot: the
+          wash already codes the owner, and on a Family event the dot was
+          `--secondary` on a `--secondary` wash — invisible, and indenting the
+          eyebrow 14px off the title's edge for nothing. */}
       <div className="flex items-center gap-1.5 text-section-label text-foreground/60">
-        {dot}
         <span>Up next</span>
         {now && <span className="text-foreground/80">· {when}</span>}
       </div>
@@ -108,10 +118,7 @@ export function NextEventHero({
     </>
   ) : (
     <>
-      <div className="flex items-center gap-2 text-section-label text-foreground/60">
-        {dot}
-        Up next
-      </div>
+      <div className="text-section-label text-foreground/60">Up next</div>
       <div className="mt-2.5 flex items-end justify-between gap-3">
         <div className="min-w-0">
           <div className="text-heading text-foreground">{event.title}</div>
@@ -154,15 +161,4 @@ export function NextEventHero({
       {body}
     </div>
   )
-}
-
-// A dot echoing the row spine: solid for solo, vertical split for shared.
-function dotStyle(colors: string[]): CSSProperties {
-  if (colors.length === 1) return { background: colors[0] }
-  const n = colors.length
-  return {
-    background: `linear-gradient(180deg, ${colors
-      .map((c, i) => `${c} ${Math.round((i / n) * 100)}% ${Math.round(((i + 1) / n) * 100)}%`)
-      .join(', ')})`,
-  }
 }

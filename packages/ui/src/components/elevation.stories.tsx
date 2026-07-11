@@ -52,6 +52,11 @@ type SurfaceItem = {
 }
 
 const SURFACES: SurfaceItem[] = [
+  {
+    token: '--surface-sunken',
+    shadow: '--shadow-inset',
+    role: 'Recessed into a card — a groove below the surface, never on the page itself (ADR 040)',
+  },
   { token: '--background', role: 'Page background — recedes. The warm table everything sits on' },
   {
     token: '--secondary',
@@ -65,6 +70,11 @@ const SURFACES: SurfaceItem[] = [
 ]
 
 const SHADOWS: SurfaceItem[] = [
+  {
+    token: '--shadow-inset',
+    shadow: '--shadow-inset',
+    role: 'Recessed — the inner shadow that makes a sunken tint read as a groove',
+  },
   {
     token: '--shadow-card',
     shadow: '--shadow-card',
@@ -199,6 +209,67 @@ export const WidgetProminenceLadder: Story = {
         numeral or a coloured border. Prominence is <code>WidgetSlot</code>’s{' '}
         <code>prominence</code> prop (derived on read from layout composition). See design-system.md
         §Widget prominence · ADR 039.
+      </Footnote>
+    </div>
+  ),
+}
+
+/* A card with a full-bleed band cut into it — the calendar widget's "all week"
+   groove, reduced to its surfaces. Shown against the identity fill it must never
+   be confused with. */
+function GrooveCard({ fill, shadow, label }: { fill: string; shadow?: string; label: string }) {
+  return (
+    <div style={{ width: 260 }}>
+      <p className="text-xs-token mb-2 uppercase tracking-wide text-muted-foreground">{label}</p>
+      <div className="overflow-hidden rounded-hero bg-card shadow-[var(--shadow-raised)]">
+        <div className="p-4 pb-3">
+          <WidgetHeader icon={CalendarDays} label="Calendar" />
+          <div
+            className="mt-3 rounded-hero p-3"
+            style={{ background: 'var(--identity-sage-tint)' }}
+          >
+            <div className="text-card-title text-foreground">Karate</div>
+            <div className="text-xs-body text-muted-foreground">4:30 pm · Zoe</div>
+          </div>
+        </div>
+        <div className="px-4 py-2.5" style={{ background: fill, boxShadow: shadow }}>
+          <div className="text-section-label text-muted-foreground">All week</div>
+          <div className="text-sm-token text-foreground">FISW Camp</div>
+        </div>
+        <div className="p-4 pt-3">
+          <div className="text-sm-token text-muted-foreground">Tomorrow · 11:00 am T&amp;T</div>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+export const SunkenPlane: Story = {
+  name: 'The sunken plane',
+  render: () => (
+    <div style={{ maxWidth: 900 }}>
+      <SectionLabel>
+        The ladder’s one step down — a recess inside a card (ADR 040) — toggle dark mode to verify
+      </SectionLabel>
+      <div className="flex flex-wrap gap-6">
+        <GrooveCard
+          label="--surface-sunken + --shadow-inset"
+          fill="var(--surface-sunken)"
+          shadow="var(--shadow-inset)"
+        />
+        <GrooveCard label="--surface-sunken, no inner shadow" fill="var(--surface-sunken)" />
+        <GrooveCard label="--secondary (wrong: it is the Family fill)" fill="var(--secondary)" />
+      </div>
+      <Footnote>
+        <code>--secondary</code> already carries a meaning in content: it is the fill a{' '}
+        <em>no-owner (Family)</em> event wears. A band in <code>--secondary</code> therefore says
+        “this belongs to everyone”, not “this is underneath” — and under a Family hero the two
+        surfaces merge outright. <code>--surface-sunken</code> is deliberately{' '}
+        <strong>near-achromatic</strong> (chroma 0.006 vs 0.022): every identity fill is chromatic,
+        so a desaturated plane can never be mistaken for one. Always pair it with{' '}
+        <code>--shadow-inset</code> — the tint alone is a grey rectangle; the inner shadow is what
+        makes it a groove. Recessed surfaces belong <em>inside</em> a card, never on{' '}
+        <code>--background</code>, which has nothing to be recessed into.
       </Footnote>
     </div>
   ),

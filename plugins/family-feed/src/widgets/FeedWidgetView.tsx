@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { MessagesSquare } from 'lucide-react'
-import { WidgetHeader as UiWidgetHeader, WIDGET_CQ } from '@family-os/ui'
+import { WidgetHeader as UiWidgetHeader, WIDGET_CQ, WIDGET_INSET, cn } from '@family-os/ui'
 import type { FeedPost } from '../types'
 import { FeedPostCard } from '../components/FeedPostCard'
 import { FeedEmptyState } from '../components/FeedEmptyState'
@@ -47,7 +47,7 @@ export function FeedWidgetView({ posts, emptyAction }: FeedWidgetViewProps) {
       </style>
 
       {/* Short — latest post, centered */}
-      <div className="ffeed-single" style={{ padding: '14px 18px 16px' }}>
+      <div className={cn('ffeed-single', WIDGET_INSET.standard)}>
         <WidgetHeader />
         {!latest ? (
           empty
@@ -59,7 +59,7 @@ export function FeedWidgetView({ posts, emptyAction }: FeedWidgetViewProps) {
       </div>
 
       {/* Tall — up to 3 posts, denser body */}
-      <div className="ffeed-multi" style={{ padding: '14px 18px 16px' }}>
+      <div className={cn('ffeed-multi', WIDGET_INSET.large)}>
         <WidgetHeader />
         {posts.length === 0 ? (
           empty

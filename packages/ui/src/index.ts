@@ -52,7 +52,7 @@ export { IDENTITY_HUES, getIdentityHue, identityColor, identityToken } from './l
 export type { IdentityHue, IdentityLayer } from './lib/identity'
 export { startOfDay, addDays, isSameDay, dayDiff, relativeDayLabel } from './lib/dates'
 export type { RelativeDayLabel, RelativeDayLabelOptions } from './lib/dates'
-export { WIDGET_CQ } from './lib/widget-breakpoints'
+export { WIDGET_CQ, WIDGET_INSET } from './lib/widget-breakpoints'
 export { WidgetHeader } from './components/widget-header'
 export type { WidgetHeaderProps } from './components/widget-header'
 export { Toast } from './components/toast'

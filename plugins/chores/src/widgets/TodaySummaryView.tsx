@@ -381,7 +381,7 @@ function TaskeeStandard({
   }
 
   return (
-    <div className="flex size-full flex-col p-4" style={{ containerType: 'size' }}>
+    <div className="flex size-full flex-col p-5" style={{ containerType: 'size' }}>
       <WidgetHeader trailing={<CoinScore value={lifetimeXp} />} />
       <div className="mt-3 flex min-h-0 flex-1 gap-4">
         <div className="flex w-35 shrink-0 flex-col gap-2">
@@ -428,7 +428,7 @@ function TaskeeLarge({
   const allDone = pending.length === 0
 
   return (
-    <div className="flex size-full flex-col p-4" style={{ containerType: 'size' }}>
+    <div className="flex size-full flex-col p-6" style={{ containerType: 'size' }}>
       <WidgetHeader trailing={dailyXp > 0 ? <DailyXp earned={dailyXp} /> : undefined} />
       <div className="mt-2 mb-3 flex items-end justify-between gap-4">
         {allDone ? (
@@ -556,7 +556,7 @@ function FocusStandard({
 
   const [hero, ...rest] = pending
   return (
-    <div className="flex size-full flex-col p-4" style={{ containerType: 'size' }}>
+    <div className="flex size-full flex-col p-5" style={{ containerType: 'size' }}>
       <WidgetHeader trailing={<CoinScore value={lifetimeXp} />} />
       <div className="mt-3 flex min-h-0 flex-1 flex-col justify-center gap-2.5">
         <NextUpLabel />
@@ -597,7 +597,7 @@ function FocusLarge({
 
   const [hero, ...rest] = pending
   return (
-    <div className="flex size-full flex-col p-4" style={{ containerType: 'size' }}>
+    <div className="flex size-full flex-col p-6" style={{ containerType: 'size' }}>
       <WidgetHeader
         trailing={dailyXp > 0 ? <DailyXp earned={dailyXp} /> : <CoinScore value={lifetimeXp} />}
       />
@@ -654,7 +654,7 @@ function FamilyStandard({ tasks }: { tasks: ChoreTask[] }) {
   /* Every member shows, urgent-first; the list fills height and only clips if it
      genuinely overflows the slot (overdue members survive the clip). */
   return (
-    <div className="flex size-full flex-col p-4" style={{ containerType: 'size' }}>
+    <div className="flex size-full flex-col p-5" style={{ containerType: 'size' }}>
       <WidgetHeader trailing={overdue > 0 ? <OverduePill n={overdue} /> : undefined} />
       <div className="mt-3 flex min-h-0 flex-1 gap-4">
         <div className="flex w-35 shrink-0 flex-col gap-1">
@@ -685,7 +685,7 @@ function FamilyLarge({ tasks }: { tasks: ChoreTask[] }) {
   }
 
   return (
-    <div className="flex size-full flex-col p-4" style={{ containerType: 'size' }}>
+    <div className="flex size-full flex-col p-6" style={{ containerType: 'size' }}>
       <WidgetHeader trailing={overdue > 0 ? <OverduePill n={overdue} /> : undefined} />
       <div className="mt-2 mb-3 flex items-end gap-4">
         <HeroCount value={pending} label={pending === 0 ? '🎉 all done today' : 'pending today'} />

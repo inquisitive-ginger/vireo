@@ -24,6 +24,7 @@
   --color-warning-foreground: var(--warning-foreground);
   --color-error: var(--error);
   --color-error-foreground: var(--error-foreground);
+  --color-surface-sunken: var(--surface-sunken);
 
   /* Canonical card-row corner radius. Standardizes the drift between the feed/
      chores 14px and the calendar 8px onto one token (→ `rounded-card`). The
@@ -211,6 +212,16 @@
     --shadow-card: 0 1px 2px oklch(0.35 0.06 50 / 0.06), 0 2px 10px oklch(0.35 0.06 50 / 0.07);
     --shadow-raised: 0 2px 6px oklch(0.35 0.06 50 / 0.07), 0 10px 28px oklch(0.35 0.06 50 / 0.12);
 
+    /* The sunken plane — the ladder's one step DOWN, below --card (ADR 040).
+       Deliberately near-achromatic (chroma 0.006 against --secondary's 0.022): an
+       identity fill is always chromatic, so a desaturated plane can never be read
+       as one — which --secondary, doubling as the Family fill, could not promise.
+       Pair with --shadow-inset; the tint alone is a grey rectangle, the inner
+       shadow is what makes it a recess. */
+    --surface-sunken: oklch(0.955 0.006 75);
+    --shadow-inset:
+      inset 0 2px 3px -1px oklch(0.35 0.06 50 / 0.1), inset 0 -1px 0 0 oklch(1 0 0 / 0.55);
+
     /* Member identity palette — six fixed hues harmonized with Terracotta & Teal.
        base: spines, rings, markers · tint: avatar fill · ink: initials on tint */
     --identity-terracotta: oklch(0.6 0.13 35);
@@ -266,6 +277,12 @@
       --card-foreground: var(--foreground);
       --shadow-card: 0 1px 2px oklch(0 0 0 / 0.3), 0 2px 10px oklch(0 0 0 / 0.35);
       --shadow-raised: 0 2px 6px oklch(0 0 0 / 0.35), 0 10px 28px oklch(0 0 0 / 0.45);
+
+      /* Sunken plane (ADR 040) — darker than --card, toward the clay background.
+         The bottom lip lightens instead of whitening, so the recess reads without
+         a bright seam on dark. */
+      --surface-sunken: oklch(0.175 0.008 47);
+      --shadow-inset: inset 0 2px 4px -1px oklch(0 0 0 / 0.4), inset 0 -1px 0 0 oklch(1 0 0 / 0.04);
 
       --identity-terracotta: oklch(0.7 0.13 35);
       --identity-terracotta-tint: oklch(0.32 0.05 35);
