@@ -106,6 +106,40 @@ Next" on 2026-06-21 so M3 — Calendar can run uninterrupted.
 
 ---
 
+### Architecture: Re-home the Family fill off `--secondary`
+
+**Type:** architecture (ADR) + a follow-on remediation pass
+**Kickoff:** _to be written_
+**Reads:** [ADR 040](../decisions/040-sunken-surface-plane.md) (§Alternatives — this is the door it leaves open), ADR 030, `docs/modules/calendar/design.md` §0, `plugins/calendar/src/lib/hues.ts`, `logs/2026-07-11-design-dev-up-next-density.md`
+**Produces:** a decision on giving the **no-owner (Family) event fill** its own token, freeing `--secondary` to mean exactly one thing (structural/inset chrome).
+**Why:** `--secondary` currently carries **two meanings** — "this is chrome" and "this belongs to everyone" — and the collision is not theoretical. It bit **three separate times in one session** (2026-07-11): the recessed span band merged into a Family-owned hero; the hero/band seam vanished; the Family owner pill dissolved into its own hero wash. Each was patched locally (ADR 040 added the sunken plane; the pill gained a ring), but the root cause is untouched: **a token with two jobs.** Every future surface that needs a neutral will hit it again.
+**Why it was deferred:** the Family fill is load-bearing across the whole calendar colour language (month chips, span bars, agenda rows, the hero) and is already in daily use — re-homing it is a bigger, riskier change than adding the rung the ladder was missing anyway.
+**Depends on:** none.
+
+---
+
+### Design: Widget content type floor (the 18px across-the-table rule)
+
+**Type:** design (small) + remediation
+**Kickoff:** _to be written_
+**Reads:** `design-system.md` §Type scale (viewing-distance rule), `plugins/calendar/src/widgets/UpNextView.tsx`, `plugins/chores/src/widgets/TodaySummaryView.tsx`
+**Produces:** a resolution to the standing contradiction between the design system's **18px minimum for widget content** ("may be glanced from across the table") and what the widgets actually ship — the calendar day list renders titles at **14px** (`text-base-token`), and chores is comparable.
+**Why:** either the rule is right and the widgets are wrong (raising type costs real rows-per-tile, and the up-next density rework just fought hard for those rows), or the rule is over-broad and should distinguish **across-the-room** surfaces (the family wall banner) from **arm's-length** ones (a parent's own tablet). Right now the system says one thing and the code does another, which makes the rule unenforceable.
+**Depends on:** none. Raised during the 2026-07-11 density rework and deliberately not smuggled into it.
+
+---
+
+### Dev: Mobile agenda — multi-day span density
+
+**Type:** development (small)
+**Kickoff:** _to be written_
+**Reads:** `plugins/calendar/src/components/AgendaView.tsx`, `plugins/calendar/src/lib/week.ts` (the fix, already built), `plugins/calendar/src/lib/grid.ts` (`eventsForDay`)
+**Produces:** the mobile agenda stating a multi-day event **once** rather than on every day it covers — the same rework the up-next widget just got, on the other read surface.
+**Why:** `AgendaView` still goes through `eventsForDay`, so a week-long camp claims a row on all five of its days. It doesn't produce the duplicate-key warning there (each day is a separate list), so it's cosmetic rather than broken — but it's the same density problem, and `buildWeek()` already exists to solve it.
+**Depends on:** none.
+
+---
+
 ### Tooling: Retry Design-Sync to claude.ai/design
 
 **Type:** tooling (`/design-sync`)
