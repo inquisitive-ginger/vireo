@@ -65,7 +65,7 @@
 
 /* Typography scale — major 2nd (1.125), base 16px
    Use these token classes instead of raw size/weight utilities.
-   Lora tokens: page-title, display-lg, display-xl              */
+   Lora tokens: page-title, display-lg, display-xl, prose, prose-sm  */
 @utility text-xs-token {
   font-family: var(--font-ui);
   font-size: 10px;
