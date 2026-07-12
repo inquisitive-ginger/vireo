@@ -48,8 +48,14 @@ export type {
 export { Spine } from './components/spine'
 export type { SpineProps } from './components/spine'
 export { cn } from './lib/utils'
-export { IDENTITY_HUES, getIdentityHue, identityColor, identityToken } from './lib/identity'
-export type { IdentityHue, IdentityLayer } from './lib/identity'
+export {
+  IDENTITY_HUES,
+  FAMILY_HUE,
+  getIdentityHue,
+  identityColor,
+  identityToken,
+} from './lib/identity'
+export type { IdentityHue, IdentityLayer, OwnerHue } from './lib/identity'
 export { startOfDay, addDays, isSameDay, dayDiff, relativeDayLabel } from './lib/dates'
 export type { RelativeDayLabel, RelativeDayLabelOptions } from './lib/dates'
 export { WIDGET_CQ, WIDGET_INSET } from './lib/widget-breakpoints'

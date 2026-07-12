@@ -91,6 +91,14 @@ in users' hands; re-homing it is a bigger, riskier change than adding the rung
 the ladder was missing anyway. **If a future session wants to revisit, this is
 the door.**
 
+> **Walked through, same day** — see [ADR 041](041-family-identity-hue.md). The
+> Family fill now has its own reserved identity hue and `--secondary` is chrome
+> again. This ADR **stands**: the ladder still needed its bottom rung, and the
+> groove is still `--surface-sunken`. What changed is that the sunken plane is no
+> longer the _only_ thing standing between a recess and an identity fill — and
+> ADR 041 is careful to keep the Family hue chromatic precisely so the guarantee
+> below ("near-achromatic on purpose") keeps holding.
+
 **Make the band a card instead of a recess (elevate, don't sink).** Rejected in
 the exploration: a raised band next to a raised hero reads as a _second hero_.
 The whole point is that a week-long condition is not a peer of the next event.
@@ -99,9 +107,10 @@ The whole point is that a week-long condition is not a peer of the next event.
 
 ## Do not revisit unless
 
-- The Family fill moves off `--secondary` (which would free `--secondary` to
-  mean "recessed" again, and make this token redundant for that one case —
-  though not for the ladder generally).
+- ~~The Family fill moves off `--secondary`~~ — **it did** (ADR 041, same day).
+  This did not make the token redundant: `--secondary` is chrome (a hover/rest
+  surface, ADR 031), and a recess that borrowed it would read as a hover state.
+  The ladder still needs a rung that means _depth_ and nothing else.
 - A third surface meaning appears that neither `--secondary` nor
   `--surface-sunken` can carry, at which point the surface vocabulary needs a
   proper re-derivation rather than another token bolted on.

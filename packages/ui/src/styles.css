@@ -243,6 +243,19 @@
     --identity-plum-tint: oklch(0.92 0.035 330);
     --identity-plum-ink: oklch(0.36 0.08 330);
 
+    /* The household — a RESERVED seventh entry, never assigned to a person
+       (ADR 041). A warm stone: chromatic (0.035, so ADR 040's "a desaturated
+       plane is never an identity fill" still holds) but deliberately quiet — a
+       family event is the week's ground state and must not outshout a person's. */
+    /* Hearth — the household's reserved identity (ADR 041). A warm STONE, not a
+       seventh member hue: chroma sits well under the six (0.035–0.05 at the tint
+       layer), so a Family fill can never be mistaken for a person's. It is deeper
+       than `--secondary` so it never reads as a hover state, and still chromatic
+       enough that ADR 040's near-achromatic groove stays a different kind of thing. */
+    --identity-family: oklch(0.55 0.022 65);
+    --identity-family-tint: oklch(0.9 0.018 70);
+    --identity-family-ink: oklch(0.36 0.02 62);
+
     /* Semantic status — error is source of truth; destructive aliases it */
     --info: oklch(0.45 0.09 200);
     --info-foreground: oklch(0.99 0 0);
@@ -303,6 +316,12 @@
       --identity-plum-tint: oklch(0.31 0.04 330);
       --identity-plum-ink: oklch(0.9 0.035 330);
 
+      /* The household — reserved, never assigned to a person (ADR 041). */
+      /* Hearth — warm stone, desaturated well under the member hues (ADR 041). */
+      --identity-family: oklch(0.72 0.022 68);
+      --identity-family-tint: oklch(0.285 0.014 65);
+      --identity-family-ink: oklch(0.9 0.018 70);
+
       --info: oklch(0.56 0.09 200);
       --info-foreground: oklch(0.99 0 0);
       --success: oklch(0.57 0.1 148);
@@ -355,6 +374,12 @@
     --identity-plum: oklch(0.66 0.1 330);
     --identity-plum-tint: oklch(0.31 0.04 330);
     --identity-plum-ink: oklch(0.9 0.035 330);
+
+    /* The household — reserved, never assigned to a person (ADR 041). */
+    /* Hearth — warm stone, desaturated well under the member hues (ADR 041). */
+    --identity-family: oklch(0.72 0.022 68);
+    --identity-family-tint: oklch(0.285 0.014 65);
+    --identity-family-ink: oklch(0.9 0.018 70);
 
     --info: oklch(0.56 0.09 200);
     --info-foreground: oklch(0.99 0 0);

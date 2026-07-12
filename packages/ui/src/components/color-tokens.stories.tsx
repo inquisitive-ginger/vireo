@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react'
-import { IDENTITY_HUES, identityToken } from '../lib/identity'
+import { FAMILY_HUE, IDENTITY_HUES, identityToken, type OwnerHue } from '../lib/identity'
 import { ProfileAvatar } from './profile-avatar'
 
 const meta: Meta = {
@@ -152,16 +152,17 @@ export const StatusTokens: Story = {
   ),
 }
 
-const IDENTITY_ROLES: Record<(typeof IDENTITY_HUES)[number], string> = {
+const IDENTITY_ROLES: Record<OwnerHue, string> = {
   terracotta: 'Identity hue 1 — harmonized with --primary',
   marigold: 'Identity hue 2',
   sage: 'Identity hue 3',
   teal: 'Identity hue 4 — harmonized with --accent',
   sky: 'Identity hue 5',
   plum: 'Identity hue 6',
+  family: 'Hearth — the household. Reserved: never assigned to a person (ADR 041)',
 }
 
-function IdentityRow({ hue }: { hue: (typeof IDENTITY_HUES)[number] }) {
+function IdentityRow({ hue }: { hue: OwnerHue }) {
   return (
     <div
       style={{
@@ -236,6 +237,22 @@ export const IdentityTokens: Story = {
       {IDENTITY_HUES.map((hue) => (
         <IdentityRow key={hue} hue={hue} />
       ))}
+
+      <p
+        style={{
+          fontFamily: 'var(--font-ui)',
+          fontSize: 11,
+          fontWeight: 700,
+          textTransform: 'uppercase',
+          letterSpacing: '0.1em',
+          color: 'var(--muted-foreground)',
+          margin: '24px 0 8px',
+        }}
+      >
+        Reserved — the household
+      </p>
+      <IdentityRow hue={FAMILY_HUE} />
+
       <p
         style={{
           fontFamily: 'var(--font-ui)',
@@ -250,6 +267,23 @@ export const IdentityTokens: Story = {
         the planned evolution. Use <code>getIdentityHue</code> / <code>identityToken</code> /{' '}
         <code>identityColor</code> from <code>@family-os/ui</code> — never invent member colors. See
         ADR 030.
+      </p>
+      <p
+        style={{
+          fontFamily: 'var(--font-ui)',
+          fontSize: 11,
+          color: 'var(--muted-foreground)',
+          marginTop: 8,
+          lineHeight: 1.5,
+        }}
+      >
+        <strong>Hearth</strong> is the seventh entry, and the hash never returns it — so the
+        household can&rsquo;t end up wearing one of its own members&rsquo; colours. It is a warm{' '}
+        <em>stone</em>: at the tint layer (the one fills actually use) it runs 0.018 chroma against
+        the members&rsquo; 0.035–0.05, so the family reads as the ground its members stand on, not a
+        seventh sibling. Pass it explicitly (<code>identity={'{FAMILY_HUE}'}</code>) for the
+        household pseudo-profile. It stays <em>chromatic</em> so a desaturated{' '}
+        <code>--surface-sunken</code> can never be mistaken for an identity fill. See ADR 041.
       </p>
     </div>
   ),

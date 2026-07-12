@@ -84,6 +84,63 @@ export function buildWeek(
 const shortDay = (d: Date) =>
   `${d.toLocaleDateString(undefined, { weekday: 'short' })} ${d.getDate()}`
 
+// ── the mobile agenda ───────────────────────────────────────────────────────
+
+export interface AgendaDay {
+  date: Date
+  /** Single-day events starting on this date. */
+  timed: CalendarEvent[]
+  /** Spans that START here — stated once, on the day they begin. */
+  startingSpans: CalendarEvent[]
+}
+
+export interface AgendaModel {
+  hero: CalendarEvent | null
+  /** Spans already under way — pinned in a band, because their start day is in the
+   *  past and there is no upcoming section left to state them in. */
+  running: CalendarEvent[]
+  days: AgendaDay[]
+}
+
+/* The agenda is a six-week SCROLL, not a week — so the widget's "pin every span in
+   an All-week band" rule doesn't transfer: a camp three weeks out is not "all
+   week", and pinning it at the top would be a lie about when it matters.
+
+   The rule that does transfer is the one that mattered: STATE A SPAN EXACTLY ONCE.
+   Here that means — pinned at the top if it is already running (its start day has
+   passed, so no section below can carry it), otherwise inline, once, in the day it
+   begins. Either way it never repeats across the days it covers, which is the bug
+   this replaces. */
+export function buildAgenda(events: CalendarEvent[], now: Date, horizon: number = 42): AgendaModel {
+  const first = startOfDay(now)
+  const lastExclusive = addDays(first, horizon)
+
+  const spans = events
+    .filter(isMultiDay)
+    .filter((e) => spanEndDate(e) >= first && new Date(e.startsAt) < lastExclusive)
+    .sort((a, b) => a.startsAt.localeCompare(b.startsAt))
+
+  const running = spans.filter((e) => startOfDay(new Date(e.startsAt)) <= first)
+  const upcoming = spans.filter((e) => startOfDay(new Date(e.startsAt)) > first)
+
+  const live = events
+    .filter((e) => !isMultiDay(e))
+    .filter((e) => eventEnd(e) >= now)
+    .sort((a, b) => a.startsAt.localeCompare(b.startsAt))
+
+  const hero = live[0] ?? null
+
+  const days: AgendaDay[] = []
+  for (let i = 0; i < horizon; i++) {
+    const date = addDays(first, i)
+    const timed = live.filter((e) => e.id !== hero?.id && isSameDay(new Date(e.startsAt), date))
+    const startingSpans = upcoming.filter((e) => isSameDay(new Date(e.startsAt), date))
+    if (timed.length || startingSpans.length) days.push({ date, timed, startingSpans })
+  }
+
+  return { hero, running, days }
+}
+
 /** A span's "when" — a date range, never a clock. Once it's already running the
  *  start date is dead weight, so it collapses to "Through Fri 17". "All day" is
  *  implied by a multi-day event; saying it is noise. */

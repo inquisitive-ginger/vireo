@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { NavLink } from 'react-router-dom'
 import { Home, Settings, ChevronRight } from 'lucide-react'
 import { FAMILY_PROFILE_ID, useAuth } from '@family-os/platform'
-import { cn, ProfileAvatar } from '@family-os/ui'
+import { cn, FAMILY_HUE, ProfileAvatar } from '@family-os/ui'
 import { ProfileGrid } from './ProfileGrid'
 import { NotificationBell } from './NotificationBell'
 
@@ -69,7 +69,12 @@ function ProfileChip() {
         aria-haspopup="listbox"
         aria-label={`${displayName} — switch profile`}
       >
-        <ProfileAvatar name={displayName} size="sm" active />
+        <ProfileAvatar
+          name={displayName}
+          identity={id === FAMILY_PROFILE_ID ? FAMILY_HUE : undefined}
+          size="sm"
+          active
+        />
         <span className="hidden xl:block text-sm font-medium truncate flex-1">{displayName}</span>
         <ChevronRight
           size={14}

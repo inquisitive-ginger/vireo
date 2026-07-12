@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Outlet, useNavigate, useLocation } from 'react-router-dom'
-import { useAuth } from '@family-os/platform'
+import { FAMILY_PROFILE_ID, useAuth } from '@family-os/platform'
 import { Toast, BottomTabBar } from '@family-os/ui'
 import type { TabBarItem } from '@family-os/ui'
 import { Sidebar } from '@/components/Sidebar'
@@ -11,7 +11,7 @@ import { MobileBrandTopBar } from '@/components/MobileBrandTopBar'
 export function App({ pluginNavItems = [] }: { pluginNavItems?: PluginNavItem[] }) {
   const navigate = useNavigate()
   const { pathname } = useLocation()
-  const { name, tier } = useAuth()
+  const { id, name, tier } = useAuth()
   const [profileGridOpen, setProfileGridOpen] = useState(false)
 
   const tabBarItems: TabBarItem[] = pluginNavItems.map((item) => ({
@@ -28,6 +28,7 @@ export function App({ pluginNavItems = [] }: { pluginNavItems?: PluginNavItem[] 
         <div className="flex-1 flex flex-col overflow-hidden">
           <MobileBrandTopBar
             name={name}
+            isFamily={id === FAMILY_PROFILE_ID}
             profileOpen={profileGridOpen}
             onProfileClick={() => setProfileGridOpen((v) => !v)}
           />

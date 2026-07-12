@@ -1,7 +1,7 @@
 import { Users } from 'lucide-react'
 import { cn } from '@family-os/ui'
 import type { PlacedSpan } from '../lib/grid'
-import { fillForHues, huesForEvent } from '../lib/hues'
+import { fillForHues, huesForEvent, isFamilyHues } from '../lib/hues'
 
 /* A continuous multi-day bar. Flush edges with a ←/→ cap where the span crosses a
    week boundary; carries the same solo/Family/shared fill as a chip. */
@@ -24,7 +24,7 @@ export function SpanBar({
       style={{ background, color }}
       title={span.event.title}
     >
-      {hues.length === 0 && !span.openStart && (
+      {isFamilyHues(hues) && !span.openStart && (
         <Users className="mr-1 h-2.5 w-2.5 shrink-0 opacity-70" />
       )}
       <span className="truncate">

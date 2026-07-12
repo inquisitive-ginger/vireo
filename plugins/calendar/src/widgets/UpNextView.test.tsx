@@ -100,7 +100,7 @@ describe('UpNextView', () => {
 
   it('states a multi-day span once in the all-week band, not on every day it touches', () => {
     renderWidget({})
-    const band = screen.getByTestId('all-week-band')
+    const band = screen.getByTestId('span-band')
     expect(within(band).getByText('All week')).toBeInTheDocument()
     expect(within(band).getByText('FISW Camp')).toBeInTheDocument()
     expect(within(band).getByText('Mon 13 – Fri 17')).toBeInTheDocument()
@@ -110,7 +110,7 @@ describe('UpNextView', () => {
 
   it('hides the all-week band entirely when there are no spans', () => {
     renderWidget({ events: EVENTS.filter((e) => e.id !== 'camp') })
-    expect(screen.queryByTestId('all-week-band')).not.toBeInTheDocument()
+    expect(screen.queryByTestId('span-band')).not.toBeInTheDocument()
     expect(screen.queryByText('All week')).not.toBeInTheDocument()
   })
 
@@ -155,7 +155,7 @@ describe('UpNextView', () => {
   it('is not all-clear when only a running span remains', () => {
     renderWidget({ events: [EVENTS[4]] })
     expect(screen.queryByText('Nothing scheduled')).not.toBeInTheDocument()
-    expect(screen.getByTestId('all-week-band')).toBeInTheDocument()
+    expect(screen.getByTestId('span-band')).toBeInTheDocument()
   })
 
   it('deep-links the whole tile to /calendar', () => {

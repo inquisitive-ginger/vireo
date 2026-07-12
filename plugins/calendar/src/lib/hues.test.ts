@@ -1,6 +1,6 @@
 import { describe, it, expect } from 'vitest'
-import { getIdentityHue } from '@family-os/ui'
-import { fillForHues, huesForEvent, spineColorsForEvent } from './hues'
+import { FAMILY_HUE, IDENTITY_HUES, getIdentityHue } from '@family-os/ui'
+import { fillForHues, huesForEvent, isFamilyHues, spineColorsForEvent } from './hues'
 
 const members = new Map([
   ['p1', 'Zoe'],
@@ -13,16 +13,38 @@ describe('huesForEvent', () => {
       getIdentityHue('Zoe'),
       getIdentityHue('Teddy'),
     ])
-    expect(huesForEvent(['ghost'], members)).toEqual([])
-    expect(huesForEvent([], members)).toEqual([])
+  })
+
+  /* An event with nobody on it belongs to the household — so it resolves to the
+     reserved `family` hue rather than an empty array. That is what lets every
+     downstream surface (fill, spine, pill) take one path instead of branching on
+     "no owner" (ADR 041). */
+  it('resolves a no-owner event to the household, never an empty array', () => {
+    expect(huesForEvent([], members)).toEqual([FAMILY_HUE])
+    expect(huesForEvent(['ghost'], members)).toEqual([FAMILY_HUE])
+  })
+
+  it('never assigns the reserved family hue to a person', () => {
+    expect(IDENTITY_HUES).not.toContain(FAMILY_HUE)
+    for (const name of ['Zoe', 'Teddy', 'Zach', 'Hallie', 'Ada', 'Bo', 'Cy']) {
+      expect(getIdentityHue(name)).not.toBe(FAMILY_HUE)
+    }
+  })
+})
+
+describe('isFamilyHues', () => {
+  it('is true only for the household', () => {
+    expect(isFamilyHues(huesForEvent([], members))).toBe(true)
+    expect(isFamilyHues(huesForEvent(['p1'], members))).toBe(false)
+    expect(isFamilyHues(huesForEvent(['p1', 'p2'], members))).toBe(false)
   })
 })
 
 describe('fillForHues', () => {
-  it('Family (no hue) → neutral secondary fill', () => {
-    expect(fillForHues([])).toEqual({
-      background: 'var(--secondary)',
-      color: 'var(--secondary-foreground)',
+  it('the household → the reserved family tint + ink (not the chrome token)', () => {
+    expect(fillForHues([FAMILY_HUE])).toEqual({
+      background: 'var(--identity-family-tint)',
+      color: 'var(--identity-family-ink)',
     })
   })
   it('solo → the owner identity tint fill + ink', () => {
@@ -40,8 +62,8 @@ describe('fillForHues', () => {
 })
 
 describe('spineColorsForEvent', () => {
-  it('Family (no hue) → a single neutral secondary band', () => {
-    expect(spineColorsForEvent([])).toEqual(['var(--secondary)'])
+  it('the household → a single family-hue band (not the chrome token)', () => {
+    expect(spineColorsForEvent([FAMILY_HUE])).toEqual(['var(--identity-family)'])
   })
   it('solo → a single base identity hue (the full-strength spine layer)', () => {
     expect(spineColorsForEvent(['teal'])).toEqual(['var(--identity-teal)'])
