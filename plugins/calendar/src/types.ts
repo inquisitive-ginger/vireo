@@ -41,3 +41,11 @@ export type CalendarView = 'month' | 'week' | 'day'
 /** The calendar's primary surface tier: the time grid (month/week/day) vs. the
  *  Activities lens (grouped by person). See design.md §4. */
 export type CalendarLens = 'calendar' | 'activities'
+
+/** A family member as the calendar needs them: the name drives the identity hue
+ *  (ADR 030) and the photo, when set, is the face inside the avatar (ADR 042).
+ *  Keyed by profile id in the `membersById` map every calendar surface takes. */
+export interface CalendarMember {
+  name: string
+  avatarUrl?: string | null
+}

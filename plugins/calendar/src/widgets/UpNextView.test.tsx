@@ -1,7 +1,7 @@
 import { describe, it, expect } from 'vitest'
 import { render, screen, within } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
-import type { CalendarEvent } from '../types'
+import type { CalendarEvent, CalendarMember } from '../types'
 import { UpNextView, type UpNextFraming, type WidgetSize } from './UpNextView'
 
 /* jsdom has no layout, so the height-aware `DayList` sees clientHeight 0 and
@@ -9,11 +9,11 @@ import { UpNextView, type UpNextFraming, type WidgetSize } from './UpNextView'
    assertions. The "+N more" clamp depends on real measurement and is verified in
    Storybook / the live app, not here. */
 
-const MEMBERS = new Map<string, string>([
-  ['zach', 'Zach'],
-  ['hallie', 'Hallie'],
-  ['zoe', 'Zoe'],
-  ['teddy', 'Teddy'],
+const MEMBERS = new Map<string, CalendarMember>([
+  ['zach', { name: 'Zach' }],
+  ['hallie', { name: 'Hallie' }],
+  ['zoe', { name: 'Zoe' }],
+  ['teddy', { name: 'Teddy' }],
 ])
 const NOW = new Date('2026-07-11T13:20:00') // Saturday afternoon
 

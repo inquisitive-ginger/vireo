@@ -1,14 +1,14 @@
-import type { CalendarEvent } from '../types'
+import type { CalendarEvent, CalendarMember } from '../types'
 
 /* Shared Storybook fixtures for the calendar components — a representative
    June 2026 family month (the visual reference the deleted `Calendar Exploration`
    story used to carry, now driving the real components). */
 
-export const STORY_MEMBERS = new Map<string, string>([
-  ['p1', 'Zach'],
-  ['p2', 'Hallie'],
-  ['p3', 'Zoe'],
-  ['p4', 'Teddy'],
+export const STORY_MEMBERS = new Map<string, CalendarMember>([
+  ['p1', { name: 'Zach' }],
+  ['p2', { name: 'Hallie' }],
+  ['p3', { name: 'Zoe' }],
+  ['p4', { name: 'Teddy' }],
 ])
 
 export const STORY_TODAY = new Date(2026, 5, 22)

@@ -82,6 +82,14 @@ export const PERMISSION_REGISTRY = {
     action: 'view',
     subject: 'platform.Plugin',
   },
+  // Baseline for every tier (ADR 042). Surfaced here so a parent can revoke it for
+  // one profile through the existing override UI.
+  'platform.profile.avatar': {
+    label: 'Change own profile photo',
+    module: 'platform',
+    action: 'update',
+    subject: 'platform.Avatar',
+  },
   'family-feed.post.create': {
     label: 'Post to family feed',
     module: 'family-feed',

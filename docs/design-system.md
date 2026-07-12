@@ -330,6 +330,55 @@ segments · the family hue for Family).
 > made one token mean two things (chrome _and_ an identity), and the two collided —
 > see ADR 041. `--secondary` is now chrome only.
 
+### Avatar photos — the spine carries the identity, the avatar carries the face (settled — 2026-07-11)
+
+**Settled** — see ADR 042 (amends ADR 030). Component: `ProfileAvatar avatarUrl`;
+editor: `AvatarEditor`.
+
+**A photo is a face, not an identity token.** A photo **fills the circle** — the
+avatar wears no hue ring. The identity colour is carried by the chrome _beside_ the
+avatar (the `ItemCard` spine, an identity wash, a hue pill), so a photograph and the
+identity system never compete for the same pixels. The tinted-initials fill remains
+underneath as the **no-photo fallback**, but it is a fallback, not the colour signal.
+
+Spines, dots, chips, calendar fills and split fills stay hue-driven and **never
+become photos**.
+
+> **The rule.** An avatar is **not** a colour signal. **Any surface showing more
+> than one person at once must carry a hue element of its own.** Never delete a
+> row's spine on the grounds that it has an avatar — that trade was made once (the
+> up-next day rows, ADR 040) on the premise that "the avatar already IS the identity
+> hue a spine would paint." A photograph makes that false, and ADR 042 reverses it.
+
+**Why not ring the photo in the owner's hue?** It was built and rejected. On a feed
+post card the `ItemCard` spine already paints that exact hue two millimetres to the
+left — the ring said the same thing twice. An audit found the ring was _redundant_
+on every surface that had a hue carrier and _load-bearing_ only on the four that had
+none. That is a reason to fix those four surfaces, not to ring every avatar.
+
+#### The identity key
+
+The **profile switcher** (`ProfileGrid`) and the **Settings member list**
+(`ProfileListItem`) both carry an identity `<Spine>`. They are the only surfaces
+showing every member's **face and name together**, which makes them the app's
+**legend** — the one place the hue→person code can be _learned_. Everywhere else
+colour appears with **no name attached** (a calendar chip is a coloured pill and
+nothing more) and only works because it was learned here. A photo replaces the
+tinted circle, so without that spine the legend disappears while everything
+depending on it remains.
+
+Where colour is _not_ required: single-person chrome — the sidebar chip, the mobile
+top bar, the compose form. That's you; colour there is decorative, not identifying.
+
+**Uploads** are cropped and encoded client-side (`AvatarEditor` → 512×512 WebP), so
+the server needs no image library. The server accepts **JPEG / PNG / WebP only,
+identified by magic bytes — never SVG** (it can carry script, and we serve inline
+from our own origin). Bytes live in Postgres and are served immutable behind
+`/api/profiles/:id/avatar?v={hash}`.
+
+> **Caveat:** a spine does **not** universally mean "who." `chores`' `TaskRow` spine
+> is a **status** colour. See "Status vs identity colour" — the call site decides.
+
 ### Semantic status tokens — light mode
 
 Each token has a paired `-foreground`. `--destructive` is a CSS alias

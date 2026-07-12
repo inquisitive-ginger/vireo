@@ -1,7 +1,7 @@
 import type { ReactNode } from 'react'
 import { MapPin, Users } from 'lucide-react'
 import { FAMILY_HUE, identityToken, type OwnerHue } from '@family-os/ui'
-import type { CalendarEvent } from '../types'
+import type { CalendarEvent, CalendarMember } from '../types'
 import { agendaWhenLabel, formatTime, isMultiDay, relativeWhen } from '../lib/grid'
 import { fillForHues, huesForEvent, isFamilyHues } from '../lib/hues'
 
@@ -55,7 +55,7 @@ export function NextEventHero({
   showSoloOwner = true,
 }: {
   event: CalendarEvent
-  membersById: Map<string, string>
+  membersById: Map<string, CalendarMember>
   now?: Date
   onClick?: () => void
   compact?: boolean
@@ -64,7 +64,7 @@ export function NextEventHero({
   const hues = huesForEvent(event.attendeeIds, membersById)
   const fill = fillForHues(hues)
   const ownerNames = event.attendeeIds
-    .map((id) => membersById.get(id))
+    .map((id) => membersById.get(id)?.name)
     .filter((n): n is string => Boolean(n))
   const when = now ? relativeWhen(event, now) : agendaWhenLabel(event)
   const hasClock = !event.allDay && !isMultiDay(event)

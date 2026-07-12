@@ -91,6 +91,7 @@ const authPlugin: FastifyPluginAsync = async (fastify) => {
       id: request.profile.id,
       name: request.profile.name,
       tier: request.profile.tier,
+      avatarUrl: request.profile.avatarUrl ?? null,
       darkMode: request.profile.darkMode ?? null,
       // Effective variant — null override defers to the tier default (ADR 036).
       focusMode: resolveFocusMode(request.profile.focusMode, request.profile.tier),
@@ -118,7 +119,13 @@ const authPlugin: FastifyPluginAsync = async (fastify) => {
     const profiles = await prisma.profile.findMany({ orderBy: { tier: 'desc' } })
     // focusMode is the raw nullable override (null = tier default) so the parent
     // override UI can show "Default" vs an explicit choice (ADR 036).
-    return profiles.map((p) => ({ id: p.id, name: p.name, tier: p.tier, focusMode: p.focusMode }))
+    return profiles.map((p) => ({
+      id: p.id,
+      name: p.name,
+      tier: p.tier,
+      avatarUrl: p.avatarUrl,
+      focusMode: p.focusMode,
+    }))
   })
 
   fastify.post<{ Body: { pin: string; targetProfileId: string } }>(

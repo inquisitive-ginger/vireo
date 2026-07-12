@@ -3,8 +3,8 @@ import { FAMILY_HUE, IDENTITY_HUES, getIdentityHue } from '@family-os/ui'
 import { fillForHues, huesForEvent, isFamilyHues, spineColorsForEvent } from './hues'
 
 const members = new Map([
-  ['p1', 'Zoe'],
-  ['p2', 'Teddy'],
+  ['p1', { name: 'Zoe' }],
+  ['p2', { name: 'Teddy' }],
 ])
 
 describe('huesForEvent', () => {

@@ -27,7 +27,11 @@ export interface FeedPostCardProps {
 export function FeedPostCard({ post, lineClamp, variant = 'note', dense }: FeedPostCardProps) {
   const inner = (
     <div className="flex min-w-0 flex-1 gap-3">
-      <ProfileAvatar name={post.author.name} size="base" />
+      <ProfileAvatar
+        name={post.author.name}
+        avatarUrl={post.author.avatarUrl ?? undefined}
+        size="base"
+      />
       <div className="min-w-0 flex-1">
         <div className="flex items-baseline gap-2">
           <span className="text-card-title text-card-foreground truncate flex-1 overflow-hidden">

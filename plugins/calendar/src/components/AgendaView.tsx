@@ -1,6 +1,6 @@
 import { CalendarDays, Plus } from 'lucide-react'
 import { Button, EmptyState, relativeDayLabel } from '@family-os/ui'
-import type { CalendarEvent } from '../types'
+import type { CalendarEvent, CalendarMember } from '../types'
 import { isSameDay } from '../lib/grid'
 import { buildAgenda } from '../lib/week'
 import { AgendaRow } from './AgendaRow'
@@ -31,7 +31,7 @@ export function AgendaView({
   onAdd,
 }: {
   events: CalendarEvent[]
-  membersById: Map<string, string>
+  membersById: Map<string, CalendarMember>
   /** Current time — drives "up next" and the Today/Tomorrow labels. */
   now: Date
   /** Tap an event → edit (tier 4). Absent → rows are read-only. */

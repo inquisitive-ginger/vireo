@@ -1,4 +1,5 @@
 import { FAMILY_HUE, getIdentityHue, identityToken, type OwnerHue } from '@family-os/ui'
+import type { CalendarMember } from '../types'
 
 /** Fill + ink resolution for an event by attendee count — the locked "color =
  *  person" language from M3 Design: Calendar (`design.md` §0):
@@ -22,9 +23,12 @@ interface Fill {
  *  belongs to the **household**, so this returns `[family]` — never an empty array.
  *  Unknown ids (e.g. a removed member) are dropped, and an event left with none
  *  reads as the family's, the right default on a shared calendar. */
-export function huesForEvent(attendeeIds: string[], membersById: Map<string, string>): OwnerHue[] {
+export function huesForEvent(
+  attendeeIds: string[],
+  membersById: Map<string, CalendarMember>
+): OwnerHue[] {
   const hues = attendeeIds
-    .map((id) => membersById.get(id))
+    .map((id) => membersById.get(id)?.name)
     .filter((name): name is string => Boolean(name))
     .map((name) => getIdentityHue(name))
   return hues.length > 0 ? hues : [FAMILY_HUE]

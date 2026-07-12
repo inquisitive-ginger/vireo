@@ -1,7 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react'
 import type { ReactNode } from 'react'
 import { MemoryRouter } from 'react-router-dom'
-import type { CalendarEvent } from '../types'
+import type { CalendarEvent, CalendarMember } from '../types'
 import { UpNextView, type UpNextFraming, type WidgetSize } from './UpNextView'
 
 /* `calendar.up-next` — the shipped widget. Three zones, three ranks (2026-07-11):
@@ -18,11 +18,11 @@ import { UpNextView, type UpNextFraming, type WidgetSize } from './UpNextView'
 
 const NOW = new Date('2026-07-11T13:20:00') // a Saturday afternoon, mid-event
 
-const MEMBERS = new Map<string, string>([
-  ['zach', 'Zach'],
-  ['hallie', 'Hallie'],
-  ['zoe', 'Zoe'],
-  ['teddy', 'Teddy'],
+const MEMBERS = new Map<string, CalendarMember>([
+  ['zach', { name: 'Zach' }],
+  ['hallie', { name: 'Hallie' }],
+  ['zoe', { name: 'Zoe' }],
+  ['teddy', { name: 'Teddy' }],
 ])
 
 function ev(

@@ -8,6 +8,7 @@ type Actions = 'view' | 'switch' | 'create' | 'update' | 'delete' | 'complete' |
 type Subjects =
   | 'platform.Profile'
   | 'platform.Plugin'
+  | 'platform.Avatar'
   | 'family-feed.Post'
   | 'chores.Task'
   | 'calendar.Event'
@@ -22,6 +23,12 @@ export function createAbility(profile: Profile, overrides: PermissionOverride[])
   // (un-completing) is a tier-4 power, granted via `manage all` below — a kid
   // cannot reverse their own completion.
   can('complete', 'chores.Task', { assigneeId: profile.id })
+
+  // Every profile can change its OWN photo (ADR 042) — choosing your own face is
+  // not administration. Tier 4 changes anyone's via `manage all`. A parent revokes
+  // this per-profile through the existing override system if a kid abuses it.
+  // The row condition is enforced explicitly in the route (see chores.Task below).
+  can('update', 'platform.Avatar', { id: profile.id })
 
   // Calendar is one shared family surface — every tier reads it (tier-4 creates/
   // edits/deletes via `manage all`). The view grant is duplicated across the

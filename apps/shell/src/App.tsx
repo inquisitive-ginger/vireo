@@ -11,7 +11,7 @@ import { MobileBrandTopBar } from '@/components/MobileBrandTopBar'
 export function App({ pluginNavItems = [] }: { pluginNavItems?: PluginNavItem[] }) {
   const navigate = useNavigate()
   const { pathname } = useLocation()
-  const { id, name, tier } = useAuth()
+  const { id, name, tier, avatarUrl } = useAuth()
   const [profileGridOpen, setProfileGridOpen] = useState(false)
 
   const tabBarItems: TabBarItem[] = pluginNavItems.map((item) => ({
@@ -28,6 +28,7 @@ export function App({ pluginNavItems = [] }: { pluginNavItems?: PluginNavItem[] 
         <div className="flex-1 flex flex-col overflow-hidden">
           <MobileBrandTopBar
             name={name}
+            avatarUrl={avatarUrl}
             isFamily={id === FAMILY_PROFILE_ID}
             profileOpen={profileGridOpen}
             onProfileClick={() => setProfileGridOpen((v) => !v)}

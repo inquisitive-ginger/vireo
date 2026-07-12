@@ -3,11 +3,13 @@ import { NotificationBell } from './NotificationBell'
 
 export function MobileBrandTopBar({
   name,
+  avatarUrl,
   isFamily = false,
   profileOpen,
   onProfileClick,
 }: {
   name: string
+  avatarUrl?: string | null
   /** On the household pseudo-profile the avatar wears the reserved family hue —
    *  the name hash only ever returns member hues (ADR 041). */
   isFamily?: boolean
@@ -28,6 +30,7 @@ export function MobileBrandTopBar({
       >
         <ProfileAvatar
           name={name}
+          avatarUrl={avatarUrl ?? undefined}
           identity={isFamily ? FAMILY_HUE : undefined}
           size="sm"
           active={profileOpen}

@@ -1,6 +1,7 @@
-import { cn } from '@family-os/ui'
-import type { CalendarEvent } from '../types'
+import { Spine, cn } from '@family-os/ui'
+import type { CalendarEvent, CalendarMember } from '../types'
 import { spanWhenLabel } from '../lib/week'
+import { huesForEvent, spineColorsForEvent } from '../lib/hues'
 import { EventOwners } from './EventOwners'
 
 /* THE MULTI-DAY SPAN PRIMITIVE — one content anatomy, two containers.
@@ -34,13 +35,16 @@ export function SpanRow({
   onClick,
 }: {
   event: CalendarEvent
-  membersById: Map<string, string>
+  membersById: Map<string, CalendarMember>
   now: Date
   showMembers?: boolean
   onClick?: () => void
 }) {
   const body = (
     <>
+      {/* Colour = person is carried here, not by the avatar — a photo is a face
+          (ADR 042). */}
+      <Spine color={spineColorsForEvent(huesForEvent(event.attendeeIds, membersById))} />
       <span className="text-base-token shrink-0 truncate font-semibold text-foreground">
         {event.title}
       </span>
@@ -67,7 +71,7 @@ export function SpanRow({
 
 export interface SpanBandProps {
   spans: CalendarEvent[]
-  membersById: Map<string, string>
+  membersById: Map<string, CalendarMember>
   now: Date
   container: SpanContainer
   /** The band's eyebrow. The widget's window is a week ("All week"); the agenda

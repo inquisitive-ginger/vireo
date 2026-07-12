@@ -1,5 +1,5 @@
 import fp from 'fastify-plugin'
-import type { FastifyPluginAsync } from 'fastify'
+import type { FastifyPluginAsync, FastifyRequest } from 'fastify'
 import bcrypt from 'bcryptjs'
 import { prisma, createAbility } from '@family-os/platform/server'
 import { PERMISSION_REGISTRY, FAMILY_PROFILE_ID } from '@family-os/platform/types'
@@ -12,12 +12,40 @@ import {
   FamilyNameUpdateSchema,
   PermissionOverrideCreateSchema,
 } from '@family-os/schemas'
+import { sniffImageMime, imageHash, avatarUrl, MAX_IMAGE_BYTES } from '../lib/image'
 
 function requireTier4(tier: number): { error: string } | null {
   return tier < 4 ? { error: 'Requires tier 4' } : null
 }
 
+/**
+ * Who may change a given profile's photo (ADR 042).
+ *
+ * Anyone may change their OWN — choosing your face is not administration — and
+ * tier 4 may change anyone's. The household pseudo-profile is tier-4 only: it has
+ * tier 1 itself, so the "own profile" branch would otherwise let a family session
+ * set the household photo.
+ *
+ * Row ownership is checked explicitly rather than through a `subject()`-tagged CASL
+ * call: @casl/prisma's typed PrismaAbility keys subject instances by Prisma model
+ * name and can't carry our namespaced string subjects (same limitation chores.Task
+ * hit). The CASL capability still gates, so a parent's override revokes self-serve.
+ */
+function canEditAvatar(request: FastifyRequest, targetId: string): boolean {
+  if (!request.ability.can('update', 'platform.Avatar')) return false
+  if (targetId === FAMILY_PROFILE_ID) return request.profile.tier >= 4
+  return request.profile.tier >= 4 || targetId === request.profile.id
+}
+
 const profilesPlugin: FastifyPluginAsync = async (fastify) => {
+  // The client crops and encodes to WebP on a canvas, so an avatar arrives as one
+  // raw image body — no multipart, and no `sharp` on the server (ADR 042). Parse
+  // the allowed types as a Buffer; the bytes are still sniffed before storage.
+  fastify.addContentTypeParser(
+    ['image/webp', 'image/png', 'image/jpeg'],
+    { parseAs: 'buffer', bodyLimit: MAX_IMAGE_BYTES },
+    (_req, body, done) => done(null, body)
+  )
   // POST /profiles — create a new profile (tier 4 only)
   fastify.post('/profiles', async (request, reply) => {
     const guard = requireTier4(request.profile.tier)
@@ -72,6 +100,85 @@ const profilesPlugin: FastifyPluginAsync = async (fastify) => {
 
     const updated = await prisma.profile.update({ where: { id }, data: result.data })
     return { id: updated.id, name: updated.name, tier: updated.tier, focusMode: updated.focusMode }
+  })
+
+  // ─── Avatar photos (ADR 042) ────────────────────────────────────────────────
+
+  // GET /profiles/:id/avatar — serve the stored bytes.
+  //
+  // Immutable: the `?v=` hash changes whenever the photo does, so a client may
+  // cache this forever. Content-Type is the one we sniffed at upload, never one
+  // the client asserted, and `nosniff` stops the browser second-guessing it.
+  fastify.get<{ Params: { id: string } }>('/profiles/:id/avatar', async (request, reply) => {
+    const image = await prisma.profileImage.findUnique({ where: { profileId: request.params.id } })
+    if (!image) return reply.status(404).send({ error: 'No avatar set' })
+
+    return reply
+      .header('Content-Type', image.mimeType)
+      .header('X-Content-Type-Options', 'nosniff')
+      .header('Content-Security-Policy', "default-src 'none'; sandbox")
+      .header('Cache-Control', 'public, max-age=31536000, immutable')
+      .send(Buffer.from(image.bytes))
+  })
+
+  // POST /profiles/:id/avatar — upload. Raw image body (see the content-type parser).
+  fastify.post<{ Params: { id: string } }>('/profiles/:id/avatar', async (request, reply) => {
+    const { id } = request.params
+
+    const target = await prisma.profile.findUnique({ where: { id } })
+    if (!target) return reply.status(404).send({ error: 'Profile not found' })
+
+    if (!canEditAvatar(request, id)) {
+      return reply.status(403).send({ error: 'Permission denied' })
+    }
+
+    const body = request.body
+    if (!Buffer.isBuffer(body) || body.length === 0) {
+      return reply.status(400).send({ error: 'Expected a raw image body' })
+    }
+
+    // Trust the bytes, not the client. A whitelist sniff is what keeps an SVG (or
+    // an HTML file wearing an image Content-Type) out of a same-origin inline response.
+    const mimeType = sniffImageMime(body)
+    if (!mimeType) {
+      return reply.status(415).send({ error: 'Unsupported image format — use JPEG, PNG or WebP' })
+    }
+
+    const hash = imageHash(body)
+    const url = avatarUrl(id, hash)
+    // Prisma's Bytes maps to Uint8Array<ArrayBuffer>; a Node Buffer is
+    // Buffer<ArrayBufferLike>, which is not assignable. Copy into a plain view.
+    const bytes = new Uint8Array(body)
+
+    await prisma.$transaction([
+      prisma.profileImage.upsert({
+        where: { profileId: id },
+        update: { bytes, mimeType, hash },
+        create: { profileId: id, bytes, mimeType, hash },
+      }),
+      prisma.profile.update({ where: { id }, data: { avatarUrl: url } }),
+    ])
+
+    return { avatarUrl: url }
+  })
+
+  // DELETE /profiles/:id/avatar — drop back to initials.
+  fastify.delete<{ Params: { id: string } }>('/profiles/:id/avatar', async (request, reply) => {
+    const { id } = request.params
+
+    const target = await prisma.profile.findUnique({ where: { id } })
+    if (!target) return reply.status(404).send({ error: 'Profile not found' })
+
+    if (!canEditAvatar(request, id)) {
+      return reply.status(403).send({ error: 'Permission denied' })
+    }
+
+    await prisma.$transaction([
+      prisma.profileImage.deleteMany({ where: { profileId: id } }),
+      prisma.profile.update({ where: { id }, data: { avatarUrl: null } }),
+    ])
+
+    return { ok: true }
   })
 
   // DELETE /profiles/:id — delete a profile (tier 4 only)

@@ -1,6 +1,12 @@
 import { useState } from 'react'
 import type { Meta, StoryObj } from '@storybook/react'
 import { ProfileAvatar } from './profile-avatar'
+import { Spine } from './spine'
+import { identityToken } from '../lib/identity'
+import { samplePortrait } from '../lib/story-fixtures'
+
+const PHOTO = samplePortrait('teal')
+const PHOTO_WARM = samplePortrait('warm')
 
 const meta: Meta<typeof ProfileAvatar> = {
   title: 'Platform/ProfileAvatar',
@@ -8,8 +14,13 @@ const meta: Meta<typeof ProfileAvatar> = {
   parameters: { layout: 'centered' },
   argTypes: {
     name: { control: 'text' },
-    size: { control: 'radio', options: ['sm', 'md', 'lg'] },
+    size: { control: 'radio', options: ['sm', 'base', 'md', 'lg'] },
     active: { control: 'boolean' },
+    avatarUrl: { control: 'text' },
+    identity: {
+      control: 'select',
+      options: [undefined, 'terracotta', 'marigold', 'sage', 'teal', 'sky', 'plum', 'family'],
+    },
   },
   args: {
     name: 'Alex Johnson',
@@ -156,6 +167,73 @@ export const ProfilePicker: Story = {
     }
     return <Picker />
   },
+}
+
+// ─── Photos (ADR 042) ─────────────────────────────────────────────────────────
+
+export const Photos: Story = {
+  name: 'Photos — a face, not an identity token',
+  parameters: { layout: 'padded' },
+  render: () => (
+    <div className="max-w-[640px] p-6 font-[var(--font-ui)]">
+      <p className="text-prose-sm mb-6 text-muted-foreground">
+        A photo <strong>fills the circle</strong> — the avatar wears no hue ring. The identity
+        colour is carried by the chrome <strong>beside</strong> the avatar (the{' '}
+        <code>ItemCard</code> spine, an identity wash), so a photograph never competes with the
+        identity system. The tinted-initials fill stays underneath as the no-photo fallback.
+      </p>
+
+      <p className="text-section-label mb-3 text-muted-foreground">Every size</p>
+      <div className="mb-8 flex items-end gap-6">
+        {(['sm', 'base', 'md', 'lg'] as const).map((size) => (
+          <div key={size} className="flex flex-col items-center gap-2">
+            <ProfileAvatar
+              name="Zach Pritchett"
+              size={size}
+              identity="teal"
+              avatarUrl={PHOTO_WARM}
+            />
+            <span className="text-xs-body text-muted-foreground">{size}</span>
+          </div>
+        ))}
+      </div>
+
+      <p className="text-section-label mb-3 text-muted-foreground">
+        The rule — a row with several people owes a hue element; the avatar is not one
+      </p>
+      <div className="mb-8 flex flex-col gap-2">
+        {[
+          { name: 'Dana Pritchett', hue: 'terracotta' as const, photo: PHOTO },
+          { name: 'Zach Pritchett', hue: 'teal' as const, photo: PHOTO_WARM },
+          { name: 'Robin Pritchett', hue: 'sage' as const, photo: undefined },
+        ].map((m) => (
+          <div
+            key={m.name}
+            className="flex items-center gap-3 rounded-card bg-card px-3 py-2 shadow-[var(--shadow-card)]"
+          >
+            <Spine color={identityToken(m.hue, 'base')} className="h-10" />
+            <ProfileAvatar name={m.name} size="base" identity={m.hue} avatarUrl={m.photo} />
+            <span className="text-sm-token">{m.name.split(' ')[0]}</span>
+          </div>
+        ))}
+      </div>
+
+      <p className="text-section-label mb-3 text-muted-foreground">
+        Mid-adoption — initials still wear the tint
+      </p>
+      <div className="flex items-end gap-6">
+        <ProfileAvatar name="Dana Pritchett" size="md" identity="terracotta" avatarUrl={PHOTO} />
+        <ProfileAvatar name="Robin Pritchett" size="md" identity="sage" />
+        <ProfileAvatar name="Sam Pritchett" size="md" identity="plum" />
+        <ProfileAvatar
+          name="Family"
+          size="md"
+          identity="family"
+          avatarUrl={samplePortrait('group')}
+        />
+      </div>
+    </div>
+  ),
 }
 
 // ─── Color palette (hue stability) ───────────────────────────────────────────

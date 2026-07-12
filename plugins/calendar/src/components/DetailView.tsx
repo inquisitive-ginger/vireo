@@ -1,6 +1,6 @@
 import { CalendarDays, Plus } from 'lucide-react'
 import { Button, EmptyState } from '@family-os/ui'
-import type { CalendarEvent, CalendarView } from '../types'
+import type { CalendarEvent, CalendarView, CalendarMember } from '../types'
 import { buildWeek, dayTitle, eventsForDay, isSameDay } from '../lib/grid'
 import { EventRow } from './EventRow'
 
@@ -36,7 +36,7 @@ function DaySection({
 }: {
   date: Date
   events: CalendarEvent[]
-  membersById: Map<string, string>
+  membersById: Map<string, CalendarMember>
   today: Date
   showHeading: boolean
 } & ManageProps) {
@@ -82,7 +82,7 @@ export function DetailView({
   view: Exclude<CalendarView, 'month'>
   cursor: Date
   events: CalendarEvent[]
-  membersById: Map<string, string>
+  membersById: Map<string, CalendarMember>
   today: Date
 } & ManageProps) {
   const days = view === 'day' ? [cursor] : buildWeek(cursor)

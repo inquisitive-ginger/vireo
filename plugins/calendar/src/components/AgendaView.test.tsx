@@ -1,11 +1,11 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
-import type { CalendarEvent } from '../types'
+import type { CalendarEvent, CalendarMember } from '../types'
 import { AgendaView } from './AgendaView'
 
-const MEMBERS = new Map<string, string>([
-  ['p1', 'Zoe'],
-  ['p2', 'Teddy'],
+const MEMBERS = new Map<string, CalendarMember>([
+  ['p1', { name: 'Zoe' }],
+  ['p2', { name: 'Teddy' }],
 ])
 const NOW = new Date(2026, 5, 22, 8, 0) // Mon Jun 22, 8am
 

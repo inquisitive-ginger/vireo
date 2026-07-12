@@ -1,6 +1,6 @@
 import { Users } from 'lucide-react'
 import { cn } from '@family-os/ui'
-import type { CalendarEvent } from '../types'
+import type { CalendarEvent, CalendarMember } from '../types'
 import { formatChipTime } from '../lib/grid'
 import { fillForHues, huesForEvent, isFamilyHues } from '../lib/hues'
 
@@ -12,7 +12,7 @@ export function EventChip({
   membersById,
 }: {
   event: CalendarEvent
-  membersById: Map<string, string>
+  membersById: Map<string, CalendarMember>
 }) {
   const hues = huesForEvent(event.attendeeIds, membersById)
   const { background, color } = fillForHues(hues)
