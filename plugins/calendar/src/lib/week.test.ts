@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest'
 import type { CalendarEvent } from '../types'
-import { buildWeek, spanWhenLabel } from './week'
+import { buildAgenda, buildWeek, spanWhenLabel } from './week'
 
 const NOW = new Date('2026-07-11T13:20:00') // Saturday afternoon
 
@@ -126,6 +126,54 @@ describe('buildWeek', () => {
     expect(spans).toEqual([])
     expect(beyond).toBe(0)
     expect(days.every((d) => d.events.length === 0)).toBe(true)
+  })
+})
+
+/* The agenda's rule is the widget's rule under a different window: STATE A SPAN
+   EXACTLY ONCE. It just has two places to state it, because it scrolls six weeks —
+   pinned if it is already running, otherwise inline on the day it begins. */
+describe('buildAgenda', () => {
+  // Started Thu 9, runs to Mon 13 — already under way at NOW (Sat 11).
+  const RUNNING = mk({
+    id: 'trip',
+    title: 'Grandma visit',
+    startsAt: '2026-07-09T00:00:00',
+    endsAt: '2026-07-14T00:00:00',
+    allDay: true,
+  })
+
+  it('pins a span that is already running — no day section below can carry it', () => {
+    // TODAY_LATER is here to take the hero slot, so TOMORROW stays in the day list.
+    const { running, days } = buildAgenda([RUNNING, TODAY_LATER, TOMORROW], NOW)
+    expect(running.map((e) => e.id)).toEqual(['trip'])
+    // And it claims no day rows: Sun 12 holds only the appointment.
+    expect(days.flatMap((d) => d.startingSpans)).toHaveLength(0)
+    expect(days.flatMap((d) => d.timed.map((e) => e.id))).toEqual(['tt'])
+  })
+
+  it('states a future span once, inline on the day it begins — never on the days it covers', () => {
+    const { running, days } = buildAgenda([CAMP], NOW)
+    expect(running).toHaveLength(0)
+    const withCamp = days.filter((d) => d.startingSpans.some((e) => e.id === 'camp'))
+    expect(withCamp).toHaveLength(1) // Mon 13 only — not Mon–Fri
+    expect(withCamp[0].date.getDate()).toBe(13)
+  })
+
+  it('leads with the next live single-day event, and never a span, as the hero', () => {
+    const { hero, days } = buildAgenda([CAMP, TODAY_LATER, TOMORROW], NOW)
+    expect(hero?.id).toBe('date')
+    // The hero is lifted out of the day list, so it is not stated twice.
+    expect(days.flatMap((d) => d.timed.map((e) => e.id))).toEqual(['tt'])
+  })
+
+  it('omits days with nothing on them — the agenda is a scroll, not a grid', () => {
+    const { days } = buildAgenda([TODAY_LATER, TOMORROW], NOW)
+    expect(days).toHaveLength(1) // Sun 12 only; the hero holds today's remainder
+    expect(days[0].date.getDate()).toBe(12)
+  })
+
+  it('is empty on a clear calendar', () => {
+    expect(buildAgenda([], NOW)).toEqual({ hero: null, running: [], days: [] })
   })
 })
 

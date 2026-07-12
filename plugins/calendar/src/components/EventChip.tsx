@@ -2,7 +2,7 @@ import { Users } from 'lucide-react'
 import { cn } from '@family-os/ui'
 import type { CalendarEvent } from '../types'
 import { formatChipTime } from '../lib/grid'
-import { fillForHues, huesForEvent } from '../lib/hues'
+import { fillForHues, huesForEvent, isFamilyHues } from '../lib/hues'
 
 /* A filled identity-hue pill (the "highlighter" analog). Family events (no
    attendee) get the neutral fill + a Users glyph; shared (2+) get the split
@@ -25,7 +25,7 @@ export function EventChip({
       style={{ background, color }}
       title={event.title}
     >
-      {hues.length === 0 && <Users className="h-2.5 w-2.5 shrink-0 opacity-70" />}
+      {isFamilyHues(hues) && <Users className="h-2.5 w-2.5 shrink-0 opacity-70" />}
       <span className="truncate">{label}</span>
     </div>
   )

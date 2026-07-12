@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Check, Settings } from 'lucide-react'
-import { ProfileAvatar, PinInput, cn } from '@family-os/ui'
+import { FAMILY_HUE, ProfileAvatar, PinInput, cn } from '@family-os/ui'
 import { FAMILY_PROFILE_ID, useAuth } from '@family-os/platform'
 
 type ProfileRow = { id: string; name: string; tier: number }
@@ -135,7 +135,7 @@ export function ProfileGrid({ open, onClose, className, onNavigate }: ProfileGri
                     : 'hover:bg-background/60'
                 )}
               >
-                <ProfileAvatar name={familyName ?? 'Family'} size="sm" />
+                <ProfileAvatar name={familyName ?? 'Family'} identity={FAMILY_HUE} size="sm" />
                 <span className="text-sm text-muted-foreground leading-none">
                   {familyName ?? 'Family view'}
                 </span>

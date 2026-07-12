@@ -1,25 +1,31 @@
 import type { ReactNode } from 'react'
 import { MapPin, Users } from 'lucide-react'
-import { identityToken, type IdentityHue } from '@family-os/ui'
+import { FAMILY_HUE, identityToken, type OwnerHue } from '@family-os/ui'
 import type { CalendarEvent } from '../types'
 import { agendaWhenLabel, formatTime, isMultiDay, relativeWhen } from '../lib/grid'
-import { fillForHues, huesForEvent } from '../lib/hues'
+import { fillForHues, huesForEvent, isFamilyHues } from '../lib/hues'
 
-/* Static identity pill for the compact hero owner — the member's soft `tint`/`ink`
-   with a hue ring so it reads against the same-hue wash. Display only (not the
-   interactive `MemberChip` picker). */
-function MemberPill({ name, hue }: { name: string; hue: IdentityHue }) {
+/* Static identity pill for the compact hero owner — the owner's soft `tint`/`ink`
+   with a hue ring so it reads against the same-hue wash it sits on. Display only
+   (not the interactive `MemberChip` picker).
+
+   The household uses this too (ADR 041): with `family` a real identity hue, the
+   Family pill is no longer a hand-rolled `--secondary` special case that dissolved
+   into its own hero — it takes the same tint/ink/ring path a member's does, and the
+   ring is what keeps it legible on a same-hue wash. */
+function OwnerPill({ name, hue, icon }: { name: string; hue: OwnerHue; icon?: ReactNode }) {
   return (
     <span
       // `text-sm-token` — the same size as the location beside it. The meta line is
       // one register; a 10px bold pill next to 13px regular text read as a mistake.
-      className="rounded-full px-2 py-0.5 text-sm-token font-semibold"
+      className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-sm-token font-semibold"
       style={{
         background: identityToken(hue, 'tint'),
         color: identityToken(hue, 'ink'),
         boxShadow: `inset 0 0 0 1px color-mix(in oklch, ${identityToken(hue, 'base')} 32%, transparent)`,
       }}
     >
+      {icon}
       {name}
     </span>
   )
@@ -71,25 +77,12 @@ export function NextEventHero({
     ) : showSoloOwner ? (
       ownerNames.join(' · ')
     ) : null
-  /* Owner(s) as identity pills. The Family pill carries a hairline ring rather
-     than leaning on its `--secondary` fill: a no-owner event's WASH is also
-     `--secondary` (the same collision ADR 040 names), so an unringed neutral pill
-     dissolves into its own hero and reads as bare text. */
-  const ownerPills: ReactNode =
-    ownerNames.length === 0 ? (
-      <span
-        className="inline-flex items-center gap-1 rounded-full px-2 py-0.5 text-sm-token font-semibold"
-        style={{
-          background: 'var(--secondary)',
-          color: 'var(--muted-foreground)',
-          boxShadow: 'inset 0 0 0 1px color-mix(in oklch, var(--foreground) 12%, transparent)',
-        }}
-      >
-        <Users className="h-3.5 w-3.5" /> Family
-      </span>
-    ) : showSoloOwner ? (
-      ownerNames.map((name, i) => <MemberPill key={name} name={name} hue={hues[i]} />)
-    ) : null
+  /* Owner(s) as identity pills — the household included, on the same path (ADR 041). */
+  const ownerPills: ReactNode = isFamilyHues(hues) ? (
+    <OwnerPill name="Family" hue={FAMILY_HUE} icon={<Users className="h-3.5 w-3.5" />} />
+  ) : showSoloOwner ? (
+    ownerNames.map((name, i) => <OwnerPill key={name} name={name} hue={hues[i]} />)
+  ) : null
 
   const body = compact ? (
     <>

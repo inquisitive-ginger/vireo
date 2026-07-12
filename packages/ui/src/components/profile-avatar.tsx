@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { cn } from '../lib/utils'
-import { getIdentityHue, identityToken, type IdentityHue } from '../lib/identity'
+import { getIdentityHue, identityToken, type OwnerHue } from '../lib/identity'
 
 export type ProfileAvatarSize = 'sm' | 'base' | 'md' | 'lg'
 
@@ -9,8 +9,10 @@ export interface ProfileAvatarProps {
   size?: ProfileAvatarSize
   active?: boolean
   avatarUrl?: string
-  /** Explicitly assigned identity hue; falls back to a name hash. */
-  identity?: IdentityHue
+  /** Explicitly assigned identity hue; falls back to a name hash. Pass `FAMILY_HUE`
+   *  for the household pseudo-profile — the hash only ever returns member hues, so
+   *  without it the family would wear one of its own members' colours (ADR 041). */
+  identity?: OwnerHue
   className?: string
 }
 

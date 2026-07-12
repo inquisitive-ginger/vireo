@@ -94,7 +94,14 @@ Loaded from Google Fonts in `apps/shell/index.html`. Plugins must use `var(--fon
 
 Major second ratio (1.125), base 16px. 11 tokens.
 
-**Viewing distance rule:** UI chrome (sidebar, settings, dialogs, forms) reads close-up — tokens up to `card-title` are appropriate. Widget and content areas may be glanced from across the table — `body` (18px) is the minimum for primary content text.
+**Viewing distance rule (amended 2026-07-11):** the floor is set by **how far away the reader is**, not by which component they're looking at.
+
+- **Close-up — anything you're holding or sitting at.** Phone, laptop, a tablet you're using with your hands. This is UI chrome (sidebar, settings, dialogs, forms) _and_ the widgets on the home dashboard. Tokens down to `base` (14px) are appropriate for primary content; `sm`/`xs-body` for meta.
+- **Across the room — the wall tablet, glanced from the kitchen.** The family pseudo-profile and any always-on ambient surface. `body` / `prose` (18px) is the minimum for primary content text, and key values want `heading` (20px) or `metric`.
+
+The rule used to name **widgets** as the across-the-room category, which was too broad: a widget is a _container_, not a distance. The same `calendar.up-next` tile is read at arm's length on a parent's laptop and from six feet away on the kitchen wall — so the floor belongs to the surface it's rendered on, not the tile. At desk distance 14px `base` is the right size for an event title, and forcing 18px there costs rows without buying legibility.
+
+**This does not soften the wall tablet.** If anything it sharpens it: the family-profile surface is now the _named_ place the 18px floor applies, rather than one instance of a vaguer rule (see [Tablet — Primary Hub](#tablet--primary-hub)). A widget that renders on both surfaces should scale its type with its prominence — which is what [Widget prominence](#widget-prominence) already gives it.
 
 All tokens are defined as CSS utilities in `packages/ui/src/styles.css` and are available as Tailwind classes throughout the codebase. Use the utility name — never raw pixel values.
 
@@ -200,12 +207,14 @@ Where each level applies:
 
 The ladder used to have no bottom rung, so anything needing to read as
 _recessed_ reached for `--secondary`. That stopped being safe once
-`--secondary` picked up a second meaning: under the identity palette it is
-the fill a **no-owner (Family) event** wears (see [Multiple people &
-no-owner](#multiple-people--no-owner-settled--calendar-m3-design-2026-06-22)).
-A `--secondary` band beneath a Family-owned hero is the _same beige_ as the
-hero — one surface saying "belongs to everyone", the other "sits underneath",
-with no seam between them.
+`--secondary` picked up a second meaning: under the identity palette it was
+the fill a **no-owner (Family) event** wore. A `--secondary` band beneath a
+Family-owned hero was the _same beige_ as the hero — one surface saying
+"belongs to everyone", the other "sits underneath", with no seam between them.
+
+(The Family fill has since moved to its own reserved hue — ADR 041 — so
+`--secondary` is chrome again. This rung stays: a recess must not borrow the
+hover/rest surface either, or depth reads as an interaction state.)
 
 - **Always pair `--surface-sunken` with `--shadow-inset`.** The tint alone is a
   grey rectangle; the inner shadow at the top lip is what makes it a groove.
@@ -216,6 +225,32 @@ with no seam between them.
   be mistaken for one, whichever member's hue lands beside it. Don't "warm it
   up" to match the palette; that's the property being bought.
 - **It marks depth, nothing else** — never a hover, active, or disabled state.
+
+#### Multi-day spans — one primitive, two containers (settled — 2026-07-11)
+
+A multi-day event is a **condition, not an appointment**: state it **once**, as
+standing context, never re-emitted on each day it covers. (Both calendar read
+surfaces used to bucket events by every day they _touched_, so one week-long camp
+claimed five rows and swamped the actual appointments.)
+
+`SpanBand` is the shared primitive — one anatomy (title · date range · owners; no
+clock, because a span's "when" is a range and "all day" is implied). It ships two
+containers, chosen by **the ground underneath it**:
+
+| Container | Surface                                    | Treatment                                        |
+| --------- | ------------------------------------------ | ------------------------------------------------ |
+| `groove`  | inside a card (the up-next widget)         | full-bleed `--surface-sunken` + `--shadow-inset` |
+| `panel`   | directly on `--background` (mobile agenda) | resting `--card` + hairline + `--shadow-card`    |
+
+The `panel` exists **because** of the rule above: a recess is illegal on
+`--background`, so the same rows get an elevated container rather than a sunken
+one. Same primitive, same anatomy — a different claim about depth, because the
+ground is different. Don't "fix" the panel by sinking it; that inverts the ladder.
+
+The window decides where a span is stated. A one-week view can pin them all
+("All week"). A scrolling agenda cannot — a camp three weeks out is not "all
+week" — so it pins only what is **already running** ("Ongoing") and states the
+rest **inline, once, on the day they begin**.
 
 ### Member identity palette
 
@@ -239,17 +274,61 @@ per-profile assignment is the planned evolution (ADR 030). Components
 accept an explicit hue (`ProfileAvatar identity` prop) so the upgrade is
 non-breaking. Plugins must never invent member colors outside this palette.
 
-#### Multiple people & no-owner (settled — Calendar M3 Design, 2026-06-22)
+#### The family hue — reserved (settled — ADR 041, 2026-07-11)
+
+The household has a **seventh entry, `family`** — _Hearth_, a warm stone. Same
+three layers, so it resolves through the same `identityToken(hue, layer)` path as
+any member:
+
+| Token                    | Light                  | Dark                    |
+| ------------------------ | ---------------------- | ----------------------- |
+| `--identity-family`      | `oklch(0.55 0.022 65)` | `oklch(0.72 0.022 68)`  |
+| `--identity-family-tint` | `oklch(0.90 0.018 70)` | `oklch(0.285 0.014 65)` |
+| `--identity-family-ink`  | `oklch(0.36 0.020 62)` | `oklch(0.90 0.018 70)`  |
+
+It is **reserved**: `IDENTITY_HUES` (the rotation the name hash draws from)
+excludes it, so `getIdentityHue()` can never hand the household's colour to a
+person. Surfaces that can hold either accept the wider `OwnerHue`
+(`IdentityHue | 'family'`).
+
+Its low chroma is deliberate: the family is the **ground its members stand on,
+not a seventh sibling**. It reads as the household's own material, and sits
+behind the six.
+
+**Compare the layer that renders.** Fills use the **tint**, where the six members
+run `0.035`–`0.05` — so Hearth's tint is `0.018`, roughly half the least
+saturated of them. (Judging it against the members' _base_ layer, `0.09`–`0.13`,
+is the trap: it makes almost any warm hue look recessive. Hearth's first values
+did exactly that and shipped a peach that was indistinguishable from terracotta's
+fill — caught in live review, see ADR 041.) Chroma has no room between chrome's
+`0.022` and the members' `0.035`, so Hearth separates from **chrome** on
+_lightness_ instead — `0.90` against `--secondary`'s `0.93`.
+
+- Use `FAMILY_HUE` for the household pseudo-profile's avatar
+  (`<ProfileAvatar identity={FAMILY_HUE} />`) — without it, the family's _name_
+  hashes into a member's hue.
+- It must stay **chromatic**. [ADR 040](decisions/040-sunken-surface-plane.md)'s
+  guarantee — a desaturated plane can never be mistaken for an identity fill —
+  holds only while every identity fill has colour in it.
+
+#### Multiple people & no-owner (settled — Calendar M3 Design, 2026-06-22; amended ADR 041)
 
 When an item belongs to **2+ specific members** (a shared calendar event, a
 multi-assignee task later), express it as a **split fill** — hard-stop segments of
 each member's `tint`, one per person — not a gradient (two tints blended read as a
 single new muddy hue) and not a dot cluster (abandons the colour fill). Text uses
-neutral `--foreground` (legible on any pale tint). When it belongs to **no one**
-(a whole-house "Family" item), use a **neutral** surface (`--secondary`) + a small
-`Users` glyph, so it reads as _family_, not as an uncolored/disabled item. In a
-**widget-slot spine**, the same logic applies vertically (single hue · split
-segments · neutral for Family).
+neutral `--foreground` (legible on any pale tint).
+
+When it belongs to **no one** (a whole-house "Family" item), it belongs to the
+**household** — paint it in the reserved `family` hue above (+ a small `Users`
+glyph), not in a chrome neutral. There is no "no owner" branch: `huesForEvent([])`
+resolves to `[FAMILY_HUE]`, so fills, spines, pills and avatars all take one path.
+In a **widget-slot spine**, the same logic applies vertically (single hue · split
+segments · the family hue for Family).
+
+> Superseded detail: this used to specify `--secondary` for the Family fill. That
+> made one token mean two things (chrome _and_ an identity), and the two collided —
+> see ADR 041. `--secondary` is now chrome only.
 
 ### Semantic status tokens — light mode
 
@@ -272,6 +351,16 @@ Triggered by `prefers-color-scheme: dark` — no JavaScript required,
 cascade-based. The dark background is a **warm clay** (`oklch(0.15 0.022 45)`)
 rather than the cold blue-black common in most apps. Primaries lighten
 to maintain contrast against dark surfaces.
+
+> **Every themed token must be declared in all three blocks** of `styles.css`:
+> `:root` (light), the `prefers-color-scheme: dark` media block, **and**
+> `[data-theme='dark']` (the explicit in-app toggle). A token missing from the
+> third does not fail loudly — it silently inherits the **light** value, and only
+> for users who toggled the theme rather than inheriting it from the OS. This has
+> bitten once: `--surface-sunken` / `--shadow-inset` shipped without the
+> `[data-theme]` entry, so the up-next groove rendered near-white on dark, and the
+> OS-preference dark screenshots all looked correct. If you add a token, grep for
+> all three.
 
 | Token                  | Light                   | Dark                   |
 | ---------------------- | ----------------------- | ---------------------- |
@@ -397,7 +486,10 @@ designed in M1. See ADR 011.
 list items minimum 64px tall.
 
 **Viewing distance:** Primary readable content minimum 18px. Status
-counts and key values minimum 20px.
+counts and key values minimum 20px. This is the **across-the-room** floor of the
+[type scale's viewing-distance rule](#type-scale) — it binds the always-on wall
+surface (the family pseudo-profile), not a parent's laptop showing the same
+widgets at desk distance.
 
 ### Other Surfaces
 
@@ -824,22 +916,34 @@ equal boxes. Hierarchy on the home surface is now carried by **elevation**, not 
 alone: the shell assigns each slot one of **three prominence rungs**. This is the
 "depth, not lines, creates hierarchy" principle applied to the widget grid.
 
-| Rung        | Shell chrome                                          | Radius                  | Role                                                                                 |
-| ----------- | ----------------------------------------------------- | ----------------------- | ------------------------------------------------------------------------------------ |
-| **Feature** | `--shadow-raised`, **no border**                      | `--radius-hero` (16px)  | The surface's one focal point; holds the module's hero. **Exactly one per surface.** |
-| **Card**    | `--shadow-card`, soft hairline (`border-border/45`)   | `--radius-panel` (12px) | Resting secondary widget.                                                            |
-| **Quiet**   | recessed `--secondary` tint, **no shadow**, soft edge | `--radius-panel` (12px) | Fully live — keeps its identity header + content — but recedes _into_ the page.      |
+| Rung        | Shell chrome                                          | Radius                  | Role                                                                                                           |
+| ----------- | ----------------------------------------------------- | ----------------------- | -------------------------------------------------------------------------------------------------------------- |
+| **Feature** | `--shadow-raised`, **no border**                      | `--radius-hero` (16px)  | The surface's one focal point; holds the module's hero. **At most one per surface** — a surface may have none. |
+| **Card**    | `--shadow-card`, soft hairline (`border-border/45`)   | `--radius-panel` (12px) | Resting secondary widget.                                                                                      |
+| **Quiet**   | recessed `--secondary` tint, **no shadow**, soft edge | `--radius-panel` (12px) | Fully live — keeps its identity header + content — but recedes _into_ the page.                                |
 
 **The uniform border is gone.** A hard outline on every slot cancels the
 (deliberately subtle) `--shadow-card` and flattens the ladder. Rungs are told apart
 by **surface + depth**; only the quiet rung carries a soft edge, and the feature
 rung carries none.
 
-**One feature per surface, re-ranked per profile.** The rung assignment expresses
-the ADR 028 tier-dominance that size used to carry alone: parent → **Calendar**
-features · kid (tier 1–2) → **Chores** features · family pseudo-profile → **Feed**
-features (a full-width banner, read across a room). The same three widgets, same
-code — only the rung differs.
+**At most one feature per surface, re-ranked per profile.** The rung assignment
+expresses the ADR 028 tier-dominance that size used to carry alone: kid (tier 1–2) →
+**Chores** features · family pseudo-profile → **Feed** features (a full-width banner,
+read across a room). The same three widgets, same code — only the rung differs.
+
+**A surface may have no feature, and the parent one doesn't** (ADR 039, amended
+2026-07-11). The feature rung claims _"this is the one thing you came for."_ That is
+true for a kid (today's chores) and for the unattended wall (the feed). It is not
+true for a parent, who opens the dashboard to **triage** — calendar, chores and feed
+are all live answers to "what needs me". Spending the ladder's loudest rung on a
+claim that isn't true devalues it everywhere it _is_ true. The calendar still leads
+by size and position (the 2×2, first column); elevation simply declines to overstate
+a dominance the surface doesn't have.
+
+**Reading order carries the same claim as elevation.** Within a column the higher rung
+sits above the lower one. A quiet widget stacked above a card one is a bug: position
+and elevation both answer "how much does this matter", so they must not disagree.
 
 **Quiet ≠ flat.** The quiet rung is a **live** state and must never be confused with
 the dashed-outline not-installed placeholder or the `--muted` error slot (both also

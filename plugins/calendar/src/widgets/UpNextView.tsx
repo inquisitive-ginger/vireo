@@ -1,9 +1,8 @@
 import { useCallback, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react'
-import { CalendarDays, Users } from 'lucide-react'
+import { CalendarDays } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import {
   EmptyState,
-  ProfileAvatar,
   WidgetHeader as UiWidgetHeader,
   WIDGET_CQ,
   WIDGET_INSET,
@@ -15,7 +14,9 @@ import type { CalendarEvent } from '../types'
 import { formatTime } from '../lib/grid'
 import { buildWeek, spanWhenLabel, type WeekDay, type WeekModel } from '../lib/week'
 import { huesForEvent, spineColorsForEvent } from '../lib/hues'
+import { EventOwners } from '../components/EventOwners'
 import { NextEventHero } from '../components/NextEventHero'
+import { SpanBand } from '../components/SpanBand'
 
 /* `calendar.up-next` — the pure view (data comes from `UpNext.tsx`).
 
@@ -79,51 +80,11 @@ function spineFor(event: CalendarEvent, membersById: Map<string, string>): strin
   return spineColorsForEvent(huesForEvent(event.attendeeIds, membersById))
 }
 
-function namesOf(event: CalendarEvent, membersById: Map<string, string>): string[] {
-  return event.attendeeIds.map((id) => membersById.get(id)).filter((n): n is string => Boolean(n))
-}
-
-/* Owners as avatars, not names. "Zoe & Teddy" costs a third of a row; two 28px
-   circles cost nothing and carry strictly more — the avatar already IS the
-   identity hue a spine would paint, plus the initial that disambiguates it, so
-   the row needs only one of the two markers. In the Mine framing they're dropped
-   entirely (everything is theirs); a no-owner Family event still gets its glyph
-   in both framings. */
-function Owners({
-  event,
-  membersById,
-  framing,
-}: {
-  event: CalendarEvent
-  membersById: Map<string, string>
-  framing: UpNextFraming
-}) {
-  const names = namesOf(event, membersById)
-  if (names.length === 0) {
-    return (
-      <span
-        className="flex size-7 shrink-0 items-center justify-center rounded-full bg-secondary text-muted-foreground"
-        aria-label="Family"
-        role="img"
-      >
-        <Users className="size-3.5" aria-hidden />
-      </span>
-    )
-  }
-  if (framing === 'mine') return null
-  return (
-    <span className="flex shrink-0 -space-x-1.5">
-      {names.slice(0, 3).map((name) => (
-        <ProfileAvatar
-          key={name}
-          name={name}
-          size="sm"
-          className="size-7 text-xs-body ring-2 ring-card"
-        />
-      ))}
-    </span>
-  )
-}
+/* The owner marker is shared with the multi-day band (`EventOwners`) — the widget
+   only supplies the framing rule: member avatars are dropped in Mine (everything
+   on that surface is already theirs), while a no-owner Family event keeps its
+   glyph in both framings. */
+const showMembersIn = (framing: UpNextFraming) => framing === 'family'
 
 /* Every row — appointment or "nothing else scheduled" — is exactly one ROW_BAND
    tall: 48px (a 28px avatar between 10px of padding), so its text always centres
@@ -167,40 +128,31 @@ function EventRow({
         {formatTime(event.startsAt).toLowerCase()}
       </span>
       <span className="text-base-token min-w-0 flex-1 truncate text-foreground">{event.title}</span>
-      {showOwners && <Owners event={event} membersById={membersById} framing={framing} />}
+      {showOwners && (
+        <EventOwners event={event} membersById={membersById} showMembers={showMembersIn(framing)} />
+      )}
     </div>
   )
 }
 
 // ZONE 2 — the all-week band
 
-/* The groove. Full-bleed (`-mx-6` against the tile's `p-6`), recessed into the
-   card with the sunken plane + its inner shadow — never `--secondary`, which in
-   this palette is the FAMILY fill and would merge with a Family-owned hero
-   directly above it (ADR 040). Renders nothing at all when there are no spans:
-   an empty groove would be a hole. */
+/* The groove — the shared `SpanBand` primitive in its recessed container. The
+   bleed margin has to track the tile's inset (`INSET.large`) exactly, or the groove
+   stops reaching the edges, which is the whole point of it. The mobile agenda uses
+   the same primitive in its `panel` container: same anatomy, different ground
+   (ADR 040 forbids a recess directly on `--background`). */
 function AllWeekBand({ week, membersById, now, framing }: ZoneProps) {
-  if (week.spans.length === 0) return null
   return (
-    <div
-      // The bleed margin has to track the tile's inset (`INSET.large`) exactly, or
-      // the groove stops reaching the edges — which is the whole point of it.
-      className="-mx-6 mt-3.5 bg-surface-sunken px-6 py-2.5 shadow-[var(--shadow-inset)]"
-      data-testid="all-week-band"
-    >
-      <div className="text-section-label mb-0.5 text-muted-foreground">All week</div>
-      {week.spans.map((event) => (
-        <div key={event.id} className="flex items-center gap-3 py-1.5">
-          <span className="text-base-token shrink-0 truncate font-semibold text-foreground">
-            {event.title}
-          </span>
-          <span className="text-sm-token min-w-0 flex-1 truncate text-muted-foreground">
-            {spanWhenLabel(event, now)}
-          </span>
-          <Owners event={event} membersById={membersById} framing={framing} />
-        </div>
-      ))}
-    </div>
+    <SpanBand
+      spans={week.spans}
+      membersById={membersById}
+      now={now}
+      container="groove"
+      label="All week"
+      showMembers={showMembersIn(framing)}
+      className="-mx-6 mt-3.5"
+    />
   )
 }
 

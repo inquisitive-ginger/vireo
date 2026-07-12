@@ -12,7 +12,6 @@ import {
   FamilyNameUpdateSchema,
   PermissionOverrideCreateSchema,
 } from '@family-os/schemas'
-import { seedWidgetLayout } from '../lib/seed-layout'
 
 function requireTier4(tier: number): { error: string } | null {
   return tier < 4 ? { error: 'Requires tier 4' } : null
@@ -28,8 +27,9 @@ const profilesPlugin: FastifyPluginAsync = async (fastify) => {
     if (!result.success) return reply.status(400).send({ error: result.error.flatten() })
 
     const { name, tier } = result.data
+    // No widget layout is written: GET /home/layout serves the current default until
+    // the profile actually customizes it (see home.ts).
     const profile = await prisma.profile.create({ data: { name, tier } })
-    await seedWidgetLayout(profile.id, tier)
 
     return { id: profile.id, name: profile.name, tier: profile.tier }
   })

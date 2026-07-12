@@ -70,10 +70,12 @@ function stubViewport(tabletUp: boolean) {
   }))
 }
 
-// A CalendarEvent for "today" so the mobile agenda has something to render.
+/* A CalendarEvent for "today" so the mobile agenda has something to render.
+   Relative to now, not pinned to noon: the agenda only carries events that
+   haven't ended yet, so a fixed hour makes the test pass or fail depending on
+   the wall clock it runs at. */
 function todayEvent() {
-  const start = new Date()
-  start.setHours(12, 0, 0, 0)
+  const start = new Date(Date.now() + 2 * 60 * 60 * 1000)
   return {
     id: 'today-1',
     seriesId: 'today-1',
