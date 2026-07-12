@@ -45,9 +45,11 @@ Today/Week/All scope filter.
   compensates. If it ever proves too quiet, **strengthen the wash — do not take the
   spine back** (recorded in the ADR).
 - **No Storybook playground.** The HTML artifact was the direction gate; the user
-  chose to iterate on the real stories rather than gate variants _within_ B. Noted
-  because it means three sub-decisions (wash at 7%, badge copy, meter-at-zero) are
-  judgement calls that were reviewed live rather than gated.
+  chose to iterate on the real stories rather than gate variants _within_ B. Worth
+  noting that **two of the three ungated sub-decisions turned out to be wrong**
+  (the header chip's colour, the meter at zero) and were caught in review — the
+  overdue wash at 7% is the one that stands. That is roughly the failure rate an
+  ungated judgement call should be expected to have.
 - **Page widths are roles, not numbers** — and a **list is not prose**: 680px is a
   reading measure, and a board row carries a spine, title, badges and three
   controls. Chores/Settings moved to 840px; the feed stayed at 680px.
@@ -110,8 +112,10 @@ manufacture one.
   two same-hued members side by side is the one case this colour language cannot
   survive. **Second bug, same root:** a **rename silently re-colours a person**
   everywhere, because the hue is derived from the name. Queued, not patched.
-- The **load meter reads `0 tasks · 0 XP load`** on an all-done member (the
-  empty-lane treatment was declined). Still the weakest thing in the diff.
+- **The empty-lane treatment was declined**, and an all-done member still renders a
+  full group (header + their completed rows). That is arguably correct — their done
+  chores are worth seeing — but it is untested against a real week's data. Revisit
+  if the board gets long.
 
 ## What the next session needs to know
 
