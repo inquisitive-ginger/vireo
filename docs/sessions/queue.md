@@ -103,40 +103,13 @@ Next" on 2026-06-21 so M3 — Calendar can run uninterrupted.
 **Produces:** the family pseudo-profile's feed **banner** rendering its body at the roomy across-room **`text-prose` (18px)** instead of the dense **`text-prose-sm` (15px)** it falls to today.
 **Why it's deferred:** the banner's tall slot trips the multi-post height gate, and a container-query **width** heuristic can't reliably tell the 4-col banner from a 2-col widget across device sizes (a 4-col banner on a 1024px wall tablet is _narrower_ than a 2-col widget on a 1920px laptop). The robust fix is **passing prominence into the widget** — e.g. a `useWidgetProminence()` context provided by `WidgetSlot` — which the feed reads to pick its across-room typography. 15px Lora reads fine in the interim, so this is a polish follow-up, not a blocker.
 **Depends on:** none (ADR 039 already anticipates prominence being available to widgets).
-
----
-
-### Architecture: Re-home the Family fill off `--secondary`
-
-**Type:** architecture (ADR) + a follow-on remediation pass
-**Kickoff:** _to be written_
-**Reads:** [ADR 040](../decisions/040-sunken-surface-plane.md) (§Alternatives — this is the door it leaves open), ADR 030, `docs/modules/calendar/design.md` §0, `plugins/calendar/src/lib/hues.ts`, `logs/2026-07-11-design-dev-up-next-density.md`
-**Produces:** a decision on giving the **no-owner (Family) event fill** its own token, freeing `--secondary` to mean exactly one thing (structural/inset chrome).
-**Why:** `--secondary` currently carries **two meanings** — "this is chrome" and "this belongs to everyone" — and the collision is not theoretical. It bit **three separate times in one session** (2026-07-11): the recessed span band merged into a Family-owned hero; the hero/band seam vanished; the Family owner pill dissolved into its own hero wash. Each was patched locally (ADR 040 added the sunken plane; the pill gained a ring), but the root cause is untouched: **a token with two jobs.** Every future surface that needs a neutral will hit it again.
-**Why it was deferred:** the Family fill is load-bearing across the whole calendar colour language (month chips, span bars, agenda rows, the hero) and is already in daily use — re-homing it is a bigger, riskier change than adding the rung the ladder was missing anyway.
-**Depends on:** none.
-
----
-
-### Design: Widget content type floor (the 18px across-the-table rule)
-
-**Type:** design (small) + remediation
-**Kickoff:** _to be written_
-**Reads:** `design-system.md` §Type scale (viewing-distance rule), `plugins/calendar/src/widgets/UpNextView.tsx`, `plugins/chores/src/widgets/TodaySummaryView.tsx`
-**Produces:** a resolution to the standing contradiction between the design system's **18px minimum for widget content** ("may be glanced from across the table") and what the widgets actually ship — the calendar day list renders titles at **14px** (`text-base-token`), and chores is comparable.
-**Why:** either the rule is right and the widgets are wrong (raising type costs real rows-per-tile, and the up-next density rework just fought hard for those rows), or the rule is over-broad and should distinguish **across-the-room** surfaces (the family wall banner) from **arm's-length** ones (a parent's own tablet). Right now the system says one thing and the code does another, which makes the rule unenforceable.
-**Depends on:** none. Raised during the 2026-07-11 density rework and deliberately not smuggled into it.
-
----
-
-### Dev: Mobile agenda — multi-day span density
-
-**Type:** development (small)
-**Kickoff:** _to be written_
-**Reads:** `plugins/calendar/src/components/AgendaView.tsx`, `plugins/calendar/src/lib/week.ts` (the fix, already built), `plugins/calendar/src/lib/grid.ts` (`eventsForDay`)
-**Produces:** the mobile agenda stating a multi-day event **once** rather than on every day it covers — the same rework the up-next widget just got, on the other read surface.
-**Why:** `AgendaView` still goes through `eventsForDay`, so a week-long camp claims a row on all five of its days. It doesn't produce the duplicate-key warning there (each day is a separate list), so it's cosmetic rather than broken — but it's the same density problem, and `buildWeek()` already exists to solve it.
-**Depends on:** none.
+**Updated 2026-07-11 (PR #37):** the type-scale viewing-distance rule was **rescoped by
+distance, not by component** — the 18px floor now binds _across-the-room_ surfaces (the
+wall tablet / family pseudo-profile) rather than "widgets" as a category. That **supports**
+this item rather than contradicting it: the family banner is now the _named_ place the
+floor applies. The mechanism (pass prominence into the widget) is unchanged. Note the
+parent layout now has **no feature rung** (ADR 039 amended), so don't key across-room
+typography off `feature` alone — key it off the family surface.
 
 ---
 
@@ -286,6 +259,10 @@ scheduled.
 ---
 
 ## Recently Completed
+
+- **2026-07-11 — Design + Dev: Family Fill Re-home, Span Primitive, Type Floor (PR #37)** ![Type](https://img.shields.io/badge/Type-Development-orange)
+  Cleared the three follow-ups the up-next density session owed, and fixed two bugs found while verifying them live. **ADR 041 — the Family identity hue.** `--secondary` carried **two meanings** (chrome _and_ the Family fill) and the two collided three times in one session; the household now has a **reserved seventh identity entry — "Hearth", a warm stone** — excluded from `IDENTITY_HUES` so the name hash can never hand it to a person, with `huesForEvent([])` resolving to `[FAMILY_HUE]` rather than `[]` (**one path**, no "no owner" branch). `--secondary` is chrome again. **The first values were wrong and live review caught it:** chroma was judged against the members' **base** layer (0.09–0.13), but fills use the **tint** layer, where the six run 0.035–0.05 — at 0.038 Hearth was a _peer_ of terracotta and rendered as the same pale peach (the exact "colour = person" violation the ADR exists to prevent). Corrected to **0.018**, separating from chrome on **lightness** since chroma has no room between 0.022 and 0.035. Also: the shell had been hashing the **family's own name** into a member hue for its avatar. **Shared multi-day primitive** — new `SpanBand`, one anatomy / **two containers** (`groove` recessed inside a card · `panel` elevated on `--background`, because ADR 040 forbids a recess there); the mobile agenda now **states a span exactly once** (pinned if running, else inline on its start day) via new `buildAgenda()`. **Type floor rescoped by distance, not component** — "a widget is a container, not a distance": 18px binds across-the-room surfaces (the wall tablet), close-up surfaces go to 14px. **Two bugs:** `--surface-sunken`/`--shadow-inset` were **missing from the `[data-theme='dark']` block**, so the groove rendered near-white under the in-app toggle (a missing token **inherits**, and OS-preference testing can't see it); and the **home dashboard served new elevation rungs on stale geometry** — the composition lived in **six** places and each profile's layout was **frozen** into `widget_layouts` on its first page load. Composition now has **one definition** in `@family-os/platform`, the default is **served not persisted**, and `GET /home/layout` gained its **first-ever test** (6). **ADR 039 amended:** `feature` is **at most** one per surface and the **parent layout has none** (a parent triages; no single widget is "the one thing you came for"), plus reading order must agree with elevation. Green: ui 85 · platform 33 · shell 3 · api 208 · calendar 89; live-reviewed across breakpoints, both themes, both toggle paths.
+  _See:_ `docs/sessions/logs/2026-07-11-design-dev-family-fill-rehome.md`
 
 - **2026-07-10 — Design + Dev: Home Dashboard Elevation Ladder (PR #34)** ![Type](https://img.shields.io/badge/Type-Development-orange)
   Reworked the home dashboard so its three widgets stop reading as equal peers. Locked **Option C — the Elevation Ladder** from a rendered four-direction exploration, then shipped it: a shell-applied **three-rung prominence scale** on `WidgetSlot` — **feature** (`--shadow-raised` · `rounded-hero` · **no border**) / **card** (resting `--shadow-card` + hairline) / **quiet** (recessed `--secondary` tint, no shadow, still fully live, distinct from the not-installed/error flats). **One feature per surface, re-ranked per profile** (parent→Calendar · kid→Chores · family→Feed banner) — elevation expresses ADR 028 dominance, not just `{w,h}`. Prominence is **derived on read** from a single **`apps/api/src/lib/default-layouts.ts`** composition (which also fixed the **never-seeded `default_layout_family`** — family had been getting the tier*1_2 layout), **not a persisted column** — **ADR 039** (amends 022/028) anticipates promoting it. Ground-plane fixes shipped with the ladder: **dropped the uniform widget border** ("depth, not lines") + a density pass. Calendar hero refined via live iteration (**no clock icon**, owner in an **identity pill**, title in **DM Sans not Lora** — user tested serif live and chose sans, smaller day headings, **spacing not divider rules**); family-feed widget gained a **dense body mode** (new **`text-prose-sm`** token, family voice stays Lora). **Sidebar ADR-031 tidy** (dropped the 3px left-bar the ADR rejected; active `bg-primary/20`, hover `/10`). `design-system.md` §Widget prominence + migrated `WidgetSlot` contract. Storybook: the exploration playground was removed post-approval and the essential rung demo folded into **`Foundation/Elevation`**; a **typography audit** added the 3 scale tokens the story was missing (`xs-body`/`prose`/`prose-sm`). Green: ui 85 · api 206 · calendar 66; typecheck/lint + Storybook build clean; live-reviewed + signed off. **Owed follow-up:** family-wall feed typography (see below).
