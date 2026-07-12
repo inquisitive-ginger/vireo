@@ -1,10 +1,11 @@
 import { useMemo, useState } from 'react'
-import { Pencil, Plus, Repeat, Trash2 } from 'lucide-react'
+import { Plus, Repeat } from 'lucide-react'
 import {
   Button,
   EmptyState,
   ItemCard,
-  ProfileAvatar,
+  MemberGroupHeader,
+  RowActions,
   SegmentedControl,
   cn,
   getIdentityHue,
@@ -45,6 +46,7 @@ type OwnerGroup = {
   ownerId: string
   name: string
   hue: IdentityHue
+  avatarUrl?: string | null
   activities: CalendarEvent[]
   days: Set<number>
 }
@@ -73,7 +75,7 @@ function groupByOwner(
   return [...membersById.keys()]
     .filter((id) => byOwner.has(id))
     .map((ownerId) => {
-      const name = membersById.get(ownerId)!.name
+      const { name, avatarUrl } = membersById.get(ownerId)!
       const list = byOwner
         .get(ownerId)!
         .slice()
@@ -86,6 +88,7 @@ function groupByOwner(
         ownerId,
         name,
         hue: getIdentityHue(name),
+        avatarUrl,
         activities: list,
         days: new Set(list.map((a) => new Date(a.startsAt).getDay())),
       }
@@ -196,34 +199,28 @@ function OwnerRoster({
 }) {
   return (
     <section className="flex flex-col gap-3">
-      {/* Header wraps below `sm:` — the weekday-load strip drops to its own
-          full-width row on a phone, stays inline on tablet/desktop. */}
-      <div className="flex flex-wrap items-center gap-x-2.5 gap-y-2">
-        <ProfileAvatar name={group.name} identity={group.hue} size="sm" />
-        <span className="text-heading text-foreground">{group.name}</span>
-        <span
-          className="text-xs-token rounded-full px-2 py-0.5"
-          style={{
-            background: identityToken(group.hue, 'tint'),
-            color: identityToken(group.hue, 'ink'),
-          }}
-        >
-          {group.activities.length}
-        </span>
-        <div className="order-last basis-full sm:order-none sm:basis-auto">
-          <WeekdayLoad hue={group.hue} days={group.days} />
-        </div>
-        {canManage && onAdd && (
-          <Button
-            variant="ghost"
-            size="sm"
-            className="ml-auto text-muted-foreground"
-            onClick={() => onAdd(group.ownerId)}
-          >
-            <Plus className="mr-1 size-4" /> Add
-          </Button>
-        )}
-      </div>
+      {/* The shared by-member group header (`@family-os/ui`) — chores' admin board
+          composes the same one. Its avatar can hold a photo, so it is not the hue
+          carrier: the rows' identity spines are (ADR 042/043). */}
+      <MemberGroupHeader
+        name={group.name}
+        hue={group.hue}
+        avatarUrl={group.avatarUrl}
+        count={group.activities.length}
+        load={<WeekdayLoad hue={group.hue} days={group.days} />}
+        action={
+          canManage && onAdd ? (
+            <Button
+              variant="ghost"
+              size="sm"
+              className="text-muted-foreground"
+              onClick={() => onAdd(group.ownerId)}
+            >
+              <Plus className="mr-1 size-4" /> Add
+            </Button>
+          ) : undefined
+        }
+      />
       <div className="flex flex-col gap-2">
         {group.activities.map((activity) => (
           <ActivityRow
@@ -294,51 +291,20 @@ function ActivityRow({
     <ItemCard
       spine={identityToken(hue)}
       align="center"
-      className={cn('relative', editable && 'transition-colors hover:border-primary/50')}
+      className={cn(editable && 'transition-colors hover:border-primary/50')}
+      onActivate={editable ? () => onEdit(activity) : undefined}
+      activateLabel={editable ? `Edit “${activity.title}”` : undefined}
       trailing={
-        canManage && (onEdit || onRemove) ? (
-          <div className="relative z-20 flex shrink-0 items-center gap-0.5">
-            {/* Comfortable 44px targets (the chores TaskCard/AdminBoard pattern). The
-                pencil is redundant with tap-row-to-edit, so it only shows on sm+; the
-                destructive Remove stays inline at every width. */}
-            {onEdit && (
-              <Button
-                variant="ghost"
-                size="icon"
-                onClick={() => onEdit(activity)}
-                aria-label={`Edit ${activity.title}`}
-                title="Edit activity"
-                className="hidden h-11 w-11 sm:inline-flex"
-              >
-                <Pencil className="size-3.5" aria-hidden />
-              </Button>
-            )}
-            {onRemove && (
-              <Button
-                variant="ghost-destructive"
-                size="icon"
-                onClick={() => onRemove(activity)}
-                aria-label={`Remove ${activity.title}`}
-                title="Remove activity"
-                className="h-11 w-11"
-              >
-                <Trash2 className="size-3.5" aria-hidden />
-              </Button>
-            )}
-          </div>
+        canManage ? (
+          <RowActions
+            label={activity.title}
+            noun="activity"
+            onEdit={onEdit ? () => onEdit(activity) : undefined}
+            onRemove={onRemove ? () => onRemove(activity) : undefined}
+          />
         ) : undefined
       }
     >
-      {/* Tap-row-to-edit (chores TaskCard/AdminBoard pattern): a stretched button
-          covers the passive area; the trailing controls sit above it (z-20). */}
-      {editable && (
-        <button
-          type="button"
-          onClick={() => onEdit!(activity)}
-          aria-label={`Edit ${activity.title}`}
-          className="absolute inset-0 z-10 cursor-pointer rounded-card focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
-        />
-      )}
       <div className="min-w-0 flex-1">
         <div className="text-card-title truncate text-foreground">{activity.title}</div>
         <div className="text-sm-token truncate text-muted-foreground">{meta}</div>

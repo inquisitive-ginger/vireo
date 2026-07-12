@@ -1,6 +1,14 @@
 import { useMemo, useRef, useState } from 'react'
-import { Pencil, Plus, Trash2 } from 'lucide-react'
-import { Badge, Button, CompletionToggle, Spine, identityColor } from '@family-os/ui'
+import { Plus } from 'lucide-react'
+import {
+  Badge,
+  CompletionToggle,
+  ItemCard,
+  MemberGroupHeader,
+  RowActions,
+  Button,
+  identityColor,
+} from '@family-os/ui'
 import type { ChoreTask } from '../types'
 import { isOverdue, dueLabel } from '../lib/dates'
 import { XpPill } from './XpPill'
@@ -8,6 +16,7 @@ import { XpPill } from './XpPill'
 export interface AdminLane {
   assigneeId: string
   assigneeName: string
+  assigneeAvatarUrl: string | null
   tasks: ChoreTask[]
 }
 
@@ -27,12 +36,30 @@ export interface AdminBoardProps {
   onEditTask?: (task: ChoreTask) => void
   /** Remove a task (tier-4 only) — host confirms then deletes. Omitted = no remove action. */
   onRemoveTask?: (task: ChoreTask) => void
+  /** Drop completed rows from the board (design.md §1). A member left with nothing
+      to show is dropped with them — a header over an empty list says nothing. */
+  hideCompleted?: boolean
 }
 
-/* By-assignee board — grouped by assignee. Identity hue does real work here (each
-   person's lane). Status still wins on a row spine (done/overdue), falling back
-   to identity. Gold = XP only. Sort: overdue → due-dated → undated → completed.
-   Used by the tier-4 admin and the read-only family dashboard. */
+/* The by-assignee admin board.
+ *
+ * IDENTITY TAKES THE EDGE; STATUS TAKES THE FIELD (ADR 043). Every row is an
+ * `ItemCard` whose spine is its assignee's hue — the same grammar the feed, the
+ * calendar agenda, and the Activities roster already use, so a row says whose it
+ * is on its own, wherever it ends up. Status is carried by the row's SURFACE
+ * instead: an overdue wash, the Overdue badge and red due text, and dim +
+ * strikethrough + a green check when done.
+ *
+ * This reverses the original board, where the spine rendered green when done, red
+ * when overdue, and *otherwise* the assignee's hue — one 4px element answering a
+ * different question depending on state — while identity was shouted separately as
+ * a full-width tint gradient across each group header. Status was already stated
+ * three other ways on every row; identity was stated nowhere the eye actually
+ * lands. See ADR 043.
+ *
+ * Gold = XP only. Sort: overdue → due-dated → undated → completed last.
+ * Used by the tier-4 admin and the read-only family dashboard.
+ */
 export function AdminBoard({
   lanes,
   onAddForAssignee,
@@ -41,6 +68,7 @@ export function AdminBoard({
   onReopenTask,
   onEditTask,
   onRemoveTask,
+  hideCompleted = false,
 }: AdminBoardProps) {
   const maxLoad = Math.max(1, ...lanes.map(laneLoad))
 
@@ -72,26 +100,49 @@ export function AdminBoard({
   }, [lanes])
 
   return (
-    <div className="border-t border-border">
-      {orderedLanes.map(({ lane, tasks }) => (
-        <div key={lane.assigneeId}>
-          <LaneHeader
-            lane={lane}
-            maxLoad={maxLoad}
-            onAdd={showAdd ? () => onAddForAssignee(lane.assigneeId) : undefined}
-          />
-          {tasks.map((task) => (
-            <AdminRow
-              key={task.id}
-              task={task}
-              onComplete={onCompleteTask}
-              onReopen={onReopenTask}
-              onEdit={onEditTask}
-              onRemove={onRemoveTask}
+    <div className="flex flex-col gap-7">
+      {orderedLanes.map(({ lane, tasks }) => {
+        const visible = hideCompleted ? tasks.filter((t) => t.status !== 'completed') : tasks
+        // Hiding completed can empty a member out entirely. Don't leave a header
+        // standing over nothing.
+        if (visible.length === 0) return null
+
+        return (
+          <section key={lane.assigneeId} className="flex flex-col gap-3">
+            <MemberGroupHeader
+              name={lane.assigneeName}
+              avatarUrl={lane.assigneeAvatarUrl}
+              status={<LaneStatus lane={lane} />}
+              count={pendingCount(lane) > 0 ? `${pendingCount(lane)} left` : undefined}
+              load={<LoadMeter lane={lane} maxLoad={maxLoad} />}
+              action={
+                showAdd ? (
+                  <Button
+                    variant="ghost"
+                    size="sm"
+                    className="text-muted-foreground"
+                    onClick={() => onAddForAssignee(lane.assigneeId)}
+                  >
+                    <Plus className="mr-1 size-4" /> Add
+                  </Button>
+                ) : undefined
+              }
             />
-          ))}
-        </div>
-      ))}
+            <div className="flex flex-col gap-2">
+              {visible.map((task) => (
+                <AdminRow
+                  key={task.id}
+                  task={task}
+                  onComplete={onCompleteTask}
+                  onReopen={onReopenTask}
+                  onEdit={onEditTask}
+                  onRemove={onRemoveTask}
+                />
+              ))}
+            </div>
+          </section>
+        )
+      })}
     </div>
   )
 }
@@ -108,66 +159,67 @@ function overdueCount(lane: AdminLane): number {
   return lane.tasks.filter((t) => isOverdue(t.dueDate, t.status)).length
 }
 
+/* The member's STATE, said in the state language — never in their identity hue.
+   A header chip reading "1 overdue" in someone's pale teal, two lines above a row
+   badge reading "Overdue" in red, is one fact wearing two colours. Same `Badge`
+   component and the same red as the row; the same green as a completed row's check.
+
+   This mirrors the widget's `PersonTile` (AllDoneChip / OverduePill / CountChip) —
+   a language the widget settled in the Today Widget rework, and the board simply
+   never adopted. Only the *count* is identity-tinted (see `MemberGroupHeader`),
+   because a count of someone's things is a statement about them, not about a state. */
+function LaneStatus({ lane }: { lane: AdminLane }) {
+  const overdue = overdueCount(lane)
+  if (overdue > 0) return <Badge variant="destructive">{overdue} overdue</Badge>
+  if (pendingCount(lane) === 0) return <Badge variant="success">✓ all done</Badge>
+  return null
+}
+
 function sortTasks(tasks: ChoreTask[]): ChoreTask[] {
   const rank = (t: ChoreTask) =>
     t.status === 'completed' ? 3 : isOverdue(t.dueDate, t.status) ? 0 : t.dueDate ? 1 : 2
   return [...tasks].sort((a, b) => rank(a) - rank(b))
 }
 
-function LaneHeader({
-  lane,
-  maxLoad,
-  onAdd,
-}: {
-  lane: AdminLane
-  maxLoad: number
-  onAdd?: () => void
-}) {
-  const hue = identityColor(lane.assigneeName)
-  const tint = identityColor(lane.assigneeName, 'tint')
-  const load = laneLoad(lane)
+/* Summed XP of a member's open tasks, against the busiest member — "is Teddy
+   carrying the house this week?".
+
+   A METER IS A COMPARISON. With nothing on the plate there is nothing to compare,
+   so it does not render — it is not a quiet meter at zero, it is a meter claiming
+   to have data. The first pass rendered "0 tasks · 0 XP load" under an empty bar,
+   and the `Math.max(6, …)` floor even painted a 6% stub of the member's hue, so an
+   all-done member appeared to be carrying a little something. The "✓ all done" chip
+   already says everything true about them.
+
+   The bar is the one place the member's hue appears in the header, since the avatar
+   may hold a photo (ADR 042). */
+function LoadMeter({ lane, maxLoad }: { lane: AdminLane; maxLoad: number }) {
   const pending = pendingCount(lane)
-  const overdue = overdueCount(lane)
-  const pct = maxLoad > 0 ? Math.max(8, (load / maxLoad) * 100) : 0
+  if (pending === 0) return null
+
+  const load = laneLoad(lane)
+  // The 6% floor keeps a real-but-tiny load visible; it must never manufacture one,
+  // so it only applies when there IS load.
+  const pct = load > 0 && maxLoad > 0 ? Math.max(6, (load / maxLoad) * 100) : 0
 
   return (
-    <div
-      className="flex items-center gap-3 border-b border-border px-4 py-3"
-      // tint gradient + 2px identity top-border carry the lane's identity hue.
-      style={{
-        background: `linear-gradient(90deg, ${tint}, transparent 70%)`,
-        borderTop: `2px solid ${hue}`,
-      }}
-    >
-      <div className="min-w-0 flex-1">
-        <div className="flex items-center gap-2">
-          <span className="text-card-title text-foreground">{lane.assigneeName}</span>
-          {overdue > 0 && <Badge variant="destructive">{overdue} overdue</Badge>}
-        </div>
-        <div className="mt-1 flex items-center gap-2">
-          <div className="h-meter max-w-30 flex-1 rounded-full bg-muted">
-            <div className="h-full rounded-full" style={{ width: `${pct}%`, background: hue }} />
-          </div>
-          <span className="text-xs-token text-muted-foreground">
-            {pending} task{pending === 1 ? '' : 's'} · {load} XP load
-          </span>
-        </div>
+    <div className="flex items-center gap-2">
+      <div className="h-meter w-24 rounded-full bg-muted">
+        <div
+          className="h-full rounded-full"
+          style={{ width: `${pct}%`, background: identityColor(lane.assigneeName) }}
+        />
       </div>
-      {onAdd && (
-        <Button
-          variant="ghost"
-          size="icon"
-          onClick={onAdd}
-          aria-label={`Add task for ${lane.assigneeName}`}
-          title={`Add task for ${lane.assigneeName}`}
-        >
-          <Plus size={16} />
-        </Button>
-      )}
+      <span className="text-xs-token text-muted-foreground">
+        {pending} task{pending === 1 ? '' : 's'} · {load} XP load
+      </span>
     </div>
   )
 }
 
+/* A task row. The spine is the assignee's hue — always, in every state. Status is
+   the row's field: the overdue wash, the badge, the red due text, and the dim +
+   strikethrough + green check of a completed row. */
 function AdminRow({
   task,
   onComplete,
@@ -187,11 +239,6 @@ function AdminRow({
   const status = override ?? task.status
   const done = status === 'completed'
   const overdue = !done && isOverdue(task.dueDate, task.status)
-  const spine = done
-    ? 'var(--success)'
-    : overdue
-      ? 'var(--error)'
-      : identityColor(task.assigneeName)
   const label = dueLabel(task.dueDate)
 
   function complete() {
@@ -206,93 +253,61 @@ function AdminRow({
   }
 
   return (
-    <div
-      className={`relative flex min-h-row-touch items-center gap-3 border-b border-border pr-1.5 pl-4 ${
-        onEdit ? 'transition-colors hover:bg-secondary/40' : ''
-      }`}
-      style={{ opacity: done ? 0.55 : 1 }}
+    <ItemCard
+      spine={identityColor(task.assigneeName)}
+      align="center"
+      dimmed={done}
+      className="transition-opacity duration-200"
+      // Status takes the field: an overdue row is washed in error, mixed INTO the
+      // card so it stays a card and not a coloured block (ADR 043).
+      style={
+        overdue ? { background: 'color-mix(in oklch, var(--error) 7%, var(--card))' } : undefined
+      }
+      onActivate={onEdit ? () => onEdit(task) : undefined}
+      activateLabel={onEdit ? `Edit “${task.title}”` : undefined}
+      trailing={
+        <>
+          <RowActions
+            label={task.title}
+            noun="task"
+            onEdit={onEdit ? () => onEdit(task) : undefined}
+            onRemove={onRemove ? () => onRemove(task) : undefined}
+          />
+          {/* Option A check-off (no flight — the board has no score plate). A completed
+              row's check doubles as the tier-4 reopen control; read-only viewers
+              (family dashboard) get a static check and no control on pending rows. */}
+          {done || onComplete ? (
+            <div className="flex size-11 shrink-0 items-center justify-center">
+              <CompletionToggle
+                checked={done}
+                size={28}
+                onToggle={done ? (onReopen ? reopen : undefined) : complete}
+                label={
+                  done ? `Reopen “${task.title}” (mark not done)` : `Mark “${task.title}” done`
+                }
+                title={done ? 'Mark not done' : undefined}
+              />
+            </div>
+          ) : null}
+        </>
+      }
     >
-      <Spine color={spine} />
-      <div className="min-w-0 flex-1 py-2">
+      <div className="min-w-0 flex-1">
         <span
-          className={`text-base-token block ${done ? 'text-muted-foreground line-through' : 'text-foreground'}`}
+          className={`text-card-title block truncate ${done ? 'text-muted-foreground line-through' : 'text-foreground'}`}
         >
           {task.title}
         </span>
-        <span className={`text-sm-token ${overdue ? 'text-error' : 'text-muted-foreground'}`}>
-          {done ? 'Done' : overdue ? `Overdue · ${label}` : (label ?? 'No due date')}
-        </span>
+        <div className="mt-0.5 flex items-center gap-2">
+          {overdue && <Badge variant="destructive">Overdue</Badge>}
+          <span
+            className={`text-sm-token ${overdue ? 'font-semibold text-error' : 'text-muted-foreground'}`}
+          >
+            {done ? 'Done' : (label ?? 'No due date')}
+          </span>
+        </div>
       </div>
-      {/* Tap-row-to-edit (design §3 "admin taps a task → drawer"). A stretched
-          transparent button covers the row's passive area (spine, title, XP pill);
-          the real controls below sit above it (z-20) so they stay clickable. This is
-          the primary edit affordance on mobile, where the explicit pencil is hidden. */}
-      {onEdit && (
-        <button
-          type="button"
-          onClick={() => onEdit(task)}
-          aria-label={`Edit “${task.title}”`}
-          className="absolute inset-0 z-10 cursor-pointer rounded-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset"
-        />
-      )}
       {!done && <XpPill value={task.xpReward} />}
-      {/* Edit / remove — inline row actions (settings → profiles pattern), 44px touch
-          targets. Above the stretched edit button (z-20). The pencil is redundant with
-          tap-row-to-edit, so it only shows on sm+ (a visible desktop affordance);
-          Remove stays inline at every width. Remove is confirmed by the host. */}
-      {(onEdit || onRemove) && (
-        <div className="relative z-20 flex shrink-0 items-center gap-0.5">
-          {onEdit && (
-            <Button
-              variant="ghost"
-              size="icon"
-              onClick={() => onEdit(task)}
-              aria-label={`Edit “${task.title}”`}
-              title="Edit task"
-              className="hidden h-11 w-11 sm:inline-flex"
-            >
-              <Pencil className="size-3.5" aria-hidden />
-            </Button>
-          )}
-          {onRemove && (
-            <Button
-              variant="ghost-destructive"
-              size="icon"
-              onClick={() => onRemove(task)}
-              aria-label={`Remove “${task.title}”`}
-              title="Remove task"
-              className="h-11 w-11"
-            >
-              <Trash2 className="size-3.5" aria-hidden />
-            </Button>
-          )}
-        </div>
-      )}
-      {/* Option A check-off (no flight — the board has no score plate). A completed
-          row's check doubles as the tier-4 reopen control; read-only viewers
-          (family dashboard) get a static check and no control on pending rows.
-          Kept above the stretched edit button (z-20) so it stays tappable + a
-          touch-padded wrapper gives it a 44px target away from Remove. */}
-      {done || onComplete ? (
-        <div className="relative z-20 flex size-11 shrink-0 items-center justify-center">
-          {done ? (
-            <CompletionToggle
-              checked
-              size={28}
-              onToggle={onReopen ? reopen : undefined}
-              label={`Reopen “${task.title}” (mark not done)`}
-              title="Mark not done"
-            />
-          ) : (
-            <CompletionToggle
-              checked={false}
-              size={28}
-              onToggle={complete}
-              label={`Mark “${task.title}” done`}
-            />
-          )}
-        </div>
-      ) : null}
-    </div>
+    </ItemCard>
   )
 }

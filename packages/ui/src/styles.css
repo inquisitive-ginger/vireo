@@ -51,8 +51,17 @@
   --spacing-sidebar-rail: 96px; /* sidebar — collapsed slim rail, label-under-icon (ADR 031) */
   --spacing-meter: 6px; /* progress-meter bar height */
 
-  /* Fixed content widths (→ max-w-content, w-drawer) */
-  --container-content: 680px;
+  /* Page widths — the four page ROLES (→ `PageContainer`, design-system.md
+     §Page containers). A page picks a role, never a number; six ad-hoc recipes
+     had drifted across the modules before these were named.
+       prose — a reading column. Feed body is Lora at 18px; wider is unreadable.
+       list  — a scannable row list. Wider than prose because a row carries a
+               spine, title, badges, and controls, not a sentence.
+       wide  — a canvas that needs room (the 7-column month grid).
+       full  — no max: the home dashboard grid fills the viewport. */
+  --container-content: 680px; /* prose */
+  --container-list: 840px;
+  --container-wide: 1100px;
   --container-drawer: 440px;
 }
 

@@ -85,10 +85,10 @@ describe('ActivitiesView', () => {
     const onAdd = vi.fn()
     renderView({ onEdit, onRemove, onAdd })
 
-    fireEvent.click(screen.getAllByRole('button', { name: 'Edit Gymnastics' })[0])
+    fireEvent.click(screen.getAllByRole('button', { name: 'Edit “Gymnastics”' })[0])
     expect(onEdit).toHaveBeenCalledWith(expect.objectContaining({ title: 'Gymnastics' }))
 
-    fireEvent.click(screen.getByRole('button', { name: 'Remove Gymnastics' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Remove “Gymnastics”' }))
     expect(onRemove).toHaveBeenCalledWith(expect.objectContaining({ title: 'Gymnastics' }))
 
     // The first per-owner "+ Add" is Hallie's (p2) — roster order follows the map.

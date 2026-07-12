@@ -14,8 +14,9 @@
 - **Gold = XP only** (treasure semantic on the marigold hue; see design-system).
   Status never gold; XP never red/green. XP numerals are **DM Sans** (`text-metric`).
 - **Red = overdue only.** Green = done. Neutral otherwise.
-- **Taskee surfaces encode status** (identity hue carries no info there).
-  **Admin/family surfaces encode identity** (per-person lanes/dots/avatars).
+- **Taskee surfaces encode status** on the spine (identity hue carries no info
+  there — everything is you). **Admin/family surfaces encode identity** on the
+  spine, and move status to the row's **field** (wash / badge / dim) — ADR 043.
 - Cards: `--card` bg, `--border`, `--shadow-card`, ~14px radius, a 4px status
   spine. Page title "Chores" in Lora (`page-title`); all else DM Sans.
 
@@ -55,11 +56,57 @@ standing; the kid chooses where to start.
 
 ### Admin view (tier 4) — grouped by assignee
 
-Each person is a **lane**: 2px hue top-border + left→right hue-tint gradient
-header (DM Sans name), per-lane **workload meter** (count + summed XP "load") and
-a per-lane **"+ add"** (prefills assignee). Rows: status spine, per-task gold XP,
-and **edit / remove** row actions. Sort: overdue → due-dated → undated → completed
-last.
+> **Reworked 2026-07-12 (Chores Overhaul, ADR 043).** The lane model below is
+> superseded; kept here only so the change is legible. **What it was:** each person
+> a "lane" with a 2px hue top-border and a left→right hue-tint gradient washed
+> across the header, over rows whose spine encoded **status** (green/red), _falling
+> back_ to the assignee hue at rest. Identity was the loudest thing on the page, the
+> spine meant three different things depending on state, and a row could not say
+> whose it was on its own.
+
+**Identity takes the edge; status takes the field** (ADR 043).
+
+- **Group header** — the shared **`MemberGroupHeader`**: `ProfileAvatar` (a real
+  face — chores never called it before), name, a **status chip**, a **count chip**,
+  the **XP-load meter**, and a **"+ Add"** that prefills the assignee. **No tint
+  wash, no top-border** — the header is quiet; the rows carry the colour.
+
+  The header's chips obey the same channel split as the rows (ADR 043) — **each
+  chip picks its language from what it says, not from whose header it's in**:
+
+  | Member state     | Chip         | Colour                  | Why                                                                 |
+  | ---------------- | ------------ | ----------------------- | ------------------------------------------------------------------- |
+  | Has open work    | `2 left`     | **identity tint**       | A count of _their things_ — an identity statement                   |
+  | Has overdue work | `1 overdue`  | **red** (`destructive`) | A **status** — the same `Badge` and the same red as the row's badge |
+  | Nothing open     | `✓ all done` | **green** (`success`)   | A **status** — the same green as a completed row's check            |
+
+  > **A meter is a comparison.** With nothing on the plate there is nothing to
+  > compare, so the load meter **does not render** for an all-done member. A first
+  > pass showed `0 tasks · 0 XP load` under an empty bar — and the 6% minimum-width
+  > floor even painted a stub of the member's hue, so someone with no work appeared
+  > to be carrying a little something. The `✓ all done` chip already says everything
+  > true about them.
+
+  > **Caught in review, worth recording.** The first pass tinted **every** header
+  > chip in the member's hue, so an urgent member's `1 overdue` rendered in their
+  > pale teal — two lines above a row badge reading `Overdue` in **red**. One fact,
+  > two colours: exactly the failure ADR 043 exists to prevent, reintroduced in the
+  > header while being fixed in the rows. This chip language mirrors the widget's
+  > `PersonTile` (`AllDoneChip` / `OverduePill` / `CountChip`), settled in the Today
+  > Widget rework — the board had simply never adopted it.
+
+- **Rows** — **`ItemCard`** with the **assignee's identity hue on the spine, in
+  every state**. Status is the row's **field**: an error **wash** on an overdue
+  row's fill, the `Overdue` badge, red due text, and dim + strikethrough + the
+  green check when done. Per-task gold XP; **`RowActions`** (pencil `sm+`, inline
+  trash) and tap-row-to-edit via `ItemCard onActivate`.
+- Sort: overdue → due-dated → undated → completed last (order locks on first
+  sight; completing a row morphs it in place rather than resorting live).
+- **Hide completed** — a toggle above the board (shown only when there _is_
+  something to hide). A member left with no visible rows is dropped entirely; a
+  header over an empty list says nothing.
+- Page width is the **`list`** role (840px) — a board row carries a spine, title,
+  badges and three controls, and had been squeezed into a 680px prose measure.
 
 > **Row actions — reconciled in Task Editing (2026-06-20).** Originally specced as
 > a hover **kebab**; shipped instead as the **settings → profiles** inline pattern,
@@ -177,8 +224,17 @@ short (an h=1 slot is 180px on the mobile stack) where the stacked list would cl
   filled list on 2×2. Status-only colour. **All-done** → centered "🎉 All done
   today" (coin retained in header). Empty → tier-aware EmptyState.
 - **Family** — `+N pending today` hero + **"X of Y done"** sub + overdue pill;
-  per-person **filled tiles** with **identity avatars** + labelled count chips,
-  **No XP.** **Every member shows, urgent-first** (overdue → most-pending) and the
+  per-person **filled tiles** — an **identity `<Spine>`** + a real **`ProfileAvatar`**
+  (which may hold a **photograph**) + labelled count chips, **no XP**.
+
+  > **Fixed 2026-07-12 (ADR 042/043).** `PersonTile` hand-rolled its own initials
+  > circle from `identityToken(hue, 'tint')`, which made the **avatar** the tile's
+  > only hue carrier. Chores would therefore have **silently never shown a member's
+  > photo** — and the moment it did, the tile would have lost its identity signal
+  > entirely (a photo's dominant colour is not its owner's hue). The spine now
+  > carries the hue; the avatar carries the face.
+
+  **Every member shows, urgent-first** (overdue → most-pending) and the
   list **fills the slot height** — it only clips if it genuinely overflows, and the
   clip drops the least-urgent member last (no hard 2-row cap; never hides
   non-overdue members). Per-person green **"✓ all done"** state when someone

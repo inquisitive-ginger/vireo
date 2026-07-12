@@ -1,5 +1,6 @@
 import type { Profile } from '@family-os/platform/types'
 import type { ChoreTask } from './types'
+import { SAMPLE_AVATARS } from './sample-avatars'
 
 function isoDay(offsetDays: number): string {
   const d = new Date()
@@ -34,12 +35,19 @@ export const SAMPLE_FAMILY_TASKS: ChoreTask[] = [
   task('f7', 'Water the plants', 'm-luca', 'Luca', { dueDate: isoDay(-2), xpReward: 5 }),
 ]
 
+/* The same board with everyone's photo attached. The board must read identically:
+   the spine says who, the face is just a face (ADR 042/043). */
+export const SAMPLE_FAMILY_TASKS_WITH_PHOTOS: ChoreTask[] = SAMPLE_FAMILY_TASKS.map((t) => ({
+  ...t,
+  assigneeAvatarUrl: SAMPLE_AVATARS[t.assigneeName] ?? null,
+}))
+
 function task(
   id: string,
   title: string,
   assigneeId: string,
   assigneeName: string,
-  opts: Partial<Pick<ChoreTask, 'status' | 'dueDate' | 'xpReward'>> = {}
+  opts: Partial<Pick<ChoreTask, 'status' | 'dueDate' | 'xpReward' | 'assigneeAvatarUrl'>> = {}
 ): ChoreTask {
   return {
     id,
@@ -47,6 +55,9 @@ function task(
     description: null,
     assigneeId,
     assigneeName,
+    // Stories exercise the no-photo fallback by default — the tinted-initials
+    // circle. The board's identity signal is the row spine either way (ADR 043).
+    assigneeAvatarUrl: opts.assigneeAvatarUrl ?? null,
     status: opts.status ?? 'pending',
     dueDate: opts.dueDate ?? null,
     xpReward: opts.xpReward ?? 10,

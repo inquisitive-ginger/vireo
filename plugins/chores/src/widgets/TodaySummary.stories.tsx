@@ -1,7 +1,11 @@
 import type { Meta, StoryObj } from '@storybook/react'
 import { MemoryRouter } from 'react-router-dom'
 import { TodaySummaryView } from './TodaySummaryView'
-import { SAMPLE_TASKEE_TASKS, SAMPLE_FAMILY_TASKS } from '../sample-tasks'
+import {
+  SAMPLE_TASKEE_TASKS,
+  SAMPLE_FAMILY_TASKS,
+  SAMPLE_FAMILY_TASKS_WITH_PHOTOS,
+} from '../sample-tasks'
 import { StoryAnnotation } from '../story-annotation'
 
 /* Widget slot dimensions from the design-system grid spec:
@@ -252,7 +256,21 @@ export const FamilyStandard: Story = {
   },
   parameters: {
     annotation:
-      'family (tier 4 or the family pseudo-profile) · wide + short · pending hero + "X of Y done" + overdue pill / per-person tiles (identity avatars + labelled chips), urgent-first · no XP',
+      'family (tier 4 or the family pseudo-profile) · wide + short · pending hero + "X of Y done" + overdue pill / per-person tiles — identity SPINE + real ProfileAvatar + labelled chips, urgent-first · no XP',
+  },
+}
+
+export const FamilyWithPhotos: Story = {
+  name: 'Family — with profile photos (2×2)',
+  args: {
+    tasks: SAMPLE_FAMILY_TASKS_WITH_PHOTOS,
+    tier: 4,
+    isFamily: false,
+    size: 'large',
+  },
+  parameters: {
+    annotation:
+      'The bug this fixes. The tile used to hand-roll its own initials circle from the identity tint, so a photo could never appear here — and the moment one did, the row would have lost its only hue carrier. Now the spine carries the hue and the avatar carries the face (ADR 042); the portraits are shot against other members’ hues on purpose, and the tile still reads correctly.',
   },
 }
 

@@ -1,4 +1,4 @@
-import type { ElementType, ReactNode } from 'react'
+import type { CSSProperties, ElementType, ReactNode } from 'react'
 import { Spine } from './spine'
 import { cn } from '../lib/utils'
 
@@ -23,9 +23,25 @@ export interface ItemCardProps {
   /** Control pinned to the row's trailing edge, outside the content column
       (e.g. a completion toggle). */
   trailing?: ReactNode
+  /** Makes the row's passive area a single tap target (tap-row-to-edit). ItemCard
+      stretches a transparent button across itself and lifts `trailing` above it,
+      so the trailing controls stay clickable. This is the primary edit affordance
+      on touch, where the explicit pencil is hidden — see `RowActions`.
+
+      The row owns its own tap surface because it owns its own radius and chrome:
+      chores and calendar each hand-rolled this overlay (and each cited the other
+      as the source) before it moved here. */
+  onActivate?: () => void
+  /** Accessible name for the tap target. Required whenever `onActivate` is set —
+      "Edit “Vacuum”", not "Edit". */
+  activateLabel?: string
   /** Chrome wrapper tag. Default `div`; feed posts render as `article`. */
   as?: ElementType
   className?: string
+  /** Dynamic row fill — the one value that can't be a token class. Chores paints
+      an overdue wash here: identity owns the spine, so status owns the field
+      (ADR 043). Genuinely-dynamic inline values are sanctioned by ADR 035. */
+  style?: CSSProperties
   /** The content column. Provide your own `min-w-0 flex-1` wrapper so the row
       truncates correctly — ItemCard owns the spine/chrome/trailing, not the
       content's internal layout. */
@@ -47,8 +63,11 @@ export function ItemCard({
   align = 'stretch',
   dimmed = false,
   trailing,
+  onActivate,
+  activateLabel,
   as,
   className,
+  style,
   children,
 }: ItemCardProps) {
   const Tag = (as ?? 'div') as ElementType
@@ -60,12 +79,28 @@ export function ItemCard({
         chrome === 'card' &&
           'rounded-card border border-border bg-card px-4 py-3 shadow-[var(--shadow-card)]',
         dimmed && 'opacity-[0.66]',
+        onActivate && 'relative',
         className
       )}
+      style={style}
     >
       {spine !== undefined && <Spine color={spine} />}
+      {onActivate && (
+        <button
+          type="button"
+          onClick={onActivate}
+          aria-label={activateLabel}
+          className="absolute inset-0 z-10 cursor-pointer rounded-card focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset focus-visible:outline-none"
+        />
+      )}
       {children}
-      {trailing}
+      {/* Lifted above the tap overlay so the row's real controls still win the click. */}
+      {trailing !== undefined &&
+        (onActivate ? (
+          <div className="relative z-20 flex shrink-0 items-center gap-0.5">{trailing}</div>
+        ) : (
+          trailing
+        ))}
     </Tag>
   )
 }

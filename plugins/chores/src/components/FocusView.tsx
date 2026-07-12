@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
 import { Check, ChevronDown, ChevronRight } from 'lucide-react'
-import { Button, PageHeader, Spine } from '@family-os/ui'
+import { Button, PageContainer, PageHeader, Spine } from '@family-os/ui'
 import type { ChoreTask } from '../types'
 import { isOverdue, dueLabel } from '../lib/dates'
 import { ScorePlate } from './ScorePlate'
@@ -51,7 +51,7 @@ export function FocusView({ tasks, onCompleteTask, initialXp }: FocusViewProps) 
   const pct = total > 0 ? (done / total) * 100 : 0
 
   return (
-    <div className="mx-auto max-w-content px-6 pt-7 pb-12">
+    <PageContainer width="list">
       <PageHeader title="Chores" action={<ScorePlate ref={plateRef} value={lifetime} />} />
 
       {/* Progress line + bar (design §1 taskee header — shared with Agency). */}
@@ -90,7 +90,7 @@ export function FocusView({ tasks, onCompleteTask, initialXp }: FocusViewProps) 
           onDone={() => onFlightDone(flight)}
         />
       ))}
-    </div>
+    </PageContainer>
   )
 }
 

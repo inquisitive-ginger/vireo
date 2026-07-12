@@ -1,6 +1,6 @@
 # Design System
 
-> Last updated: 2026-07-10 — Home-dashboard hierarchy: **widget prominence / elevation ladder** (feature · card · quiet rungs) added to Widget Composition; `WidgetSlot` contract migrated off the single `flat` boolean; uniform widget border dropped.
+> Last updated: 2026-07-12 — **ADR 043: identity takes the edge, status takes the field** (a multi-person row's spine is always the owner's hue; status moves to the row's wash/badge/dim). The chores lane-header tint wash and the `ItemCard` "AdminBoard exception" are both withdrawn; row affordances (`onActivate`, `RowActions`, `MemberGroupHeader`) move into the primitives. New **Page containers** section — four roles (`prose`/`list`/`wide`/`full`) via `PageContainer`, retiring six ad-hoc page recipes.
 
 This document records settled design decisions. Deferred items are
 explicitly marked — do not treat absence of a spec as a free choice.
@@ -26,6 +26,8 @@ explicitly marked — do not treat absence of a spec as a free choice.
 - [Motion & Animation](#motion--animation)
 - [Plugin Design Contract](#plugin-design-contract)
 - [Mobile Surface](#mobile-surface)
+- [Status vs identity colour](#status-vs-identity-colour)
+- [Page containers](#page-containers)
 - [To Be Defined](#to-be-defined)
 
 ---
@@ -376,8 +378,11 @@ identified by magic bytes — never SVG** (it can carry script, and we serve inl
 from our own origin). Bytes live in Postgres and are served immutable behind
 `/api/profiles/:id/avatar?v={hash}`.
 
-> **Caveat:** a spine does **not** universally mean "who." `chores`' `TaskRow` spine
-> is a **status** colour. See "Status vs identity colour" — the call site decides.
+> **Caveat:** a spine does **not** universally mean "who" — the **call site** decides.
+> On a **multi-person** surface it always means who (ADR 043). On a **single-person**
+> surface, where identity carries no information, it means **status**: chores' taskee
+> `TaskCard` and the widget's taskee `TaskRow` both pass a status colour, and are
+> correct to. See "Status vs identity colour".
 
 ### Semantic status tokens — light mode
 
@@ -927,13 +932,22 @@ is the canonical corner for every card-chrome row. `ItemCard` applies it; don't
 reach for `rounded-[14px]`/`rounded-lg` on a card row. Surfaces larger than a row
 use `--radius-panel` / `--radius-hero` — see [Spacing](#spacing).
 
-> **Sanctioned exception — chores AdminBoard (recorded 2026-07-10, design-system
-> audit).** A dense, divider-separated lane list whose rows need affordances
-> `ItemCard` doesn't model (a stretched tap-to-edit overlay button, a
-> multi-control trailing cluster) may hand-roll the row flex scaffold. It must
-> still compose `<Spine>` and follow _Status vs identity colour_, and its rows
-> must meet `--spacing-row-touch`. The AdminBoard is the reference case; a new
-> surface claiming this exception should be added to this note.
+**Row affordances belong to the primitive, not to its callers:**
+
+| Prop / component      | Role                                                                                                                                       |
+| --------------------- | ------------------------------------------------------------------------------------------------------------------------------------------ |
+| `ItemCard onActivate` | Makes the row's passive area one tap target (tap-row-to-edit) and lifts `trailing` above it. A row owning its chrome owns its tap surface. |
+| `RowActions`          | The inline edit/remove cluster — pencil on `sm+` (tap-row is the touch affordance), trash at every width, 44px targets.                    |
+| `MemberGroupHeader`   | The by-member group header: face, name, identity-tinted count, load slot, add. Shared by the chores board and the Activities roster.       |
+
+> **The AdminBoard exception is withdrawn (2026-07-12, ADR 043).** This section
+> previously granted chores' `AdminBoard` a sanctioned exception to hand-roll the
+> row scaffold, because it needed "a stretched tap-to-edit overlay button, a
+> multi-control trailing cluster" that `ItemCard` didn't model. **The premise was
+> already false:** calendar's `ActivityRow` was doing both _inside_ `ItemCard`, and
+> each file's comments cited the other as its source — duplicated code that nobody
+> had noticed was duplicated. Those affordances are now the primitive's (above).
+> **No surface hand-rolls the row skeleton.**
 
 > **Reconciled 2026-06-23.** Feed (`FeedPostCard`), chores (`TaskCard`), and
 > calendar (`EventRow`) each hand-rolled this skeleton with drifted radii (14px vs
@@ -1621,10 +1635,73 @@ avatars.
 The `<Spine>` primitive (see _Identity in widget slots_) is deliberately
 **color-agnostic** so this rule lives at the call site, not the component: a
 single-person surface passes a status color (`spineColor(task)`), a multi-person
-one passes `identityColor(name)`. The admin chores board sits on the seam — it
-groups by member, so **identity is carried by the lane header** (tint gradient +
-2px top-border), which frees the row `<Spine>` to encode **status** (done/overdue),
-falling back to the assignee hue at rest.
+one passes `identityColor(name)`.
+
+### When a row must carry both — ADR 043 (settled 2026-07-12)
+
+Some rows carry **both** signals: a chore on the admin board has an owner _and_ a
+state. They are split by **channel**, never negotiated:
+
+> **Identity takes the leading edge. Status takes the field.**
+>
+> - The **spine** carries the **identity hue, in every state**. It never encodes
+>   status on a multi-person surface.
+> - **Status** is carried by the row's **surface and content**: an overdue **wash**
+>   on the row fill, the `Overdue` badge, red meta text, dim + strikethrough, the
+>   completion check.
+
+**Why the spine goes to identity, not status.** Status is already stated three
+other ways on every row (badge, red date, strikethrough + dim + green check);
+identity, without the spine, is stated nowhere the eye actually lands. And an
+avatar cannot rescue it — a photo is a face, not a hue (ADR 042). The spine is the
+only identity carrier a row has.
+
+**The cost is real and deliberate.** Overdue loses the red bar. It is compensated
+by the row **wash** — status moves from a 4px line to the whole surface, which is
+_more_ prominent, not less, and stops competing with identity for the same pixels.
+If overdue ever proves too quiet, **strengthen the wash; do not take the spine
+back.**
+
+> **Superseded.** This section previously read: _"The admin chores board sits on
+> the seam — identity is carried by the lane header (tint gradient + 2px
+> top-border), which frees the row `<Spine>` to encode status, falling back to the
+> assignee hue at rest."_ That spine meant green, or red, **or** a person,
+> depending on state — three meanings in one 4px element, so it taught nothing.
+> The lane-header tint wash is gone with it: identity was the loudest thing on a
+> page whose subject is the tasks. See ADR 043.
+
+**Single-person surfaces are unchanged.** The chores **taskee** views still encode
+status on the spine, and remain the reference case for the rule above.
+
+## Page containers
+
+**Settled** — Chores Overhaul, 2026-07-12. Component: `PageContainer`
+(`@family-os/ui`).
+
+A route surface states its **role**, not a width. Four roles:
+
+| Role    | Width                         | Surfaces                                       |
+| ------- | ----------------------------- | ---------------------------------------------- |
+| `prose` | `--container-content` (680px) | Family feed — Lora body at 18px                |
+| `list`  | `--container-list` (840px)    | Chores board · taskee · focus · Settings       |
+| `wide`  | `--container-wide` (1100px)   | Calendar month / week — a canvas, not a column |
+| `full`  | no max                        | Home dashboard · calendar mobile agenda        |
+
+A **list is not prose.** 680px is a reading measure; a list row carries a spine, a
+title, badges and controls, so it needs more room than a sentence does. Splitting
+the two is the point of having roles rather than one shared width.
+
+**Padding is not a prop.** Every role gets the same rhythm (`px-4 sm:px-6 pt-6
+pb-12`) so the gutter never jumps between routes. A surface that must break the
+gutter does it on a **child**, not by renegotiating the page frame.
+
+> **Why this exists.** Six surfaces had six recipes. Chores and the feed matched at
+> 680px only by coincidence; the calendar hardcoded `max-w-[1100px]` next to a token
+> that existed to prevent exactly that; the calendar's mobile agenda re-declared
+> `px-4` on each of its three children; and **Settings had drifted onto Tailwind's
+> stock `max-w-2xl` (672px — 8px off our token) _without_ `mx-auto`, so it silently
+> hugged the left edge while every sibling route sat centred.** None of that was
+> decided. Compose `PageContainer`; do not hand-roll `mx-auto max-w-… px-…`.
 
 ## To Be Defined
 

@@ -1,4 +1,5 @@
 import type { ReactNode } from 'react'
+import { PageContainer } from './page-container'
 import { cn } from '../lib/utils'
 
 export interface SettingsSectionProps {
@@ -31,9 +32,13 @@ export interface SettingsLayoutProps {
 
 export function SettingsLayout({ children }: SettingsLayoutProps) {
   return (
-    <div className="p-4 sm:p-6 md:p-8 max-w-2xl">
+    // `list` — a column of member/permission rows, the same role as the chores
+    // board. This had drifted onto Tailwind's stock `max-w-2xl` (672px, 8px off
+    // our token) *without* `mx-auto`, so Settings quietly hugged the left edge
+    // while every sibling route sat centred.
+    <PageContainer width="list">
       <h1 className="text-page-title mb-5 md:mb-7">Settings</h1>
       <div className="flex flex-col gap-4 md:gap-5">{children}</div>
-    </div>
+    </PageContainer>
   )
 }
