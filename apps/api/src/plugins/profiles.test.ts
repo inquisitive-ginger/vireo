@@ -3,22 +3,10 @@ import type { FastifyInstance } from 'fastify'
 import type { LightMyRequestResponse } from 'fastify'
 import { buildServer } from '../server'
 import { prisma } from '@family-os/platform/server'
+import { DEFAULT_LAYOUTS } from '@family-os/platform/types'
 import bcrypt from 'bcryptjs'
 
 let app: FastifyInstance
-
-const DEFAULT_LAYOUTS = {
-  default_layout_tier_1_2: [
-    { widgetId: 'chores.today-summary', x: 0, y: 0, w: 2, h: 2 },
-    { widgetId: 'family-feed.feed', x: 2, y: 0, w: 2, h: 1 },
-    { widgetId: 'calendar.up-next', x: 2, y: 1, w: 2, h: 1 },
-  ],
-  default_layout_tier_3_4: [
-    { widgetId: 'calendar.up-next', x: 0, y: 0, w: 2, h: 2 },
-    { widgetId: 'family-feed.feed', x: 2, y: 0, w: 2, h: 1 },
-    { widgetId: 'chores.today-summary', x: 2, y: 1, w: 2, h: 1 },
-  ],
-}
 
 function getCookie(res: LightMyRequestResponse): string {
   const raw = res.headers['set-cookie']
@@ -28,7 +16,10 @@ function getCookie(res: LightMyRequestResponse): string {
 
 beforeAll(async () => {
   app = await buildServer()
-  for (const [key, value] of Object.entries(DEFAULT_LAYOUTS)) {
+  // Geometry only, from the ONE definition — these files used to keep their own stale
+  // copies of the composition (feed above chores), which is how the drift hid.
+  for (const [key, items] of Object.entries(DEFAULT_LAYOUTS)) {
+    const value = items.map(({ widgetId, x, y, w, h }) => ({ widgetId, x, y, w, h }))
     await prisma.systemConfig.upsert({
       where: { key },
       update: { value },
@@ -73,7 +64,7 @@ async function getTier4Cookie(): Promise<string> {
 // ─── POST /profiles ───────────────────────────────────────────────────────────
 
 describe('POST /api/profiles', () => {
-  it('creates a profile and seeds a widget layout', async () => {
+  it('creates a profile without freezing a widget layout into it', async () => {
     const cookie = await getTier4Cookie()
 
     const res = await app.inject({
@@ -88,11 +79,13 @@ describe('POST /api/profiles', () => {
     expect(body.name).toBe('Jordan')
     expect(body.tier).toBe(2)
 
+    // No layout is persisted at creation — GET /home/layout serves the current default
+    // until the profile actually customizes it, so a corrected default still reaches it.
     const layouts = await prisma.widgetLayout.findMany({ where: { profileId: body.id } })
-    expect(layouts.length).toBeGreaterThan(0)
+    expect(layouts).toHaveLength(0)
   })
 
-  it('seeds a tier-3/4 layout for a tier-4 profile', async () => {
+  it('serves a new tier-4 profile the tier-3/4 composition', async () => {
     const cookie = await getTier4Cookie()
 
     const res = await app.inject({
@@ -101,11 +94,31 @@ describe('POST /api/profiles', () => {
       headers: { cookie },
       payload: { name: 'Alex', tier: 4 },
     })
-
     const { id } = res.json<{ id: string }>()
-    const layouts = await prisma.widgetLayout.findMany({ where: { profileId: id } })
-    const widgetIds = layouts.map((l) => l.widgetId)
-    expect(widgetIds).toContain('calendar.up-next')
+
+    // Read it the way the shell does — the layout is resolved on read, not stored, so
+    // asserting on `widget_layouts` rows would now be asserting on an empty table.
+    const hash = await bcrypt.hash('1234', 10)
+    await prisma.systemConfig.upsert({
+      where: { key: 'family_pin_hash' },
+      update: { value: hash },
+      create: { key: 'family_pin_hash', value: hash, updatedBy: null },
+    })
+    const pin = await app.inject({
+      method: 'POST',
+      url: '/api/auth/verify-pin',
+      payload: { pin: '1234', targetProfileId: id },
+    })
+    const layoutRes = await app.inject({
+      method: 'GET',
+      url: '/api/home/layout',
+      headers: { cookie: getCookie(pin) },
+    })
+    const slots = layoutRes.json<{ widgetId: string; x: number; prominence: string }[]>()
+    // Parents get no feature rung (ADR 039, amended); the calendar leads the first column.
+    expect(slots.find((s) => s.widgetId === 'calendar.up-next')).toMatchObject({ x: 0 })
+    expect(slots.filter((s) => s.prominence === 'feature')).toHaveLength(0)
+    expect(slots.find((s) => s.widgetId === 'family-feed.feed')?.prominence).toBe('quiet')
   })
 
   it('returns 403 when session is tier < 4', async () => {

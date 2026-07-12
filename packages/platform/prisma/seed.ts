@@ -1,6 +1,7 @@
 import { Pool } from 'pg'
 import { PrismaPg } from '@prisma/adapter-pg'
 import { PrismaClient } from '../src/generated/prisma'
+import { DEFAULT_LAYOUTS } from '../src/home-layout'
 
 const pool = new Pool({
   connectionString:
@@ -9,24 +10,11 @@ const pool = new Pool({
 const adapter = new PrismaPg(pool)
 const prisma = new PrismaClient({ adapter })
 
-// Default widget layouts per ADR 028
-const DEFAULT_LAYOUTS = {
-  default_layout_family: [
-    { widgetId: 'family-feed.feed', x: 0, y: 0, w: 4, h: 1 },
-    { widgetId: 'chores.today-summary', x: 0, y: 1, w: 2, h: 1 },
-    { widgetId: 'calendar.up-next', x: 2, y: 1, w: 2, h: 1 },
-  ],
-  default_layout_tier_1_2: [
-    { widgetId: 'chores.today-summary', x: 0, y: 0, w: 2, h: 2 },
-    { widgetId: 'family-feed.feed', x: 2, y: 0, w: 2, h: 1 },
-    { widgetId: 'calendar.up-next', x: 2, y: 1, w: 2, h: 1 },
-  ],
-  default_layout_tier_3_4: [
-    { widgetId: 'calendar.up-next', x: 0, y: 0, w: 2, h: 2 },
-    { widgetId: 'family-feed.feed', x: 2, y: 0, w: 2, h: 1 },
-    { widgetId: 'chores.today-summary', x: 2, y: 1, w: 2, h: 1 },
-  ],
-} as const
+/* The widget layouts come from `src/home-layout.ts` — the one definition, shared with
+   the API and the shell. This file used to keep its own hand-maintained copy, and it
+   drifted: the composition was re-ranked (chores above feed) in the API's copy only,
+   so a seeded database served the old geometry under the new elevation rungs. Never
+   re-declare the layouts here. */
 
 async function main() {
   await prisma.profile.upsert({
@@ -47,7 +35,10 @@ async function main() {
     create: { id: 'seed-child-1', name: 'Child', tier: 1, avatarUrl: null },
   })
 
-  for (const [key, value] of Object.entries(DEFAULT_LAYOUTS)) {
+  // Geometry only — `prominence` is derived on read from the composition, never
+  // stored, so it can't drift out of sync with the code (ADR 039).
+  for (const [key, items] of Object.entries(DEFAULT_LAYOUTS)) {
+    const value = items.map(({ widgetId, x, y, w, h }) => ({ widgetId, x, y, w, h }))
     await prisma.systemConfig.upsert({
       where: { key },
       update: { value },

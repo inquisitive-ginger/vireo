@@ -4,7 +4,6 @@ import bcrypt from 'bcryptjs'
 import { prisma } from '@family-os/platform/server'
 import { FAMILY_PROFILE_ID } from '@family-os/platform/types'
 import { FamilySetupSchema, CreateFamilyMembersSchema, SetPinSchema } from '@family-os/schemas'
-import { seedWidgetLayout } from '../lib/seed-layout'
 
 const setupPlugin: FastifyPluginAsync = async (fastify) => {
   // GET /setup/status
@@ -47,8 +46,6 @@ const setupPlugin: FastifyPluginAsync = async (fastify) => {
       data: { name: parentName, tier: 4 },
     })
 
-    await seedWidgetLayout(profile.id, 4)
-
     await prisma.systemConfig.upsert({
       where: { key: 'onboarding_step' },
       update: { value: 2 },
@@ -71,7 +68,6 @@ const setupPlugin: FastifyPluginAsync = async (fastify) => {
     const created = []
     for (const { name, tier } of result.data.profiles) {
       const profile = await prisma.profile.create({ data: { name, tier } })
-      await seedWidgetLayout(profile.id, tier)
       created.push({ id: profile.id, name: profile.name, tier: profile.tier })
     }
 

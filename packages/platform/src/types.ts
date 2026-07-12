@@ -148,3 +148,14 @@ export type PluginManifest = {
   widgets?: unknown[] // typed WidgetManifest added by M1 widget system story (ADR 022)
   navItem?: NavItemManifest // ADR 032 — one sidebar nav entry per plugin
 }
+
+/* The home dashboard's default composition (geometry + elevation rung). Re-exported
+   here so the API, the shell and the Prisma seed all reach ONE definition — a second
+   hand-maintained copy in the seed is what let the two drift apart. */
+export {
+  DEFAULT_LAYOUTS,
+  defaultLayoutKey,
+  prominenceFor,
+  type LayoutDefault,
+  type Prominence,
+} from './home-layout'

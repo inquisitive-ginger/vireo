@@ -2,26 +2,17 @@ import { describe, it, expect, beforeAll, afterAll, beforeEach } from 'vitest'
 import type { FastifyInstance } from 'fastify'
 import { buildServer } from '../server'
 import { prisma } from '@family-os/platform/server'
+import { DEFAULT_LAYOUTS } from '@family-os/platform/types'
 import bcrypt from 'bcryptjs'
 
 let app: FastifyInstance
 
-const DEFAULT_LAYOUTS = {
-  default_layout_tier_1_2: [
-    { widgetId: 'chores.today-summary', x: 0, y: 0, w: 2, h: 2 },
-    { widgetId: 'family-feed.feed', x: 2, y: 0, w: 2, h: 1 },
-    { widgetId: 'calendar.up-next', x: 2, y: 1, w: 2, h: 1 },
-  ],
-  default_layout_tier_3_4: [
-    { widgetId: 'calendar.up-next', x: 0, y: 0, w: 2, h: 2 },
-    { widgetId: 'family-feed.feed', x: 2, y: 0, w: 2, h: 1 },
-    { widgetId: 'chores.today-summary', x: 2, y: 1, w: 2, h: 1 },
-  ],
-}
-
 beforeAll(async () => {
   app = await buildServer()
-  for (const [key, value] of Object.entries(DEFAULT_LAYOUTS)) {
+  // Geometry only, from the ONE definition — these files used to keep their own stale
+  // copies of the composition (feed above chores), which is how the drift hid.
+  for (const [key, items] of Object.entries(DEFAULT_LAYOUTS)) {
+    const value = items.map(({ widgetId, x, y, w, h }) => ({ widgetId, x, y, w, h }))
     await prisma.systemConfig.upsert({
       where: { key },
       update: { value },
@@ -102,18 +93,19 @@ describe('POST /api/setup/family', () => {
     expect(step?.value).toBe(2)
   })
 
-  it('seeds a tier-3/4 widget layout for the new parent', async () => {
+  it('does not freeze a widget layout into the new parent', async () => {
     await app.inject({
       method: 'POST',
       url: '/api/setup/family',
       payload: { familyName: 'The Smiths', parentName: 'Jordan Smith' },
     })
 
+    // Onboarding no longer copies the default into `widget_layouts`. GET /home/layout
+    // resolves it on read, so the profile keeps tracking the current default instead of
+    // pinning whatever it was on the day the family was set up.
     const parent = await prisma.profile.findFirst({ where: { tier: 4 } })
     const layouts = await prisma.widgetLayout.findMany({ where: { profileId: parent!.id } })
-    expect(layouts.length).toBeGreaterThan(0)
-    const widgetIds = layouts.map((l) => l.widgetId)
-    expect(widgetIds).toContain('calendar.up-next')
+    expect(layouts).toHaveLength(0)
   })
 
   it('returns 400 when familyName is missing', async () => {
@@ -187,7 +179,7 @@ describe('POST /api/setup/members', () => {
     expect(step?.value).toBe(3)
   })
 
-  it('seeds tier-appropriate widget layouts for each member', async () => {
+  it('does not freeze widget layouts into the new members', async () => {
     await app.inject({
       method: 'POST',
       url: '/api/setup/members',
@@ -196,9 +188,7 @@ describe('POST /api/setup/members', () => {
 
     const child = await prisma.profile.findFirst({ where: { name: 'Child' } })
     const layouts = await prisma.widgetLayout.findMany({ where: { profileId: child!.id } })
-    expect(layouts.length).toBeGreaterThan(0)
-    const widgetIds = layouts.map((l) => l.widgetId)
-    expect(widgetIds).toContain('chores.today-summary')
+    expect(layouts).toHaveLength(0)
   })
 
   it('returns 409 when not at onboarding step 2', async () => {

@@ -1,0 +1,13 @@
+-- Drop the frozen default layouts.
+--
+-- `widget_layouts` rows used to be written on a profile's first home-page load (and at
+-- profile creation), copying whatever the default composition was at that moment. They
+-- then won every later read, so a profile could never pick up a corrected default: when
+-- the elevation ladder re-ranked the home dashboard (chores above the feed for tiers
+-- 3/4 and 1/2), existing profiles kept the old geometry and rendered the NEW prominence
+-- rungs on it — a `quiet` widget stacked above a `card` one.
+--
+-- No layout-editing UI exists yet, so every one of these rows is a cache of a default,
+-- not a user's choice. Nothing is lost by dropping them: GET /home/layout now serves the
+-- current default, and a row is only written once a profile genuinely customizes.
+DELETE FROM "platform"."widget_layouts";

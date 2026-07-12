@@ -1,9 +1,7 @@
 import fp from 'fastify-plugin'
 import type { FastifyPluginAsync } from 'fastify'
 import { prisma } from '@family-os/platform/server'
-import { FAMILY_PROFILE_ID } from '@family-os/platform/types'
-import { seedWidgetLayout } from '../lib/seed-layout'
-import { DEFAULT_LAYOUTS } from '../lib/default-layouts'
+import { DEFAULT_LAYOUTS, FAMILY_PROFILE_ID } from '@family-os/platform/types'
 
 const devPlugin: FastifyPluginAsync = async (fastify) => {
   fastify.post('/dev/reset', async () => {
@@ -19,14 +17,15 @@ const devPlugin: FastifyPluginAsync = async (fastify) => {
       update: {},
       create: { id: FAMILY_PROFILE_ID, name: 'Family', tier: 1, avatarUrl: null },
     })
-    for (const [key, value] of Object.entries(DEFAULT_LAYOUTS)) {
+    // Geometry only — `prominence` is derived on read, never stored (ADR 039).
+    for (const [key, items] of Object.entries(DEFAULT_LAYOUTS)) {
+      const value = items.map(({ widgetId, x, y, w, h }) => ({ widgetId, x, y, w, h }))
       await prisma.systemConfig.upsert({
         where: { key },
         update: { value },
         create: { key, value },
       })
     }
-    await seedWidgetLayout(FAMILY_PROFILE_ID, 1)
     return { ok: true }
   })
 }
