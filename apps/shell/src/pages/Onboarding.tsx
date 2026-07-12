@@ -4,7 +4,19 @@ import { Navigate, useNavigate } from 'react-router-dom'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { ChevronRight, Plus, Trash2, Check, CircleAlert } from 'lucide-react'
-import { Button, Input, Label, Badge, ProfileAvatar, cn } from '@family-os/ui'
+import {
+  Button,
+  Input,
+  Label,
+  Badge,
+  ProfileAvatar,
+  ColorPicker,
+  Spine,
+  identityToken,
+  nextFreeHue,
+  cn,
+  type IdentityHue,
+} from '@family-os/ui'
 import { FamilySetupSchema, type FamilySetupInput } from '@family-os/schemas'
 
 type SetupStatus = { needsSetup: boolean; currentStep: 1 | 2 | 3 | null }
@@ -15,7 +27,12 @@ interface Member {
   id: string
   name: string
   tier: TierLevel
+  /** Auto-assigned on add, shown immediately, changeable by tapping the dot (ADR 044).
+      Nobody is ever BLOCKED on choosing a colour — setting up the house is the job. */
+  hue: IdentityHue
 }
+
+type ProfileRow = { id: string; identityHue?: string | null }
 
 const TIER_OPTS: { tier: TierLevel; label: string }[] = [
   { tier: 4, label: 'Parent' },
@@ -125,9 +142,24 @@ function Step2({ onComplete }: { onComplete: () => void }) {
   const [draftName, setDraftName] = useState('')
   const [draftTier, setDraftTier] = useState<TierLevel>(4)
   const [draftError, setDraftError] = useState('')
+  const [recolouring, setRecolouring] = useState<string | null>(null)
+
+  // Step 1 already created the first parent, and the server gave them a colour. We need
+  // to know which, or we would hand a second member the same one.
+  const { data: existing = [] } = useQuery<ProfileRow[]>({
+    queryKey: ['api/profiles'],
+    queryFn: () => fetch('/api/profiles').then((r) => r.json()) as Promise<ProfileRow[]>,
+    staleTime: 30_000,
+  })
+
+  const claimedHues = [
+    ...existing.map((p) => p.identityHue).filter((h): h is string => Boolean(h)),
+    ...members.map((m) => m.hue),
+  ]
+  const paletteFull = nextFreeHue(claimedHues) === null
 
   const mutation = useMutation({
-    mutationFn: (profiles: Array<{ name: string; tier: number }>) =>
+    mutationFn: (profiles: Array<{ name: string; tier: number; identityHue: string }>) =>
       fetch('/api/setup/members', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -144,45 +176,87 @@ function Step2({ onComplete }: { onComplete: () => void }) {
       setDraftError('Name is required')
       return
     }
+    // The palette is a hard cap on household size (ADR 044). Say so; never silently
+    // hand out a duplicate — a shared hue points "colour = person" at two people.
+    const hue = nextFreeHue(claimedHues)
+    if (!hue) {
+      setDraftError('Every colour is taken — a family can have at most 8 members.')
+      return
+    }
     setDraftError('')
     setMembers((prev) => [
       ...prev,
-      { id: crypto.randomUUID(), name: draftName.trim(), tier: draftTier },
+      { id: crypto.randomUUID(), name: draftName.trim(), tier: draftTier, hue },
     ])
     setDraftName('')
     setDraftTier(4)
   }
 
-  const submit = () => mutation.mutate(members.map(({ name, tier }) => ({ name, tier })))
+  const submit = () =>
+    mutation.mutate(members.map(({ name, tier, hue }) => ({ name, tier, identityHue: hue })))
 
   const tierLabel = (tier: TierLevel) => TIER_OPTS.find((o) => o.tier === tier)?.label ?? ''
+
+  // Who holds what, for the picker's "taken" state. Keyed by hue.
+  const takenBy = Object.fromEntries(members.map((m) => [m.hue, m.name]))
 
   return (
     <div className="flex flex-col gap-5">
       {members.length > 0 && (
         <ul className="flex flex-col gap-2">
           {members.map((m) => (
-            <li
-              key={m.id}
-              className="flex items-center justify-between px-3 py-2.5 rounded-lg bg-background border border-border"
-            >
-              <div className="flex items-center gap-3">
-                <ProfileAvatar name={m.name} size="sm" />
-                <span className="text-sm font-medium">{m.name}</span>
+            <li key={m.id} className="flex flex-col gap-2">
+              <div className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg bg-background border border-border">
+                <div className="flex min-w-0 items-center gap-3">
+                  {/* The colour is assigned, and SHOWN. Never hidden behind a step the
+                      parent has to complete before they can get on with it (ADR 044). */}
+                  <Spine color={identityToken(m.hue)} className="h-8" />
+                  <ProfileAvatar name={m.name} size="sm" identity={m.hue} />
+                  <span className="truncate text-sm font-medium">{m.name}</span>
+                </div>
+                <div className="flex shrink-0 items-center gap-2">
+                  <Badge variant="muted">{tierLabel(m.tier)}</Badge>
+                  <button
+                    type="button"
+                    onClick={() => setRecolouring((cur) => (cur === m.id ? null : m.id))}
+                    aria-label={`Change ${m.name}'s colour — currently ${m.hue}`}
+                    aria-expanded={recolouring === m.id}
+                    className={cn(
+                      'size-5 shrink-0 rounded-full cursor-pointer',
+                      'transition-transform duration-[var(--duration-fast)] hover:scale-110',
+                      'focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none',
+                      recolouring === m.id && 'ring-2 ring-foreground ring-offset-2'
+                    )}
+                    style={{ background: identityToken(m.hue) }}
+                  />
+                  <Button
+                    type="button"
+                    variant="ghost-destructive"
+                    size="icon"
+                    onClick={() => {
+                      setMembers((ms) => ms.filter((x) => x.id !== m.id))
+                      setRecolouring((cur) => (cur === m.id ? null : cur))
+                    }}
+                    aria-label={`Remove ${m.name}`}
+                    className="h-7 w-7"
+                  >
+                    <Trash2 size={14} />
+                  </Button>
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <Badge variant="muted">{tierLabel(m.tier)}</Badge>
-                <Button
-                  type="button"
-                  variant="ghost-destructive"
-                  size="icon"
-                  onClick={() => setMembers((ms) => ms.filter((x) => x.id !== m.id))}
-                  aria-label={`Remove ${m.name}`}
-                  className="h-7 w-7"
-                >
-                  <Trash2 size={14} />
-                </Button>
-              </div>
+
+              {recolouring === m.id && (
+                <div className="rounded-lg border border-border bg-background p-3">
+                  <ColorPicker
+                    value={m.hue}
+                    takenBy={takenBy}
+                    onChange={(hue) => {
+                      setMembers((ms) => ms.map((x) => (x.id === m.id ? { ...x, hue } : x)))
+                      setRecolouring(null)
+                    }}
+                  />
+                </div>
+              )}
             </li>
           ))}
         </ul>
@@ -231,10 +305,23 @@ function Step2({ onComplete }: { onComplete: () => void }) {
           </div>
         </div>
 
-        <Button type="button" variant="outline" size="sm" onClick={addMember} className="w-full">
+        <Button
+          type="button"
+          variant="outline"
+          size="sm"
+          onClick={addMember}
+          disabled={paletteFull}
+          className="w-full"
+        >
           <Plus size={14} />
           Add
         </Button>
+
+        {paletteFull && (
+          <p className="text-xs text-muted-foreground">
+            Every colour is taken — a family can have at most 8 members.
+          </p>
+        )}
       </div>
 
       {mutation.isError && (

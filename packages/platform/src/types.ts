@@ -21,6 +21,9 @@ export type Profile = {
   name: string
   tier: TierLevel
   avatarUrl?: string
+  /** The member's assigned identity colour (ADR 044). Null only while unassigned —
+      callers fall back to the name hash via `resolveHue`. */
+  identityHue?: string | null
   darkMode?: boolean | null
   /** Taskee surface variant. null = derive from tier; true/false = parent override. */
   focusMode?: boolean | null
@@ -89,6 +92,14 @@ export const PERMISSION_REGISTRY = {
     module: 'platform',
     action: 'update',
     subject: 'platform.Avatar',
+  },
+  // Baseline for every tier (ADR 044), on the same argument as the photo above:
+  // choosing your own colour is not administration. Tier 4 may change anyone's.
+  'platform.profile.color': {
+    label: 'Change own colour',
+    module: 'platform',
+    action: 'update',
+    subject: 'platform.Color',
   },
   'family-feed.post.create': {
     label: 'Post to family feed',

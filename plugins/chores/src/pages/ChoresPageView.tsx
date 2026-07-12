@@ -146,6 +146,7 @@ function toLanes(tasks: ChoreTask[]): AdminLane[] {
         assigneeId: t.assigneeId,
         assigneeName: t.assigneeName,
         assigneeAvatarUrl: t.assigneeAvatarUrl,
+        assigneeHue: t.assigneeHue,
         tasks: [],
       }
       map.set(t.assigneeId, lane)

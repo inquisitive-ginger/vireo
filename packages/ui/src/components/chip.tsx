@@ -1,5 +1,5 @@
 import type { CSSProperties, ReactNode } from 'react'
-import { identityColor } from '../lib/identity'
+import { identityToken, resolveHue } from '../lib/identity'
 import { cn } from '../lib/utils'
 
 /* The shared selectable-pill chip — the rounded-full `border-2` toggle skeleton
@@ -56,8 +56,10 @@ export function Chip({
 }
 
 export interface MemberChipProps {
-  /** Member name — drives the identity hue (deterministic; ADR 030). */
   name: string
+  /** The member's ASSIGNED identity hue (ADR 044). Omitted falls back to the name
+      hash, which collides and moves on rename — pass it wherever the profile is at hand. */
+  hue?: string | null
   selected: boolean
   onClick: () => void
 }
@@ -65,7 +67,8 @@ export interface MemberChipProps {
 /* The identity-hue member chip — selected fills with the member's `tint`/`ink`
    and a hue dot. Shared by the chores assignee picker and the calendar owner
    picker (both previously had a private copy). */
-export function MemberChip({ name, selected, onClick }: MemberChipProps) {
+export function MemberChip({ name, hue, selected, onClick }: MemberChipProps) {
+  const owner = resolveHue(name, hue)
   return (
     <Chip
       selected={selected}
@@ -73,13 +76,13 @@ export function MemberChip({ name, selected, onClick }: MemberChipProps) {
       leading={
         <span
           className="size-2 shrink-0 rounded-full"
-          style={{ background: identityColor(name) }}
+          style={{ background: identityToken(owner) }}
         />
       }
       selectedStyle={{
-        borderColor: identityColor(name),
-        background: identityColor(name, 'tint'),
-        color: identityColor(name, 'ink'),
+        borderColor: identityToken(owner),
+        background: identityToken(owner, 'tint'),
+        color: identityToken(owner, 'ink'),
       }}
     >
       {name}

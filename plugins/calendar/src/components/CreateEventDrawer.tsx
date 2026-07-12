@@ -333,6 +333,7 @@ export function CreateEventDrawer({
                   <MemberChip
                     key={m.id}
                     name={m.name}
+                    hue={m.identityHue}
                     selected={!family && ownerIds.includes(m.id)}
                     onClick={() => toggleOwner(m.id)}
                   />

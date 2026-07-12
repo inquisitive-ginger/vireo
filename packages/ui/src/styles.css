@@ -231,26 +231,44 @@
     --shadow-inset:
       inset 0 2px 3px -1px oklch(0.35 0.06 50 / 0.1), inset 0 -1px 0 0 oklch(1 0 0 / 0.55);
 
-    /* Member identity palette — six fixed hues harmonized with Terracotta & Teal.
-       base: spines, rings, markers · tint: avatar fill · ink: initials on tint */
+    /* Member identity palette — EIGHT fixed hues harmonized with Terracotta & Teal
+       (ADR 044). base: spines, rings, markers · tint: fills · ink: text on tint.
+
+       The six original hues are unchanged — nobody's colour moved. `moss` (117) and
+       `indigo` (268) were added into the two widest usable gaps, because a hue is
+       now UNIQUE per member, which makes the palette size a hard cap on household
+       size. Red (~335°–30°) is reserved for --error and is not available to anyone.
+
+       The TINT layer was rebuilt. It used to flatten every hue to L≈0.92 / C≈0.04,
+       which put the month grid — where a chip is a coloured pill and nothing else —
+       on the one layer where all eight hues converge on off-white. It now inherits
+       the base's lightness order and carries real chroma, so the closest pair on a
+       fill is 0.046 ΔEok rather than 0.025. Judge a colour on the layer that renders
+       it (ADR 041's lesson): these are compared at `tint`, not at `base`. */
     --identity-terracotta: oklch(0.6 0.13 35);
-    --identity-terracotta-tint: oklch(0.92 0.04 40);
-    --identity-terracotta-ink: oklch(0.38 0.1 35);
+    --identity-terracotta-tint: oklch(0.806 0.092 35);
+    --identity-terracotta-ink: oklch(0.36 0.09 35);
     --identity-marigold: oklch(0.71 0.12 78);
-    --identity-marigold-tint: oklch(0.93 0.05 85);
-    --identity-marigold-ink: oklch(0.42 0.09 70);
+    --identity-marigold-tint: oklch(0.877 0.085 78);
+    --identity-marigold-ink: oklch(0.36 0.084 78);
+    --identity-moss: oklch(0.65 0.12 117);
+    --identity-moss-tint: oklch(0.838 0.085 117);
+    --identity-moss-ink: oklch(0.36 0.084 117);
     --identity-sage: oklch(0.6 0.1 148);
-    --identity-sage-tint: oklch(0.92 0.045 148);
-    --identity-sage-ink: oklch(0.36 0.08 148);
+    --identity-sage-tint: oklch(0.806 0.07 148);
+    --identity-sage-ink: oklch(0.36 0.07 148);
     --identity-teal: oklch(0.55 0.09 188);
-    --identity-teal-tint: oklch(0.91 0.04 188);
-    --identity-teal-ink: oklch(0.35 0.07 188);
+    --identity-teal-tint: oklch(0.773 0.063 188);
+    --identity-teal-ink: oklch(0.36 0.063 188);
     --identity-sky: oklch(0.58 0.09 235);
-    --identity-sky-tint: oklch(0.91 0.035 235);
-    --identity-sky-ink: oklch(0.36 0.08 235);
+    --identity-sky-tint: oklch(0.793 0.063 235);
+    --identity-sky-ink: oklch(0.36 0.063 235);
+    --identity-indigo: oklch(0.6 0.13 268);
+    --identity-indigo-tint: oklch(0.806 0.092 268);
+    --identity-indigo-ink: oklch(0.36 0.09 268);
     --identity-plum: oklch(0.56 0.1 330);
-    --identity-plum-tint: oklch(0.92 0.035 330);
-    --identity-plum-ink: oklch(0.36 0.08 330);
+    --identity-plum-tint: oklch(0.78 0.07 330);
+    --identity-plum-ink: oklch(0.36 0.07 330);
 
     /* The household — a RESERVED seventh entry, never assigned to a person
        (ADR 041). A warm stone: chromatic (0.035, so ADR 040's "a desaturated
@@ -306,24 +324,33 @@
       --surface-sunken: oklch(0.175 0.008 47);
       --shadow-inset: inset 0 2px 4px -1px oklch(0 0 0 / 0.4), inset 0 -1px 0 0 oklch(1 0 0 / 0.04);
 
+      /* Eight hues (ADR 044). The dark tint is a dark chip, so the fill repair runs
+         the other way — it still inherits the base's lightness order and carries
+         real chroma, instead of collapsing every hue onto one dim wash. */
       --identity-terracotta: oklch(0.7 0.13 35);
-      --identity-terracotta-tint: oklch(0.32 0.05 35);
-      --identity-terracotta-ink: oklch(0.9 0.04 40);
+      --identity-terracotta-tint: oklch(0.353 0.081 35);
+      --identity-terracotta-ink: oklch(0.9 0.049 35);
       --identity-marigold: oklch(0.78 0.12 78);
-      --identity-marigold-tint: oklch(0.33 0.05 78);
-      --identity-marigold-ink: oklch(0.91 0.05 85);
+      --identity-marigold-tint: oklch(0.408 0.079 78);
+      --identity-marigold-ink: oklch(0.9 0.046 78);
+      --identity-moss: oklch(0.73 0.12 117);
+      --identity-moss-tint: oklch(0.374 0.079 117);
+      --identity-moss-ink: oklch(0.9 0.046 117);
       --identity-sage: oklch(0.7 0.1 148);
-      --identity-sage-tint: oklch(0.31 0.045 148);
-      --identity-sage-ink: oklch(0.9 0.045 148);
+      --identity-sage-tint: oklch(0.353 0.066 148);
+      --identity-sage-ink: oklch(0.9 0.038 148);
       --identity-teal: oklch(0.66 0.09 188);
-      --identity-teal-tint: oklch(0.3 0.04 188);
-      --identity-teal-ink: oklch(0.89 0.04 188);
+      --identity-teal-tint: oklch(0.325 0.059 188);
+      --identity-teal-ink: oklch(0.9 0.034 188);
       --identity-sky: oklch(0.68 0.09 235);
-      --identity-sky-tint: oklch(0.31 0.04 235);
-      --identity-sky-ink: oklch(0.89 0.035 235);
+      --identity-sky-tint: oklch(0.339 0.059 235);
+      --identity-sky-ink: oklch(0.9 0.034 235);
+      --identity-indigo: oklch(0.7 0.13 268);
+      --identity-indigo-tint: oklch(0.353 0.081 268);
+      --identity-indigo-ink: oklch(0.9 0.049 268);
       --identity-plum: oklch(0.66 0.1 330);
-      --identity-plum-tint: oklch(0.31 0.04 330);
-      --identity-plum-ink: oklch(0.9 0.035 330);
+      --identity-plum-tint: oklch(0.325 0.066 330);
+      --identity-plum-ink: oklch(0.9 0.038 330);
 
       /* The household — reserved, never assigned to a person (ADR 041). */
       /* Hearth — warm stone, desaturated well under the member hues (ADR 041). */
@@ -372,24 +399,33 @@
     --surface-sunken: oklch(0.175 0.008 47);
     --shadow-inset: inset 0 2px 4px -1px oklch(0 0 0 / 0.4), inset 0 -1px 0 0 oklch(1 0 0 / 0.04);
 
+    /* Eight hues (ADR 044) — repeated here, not only in the prefers-color-scheme
+       block above: this is the EXPLICIT theme toggle, and a token missing from it
+       silently falls back to the light `:root` value (see --surface-sunken). */
     --identity-terracotta: oklch(0.7 0.13 35);
-    --identity-terracotta-tint: oklch(0.32 0.05 35);
-    --identity-terracotta-ink: oklch(0.9 0.04 40);
+    --identity-terracotta-tint: oklch(0.353 0.081 35);
+    --identity-terracotta-ink: oklch(0.9 0.049 35);
     --identity-marigold: oklch(0.78 0.12 78);
-    --identity-marigold-tint: oklch(0.33 0.05 78);
-    --identity-marigold-ink: oklch(0.91 0.05 85);
+    --identity-marigold-tint: oklch(0.408 0.079 78);
+    --identity-marigold-ink: oklch(0.9 0.046 78);
+    --identity-moss: oklch(0.73 0.12 117);
+    --identity-moss-tint: oklch(0.374 0.079 117);
+    --identity-moss-ink: oklch(0.9 0.046 117);
     --identity-sage: oklch(0.7 0.1 148);
-    --identity-sage-tint: oklch(0.31 0.045 148);
-    --identity-sage-ink: oklch(0.9 0.045 148);
+    --identity-sage-tint: oklch(0.353 0.066 148);
+    --identity-sage-ink: oklch(0.9 0.038 148);
     --identity-teal: oklch(0.66 0.09 188);
-    --identity-teal-tint: oklch(0.3 0.04 188);
-    --identity-teal-ink: oklch(0.89 0.04 188);
+    --identity-teal-tint: oklch(0.325 0.059 188);
+    --identity-teal-ink: oklch(0.9 0.034 188);
     --identity-sky: oklch(0.68 0.09 235);
-    --identity-sky-tint: oklch(0.31 0.04 235);
-    --identity-sky-ink: oklch(0.89 0.035 235);
+    --identity-sky-tint: oklch(0.339 0.059 235);
+    --identity-sky-ink: oklch(0.9 0.034 235);
+    --identity-indigo: oklch(0.7 0.13 268);
+    --identity-indigo-tint: oklch(0.353 0.081 268);
+    --identity-indigo-ink: oklch(0.9 0.049 268);
     --identity-plum: oklch(0.66 0.1 330);
-    --identity-plum-tint: oklch(0.31 0.04 330);
-    --identity-plum-ink: oklch(0.9 0.035 330);
+    --identity-plum-tint: oklch(0.325 0.066 330);
+    --identity-plum-ink: oklch(0.9 0.038 330);
 
     /* The household — reserved, never assigned to a person (ADR 041). */
     /* Hearth — warm stone, desaturated well under the member hues (ADR 041). */

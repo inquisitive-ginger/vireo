@@ -8,8 +8,8 @@ import {
   RowActions,
   SegmentedControl,
   cn,
-  getIdentityHue,
   identityToken,
+  resolveHue,
   type IdentityHue,
 } from '@family-os/ui'
 import type { CalendarEvent, CalendarMember } from '../types'
@@ -75,7 +75,7 @@ function groupByOwner(
   return [...membersById.keys()]
     .filter((id) => byOwner.has(id))
     .map((ownerId) => {
-      const { name, avatarUrl } = membersById.get(ownerId)!
+      const { name, identityHue, avatarUrl } = membersById.get(ownerId)!
       const list = byOwner
         .get(ownerId)!
         .slice()
@@ -87,7 +87,7 @@ function groupByOwner(
       return {
         ownerId,
         name,
-        hue: getIdentityHue(name),
+        hue: resolveHue(name, identityHue),
         avatarUrl,
         activities: list,
         days: new Set(list.map((a) => new Date(a.startsAt).getDay())),

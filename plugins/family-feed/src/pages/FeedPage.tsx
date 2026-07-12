@@ -16,7 +16,7 @@ const postSchema = z.object({ body: z.string().min(1) })
 const FEED_KEY = ['family-feed/posts']
 
 export function FeedPage() {
-  const { name: authorName } = useAuth()
+  const { name: authorName, identityHue } = useAuth()
   const queryClient = useQueryClient()
   const [composing, setComposing] = useState(false)
   const feedRef = useRef<HTMLDivElement>(null)
@@ -101,6 +101,7 @@ export function FeedPage() {
           composing ? (
             <ComposeForm
               authorName={authorName}
+              authorHue={identityHue}
               onSubmit={handlePost}
               onCancel={() => setComposing(false)}
             />

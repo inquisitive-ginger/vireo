@@ -79,9 +79,11 @@ describe('MemberGroupHeader', () => {
   })
 
   it('tints the COUNT in the member’s identity hue — a count of someone’s things is a statement about them (and the avatar may hold a photo, so it cannot be the colour signal — ADR 042)', () => {
-    render(<MemberGroupHeader name="Maya" count="2 left" />)
+    // The hue is passed, not hashed: it is assigned per member and travels with the
+    // data (ADR 044). Asserting against `getIdentityHue('Maya')` would pin this test to
+    // the palette's LENGTH — growing it from six hues to eight moves every hash bucket.
+    render(<MemberGroupHeader name="Maya" hue="sage" count="2 left" />)
     const count = screen.getByText('2 left')
-    // Maya hashes to `sage`.
     expect(count.style.background).toBe('var(--identity-sage-tint)')
     expect(count.style.color).toBe('var(--identity-sage-ink)')
   })

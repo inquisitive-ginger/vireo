@@ -153,12 +153,14 @@ export const StatusTokens: Story = {
 }
 
 const IDENTITY_ROLES: Record<OwnerHue, string> = {
-  terracotta: 'Identity hue 1 — harmonized with --primary',
-  marigold: 'Identity hue 2',
-  sage: 'Identity hue 3',
-  teal: 'Identity hue 4 — harmonized with --accent',
-  sky: 'Identity hue 5',
-  plum: 'Identity hue 6',
+  terracotta: 'Assignable — harmonized with --primary',
+  marigold: 'Assignable',
+  moss: 'Assignable — added in ADR 044',
+  sage: 'Assignable',
+  teal: 'Assignable — harmonized with --accent',
+  sky: 'Assignable',
+  indigo: 'Assignable — added in ADR 044',
+  plum: 'Assignable',
   family: 'Hearth — the household. Reserved: never assigned to a person (ADR 041)',
 }
 

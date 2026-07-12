@@ -55,7 +55,7 @@ export const IdentityRange: Story = {
             id: name,
             body: `A note from ${name} — each family member keeps the same color everywhere.`,
             createdAt: new Date(Date.now() - 18 * 60_000).toISOString(),
-            author: { id: name, name, avatarUrl: null },
+            author: { id: name, name, avatarUrl: null, identityHue: null },
           }}
         />
       ))}

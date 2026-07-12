@@ -9,9 +9,16 @@ datasource db {
 }
 
 model Profile {
-  id          String   @id @default(uuid())
-  name        String
-  tier        Int
+  id   String @id @default(uuid())
+  name String
+  tier Int
+  // The member's identity colour (ADR 044): assigned and persisted, not hashed from
+  // the name. UNIQUE, because "colour = person" is the app's load-bearing convention —
+  // a duplicate hue doesn't degrade the mapping, it points it at two people at once.
+  // Uniqueness therefore makes IDENTITY_HUES.length a hard cap on household size.
+  // Nullable so the `family` pseudo-profile consumes no member hue (Postgres allows
+  // many NULLs under a unique index) and so a profile can exist before it is assigned.
+  identityHue String?  @unique @map("identity_hue")
   avatarUrl   String?  @map("avatar_url")
   darkMode    Boolean? @map("dark_mode")
   // Taskee surface variant: null = derive from tier (≤2 → Focus); true/false = parent override.

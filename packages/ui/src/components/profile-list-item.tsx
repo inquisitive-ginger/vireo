@@ -1,8 +1,9 @@
+import type { ReactNode } from 'react'
 import { Pencil, Trash2 } from 'lucide-react'
 import { ProfileAvatar } from './profile-avatar'
 import { Spine } from './spine'
 import { Button } from './button'
-import { identityColor } from '../lib/identity'
+import { identityToken, resolveHue } from '../lib/identity'
 import { cn } from '../lib/utils'
 
 type TierLevel = 1 | 2 | 3 | 4
@@ -10,19 +11,26 @@ type TierLevel = 1 | 2 | 3 | 4
 export interface ProfileListItemProps {
   name: string
   tier: TierLevel
+  /** The member's assigned hue (ADR 044). Omitted falls back to the name hash. */
+  hue?: string | null
   avatarUrl?: string | null
   isLast?: boolean
   onEdit?: () => void
   onRemove?: () => void
+  /** Rendered after the tier pill — the colour control lives here (ADR 044), because
+      this list is the legend and so it is also where a colour gets traded. */
+  trailing?: ReactNode
 }
 
 export function ProfileListItem({
   name,
   tier,
+  hue,
   avatarUrl,
   isLast,
   onEdit,
   onRemove,
+  trailing,
 }: ProfileListItemProps) {
   return (
     <div
@@ -37,12 +45,18 @@ export function ProfileListItem({
           split fills) colour appears with no name attached. Once a photo replaces
           the tinted initials circle, this spine is the only thing still teaching it.
           A legend needs the symbol beside the label; that is what this is. */}
-      <Spine color={identityColor(name)} />
-      <ProfileAvatar name={name} avatarUrl={avatarUrl ?? undefined} size="md" />
+      <Spine color={identityToken(resolveHue(name, hue))} />
+      <ProfileAvatar
+        name={name}
+        identity={resolveHue(name, hue)}
+        avatarUrl={avatarUrl ?? undefined}
+        size="md"
+      />
       <span className="min-w-0 flex-1 truncate text-card-title">{name}</span>
       <span className="shrink-0 rounded-full bg-secondary px-2 py-0.5 text-xs-body font-semibold tracking-[0.03em] text-muted-foreground">
         Tier {tier}
       </span>
+      {trailing}
       <div className="flex shrink-0 gap-0.5 sm:gap-1.5">
         {onEdit && (
           <Button

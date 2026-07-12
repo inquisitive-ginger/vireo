@@ -15,6 +15,7 @@ function task(over: Partial<ChoreTask> & Pick<ChoreTask, 'id' | 'title'>): Chore
     assigneeId: 'm-maya',
     assigneeName: 'Maya',
     assigneeAvatarUrl: null,
+    assigneeHue: 'sage',
     status: 'pending',
     dueDate: null,
     xpReward: 10,
@@ -25,7 +26,11 @@ function task(over: Partial<ChoreTask> & Pick<ChoreTask, 'id' | 'title'>): Chore
   }
 }
 
-// Maya hashes to `sage`, Luca to `plum` (packages/ui identity hash).
+// The hues are ASSIGNED, not hashed from the name (ADR 044) — so the fixtures carry
+// them, and these assertions are pinned to the assignment rather than to whatever
+// bucket a name happens to fall in. (Hashing would also pin them to the palette's
+// LENGTH: growing it from six hues to eight moved every bucket, which is what broke
+// the previous version of this comment.)
 const MAYA_HUE = 'var(--identity-sage)'
 const LUCA_HUE = 'var(--identity-plum)'
 
@@ -39,6 +44,7 @@ function lanes(over: Partial<AdminLane>[] = []): AdminLane[] {
       assigneeId: 'm-maya',
       assigneeName: 'Maya',
       assigneeAvatarUrl: null,
+      assigneeHue: 'sage',
       tasks: [OVERDUE, PENDING, DONE],
     },
   ]
@@ -85,17 +91,25 @@ describe('AdminBoard — identity takes the edge (ADR 043)', () => {
     render(
       <AdminBoard
         lanes={[
-          { assigneeId: 'm-maya', assigneeName: 'Maya', assigneeAvatarUrl: null, tasks: [PENDING] },
+          {
+            assigneeId: 'm-maya',
+            assigneeName: 'Maya',
+            assigneeAvatarUrl: null,
+            assigneeHue: 'sage',
+            tasks: [PENDING],
+          },
           {
             assigneeId: 'm-luca',
             assigneeName: 'Luca',
             assigneeAvatarUrl: null,
+            assigneeHue: 'plum',
             tasks: [
               task({
                 id: 't9',
                 title: 'Water the plants',
                 assigneeId: 'm-luca',
                 assigneeName: 'Luca',
+                assigneeHue: 'plum',
               }),
             ],
           },
@@ -105,6 +119,57 @@ describe('AdminBoard — identity takes the edge (ADR 043)', () => {
     )
     expect(spineColorOf('Make your bed')).toBe(MAYA_HUE)
     expect(spineColorOf('Water the plants')).toBe(LUCA_HUE)
+  })
+
+  it('takes the hue from the DATA, not the name — two members who hash alike still differ (ADR 044)', () => {
+    // "Zach" and "Emma" hash to the same bucket, so under the old name-derived scheme
+    // these two lanes rendered in ONE colour — stacked adjacently, on a board whose
+    // entire language is "the spine says who". The assigned hue is what fixes it.
+    render(
+      <AdminBoard
+        lanes={[
+          {
+            assigneeId: 'm-zach',
+            assigneeName: 'Zach',
+            assigneeAvatarUrl: null,
+            assigneeHue: 'terracotta',
+            tasks: [
+              task({ id: 'z1', title: 'Bins', assigneeName: 'Zach', assigneeHue: 'terracotta' }),
+            ],
+          },
+          {
+            assigneeId: 'm-emma',
+            assigneeName: 'Emma',
+            assigneeAvatarUrl: null,
+            assigneeHue: 'moss',
+            tasks: [task({ id: 'e1', title: 'Dishes', assigneeName: 'Emma', assigneeHue: 'moss' })],
+          },
+        ]}
+        onAddForAssignee={vi.fn()}
+      />
+    )
+    expect(spineColorOf('Bins')).toBe('var(--identity-terracotta)')
+    expect(spineColorOf('Dishes')).toBe('var(--identity-moss)')
+    expect(spineColorOf('Bins')).not.toBe(spineColorOf('Dishes'))
+  })
+
+  it('falls back to the name hash only when a member has no assigned hue', () => {
+    render(
+      <AdminBoard
+        lanes={[
+          {
+            assigneeId: 'm-maya',
+            assigneeName: 'Maya',
+            assigneeAvatarUrl: null,
+            assigneeHue: null,
+            tasks: [task({ id: 'n1', title: 'Sweep', assigneeName: 'Maya', assigneeHue: null })],
+          },
+        ]}
+        onAddForAssignee={vi.fn()}
+      />
+    )
+    // Still painted — an unassigned profile is never colourless.
+    expect(spineColorOf('Sweep')).toMatch(/^var\(--identity-[a-z]+\)$/)
   })
 
   it('carries status on the field instead — badge, wash, strikethrough', () => {
@@ -153,7 +218,13 @@ describe('AdminBoard — the member group header', () => {
     render(
       <AdminBoard
         lanes={[
-          { assigneeId: 'm-maya', assigneeName: 'Maya', assigneeAvatarUrl: null, tasks: [DONE] },
+          {
+            assigneeId: 'm-maya',
+            assigneeName: 'Maya',
+            assigneeAvatarUrl: null,
+            assigneeHue: 'sage',
+            tasks: [DONE],
+          },
         ]}
         onAddForAssignee={vi.fn()}
       />
@@ -170,7 +241,13 @@ describe('AdminBoard — the member group header', () => {
     render(
       <AdminBoard
         lanes={[
-          { assigneeId: 'm-maya', assigneeName: 'Maya', assigneeAvatarUrl: null, tasks: [DONE] },
+          {
+            assigneeId: 'm-maya',
+            assigneeName: 'Maya',
+            assigneeAvatarUrl: null,
+            assigneeHue: 'sage',
+            tasks: [DONE],
+          },
         ]}
         onAddForAssignee={vi.fn()}
       />
@@ -183,7 +260,13 @@ describe('AdminBoard — the member group header', () => {
     render(
       <AdminBoard
         lanes={[
-          { assigneeId: 'm-maya', assigneeName: 'Maya', assigneeAvatarUrl: null, tasks: [DONE] },
+          {
+            assigneeId: 'm-maya',
+            assigneeName: 'Maya',
+            assigneeAvatarUrl: null,
+            assigneeHue: 'sage',
+            tasks: [DONE],
+          },
         ]}
         onAddForAssignee={vi.fn()}
       />
@@ -210,11 +293,18 @@ describe('AdminBoard — hide completed', () => {
     render(
       <AdminBoard
         lanes={[
-          { assigneeId: 'm-maya', assigneeName: 'Maya', assigneeAvatarUrl: null, tasks: [PENDING] },
+          {
+            assigneeId: 'm-maya',
+            assigneeName: 'Maya',
+            assigneeAvatarUrl: null,
+            assigneeHue: 'sage',
+            tasks: [PENDING],
+          },
           {
             assigneeId: 'm-luca',
             assigneeName: 'Luca',
             assigneeAvatarUrl: null,
+            assigneeHue: 'sage',
             tasks: [
               task({ id: 't8', title: 'Old chore', assigneeName: 'Luca', status: 'completed' }),
             ],
@@ -235,7 +325,13 @@ describe('AdminBoard — tier-4 controls', () => {
     render(
       <AdminBoard
         lanes={[
-          { assigneeId: 'm-maya', assigneeName: 'Maya', assigneeAvatarUrl: null, tasks: [PENDING] },
+          {
+            assigneeId: 'm-maya',
+            assigneeName: 'Maya',
+            assigneeAvatarUrl: null,
+            assigneeHue: 'sage',
+            tasks: [PENDING],
+          },
         ]}
         onAddForAssignee={vi.fn()}
         onCompleteTask={onComplete}
@@ -257,7 +353,13 @@ describe('AdminBoard — tier-4 controls', () => {
     render(
       <AdminBoard
         lanes={[
-          { assigneeId: 'm-maya', assigneeName: 'Maya', assigneeAvatarUrl: null, tasks: [DONE] },
+          {
+            assigneeId: 'm-maya',
+            assigneeName: 'Maya',
+            assigneeAvatarUrl: null,
+            assigneeHue: 'sage',
+            tasks: [DONE],
+          },
         ]}
         onAddForAssignee={vi.fn()}
         onReopenTask={onReopen}

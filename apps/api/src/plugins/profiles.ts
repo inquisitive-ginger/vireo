@@ -7,10 +7,12 @@ import type { TierLevel } from '@family-os/platform/types'
 import {
   CreateProfileSchema,
   UpdateProfileSchema,
+  SetIdentityHueSchema,
   ResetPinSchema,
   CheckPinSchema,
   FamilyNameUpdateSchema,
   PermissionOverrideCreateSchema,
+  nextFreeHue,
 } from '@family-os/schemas'
 import { sniffImageMime, imageHash, avatarUrl, MAX_IMAGE_BYTES } from '../lib/image'
 
@@ -37,6 +39,15 @@ function canEditAvatar(request: FastifyRequest, targetId: string): boolean {
   return request.profile.tier >= 4 || targetId === request.profile.id
 }
 
+/** Who may change a given profile's colour (ADR 044). Same shape as the photo above,
+    and for the same reason: choosing your own colour is not administration. The
+    household is not reachable here at all — Hearth is reserved (ADR 041), so the route
+    rejects it outright rather than tier-gating it. */
+function canEditColor(request: FastifyRequest, targetId: string): boolean {
+  if (!request.ability.can('update', 'platform.Color')) return false
+  return request.profile.tier >= 4 || targetId === request.profile.id
+}
+
 const profilesPlugin: FastifyPluginAsync = async (fastify) => {
   // The client crops and encodes to WebP on a canvas, so an avatar arrives as one
   // raw image body — no multipart, and no `sharp` on the server (ADR 042). Parse
@@ -55,11 +66,32 @@ const profilesPlugin: FastifyPluginAsync = async (fastify) => {
     if (!result.success) return reply.status(400).send({ error: result.error.flatten() })
 
     const { name, tier } = result.data
+
+    // A colour is assigned on creation, never chosen as a precondition of it (ADR 044).
+    // When the palette is exhausted the profile is NOT created: refusing is the honest
+    // answer, because a member without a hue is invisible on every surface that uses
+    // colour to say who — and handing out a duplicate would be worse still.
+    const taken = await prisma.profile.findMany({
+      where: { id: { not: FAMILY_PROFILE_ID }, identityHue: { not: null } },
+      select: { identityHue: true },
+    })
+    const identityHue = nextFreeHue(taken.map((p) => p.identityHue))
+    if (!identityHue) {
+      return reply
+        .status(409)
+        .send({ error: 'Every colour is taken — free one up to add another member.' })
+    }
+
     // No widget layout is written: GET /home/layout serves the current default until
     // the profile actually customizes it (see home.ts).
-    const profile = await prisma.profile.create({ data: { name, tier } })
+    const profile = await prisma.profile.create({ data: { name, tier, identityHue } })
 
-    return { id: profile.id, name: profile.name, tier: profile.tier }
+    return {
+      id: profile.id,
+      name: profile.name,
+      tier: profile.tier,
+      identityHue: profile.identityHue,
+    }
   })
 
   // PATCH /profiles/:id — update name and/or tier (tier 4 only)
@@ -179,6 +211,45 @@ const profilesPlugin: FastifyPluginAsync = async (fastify) => {
     ])
 
     return { ok: true }
+  })
+
+  // ─── Identity colour (ADR 044) ──────────────────────────────────────────────
+
+  // PUT /profiles/:id/color — take a colour from the palette.
+  //
+  // Its own route rather than a field on PATCH /profiles/:id, because PATCH is tier-4
+  // administration and choosing your own colour is not (same argument as the avatar
+  // above). The hue is UNIQUE across the family: "colour = person" is the app's
+  // load-bearing convention, so a duplicate would not degrade the mapping, it would
+  // point it at two people at once.
+  fastify.put<{ Params: { id: string } }>('/profiles/:id/color', async (request, reply) => {
+    const { id } = request.params
+
+    if (id === FAMILY_PROFILE_ID)
+      return reply.status(400).send({ error: 'The household has its own reserved colour' })
+
+    const target = await prisma.profile.findUnique({ where: { id } })
+    if (!target) return reply.status(404).send({ error: 'Profile not found' })
+
+    if (!canEditColor(request, id)) {
+      return reply.status(403).send({ error: 'Permission denied' })
+    }
+
+    const result = SetIdentityHueSchema.safeParse(request.body)
+    if (!result.success) return reply.status(400).send({ error: result.error.flatten() })
+
+    const { identityHue } = result.data
+
+    const holder = await prisma.profile.findFirst({
+      where: { identityHue, id: { not: id } },
+      select: { name: true },
+    })
+    if (holder) {
+      return reply.status(409).send({ error: `${holder.name} already has that colour` })
+    }
+
+    const updated = await prisma.profile.update({ where: { id }, data: { identityHue } })
+    return { id: updated.id, identityHue: updated.identityHue }
   })
 
   // DELETE /profiles/:id — delete a profile (tier 4 only)

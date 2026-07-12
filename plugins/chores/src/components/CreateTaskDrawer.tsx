@@ -127,6 +127,7 @@ export function CreateTaskDrawer({
                       <MemberChip
                         key={m.id}
                         name={m.name}
+                        hue={m.identityHue}
                         selected={field.value === m.id}
                         onClick={() => field.onChange(m.id)}
                       />

@@ -1,4 +1,4 @@
-import { ItemCard, ProfileAvatar, identityColor } from '@family-os/ui'
+import { ItemCard, ProfileAvatar, identityToken, resolveHue } from '@family-os/ui'
 import type { FeedPost } from '../types'
 
 function relativeTime(isoString: string): string {
@@ -29,6 +29,7 @@ export function FeedPostCard({ post, lineClamp, variant = 'note', dense }: FeedP
     <div className="flex min-w-0 flex-1 gap-3">
       <ProfileAvatar
         name={post.author.name}
+        identity={resolveHue(post.author.name, post.author.identityHue)}
         avatarUrl={post.author.avatarUrl ?? undefined}
         size="base"
       />
@@ -62,16 +63,18 @@ export function FeedPostCard({ post, lineClamp, variant = 'note', dense }: FeedP
 
   if (variant === 'plain') return inner
 
+  const spine = identityToken(resolveHue(post.author.name, post.author.identityHue))
+
   if (variant === 'widget') {
     return (
-      <ItemCard chrome="bare" spine={identityColor(post.author.name)}>
+      <ItemCard chrome="bare" spine={spine}>
         {inner}
       </ItemCard>
     )
   }
 
   return (
-    <ItemCard as="article" spine={identityColor(post.author.name)}>
+    <ItemCard as="article" spine={spine}>
       {inner}
     </ItemCard>
   )

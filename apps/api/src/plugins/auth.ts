@@ -58,6 +58,7 @@ const authPlugin: FastifyPluginAsync = async (fastify) => {
           name: row.name,
           tier: row.tier as Profile['tier'],
           avatarUrl: row.avatarUrl ?? undefined,
+          identityHue: row.identityHue,
           darkMode: row.darkMode ?? null,
           focusMode: row.focusMode ?? null,
           pushEnabled: row.pushEnabled,
@@ -92,6 +93,7 @@ const authPlugin: FastifyPluginAsync = async (fastify) => {
       name: request.profile.name,
       tier: request.profile.tier,
       avatarUrl: request.profile.avatarUrl ?? null,
+      identityHue: request.profile.identityHue ?? null,
       darkMode: request.profile.darkMode ?? null,
       // Effective variant — null override defers to the tier default (ADR 036).
       focusMode: resolveFocusMode(request.profile.focusMode, request.profile.tier),
@@ -124,6 +126,7 @@ const authPlugin: FastifyPluginAsync = async (fastify) => {
       name: p.name,
       tier: p.tier,
       avatarUrl: p.avatarUrl,
+      identityHue: p.identityHue,
       focusMode: p.focusMode,
     }))
   })

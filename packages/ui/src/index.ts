@@ -51,6 +51,8 @@ export type {
 } from './components/permission-toggle-list'
 export { Spine } from './components/spine'
 export type { SpineProps } from './components/spine'
+export { ColorPicker, isPaletteFull } from './components/color-picker'
+export type { ColorPickerProps } from './components/color-picker'
 export { cn } from './lib/utils'
 export {
   IDENTITY_HUES,
@@ -58,6 +60,9 @@ export {
   getIdentityHue,
   identityColor,
   identityToken,
+  isIdentityHue,
+  nextFreeHue,
+  resolveHue,
 } from './lib/identity'
 export type { IdentityHue, IdentityLayer, OwnerHue } from './lib/identity'
 export { startOfDay, addDays, isSameDay, dayDiff, relativeDayLabel } from './lib/dates'

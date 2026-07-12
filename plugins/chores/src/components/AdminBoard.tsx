@@ -7,7 +7,8 @@ import {
   MemberGroupHeader,
   RowActions,
   Button,
-  identityColor,
+  identityToken,
+  resolveHue,
 } from '@family-os/ui'
 import type { ChoreTask } from '../types'
 import { isOverdue, dueLabel } from '../lib/dates'
@@ -17,6 +18,8 @@ export interface AdminLane {
   assigneeId: string
   assigneeName: string
   assigneeAvatarUrl: string | null
+  /** The member's assigned hue (ADR 044) — null falls back to the name hash. */
+  assigneeHue: string | null
   tasks: ChoreTask[]
 }
 
@@ -111,6 +114,7 @@ export function AdminBoard({
           <section key={lane.assigneeId} className="flex flex-col gap-3">
             <MemberGroupHeader
               name={lane.assigneeName}
+              hue={resolveHue(lane.assigneeName, lane.assigneeHue)}
               avatarUrl={lane.assigneeAvatarUrl}
               status={<LaneStatus lane={lane} />}
               count={pendingCount(lane) > 0 ? `${pendingCount(lane)} left` : undefined}
@@ -207,7 +211,10 @@ function LoadMeter({ lane, maxLoad }: { lane: AdminLane; maxLoad: number }) {
       <div className="h-meter w-24 rounded-full bg-muted">
         <div
           className="h-full rounded-full"
-          style={{ width: `${pct}%`, background: identityColor(lane.assigneeName) }}
+          style={{
+            width: `${pct}%`,
+            background: identityToken(resolveHue(lane.assigneeName, lane.assigneeHue)),
+          }}
         />
       </div>
       <span className="text-xs-token text-muted-foreground">
@@ -254,7 +261,7 @@ function AdminRow({
 
   return (
     <ItemCard
-      spine={identityColor(task.assigneeName)}
+      spine={identityToken(resolveHue(task.assigneeName, task.assigneeHue))}
       align="center"
       dimmed={done}
       className="transition-opacity duration-200"

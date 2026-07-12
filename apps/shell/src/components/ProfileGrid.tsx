@@ -6,13 +6,19 @@ import {
   ProfileAvatar,
   PinInput,
   Spine,
-  identityColor,
   identityToken,
+  resolveHue,
   cn,
 } from '@family-os/ui'
 import { FAMILY_PROFILE_ID, useAuth } from '@family-os/platform'
 
-type ProfileRow = { id: string; name: string; tier: number; avatarUrl?: string | null }
+type ProfileRow = {
+  id: string
+  name: string
+  tier: number
+  identityHue?: string | null
+  avatarUrl?: string | null
+}
 type PinPhase = 'list' | 'pin-entry' | 'pin-error'
 
 interface ProfileGridProps {
@@ -133,9 +139,13 @@ export function ProfileGrid({ open, onClose, className, onNavigate }: ProfileGri
                     are the only surfaces pairing every member's face with their name,
                     so they are where the hue→person code is learned. A photo covers
                     the tinted initials circle; this spine is what keeps teaching it. */}
-                <Spine color={identityColor(profile.name)} className="h-8" />
+                <Spine
+                  color={identityToken(resolveHue(profile.name, profile.identityHue))}
+                  className="h-8"
+                />
                 <ProfileAvatar
                   name={profile.name}
+                  identity={resolveHue(profile.name, profile.identityHue)}
                   avatarUrl={profile.avatarUrl ?? undefined}
                   size="sm"
                 />

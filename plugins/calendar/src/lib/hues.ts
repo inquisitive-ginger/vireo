@@ -1,4 +1,4 @@
-import { FAMILY_HUE, getIdentityHue, identityToken, type OwnerHue } from '@family-os/ui'
+import { FAMILY_HUE, identityToken, resolveHue, type OwnerHue } from '@family-os/ui'
 import type { CalendarMember } from '../types'
 
 /** Fill + ink resolution for an event by attendee count — the locked "color =
@@ -27,11 +27,45 @@ export function huesForEvent(
   attendeeIds: string[],
   membersById: Map<string, CalendarMember>
 ): OwnerHue[] {
-  const hues = attendeeIds
-    .map((id) => membersById.get(id)?.name)
-    .filter((name): name is string => Boolean(name))
-    .map((name) => getIdentityHue(name))
+  const hues = ownersForEvent(attendeeIds, membersById).map((m) =>
+    resolveHue(m.name, m.identityHue)
+  )
   return hues.length > 0 ? hues : [FAMILY_HUE]
+}
+
+/** The people an event actually belongs to — known attendees, in order. Empty means the
+ *  household's (see `huesForEvent`). */
+export function ownersForEvent(
+  attendeeIds: string[],
+  membersById: Map<string, CalendarMember>
+): CalendarMember[] {
+  return attendeeIds.map((id) => membersById.get(id)).filter((m): m is CalendarMember => Boolean(m))
+}
+
+/** The event's SECOND CHANNEL (ADR 044).
+ *
+ *  A month-grid chip used to be a coloured pill and nothing else, which made colour the
+ *  only thing telling two people apart — and eight nameable hues do not survive
+ *  red-green colour-blindness, which about 1 in 12 men have. Terracotta and marigold
+ *  land 0.013 ΔEok apart for a deuteranope: the same pill.
+ *
+ *  So the chip carries its owner's initial. Returns:
+ *    · a solo event  → that member's initial ("Z")
+ *    · a shared one  → one initial per attendee ("ZH"), capped so the chip stays a chip
+ *    · the family's  → null; Hearth is not a person and has no initial to carry, and
+ *                      the household fill is the one hue that never collides with a
+ *                      member's (ADR 041 keeps it near-achromatic). */
+const MAX_INITIALS = 3
+export function initialsForEvent(
+  attendeeIds: string[],
+  membersById: Map<string, CalendarMember>
+): string | null {
+  const owners = ownersForEvent(attendeeIds, membersById)
+  if (owners.length === 0) return null
+  return owners
+    .slice(0, MAX_INITIALS)
+    .map((m) => [...m.name][0]?.toUpperCase() ?? '')
+    .join('')
 }
 
 /** Is this the household's event rather than a person's? The one thing callers

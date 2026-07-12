@@ -3,7 +3,23 @@ import type { FastifyPluginAsync } from 'fastify'
 import bcrypt from 'bcryptjs'
 import { prisma } from '@family-os/platform/server'
 import { FAMILY_PROFILE_ID } from '@family-os/platform/types'
-import { FamilySetupSchema, CreateFamilyMembersSchema, SetPinSchema } from '@family-os/schemas'
+import {
+  FamilySetupSchema,
+  CreateFamilyMembersSchema,
+  SetPinSchema,
+  nextFreeHue,
+  IDENTITY_HUES,
+} from '@family-os/schemas'
+
+/** The hues already spoken for. The `family` pseudo-profile is excluded everywhere and
+    carries no hue of its own (Hearth is reserved, ADR 041), so it consumes nothing. */
+async function takenHues(): Promise<string[]> {
+  const rows = await prisma.profile.findMany({
+    where: { id: { not: FAMILY_PROFILE_ID }, identityHue: { not: null } },
+    select: { identityHue: true },
+  })
+  return rows.map((r) => r.identityHue as string)
+}
 
 const setupPlugin: FastifyPluginAsync = async (fastify) => {
   // GET /setup/status
@@ -42,8 +58,9 @@ const setupPlugin: FastifyPluginAsync = async (fastify) => {
       create: { key: 'family_name', value: familyName },
     })
 
+    // First member in the house, so the whole palette is free.
     const profile = await prisma.profile.create({
-      data: { name: parentName, tier: 4 },
+      data: { name: parentName, tier: 4, identityHue: nextFreeHue([]) },
     })
 
     await prisma.systemConfig.upsert({
@@ -52,7 +69,12 @@ const setupPlugin: FastifyPluginAsync = async (fastify) => {
       create: { key: 'onboarding_step', value: 2 },
     })
 
-    return { id: profile.id, name: profile.name, tier: profile.tier }
+    return {
+      id: profile.id,
+      name: profile.name,
+      tier: profile.tier,
+      identityHue: profile.identityHue,
+    }
   })
 
   // POST /setup/members — Step 2: additional family members (any tier, 0-N)
@@ -65,10 +87,32 @@ const setupPlugin: FastifyPluginAsync = async (fastify) => {
       return reply.status(409).send({ error: 'Not at members setup step' })
     }
 
+    // Every member gets a colour the moment they are created — auto-assigned, never
+    // blocking (ADR 044). Checked BEFORE creating anyone: a family that overflows the
+    // palette must fail whole, not leave the last two kids colourless.
+    const taken = await takenHues()
+    const free = IDENTITY_HUES.length - taken.length
+    if (result.data.profiles.length > free) {
+      return reply.status(409).send({
+        error: `Only ${free} ${free === 1 ? 'colour is' : 'colours are'} left — a family can have at most ${IDENTITY_HUES.length} members.`,
+      })
+    }
+
+    // A client-chosen hue is honoured, but never trusted: the client cannot see the
+    // whole household, so uniqueness is settled here (and again by the DB's unique
+    // index). A duplicate request falls back to the next free colour rather than
+    // failing the whole family — the member still gets a colour, just not that one.
     const created = []
-    for (const { name, tier } of result.data.profiles) {
-      const profile = await prisma.profile.create({ data: { name, tier } })
-      created.push({ id: profile.id, name: profile.name, tier: profile.tier })
+    for (const { name, tier, identityHue } of result.data.profiles) {
+      const hue = identityHue && !taken.includes(identityHue) ? identityHue : nextFreeHue(taken)
+      const profile = await prisma.profile.create({ data: { name, tier, identityHue: hue } })
+      if (hue) taken.push(hue)
+      created.push({
+        id: profile.id,
+        name: profile.name,
+        tier: profile.tier,
+        identityHue: profile.identityHue,
+      })
     }
 
     await prisma.systemConfig.update({

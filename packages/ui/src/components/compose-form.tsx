@@ -2,11 +2,14 @@ import { useState } from 'react'
 import { Button } from './button'
 import { ProfileAvatar } from './profile-avatar'
 import { Textarea } from './textarea'
+import { resolveHue } from '../lib/identity'
 
 export interface ComposeFormProps {
   onSubmit: (body: string) => void | Promise<void>
   onCancel: () => void
   authorName?: string
+  /** The author's assigned identity hue (ADR 044). Falls back to the name hash. */
+  authorHue?: string | null
   defaultValue?: string
 }
 
@@ -14,6 +17,7 @@ export function ComposeForm({
   onSubmit,
   onCancel,
   authorName = 'You',
+  authorHue,
   defaultValue = '',
 }: ComposeFormProps) {
   const [body, setBody] = useState(defaultValue)
@@ -34,7 +38,7 @@ export function ComposeForm({
   return (
     <div className="rounded-panel border border-border bg-card px-4 py-4 shadow-[var(--shadow-raised)]">
       <div className="flex gap-3 items-start">
-        <ProfileAvatar name={authorName} size="base" />
+        <ProfileAvatar name={authorName} identity={resolveHue(authorName, authorHue)} size="base" />
         <Textarea
           autoFocus
           value={body}
