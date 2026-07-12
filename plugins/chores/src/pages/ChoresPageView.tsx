@@ -1,5 +1,5 @@
-import type { ReactNode } from 'react'
-import { PageHeader } from '@family-os/ui'
+import { useState, type ReactNode } from 'react'
+import { Label, PageContainer, PageHeader, Switch } from '@family-os/ui'
 import type { ChoreTask } from '../types'
 import { isOverdue } from '../lib/dates'
 import { TaskeeView } from '../components/TaskeeView'
@@ -52,6 +52,9 @@ export function ChoresPageView({
   initialXp,
   focusMode,
 }: ChoresPageViewProps) {
+  // Declared before the taskee early-return so the hook order stays unconditional.
+  const [hideCompleted, setHideCompleted] = useState(false)
+
   // Taskee, non-empty → the dedicated taskee surface (owns its header, the
   // lifetime score plate, and the XP-flight completion — design §1/§2). The
   // Focus-mode setting picks the variant: Focus (hero "Next up") vs Agency (the
@@ -66,7 +69,7 @@ export function ChoresPageView({
   const pending = tasks.length - done
 
   return (
-    <div className="mx-auto max-w-content px-6 pt-7 pb-12">
+    <PageContainer width="list">
       {/* Family pulse summary — counts only, no family XP (design §1). When the
           board is empty the empty-state owns the primary CTA, so the header action
           is suppressed (avoids a duplicate "New Task" primary action). */}
@@ -83,17 +86,34 @@ export function ChoresPageView({
           action={emptyAction}
         />
       ) : (
-        <AdminBoard
-          lanes={toLanes(tasks)}
-          showAdd={canManage}
-          onAddForAssignee={onAddForAssignee ?? (() => {})}
-          onCompleteTask={canManage ? onCompleteTask : undefined}
-          onReopenTask={canManage ? onReopenTask : undefined}
-          onEditTask={canManage ? onEditTask : undefined}
-          onRemoveTask={canManage ? onRemoveTask : undefined}
-        />
+        <>
+          {/* Only offered when there is something to hide — a dead toggle on a board
+              with no completed rows is just chrome. */}
+          {done > 0 && (
+            <div className="mb-5 flex items-center justify-end gap-2.5">
+              <Label htmlFor="hide-completed" className="text-sm-token text-muted-foreground">
+                Hide completed
+              </Label>
+              <Switch
+                id="hide-completed"
+                checked={hideCompleted}
+                onCheckedChange={setHideCompleted}
+              />
+            </div>
+          )}
+          <AdminBoard
+            lanes={toLanes(tasks)}
+            showAdd={canManage}
+            hideCompleted={hideCompleted}
+            onAddForAssignee={onAddForAssignee ?? (() => {})}
+            onCompleteTask={canManage ? onCompleteTask : undefined}
+            onReopenTask={canManage ? onReopenTask : undefined}
+            onEditTask={canManage ? onEditTask : undefined}
+            onRemoveTask={canManage ? onRemoveTask : undefined}
+          />
+        </>
       )}
-    </div>
+    </PageContainer>
   )
 }
 
@@ -122,7 +142,12 @@ function toLanes(tasks: ChoreTask[]): AdminLane[] {
   for (const t of tasks) {
     let lane = map.get(t.assigneeId)
     if (!lane) {
-      lane = { assigneeId: t.assigneeId, assigneeName: t.assigneeName, tasks: [] }
+      lane = {
+        assigneeId: t.assigneeId,
+        assigneeName: t.assigneeName,
+        assigneeAvatarUrl: t.assigneeAvatarUrl,
+        tasks: [],
+      }
       map.set(t.assigneeId, lane)
     }
     lane.tasks.push(t)

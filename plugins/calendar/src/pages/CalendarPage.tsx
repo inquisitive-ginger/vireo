@@ -4,6 +4,7 @@ import {
   Button,
   ConfirmDialog,
   EmptyState,
+  PageContainer,
   SegmentedControl,
   TabBar,
   type TabBarOption,
@@ -308,8 +309,10 @@ export function CalendarPage() {
   // activities from their phone. Contextual header + Add CTA, then the tab bar +
   // its panel.
   const mobileSurface = (
-    <div className="w-full pt-5">
-      <div className="flex items-center justify-between gap-3 px-4 pb-3">
+    // `full` — a phone agenda spans the screen. The gutter is the container's now;
+    // each of these three children used to carry its own `px-4`.
+    <PageContainer width="full">
+      <div className="flex items-center justify-between gap-3 pb-3">
         <h1 className="text-page-title text-foreground">
           {onActivities ? 'Activities' : 'Calendar'}
         </h1>
@@ -323,23 +326,17 @@ export function CalendarPage() {
           </Button>
         )}
       </div>
-      <div className="px-4">
-        <TabBar
-          aria-label="Calendar surface"
-          idBase="calendar-surface-m"
-          options={LENS_TABS}
-          value={lens}
-          onChange={setLens}
-        />
-      </div>
-      <div
-        className="px-4 pb-10 pt-4"
-        role="tabpanel"
-        aria-labelledby={`calendar-surface-m-tab-${lens}`}
-      >
+      <TabBar
+        aria-label="Calendar surface"
+        idBase="calendar-surface-m"
+        options={LENS_TABS}
+        value={lens}
+        onChange={setLens}
+      />
+      <div className="pt-4" role="tabpanel" aria-labelledby={`calendar-surface-m-tab-${lens}`}>
         {onActivities ? activitiesBody : agendaBody}
       </div>
-    </div>
+    </PageContainer>
   )
 
   // The time grid (month/week/day) — the calendar lens's chrome + body.
@@ -425,7 +422,8 @@ export function CalendarPage() {
   )
 
   const tabletSurface = (
-    <div className="mx-auto w-full max-w-[1100px] px-4 pb-12 pt-6 sm:px-6">
+    // `wide` — a 7-column month grid needs canvas, not a reading column.
+    <PageContainer width="wide">
       {/* Primary tier — Calendar ⇄ Activities (design.md §4), set apart from the
           Month/Week/Day sub-switch so the lens never reads as a fourth zoom level. */}
       <TabBar
@@ -440,7 +438,7 @@ export function CalendarPage() {
       <div role="tabpanel" aria-labelledby={`calendar-surface-tab-${lens}`}>
         {lens === 'activities' ? activitiesLens : calendarLens}
       </div>
-    </div>
+    </PageContainer>
   )
 
   return (

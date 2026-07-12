@@ -2,7 +2,7 @@ import { type ReactNode, Suspense, useCallback, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Loader2, Users, ClipboardList, CalendarDays } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
-import { WidgetGrid, PlaceholderCard } from '@family-os/ui'
+import { WidgetGrid, PlaceholderCard, PageContainer } from '@family-os/ui'
 import type { WidgetLayoutItem } from '@family-os/ui'
 import { useAuth } from '@family-os/platform'
 import { getLazyWidget } from '../lib/load-plugin'
@@ -101,10 +101,11 @@ export function Home({ widgetRemotes }: HomeProps) {
   }
 
   return (
-    <div className="flex flex-col p-6 md:h-full">
-      <WidgetGrid layout={layout ?? []} flatSlots={flatSlots} className="md:flex-1 md:min-h-0">
+    // `full` — the dashboard grid is meant to fill the viewport, not sit in a column.
+    <PageContainer width="full" className="flex flex-col md:h-full">
+      <WidgetGrid layout={layout ?? []} flatSlots={flatSlots} className="md:min-h-0 md:flex-1">
         {widgetChildren}
       </WidgetGrid>
-    </div>
+    </PageContainer>
   )
 }

@@ -3,11 +3,11 @@ import { CheckSquare, Star, TrendingUp } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import {
   EmptyState,
+  ProfileAvatar,
   Spine,
   WidgetHeader as UiWidgetHeader,
   WIDGET_CQ,
-  getIdentityHue,
-  identityToken,
+  identityColor,
 } from '@family-os/ui'
 import type { ChoreTask } from '../types'
 import { isOverdue } from '../lib/dates'
@@ -214,12 +214,26 @@ function TaskRow({ task }: { task: ChoreTask }) {
   )
 }
 
-/* Family person tile — identity avatar + name + count chips, filled bg. */
-function PersonTile({ name, tasks }: { name: string; tasks: ChoreTask[] }) {
+/* Family person tile — identity SPINE + a real avatar (which may hold a photo) +
+   name + count chips, on a filled row.
+
+   This tile used to hand-roll its own initials circle from `identityToken(hue,
+   'tint')`, which made the avatar the row's only hue carrier — so chores would
+   have silently never shown a member's photo, and the moment it did, the tile
+   would have lost its identity signal entirely. A photo is a face, not a colour
+   token: the spine carries the hue, the avatar carries the face (ADR 042). */
+function PersonTile({
+  name,
+  avatarUrl,
+  tasks,
+}: {
+  name: string
+  avatarUrl: string | null
+  tasks: ChoreTask[]
+}) {
   const pending = tasks.filter((t) => t.status === 'pending').length
   const overdue = overdueCount(tasks)
   const allDone = pending === 0 && tasks.length > 0
-  const hue = getIdentityHue(name)
 
   return (
     <div
@@ -230,16 +244,8 @@ function PersonTile({ name, tasks }: { name: string; tasks: ChoreTask[] }) {
         opacity: allDone ? 0.78 : 1,
       }}
     >
-      <span
-        className="text-sm-token inline-flex size-7 shrink-0 items-center justify-center rounded-full font-bold"
-        style={{
-          background: identityToken(hue, 'tint'),
-          color: identityToken(hue, 'ink'),
-        }}
-        aria-hidden
-      >
-        {name[0]}
-      </span>
+      <Spine color={identityColor(name)} inset />
+      <ProfileAvatar name={name} avatarUrl={avatarUrl ?? undefined} size="sm" className="size-7" />
       <span className="text-base-token min-w-0 flex-1 truncate font-medium text-foreground">
         {name}
       </span>
@@ -255,14 +261,19 @@ function PersonTile({ name, tasks }: { name: string; tasks: ChoreTask[] }) {
   )
 }
 
-function groupByAssignee(tasks: ChoreTask[]): { name: string; tasks: ChoreTask[] }[] {
-  const map = new Map<string, ChoreTask[]>()
+type MemberGroup = { name: string; avatarUrl: string | null; tasks: ChoreTask[] }
+
+function groupByAssignee(tasks: ChoreTask[]): MemberGroup[] {
+  const map = new Map<string, MemberGroup>()
   for (const t of tasks) {
-    const key = t.assigneeName
-    if (!map.has(key)) map.set(key, [])
-    map.get(key)!.push(t)
+    let group = map.get(t.assigneeName)
+    if (!group) {
+      group = { name: t.assigneeName, avatarUrl: t.assigneeAvatarUrl, tasks: [] }
+      map.set(t.assigneeName, group)
+    }
+    group.tasks.push(t)
   }
-  return Array.from(map.entries()).map(([name, ts]) => ({ name, tasks: ts }))
+  return [...map.values()]
 }
 
 /* Shared empty frame: header (keeps the coin) + centered signal. */
@@ -664,8 +675,8 @@ function FamilyStandard({ tasks }: { tasks: ChoreTask[] }) {
           </span>
         </div>
         <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-1.5 overflow-hidden">
-          {[...groups].sort(byMemberUrgency).map(({ name, tasks: memberTasks }) => (
-            <PersonTile key={name} name={name} tasks={memberTasks} />
+          {[...groups].sort(byMemberUrgency).map((g) => (
+            <PersonTile key={g.name} name={g.name} avatarUrl={g.avatarUrl} tasks={g.tasks} />
           ))}
         </div>
       </div>
@@ -692,8 +703,8 @@ function FamilyLarge({ tasks }: { tasks: ChoreTask[] }) {
       </div>
       <ProgressBar done={done} total={total} />
       <div className="mt-3 flex min-h-0 flex-1 flex-col gap-1.5 overflow-hidden">
-        {[...groups].sort(byMemberUrgency).map(({ name, tasks: memberTasks }) => (
-          <PersonTile key={name} name={name} tasks={memberTasks} />
+        {[...groups].sort(byMemberUrgency).map((g) => (
+          <PersonTile key={g.name} name={g.name} avatarUrl={g.avatarUrl} tasks={g.tasks} />
         ))}
       </div>
     </div>

@@ -275,6 +275,43 @@ describe('GET /api/chores/tasks', () => {
     })
     expect(res.json().tasks[0].assigneeName).toBe('Kid')
   })
+
+  /* The board draws a face on every row (ADR 042), which it can only do if the
+     join carries the avatar. This route already loaded the profile row and threw
+     the field away — the same latent gap family-feed shipped with — so chores
+     could never have rendered a photo. Locked here so it can't regress silently. */
+  it('includes the joined assignee avatar', async () => {
+    await prisma.profile.update({
+      where: { id: KID_ID },
+      data: { avatarUrl: `/api/profiles/${KID_ID}/avatar?v=abc123` },
+    })
+    await chorePrisma.task.create({
+      data: { title: 'Task with a face', assigneeId: KID_ID, createdBy: PARENT_ID },
+    })
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const res = await app.inject({
+      method: 'GET',
+      url: '/api/chores/tasks',
+      headers: { cookie },
+    })
+    expect(res.json().tasks[0].assigneeAvatarUrl).toBe(`/api/profiles/${KID_ID}/avatar?v=abc123`)
+  })
+
+  it('returns a null avatar for a member with no photo', async () => {
+    // Explicit, not seed-dependent: the profile seed persists across tests in this
+    // file, so a sibling test setting an avatar must not decide this one's outcome.
+    await prisma.profile.update({ where: { id: KID_ID }, data: { avatarUrl: null } })
+    await chorePrisma.task.create({
+      data: { title: 'Faceless task', assigneeId: KID_ID, createdBy: PARENT_ID },
+    })
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const res = await app.inject({
+      method: 'GET',
+      url: '/api/chores/tasks',
+      headers: { cookie },
+    })
+    expect(res.json().tasks[0].assigneeAvatarUrl).toBeNull()
+  })
 })
 
 // ─── PATCH /api/chores/tasks/:id/complete ─────────────────────────────────────

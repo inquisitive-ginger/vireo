@@ -148,7 +148,7 @@ const choresPlugin: FastifyPluginAsync = async (fastify) => {
       title: task.title,
     })
 
-    return reply.status(201).send(serializeTask(task, assignee.name))
+    return reply.status(201).send(serializeTask(task, assignee))
   })
 
   // PATCH /chores/tasks/:id — edit a task's fields (tier 4 only / manage). Mirrors
@@ -201,7 +201,7 @@ const choresPlugin: FastifyPluginAsync = async (fastify) => {
       data: { title, description, assigneeId: assignee.id, dueDate, xpReward },
     })
 
-    return serializeTask(task, assignee.name)
+    return serializeTask(task, assignee)
   })
 
   // DELETE /chores/tasks/:id — remove a task (tier 4 only / manage).
@@ -240,10 +240,10 @@ const choresPlugin: FastifyPluginAsync = async (fastify) => {
     const profiles = assigneeIds.length
       ? await prisma.profile.findMany({ where: { id: { in: assigneeIds } } })
       : []
-    const nameById = new Map(profiles.map((p) => [p.id, p.name]))
+    const profileById = new Map(profiles.map((p) => [p.id, p]))
 
     return {
-      tasks: tasks.map((t) => serializeTask(t, nameById.get(t.assigneeId) ?? 'Unknown')),
+      tasks: tasks.map((t) => serializeTask(t, profileById.get(t.assigneeId))),
     }
   })
 
@@ -290,7 +290,7 @@ const choresPlugin: FastifyPluginAsync = async (fastify) => {
     })
 
     const assignee = await prisma.profile.findUnique({ where: { id: updated.assigneeId } })
-    return serializeTask(updated, assignee?.name ?? 'Unknown')
+    return serializeTask(updated, assignee)
   })
 
   // PATCH /chores/tasks/:id/reopen — un-complete a task. Tier-4 only (manage all):
@@ -323,7 +323,7 @@ const choresPlugin: FastifyPluginAsync = async (fastify) => {
     })
 
     const assignee = await prisma.profile.findUnique({ where: { id: updated.assigneeId } })
-    return serializeTask(updated, assignee?.name ?? 'Unknown')
+    return serializeTask(updated, assignee)
   })
 
   // GET /chores/xp — returns the active profile's lifetime XP total (all tiers).
@@ -361,13 +361,21 @@ type TaskRow = {
   completedAt: Date | null
 }
 
-function serializeTask(task: TaskRow, assigneeName: string) {
+/* The assignee's identity, as the client needs it to draw a row: a name for the
+   label and the hue hash, and the avatar for the face. The avatar URL was being
+   dropped here even though every call site already held the profile row — the
+   same latent gap ADR 042 found in family-feed, and the reason chores could never
+   have rendered a member's photo. */
+type AssigneeRef = { name: string; avatarUrl: string | null } | null | undefined
+
+function serializeTask(task: TaskRow, assignee: AssigneeRef) {
   return {
     id: task.id,
     title: task.title,
     description: task.description,
     assigneeId: task.assigneeId,
-    assigneeName,
+    assigneeName: assignee?.name ?? 'Unknown',
+    assigneeAvatarUrl: assignee?.avatarUrl ?? null,
     status: task.status,
     dueDate: task.dueDate ? task.dueDate.toISOString().slice(0, 10) : null,
     xpReward: task.xpReward,

@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Button, PageHeader, relativeDayLabel } from '@family-os/ui'
+import { Button, PageContainer, PageHeader, relativeDayLabel } from '@family-os/ui'
 import type { FeedPost } from '../types'
 import { FeedPostCard } from '../components/FeedPostCard'
 import { FeedEmptyState } from '../components/FeedEmptyState'
@@ -47,7 +47,7 @@ export function FeedPageView({
   onLoadMore,
 }: FeedPageViewProps) {
   return (
-    <div className="mx-auto max-w-content px-6 pt-7 pb-12">
+    <PageContainer width="prose">
       {/* When the feed is empty the empty-state owns the primary CTA, so the header
           action is suppressed (avoids a duplicate compose action — mirrors chores). */}
       <PageHeader
@@ -90,6 +90,6 @@ export function FeedPageView({
           )}
         </div>
       )}
-    </div>
+    </PageContainer>
   )
 }
