@@ -9,6 +9,7 @@ type Subjects =
   | 'platform.Profile'
   | 'platform.Plugin'
   | 'platform.Avatar'
+  | 'platform.Color'
   | 'family-feed.Post'
   | 'chores.Task'
   | 'calendar.Event'
@@ -29,6 +30,11 @@ export function createAbility(profile: Profile, overrides: PermissionOverride[])
   // this per-profile through the existing override system if a kid abuses it.
   // The row condition is enforced explicitly in the route (see chores.Task below).
   can('update', 'platform.Avatar', { id: profile.id })
+
+  // ...and its OWN colour (ADR 044), on exactly the same argument. Note that unlike a
+  // photo, a colour is UNIQUE across the family, so this grant lets a kid take a hue
+  // nobody else holds — never one already spoken for (the route 409s).
+  can('update', 'platform.Color', { id: profile.id })
 
   // Calendar is one shared family surface — every tier reads it (tier-4 creates/
   // edits/deletes via `manage all`). The view grant is duplicated across the

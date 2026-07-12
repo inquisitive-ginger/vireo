@@ -1,6 +1,6 @@
 # Design System
 
-> Last updated: 2026-07-12 — **ADR 043: identity takes the edge, status takes the field** (a multi-person row's spine is always the owner's hue; status moves to the row's wash/badge/dim). The chores lane-header tint wash and the `ItemCard` "AdminBoard exception" are both withdrawn; row affordances (`onActivate`, `RowActions`, `MemberGroupHeader`) move into the primitives. New **Page containers** section — four roles (`prose`/`list`/`wide`/`full`) via `PageContainer`, retiring six ad-hoc page recipes.
+> Last updated: 2026-07-12 — **ADR 044: a colour is assigned, not derived; and it is not the only channel.** The member palette grows to **eight** (`moss`, `indigo`); a member's hue is **persisted and unique** (`resolveHue`, never `identityColor(name)`), so palette size is now a **cap on household size**. The **tint layer is rebuilt** — it flattened every hue to off-white on the one surface (the month grid) where colour does all the work. Eight nameable hues cannot survive red-green colour-blindness, so **any surface where a hue is the sole discriminator owes a second channel** — the calendar chip carries its owner's initial.
 
 This document records settled design decisions. Deferred items are
 explicitly marked — do not treat absence of a spec as a free choice.
@@ -256,25 +256,64 @@ rest **inline, once, on the day they begin**.
 
 ### Member identity palette
 
-**Settled** — see ADR 030. Helpers: `getIdentityHue`, `identityToken`,
-`identityColor` from `@family-os/ui`.
+**Settled** — see ADR 030, amended by **ADR 044**. Helpers: **`resolveHue`**,
+`identityToken`, `nextFreeHue`, `isIdentityHue` from `@family-os/ui`. The palette
+list itself lives in `@family-os/schemas` — the API allocates hues and the UI paints
+them, and that is the only leaf package both can import.
 
-Six fixed hues harmonized with Terracotta & Teal. Every family member maps
-to one hue and keeps it **everywhere** — avatar fill, feed post spine,
-calendar chips, chore assignments. Three layers per hue, light + dark aware:
+**Eight** fixed hues harmonized with Terracotta & Teal. Every family member maps to
+one hue and keeps it **everywhere** — avatar fill, feed post spine, calendar chips,
+chore assignments. Three layers per hue, light + dark aware:
 
-| Layer | Token pattern           | Use                                |
-| ----- | ----------------------- | ---------------------------------- |
-| base  | `--identity-{hue}`      | Spines, rings, markers, indicators |
-| tint  | `--identity-{hue}-tint` | Avatar fill, soft backgrounds      |
-| ink   | `--identity-{hue}-ink`  | Initials/text on tint              |
+| Layer | Token pattern           | Use                                        |
+| ----- | ----------------------- | ------------------------------------------ |
+| base  | `--identity-{hue}`      | Spines, rings, markers, indicators         |
+| tint  | `--identity-{hue}-tint` | **Fills** — calendar chips, avatar, washes |
+| ink   | `--identity-{hue}-ink`  | Initials/text on tint                      |
 
-Hues: `terracotta` · `marigold` · `sage` · `teal` · `sky` · `plum`
+Hues: `terracotta` · `marigold` · **`moss`** · `sage` · `teal` · `sky` ·
+**`indigo`** · `plum`
 
-Assignment is currently a name hash (collisions possible); explicit
-per-profile assignment is the planned evolution (ADR 030). Components
-accept an explicit hue (`ProfileAvatar identity` prop) so the upgrade is
-non-breaking. Plugins must never invent member colors outside this palette.
+**The hue is ASSIGNED, not derived** (ADR 044). It is persisted per profile
+(`Profile.identityHue`), **unique across the family**, and **travels with the data** —
+every payload carrying a person carries their hue. `getIdentityHue(name)` is a
+**fallback only**: it collides (`"Zach"` and `"Emma"` hash alike, at six hues _and_ at
+eight) and it moves on rename (`"Teddy"` is terracotta, `"Ted"` is sage).
+
+```tsx
+// ✅ the one way to ask "which hue is this person"
+identityToken(resolveHue(task.assigneeName, task.assigneeHue))
+// ❌ never re-derive from a name when the profile is in hand
+identityColor(task.assigneeName)
+```
+
+Because hues are unique, **`IDENTITY_HUES.length` is a hard cap on household size**.
+`nextFreeHue` returns `null` on a full palette and callers must **say the palette is
+full** — a duplicate hue does not degrade "colour = person", it points it at **two
+people at once**. Plugins must never invent member colours outside this palette, and
+there is deliberately **no free colour input**.
+
+> **Judge a colour on the layer that renders it.** Hues get quoted at `base`, but the
+> calendar month grid — the surface where colour does the most work — paints at
+> `tint`. The tint layer used to flatten every hue to L≈0.92/C≈0.04, where all eight
+> converge on off-white; it now inherits the base's lightness order and carries real
+> chroma. This has now bitten twice (ADR 041, ADR 044).
+
+#### Colour is the primary channel, not the only one (ADR 044)
+
+Eight _nameable_ hues do not fit in the ~305° left once red is reserved for `--error`,
+so **two pairs collide under red-green colour-blindness** — which about **1 in 12 men**
+have. That is an accepted, deliberate trade.
+
+**So any surface where a hue is the ONLY thing distinguishing two people owes a second
+channel.** The calendar month chip carries its owner's **initial** (the family case
+already had one — the `Users` glyph). A selection state must never ride on colour alone
+either: the `ColorPicker` swatch carries a ring and a check, not just a fill.
+
+**A capability with no surface is not a capability.** `platform.profile.color` is
+update-own for _every_ tier, so the picker lives in Settings → **Your colour**
+(self-serve, any tier), not only in the tier-4 profile drawer — exactly as ADR 042's
+photo does.
 
 #### The family hue — reserved (settled — ADR 041, 2026-07-11)
 

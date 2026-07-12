@@ -56,7 +56,8 @@ export default function UpNext() {
 
   const membersById = useMemo(() => {
     const map = new Map<string, CalendarMember>()
-    for (const p of profiles ?? []) map.set(p.id, { name: p.name, avatarUrl: p.avatarUrl })
+    for (const p of profiles ?? [])
+      map.set(p.id, { name: p.name, identityHue: p.identityHue, avatarUrl: p.avatarUrl })
     return map
   }, [profiles])
 

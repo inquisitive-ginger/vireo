@@ -1,15 +1,18 @@
-import { FAMILY_HUE, ProfileAvatar } from '@family-os/ui'
+import { FAMILY_HUE, ProfileAvatar, resolveHue } from '@family-os/ui'
 import { NotificationBell } from './NotificationBell'
 
 export function MobileBrandTopBar({
   name,
   avatarUrl,
+  identityHue,
   isFamily = false,
   profileOpen,
   onProfileClick,
 }: {
   name: string
   avatarUrl?: string | null
+  /** The member's assigned colour (ADR 044). Null falls back to the name hash. */
+  identityHue?: string | null
   /** On the household pseudo-profile the avatar wears the reserved family hue —
    *  the name hash only ever returns member hues (ADR 041). */
   isFamily?: boolean
@@ -31,7 +34,7 @@ export function MobileBrandTopBar({
         <ProfileAvatar
           name={name}
           avatarUrl={avatarUrl ?? undefined}
-          identity={isFamily ? FAMILY_HUE : undefined}
+          identity={isFamily ? FAMILY_HUE : resolveHue(name, identityHue)}
           size="sm"
           active={profileOpen}
         />

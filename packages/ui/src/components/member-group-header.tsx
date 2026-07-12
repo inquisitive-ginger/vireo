@@ -1,6 +1,6 @@
 import type { ReactNode } from 'react'
 import { ProfileAvatar } from './profile-avatar'
-import { getIdentityHue, identityToken, type OwnerHue } from '../lib/identity'
+import { identityToken, resolveHue, type OwnerHue } from '../lib/identity'
 import { cn } from '../lib/utils'
 
 export interface MemberGroupHeaderProps {
@@ -52,7 +52,7 @@ export function MemberGroupHeader({
   action,
   className,
 }: MemberGroupHeaderProps) {
-  const ownerHue = hue ?? getIdentityHue(name)
+  const ownerHue: OwnerHue = hue ?? resolveHue(name)
   return (
     <div className={cn('flex flex-wrap items-center gap-x-2.5 gap-y-2', className)}>
       <ProfileAvatar name={name} identity={ownerHue} avatarUrl={avatarUrl ?? undefined} size="sm" />

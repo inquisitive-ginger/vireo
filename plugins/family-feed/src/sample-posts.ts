@@ -5,12 +5,18 @@ const MIN = 60_000
 const HOUR = 60 * MIN
 const DAY = 24 * HOUR
 
-function post(id: string, name: string, body: string, agoMs: number): FeedPost {
+function post(
+  id: string,
+  name: string,
+  body: string,
+  agoMs: number,
+  identityHue: string | null = null
+): FeedPost {
   return {
     id,
     body,
     createdAt: new Date(Date.now() - agoMs).toISOString(),
-    author: { id: `author-${name.toLowerCase()}`, name, avatarUrl: null },
+    author: { id: `author-${name.toLowerCase()}`, name, avatarUrl: null, identityHue },
   }
 }
 

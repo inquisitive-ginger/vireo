@@ -10,6 +10,8 @@ export type AuthUser = {
   name: string
   tier: TierLevel
   avatarUrl?: string | null
+  /** The member's assigned identity colour (ADR 044). */
+  identityHue?: string | null
   darkMode?: boolean | null
   /** Effective taskee variant from /auth/me (already resolved against tier). */
   focusMode?: boolean
@@ -49,6 +51,7 @@ function AuthLoader({ children, queryClient }: { children: ReactNode; queryClien
         name: data.name,
         tier: data.tier,
         avatarUrl: data.avatarUrl,
+        identityHue: data.identityHue,
         darkMode: data.darkMode,
         focusMode: data.focusMode,
         pushEnabled: data.pushEnabled ?? false,

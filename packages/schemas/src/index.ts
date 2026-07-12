@@ -1,8 +1,22 @@
 import { z } from 'zod'
+import { IDENTITY_HUES } from './identity'
+
+export {
+  IDENTITY_HUES,
+  FAMILY_HUE,
+  isIdentityHue,
+  nextFreeHue,
+  type IdentityHue,
+  type OwnerHue,
+} from './identity'
 
 // ─── Profile management ───────────────────────────────────────────────────────
 
 const TierSchema = z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4)])
+
+/** A member's identity colour must come from the curated palette (ADR 044) — there is
+    no free colour input, which is what keeps a family off neon green. */
+export const IdentityHueSchema = z.enum(IDENTITY_HUES)
 
 export const CreateProfileSchema = z.object({
   name: z.string().min(1, 'Name is required').max(50),
@@ -19,6 +33,18 @@ export const UpdateProfileSchema = z
   .refine((d) => d.name !== undefined || d.tier !== undefined || d.focusMode !== undefined, {
     message: 'At least one field is required',
   })
+
+/** Identity hue (ADR 044) — its own route, not a field on PATCH /profiles/:id.
+ *
+ * PATCH is tier-4 administration; choosing your OWN colour is not administration, so it
+ * follows the avatar precedent (ADR 042): a dedicated endpoint with an update-own
+ * capability. The value is constrained to the curated palette — there is no free colour
+ * input, which is what keeps a family off neon green. Uniqueness cannot be checked here
+ * (a schema cannot see the rest of the household); the route returns 409 and the DB
+ * carries a unique index behind it. */
+export const SetIdentityHueSchema = z.object({
+  identityHue: IdentityHueSchema,
+})
 
 export const ResetPinSchema = z.object({
   currentPin: z
@@ -66,6 +92,10 @@ export const CreateFamilyMembersSchema = z.object({
     z.object({
       name: z.string().min(1, 'Name is required').max(50),
       tier: z.union([z.literal(1), z.literal(2), z.literal(3), z.literal(4)]),
+      // Optional: onboarding auto-assigns a colour and shows it, and the parent may tap
+      // to change it before submitting (ADR 044). Absent = let the server assign. The
+      // server checks uniqueness either way — a client cannot be trusted to.
+      identityHue: IdentityHueSchema.optional(),
     })
   ),
 })

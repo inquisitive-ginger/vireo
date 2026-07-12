@@ -1,5 +1,5 @@
 import { Users } from 'lucide-react'
-import { FAMILY_HUE, ProfileAvatar, identityToken } from '@family-os/ui'
+import { FAMILY_HUE, ProfileAvatar, identityToken, resolveHue } from '@family-os/ui'
 import type { CalendarEvent, CalendarMember } from '../types'
 
 /* WHO AN EVENT BELONGS TO — the FACE on a calendar row (the up-next widget's day
@@ -62,6 +62,7 @@ export function EventOwners({
         <ProfileAvatar
           key={member.name}
           name={member.name}
+          identity={resolveHue(member.name, member.identityHue)}
           avatarUrl={member.avatarUrl ?? undefined}
           size="sm"
           className="size-7 text-xs-body ring-2 ring-card"

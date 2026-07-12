@@ -42,10 +42,13 @@ export type CalendarView = 'month' | 'week' | 'day'
  *  Activities lens (grouped by person). See design.md §4. */
 export type CalendarLens = 'calendar' | 'activities'
 
-/** A family member as the calendar needs them: the name drives the identity hue
- *  (ADR 030) and the photo, when set, is the face inside the avatar (ADR 042).
+/** A family member as the calendar needs them. The hue is ASSIGNED, not derived from
+ *  the name (ADR 044) — it arrives with the profile and is unique across the family;
+ *  `resolveHue` falls back to the name hash only while a profile has none. The photo,
+ *  when set, is the face inside the avatar (ADR 042).
  *  Keyed by profile id in the `membersById` map every calendar surface takes. */
 export interface CalendarMember {
   name: string
+  identityHue?: string | null
   avatarUrl?: string | null
 }

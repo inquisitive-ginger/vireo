@@ -8,11 +8,22 @@ function isoDay(offsetDays: number): string {
   return d.toISOString().slice(0, 10)
 }
 
+/* Assigned identity hues (ADR 044) — and this roster is exactly why they had to be
+   assigned. "Zach" and "Emma" HASH TO THE SAME terracotta, so under the old
+   name-derived scheme two of these four members rendered in one colour, on a board
+   that stacks member groups adjacently. The hue now travels with the data. */
+const SAMPLE_HUES: Record<string, string> = {
+  Maya: 'teal',
+  Zach: 'terracotta',
+  Emma: 'plum',
+  Luca: 'marigold',
+}
+
 export const SAMPLE_MEMBERS: Profile[] = [
-  { id: 'm-maya', name: 'Maya', tier: 1 },
-  { id: 'm-zach', name: 'Zach', tier: 2 },
-  { id: 'm-emma', name: 'Emma', tier: 3 },
-  { id: 'm-luca', name: 'Luca', tier: 1 },
+  { id: 'm-maya', name: 'Maya', tier: 1, identityHue: SAMPLE_HUES.Maya },
+  { id: 'm-zach', name: 'Zach', tier: 2, identityHue: SAMPLE_HUES.Zach },
+  { id: 'm-emma', name: 'Emma', tier: 3, identityHue: SAMPLE_HUES.Emma },
+  { id: 'm-luca', name: 'Luca', tier: 1, identityHue: SAMPLE_HUES.Luca },
 ]
 
 /* One taskee's list (all assigned to Maya) — used for the taskee stories. */
@@ -47,7 +58,9 @@ function task(
   title: string,
   assigneeId: string,
   assigneeName: string,
-  opts: Partial<Pick<ChoreTask, 'status' | 'dueDate' | 'xpReward' | 'assigneeAvatarUrl'>> = {}
+  opts: Partial<
+    Pick<ChoreTask, 'status' | 'dueDate' | 'xpReward' | 'assigneeAvatarUrl' | 'assigneeHue'>
+  > = {}
 ): ChoreTask {
   return {
     id,
@@ -58,6 +71,7 @@ function task(
     // Stories exercise the no-photo fallback by default — the tinted-initials
     // circle. The board's identity signal is the row spine either way (ADR 043).
     assigneeAvatarUrl: opts.assigneeAvatarUrl ?? null,
+    assigneeHue: opts.assigneeHue ?? SAMPLE_HUES[assigneeName] ?? null,
     status: opts.status ?? 'pending',
     dueDate: opts.dueDate ?? null,
     xpReward: opts.xpReward ?? 10,

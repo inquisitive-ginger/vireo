@@ -7,7 +7,8 @@ import {
   Spine,
   WidgetHeader as UiWidgetHeader,
   WIDGET_CQ,
-  identityColor,
+  identityToken,
+  resolveHue,
 } from '@family-os/ui'
 import type { ChoreTask } from '../types'
 import { isOverdue } from '../lib/dates'
@@ -224,10 +225,12 @@ function TaskRow({ task }: { task: ChoreTask }) {
    token: the spine carries the hue, the avatar carries the face (ADR 042). */
 function PersonTile({
   name,
+  hue,
   avatarUrl,
   tasks,
 }: {
   name: string
+  hue: string | null
   avatarUrl: string | null
   tasks: ChoreTask[]
 }) {
@@ -244,8 +247,14 @@ function PersonTile({
         opacity: allDone ? 0.78 : 1,
       }}
     >
-      <Spine color={identityColor(name)} inset />
-      <ProfileAvatar name={name} avatarUrl={avatarUrl ?? undefined} size="sm" className="size-7" />
+      <Spine color={identityToken(resolveHue(name, hue))} inset />
+      <ProfileAvatar
+        name={name}
+        identity={resolveHue(name, hue)}
+        avatarUrl={avatarUrl ?? undefined}
+        size="sm"
+        className="size-7"
+      />
       <span className="text-base-token min-w-0 flex-1 truncate font-medium text-foreground">
         {name}
       </span>
@@ -261,14 +270,24 @@ function PersonTile({
   )
 }
 
-type MemberGroup = { name: string; avatarUrl: string | null; tasks: ChoreTask[] }
+type MemberGroup = {
+  name: string
+  hue: string | null
+  avatarUrl: string | null
+  tasks: ChoreTask[]
+}
 
 function groupByAssignee(tasks: ChoreTask[]): MemberGroup[] {
   const map = new Map<string, MemberGroup>()
   for (const t of tasks) {
     let group = map.get(t.assigneeName)
     if (!group) {
-      group = { name: t.assigneeName, avatarUrl: t.assigneeAvatarUrl, tasks: [] }
+      group = {
+        name: t.assigneeName,
+        hue: t.assigneeHue,
+        avatarUrl: t.assigneeAvatarUrl,
+        tasks: [],
+      }
       map.set(t.assigneeName, group)
     }
     group.tasks.push(t)
@@ -676,7 +695,13 @@ function FamilyStandard({ tasks }: { tasks: ChoreTask[] }) {
         </div>
         <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-1.5 overflow-hidden">
           {[...groups].sort(byMemberUrgency).map((g) => (
-            <PersonTile key={g.name} name={g.name} avatarUrl={g.avatarUrl} tasks={g.tasks} />
+            <PersonTile
+              key={g.name}
+              name={g.name}
+              hue={g.hue}
+              avatarUrl={g.avatarUrl}
+              tasks={g.tasks}
+            />
           ))}
         </div>
       </div>
@@ -704,7 +729,13 @@ function FamilyLarge({ tasks }: { tasks: ChoreTask[] }) {
       <ProgressBar done={done} total={total} />
       <div className="mt-3 flex min-h-0 flex-1 flex-col gap-1.5 overflow-hidden">
         {[...groups].sort(byMemberUrgency).map((g) => (
-          <PersonTile key={g.name} name={g.name} avatarUrl={g.avatarUrl} tasks={g.tasks} />
+          <PersonTile
+            key={g.name}
+            name={g.name}
+            hue={g.hue}
+            avatarUrl={g.avatarUrl}
+            tasks={g.tasks}
+          />
         ))}
       </div>
     </div>

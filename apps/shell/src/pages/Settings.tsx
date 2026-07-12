@@ -41,7 +41,9 @@ import {
   SegmentedControl,
   ProfileAvatar,
   AvatarEditor,
+  ColorPicker,
   FAMILY_HUE,
+  resolveHue,
 } from '@family-os/ui'
 import type { PermissionToggleListItem } from '@family-os/ui'
 import { CreateProfileSchema, type CreateProfileInput } from '@family-os/schemas'
@@ -53,6 +55,8 @@ type ProfileRow = {
   name: string
   tier: 1 | 2 | 3 | 4
   avatarUrl?: string | null
+  // The member's assigned identity colour (ADR 044) — unique across the family.
+  identityHue?: string | null
   // Raw Focus-mode override: null = tier default, true/false = explicit (ADR 036).
   focusMode?: boolean | null
 }
@@ -492,7 +496,7 @@ function AvatarField({ profile }: { profile: ProfileRow }) {
             name={profile.name}
             size="lg"
             avatarUrl={profile.avatarUrl ?? undefined}
-            identity={isFamily ? FAMILY_HUE : undefined}
+            identity={isFamily ? FAMILY_HUE : resolveHue(profile.name, profile.identityHue)}
           />
           <span className="absolute -bottom-0.5 -right-0.5 grid size-7 place-items-center rounded-full border-2 border-card bg-primary text-primary-foreground shadow-[var(--shadow-card)] transition-transform group-hover:scale-110">
             <Camera className="size-3.5" aria-hidden />
@@ -552,13 +556,93 @@ function AvatarField({ profile }: { profile: ProfileRow }) {
   )
 }
 
+/**
+ * The member's identity colour (ADR 044).
+ *
+ * It sits right beside the photo because they are the two halves of one idea: the avatar
+ * carries the FACE, the chrome beside it carries the IDENTITY (ADR 042). A photo cannot
+ * be a colour token, so the hue has to be chosen and shown somewhere — and this drawer,
+ * reached from the member list, is the app's legend: the one surface pairing a face, a
+ * name and a hue, and therefore the one place the hue→person code can be learned.
+ *
+ * Unlike the photo, a colour is UNIQUE across the family, which makes changing it a
+ * TRADE. So a taken swatch shows who holds it rather than going quietly dead.
+ */
+function ColorField({
+  profile,
+  profiles,
+  label,
+}: {
+  profile: ProfileRow
+  profiles: ProfileRow[]
+  /** Rendered as an inline heading. Omit when the surrounding SettingsSection
+      already titles it, so the label isn't stated twice. */
+  label?: string
+}) {
+  const queryClient = useQueryClient()
+  const [errorMsg, setErrorMsg] = useState<string | undefined>()
+
+  const takenBy: Record<string, string> = {}
+  for (const p of profiles) {
+    if (p.id !== FAMILY_PROFILE_ID && p.identityHue) takenBy[p.identityHue] = p.name
+  }
+
+  const mutation = useMutation({
+    mutationFn: async (identityHue: string) => {
+      const res = await fetch(`/api/profiles/${profile.id}/color`, {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ identityHue }),
+      })
+      if (!res.ok) throw new Error((await res.json()).error ?? 'Could not change the colour')
+      return res.json()
+    },
+    onSuccess: () => {
+      setErrorMsg(undefined)
+      queryClient.invalidateQueries({ queryKey: ['api/profiles'] })
+      queryClient.invalidateQueries({ queryKey: ['api/auth/me'] })
+      // The hue rides on every payload carrying this person, so a change has to reach
+      // the boards that paint them (ADR 044).
+      queryClient.invalidateQueries({ queryKey: ['chores/tasks'] })
+      queryClient.invalidateQueries({ queryKey: ['calendar/events'] })
+      queryClient.invalidateQueries({ queryKey: ['calendar/activities'] })
+      queryClient.invalidateQueries({ queryKey: ['family-feed/posts'] })
+    },
+    onError: (e: Error) => setErrorMsg(e.message),
+  })
+
+  // Hearth is reserved and never assignable — the household is a who, not a member
+  // (ADR 041). Bailing out AFTER the hooks, never before them.
+  if (profile.id === FAMILY_PROFILE_ID) return null
+
+  return (
+    <div className="flex flex-col gap-3 px-6 py-5">
+      <div className="flex flex-col gap-1">
+        {label && <h3 className="text-section-label text-muted-foreground">{label}</h3>}
+        <p className="text-xs-body text-muted-foreground">
+          {profile.name.split(' ')[0]}’s colour, everywhere they appear. No two people share one.
+        </p>
+      </div>
+      <ColorPicker
+        value={profile.identityHue}
+        takenBy={takenBy}
+        disabled={mutation.isPending}
+        onChange={(hue) => mutation.mutate(hue)}
+      />
+      {errorMsg && <FieldError message={errorMsg} />}
+    </div>
+  )
+}
+
 // ─── Profile edit drawer ──────────────────────────────────────────────────────
 
 function ProfileEditDrawer({
   profile,
+  profiles,
   onClose,
 }: {
   profile: ProfileRow | null
+  profiles: ProfileRow[]
   onClose: () => void
 }) {
   const { id: activeProfileId } = useAuth()
@@ -569,6 +653,8 @@ function ProfileEditDrawer({
       {profile && (
         <>
           <AvatarField profile={profile} />
+          <div className="border-t border-border" />
+          <ColorField profile={profile} profiles={profiles} label="Colour" />
           <div className="border-t border-border" />
           <ProfileEditFields profile={profile} />
 
@@ -655,6 +741,7 @@ function ProfilesSection() {
             key={profile.id}
             name={profile.name}
             tier={profile.tier}
+            hue={profile.identityHue}
             avatarUrl={profile.avatarUrl}
             isLast={i === nonFamily.length - 1 && !showCreate}
             onEdit={() => setEditTarget(profile)}
@@ -676,7 +763,11 @@ function ProfilesSection() {
         )}
       </SettingsSection>
 
-      <ProfileEditDrawer profile={editTarget} onClose={() => setEditTarget(null)} />
+      <ProfileEditDrawer
+        profile={editTarget}
+        profiles={profiles}
+        onClose={() => setEditTarget(null)}
+      />
 
       <ConfirmDialog
         open={!!deleteTarget}
@@ -1071,25 +1162,44 @@ function PushNotificationsRow() {
   )
 }
 
-// ─── Your photo (self-serve — every tier) ─────────────────────────────────────
+// ─── Your photo + colour (self-serve — every tier) ────────────────────────────
 
 /**
- * The self-serve half of ADR 042. The Profiles section is tier-4 only, so without
- * this a kid would have the *permission* to change their own photo and nowhere to
- * do it. Choosing your own face is a personal setting, so it sits beside Display
- * rather than inside profile administration.
+ * The self-serve half of ADR 042 and ADR 044. The Profiles section is tier-4 only, so
+ * without this a kid would have the *permission* to change their own photo and their own
+ * colour, and nowhere to do it. Choosing your own face and your own colour are personal
+ * settings, so they sit beside Display rather than inside profile administration.
+ *
+ * The colour needs the whole roster, not just this profile: a hue is UNIQUE across the
+ * family, so the picker has to show which are taken, and by whom.
  */
-function YourPhotoSection() {
-  const { id, name, tier, avatarUrl } = useAuth()
+function YourAppearanceSection() {
+  const { id, name, tier, avatarUrl, identityHue } = useAuth()
 
-  // The household has no "own" photo to set — a family session is tier 1 and its
-  // photo is a tier-4 decision (ADR 042).
+  const { data: profiles = [] } = useQuery<ProfileRow[]>({
+    queryKey: ['api/profiles'],
+    queryFn: () => fetch('/api/profiles').then((r) => r.json()) as Promise<ProfileRow[]>,
+    staleTime: 30_000,
+  })
+
+  // The household has no "own" photo or colour to set — a family session is tier 1, its
+  // photo is a tier-4 decision (ADR 042), and Hearth is reserved (ADR 041).
   if (id === FAMILY_PROFILE_ID) return null
 
+  // `identityHue` MUST be threaded through here. Rebuilding the profile as a literal and
+  // forgetting it is precisely how this avatar ended up hashing its owner's name while
+  // the spine two inches away painted their real colour.
+  const self: ProfileRow = { id, name, tier, avatarUrl, identityHue }
+
   return (
-    <SettingsSection title="Your photo">
-      <AvatarField profile={{ id, name, tier, avatarUrl }} />
-    </SettingsSection>
+    <>
+      <SettingsSection title="Your photo">
+        <AvatarField profile={self} />
+      </SettingsSection>
+      <SettingsSection title="Your colour">
+        <ColorField profile={self} profiles={profiles} />
+      </SettingsSection>
+    </>
   )
 }
 
@@ -1110,7 +1220,7 @@ export function Settings() {
         </SettingsSection>
       </TierGate>
 
-      <YourPhotoSection />
+      <YourAppearanceSection />
 
       <SettingsSection title="Display">
         <AppearanceRow />

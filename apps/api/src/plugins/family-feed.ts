@@ -33,6 +33,7 @@ const familyFeedPlugin: FastifyPluginAsync = async (fastify) => {
         id: post.authorId,
         name: author?.name ?? 'Unknown',
         avatarUrl: author?.avatarUrl ?? null,
+        identityHue: author?.identityHue ?? null,
       },
     })
   })
@@ -72,6 +73,7 @@ const familyFeedPlugin: FastifyPluginAsync = async (fastify) => {
           id: p.authorId,
           name: profileMap.get(p.authorId)?.name ?? 'Unknown',
           avatarUrl: profileMap.get(p.authorId)?.avatarUrl ?? null,
+          identityHue: profileMap.get(p.authorId)?.identityHue ?? null,
         },
       })),
       nextCursor,

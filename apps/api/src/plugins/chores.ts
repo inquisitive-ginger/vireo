@@ -366,7 +366,10 @@ type TaskRow = {
    dropped here even though every call site already held the profile row — the
    same latent gap ADR 042 found in family-feed, and the reason chores could never
    have rendered a member's photo. */
-type AssigneeRef = { name: string; avatarUrl: string | null } | null | undefined
+type AssigneeRef =
+  | { name: string; avatarUrl: string | null; identityHue: string | null }
+  | null
+  | undefined
 
 function serializeTask(task: TaskRow, assignee: AssigneeRef) {
   return {
@@ -376,6 +379,10 @@ function serializeTask(task: TaskRow, assignee: AssigneeRef) {
     assigneeId: task.assigneeId,
     assigneeName: assignee?.name ?? 'Unknown',
     assigneeAvatarUrl: assignee?.avatarUrl ?? null,
+    // The row spine is the assignee's hue in every state (ADR 043), so it must travel
+    // with the task rather than be re-derived from `assigneeName` — a hash collides,
+    // and a rename would silently re-colour the person (ADR 044).
+    assigneeHue: assignee?.identityHue ?? null,
     status: task.status,
     dueDate: task.dueDate ? task.dueDate.toISOString().slice(0, 10) : null,
     xpReward: task.xpReward,

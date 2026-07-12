@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { cn } from '../lib/utils'
-import { getIdentityHue, identityToken, type OwnerHue } from '../lib/identity'
+import { identityToken, resolveHue, type OwnerHue } from '../lib/identity'
 
 export type ProfileAvatarSize = 'sm' | 'base' | 'md' | 'lg'
 
@@ -43,7 +43,7 @@ export function ProfileAvatar({
   identity,
   className,
 }: ProfileAvatarProps) {
-  const hue = identity ?? getIdentityHue(name)
+  const hue: OwnerHue = identity ?? resolveHue(name)
   const [imageFailed, setImageFailed] = useState(false)
   const showImage = Boolean(avatarUrl) && !imageFailed
 

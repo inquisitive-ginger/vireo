@@ -137,7 +137,7 @@ export function CalendarPage() {
   const membersById = useMemo(() => {
     const map = new Map<string, CalendarMember>()
     for (const m of profilesQuery.data ?? [])
-      map.set(m.id, { name: m.name, avatarUrl: m.avatarUrl })
+      map.set(m.id, { name: m.name, identityHue: m.identityHue, avatarUrl: m.avatarUrl })
     return map
   }, [profilesQuery.data])
 
