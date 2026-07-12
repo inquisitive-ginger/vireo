@@ -8,7 +8,7 @@ import { STORY_MEMBERS } from './fixtures'
    and (edit mode) an in-drawer Remove. */
 
 const members: Profile[] = [...STORY_MEMBERS].map(
-  ([id, name]) => ({ id, name, tier: 2 }) as Profile
+  ([id, member]) => ({ id, name: member.name, tier: 2 }) as Profile
 )
 
 const meta: Meta<typeof CreateEventDrawer> = {

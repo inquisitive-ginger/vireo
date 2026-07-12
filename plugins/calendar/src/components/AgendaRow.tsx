@@ -1,6 +1,6 @@
 import { ChevronRight, MapPin, Repeat, Users } from 'lucide-react'
 import { ItemCard } from '@family-os/ui'
-import type { CalendarEvent } from '../types'
+import type { CalendarEvent, CalendarMember } from '../types'
 import { agendaWhenLabel } from '../lib/grid'
 import { huesForEvent, spineColorsForEvent } from '../lib/hues'
 
@@ -15,13 +15,13 @@ export function AgendaRow({
   onClick,
 }: {
   event: CalendarEvent
-  membersById: Map<string, string>
+  membersById: Map<string, CalendarMember>
   /** Tap-to-edit (tier 4). When set the row becomes a button. */
   onClick?: () => void
 }) {
   const spineColors = spineColorsForEvent(huesForEvent(event.attendeeIds, membersById))
   const ownerNames = event.attendeeIds
-    .map((id) => membersById.get(id))
+    .map((id) => membersById.get(id)?.name)
     .filter((n): n is string => Boolean(n))
 
   const card = (

@@ -5,8 +5,8 @@ import { layoutMonth } from '../lib/grid'
 import { MonthGrid } from './MonthGrid'
 
 const members = new Map([
-  ['p1', 'Zoe'],
-  ['p2', 'Teddy'],
+  ['p1', { name: 'Zoe' }],
+  ['p2', { name: 'Teddy' }],
 ])
 
 function evt(o: {

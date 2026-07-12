@@ -25,8 +25,27 @@ model Profile {
   widgetLayouts       WidgetLayout[]
   notifications       Notification[]
   pushSubscriptions   PushSubscription[]
+  image               ProfileImage?
 
   @@map("profiles")
+  @@schema("platform")
+}
+
+/// The avatar photograph's bytes (ADR 042). Lives in Postgres rather than on disk so
+/// that ADR 009's "backup and restore is a single operation" still holds — a household
+/// is ≤ ~8 profiles × ~40KB, so the usual blobs-in-a-database objection doesn't apply.
+/// `Profile.avatarUrl` holds `/api/profiles/:id/avatar?v={hash}`; the hash busts the
+/// immutable cache when the photo changes.
+model ProfileImage {
+  profileId String   @id @map("profile_id")
+  bytes     Bytes
+  mimeType  String   @map("mime_type")
+  hash      String
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@map("profile_images")
   @@schema("platform")
 }
 

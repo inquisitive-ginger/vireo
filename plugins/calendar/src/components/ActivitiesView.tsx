@@ -11,7 +11,7 @@ import {
   identityToken,
   type IdentityHue,
 } from '@family-os/ui'
-import type { CalendarEvent } from '../types'
+import type { CalendarEvent, CalendarMember } from '../types'
 import { formatTime, localDateKey } from '../lib/grid'
 
 /* The Activities lens (design.md §4, story #5) — a LENS on the calendar, not a
@@ -54,7 +54,7 @@ type OwnerGroup = {
  *  later — measured against the injected `now`). */
 function groupByOwner(
   activities: CalendarEvent[],
-  membersById: Map<string, string>,
+  membersById: Map<string, CalendarMember>,
   now: Date
 ): OwnerGroup[] {
   const nowKey = localDateKey(now)
@@ -73,7 +73,7 @@ function groupByOwner(
   return [...membersById.keys()]
     .filter((id) => byOwner.has(id))
     .map((ownerId) => {
-      const name = membersById.get(ownerId)!
+      const name = membersById.get(ownerId)!.name
       const list = byOwner
         .get(ownerId)!
         .slice()
@@ -94,7 +94,7 @@ function groupByOwner(
 
 export interface ActivitiesViewProps {
   activities: CalendarEvent[]
-  membersById: Map<string, string>
+  membersById: Map<string, CalendarMember>
   /** Current time — decides which activities still count as standing, and anchors
    *  the Seasons axis. */
   now: Date

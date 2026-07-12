@@ -3,6 +3,7 @@ import { CalendarDays } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import {
   EmptyState,
+  Spine,
   WidgetHeader as UiWidgetHeader,
   WIDGET_CQ,
   WIDGET_INSET,
@@ -10,7 +11,7 @@ import {
   isSameDay,
   relativeDayLabel,
 } from '@family-os/ui'
-import type { CalendarEvent } from '../types'
+import type { CalendarEvent, CalendarMember } from '../types'
 import { formatTime } from '../lib/grid'
 import { buildWeek, spanWhenLabel, type WeekDay, type WeekModel } from '../lib/week'
 import { huesForEvent, spineColorsForEvent } from '../lib/hues'
@@ -49,7 +50,7 @@ export type UpNextFraming = 'family' | 'mine'
 
 export interface UpNextViewProps {
   events: CalendarEvent[]
-  membersById: Map<string, string>
+  membersById: Map<string, CalendarMember>
   /** Current time — drives the countdown, "Later today", and day labels. */
   now: Date
   /** Family → owner avatars shown; Mine → dropped (all theirs), Family events tagged. */
@@ -61,7 +62,7 @@ export interface UpNextViewProps {
 
 interface ZoneProps {
   week: WeekModel
-  membersById: Map<string, string>
+  membersById: Map<string, CalendarMember>
   now: Date
   framing: UpNextFraming
 }
@@ -76,7 +77,7 @@ function WidgetHeader() {
   return <UiWidgetHeader icon={CalendarDays} label="Calendar" />
 }
 
-function spineFor(event: CalendarEvent, membersById: Map<string, string>): string[] {
+function spineFor(event: CalendarEvent, membersById: Map<string, CalendarMember>): string[] {
   return spineColorsForEvent(huesForEvent(event.attendeeIds, membersById))
 }
 
@@ -118,7 +119,7 @@ function EventRow({
   showOwners = true,
 }: {
   event: CalendarEvent
-  membersById: Map<string, string>
+  membersById: Map<string, CalendarMember>
   framing: UpNextFraming
   showOwners?: boolean
 }) {
@@ -127,6 +128,11 @@ function EventRow({
       <span className="text-sm-token w-16 shrink-0 tabular-nums text-muted-foreground">
         {formatTime(event.startsAt).toLowerCase()}
       </span>
+      {/* The spine, not the avatar, carries the hue (ADR 042). An avatar can hold a
+          PHOTO now, so it is no longer a strict superset of the spine — the premise
+          this row was stripped on. Across the room the colour is what reads; the
+          face is a close-up detail. */}
+      <Spine color={spineFor(event, membersById)} />
       <span className="text-base-token min-w-0 flex-1 truncate text-foreground">{event.title}</span>
       {showOwners && (
         <EventOwners event={event} membersById={membersById} showMembers={showMembersIn(framing)} />

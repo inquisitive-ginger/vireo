@@ -2,6 +2,7 @@ import { Users } from 'lucide-react'
 import { cn } from '@family-os/ui'
 import type { PlacedSpan } from '../lib/grid'
 import { fillForHues, huesForEvent, isFamilyHues } from '../lib/hues'
+import type { CalendarMember } from '../types'
 
 /* A continuous multi-day bar. Flush edges with a ←/→ cap where the span crosses a
    week boundary; carries the same solo/Family/shared fill as a chip. */
@@ -10,7 +11,7 @@ export function SpanBar({
   membersById,
 }: {
   span: PlacedSpan
-  membersById: Map<string, string>
+  membersById: Map<string, CalendarMember>
 }) {
   const hues = huesForEvent(span.event.attendeeIds, membersById)
   const { background, color } = fillForHues(hues)

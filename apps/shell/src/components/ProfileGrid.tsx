@@ -1,10 +1,18 @@
 import { useState } from 'react'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
 import { Check, Settings } from 'lucide-react'
-import { FAMILY_HUE, ProfileAvatar, PinInput, cn } from '@family-os/ui'
+import {
+  FAMILY_HUE,
+  ProfileAvatar,
+  PinInput,
+  Spine,
+  identityColor,
+  identityToken,
+  cn,
+} from '@family-os/ui'
 import { FAMILY_PROFILE_ID, useAuth } from '@family-os/platform'
 
-type ProfileRow = { id: string; name: string; tier: number }
+type ProfileRow = { id: string; name: string; tier: number; avatarUrl?: string | null }
 type PinPhase = 'list' | 'pin-entry' | 'pin-error'
 
 interface ProfileGridProps {
@@ -30,6 +38,9 @@ export function ProfileGrid({ open, onClose, className, onNavigate }: ProfileGri
 
   // Exclude active profile and the family pseudo-profile (shown as dedicated item below)
   const switchableProfiles = profiles.filter((p) => p.id !== activeId && p.id !== FAMILY_PROFILE_ID)
+  // The household's own row — it can carry a photo too (ADR 042), and its name comes
+  // from system_config rather than the profile row.
+  const familyProfile = profiles.find((p) => p.id === FAMILY_PROFILE_ID)
 
   async function switchTo(target: ProfileRow) {
     const needsPin = target.tier === 4 && activeTier < 4
@@ -118,7 +129,16 @@ export function ProfileGrid({ open, onClose, className, onNavigate }: ProfileGri
                   'hover:bg-background/60'
                 )}
               >
-                <ProfileAvatar name={profile.name} size="sm" />
+                {/* THE KEY — see ProfileListItem. The switcher and the settings list
+                    are the only surfaces pairing every member's face with their name,
+                    so they are where the hue→person code is learned. A photo covers
+                    the tinted initials circle; this spine is what keeps teaching it. */}
+                <Spine color={identityColor(profile.name)} className="h-8" />
+                <ProfileAvatar
+                  name={profile.name}
+                  avatarUrl={profile.avatarUrl ?? undefined}
+                  size="sm"
+                />
                 <span className="flex-1 text-sm">{profile.name.split(' ')[0]}</span>
               </button>
             ))}
@@ -135,7 +155,13 @@ export function ProfileGrid({ open, onClose, className, onNavigate }: ProfileGri
                     : 'hover:bg-background/60'
                 )}
               >
-                <ProfileAvatar name={familyName ?? 'Family'} identity={FAMILY_HUE} size="sm" />
+                <Spine color={identityToken(FAMILY_HUE, 'base')} className="h-8" />
+                <ProfileAvatar
+                  name={familyName ?? 'Family'}
+                  avatarUrl={familyProfile?.avatarUrl ?? undefined}
+                  identity={FAMILY_HUE}
+                  size="sm"
+                />
                 <span className="text-sm text-muted-foreground leading-none">
                   {familyName ?? 'Family view'}
                 </span>

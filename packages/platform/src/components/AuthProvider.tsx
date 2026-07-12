@@ -9,6 +9,7 @@ export type AuthUser = {
   id: string
   name: string
   tier: TierLevel
+  avatarUrl?: string | null
   darkMode?: boolean | null
   /** Effective taskee variant from /auth/me (already resolved against tier). */
   focusMode?: boolean
@@ -47,6 +48,7 @@ function AuthLoader({ children, queryClient }: { children: ReactNode; queryClien
         id: data.id,
         name: data.name,
         tier: data.tier,
+        avatarUrl: data.avatarUrl,
         darkMode: data.darkMode,
         focusMode: data.focusMode,
         pushEnabled: data.pushEnabled ?? false,

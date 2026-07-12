@@ -47,7 +47,7 @@ export function Sidebar({ pluginNavItems = [] }: { pluginNavItems?: PluginNavIte
 }
 
 function ProfileChip() {
-  const { id, name, familyName } = useAuth()
+  const { id, name, familyName, avatarUrl } = useAuth()
   const [gridOpen, setGridOpen] = useState(false)
   const displayName = id === FAMILY_PROFILE_ID ? (familyName ?? name) : name
 
@@ -71,6 +71,7 @@ function ProfileChip() {
       >
         <ProfileAvatar
           name={displayName}
+          avatarUrl={avatarUrl ?? undefined}
           identity={id === FAMILY_PROFILE_ID ? FAMILY_HUE : undefined}
           size="sm"
           active

@@ -1,6 +1,19 @@
 import { useState, useRef, useEffect } from 'react'
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Sun, Monitor, Moon, Plus, Shield, CircleAlert, Pencil, Check, Bell } from 'lucide-react'
+import {
+  Sun,
+  Monitor,
+  Moon,
+  Plus,
+  Shield,
+  CircleAlert,
+  Pencil,
+  Check,
+  Bell,
+  Camera,
+  ImageUp,
+  Trash2,
+} from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
@@ -26,6 +39,9 @@ import {
   Drawer,
   Switch,
   SegmentedControl,
+  ProfileAvatar,
+  AvatarEditor,
+  FAMILY_HUE,
 } from '@family-os/ui'
 import type { PermissionToggleListItem } from '@family-os/ui'
 import { CreateProfileSchema, type CreateProfileInput } from '@family-os/schemas'
@@ -36,6 +52,7 @@ type ProfileRow = {
   id: string
   name: string
   tier: 1 | 2 | 3 | 4
+  avatarUrl?: string | null
   // Raw Focus-mode override: null = tier default, true/false = explicit (ADR 036).
   focusMode?: boolean | null
 }
@@ -409,6 +426,132 @@ function FocusModeField({ profile }: { profile: ProfileRow }) {
   )
 }
 
+// ─── Avatar (ADR 042) ─────────────────────────────────────────────────────────
+
+/**
+ * The photo affordance at the top of the profile drawer. The avatar itself is the
+ * button — a camera badge says so — and the editor opens as a dialog ABOVE the
+ * drawer, because cropping wants a big square canvas and the drawer is a 440px rail.
+ */
+function AvatarField({ profile }: { profile: ProfileRow }) {
+  const queryClient = useQueryClient()
+  const [editing, setEditing] = useState(false)
+  const [errorMsg, setErrorMsg] = useState<string | undefined>()
+
+  const isFamily = profile.id === FAMILY_PROFILE_ID
+
+  function refresh() {
+    queryClient.invalidateQueries({ queryKey: ['api/profiles'] })
+    // The active profile's own photo rides on /auth/me — the sidebar and mobile
+    // top bar read it from there, not from the profiles list.
+    queryClient.invalidateQueries({ queryKey: ['api/auth/me'] })
+  }
+
+  const uploadMutation = useMutation({
+    mutationFn: async (blob: Blob) => {
+      const res = await fetch(`/api/profiles/${profile.id}/avatar`, {
+        method: 'POST',
+        headers: { 'Content-Type': blob.type },
+        body: blob,
+      })
+      if (!res.ok) throw new Error((await res.json()).error ?? 'Upload failed')
+      return res.json() as Promise<{ avatarUrl: string }>
+    },
+    onSuccess: () => {
+      setErrorMsg(undefined)
+      setEditing(false)
+      refresh()
+    },
+    onError: (e: Error) => setErrorMsg(e.message),
+  })
+
+  const removeMutation = useMutation({
+    mutationFn: async () => {
+      const res = await fetch(`/api/profiles/${profile.id}/avatar`, { method: 'DELETE' })
+      if (!res.ok) throw new Error('Could not remove the photo')
+    },
+    onSuccess: () => {
+      setErrorMsg(undefined)
+      refresh()
+    },
+    onError: (e: Error) => setErrorMsg(e.message),
+  })
+
+  const hasPhoto = Boolean(profile.avatarUrl)
+
+  return (
+    <div className="px-6 py-5">
+      <div className="flex items-center gap-4">
+        <button
+          type="button"
+          onClick={() => setEditing(true)}
+          aria-label={hasPhoto ? 'Change photo' : 'Add photo'}
+          className="group relative shrink-0 cursor-pointer rounded-full focus-visible:outline focus-visible:outline-2 focus-visible:outline-primary focus-visible:outline-offset-2"
+        >
+          <ProfileAvatar
+            name={profile.name}
+            size="lg"
+            avatarUrl={profile.avatarUrl ?? undefined}
+            identity={isFamily ? FAMILY_HUE : undefined}
+          />
+          <span className="absolute -bottom-0.5 -right-0.5 grid size-7 place-items-center rounded-full border-2 border-card bg-primary text-primary-foreground shadow-[var(--shadow-card)] transition-transform group-hover:scale-110">
+            <Camera className="size-3.5" aria-hidden />
+          </span>
+        </button>
+
+        <div className="flex min-w-0 flex-col items-start gap-1">
+          <div className="flex flex-wrap items-center gap-1">
+            <Button variant="ghost" size="sm" className="h-8 px-2" onClick={() => setEditing(true)}>
+              <ImageUp className="size-4" />
+              {hasPhoto ? 'Change photo' : 'Add photo'}
+            </Button>
+            {hasPhoto && (
+              <Button
+                variant="ghost-destructive"
+                size="sm"
+                className="h-8 px-2"
+                disabled={removeMutation.isPending}
+                onClick={() => removeMutation.mutate()}
+              >
+                <Trash2 className="size-4" />
+                Remove
+              </Button>
+            )}
+          </div>
+          <p className="text-xs-body text-muted-foreground">
+            {hasPhoto ? 'A photo is a face — the colour still says who.' : 'Initials for now.'}
+          </p>
+        </div>
+      </div>
+
+      {errorMsg && <FieldError message={errorMsg} />}
+
+      {/* Stacked over the drawer. Radix owns the drawer's focus trap, so this plain
+          overlay sits above it at a higher z-index and closes back to the drawer. */}
+      {editing && (
+        <div
+          role="dialog"
+          aria-modal="true"
+          aria-label="Crop photo"
+          className="fixed inset-0 z-[60] grid place-items-center bg-black/40 p-4 backdrop-blur-sm"
+        >
+          <div className="max-h-full overflow-y-auto rounded-hero border border-border bg-card p-8 shadow-[var(--shadow-raised)]">
+            <h3 className="text-card-title mb-6">
+              {hasPhoto ? 'Change photo' : 'Add photo'} — {profile.name.split(' ')[0]}
+            </h3>
+            <AvatarEditor
+              name={profile.name}
+              saving={uploadMutation.isPending}
+              onCancel={() => setEditing(false)}
+              onSave={(blob) => uploadMutation.mutate(blob)}
+            />
+          </div>
+        </div>
+      )}
+    </div>
+  )
+}
+
 // ─── Profile edit drawer ──────────────────────────────────────────────────────
 
 function ProfileEditDrawer({
@@ -425,6 +568,8 @@ function ProfileEditDrawer({
     <Drawer open={!!profile} onClose={onClose} title={profile?.name ?? ''}>
       {profile && (
         <>
+          <AvatarField profile={profile} />
+          <div className="border-t border-border" />
           <ProfileEditFields profile={profile} />
 
           <div className="border-t-2 border-border">
@@ -510,6 +655,7 @@ function ProfilesSection() {
             key={profile.id}
             name={profile.name}
             tier={profile.tier}
+            avatarUrl={profile.avatarUrl}
             isLast={i === nonFamily.length - 1 && !showCreate}
             onEdit={() => setEditTarget(profile)}
             onRemove={() => setDeleteTarget(profile)}
@@ -925,6 +1071,28 @@ function PushNotificationsRow() {
   )
 }
 
+// ─── Your photo (self-serve — every tier) ─────────────────────────────────────
+
+/**
+ * The self-serve half of ADR 042. The Profiles section is tier-4 only, so without
+ * this a kid would have the *permission* to change their own photo and nowhere to
+ * do it. Choosing your own face is a personal setting, so it sits beside Display
+ * rather than inside profile administration.
+ */
+function YourPhotoSection() {
+  const { id, name, tier, avatarUrl } = useAuth()
+
+  // The household has no "own" photo to set — a family session is tier 1 and its
+  // photo is a tier-4 decision (ADR 042).
+  if (id === FAMILY_PROFILE_ID) return null
+
+  return (
+    <SettingsSection title="Your photo">
+      <AvatarField profile={{ id, name, tier, avatarUrl }} />
+    </SettingsSection>
+  )
+}
+
 // ─── Page ─────────────────────────────────────────────────────────────────────
 
 export function Settings() {
@@ -941,6 +1109,8 @@ export function Settings() {
           <PinResetRow />
         </SettingsSection>
       </TierGate>
+
+      <YourPhotoSection />
 
       <SettingsSection title="Display">
         <AppearanceRow />

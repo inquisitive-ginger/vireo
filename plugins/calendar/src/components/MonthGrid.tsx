@@ -4,6 +4,7 @@ import type { LaidOutWeek } from '../lib/grid'
 import { WEEKDAY_LABELS, isSameDay, dayDiff } from '../lib/grid'
 import { EventChip } from './EventChip'
 import { SpanBar } from './SpanBar'
+import type { CalendarMember } from '../types'
 
 // Layout constants (px) — ported from the locked exploration so the span overlay
 // lines up with the reserved band under each cell's date number.
@@ -23,7 +24,7 @@ export function MonthGrid({
   onQuickAdd,
 }: {
   weeks: LaidOutWeek[]
-  membersById: Map<string, string>
+  membersById: Map<string, CalendarMember>
   today: Date
   onDrillDay: (date: Date) => void
   /** Tier-4 quick-add: a "+" revealed on cell hover (hover-capable devices only)

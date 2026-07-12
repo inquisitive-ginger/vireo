@@ -2,7 +2,7 @@ import { useMemo } from 'react'
 import { Loader2 } from 'lucide-react'
 import { FAMILY_PROFILE_ID, useAuth, useQuery } from '@family-os/platform'
 import type { Profile } from '@family-os/platform/types'
-import type { EventsResponse } from '../types'
+import type { EventsResponse, CalendarMember } from '../types'
 import { agendaRange } from '../lib/grid'
 import { WEEK_WINDOW_DAYS } from '../lib/week'
 import { UpNextView, type UpNextFraming } from './UpNextView'
@@ -55,8 +55,8 @@ export default function UpNext() {
   })
 
   const membersById = useMemo(() => {
-    const map = new Map<string, string>()
-    for (const p of profiles ?? []) map.set(p.id, p.name)
+    const map = new Map<string, CalendarMember>()
+    for (const p of profiles ?? []) map.set(p.id, { name: p.name, avatarUrl: p.avatarUrl })
     return map
   }, [profiles])
 

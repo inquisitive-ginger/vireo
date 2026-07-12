@@ -47,8 +47,15 @@ export function ProfileAvatar({
   const [imageFailed, setImageFailed] = useState(false)
   const showImage = Boolean(avatarUrl) && !imageFailed
 
-  // Initials are the base layer; the photo (when present and loadable) sits above
-  // them, so a broken/absent URL falls back to initials rather than an empty circle.
+  // A photo is a FACE, not an identity token (ADR 042). It fills the circle — no
+  // hue band. The identity hue is carried by the chrome BESIDE the avatar (the
+  // ItemCard spine, an identity wash, a hue pill), never by the avatar itself, so a
+  // photo and the identity system never compete. Any surface showing several people
+  // at once must therefore carry a hue element of its own; an avatar alone is not
+  // enough once it can hold a face.
+  //
+  // Initials are the base layer, so a broken or absent URL falls back to them
+  // rather than to an empty circle — and initials still sit on the identity tint.
   return (
     <div
       role="img"
