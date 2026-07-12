@@ -77,6 +77,17 @@
 
 ---
 
+### Design+Dev: Chores overhaul ← queued alongside M3 (not blocked by it)
+
+**Type:** design + development
+**Kickoff:** _to be written_
+**Reads:** `plugins/chores/src/widgets/TodaySummaryView.tsx` (`PersonTile`, `TaskRow`), ADR 042, ADR 030, `design-system.md` §"Avatar photos" + §"Status vs identity colour"
+**Produces:** a chores surface that participates in the avatar/identity system like every other module.
+**Why it's queued:** surfaced by the ADR-042 avatar audit (2026-07-11). Chores **does not use `ProfileAvatar` at all** — `PersonTile` hand-rolls its own initials circle from `identityToken(hue, 'tint')`, so chores will **silently never show member photos** while every other surface does. The mechanical swap is small, but it shouldn't be done blind: `TaskRow`'s spine is a **status** colour, not identity, so chores is the one module where "a spine means who" is false, and dropping avatars in beside it needs the two colour languages resolved rather than stacked. The user's call: _"chores view needs a more substantial overhaul imo"_ — so this is scoped as a design session, not a patch.
+**Depends on:** none (ADR 042 shipped; the avatar plumbing is in place).
+
+---
+
 ## Deferred — Platform v2
 
 Platform/tooling follow-ons that aren't milestone work. The first two were scoped
@@ -110,17 +121,6 @@ this item rather than contradicting it: the family banner is now the _named_ pla
 floor applies. The mechanism (pass prominence into the widget) is unchanged. Note the
 parent layout now has **no feature rung** (ADR 039 amended), so don't key across-room
 typography off `feature` alone — key it off the family surface.
-
----
-
-### Design+Dev: Chores overhaul (incl. avatars + the identity key)
-
-**Type:** design + development
-**Kickoff:** _to be written_
-**Reads:** `plugins/chores/src/widgets/TodaySummaryView.tsx` (`PersonTile`, `TaskRow`), ADR 042, ADR 030, `design-system.md` §"Avatar photos" + §"Status vs identity colour"
-**Produces:** a chores surface that participates in the avatar/identity system like every other module.
-**Why it's queued:** surfaced by the ADR-042 avatar audit (2026-07-11). Chores **does not use `ProfileAvatar` at all** — `PersonTile` hand-rolls its own initials circle from `identityToken(hue, 'tint')`, so chores will **silently never show member photos** while every other surface does. The mechanical swap is small, but it shouldn't be done blind: `TaskRow`'s spine is a **status** colour, not identity, so chores is the one module where "a spine means who" is false, and dropping avatars in beside it needs the two colour languages resolved rather than stacked. The user's call: _"chores view needs a more substantial overhaul imo"_ — so this is scoped as a design session, not a patch.
-**Depends on:** none (ADR 042 shipped; the avatar plumbing is in place).
 
 ---
 
