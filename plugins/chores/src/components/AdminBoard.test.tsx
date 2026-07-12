@@ -130,10 +130,26 @@ describe('AdminBoard — the member group header', () => {
     expect(screen.getByRole('img', { name: 'Maya' })).toBeInTheDocument()
     expect(screen.getByText('Maya')).toBeInTheDocument()
     expect(screen.getByText('1 overdue')).toBeInTheDocument()
+    expect(screen.getByText('2 left')).toBeInTheDocument()
     expect(screen.getByText(/2 tasks · 20 XP load/)).toBeInTheDocument()
   })
 
-  it('says "all done" when a member has nothing open', () => {
+  /* One fact must not wear two colours. The header chip said "1 overdue" while the
+     row two lines below said "Overdue" — if the header is tinted in the member's hue,
+     the same alarm is red in one place and pale teal in the other. */
+  it('says overdue in the SAME language as the row — never in the member’s identity hue', () => {
+    render(<AdminBoard lanes={lanes()} onAddForAssignee={vi.fn()} />)
+
+    const headerChip = screen.getByText('1 overdue')
+    const rowBadge = within(rowFor('Feed the dog')).getByText('Overdue')
+
+    // Both are the destructive Badge; neither carries an inline identity tint.
+    expect(headerChip.className).toContain('destructive')
+    expect(rowBadge.className).toContain('destructive')
+    expect(headerChip.style.background).toBe('')
+  })
+
+  it('says "✓ all done" in success green when a member has nothing open', () => {
     render(
       <AdminBoard
         lanes={[
@@ -142,7 +158,37 @@ describe('AdminBoard — the member group header', () => {
         onAddForAssignee={vi.fn()}
       />
     )
-    expect(screen.getByText('all done')).toBeInTheDocument()
+    const chip = screen.getByText('✓ all done')
+    expect(chip.className).toContain('success')
+    expect(chip.style.background).toBe('')
+  })
+
+  /* A meter is a COMPARISON. With nothing on the plate there is nothing to compare,
+     so it must not render — otherwise it claims to have data it doesn't, and the 6%
+     minimum-width floor even paints a stub of load that isn't there. */
+  it('drops the load meter entirely for a member with nothing open', () => {
+    render(
+      <AdminBoard
+        lanes={[
+          { assigneeId: 'm-maya', assigneeName: 'Maya', assigneeAvatarUrl: null, tasks: [DONE] },
+        ]}
+        onAddForAssignee={vi.fn()}
+      />
+    )
+    expect(screen.queryByText(/XP load/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/0 tasks/)).not.toBeInTheDocument()
+  })
+
+  it('shows no count chip when a member has nothing open — the status chip says it', () => {
+    render(
+      <AdminBoard
+        lanes={[
+          { assigneeId: 'm-maya', assigneeName: 'Maya', assigneeAvatarUrl: null, tasks: [DONE] },
+        ]}
+        onAddForAssignee={vi.fn()}
+      />
+    )
+    expect(screen.queryByText(/left$/)).not.toBeInTheDocument()
   })
 
   it('prefills the create drawer from the per-member Add', () => {

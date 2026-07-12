@@ -9,9 +9,18 @@ export interface MemberGroupHeaderProps {
       the household. */
   hue?: OwnerHue
   avatarUrl?: string | null
-  /** A short count beside the name, rendered on the member's identity tint —
-      "3", "2 left". Omit for none. */
-  badge?: ReactNode
+  /** A count of **this member's items** — "3", "2 left". Rendered on their identity
+      tint, because a count of someone's things is an identity statement. Omit for none. */
+  count?: ReactNode
+  /** A **status** chip — "1 overdue", "✓ all done". Rendered **raw**: the caller owns
+      the colour, because status has its own language (red = overdue, green = done) and
+      must not be repainted in an identity hue.
+
+      This slot exists because the first pass tinted *everything* here, so a member with
+      overdue work got "1 overdue" in their pale teal — while the row two lines below
+      said "Overdue" in red. One fact, two colours: exactly what ADR 043 exists to
+      prevent, reintroduced in the header while being fixed in the rows. */
+  status?: ReactNode
   /** The group's load read: chores' XP meter, calendar's weekday strip. Wraps to
       its own full-width row below `sm:` so a phone doesn't crush the name. */
   load?: ReactNode
@@ -37,7 +46,8 @@ export function MemberGroupHeader({
   name,
   hue,
   avatarUrl,
-  badge,
+  count,
+  status,
   load,
   action,
   className,
@@ -47,7 +57,9 @@ export function MemberGroupHeader({
     <div className={cn('flex flex-wrap items-center gap-x-2.5 gap-y-2', className)}>
       <ProfileAvatar name={name} identity={ownerHue} avatarUrl={avatarUrl ?? undefined} size="sm" />
       <span className="text-heading text-foreground">{name}</span>
-      {badge !== undefined && (
+      {/* Status reads before the count — an alarm outranks an inventory. */}
+      {status}
+      {count !== undefined && (
         <span
           className="text-xs-token rounded-full px-2 py-0.5"
           style={{
@@ -55,7 +67,7 @@ export function MemberGroupHeader({
             color: identityToken(ownerHue, 'ink'),
           }}
         >
-          {badge}
+          {count}
         </span>
       )}
       {load !== undefined && (

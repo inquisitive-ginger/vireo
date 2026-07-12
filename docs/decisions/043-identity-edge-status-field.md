@@ -117,6 +117,19 @@ skeleton.
 
 - **A row spine on a multi-person surface means "who". Always.** If you need to
   show state, use the field: wash, badge, meta text, dim, check.
+- **The rule binds chips too, not just spines.** A chip picks its language from
+  **what it says**, not from whose header it sits in: a **count** of a member's
+  items is an identity statement (identity tint); **"1 overdue" / "✓ all done"** are
+  **statuses** and take the status colours (red / green), the same ones their rows
+  use. The first implementation of this ADR tinted _every_ header chip in the
+  member's hue, so an urgent member's `1 overdue` rendered in pale teal two lines
+  above a row badge reading `Overdue` in red — one fact wearing two colours, the
+  exact failure this ADR exists to prevent, reintroduced one level up while being
+  fixed in the rows. `MemberGroupHeader` therefore renders its `status` slot **raw**
+  and tints only `count`.
+- **A meter is a comparison; at zero it must not render.** An empty bar with
+  "0 tasks · 0 XP load" is not a quiet meter, it is a meter claiming to have data —
+  and a minimum-width floor will even paint a stub of load that does not exist.
 - **Single-person surfaces are unchanged** — the taskee views' status spines are
   still correct, and still the reference case for the original rule.
 - **Identity hues are now load-bearing on a denser surface than before.**

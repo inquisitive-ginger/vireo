@@ -67,10 +67,34 @@ standing; the kid chooses where to start.
 **Identity takes the edge; status takes the field** (ADR 043).
 
 - **Group header** — the shared **`MemberGroupHeader`**: `ProfileAvatar` (a real
-  face — chores never called it before), name, an identity-tinted urgency badge
-  (`1 overdue` / `2 left` / `all done`), the **XP-load meter** (count + summed
-  load, bar in the member's hue), and a **"+ Add"** that prefills the assignee.
-  **No tint wash, no top-border** — the header is quiet; the rows carry the colour.
+  face — chores never called it before), name, a **status chip**, a **count chip**,
+  the **XP-load meter**, and a **"+ Add"** that prefills the assignee. **No tint
+  wash, no top-border** — the header is quiet; the rows carry the colour.
+
+  The header's chips obey the same channel split as the rows (ADR 043) — **each
+  chip picks its language from what it says, not from whose header it's in**:
+
+  | Member state     | Chip         | Colour                  | Why                                                                 |
+  | ---------------- | ------------ | ----------------------- | ------------------------------------------------------------------- |
+  | Has open work    | `2 left`     | **identity tint**       | A count of _their things_ — an identity statement                   |
+  | Has overdue work | `1 overdue`  | **red** (`destructive`) | A **status** — the same `Badge` and the same red as the row's badge |
+  | Nothing open     | `✓ all done` | **green** (`success`)   | A **status** — the same green as a completed row's check            |
+
+  > **A meter is a comparison.** With nothing on the plate there is nothing to
+  > compare, so the load meter **does not render** for an all-done member. A first
+  > pass showed `0 tasks · 0 XP load` under an empty bar — and the 6% minimum-width
+  > floor even painted a stub of the member's hue, so someone with no work appeared
+  > to be carrying a little something. The `✓ all done` chip already says everything
+  > true about them.
+
+  > **Caught in review, worth recording.** The first pass tinted **every** header
+  > chip in the member's hue, so an urgent member's `1 overdue` rendered in their
+  > pale teal — two lines above a row badge reading `Overdue` in **red**. One fact,
+  > two colours: exactly the failure ADR 043 exists to prevent, reintroduced in the
+  > header while being fixed in the rows. This chip language mirrors the widget's
+  > `PersonTile` (`AllDoneChip` / `OverduePill` / `CountChip`), settled in the Today
+  > Widget rework — the board had simply never adopted it.
+
 - **Rows** — **`ItemCard`** with the **assignee's identity hue on the spine, in
   every state**. Status is the row's **field**: an error **wash** on an overdue
   row's fill, the `Overdue` badge, red due text, and dim + strikethrough + the

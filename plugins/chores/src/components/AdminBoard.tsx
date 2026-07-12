@@ -112,7 +112,8 @@ export function AdminBoard({
             <MemberGroupHeader
               name={lane.assigneeName}
               avatarUrl={lane.assigneeAvatarUrl}
-              badge={laneBadge(lane)}
+              status={<LaneStatus lane={lane} />}
+              count={pendingCount(lane) > 0 ? `${pendingCount(lane)} left` : undefined}
               load={<LoadMeter lane={lane} maxLoad={maxLoad} />}
               action={
                 showAdd ? (
@@ -158,13 +159,20 @@ function overdueCount(lane: AdminLane): number {
   return lane.tasks.filter((t) => isOverdue(t.dueDate, t.status)).length
 }
 
-/** The count beside the name — an urgent member says so here, before you reach
-    their rows. */
-function laneBadge(lane: AdminLane): string {
+/* The member's STATE, said in the state language — never in their identity hue.
+   A header chip reading "1 overdue" in someone's pale teal, two lines above a row
+   badge reading "Overdue" in red, is one fact wearing two colours. Same `Badge`
+   component and the same red as the row; the same green as a completed row's check.
+
+   This mirrors the widget's `PersonTile` (AllDoneChip / OverduePill / CountChip) —
+   a language the widget settled in the Today Widget rework, and the board simply
+   never adopted. Only the *count* is identity-tinted (see `MemberGroupHeader`),
+   because a count of someone's things is a statement about them, not about a state. */
+function LaneStatus({ lane }: { lane: AdminLane }) {
   const overdue = overdueCount(lane)
-  if (overdue > 0) return `${overdue} overdue`
-  const pending = pendingCount(lane)
-  return pending === 0 ? 'all done' : `${pending} left`
+  if (overdue > 0) return <Badge variant="destructive">{overdue} overdue</Badge>
+  if (pendingCount(lane) === 0) return <Badge variant="success">✓ all done</Badge>
+  return null
 }
 
 function sortTasks(tasks: ChoreTask[]): ChoreTask[] {
@@ -173,13 +181,26 @@ function sortTasks(tasks: ChoreTask[]): ChoreTask[] {
   return [...tasks].sort((a, b) => rank(a) - rank(b))
 }
 
-/** Summed XP of a member's open tasks, against the busiest member — "is Teddy
-    carrying the house this week?". The bar is the one place the member's hue
-    appears in the header, since the avatar may hold a photo (ADR 042). */
+/* Summed XP of a member's open tasks, against the busiest member — "is Teddy
+   carrying the house this week?".
+
+   A METER IS A COMPARISON. With nothing on the plate there is nothing to compare,
+   so it does not render — it is not a quiet meter at zero, it is a meter claiming
+   to have data. The first pass rendered "0 tasks · 0 XP load" under an empty bar,
+   and the `Math.max(6, …)` floor even painted a 6% stub of the member's hue, so an
+   all-done member appeared to be carrying a little something. The "✓ all done" chip
+   already says everything true about them.
+
+   The bar is the one place the member's hue appears in the header, since the avatar
+   may hold a photo (ADR 042). */
 function LoadMeter({ lane, maxLoad }: { lane: AdminLane; maxLoad: number }) {
-  const load = laneLoad(lane)
   const pending = pendingCount(lane)
-  const pct = maxLoad > 0 ? Math.max(6, (load / maxLoad) * 100) : 0
+  if (pending === 0) return null
+
+  const load = laneLoad(lane)
+  // The 6% floor keeps a real-but-tiny load visible; it must never manufacture one,
+  // so it only applies when there IS load.
+  const pct = load > 0 && maxLoad > 0 ? Math.max(6, (load / maxLoad) * 100) : 0
 
   return (
     <div className="flex items-center gap-2">

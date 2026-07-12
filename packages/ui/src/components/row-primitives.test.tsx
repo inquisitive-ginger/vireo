@@ -78,17 +78,30 @@ describe('MemberGroupHeader', () => {
     expect(screen.getByText('Maya')).toBeInTheDocument()
   })
 
-  it('tints the badge in the member’s identity hue — the avatar may hold a photo, so it cannot be the colour signal (ADR 042)', () => {
-    render(<MemberGroupHeader name="Maya" badge="2 left" />)
-    const badge = screen.getByText('2 left')
+  it('tints the COUNT in the member’s identity hue — a count of someone’s things is a statement about them (and the avatar may hold a photo, so it cannot be the colour signal — ADR 042)', () => {
+    render(<MemberGroupHeader name="Maya" count="2 left" />)
+    const count = screen.getByText('2 left')
     // Maya hashes to `sage`.
-    expect(badge.style.background).toBe('var(--identity-sage-tint)')
-    expect(badge.style.color).toBe('var(--identity-sage-ink)')
+    expect(count.style.background).toBe('var(--identity-sage-tint)')
+    expect(count.style.color).toBe('var(--identity-sage-ink)')
   })
 
   it('honours an explicit hue over the name hash', () => {
-    render(<MemberGroupHeader name="Maya" hue="plum" badge="2 left" />)
+    render(<MemberGroupHeader name="Maya" hue="plum" count="2 left" />)
     expect(screen.getByText('2 left').style.background).toBe('var(--identity-plum-tint)')
+  })
+
+  it('renders a STATUS chip raw — status has its own language and must never be repainted in an identity hue (ADR 043)', () => {
+    render(
+      <MemberGroupHeader
+        name="Maya"
+        status={<span data-testid="status">1 overdue</span>}
+        count="2 left"
+      />
+    )
+    const status = screen.getByTestId('status')
+    expect(status.style.background).toBe('')
+    expect(status.style.color).toBe('')
   })
 
   it('renders the load and action slots the call site supplies', () => {

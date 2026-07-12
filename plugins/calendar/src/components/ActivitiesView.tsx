@@ -206,7 +206,7 @@ function OwnerRoster({
         name={group.name}
         hue={group.hue}
         avatarUrl={group.avatarUrl}
-        badge={group.activities.length}
+        count={group.activities.length}
         load={<WeekdayLoad hue={group.hue} days={group.days} />}
         action={
           canManage && onAdd ? (
