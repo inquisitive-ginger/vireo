@@ -5,6 +5,7 @@ import {
   buildWeek,
   eventsForDay,
   eventsOnDay,
+  heroWhen,
   isMultiDay,
   layoutMonth,
   localDateKey,
@@ -141,5 +142,57 @@ describe('rangeFor', () => {
     const { from, to } = rangeFor('day', new Date(2026, 5, 15, 12))
     expect(localDateKey(new Date(from))).toBe('2026-06-15')
     expect(localDateKey(new Date(to))).toBe('2026-06-15')
+  })
+})
+
+describe('heroWhen', () => {
+  // Mon 13 Jul 2026, 4:00 PM — the hero is picked from a week-long window, so
+  // "later today" and "a later day" are both routine, not edge cases.
+  const now = new Date(2026, 6, 13, 16, 0)
+
+  it('counts down a later-today event', () => {
+    const w = heroWhen(evt({ id: 'e', start: new Date(2026, 6, 13, 17, 15) }), now)
+    expect(w).toEqual({ when: 'in 1h 15m', clock: '5:15 PM', future: false })
+  })
+
+  it('says Now while the event is under way', () => {
+    const w = heroWhen(
+      evt({ id: 'e', start: new Date(2026, 6, 13, 15, 30), end: new Date(2026, 6, 13, 17, 0) }),
+      now
+    )
+    expect(w).toEqual({ when: 'Now', clock: '3:30 PM', future: false })
+  })
+
+  // The bug this function exists to kill: a tomorrow event used to report its bare
+  // clock ("5:15 PM") as the proximity clause, which reads as today.
+  it('names the DAY for tomorrow, not the clock', () => {
+    const w = heroWhen(evt({ id: 'e', start: new Date(2026, 6, 14, 17, 15) }), now)
+    expect(w).toEqual({ when: 'Tomorrow', clock: '5:15 PM', future: true })
+  })
+
+  it('names the weekday within the week and the date beyond it', () => {
+    expect(heroWhen(evt({ id: 'e', start: new Date(2026, 6, 18, 14, 0) }), now).when).toBe(
+      'Saturday'
+    )
+    expect(heroWhen(evt({ id: 'e', start: new Date(2026, 6, 22, 14, 0) }), now).when).toBe('Jul 22')
+  })
+
+  // A later start day means the hero — the first event still live — is not today,
+  // so nothing single-day is left today. That's what `future` licenses the eyebrow
+  // to say, and why an in-progress event that STARTED yesterday must not set it.
+  it('does not mark a still-running event from an earlier day as future', () => {
+    const w = heroWhen(
+      evt({ id: 'e', start: new Date(2026, 6, 12, 9, 0), end: new Date(2026, 6, 13, 18, 0) }),
+      now
+    )
+    expect(w.future).toBe(false)
+    expect(w.when).toBe('Now')
+  })
+
+  // An all-day hero rendered no time line at all, because the meta line was keyed
+  // on having a clock. `clock` is always a renderable string.
+  it('gives an all-day event a clock label and still names its day', () => {
+    const w = heroWhen(evt({ id: 'e', start: new Date(2026, 6, 14), allDay: true }), now)
+    expect(w).toEqual({ when: 'Tomorrow', clock: 'All day', future: true })
   })
 })

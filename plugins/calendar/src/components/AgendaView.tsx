@@ -68,6 +68,7 @@ export function AgendaView({
         <NextEventHero
           event={hero}
           membersById={membersById}
+          now={now}
           onClick={onEditEvent ? () => onEditEvent(hero) : undefined}
         />
       )}

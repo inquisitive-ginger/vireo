@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import { MapPin, Users } from 'lucide-react'
 import { FAMILY_HUE, identityToken, type OwnerHue } from '@family-os/ui'
 import type { CalendarEvent, CalendarMember } from '../types'
-import { agendaWhenLabel, formatTime, isMultiDay, relativeWhen } from '../lib/grid'
+import { heroWhen } from '../lib/grid'
 import { fillForHues, huesForEvent, isFamilyHues } from '../lib/hues'
 
 /* Static identity pill for the compact hero owner — the owner's soft `tint`/`ink`
@@ -37,11 +37,18 @@ function OwnerPill({ name, hue, icon }: { name: string; hue: OwnerHue; icon?: Re
    (story #7) so the two surfaces stay in lockstep.
 
    Two layouts share the same washing / hue / "Up next" identity:
-   · default (mobile agenda) — title left, the clock/date label prominent on the
-     right, owner under the title. Unchanged from story #4.
+   · default (mobile agenda) — title left, the headline when-value prominent on
+     the right, owner under the title.
    · `compact` (widget slot) — a single header line ("Up next · in 30 min", the
      countdown reunited with the eyebrow), the title as the one dominant element,
-     then a quiet meta line (time · place · owner). `now` drives the countdown.
+     then a quiet meta line (time · place · owner).
+
+   Both heroes are the *first live event*, not the first event today: the widget
+   scans a week ahead and the agenda six. So the eyebrow carries two clauses —
+   which day (unless it's today, where "how soon" beats it) and, when that day is
+   a later one, the boundary the hero would otherwise step over silently. A hero
+   showing "5:15 PM" over an event that is actually tomorrow reads as today; the
+   eyebrow says so out loud.
 
    `onClick` makes the whole card a button (tap-to-edit / tap-through).
    `showSoloOwner=false` drops member names (the widget's Mine framing — all
@@ -56,7 +63,7 @@ export function NextEventHero({
 }: {
   event: CalendarEvent
   membersById: Map<string, CalendarMember>
-  now?: Date
+  now: Date
   onClick?: () => void
   compact?: boolean
   showSoloOwner?: boolean
@@ -66,8 +73,12 @@ export function NextEventHero({
   const ownerNames = event.attendeeIds
     .map((id) => membersById.get(id)?.name)
     .filter((n): n is string => Boolean(n))
-  const when = now ? relativeWhen(event, now) : agendaWhenLabel(event)
-  const hasClock = !event.allDay && !isMultiDay(event)
+  const { when, clock, future } = heroWhen(event, now)
+  /* The hero is the next event still live, so a later start day means today's
+     schedule is spent. Say it — "Up next" over a tomorrow event invites the
+     reader to plan for tonight. (Scoped to single-day events: a span running
+     today is stated by the "All week" band directly above.) */
+  const lead = future ? 'Nothing left today' : 'Up next'
 
   const owner: ReactNode =
     ownerNames.length === 0 ? (
@@ -86,20 +97,26 @@ export function NextEventHero({
 
   const body = compact ? (
     <>
-      {/* Header line: "Up next" and the countdown read together, not in opposite
-          corners — and both stay smaller than the title below. No identity dot: the
-          wash already codes the owner, and on a Family event the dot was
-          `--secondary` on a `--secondary` wash — invisible, and indenting the
-          eyebrow 14px off the title's edge for nothing. */}
-      <div className="flex items-center gap-1.5 text-section-label text-foreground/60">
-        <span>Up next</span>
-        {now && <span className="text-foreground/80">· {when}</span>}
+      {/* Header line: the lead and the when read together, not in opposite corners
+          — and both stay smaller than the title below. No identity dot: the wash
+          already codes the owner, and on a Family event the dot was `--secondary`
+          on a `--secondary` wash — invisible, and indenting the eyebrow 14px off
+          the title's edge for nothing.
+
+          Wraps rather than truncates: at 1×1 the zone has no day rows at all, so
+          the eyebrow is the ONLY thing that can say today is spent — it must not be
+          the thing that gets cut. It does wrap at that size, so the separator is
+          glued to the lead: a break must not hand the second line a leading "·". */}
+      <div className="flex flex-wrap items-center gap-x-1.5 text-section-label text-foreground/60">
+        <span>{lead} ·</span>
+        <span className="text-foreground/80">{when}</span>
       </div>
       <div className="text-heading mt-2 truncate text-foreground">{event.title}</div>
       {/* Meta: time (plain, no clock icon) → place → owner pill. The wash already
-          codes identity, so the owner reads as a pill, not a labelled field. */}
+          codes identity, so the owner reads as a pill, not a labelled field.
+          `clock` always renders — an all-day hero used to show no time line at all. */}
       <div className="mt-1.5 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm-token text-foreground/75">
-        {hasClock && <span className="tabular-nums">{formatTime(event.startsAt)}</span>}
+        <span className="tabular-nums">{clock}</span>
         {event.location && (
           <span className="inline-flex min-w-0 items-center gap-1">
             <MapPin className="h-3.5 w-3.5 shrink-0" />
@@ -111,7 +128,14 @@ export function NextEventHero({
     </>
   ) : (
     <>
-      <div className="text-section-label text-foreground/60">Up next</div>
+      {/* Unlike `compact`, this layout has a dedicated headline slot for the
+          when-value — so the eyebrow carries only what that slot CANNOT: the day,
+          and the boundary. Echoing the countdown here would print "in 2h 47m"
+          twice, six lines apart: the very duplication this change exists to end. */}
+      <div className="text-section-label text-foreground/60">
+        {lead}
+        {future && <span className="text-foreground/80"> · {when}</span>}
+      </div>
       <div className="mt-2.5 flex items-end justify-between gap-3">
         <div className="min-w-0">
           <div className="text-heading text-foreground">{event.title}</div>
@@ -122,7 +146,13 @@ export function NextEventHero({
           )}
         </div>
         <div className="shrink-0 text-right">
-          <div className="text-card-title font-semibold tabular-nums text-foreground">{when}</div>
+          {/* Today, the countdown IS the headline number. On a later day the eyebrow
+              has already named the day, so the number goes back to being the clock —
+              otherwise the right column would repeat the eyebrow and the hero would
+              still never state a time. */}
+          <div className="text-card-title font-semibold tabular-nums text-foreground">
+            {future ? clock : when}
+          </div>
           {event.location && (
             <div className="mt-0.5 flex items-center justify-end gap-1 text-xs-token text-foreground/70">
               <MapPin className="h-3 w-3" /> {event.location}

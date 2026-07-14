@@ -90,12 +90,37 @@ function renderWidget(props: {
 describe('UpNextView', () => {
   it('leads with the next-up hero and lists the rest', () => {
     renderWidget({})
-    expect(screen.getByText('Up next')).toBeInTheDocument()
+    expect(screen.getByText('Up next ·')).toBeInTheDocument()
     expect(screen.getByText('Karate')).toBeInTheDocument()
     // The rest appear as rows, and the hero is not duplicated among them.
     expect(screen.getByText('Tumbling')).toBeInTheDocument()
     expect(screen.getByText('Date night')).toBeInTheDocument()
     expect(screen.getAllByText('Karate')).toHaveLength(1)
+  })
+
+  // NOW is Sat 13:20 and Karate is Sat 16:30 — still today, so "how soon" beats
+  // "which day", and the eyebrow keeps the countdown it has always shown.
+  it('keeps the countdown, not a day label, while the hero is still today', () => {
+    renderWidget({})
+    expect(screen.getByText('Up next ·')).toBeInTheDocument()
+    expect(screen.getByText('in 3h 10m')).toBeInTheDocument()
+    expect(screen.queryByText('Nothing left today ·')).not.toBeInTheDocument()
+  })
+
+  /* The bug. The hero is the next event still LIVE — not the next event today —
+     so on a spent evening it silently promotes a future day. It used to announce
+     that day's bare clock ("1:00 PM"), which reads as tonight. It must name the
+     day, and say that today is done. */
+  it('names the day and says today is spent when the hero is not today', () => {
+    const bbq = EVENTS.find((e) => e.id === 'e4')!
+    renderWidget({ events: [bbq] })
+
+    expect(screen.getByText('Nothing left today ·')).toBeInTheDocument()
+    expect(screen.getAllByText('Tomorrow').length).toBeGreaterThan(0)
+    expect(screen.queryByText('Up next ·')).not.toBeInTheDocument()
+    // The clock still renders — in the meta line, where it can't be mistaken for
+    // the proximity clause.
+    expect(screen.getByText('1:00 PM')).toBeInTheDocument()
   })
 
   it('states a multi-day span once in the all-week band, not on every day it touches', () => {

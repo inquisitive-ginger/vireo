@@ -1,4 +1,4 @@
-import { addDays, dayDiff, isSameDay, startOfDay } from '@family-os/ui'
+import { addDays, dayDiff, isSameDay, relativeDayLabel, startOfDay } from '@family-os/ui'
 import type { CalendarEvent } from '../types'
 
 /* Month-grid layout math, ported from the locked `calendar-month.stories.tsx`
@@ -252,19 +252,43 @@ export function agendaWhenLabel(event: CalendarEvent): string {
   return formatTime(event.startsAt)
 }
 
-/* A proximity phrase for the "up next" surfaces — "Now" while the event is in
-   progress, a countdown ("in 30 min" / "in 2h 15m") for a same-day future
-   event, else the clock/date label. The value a family actually wants from a
-   glance is *how soon*, not the wall-clock time. */
-export function relativeWhen(event: CalendarEvent, now: Date): string {
-  const start = new Date(event.startsAt)
-  if (now >= start && now < eventEnd(event)) return 'Now'
-  if (!isSameDay(start, now)) return agendaWhenLabel(event)
+/** How soon a same-day event starts — the value a family actually wants from a
+ *  glance. Only meaningful within the day; past that, *which day* is the fact. */
+function countdown(start: Date, now: Date): string {
   const mins = Math.round((start.getTime() - now.getTime()) / 60_000)
   if (mins < 60) return `in ${mins} min`
   const h = Math.floor(mins / 60)
   const m = mins % 60
   return m ? `in ${h}h ${m}m` : `in ${h} hr`
+}
+
+/* The hero's "when", split into the two facts it renders on two different lines:
+   the proximity clause rides the eyebrow, the clock rides the meta. They have to
+   come apart, because collapsing them into one string is exactly what let the
+   widget announce a bare "5:15 PM" for an event that was actually tomorrow —
+   the eyebrow spent its slot re-printing the clock the meta line already showed,
+   and the day went unsaid. */
+export interface HeroWhen {
+  /** The proximity clause. Today: `Now` / `in 30 min`. Any later day: *which day*
+   *  (`Tomorrow` · `Saturday` · `Jul 22`) — never a clock, which says nothing a
+   *  glancer can place. */
+  when: string
+  /** The wall clock, or `All day` / `Until Jul 18` when the event hasn't got one.
+   *  Always renderable — an all-day hero used to show no time at all. */
+  clock: string
+  /** The event starts on a later calendar day than `now`. Since the hero is the
+   *  first event still live, this means nothing single-day is left today — the
+   *  boundary the hero has to announce rather than quietly step over. */
+  future: boolean
+}
+
+export function heroWhen(event: CalendarEvent, now: Date): HeroWhen {
+  const start = new Date(event.startsAt)
+  const clock = agendaWhenLabel(event)
+  // Under way — beats any day label, and it's why `future` can't just be `start > now`.
+  if (now >= start && now < eventEnd(event)) return { when: 'Now', clock, future: false }
+  if (isSameDay(start, now)) return { when: countdown(start, now), clock, future: false }
+  return { when: relativeDayLabel(start, now).lead, clock, future: true }
 }
 
 const MONTHS = [
