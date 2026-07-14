@@ -28,9 +28,13 @@ trap 'echo ""; stop_all' EXIT INT TERM
 
 cd "$REPO_ROOT"
 
+PLUGINS=(family-feed chores calendar)
+
 # ── 1. Build plugins (federation remotes must exist before shell dev starts) ──
 echo "Building plugins..."
-pnpm --filter @family-os/plugin-demo-plugin build
+for p in "${PLUGINS[@]}"; do
+  pnpm --filter "@family-os/plugin-$p" build
+done
 echo "Build done."
 
 # ── 2. Start services ─────────────────────────────────────────────────────────
@@ -39,9 +43,11 @@ echo "Starting API (port 3000)..."
 pnpm --filter @family-os/api dev > /tmp/family-os-api.log 2>&1 &
 echo $! >> "$PID_FILE"
 
-echo "Starting demo-plugin watch+preview (port 3010)..."
-pnpm --filter @family-os/plugin-demo-plugin dev > /tmp/family-os-plugin.log 2>&1 &
-echo $! >> "$PID_FILE"
+for p in "${PLUGINS[@]}"; do
+  echo "Starting $p watch+preview..."
+  pnpm --filter "@family-os/plugin-$p" dev > "/tmp/family-os-plugin-$p.log" 2>&1 &
+  echo $! >> "$PID_FILE"
+done
 
 echo "Starting shell dev server (port 5173, HMR enabled)..."
 pnpm --filter @family-os/shell dev > /tmp/family-os-shell.log 2>&1 &
@@ -52,7 +58,7 @@ sleep 2
 # ── 3. Cloudflare tunnel ──────────────────────────────────────────────────────
 echo ""
 echo "Opening Cloudflare tunnel → http://localhost:5173"
-echo "Logs: /tmp/family-os-{api,plugin,shell}.log"
+echo "Logs: /tmp/family-os-{api,shell}.log, /tmp/family-os-plugin-*.log"
 echo "Stop: ./scripts/dev-tunnel.sh stop  (or Ctrl-C here)"
 echo ""
 cloudflared tunnel --url http://localhost:5173

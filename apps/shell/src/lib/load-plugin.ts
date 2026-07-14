@@ -4,7 +4,6 @@ import { lazy, type ComponentType, type LazyExoticComponent } from 'react'
 // Each entry corresponds to a remote declared in vite.config.ts via plugins.json.
 // When a plugin is added to plugins.json, add its lazy import here.
 const pluginLoaders: Record<string, () => Promise<{ default: ComponentType }>> = {
-  'demo-plugin': () => import('demo-plugin/Plugin'),
   'family-feed': () => import('family-feed/Plugin'),
   chores: () => import('chores/Plugin'),
   calendar: () => import('calendar/Plugin'),

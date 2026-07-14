@@ -42,16 +42,11 @@ export default defineConfig({
       reuseExistingServer: !process.env.CI && !process.env.E2E,
     },
     {
-      // Plugin preview server — requires a prior `pnpm --filter @family-os/plugin-demo-plugin build`
-      // CI: run build before `pnpm e2e`. Local dev: keep `vite preview` running on port 3010.
-      command: 'pnpm --filter @family-os/plugin-demo-plugin preview',
-      url: 'http://localhost:3010',
-      reuseExistingServer: !process.env.CI,
-    },
-    {
       // chores preview (port 3012) — needed so the /chores page renders the
-      // real federated module (not the uninstalled placeholder) for completion E2E.
+      // real federated module (not the uninstalled placeholder). Also the fixture
+      // for the shell's "a plugin route renders in the main slot" checks.
       // Requires a prior `pnpm --filter @family-os/plugin-chores build`.
+      // CI: run build before `pnpm e2e`. Local dev: keep `vite preview` running on 3012.
       command: 'pnpm --filter @family-os/plugin-chores preview',
       url: 'http://localhost:3012',
       reuseExistingServer: !process.env.CI,
