@@ -5,6 +5,10 @@ import { DEFAULT_LAYOUTS, FAMILY_PROFILE_ID } from '@family-os/platform/types'
 
 const devPlugin: FastifyPluginAsync = async (fastify) => {
   fastify.post('/dev/reset', async () => {
+    // Every RESTRICT FK into profiles must be cleared before the profile delete
+    // below, or it throws P2003. (profile_images is CASCADE — no entry needed.)
+    await prisma.notification.deleteMany()
+    await prisma.pushSubscription.deleteMany()
     await prisma.session.deleteMany()
     await prisma.widgetLayout.deleteMany()
     await prisma.permissionOverride.deleteMany()

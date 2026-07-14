@@ -36,16 +36,16 @@ test.describe('shell skeleton', () => {
 
   // AC5
   test('navigating to a plugin route renders content in the main slot', async ({ page }) => {
-    await page.goto('/demo-plugin')
+    await page.goto('/chores')
     await expect(page.locator('main')).toBeVisible()
-    await expect(page.locator('h1', { hasText: 'Demo Plugin' })).toBeVisible()
+    await expect(page.locator('h1', { hasText: 'Chores' })).toBeVisible()
     // sidebar persists during navigation
     await expect(page.locator('aside')).toBeVisible()
   })
 
   // AC5 — nav link triggers client-side navigation
   test('clicking a nav link navigates without a full page reload', async ({ page }) => {
-    await page.goto('/demo')
+    await page.goto('/chores')
     await page.locator('nav').getByRole('link', { name: 'Home' }).click()
     await expect(page.getByTestId('widget-grid')).toBeVisible()
     await expect(page.locator('aside')).toBeVisible()

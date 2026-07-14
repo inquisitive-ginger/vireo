@@ -9,19 +9,24 @@
  *   pnpm db:reset --all                       # platform + all known plugins
  *   pnpm db:reset --only --module family-feed # named plugin only, skip platform
  *   pnpm db:reset --only --all                # all plugins only, skip platform
+ *   pnpm db:reset --all --keep-profiles       # clear content, keep the household
  */
 
 import { Pool } from 'pg'
 import { PrismaPg } from '@prisma/adapter-pg'
 import { PrismaClient } from '../src/generated/prisma'
 
-const KNOWN_MODULES = ['family-feed', 'chores'] as const
+const KNOWN_MODULES = ['family-feed', 'chores', 'calendar'] as const
 type Module = (typeof KNOWN_MODULES)[number]
 
-function parseArgs(): { modules: Set<Module>; platformOnly: boolean } {
+type Options = { modules: Set<Module>; platformOnly: boolean; keepProfiles: boolean }
+
+function parseArgs(): Options {
   const args = process.argv.slice(2)
   const only = args.includes('--only')
-  if (args.includes('--all')) return { modules: new Set(KNOWN_MODULES), platformOnly: false }
+  const keepProfiles = args.includes('--keep-profiles')
+  if (args.includes('--all'))
+    return { modules: new Set(KNOWN_MODULES), platformOnly: only, keepProfiles }
   const modules = new Set<Module>()
   for (let i = 0; i < args.length; i++) {
     if (args[i] === '--module' && args[i + 1]) {
@@ -38,20 +43,25 @@ function parseArgs(): { modules: Set<Module>; platformOnly: boolean } {
     console.error('--only requires --module <name> or --all')
     process.exit(1)
   }
-  return { modules, platformOnly: only }
+  return { modules, platformOnly: only, keepProfiles }
 }
 
-const pool = new Pool({
-  connectionString:
-    process.env.DATABASE_URL ?? 'postgresql://familyos:familyos@localhost:5432/familyos',
-})
+const connectionString =
+  process.env.DATABASE_URL ?? 'postgresql://familyos:familyos@localhost:5432/familyos'
+
+const pool = new Pool({ connectionString })
 const adapter = new PrismaPg(pool)
 const prisma = new PrismaClient({ adapter })
+
+// Content the household generated, as opposed to who the household *is*.
+async function resetPlatformContent() {
+  await prisma.notification.deleteMany()
+}
 
 async function resetPlatform() {
   await prisma.session.deleteMany()
   await prisma.pushSubscription.deleteMany()
-  await prisma.notification.deleteMany()
+  await resetPlatformContent()
   await prisma.widgetLayout.deleteMany()
   await prisma.permissionOverride.deleteMany()
 
@@ -77,15 +87,30 @@ async function resetFamilyFeed() {
 
 async function resetChoreEngine() {
   await pool.query('DELETE FROM chores.tasks')
+  await pool.query('DELETE FROM chores.xp_balances')
+}
+
+// event_attendees and event_exceptions cascade from events.
+async function resetCalendar() {
+  await pool.query('DELETE FROM calendar.events')
 }
 
 async function main() {
-  const { modules, platformOnly } = parseArgs()
+  const { modules, platformOnly, keepProfiles } = parseArgs()
 
-  const parts = [...(!platformOnly ? ['platform'] : []), ...[...modules]]
-  console.log(`Resetting ${parts.join(', ')} to zero state...`)
+  const platformLabel = keepProfiles ? 'platform (content only)' : 'platform'
+  const parts = [...(!platformOnly ? [platformLabel] : []), ...[...modules]]
+  const target = connectionString.split('/').pop()?.split('?')[0]
+  console.log(`Resetting ${parts.join(', ')} in "${target}"...`)
 
-  if (!platformOnly) await resetPlatform()
+  if (!platformOnly) {
+    if (keepProfiles) {
+      await resetPlatformContent()
+      console.log('  platform: notifications cleared (profiles preserved)')
+    } else {
+      await resetPlatform()
+    }
+  }
 
   if (modules.has('family-feed')) {
     await resetFamilyFeed()
@@ -94,10 +119,15 @@ async function main() {
 
   if (modules.has('chores')) {
     await resetChoreEngine()
-    console.log('  chores: tasks cleared')
+    console.log('  chores: tasks + XP balances cleared')
   }
 
-  console.log('Done. Navigate to / to start onboarding.')
+  if (modules.has('calendar')) {
+    await resetCalendar()
+    console.log('  calendar: events cleared')
+  }
+
+  console.log(keepProfiles ? 'Done.' : 'Done. Navigate to / to start onboarding.')
 }
 
 main()
