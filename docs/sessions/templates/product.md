@@ -118,7 +118,9 @@ milestone.
 
   Statuses: ⬜ Not Started · 🔄 In Progress · ✅ Done · 🔙 Sent Back
 
-- [ ] `docs/sessions/queue.md` updated — add any newly-identified follow-on sessions
+- [ ] `docs/sessions/queue.md` updated — add any newly-identified follow-on sessions. Any
+      **Recently Completed** entry is **at most 2–3 concise lines + a pointer to the session
+      log**; the log holds the full detail. Trim, don't paste
 - [ ] Session log committed to `docs/sessions/logs/YYYY-MM-DD-product-[milestone].md`
 - [ ] `CLAUDE.md` current status updated
 

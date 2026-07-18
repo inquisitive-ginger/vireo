@@ -6,13 +6,13 @@
 
 ## Active Milestone
 
-**M3 — Calendar** is the active milestone. Product planning ran 2026-06-21 (opened by
-a requirements brainstorm against the family's paper wall calendar); `docs/modules/calendar/`
-is specced with 8 dependency-ordered stories. **M3 Design: Calendar** is next, then the
-dev stories. MVP thesis: a glanceable tablet twin of the paper calendar + mobile capture +
-reminders. M2 — Chores ✅ done (2026-06-20). Platform cleanup (Service Worker cache strategy)
-and the design-sync retry were deferred to **Platform v2** on 2026-06-21 so M3 can run
-uninterrupted.
+**M3 — Calendar** is the active milestone and **one story from MVP-complete**: 6 of 7 MVP
+stories have shipped (design 2026-06-22; dev stories 1–5 + 7). Only **Event Reminders
+(story 6)** remains — gated by the owed reminder-scheduling ADR. Story 8 (Suggested Events
+Inbox) is the deferred north star. MVP thesis: a glanceable tablet twin of the paper
+calendar + mobile capture + reminders. M2 — Chores ✅ done (2026-06-20). Platform cleanup
+(Service Worker cache strategy) was deferred to **Platform v2** so M3 can run uninterrupted;
+see the queue's Deferred Backlog.
 
 ## Completed
 
