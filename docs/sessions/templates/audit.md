@@ -93,7 +93,9 @@ One issue at a time by default. The user may explicitly approve batching multipl
 
 - [ ] All issues resolved or explicitly deferred with a reason recorded below
 - [ ] `docs/roadmap.md` updated if milestone structure changed
-- [ ] `docs/sessions/queue.md` updated with any new or reordered sessions
+- [ ] `docs/sessions/queue.md` updated with any new or reordered sessions. Any **Recently
+      Completed** entry is **at most 2–3 concise lines + a pointer to the session log**; keep
+      **Deferred** entries short too (what · why it waits · pointer). Trim, don't paste
 - [ ] `CLAUDE.md` current status updated
 - [ ] All changes in a single commit with prefix `[planning/audit]`
 

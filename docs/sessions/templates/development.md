@@ -164,7 +164,9 @@ and get the user's agreement that a live review isn't needed before closing out.
 - [ ] Story spec `**Status:**` field updated to ✅ Done in `docs/modules/[name]/stories/[story].md`
 - [ ] Session log committed to `docs/sessions/logs/YYYY-MM-DD-dev-[story].md`
 - [ ] `CLAUDE.md` current status updated
-- [ ] `docs/sessions/queue.md` updated if this session unblocks or adds new entries
+- [ ] `docs/sessions/queue.md` updated if this session unblocks or adds new entries. Any
+      **Recently Completed** entry is **at most 2–3 concise lines + a pointer to the session
+      log** — the log holds the full detail; do not paste the session summary into the queue
 - [ ] PR opened against `main` following conventions in `CONTRIBUTING.md`
 
 ## Session log format

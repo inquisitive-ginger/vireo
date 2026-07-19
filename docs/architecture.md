@@ -1,6 +1,6 @@
 # Architecture
 
-> Last updated: 2026-06-21 — profiles schema synced (dark_mode / focus_mode / push_enabled); manifest example renamed chore-engine → chores.
+> Last updated: 2026-07-18 — settled-decisions table extended through ADR 044; profiles schema synced (`identity_hue`, ADR 044) + `profile_images` table (ADR 042).
 
 ---
 
@@ -69,42 +69,52 @@ All decisions below are locked. See `docs/decisions/` for full
 rationale. Do not re-litigate — flag in session notes if revisit
 is warranted.
 
-| ADR | Decision                                                                                                                                                                                                         |
-| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 001 | Plugin-native micro-frontend — first-party and community plugins share the same API and load path                                                                                                                |
-| 002 | Two-layer currency — XP (gamification, never converts) and F$ (earnable, redeemable, real-money path)                                                                                                            |
-| 003 | Age-tiered agency — four trust levels, parent-assigned, capability rules bound to levels not names                                                                                                               |
-| 004 | WebSocket-first internally; Web Push for mobile parents; polling for external APIs                                                                                                                               |
-| 005 | Allowance as ledger — system tracks balances, never moves real money; cashout is a parent-confirmed event                                                                                                        |
-| 006 | TypeScript end-to-end — React shell, Node.js/Fastify plugin services                                                                                                                                             |
-| 007 | Vite Module Federation for plugin loading — each plugin publishes a remoteEntry.js and manifest                                                                                                                  |
-| 008 | In-process EventEmitter + @fastify/websocket bridge; MQTT bridge is a defined extension point for M4+                                                                                                            |
-| 009 | PostgreSQL (Docker), single instance, per-plugin schemas; JSONB for semi-structured config                                                                                                                       |
-| 010 | PWA for mobile (Android); Web Push for out-of-home notifications; no native app planned                                                                                                                          |
-| 011 | Shell home surface is a composable, role-aware widget grid; M0 must not foreclose this model; implementation deferred to M1                                                                                      |
-| 012 | shadcn/ui + Tailwind CSS v4 — component library and styling                                                                                                                                                      |
-| 013 | State in layers: React Context (auth/tier), Zustand (shell), TanStack Query (server/plugin data)                                                                                                                 |
-| 014 | Plugin design contract is import-based from `@family-os/ui` and `@family-os/platform`                                                                                                                            |
-| 015 | Permissions layer on top of tier: effective permissions = tier baseline + grants − revocations; `TierGate` for coarse gating, `PermissionGate` for fine-grained                                                  |
-| 016 | Monorepo tooling: pnpm workspaces + Turborepo; `apps/` for runnable services, `packages/` for shared libraries                                                                                                   |
-| 017 | Auth session mechanism: `@fastify/session` + `connect-pg-simple`; cookie-based, server-side sessions; session stores active `profileId`                                                                          |
-| 018 | CASL `(action, subject)` model for permission checks (extends ADR 015); `PERMISSION_REGISTRY` const for compile-time types + runtime enumeration; `@casl/prisma` `accessibleBy()` for row-level DB filtering     |
-| 019 | ORM: Prisma; per-plugin `schema.prisma` files; `accessibleBy()` drives automatic row-level filtering in every module route                                                                                       |
-| 020 | Plugin dev toolchain: Turborepo generator (`pnpm turbo gen plugin`); per-plugin Vite dev servers; no custom CLI                                                                                                  |
-| 021 | Global family PIN stored in `system_config` (`key = 'family_pin_hash'`); family pseudo-profile is unattended default state                                                                                       |
-| 022 | Widget system: React Grid Layout, six named sizes, widget manifest extends ADR 007/014, two-level role model (shell + widget), per-user layout as `{widgetId, x, y, w, h}[]`                                     |
-| 023 | Test runner: Vitest (shares Vite pipeline); component tests: `@testing-library/react` + jsdom; route tests: `fastify.inject()`                                                                                   |
-| 024 | E2E: Playwright; deferred to M0 shell-skeleton story; lives in `packages/e2e`                                                                                                                                    |
-| 025 | Component catalog: Storybook 10 in `packages/ui`; ships in M0 dev-environment story                                                                                                                              |
-| 026 | Test conventions: colocated test files; no enforced coverage thresholds; real PostgreSQL for integration tests (`familyos_test` DB separate from dev); shared test utils in `packages/test-utils`                |
-| 027 | Environment configuration: `.env` files at repo root; `NODE_OPTIONS --env-file` for dev server; Vitest `envDir` for tests; `familyos` / `familyos_test` database separation                                      |
-| 028 | Home surface default layouts: three tier-appropriate defaults (family pseudo-profile, tiers 1–2, tiers 3–4); Family Feed, Chores, Calendar are reserved modules; absent reserved slots render a placeholder card |
-| 029 | All notifications flow through `platform.notify()`; platform routes to toast, tray, or Web Push based on priority and active profile tier; plugins never render their own toasts or push payloads                |
-| 030 | Member identity colors — six fixed palette hues; every family member maps to one hue used everywhere; `getIdentityHue` / `identityToken` / `identityColor` helpers; plugins never invent member colors           |
-| 031 | Interaction-state language — `--primary` owns active/hover/selected across the app; `--accent` locked to module identity only; sidebar uses lightness delta, no hairlines                                        |
-| 032 | Plugin nav-item registration — plugins declare a `navItem` (`label`, `route`, `icon`, `minTier`) in `manifest.json`; the sidebar renders tier-filtered nav from the registry                                     |
-| 033 | Mobile nav pattern — bottom tab bar (4 module tabs + profile) below the `md:` breakpoint; single-column widget reflow; `env(safe-area-inset-*)`. Profile/top-bar clauses superseded by ADR 034                   |
-| 034 | Mobile brand top bar — avatar · wordmark · bell on mobile; bottom bar is nav-only. Supersedes the "profile chip on mobile" / no-top-bar clauses of ADR 033                                                       |
+| ADR | Decision                                                                                                                                                                                                                        |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 001 | Plugin-native micro-frontend — first-party and community plugins share the same API and load path                                                                                                                               |
+| 002 | Two-layer currency — XP (gamification, never converts) and F$ (earnable, redeemable, real-money path)                                                                                                                           |
+| 003 | Age-tiered agency — four trust levels, parent-assigned, capability rules bound to levels not names                                                                                                                              |
+| 004 | WebSocket-first internally; Web Push for mobile parents; polling for external APIs                                                                                                                                              |
+| 005 | Allowance as ledger — system tracks balances, never moves real money; cashout is a parent-confirmed event                                                                                                                       |
+| 006 | TypeScript end-to-end — React shell, Node.js/Fastify plugin services                                                                                                                                                            |
+| 007 | Vite Module Federation for plugin loading — each plugin publishes a remoteEntry.js and manifest                                                                                                                                 |
+| 008 | In-process EventEmitter + @fastify/websocket bridge; MQTT bridge is a defined extension point for M4+                                                                                                                           |
+| 009 | PostgreSQL (Docker), single instance, per-plugin schemas; JSONB for semi-structured config                                                                                                                                      |
+| 010 | PWA for mobile (Android); Web Push for out-of-home notifications; no native app planned                                                                                                                                         |
+| 011 | Shell home surface is a composable, role-aware widget grid; M0 must not foreclose this model; implementation deferred to M1                                                                                                     |
+| 012 | shadcn/ui + Tailwind CSS v4 — component library and styling                                                                                                                                                                     |
+| 013 | State in layers: React Context (auth/tier), Zustand (shell), TanStack Query (server/plugin data)                                                                                                                                |
+| 014 | Plugin design contract is import-based from `@family-os/ui` and `@family-os/platform`                                                                                                                                           |
+| 015 | Permissions layer on top of tier: effective permissions = tier baseline + grants − revocations; `TierGate` for coarse gating, `PermissionGate` for fine-grained                                                                 |
+| 016 | Monorepo tooling: pnpm workspaces + Turborepo; `apps/` for runnable services, `packages/` for shared libraries                                                                                                                  |
+| 017 | Auth session mechanism: `@fastify/session` + `connect-pg-simple`; cookie-based, server-side sessions; session stores active `profileId`                                                                                         |
+| 018 | CASL `(action, subject)` model for permission checks (extends ADR 015); `PERMISSION_REGISTRY` const for compile-time types + runtime enumeration; `@casl/prisma` `accessibleBy()` for row-level DB filtering                    |
+| 019 | ORM: Prisma; per-plugin `schema.prisma` files; `accessibleBy()` drives automatic row-level filtering in every module route                                                                                                      |
+| 020 | Plugin dev toolchain: Turborepo generator (`pnpm turbo gen plugin`); per-plugin Vite dev servers; no custom CLI                                                                                                                 |
+| 021 | Global family PIN stored in `system_config` (`key = 'family_pin_hash'`); family pseudo-profile is unattended default state                                                                                                      |
+| 022 | Widget system: React Grid Layout, six named sizes, widget manifest extends ADR 007/014, two-level role model (shell + widget), per-user layout as `{widgetId, x, y, w, h}[]`                                                    |
+| 023 | Test runner: Vitest (shares Vite pipeline); component tests: `@testing-library/react` + jsdom; route tests: `fastify.inject()`                                                                                                  |
+| 024 | E2E: Playwright; deferred to M0 shell-skeleton story; lives in `packages/e2e`                                                                                                                                                   |
+| 025 | Component catalog: Storybook 10 in `packages/ui`; ships in M0 dev-environment story                                                                                                                                             |
+| 026 | Test conventions: colocated test files; no enforced coverage thresholds; real PostgreSQL for integration tests (`familyos_test` DB separate from dev); shared test utils in `packages/test-utils`                               |
+| 027 | Environment configuration: `.env` files at repo root; `NODE_OPTIONS --env-file` for dev server; Vitest `envDir` for tests; `familyos` / `familyos_test` database separation                                                     |
+| 028 | Home surface default layouts: three tier-appropriate defaults (family pseudo-profile, tiers 1–2, tiers 3–4); Family Feed, Chores, Calendar are reserved modules; absent reserved slots render a placeholder card                |
+| 029 | All notifications flow through `platform.notify()`; platform routes to toast, tray, or Web Push based on priority and active profile tier; plugins never render their own toasts or push payloads                               |
+| 030 | Member identity colors — six fixed palette hues; every family member maps to one hue used everywhere; `getIdentityHue` / `identityToken` / `identityColor` helpers; plugins never invent member colors                          |
+| 031 | Interaction-state language — `--primary` owns active/hover/selected across the app; `--accent` locked to module identity only; sidebar uses lightness delta, no hairlines                                                       |
+| 032 | Plugin nav-item registration — plugins declare a `navItem` (`label`, `route`, `icon`, `minTier`) in `manifest.json`; the sidebar renders tier-filtered nav from the registry                                                    |
+| 033 | Mobile nav pattern — bottom tab bar (4 module tabs + profile) below the `md:` breakpoint; single-column widget reflow; `env(safe-area-inset-*)`. Profile/top-bar clauses superseded by ADR 034                                  |
+| 034 | Mobile brand top bar — avatar · wordmark · bell on mobile; bottom bar is nav-only. Supersedes the "profile chip on mobile" / no-top-bar clauses of ADR 033                                                                      |
+| 035 | Plugin styling — first-party plugins styled utility-first like the shell; shell `@source`-scans `plugins/*/src`. Third-party per-plugin build deferred (Option 2)                                                               |
+| 036 | Focus Mode — per-profile `focus_mode` setting (null = derive from tier) selects the chores taskee variant                                                                                                                       |
+| 037 | Date inputs — react-day-picker v10 themed by token; `Calendar`/`Popover`/`DatePicker`/`DateRangePicker` in `@family-os/ui`                                                                                                      |
+| 038 | Calendar recurrence storage — one canonical event row, weekly expansion computed-on-read; per-occurrence skip via `event_exceptions`; attendees via join; `is_activity` derived                                                 |
+| 039 | Widget prominence — three elevation rungs (feature/card/quiet) resolved on read per profile (`GET /home/layout` carries `prominence`); at most one feature per surface; not a persisted column                                  |
+| 040 | Sunken surface plane — `--surface-sunken` + `--shadow-inset` as the one step down; only inside a card, near-achromatic so it never reads as an identity fill                                                                    |
+| 041 | Family identity hue — reserved `family` ("Hearth") entry excluded from `IDENTITY_HUES`; `--secondary` is chrome again; `huesForEvent([])` → `[FAMILY_HUE]`                                                                      |
+| 042 | Avatar images — a photo is a face, not an identity token; avatar wears no hue ring, chrome beside it carries identity; client-side crop→WebP, bytes in `platform.profile_images`. Amends ADR 030                                |
+| 043 | Identity takes the edge, status takes the field — on a multi-person row the spine is always the identity hue; status moves to the row's field. `ItemCard` owns row affordances (AdminBoard exception withdrawn)                 |
+| 044 | Member hue is assigned, not derived — persisted `Profile.identityHue`, unique across the family (palette size caps household size); `resolveHue` canonical, `getIdentityHue` a fallback; palette grows to eight. Amends ADR 030 |
 
 ---
 
@@ -356,10 +366,18 @@ profiles
   name         text
   tier         integer (1–4)
   avatar_url   text     nullable
+  identity_hue text     nullable UNIQUE   -- assigned member hue (ADR 044); unique so "colour = person" holds; null = getIdentityHue fallback / family profile
   dark_mode    boolean  nullable          -- display pref; null = follow prefers-color-scheme (M1 home-surface)
   focus_mode   boolean  nullable          -- chores taskee variant; null = derive from tier (ADR 036)
   push_enabled boolean  default false     -- Web Push opt-in (M1 web-push)
   created_at   timestamptz
+
+profile_images                            -- avatar photo bytes (ADR 042); served immutable at /api/profiles/:id/avatar?v={hash}
+  profile_id   uuid  PK  FK → profiles.id (ON DELETE CASCADE)
+  bytes        bytea
+  mime_type    text                       -- server-derived; JPEG/PNG/WebP only, whitelisted by magic bytes
+  hash         text                       -- cache-buster in the avatar URL
+  updated_at   timestamptz
 
 permission_overrides
   id           uuid  PK

@@ -48,6 +48,7 @@ If tests exist for an AC, run them first (`pnpm test` / `pnpm e2e`) — but pass
 
 - [ ] AC checklist completed (every AC is Pass / Fail / Skip with a note)
 - [ ] Any failing ACs either fixed (if trivial) or logged as a fix-session queue entry
+      (a queue entry is **2–3 concise lines + a pointer to the log** — trim, don't paste)
 - [ ] Story status confirmed ✅ Done or updated to 🔙 Sent Back in `docs/modules/[name]/progress.md`
 - [ ] Session log committed to `docs/sessions/logs/YYYY-MM-DD-qa-[story].md`
 - [ ] `CLAUDE.md` current status updated
