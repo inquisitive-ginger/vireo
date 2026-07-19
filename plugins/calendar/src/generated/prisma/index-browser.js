@@ -147,6 +147,12 @@ exports.Prisma.EventExceptionScalarFieldEnum = {
   createdAt: 'createdAt',
 }
 
+exports.Prisma.ReminderLogScalarFieldEnum = {
+  eventId: 'eventId',
+  occurrenceDate: 'occurrenceDate',
+  firedAt: 'firedAt',
+}
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc',
@@ -166,6 +172,7 @@ exports.Prisma.ModelName = {
   Event: 'Event',
   EventAttendee: 'EventAttendee',
   EventException: 'EventException',
+  ReminderLog: 'ReminderLog',
 }
 
 /**

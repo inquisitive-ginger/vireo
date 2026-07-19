@@ -455,6 +455,61 @@ describe('PATCH /calendar/events/:id', () => {
     })
     expect(res.statusCode).toBe(404)
   })
+
+  // Reminder re-arm on edit (ADR 045 / AC5) — the ledger is keyed by occurrence
+  // date, so a same-day time or lead change must clear the fired row to re-fire.
+  async function seedFiredReminder(cookie: string): Promise<string> {
+    const res = await createEvent(cookie, {
+      title: 'Standup',
+      startsAt: '2026-07-02T15:00:00.000Z',
+      reminderMinutes: 30,
+      attendeeIds: [KID_ID],
+    })
+    const id = res.json().id
+    await calendarPrisma.reminderLog.create({
+      data: { eventId: id, occurrenceDate: new Date('2026-07-02T00:00:00.000Z') },
+    })
+    return id
+  }
+
+  const patch = (cookie: string, id: string, payload: Payload) =>
+    app.inject({ method: 'PATCH', url: `/api/calendar/events/${id}`, headers: { cookie }, payload })
+
+  it('clears the reminder ledger when the start time moves (re-arm)', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const id = await seedFiredReminder(cookie)
+    await patch(cookie, id, {
+      title: 'Standup',
+      startsAt: '2026-07-02T17:00:00.000Z',
+      reminderMinutes: 30,
+      attendeeIds: [KID_ID],
+    })
+    expect(await calendarPrisma.reminderLog.count({ where: { eventId: id } })).toBe(0)
+  })
+
+  it('clears the reminder ledger when the reminder lead changes (re-arm)', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const id = await seedFiredReminder(cookie)
+    await patch(cookie, id, {
+      title: 'Standup',
+      startsAt: '2026-07-02T15:00:00.000Z',
+      reminderMinutes: 10,
+      attendeeIds: [KID_ID],
+    })
+    expect(await calendarPrisma.reminderLog.count({ where: { eventId: id } })).toBe(0)
+  })
+
+  it('keeps the reminder ledger when only the title changes', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const id = await seedFiredReminder(cookie)
+    await patch(cookie, id, {
+      title: 'Renamed',
+      startsAt: '2026-07-02T15:00:00.000Z',
+      reminderMinutes: 30,
+      attendeeIds: [KID_ID],
+    })
+    expect(await calendarPrisma.reminderLog.count({ where: { eventId: id } })).toBe(1)
+  })
 })
 
 // ─── Delete: series & per-occurrence skip ────────────────────────────────────

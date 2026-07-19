@@ -3,6 +3,7 @@ import type { FastifyPluginAsync } from 'fastify'
 import { prisma } from '@family-os/platform/server'
 import { EventInputSchema, type EventInput } from '@family-os/schemas'
 import { calendarPrisma } from '@family-os/plugin-calendar/db'
+import { startReminderScheduler } from '../lib/reminder-scheduler'
 
 const DAY_MS = 24 * 60 * 60 * 1000
 const WEEK_MS = 7 * DAY_MS
@@ -184,6 +185,13 @@ function expandWeekly(event: EventRow, from: Date, to: Date) {
 // ─── Routes ───────────────────────────────────────────────────────────────────
 
 const calendarPlugin: FastifyPluginAsync = async (fastify) => {
+  // Time-based reminder poll (ADR 045). Not in tests — they drive `runReminderTick`
+  // directly with a mocked clock; a live 60s interval would leak and fire on fixtures.
+  if (process.env.NODE_ENV !== 'test') {
+    const stop = startReminderScheduler(fastify.eventBus)
+    fastify.addHook('onClose', async () => stop())
+  }
+
   // GET /calendar/events?from=&to= — the shared calendar: every tier 1+ sees all
   // events, with recurring series expanded into occurrences within the range.
   fastify.get('/calendar/events', async (request, reply) => {
@@ -298,6 +306,18 @@ const calendarPlugin: FastifyPluginAsync = async (fastify) => {
     const parsed = await parseEventBody(request.body)
     if (!parsed.ok) return reply.status(parsed.status).send({ error: parsed.error })
     const d = parsed.data
+
+    // Re-arm reminders when the timing changes: the reminder ledger (ADR 045) is
+    // keyed by occurrence *date*, so a same-day time move (or a reminder-lead change)
+    // would otherwise stay suppressed by an already-fired row. Clearing the event's
+    // ledger lets the scheduler fire the corrected reminder; past occurrences won't
+    // re-fire (they're stale). A title/location-only edit leaves it untouched.
+    const timingChanged =
+      existing.startsAt.getTime() !== d.startsAt.getTime() ||
+      existing.reminderMinutes !== d.reminderMinutes
+    if (timingChanged) {
+      await calendarPrisma.reminderLog.deleteMany({ where: { eventId: id } })
+    }
 
     const event = (await calendarPrisma.event.update({
       where: { id },

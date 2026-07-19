@@ -32,6 +32,7 @@ model Event {
 
   attendees  EventAttendee[]
   exceptions EventException[]
+  reminders  ReminderLog[]
 
   @@map("events")
   @@schema("calendar")
@@ -61,5 +62,21 @@ model EventException {
 
   @@id([eventId, occurrenceDate])
   @@map("event_exceptions")
+  @@schema("calendar")
+}
+
+// Sparse "already fired" ledger for event reminders (ADR 045) — the dual of
+// EventException. One row per (event, occurrence) whose reminder has fired, so the
+// scheduler poll fires each reminder exactly once and survives restarts. Keeps
+// compute-on-read intact (ADR 038): the future is never materialized; this records
+// only the past. Cascades on event delete.
+model ReminderLog {
+  eventId        String   @map("event_id") @db.Uuid
+  occurrenceDate DateTime @map("occurrence_date") @db.Date
+  firedAt        DateTime @default(now()) @map("fired_at") @db.Timestamptz(6)
+  event          Event    @relation(fields: [eventId], references: [id], onDelete: Cascade)
+
+  @@id([eventId, occurrenceDate])
+  @@map("reminder_log")
   @@schema("calendar")
 }
