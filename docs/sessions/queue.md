@@ -17,16 +17,6 @@
 
 ## Up Next
 
-### M3 Dev: Event Reminders (story 6) — last MVP story
-
-**Type:** development · **Kickoff:** _to be written_ ·
-[story](../modules/calendar/stories/event-reminders.md)
-Time-based reminders via `platform.notify()` + Web Push — the rung that lets the
-family retire Google. **Resolve the reminder-scheduling ADR first** (Owed ADRs
-below): the event bus is an in-process `EventEmitter` with no timer/cron, so the
-firing mechanism + restart durability must be chosen. _Depends on stories #1, #3._
-Shipping this makes M3 MVP-complete (only story left standing).
-
 ### Platform: family-feed test addendum
 
 **Type:** development (test addendum) · **Kickoff:** _to be written_
@@ -55,12 +45,19 @@ suite mirroring chores/calendar. _Depends on: none._
 
 ### Platform v2 — post-M3 platform/mobile follow-ons
 
-- **Service Worker cache strategy (prod)** — non-stale SW caching for the shell
-  (network-first or build-stamped cache name) so installed PWAs update without a
-  manual clear. Folds in the push-toggle-stuck-OFF bug (#4): the dev tunnel runs the
-  dev build where the SW guard tears the worker down, so the toggle can't read ON
-  until a real SW exists. _Reads: `docs/modules/platform/stories/sw-cache-strategy.md`,
-  `apps/shell/public/sw.js`; origin `logs/2026-06-19-dev-bug-bash-m2-shell.md`._
+- **Service Worker cache strategy (prod) — now gates native Web Push.** Non-stale SW
+  caching for the shell (network-first or build-stamped cache name) so installed PWAs
+  update without a manual clear. Folds in the push-toggle-stuck-OFF bug (#4): the dev
+  tunnel runs the dev build where the SW guard tears the worker down, so the toggle
+  can't read ON until a real SW exists. **Reminders (M3) surfaced the downstream cost:**
+  with no live SW, no `push_subscriptions` row can persist, so an `alert` reminder's
+  Web Push has nowhere to land — this is the last thing between reminders and retiring
+  Google's push. **Also fold in the orphaned-subscription case:** `reset.ts` deletes
+  `push_subscriptions` on any `db:reset` while the phone keeps its browser-local
+  subscription, so the toggle reads ON with **no server row** (silent no-op). _Reads:
+  `docs/modules/platform/stories/sw-cache-strategy.md`, `apps/shell/public/sw.js`,
+  `apps/shell/src/main.tsx`, `apps/api/src/plugins/push.ts`; origin
+  `logs/2026-06-19-dev-bug-bash-m2-shell.md`, `logs/2026-07-19-dev-event-reminders.md`._
 - **Family Profile Notifications** — M1-scoped, deferred as a Platform v2 extra
   (outside M1's done-when). Surface shape + `FamilyNotificationStrip` + ADR 029
   `audience` field. _Kickoff: `kickoffs/design-family-profile-notifications.md`._
@@ -80,7 +77,7 @@ suite mirroring chores/calendar. _Depends on: none._
   (schema/prisma config/db.ts/`./db` export), federation `shared` uses the array not
   singleton-object form, `dev` can't serve a federated remote, and backend wiring
   (server.ts, route file, load-plugin.ts, federation.d.ts, ICON*MAP) is manual.
-  \_Reads: `turbo/generators/config.ts` + `templates/plugin/*`.*
+  \_Reads: `turbo/generators/config.ts` + `templates/plugin/*`.\*
 - **Storybook stories → Tailwind utilities** — migrate legacy inline-`style` layout
   in ui stories to Tailwind utilities (ADR 035), keeping inline `style` only for
   dynamic token values. Heaviest first: `color-tokens`, `form-primitives`,
@@ -97,6 +94,11 @@ suite mirroring chores/calendar. _Depends on: none._
 
 > Two-line index; full detail in the linked log.
 
+- **2026-07-19 — Event Reminders (story 6, PR #41). M3 MVP-complete.** 60s in-process
+  poll computing due reminders on read + a sparse `calendar.reminder_log` ledger (dual of
+  `event_exceptions`, so ADR 038 holds); `notify()` at `alert`, audience = attendees +
+  tier-4 parents / everyone for Family; edit re-arms on time/lead change. **ADR 045.**
+  Native push still blocked by the deferred SW story. _[log](logs/2026-07-19-dev-event-reminders.md)_
 - **2026-07-12 — Identity Hue Assignment (PR #40).** Member hue is now persisted +
   unique (`Profile.identityHue`, `resolveHue`), palette grew to eight, the tint layer
   was rebuilt, and the calendar chip gained an owner-initial second channel for

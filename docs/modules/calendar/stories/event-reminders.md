@@ -1,7 +1,7 @@
 # Story: Event Reminders
 
 **Module:** calendar
-**Status:** ⬜ Not Started
+**Status:** ✅ Done
 
 ## User story
 

@@ -6,19 +6,21 @@
 
 ## Active Milestone
 
-**M3 — Calendar** is the active milestone and **one story from MVP-complete**: 6 of 7 MVP
-stories have shipped (design 2026-06-22; dev stories 1–5 + 7). Only **Event Reminders
-(story 6)** remains — gated by the owed reminder-scheduling ADR. Story 8 (Suggested Events
-Inbox) is the deferred north star. MVP thesis: a glanceable tablet twin of the paper
-calendar + mobile capture + reminders. M2 — Chores ✅ done (2026-06-20). Platform cleanup
-(Service Worker cache strategy) was deferred to **Platform v2** so M3 can run uninterrupted;
-see the queue's Deferred Backlog.
+**M3 — Calendar** is ✅ **MVP-complete** (2026-07-19): all 7 MVP stories shipped
+(design 2026-06-22; dev stories 1–7). **Event Reminders (story 6, PR #41)** closed it —
+a 60s in-process poll (ADR 045) firing `platform.notify()` at reminder time. Story 8
+(Suggested Events Inbox) is the deferred north star, gated by the external-ingest ADR. MVP
+thesis delivered: a glanceable tablet twin of the paper calendar + mobile capture +
+reminders. M2 — Chores ✅ done (2026-06-20). **No milestone is currently active — pick the
+next one.** Platform cleanup (Service Worker cache strategy) sits in **Platform v2** and now
+gates native Web Push actually landing on a phone; see the queue's Deferred Backlog.
 
 ## Completed
 
 **M0 — Foundation** · ✅ Done (2026-06-01)
 **M1 — Platform Shell** · ✅ Done (2026-06-15)
 **M2 — Chores** · ✅ Done (2026-06-20)
+**M3 — Calendar** · ✅ MVP-complete (2026-07-19) — story 8 (Suggested Events Inbox) deferred
 
 ---
 
