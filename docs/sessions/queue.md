@@ -17,6 +17,18 @@
 
 ## Up Next
 
+### Deployment: Part B — containerize + CI
+
+**Type:** development/infra · **Kickoff:** _to be written_
+Part A is done (prod-servable, A2 verified). Next on the deploy path — and the
+prerequisite to running on the Pi, since **no images exist yet**: the two
+Dockerfiles (`apps/api`, `apps/shell` with the Cloudflare-DNS Caddy build), the
+`Caddyfile`, `docker-compose.prod.yml`, and **E1 CI** (`.github/workflows/ci.yml`
+with a Postgres service). Then Part C provisions the Pi. POC box is a **Pi 3B v1.2
+(1 GB RAM)** — Docker as written, tune later. _Reads: `docs/deployment.md` Parts
+B/C/E, `logs/2026-07-19-dev-prod-serve.md`, memory `project-poc-hardware`._
+_Depends on: none (Part A merged)._
+
 ### Platform: family-feed test addendum
 
 **Type:** development (test addendum) · **Kickoff:** _to be written_
@@ -94,6 +106,11 @@ suite mirroring chores/calendar. _Depends on: none._
 
 > Two-line index; full detail in the linked log.
 
+- **2026-07-19 — Production Serve (deployment Part A).** A2 verified in a real
+  browser — federated plugins render under `/plugins/<name>/` from the flat prod
+  tree, no `base` override (relative via `import.meta.url`); `db:deploy` added to
+  all four Prisma packages; `family-feed`'s missing init migration baselined. Part
+  B (containerize) + E1 CI is next. _[log](logs/2026-07-19-dev-prod-serve.md)_
 - **2026-07-19 — Service Worker Cache Strategy (prod).** First deployment-critical
   story. `sw.js` → network-first for navigations + `/api`·`/events`·`/plugins/*`,
   cache-first for hashed assets; a Vite build-stamp plugin bakes the entry hash into

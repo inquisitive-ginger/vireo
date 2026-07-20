@@ -1,9 +1,12 @@
 # Deployment — Family OS on a Raspberry Pi 4
 
-> **Status:** proposed runbook, not yet executed. The production serving layer
-> described in **Part A** does not exist yet — it has to be built (as a dev
-> session, with live verification) before any of Parts B–F will work. Treat
-> Parts B–F as the target shape, not blind copy-paste.
+> **Status:** **Part A done** (2026-07-19) — A1 SW cache shipped, A2 verified,
+> A3 migrations wired; only A4 (on-Pi secrets) remains, and it's Part C config.
+> **Part B (containerize) + E1 (CI) is the next session** and the prerequisite to
+> running on the Pi — no images exist yet. Treat Parts B–F as the target shape,
+> not blind copy-paste. Note the POC box is a **Pi 3B v1.2 (1 GB RAM)**, not the
+> Pi 4 in the title — see `logs/2026-07-19-dev-prod-serve.md` and memory
+> `project-poc-hardware`.
 
 Target: a Pi 4 bolted near the kitchen serves the app to a wall-mounted iPad as
 an installable PWA over trusted HTTPS, updated automatically on merge to `main`.
@@ -62,7 +65,15 @@ registers and its `push` handler fires. Web Push was only broken because the
 tunnel served the _dev_ build (which tears the SW down). On a real HTTPS prod
 build, push works — once A1 lands, both push and updates are reliable.
 
-### A2. Verify plugins serve under a subpath
+### A2. Verify plugins serve under a subpath ✅ verified 2026-07-19
+
+**Result: works with the default `base: '/'` — no per-plugin override needed.**
+`vite-plugin-federation@1.4.1` resolves exposed/shared chunks **relatively**
+against `import.meta.url`, so a `remoteEntry.js` loaded from
+`/plugins/<name>/assets/` pulls its chunks from that same dir. Verified static +
+HTTP (flat prod tree, all URLs `200` with correct MIME) and in a real browser
+against the flat tree with `/api` proxied — all three plugins render. Details in
+`logs/2026-07-19-dev-prod-serve.md`. Original analysis below, kept for context.
 
 Plugins build to `dist/{index.html,manifest.json,assets/remoteEntry.js,…}` with
 Vite `base` defaulting to `/`. In prod they're served at `/plugins/<name>/`. The
@@ -73,7 +84,14 @@ or the manifest resolves against `/assets/...` instead of
 This is the highest-risk item in Part A; nail it with a real browser before
 declaring victory.
 
-### A3. Production API run + migrations
+### A3. Production API run + migrations ✅ scripts done 2026-07-19
+
+**`db:deploy` (`prisma migrate deploy`) added to all four packages.**
+`family-feed` had no migrations folder (dev table applied via `db push`) — its
+initial migration is now baselined (`20260719120000_init_family_feed`, marked
+applied in dev; creates the schema+table fresh on an empty prod DB). The compiled
+`node dist/index.js` run happens in the Dockerfile (Part B); the entrypoint below
+already calls `db:deploy` per package.
 
 - The API currently starts with `tsx watch` (`apps/api` `dev`). Prod runs the
   compiled output: `pnpm --filter @family-os/api build` → `node dist/index.js`.
