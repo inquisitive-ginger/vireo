@@ -1,3 +1,12 @@
+/* react-day-picker's base stylesheet + our selected-day fill live here, not in
+   calendar.tsx, because a JS `import '*.css'` inside @family-os/ui gets split
+   into a federation shared-chunk CSS that the plugin runtime never links, so the
+   picker renders unstyled in prod (ADR 035's third-party-CSS gap). This stylesheet
+   is @imported by both the shell and Storybook, so routing them through it
+   guarantees they load. Order matters: rdp base first, our override second. */
+@import 'react-day-picker/style.css';
+@import './components/calendar.css';
+
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
