@@ -105,6 +105,34 @@ describe('POST /api/auth/switch', () => {
     expect(res.json<{ tier: number }>().tier).toBe(1)
   })
 
+  it('switches to the family profile when no family row exists (prod parity)', async () => {
+    // Prod has no seeded `family` row; the pseudo-profile is synthetic (preHandler
+    // fabricates it). Deleting the row reproduces prod and guards the regression.
+    await prisma.profile.deleteMany({ where: { id: 'family' } })
+    try {
+      const res = await app.inject({
+        method: 'POST',
+        url: '/api/auth/switch',
+        payload: { targetProfileId: 'family' },
+      })
+      expect(res.statusCode).toBe(200)
+      expect(res.json<{ id: string; tier: number }>()).toMatchObject({ id: 'family', tier: 1 })
+
+      const me = await app.inject({
+        method: 'GET',
+        url: '/api/auth/me',
+        headers: { cookie: getCookie(res) },
+      })
+      expect(me.json<{ id: string }>().id).toBe('family')
+    } finally {
+      await prisma.profile.upsert({
+        where: { id: 'family' },
+        update: {},
+        create: { id: 'family', name: 'Family', tier: 1, avatarUrl: null },
+      })
+    }
+  })
+
   it('returns 403 when switching from tier < 4 to tier 4', async () => {
     // family (tier 1) tries to switch to parent (tier 4) without PIN
     const res = await app.inject({
