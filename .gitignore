@@ -12,3 +12,4 @@ storybook-static/
 *.tsbuildinfo
 packages/platform/src/generated/
 .dev-pids
+.preview-pids

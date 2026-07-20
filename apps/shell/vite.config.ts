@@ -1,6 +1,6 @@
 import path from 'path'
-import { readFileSync } from 'fs'
-import { defineConfig } from 'vite'
+import { readFileSync, writeFileSync, existsSync } from 'fs'
+import { defineConfig, type Plugin } from 'vite'
 import react from '@vitejs/plugin-react'
 import tailwindcss from '@tailwindcss/vite'
 import federation from '@originjs/vite-plugin-federation'
@@ -9,10 +9,34 @@ import type { RegistryEntry } from '@family-os/platform/types'
 const registryPath = path.resolve(__dirname, '../../plugins.json')
 const registry: RegistryEntry[] = JSON.parse(readFileSync(registryPath, 'utf-8'))
 
+// Stamp the built service worker's cache name with the entry chunk's content
+// hash so every deploy gets a fresh SW (byte-changed → browser reinstalls) and
+// `activate` purges the prior cache. Without this the SW is byte-identical each
+// build and installed PWAs pin a stale shell.
+function stampServiceWorker(): Plugin {
+  let version = 'dev'
+  return {
+    name: 'stamp-service-worker',
+    apply: 'build',
+    generateBundle(_, bundle) {
+      const entry = Object.values(bundle).find((c) => c.type === 'chunk' && c.isEntry)
+      const hash =
+        entry?.type === 'chunk' ? entry.fileName.match(/-([A-Za-z0-9_-]+)\.js$/)?.[1] : ''
+      if (hash) version = hash
+    },
+    closeBundle() {
+      const swPath = path.resolve(__dirname, 'dist/sw.js')
+      if (!existsSync(swPath)) return
+      writeFileSync(swPath, readFileSync(swPath, 'utf-8').replace(/__SW_VERSION__/g, version))
+    },
+  }
+}
+
 export default defineConfig({
   plugins: [
     react(),
     tailwindcss(),
+    stampServiceWorker(),
     federation({
       name: 'shell',
       remotes: Object.fromEntries(

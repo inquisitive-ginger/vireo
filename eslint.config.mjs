@@ -55,6 +55,14 @@ export default [
     },
   },
   {
+    files: ['**/sw.js'],
+    languageOptions: {
+      globals: {
+        ...globals.serviceworker,
+      },
+    },
+  },
+  {
     ignores: ['**/dist/**', '**/node_modules/**', '**/storybook-static/**', '**/src/generated/**'],
   },
   prettier,
