@@ -1,0 +1,17 @@
+{$APP_HOST} {
+	encode zstd gzip
+	tls {
+		dns cloudflare {$CF_API_TOKEN}
+	}
+
+	@backend path /api/* /events*
+	handle @backend {
+		reverse_proxy api:3000
+	}
+
+	handle {
+		root * /srv
+		try_files {path} /index.html
+		file_server
+	}
+}
