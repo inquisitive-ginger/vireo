@@ -17,17 +17,20 @@
 
 ## Up Next
 
-### Deployment: Part B — containerize + CI
+### Deployment: Part C — provision the Pi (+ E3 deploy)
 
-**Type:** development/infra · **Kickoff:** _to be written_
-Part A is done (prod-servable, A2 verified). Next on the deploy path — and the
-prerequisite to running on the Pi, since **no images exist yet**: the two
-Dockerfiles (`apps/api`, `apps/shell` with the Cloudflare-DNS Caddy build), the
-`Caddyfile`, `docker-compose.prod.yml`, and **E1 CI** (`.github/workflows/ci.yml`
-with a Postgres service). Then Part C provisions the Pi. POC box is a **Pi 3B v1.2
+**Type:** infra (mostly manual, on the Pi) · **Kickoff:** _to be written_
+Parts A + B are done and images build to GHCR. Now bring it up on the box:
+install Docker, write `/opt/family-os/.env` (A4 secrets — Postgres creds,
+`SESSION_SECRET`, VAPID pair, `CF_API_TOKEN`, `APP_HOST`), add the Cloudflare `A`
+record + scoped DNS token, copy `docker-compose.prod.yml`, `docker compose ... up
+-d`, watch the cert issue. Then **E3**: register a self-hosted runner on the Pi
+and add `deploy.yml` for pull-based CD. Finally Part D (install the PWA on the
+iPad) + F (nightly `pg_dump` backups). **First: confirm `release.yml` published
+`family-os-api` + `family-os-web` (arm64) to GHCR.** POC box is a **Pi 3B v1.2
 (1 GB RAM)** — Docker as written, tune later. _Reads: `docs/deployment.md` Parts
-B/C/E, `logs/2026-07-19-dev-prod-serve.md`, memory `project-poc-hardware`._
-_Depends on: none (Part A merged)._
+C–F, `logs/2026-07-19-dev-containerize.md`, memory `project-poc-hardware`._
+_Depends on: Part B merged (done)._
 
 ### Platform: family-feed test addendum
 
@@ -106,6 +109,13 @@ suite mirroring chores/calendar. _Depends on: none._
 
 > Two-line index; full detail in the linked log.
 
+- **2026-07-19 — Containerize (deployment Part B, PR #42).** Two GHCR images the
+  Pi pulls: **api runs via `tsx`** (imports workspace TS at runtime; driver-adapter
+  Prisma clients are arch-independent) with an entrypoint that `migrate deploy`s all
+  four schemas; **web** = shell/plugins served flat by Caddy (Cloudflare DNS-01).
+  Compose + `ci.yml` (E1, green) + `release.yml` (E2, arm64→GHCR). Fixed two clean-
+  checkout bugs: pnpm `allowBuilds` placeholder + platform's uncommitted Prisma
+  client. _[log](logs/2026-07-19-dev-containerize.md)_
 - **2026-07-19 — Production Serve (deployment Part A).** A2 verified in a real
   browser — federated plugins render under `/plugins/<name>/` from the flat prod
   tree, no `base` override (relative via `import.meta.url`); `db:deploy` added to

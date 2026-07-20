@@ -1,12 +1,14 @@
 # Deployment — Family OS on a Raspberry Pi 4
 
-> **Status:** **Part A done** (2026-07-19) — A1 SW cache shipped, A2 verified,
-> A3 migrations wired; only A4 (on-Pi secrets) remains, and it's Part C config.
-> **Part B (containerize) + E1 (CI) is the next session** and the prerequisite to
-> running on the Pi — no images exist yet. Treat Parts B–F as the target shape,
-> not blind copy-paste. Note the POC box is a **Pi 3B v1.2 (1 GB RAM)**, not the
-> Pi 4 in the title — see `logs/2026-07-19-dev-prod-serve.md` and memory
-> `project-poc-hardware`.
+> **Status:** **Parts A + B done** (2026-07-19). A: SW cache, A2 subpath verified,
+> A3 migrations. B: both Dockerfiles, Caddyfile, `docker-compose.prod.yml`,
+> `ci.yml` (E1, green) and `release.yml` (E2, arm64 → GHCR). **The shipped files
+> are the source of truth — the Part B code samples below are the original
+> proposal and differ: the API runs via `tsx`, not `node dist`** (it imports
+> workspace TS at runtime), and there is no `pnpm deploy --prod` stage. See
+> `logs/2026-07-19-dev-containerize.md`. **Next is Part C — provision the Pi**
+> (Docker, A4 secrets, DNS) + E3 (self-hosted runner). POC box is a **Pi 3B v1.2
+> (1 GB RAM)**, not the Pi 4 in the title — memory `project-poc-hardware`.
 
 Target: a Pi 4 bolted near the kitchen serves the app to a wall-mounted iPad as
 an installable PWA over trusted HTTPS, updated automatically on merge to `main`.
