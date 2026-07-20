@@ -1,7 +1,7 @@
 # Story: Service Worker Cache Strategy
 
 **Module:** platform
-**Status:** ⬜ Not Started
+**Status:** ✅ Done (2026-07-19 — `logs/2026-07-19-dev-sw-cache-strategy.md`)
 
 ## User story
 
