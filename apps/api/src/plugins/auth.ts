@@ -106,6 +106,12 @@ const authPlugin: FastifyPluginAsync = async (fastify) => {
   fastify.post<{ Body: { targetProfileId: string } }>('/auth/switch', async (request, reply) => {
     const { targetProfileId } = request.body
 
+    // The Family profile is synthetic (no DB row); the preHandler fabricates it on read.
+    if (targetProfileId === FAMILY_PROFILE_ID) {
+      request.session.activeProfileId = FAMILY_PROFILE_ID
+      return { id: FAMILY_PROFILE_ID, name: 'Family', tier: 1 }
+    }
+
     const target = await prisma.profile.findUnique({ where: { id: targetProfileId } })
     if (!target) return reply.status(404).send({ error: 'Profile not found' })
 
