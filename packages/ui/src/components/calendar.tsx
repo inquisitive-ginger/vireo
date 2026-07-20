@@ -1,5 +1,3 @@
-import 'react-day-picker/style.css'
-import './calendar.css'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import { DayPicker, getDefaultClassNames } from 'react-day-picker'
 import type { ComponentProps, CSSProperties } from 'react'
