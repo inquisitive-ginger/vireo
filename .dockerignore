@@ -1,0 +1,13 @@
+node_modules
+**/node_modules
+**/dist
+**/.turbo
+.turbo
+.git
+coverage
+**/coverage
+*.log
+.env
+**/.env
+.preview-pids
+storybook-static

@@ -1,0 +1,37 @@
+name: ci
+on: pull_request
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: familyos
+          POSTGRES_PASSWORD: familyos
+          POSTGRES_DB: familyos_test
+        ports: ['5432:5432']
+        options: >-
+          --health-cmd "pg_isready -U familyos" --health-interval 5s
+          --health-timeout 5s --health-retries 5
+    env:
+      DATABASE_URL: postgresql://familyos:familyos@localhost:5432/familyos_test
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm lint
+      - name: Migrate + seed the test database
+        run: |
+          for p in platform plugin-family-feed plugin-chores plugin-calendar; do
+            pnpm --filter "@family-os/$p" exec prisma migrate deploy
+          done
+          pnpm --filter @family-os/platform exec prisma db seed
+      - run: pnpm test
+      - run: pnpm build
