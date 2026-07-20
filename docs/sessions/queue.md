@@ -26,32 +26,23 @@ compressed → **off the Pi** (offsite bucket / second disk), on a systemd timer
 cron; test a restore once. _Reads: `docs/deployment.md` Part F._ _Depends on:
 none (live)._
 
-### Deployment: move Docker data onto the SSD
+### Deployment hardening — SSD data-root · E3 auto-deploy · faster builds
 
-**Type:** infra · **Kickoff:** _to be written_
-`docker-compose.prod.yml` uses named volumes (`postgres_data`, `caddy_data`) →
-they sit under `/var/lib/docker` on the **microSD**, so the household's Postgres
-data + the ~2 GB api image wear the SD card — the exact thing the `/mnt/data` SSD
-was set up to prevent. Point Docker's data-root at the SSD (`/etc/docker/daemon.json`
-`"data-root": "/mnt/data/docker"`, then migrate + restart), or bind-mount the
-postgres volume to `/mnt/data`. Do before long-term use. _Reads: memory
-`project-poc-hardware`._ _Depends on: none (live)._
-
-### Deployment: E3 — self-hosted runner auto-deploy
-
-**Type:** infra · **Kickoff:** _to be written_
-Retire the manual `pull && up -d`: register a self-hosted `linux/ARM64` runner on
-the Pi (as a service) + add `.github/workflows/deploy.yml` (`workflow_run` after
-`release`) so merges to `main` deploy themselves. _Reads: `docs/deployment.md` E3._
-_Depends on: none (live)._
-
-### Speed up the arm64 image builds
-
-**Type:** infra/tooling · **Kickoff:** _to be written_
-`release.yml` takes ~15 min: full-monorepo `pnpm install` + Vite build under QEMU
-emulation, twice, no cache. Fix by building JS natively → copying into a thin
-arm64 runtime, and/or buildx `cache-from/to`, and/or arm64 hosted runners.
-_Reads: `docs/deployment.md` E2 note, `logs/2026-07-20-deploy-golive.md`._
+**Type:** infra/tooling · **Kickoff:** `kickoffs/deploy-hardening.md`
+Post-go-live infra follow-ups, bundled into one session (backups are separate,
+above). Three items: **(1) Move Docker's data onto the SSD** — named volumes
+(`postgres_data`, `caddy_data`) sit on the **microSD** under `/var/lib/docker`, so
+the household DB + the ~2 GB api image wear the SD card the `/mnt/data` SSD was
+meant to save; set `/etc/docker/daemon.json` `"data-root": "/mnt/data/docker"`
+(migrate + restart) or bind-mount the postgres volume. **(2) E3 auto-deploy** —
+register a self-hosted `linux/ARM64` runner on the Pi (as a service) + add
+`.github/workflows/deploy.yml` (`workflow_run` after `release`) so merges
+self-deploy, retiring the manual `pull && up -d`. **(3) Faster arm64 builds** —
+`release.yml` is ~15 min (QEMU-emulated full install + Vite build, twice, no
+cache); build JS natively → thin arm64 runtime, and/or buildx `cache-from/to`,
+and/or arm64 hosted runners. _Reads: `docs/deployment.md` C/E2/E3,
+`logs/2026-07-20-deploy-golive.md`, memory `project-poc-hardware`._ _Depends on:
+none (live)._
 
 ### Platform: family-feed test addendum
 
