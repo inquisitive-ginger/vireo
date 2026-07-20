@@ -1,0 +1,141 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  schemas  = ["platform"]
+}
+
+model Profile {
+  id          String   @id @default(uuid())
+  name        String
+  tier        Int
+  // The member's identity colour (ADR 044): assigned and persisted, not hashed from
+  // the name. UNIQUE, because "colour = person" is the app's load-bearing convention —
+  // a duplicate hue doesn't degrade the mapping, it points it at two people at once.
+  // Uniqueness therefore makes IDENTITY_HUES.length a hard cap on household size.
+  // Nullable so the `family` pseudo-profile consumes no member hue (Postgres allows
+  // many NULLs under a unique index) and so a profile can exist before it is assigned.
+  identityHue String?  @unique @map("identity_hue")
+  avatarUrl   String?  @map("avatar_url")
+  darkMode    Boolean? @map("dark_mode")
+  // Taskee surface variant: null = derive from tier (≤2 → Focus); true/false = parent override.
+  focusMode   Boolean? @map("focus_mode")
+  pushEnabled Boolean  @default(false) @map("push_enabled")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  permissionOverrides PermissionOverride[] @relation("profile_overrides")
+  grantedOverrides    PermissionOverride[] @relation("granted_by_overrides")
+  systemConfigs       SystemConfig[]
+  widgetLayouts       WidgetLayout[]
+  notifications       Notification[]
+  pushSubscriptions   PushSubscription[]
+  image               ProfileImage?
+
+  @@map("profiles")
+  @@schema("platform")
+}
+
+/// The avatar photograph's bytes (ADR 042). Lives in Postgres rather than on disk so
+/// that ADR 009's "backup and restore is a single operation" still holds — a household
+/// is ≤ ~8 profiles × ~40KB, so the usual blobs-in-a-database objection doesn't apply.
+/// `Profile.avatarUrl` holds `/api/profiles/:id/avatar?v={hash}`; the hash busts the
+/// immutable cache when the photo changes.
+model ProfileImage {
+  profileId String   @id @map("profile_id")
+  bytes     Bytes
+  mimeType  String   @map("mime_type")
+  hash      String
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  profile Profile @relation(fields: [profileId], references: [id], onDelete: Cascade)
+
+  @@map("profile_images")
+  @@schema("platform")
+}
+
+model PushSubscription {
+  id        String   @id @default(uuid())
+  profileId String   @map("profile_id")
+  endpoint  String   @unique
+  p256dhKey String   @map("p256dh_key")
+  authKey   String   @map("auth_key")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  profile Profile @relation(fields: [profileId], references: [id])
+
+  @@map("push_subscriptions")
+  @@schema("platform")
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  profileId String   @map("profile_id")
+  title     String
+  body      String?
+  variant   String
+  priority  String   @default("info")
+  isRead    Boolean  @default(false) @map("is_read")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  profile Profile @relation(fields: [profileId], references: [id])
+
+  @@map("notifications")
+  @@schema("platform")
+}
+
+model WidgetLayout {
+  id        String @id @default(uuid())
+  profileId String @map("profile_id")
+  widgetId  String @map("widget_id")
+  x         Int
+  y         Int
+  w         Int
+  h         Int
+
+  profile Profile @relation(fields: [profileId], references: [id])
+
+  @@map("widget_layouts")
+  @@schema("platform")
+}
+
+model PermissionOverride {
+  id        String   @id @default(uuid())
+  profileId String   @map("profile_id")
+  action    String
+  subject   String
+  type      String
+  grantedBy String?  @map("granted_by")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  profile Profile  @relation("profile_overrides", fields: [profileId], references: [id])
+  grantor Profile? @relation("granted_by_overrides", fields: [grantedBy], references: [id])
+
+  @@map("permission_overrides")
+  @@schema("platform")
+}
+
+model SystemConfig {
+  key       String   @id
+  value     Json
+  updatedBy String?  @map("updated_by")
+  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
+
+  profile Profile? @relation(fields: [updatedBy], references: [id])
+
+  @@map("system_config")
+  @@schema("platform")
+}
+
+// Managed by connect-pg-simple; Prisma tracks it here to avoid schema drift.
+model Session {
+  sid    String   @id @db.VarChar
+  sess   Json
+  expire DateTime @db.Timestamp(6)
+
+  @@index([expire], name: "IDX_sessions_expire")
+  @@map("sessions")
+  @@schema("platform")
+}
