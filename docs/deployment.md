@@ -1,14 +1,15 @@
 # Deployment — Family OS on a Raspberry Pi 4
 
-> **Status:** **Parts A + B done** (2026-07-19). A: SW cache, A2 subpath verified,
-> A3 migrations. B: both Dockerfiles, Caddyfile, `docker-compose.prod.yml`,
-> `ci.yml` (E1, green) and `release.yml` (E2, arm64 → GHCR). **The shipped files
-> are the source of truth — the Part B code samples below are the original
-> proposal and differ: the API runs via `tsx`, not `node dist`** (it imports
-> workspace TS at runtime), and there is no `pnpm deploy --prod` stage. See
-> `logs/2026-07-19-dev-containerize.md`. **Next is Part C — provision the Pi**
-> (Docker, A4 secrets, DNS) + E3 (self-hosted runner). POC box is a **Pi 3B v1.2
-> (1 GB RAM)**, not the Pi 4 in the title — memory `project-poc-hardware`.
+> **Status: 🟢 LIVE (2026-07-20) at `https://vireohome.app`.** Parts A + B + C all
+> done on a **Pi 3B v1.2 (1 GB RAM)**, not the Pi 4 in the title (memory
+> `project-poc-hardware`). Docker Compose (postgres + api + Caddy), GHCR images,
+> Cloudflare DNS-01 Let's Encrypt cert, PWA installed. Deviations from the runbook
+> below, all intentional: **the API runs via `tsx`, not `node dist`** (imports
+> workspace TS at runtime; no `pnpm deploy --prod` stage — the Part B code samples
+> below are the original proposal); apex domain (not `family.`); the actual bring-up
+> is in `logs/2026-07-20-deploy-golive.md` (+ Part B: `logs/2026-07-19-dev-containerize.md`).
+> **Remaining (non-blocking):** Part F offsite backups (most important), E3
+> self-hosted-runner auto-deploy, faster arm64 builds.
 
 Target: a Pi 4 bolted near the kitchen serves the app to a wall-mounted iPad as
 an installable PWA over trusted HTTPS, updated automatically on merge to `main`.

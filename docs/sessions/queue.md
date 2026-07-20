@@ -17,20 +17,41 @@
 
 ## Up Next
 
-### Deployment: Part C — provision the Pi (+ E3 deploy)
+### Deployment: Part F — offsite backups (most important)
 
-**Type:** infra (mostly manual, on the Pi) · **Kickoff:** _to be written_
-Parts A + B are done and images build to GHCR. Now bring it up on the box:
-install Docker, write `/opt/family-os/.env` (A4 secrets — Postgres creds,
-`SESSION_SECRET`, VAPID pair, `CF_API_TOKEN`, `APP_HOST`), add the Cloudflare `A`
-record + scoped DNS token, copy `docker-compose.prod.yml`, `docker compose ... up
--d`, watch the cert issue. Then **E3**: register a self-hosted runner on the Pi
-and add `deploy.yml` for pull-based CD. Finally Part D (install the PWA on the
-iPad) + F (nightly `pg_dump` backups). **First: confirm `release.yml` published
-`family-os-api` + `family-os-web` (arm64) to GHCR.** POC box is a **Pi 3B v1.2
-(1 GB RAM)** — Docker as written, tune later. _Reads: `docs/deployment.md` Parts
-C–F, `logs/2026-07-19-dev-containerize.md`, memory `project-poc-hardware`._
-_Depends on: Part B merged (done)._
+**Type:** infra · **Kickoff:** _to be written_
+The app is **live** and the whole household now lives in one Postgres volume on
+the Pi with **no backup**. Nightly `docker compose exec -T postgres pg_dump` →
+compressed → **off the Pi** (offsite bucket / second disk), on a systemd timer or
+cron; test a restore once. _Reads: `docs/deployment.md` Part F._ _Depends on:
+none (live)._
+
+### Deployment: move Docker data onto the SSD
+
+**Type:** infra · **Kickoff:** _to be written_
+`docker-compose.prod.yml` uses named volumes (`postgres_data`, `caddy_data`) →
+they sit under `/var/lib/docker` on the **microSD**, so the household's Postgres
+data + the ~2 GB api image wear the SD card — the exact thing the `/mnt/data` SSD
+was set up to prevent. Point Docker's data-root at the SSD (`/etc/docker/daemon.json`
+`"data-root": "/mnt/data/docker"`, then migrate + restart), or bind-mount the
+postgres volume to `/mnt/data`. Do before long-term use. _Reads: memory
+`project-poc-hardware`._ _Depends on: none (live)._
+
+### Deployment: E3 — self-hosted runner auto-deploy
+
+**Type:** infra · **Kickoff:** _to be written_
+Retire the manual `pull && up -d`: register a self-hosted `linux/ARM64` runner on
+the Pi (as a service) + add `.github/workflows/deploy.yml` (`workflow_run` after
+`release`) so merges to `main` deploy themselves. _Reads: `docs/deployment.md` E3._
+_Depends on: none (live)._
+
+### Speed up the arm64 image builds
+
+**Type:** infra/tooling · **Kickoff:** _to be written_
+`release.yml` takes ~15 min: full-monorepo `pnpm install` + Vite build under QEMU
+emulation, twice, no cache. Fix by building JS natively → copying into a thin
+arm64 runtime, and/or buildx `cache-from/to`, and/or arm64 hosted runners.
+_Reads: `docs/deployment.md` E2 note, `logs/2026-07-20-deploy-golive.md`._
 
 ### Platform: family-feed test addendum
 
@@ -109,6 +130,12 @@ suite mirroring chores/calendar. _Depends on: none._
 
 > Two-line index; full detail in the linked log.
 
+- **2026-07-20 — LIVE: Part C go-live + day-picker fix.** Family OS is deployed on
+  the Pi 3B at **`https://vireohome.app`** (Docker Compose, GHCR images, Cloudflare
+  DNS-01 Let's Encrypt cert, PWA installed on the fridge iPad). Fixed the first prod
+  bug — the calendar date-picker rendered unstyled because `react-day-picker`'s CSS
+  was JS-imported inside `@family-os/ui` and orphaned in the federated build (PR #43);
+  moved it to `ui/styles.css`. _[log](logs/2026-07-20-deploy-golive.md)_
 - **2026-07-19 — Containerize (deployment Part B, PR #42).** Two GHCR images the
   Pi pulls: **api runs via `tsx`** (imports workspace TS at runtime; driver-adapter
   Prisma clients are arch-independent) with an entrypoint that `migrate deploy`s all
