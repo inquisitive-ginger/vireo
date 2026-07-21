@@ -156,6 +156,18 @@ exports.Prisma.NotificationScalarFieldEnum = {
   createdAt: 'createdAt',
 }
 
+exports.Prisma.BugReportScalarFieldEnum = {
+  id: 'id',
+  reporterId: 'reporterId',
+  description: 'description',
+  context: 'context',
+  status: 'status',
+  githubIssueNumber: 'githubIssueNumber',
+  resolution: 'resolution',
+  createdAt: 'createdAt',
+  updatedAt: 'updatedAt',
+}
+
 exports.Prisma.WidgetLayoutScalarFieldEnum = {
   id: 'id',
   profileId: 'profileId',
@@ -219,6 +231,7 @@ exports.Prisma.ModelName = {
   ProfileImage: 'ProfileImage',
   PushSubscription: 'PushSubscription',
   Notification: 'Notification',
+  BugReport: 'BugReport',
   WidgetLayout: 'WidgetLayout',
   PermissionOverride: 'PermissionOverride',
   SystemConfig: 'SystemConfig',

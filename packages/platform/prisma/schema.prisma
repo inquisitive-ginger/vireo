@@ -33,6 +33,7 @@ model Profile {
   notifications       Notification[]
   pushSubscriptions   PushSubscription[]
   image               ProfileImage?
+  bugReports          BugReport[]
 
   @@map("profiles")
   @@schema("platform")
@@ -83,6 +84,31 @@ model Notification {
   profile Profile @relation(fields: [profileId], references: [id])
 
   @@map("notifications")
+  @@schema("platform")
+}
+
+/// An in-app bug report (ADR 046). `context` is a JSON blob of everything the app
+/// captured for the reporter — route, build hash, viewport, user agent, recent console
+/// errors — deliberately schemaless, because it is evidence handed to a fixer rather
+/// than data the app queries. Adding a field to the capture must never need a migration.
+///
+/// `githubIssueNumber` is nullable and stays null when no token is configured: the
+/// bridge is best-effort and must never cost the household its report (ADR 046).
+model BugReport {
+  id                String   @id @default(uuid())
+  reporterId        String   @map("reporter_id")
+  description       String
+  context           Json
+  status            String   @default("new")
+  githubIssueNumber Int?     @map("github_issue_number")
+  resolution        String?
+  createdAt         DateTime @default(now()) @map("created_at")
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  reporter Profile @relation(fields: [reporterId], references: [id], onDelete: Cascade)
+
+  @@index([status])
+  @@map("bug_reports")
   @@schema("platform")
 }
 

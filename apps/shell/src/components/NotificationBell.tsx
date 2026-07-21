@@ -3,6 +3,7 @@ import { useAuth, useEventBus } from '@family-os/platform'
 import { BellBadge, NotificationTray } from '@family-os/ui'
 import type { NotificationEntry } from '@family-os/ui'
 import { useQuery, useQueryClient } from '@tanstack/react-query'
+import { ReportProblemButton } from './ReportProblemButton'
 
 type UnreadData = {
   unreadCount: number
@@ -72,7 +73,10 @@ export function NotificationBell({
     queryClient.invalidateQueries({ queryKey: ['notifications/unread'] })
   }
 
-  if (tier < 2) return null
+  // Below tier 2 there is no tray to hang the report entry off, so the slot this
+  // component occupies is filled by the report control alone (ADR 046) — one report
+  // affordance per profile, never two.
+  if (tier < 2) return <ReportProblemButton variant={compact ? 'compact' : 'fold'} />
 
   return (
     <div className={className}>
@@ -90,6 +94,7 @@ export function NotificationBell({
         onDeleteNotification={handleDeleteNotification}
         onClearAll={handleClearAll}
         loading={isFetching}
+        footer={<ReportProblemButton />}
       />
     </div>
   )

@@ -615,20 +615,23 @@ describe('GET /api/profiles/:id/permissions', () => {
         overrideId: string | null
       }>
     }>()
-    expect(permissions).toHaveLength(11)
+    expect(permissions).toHaveLength(12)
     expect(permissions.every((p) => p.override === null && p.overrideId === null)).toBe(true)
     // tier 1 baseline: view platform.Plugin + view chores.Task + complete
     // chores.Task (every tier can complete its own assigned task) + view
     // calendar.Event (the shared family calendar — every tier reads it) + update
     // platform.Avatar (every tier sets its OWN photo — ADR 042) + update
     // platform.Color (every tier picks its OWN colour — ADR 044, same argument:
-    // choosing how you appear is not administration)
+    // choosing how you appear is not administration) + create platform.BugReport
+    // (every tier reports a problem — ADR 046: the youngest user is the likeliest
+    // to hit a rough edge and the least able to route around it)
     expect(permissions.find((p) => p.key === 'platform.plugin.view')?.inBaseline).toBe(true)
     expect(permissions.find((p) => p.key === 'chores.task.view')?.inBaseline).toBe(true)
     expect(permissions.find((p) => p.key === 'chores.task.complete')?.inBaseline).toBe(true)
     expect(permissions.find((p) => p.key === 'calendar.event.view')?.inBaseline).toBe(true)
     expect(permissions.find((p) => p.key === 'platform.profile.avatar')?.inBaseline).toBe(true)
     expect(permissions.find((p) => p.key === 'platform.profile.color')?.inBaseline).toBe(true)
+    expect(permissions.find((p) => p.key === 'platform.bug-report.create')?.inBaseline).toBe(true)
     expect(permissions.find((p) => p.key === 'platform.profile.view')?.inBaseline).toBe(false)
     expect(permissions.find((p) => p.key === 'platform.profile.switch')?.inBaseline).toBe(false)
     expect(permissions.find((p) => p.key === 'family-feed.post.create')?.inBaseline).toBe(false)

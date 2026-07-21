@@ -101,6 +101,15 @@ export const PERMISSION_REGISTRY = {
     action: 'update',
     subject: 'platform.Color',
   },
+  // Baseline for every tier (ADR 046). Surfaced here so a parent can revoke it for one
+  // profile through the existing override UI — the escape hatch for a kid who discovers
+  // that the report button is fun to press.
+  'platform.bug-report.create': {
+    label: 'Report a problem',
+    module: 'platform',
+    action: 'create',
+    subject: 'platform.BugReport',
+  },
   'family-feed.post.create': {
     label: 'Post to family feed',
     module: 'family-feed',

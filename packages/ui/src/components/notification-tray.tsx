@@ -1,5 +1,6 @@
 import * as Dialog from '@radix-ui/react-dialog'
 import { X, Bell } from 'lucide-react'
+import type { ReactNode } from 'react'
 import { cn } from '../lib/utils'
 import { Button } from './button'
 import { EmptyState } from './empty-state'
@@ -22,6 +23,9 @@ export interface NotificationTrayProps {
   onDeleteNotification?: (id: string) => void
   onClearAll?: () => void
   loading?: boolean
+  /** Pinned below the scroll region — the tray's standing actions, which must stay
+      reachable when the list is long enough to scroll (ADR 046's report entry). */
+  footer?: ReactNode
   className?: string
 }
 
@@ -32,6 +36,7 @@ export function NotificationTray({
   onDeleteNotification,
   onClearAll,
   loading = false,
+  footer,
   className,
 }: NotificationTrayProps) {
   return (
@@ -99,6 +104,12 @@ export function NotificationTray({
               ))
             )}
           </div>
+
+          {footer && (
+            <div className="shrink-0 border-t border-border px-4 py-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)]">
+              {footer}
+            </div>
+          )}
         </Dialog.Content>
       </Dialog.Portal>
     </Dialog.Root>

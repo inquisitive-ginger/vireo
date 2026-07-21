@@ -47,6 +47,7 @@ import {
 } from '@family-os/ui'
 import type { PermissionToggleListItem } from '@family-os/ui'
 import { CreateProfileSchema, type CreateProfileInput } from '@family-os/schemas'
+import { BugReportsSection } from '@/components/BugReportsSection'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
@@ -1217,6 +1218,10 @@ export function Settings() {
 
         <SettingsSection title="Security">
           <PinResetRow />
+        </SettingsSection>
+
+        <SettingsSection title="Reported problems">
+          <BugReportsSection />
         </SettingsSection>
       </TierGate>
 
