@@ -9,10 +9,8 @@
 FROM --platform=$BUILDPLATFORM node:22-slim AS build
 RUN corepack enable
 WORKDIR /repo
-COPY pnpm-lock.yaml pnpm-workspace.yaml ./
-RUN pnpm fetch
 COPY . .
-RUN pnpm install --frozen-lockfile --offline
+RUN pnpm install --frozen-lockfile
 RUN pnpm --filter @family-os/plugin-family-feed --filter @family-os/plugin-chores \
         --filter @family-os/plugin-calendar build
 RUN pnpm --filter @family-os/shell build
