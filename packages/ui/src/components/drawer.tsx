@@ -18,6 +18,7 @@ export function Drawer({ open, onClose, title, children, className }: DrawerProp
       <Dialog.Portal>
         <Dialog.Overlay className="fixed inset-0 z-40 bg-black/15 backdrop-blur-[1px]" />
         <Dialog.Content
+          onCloseAutoFocus={(e) => e.preventDefault()}
           className={cn(
             // Full-width sheet on mobile (the calendar/chores capture surface);
             // the 440px right rail returns at `md:`+.
