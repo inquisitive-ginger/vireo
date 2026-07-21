@@ -26,23 +26,24 @@ compressed → **off the Pi** (offsite bucket / second disk), on a systemd timer
 cron; test a restore once. _Reads: `docs/deployment.md` Part F._ _Depends on:
 none (live)._
 
-### Deployment hardening — SSD data-root · E3 auto-deploy · faster builds
+### Deployment: SSD data-root · shrink the api image
 
-**Type:** infra/tooling · **Kickoff:** `kickoffs/deploy-hardening.md`
-Post-go-live infra follow-ups, bundled into one session (backups are separate,
-above). Three items: **(1) Move Docker's data onto the SSD** — named volumes
-(`postgres_data`, `caddy_data`) sit on the **microSD** under `/var/lib/docker`, so
-the household DB + the ~2 GB api image wear the SD card the `/mnt/data` SSD was
-meant to save; set `/etc/docker/daemon.json` `"data-root": "/mnt/data/docker"`
-(migrate + restart) or bind-mount the postgres volume. **(2) E3 auto-deploy** —
-register a self-hosted `linux/ARM64` runner on the Pi (as a service) + add
-`.github/workflows/deploy.yml` (`workflow_run` after `release`) so merges
-self-deploy, retiring the manual `pull && up -d`. **(3) Faster arm64 builds** —
-`release.yml` is ~15 min (QEMU-emulated full install + Vite build, twice, no
-cache); build JS natively → thin arm64 runtime, and/or buildx `cache-from/to`,
-and/or arm64 hosted runners. _Reads: `docs/deployment.md` C/E2/E3,
-`logs/2026-07-20-deploy-golive.md`, memory `project-poc-hardware`._ _Depends on:
-none (live)._
+**Type:** infra/tooling · **Kickoff:** _to be written_
+What's left of the deploy-hardening session (E3 auto-deploy and faster builds
+**shipped 2026-07-21**). Two items: **(1) Move Docker's data onto the SSD** —
+named volumes (`postgres_data`, `caddy_data`) sit on the **microSD** under
+`/var/lib/docker`, so the household DB + the 2 GB api image wear the SD card the
+`/mnt/data` SSD was meant to save; set `/etc/docker/daemon.json`
+`"data-root": "/mnt/data/docker"` (migrate + restart) or bind-mount the postgres
+volume. Touches **live data** — back up first. **(2) Shrink the api image** — at
+**2.09 GB** (web is 150 MB) it is the whole reason a deploy takes ~6 min on the
+Pi; every source change rebuilds the `pnpm install` layer so ~2 GB is re-pulled.
+Split `node_modules` off the source layer (`COPY` manifests → install → `COPY`
+source). **This is the same class of change that took the API down on 2026-07-21
+— boot-test the image against a real DB in CI before it goes near the Pi**, and
+do not reach for `pnpm fetch` + `--offline`. _Reads: `docs/deployment.md` E2/E3,
+`logs/2026-07-21-infra-deploy-hardening.md`, memory `project-poc-hardware`._
+_Depends on: none (live)._
 
 ### Platform: family-feed test addendum
 
@@ -121,6 +122,12 @@ suite mirroring chores/calendar. _Depends on: none._
 
 > Two-line index; full detail in the linked log.
 
+- **2026-07-21 — Deploy hardening: E3 auto-deploy + faster builds (PRs #45, #46).**
+  Merging to `main` now deploys itself (`release` → `deploy` on a self-hosted runner
+  on the Pi); release wall-clock ~15 min → **4m20s** (web builds native via
+  `$BUILDPLATFORM` + cross-compiled Caddy; buildx GHA cache). Splitting the api
+  install into `pnpm fetch` + `--offline` **took the API down in prod** — reverted;
+  rollback via `TAG` worked. _[log](logs/2026-07-21-infra-deploy-hardening.md)_
 - **2026-07-20 — LIVE: Part C go-live + day-picker fix.** Family OS is deployed on
   the Pi 3B at **`https://vireohome.app`** (Docker Compose, GHCR images, Cloudflare
   DNS-01 Let's Encrypt cert, PWA installed on the fridge iPad). Fixed the first prod

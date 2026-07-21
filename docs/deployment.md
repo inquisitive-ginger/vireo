@@ -8,8 +8,14 @@
 > workspace TS at runtime; no `pnpm deploy --prod` stage — the Part B code samples
 > below are the original proposal); apex domain (not `family.`); the actual bring-up
 > is in `logs/2026-07-20-deploy-golive.md` (+ Part B: `logs/2026-07-19-dev-containerize.md`).
-> **Remaining (non-blocking):** Part F offsite backups (most important), E3
-> self-hosted-runner auto-deploy, faster arm64 builds.
+>
+> **E3 auto-deploy is LIVE (2026-07-21).** A merge to `main` now deploys itself —
+> `release` → `deploy` on a self-hosted runner on the Pi; the manual
+> `pull && up -d` is retired. Release wall-clock is **~4m20s** (was ~15 min); the
+> Pi-side deploy adds ~6 min, dominated by pulling the 2 GB api image. See
+> `logs/2026-07-21-infra-deploy-hardening.md`.
+> **Remaining (non-blocking):** Part F offsite backups (most important), Docker
+> data-root still on the microSD, and shrinking the api image.
 
 Target: a Pi 4 bolted near the kitchen serves the app to a wall-mounted iPad as
 an installable PWA over trusted HTTPS, updated automatically on merge to `main`.
@@ -394,17 +400,39 @@ jobs:
             ghcr.io/inquisitive-ginger/family-os-${{ matrix.name }}:latest
 ```
 
-> Building arm64 under QEMU on x86 runners is correct but slow (Vite build
-> emulated). If it drags past ~15 min, the optimization is to build the JS
-> natively on the x86 runner and copy prebuilt `dist` into a thin arm64 runtime
-> image (no compilation under emulation) — worth doing later, not day one.
+> **Done 2026-07-21 (~15 min → ~4m20s).** The **web** image now builds fully
+> native: both build stages pin `--platform=$BUILDPLATFORM`, so the Vite build
+> runs on the x86 runner (its `dist` is arch-independent) and Caddy is
+> cross-compiled by passing `GOOS`/`GOARCH` to `xcaddy`. Only the final stage is
+> arm64 and it just `COPY`s files in, so nothing is emulated. The **api** image
+> still builds under QEMU — it ships arm64 `node_modules` for `tsx` — plus buildx
+> GHA cache (`scope` per image) on both.
+>
+> **Do not split the api install into `pnpm fetch` + `pnpm install --offline`.**
+> It builds, pushes and smoke-tests clean, then fails at boot with
+> `Cannot find module '@prisma/client-runtime-utils'` under tsx's resolver. It
+> took the API down in production once; see
+> `logs/2026-07-21-infra-deploy-hardening.md`.
+>
+> Remaining: the api image is **2.09 GB** (web is 150 MB), so the Pi re-pulls
+> ~2 GB per deploy (~6 min). Splitting `node_modules` off the source layer is the
+> next win — but boot-test it against a real DB in CI first.
 
-### E3. Deploy via a self-hosted runner on the Pi (`.github/workflows/deploy.yml`)
+### E3. Deploy via a self-hosted runner on the Pi ✅ live 2026-07-21
 
-The Pi is behind NAT (no inbound), so it _pulls_. Register a self-hosted runner
-on the Pi (repo → Settings → Actions → Runners → New self-hosted runner,
-`linux/arm64`; install it as a service so it survives reboot). A deploy job that
-runs _on that runner_ after `release` succeeds:
+**Shipped as `.github/workflows/deploy.yml`.** The runner is registered on the Pi
+as `vireo-pi` (labels `self-hosted, Linux, ARM64, vireo-pi`), installed as a
+systemd service so it survives reboot, running as `zach` (in the `docker` group).
+To pause deploys:
+`sudo systemctl stop actions.runner.inquisitive-ginger-family-os.vireo-pi`.
+
+The shipped job adds `concurrency: { group: deploy, cancel-in-progress: false }`
+to the sample below — **keep it**. Two releases finishing close together will
+otherwise race the same `.env` and compose stack; queueing them is what made the
+first live run safe. The job takes no `actions/checkout` — it only touches
+`/opt/family-os`.
+
+The Pi is behind NAT (no inbound), so it _pulls_:
 
 ```yaml
 name: deploy
