@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" width="512" height="512">
+  <defs></defs>
+  <g>
+    <rect width="512" height="512" fill="oklch(0.57 0.14 35)"/>
+    
+  <g transform="translate(256 248) scale(1.06) translate(-256 -256)">
+    <!-- house body -->
+    <rect x="172" y="232" width="168" height="176" rx="22"
+          fill="oklch(0.985 0.008 75)"/>
+    <!-- roof: flat-based triangle overlapping the body top, with eave overhang -->
+    <path d="M256 130 L146 240 L366 240 Z"
+          fill="oklch(0.999 0.004 80)" stroke="oklch(0.999 0.004 80)" stroke-width="10" stroke-linejoin="round"/>
+    <!-- entry hole (hearth glow) -->
+    <circle cx="256" cy="292" r="44" fill="oklch(0.62 0.12 70)"/>
+    <circle cx="256" cy="292" r="38" fill="oklch(0.74 0.13 78)"/>
+    <!-- perch -->
+    <rect x="228" y="372" width="56" height="12" rx="6" fill="oklch(0.57 0.14 35)"/>
+    
+    <g>
+      <!-- body -->
+      <ellipse cx="259" cy="356" rx="27" ry="19" fill="oklch(0.47 0.07 185)"/>
+      <!-- tail up-right -->
+      <path d="M281 360 L308 340 Q302 358 294 366 Z" fill="oklch(0.47 0.07 185)"/>
+      <!-- head -->
+      <circle cx="236" cy="343" r="14" fill="oklch(0.47 0.07 185)"/>
+      <!-- beak -->
+      <path d="M223 341 L207 344 L224 351 Z" fill="oklch(0.74 0.13 78)"/>
+      <!-- eye -->
+      <circle cx="234" cy="340" r="3" fill="oklch(0.985 0.008 75)"/>
+      <!-- feet -->
+      <path d="M251 374 l0 8 M267 374 l0 8" stroke="oklch(0.30 0.05 185)" stroke-width="3" stroke-linecap="round"/>
+    </g>
+  </g>
+  </g>
+</svg>
