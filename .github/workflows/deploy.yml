@@ -1,0 +1,29 @@
+name: deploy
+on:
+  workflow_run:
+    workflows: [release]
+    types: [completed]
+
+concurrency:
+  group: deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    runs-on: [self-hosted, linux, ARM64]
+    steps:
+      - name: Pull the release images and restart the stack
+        working-directory: /opt/family-os
+        env:
+          TAG: ${{ github.event.workflow_run.head_sha }}
+        run: |
+          set -e
+          if grep -q '^TAG=' .env; then
+            sed -i "s/^TAG=.*/TAG=$TAG/" .env
+          else
+            echo "TAG=$TAG" >> .env
+          fi
+          docker compose -f docker-compose.prod.yml --env-file .env pull
+          docker compose -f docker-compose.prod.yml --env-file .env up -d
+          docker image prune -f
