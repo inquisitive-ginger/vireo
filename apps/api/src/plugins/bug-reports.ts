@@ -1,6 +1,7 @@
 import fp from 'fastify-plugin'
 import type { FastifyPluginAsync } from 'fastify'
 import { prisma } from '@family-os/platform/server'
+import { FAMILY_PROFILE_ID } from '@family-os/platform/types'
 import { BugReportCreateSchema, BugReportUpdateSchema } from '@family-os/schemas'
 import type { BugReportContext, BugReportStatus } from '@family-os/schemas'
 import { createBugIssue } from '../lib/github-issue'
@@ -15,12 +16,31 @@ type ReportRow = {
   resolution: string | null
   createdAt: Date
   updatedAt: Date
-  reporter?: { id: string; name: string; identityHue: string | null; avatarUrl: string | null }
+  reporterId: string
+}
+
+type Reporter = {
+  id: string
+  name: string
+  identityHue: string | null
+  avatarUrl: string | null
+}
+
+/** Resolves a reporter id to an identity, for reporters that may have no profile row.
+ *
+ * The household pseudo-profile is synthetic wherever onboarding never wrote one, and it
+ * is the default profile — so this is the common path, not the edge case. A reporter
+ * whose profile was deleted resolves the same way: the report outlives its author,
+ * because it is evidence about the app rather than the person's property. */
+function resolveReporter(id: string, profile: Reporter | undefined): Reporter {
+  if (profile) return profile
+  if (id === FAMILY_PROFILE_ID) return { id, name: 'Family', identityHue: null, avatarUrl: null }
+  return { id, name: 'Someone', identityHue: null, avatarUrl: null }
 }
 
 /** The reporter travels with the row (ADR 044) — a triage board is a multi-person
     surface, so `identityHue` has to be on the payload or the spine cannot be painted. */
-function serializeReport(report: ReportRow) {
+function serializeReport(report: ReportRow, reporter: Reporter) {
   return {
     id: report.id,
     description: report.description,
@@ -30,16 +50,7 @@ function serializeReport(report: ReportRow) {
     resolution: report.resolution,
     createdAt: report.createdAt.toISOString(),
     updatedAt: report.updatedAt.toISOString(),
-    ...(report.reporter
-      ? {
-          reporter: {
-            id: report.reporter.id,
-            name: report.reporter.name,
-            identityHue: report.reporter.identityHue,
-            avatarUrl: report.reporter.avatarUrl,
-          },
-        }
-      : {}),
+    reporter,
   }
 }
 
@@ -99,7 +110,16 @@ const bugReportsPlugin: FastifyPluginAsync = async (fastify) => {
 
     fastify.eventBus.emit('platform.bug-report.created', { id: report.id })
 
-    return reply.status(201).send(serializeReport(report))
+    // The reporter is the caller, already resolved by auth — no lookup needed, and it
+    // works whether or not that profile has a row.
+    return reply.status(201).send(
+      serializeReport(report, {
+        id: request.profile.id,
+        name: request.profile.name,
+        identityHue: request.profile.identityHue ?? null,
+        avatarUrl: request.profile.avatarUrl ?? null,
+      })
+    )
   })
 
   // GET /bug-reports — your own reports. Tier 4 sees the whole household's (the
@@ -111,12 +131,19 @@ const bugReportsPlugin: FastifyPluginAsync = async (fastify) => {
       where: isTriager ? {} : { reporterId: request.profile.id },
       orderBy: { createdAt: 'desc' },
       take: 100,
-      include: {
-        reporter: { select: { id: true, name: true, identityHue: true, avatarUrl: true } },
-      },
     })
 
-    return reports.map(serializeReport)
+    // Resolved in one query rather than a relation, because a reporter may legitimately
+    // have no profile row (see the model comment). Missing ones fall back by id.
+    const profiles = await prisma.profile.findMany({
+      where: { id: { in: [...new Set(reports.map((r) => r.reporterId))] } },
+      select: { id: true, name: true, identityHue: true, avatarUrl: true },
+    })
+    const byId = new Map(profiles.map((p) => [p.id, p]))
+
+    return reports.map((r) =>
+      serializeReport(r, resolveReporter(r.reporterId, byId.get(r.reporterId)))
+    )
   })
 
   // PATCH /bug-reports/:id — move a report along. Triage is tier-4 only.
@@ -140,9 +167,11 @@ const bugReportsPlugin: FastifyPluginAsync = async (fastify) => {
         ...(parsed.data.status !== undefined ? { status: parsed.data.status } : {}),
         ...(parsed.data.resolution !== undefined ? { resolution: parsed.data.resolution } : {}),
       },
-      include: {
-        reporter: { select: { id: true, name: true, identityHue: true, avatarUrl: true } },
-      },
+    })
+
+    const reporterProfile = await prisma.profile.findUnique({
+      where: { id: report.reporterId },
+      select: { id: true, name: true, identityHue: true, avatarUrl: true },
     })
 
     // Only the arrival is worth a ping. Firing on every transition would train the
@@ -158,7 +187,7 @@ const bugReportsPlugin: FastifyPluginAsync = async (fastify) => {
       )
     }
 
-    return serializeReport(report)
+    return serializeReport(report, resolveReporter(report.reporterId, reporterProfile ?? undefined))
   })
 }
 

@@ -33,7 +33,6 @@ model Profile {
   notifications       Notification[]
   pushSubscriptions   PushSubscription[]
   image               ProfileImage?
-  bugReports          BugReport[]
 
   @@map("profiles")
   @@schema("platform")
@@ -94,6 +93,14 @@ model Notification {
 ///
 /// `githubIssueNumber` is nullable and stays null when no token is configured: the
 /// bridge is best-effort and must never cost the household its report (ADR 046).
+///
+/// `reporterId` carries NO foreign key, deliberately. The household pseudo-profile
+/// (`FAMILY_PROFILE_ID`) is synthetic on installs whose onboarding never wrote a row —
+/// production is one — yet it is the DEFAULT profile, the one the fridge tablet sits
+/// on, and therefore the likeliest reporter of all. An FK made the single most likely
+/// report a 500. The reporter is resolved at read time instead, falling back to the
+/// household identity, which also keeps a report readable after its author is deleted:
+/// a report is evidence about the app, not a possession of the person who filed it.
 model BugReport {
   id                String   @id @default(uuid())
   reporterId        String   @map("reporter_id")
@@ -104,8 +111,6 @@ model BugReport {
   resolution        String?
   createdAt         DateTime @default(now()) @map("created_at")
   updatedAt         DateTime @updatedAt @map("updated_at")
-
-  reporter Profile @relation(fields: [reporterId], references: [id], onDelete: Cascade)
 
   @@index([status])
   @@map("bug_reports")
