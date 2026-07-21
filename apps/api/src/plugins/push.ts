@@ -38,11 +38,16 @@ export async function sendPushToProfile(profileId: string, payload: object): Pro
       try {
         await webpush.sendNotification(
           { endpoint: sub.endpoint, keys: { p256dh: sub.p256dhKey, auth: sub.authKey } },
-          JSON.stringify(payload)
+          JSON.stringify(payload),
+          // Reminders and alerts are time-sensitive; the default `normal` urgency
+          // lets a dozing Android phone batch the push to its next maintenance
+          // window (observed ~4 min late). `high` asks FCM to wake it now.
+          { urgency: 'high' }
         )
       } catch (err: unknown) {
         const statusCode = (err as { statusCode?: number }).statusCode
-        if (statusCode === 410) gone.push(sub.endpoint)
+        if (statusCode === 410 || statusCode === 404) gone.push(sub.endpoint)
+        else console.error(`Push to ${sub.endpoint.slice(0, 40)} failed:`, statusCode, err)
       }
     })
   )
