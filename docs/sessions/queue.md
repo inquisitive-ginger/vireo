@@ -51,14 +51,18 @@ _Depends on: none (live)._
 ADR 046 shipped and is verified end-to-end **on the API**, but the **UI has never
 been seen by a human** — the drawer, the tier-4 triage board, and the "Fixed —
 live" notification are integration-tested only. File one from the fridge iPad and
-review it. Three loose threads to close while there: **(1)** `sw.js` served no
-cache name to a grep during the live check — unconfirmed either way, but the SW
-stamp is what makes deploys reach installed PWAs, so rule it out; **(2)** the
-bridge PAT was pasted into a chat transcript and should be **rotated**; **(3)**
-`prisma generate` locally emits a **minified** `runtime/*` where the committed
-client is pretty-printed, so ~19k lines of churn must be stripped by hand on every
+review it. Two loose threads to close while there: **(1)** the bridge PAT was
+pasted into a chat transcript and should be **rotated**; **(2)** `prisma generate`
+locally emits a **minified** `runtime/*` where the committed client is
+pretty-printed, so ~19k lines of churn must be stripped by hand on every
 regenerate — reconcile the two before it gets committed by accident. _Reads:
 `logs/2026-07-21-design-dev-bug-reporting.md`, ADR 046._ _Depends on: none._
+
+> The "`sw.js` has no cache name" worry raised at closeout was a **false alarm** —
+> the grep searched for a literal `family-os-<hash>` but the worker builds it as a
+> template literal. Verified live: `VERSION = 'DtOQCrRD'` matches the deployed
+> bundle, and the worker calls `skipWaiting()` + `clients.claim()`, so an installed
+> PWA picks up a deploy on one fresh navigation.
 
 ### Platform: family-feed test addendum
 

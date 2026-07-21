@@ -107,9 +107,13 @@ touched the middle. Test artifacts removed afterwards; prod is at zero reports.
 - **The UI has never been reviewed by a human.** The drawer, the tier-4 board, and
   the "Fixed — live" notification are integration-tested only. The real check is
   filing one from the fridge iPad.
-- **`sw.js` served no cache name** to a grep during the live check. Unconfirmed
-  either way, but the SW stamp is what makes deploys reach installed PWAs — worth
-  ruling out before trusting the iPad to auto-update.
+- ~~`sw.js` served no cache name to a grep during the live check.~~ **False alarm,
+  resolved same session:** the grep looked for a literal `family-os-<hash>`, but the
+  worker builds it as a template literal. Verified on prod — `VERSION = 'DtOQCrRD'`
+  matches the deployed bundle, and the worker calls `skipWaiting()` +
+  `clients.claim()`, so an installed PWA picks up a deploy on **one fresh
+  navigation**. On iOS that means swiping the app out of the App Switcher;
+  backgrounding only suspends it and resumes the same page.
 - The bridge token is a fine-grained PAT, Issues-only, on the Pi's `.env`. It was
   pasted into a chat transcript and **should be rotated**.
 - The fix loop is manual by design. `docs/fix-it-playbook.md` documents the
