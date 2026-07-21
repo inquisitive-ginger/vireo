@@ -150,3 +150,54 @@ export const EventInputSchema = z
   })
 
 export type EventInput = z.infer<typeof EventInputSchema>
+
+// ─── Bug reports ──────────────────────────────────────────────────────────────
+
+/** The lifecycle a report moves through (ADR 046). `deployed` is the only status the
+    reporter is notified about — the rest are visible in-app but not worth a ping. */
+export const BUG_REPORT_STATUSES = ['new', 'triaged', 'fixing', 'deployed', 'wont_fix'] as const
+
+export const BugReportStatusSchema = z.enum(BUG_REPORT_STATUSES)
+
+/** What the app captured on the reporter's behalf. Validated but deliberately lenient:
+    it is evidence, not a data model, and a capture that fails validation would lose the
+    report entirely — so every field past the route is optional and clamped rather than
+    rejected. The route is the one thing a fixer cannot work without. */
+export const BugReportContextSchema = z.object({
+  route: z.string().max(200),
+  buildHash: z.string().max(100).nullish(),
+  viewport: z.object({ width: z.number().int(), height: z.number().int() }).nullish(),
+  userAgent: z.string().max(500).nullish(),
+  // Capped server-side too: a page in an error loop could otherwise post megabytes.
+  consoleErrors: z.array(z.string().max(1000)).max(10).optional().default([]),
+})
+
+export const BugReportCreateSchema = z.object({
+  description: z
+    .string()
+    .trim()
+    .min(1, 'Tell us what went wrong')
+    .max(2000, 'That is longer than we can store — try the short version'),
+  context: BugReportContextSchema,
+})
+
+export const BugReportUpdateSchema = z
+  .object({
+    status: BugReportStatusSchema.optional(),
+    resolution: z
+      .string()
+      .max(500)
+      .nullish()
+      .transform((v) => {
+        const trimmed = v?.trim()
+        return trimmed && trimmed.length > 0 ? trimmed : null
+      }),
+  })
+  .refine((d) => d.status !== undefined || d.resolution !== undefined, {
+    message: 'At least one field is required',
+  })
+
+export type BugReportStatus = (typeof BUG_REPORT_STATUSES)[number]
+export type BugReportContext = z.infer<typeof BugReportContextSchema>
+export type BugReportCreateInput = z.infer<typeof BugReportCreateSchema>
+export type BugReportUpdateInput = z.infer<typeof BugReportUpdateSchema>

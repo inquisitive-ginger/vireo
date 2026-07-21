@@ -34,14 +34,14 @@ export function Sidebar({ pluginNavItems = [] }: { pluginNavItems?: PluginNavIte
           <NavItem key={item.to} to={item.to} icon={item.icon} label={item.label} />
         ))}
       </nav>
-      {/* Utility group (bell + settings) is tier-2+; render it — and its top
-          divider — only when it has items, so the family profile gets no stray rule. */}
-      {tier >= 2 && (
-        <div className="mx-2 xl:mx-3 pt-2 pb-2 space-y-1 border-t border-border/60">
-          <NotificationBell fold />
-          <SettingsNavItem />
-        </div>
-      )}
+      {/* Utility group. Bell + settings are tier-2+, but reporting a problem is not
+          (ADR 046) — so the group now renders for every tier and `NotificationBell`
+          itself degrades to the report control below tier 2. It always has at least
+          one item, so the top divider is no longer conditional. */}
+      <div className="mx-2 xl:mx-3 pt-2 pb-2 space-y-1 border-t border-border/60">
+        <NotificationBell fold />
+        <SettingsNavItem />
+      </div>
     </aside>
   )
 }

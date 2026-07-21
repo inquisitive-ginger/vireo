@@ -116,4 +116,38 @@ describe('NotificationTray', () => {
     fireEvent.mouseEnter(container)
     expect(screen.queryByLabelText(/delete notification/i)).not.toBeInTheDocument()
   })
+
+  it('renders a footer below the list', () => {
+    render(
+      <NotificationTray
+        open={true}
+        onClose={() => {}}
+        notifications={SAMPLE}
+        footer={<button>Report a problem</button>}
+      />
+    )
+    expect(screen.getByRole('button', { name: 'Report a problem' })).toBeInTheDocument()
+  })
+
+  // The footer is the report entry (ADR 046) — it has to survive the empty state,
+  // which is exactly when a broken app has produced no notifications to show.
+  it('keeps the footer when there are no notifications', () => {
+    render(
+      <NotificationTray
+        open={true}
+        onClose={() => {}}
+        notifications={[]}
+        footer={<button>Report a problem</button>}
+      />
+    )
+    expect(screen.getByText('No notifications')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Report a problem' })).toBeInTheDocument()
+  })
+
+  it('renders no footer element when none is given', () => {
+    const { container } = render(
+      <NotificationTray open={true} onClose={() => {}} notifications={SAMPLE} />
+    )
+    expect(container.querySelector('.border-t')).not.toBeInTheDocument()
+  })
 })

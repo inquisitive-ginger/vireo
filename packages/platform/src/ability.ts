@@ -10,6 +10,7 @@ type Subjects =
   | 'platform.Plugin'
   | 'platform.Avatar'
   | 'platform.Color'
+  | 'platform.BugReport'
   | 'family-feed.Post'
   | 'chores.Task'
   | 'calendar.Event'
@@ -35,6 +36,12 @@ export function createAbility(profile: Profile, overrides: PermissionOverride[])
   // photo, a colour is UNIQUE across the family, so this grant lets a kid take a hue
   // nobody else holds — never one already spoken for (the route 409s).
   can('update', 'platform.Color', { id: profile.id })
+
+  // Reporting a problem is granted to EVERY tier, tier 1 included (ADR 046) — the
+  // youngest user is the likeliest to hit a rough edge and the least able to route
+  // around it, so gating this at tier 2 would silence exactly the reports worth having.
+  // Triage (viewing everyone's, moving a status) is tier-4, via `manage all` below.
+  can('create', 'platform.BugReport')
 
   // Calendar is one shared family surface — every tier reads it (tier-4 creates/
   // edits/deletes via `manage all`). The view grant is duplicated across the

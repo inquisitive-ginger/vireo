@@ -15,6 +15,11 @@ import { RequireTier2 } from './components/RequireTier2'
 import { PluginView } from './components/PluginView'
 import { PluginErrorBoundary } from './components/PluginErrorBoundary'
 import { PluginNotFound } from './pages/PluginNotFound'
+import { installErrorCapture } from './lib/report-context'
+
+// Before anything else renders — an error thrown during boot is exactly the one worth
+// having in a report, and a capture installed after the fact would miss it.
+installErrorCapture()
 
 if (import.meta.env.PROD) {
   if ('serviceWorker' in navigator) {

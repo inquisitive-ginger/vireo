@@ -7,6 +7,7 @@ import preferencesPlugin from './plugins/preferences'
 import setupPlugin from './plugins/setup'
 import profilesPlugin from './plugins/profiles'
 import notificationsPlugin from './plugins/notifications'
+import bugReportsPlugin from './plugins/bug-reports'
 import pushPlugin, { initVapidKeys } from './plugins/push'
 import familyFeedPlugin from './plugins/family-feed'
 import choresPlugin from './plugins/chores'
@@ -32,6 +33,7 @@ export async function buildServer() {
       await api.register(preferencesPlugin)
       await api.register(profilesPlugin)
       await api.register(notificationsPlugin)
+      await api.register(bugReportsPlugin)
       await api.register(pushPlugin)
       await api.register(familyFeedPlugin)
       await api.register(choresPlugin)
