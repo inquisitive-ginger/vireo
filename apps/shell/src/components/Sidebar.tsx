@@ -23,7 +23,7 @@ export function Sidebar({ pluginNavItems = [] }: { pluginNavItems?: PluginNavIte
   const { tier } = useAuth()
   const visiblePluginItems = pluginNavItems.filter((item) => !item.minTier || item.minTier <= tier)
   return (
-    <aside className="hidden md:flex w-sidebar-rail xl:w-sidebar shrink-0 h-screen flex-col bg-background border-r border-border/60 relative transition-[width] duration-[var(--duration-normal)]">
+    <aside className="hidden md:flex w-sidebar-rail xl:w-sidebar shrink-0 h-full flex-col bg-background border-r border-border/60 relative transition-[width] duration-[var(--duration-normal)]">
       <ProfileChip />
       <nav
         className="flex-1 min-h-0 overflow-y-auto px-2 xl:px-3 pt-1 space-y-1"
