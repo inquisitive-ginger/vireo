@@ -1121,7 +1121,7 @@ function AppearanceRow() {
 
 function PushNotificationsRow() {
   const queryClient = useQueryClient()
-  const { state, isLoading, subscribe, unsubscribe } = usePushSubscription()
+  const { state, isLoading, error, subscribe, unsubscribe } = usePushSubscription()
 
   const enabled = state === 'subscribed'
 
@@ -1151,7 +1151,9 @@ function PushNotificationsRow() {
         <Label htmlFor="push-notifications-toggle" className="text-sm font-medium cursor-pointer">
           Push Notifications
         </Label>
-        <p className="text-xs text-muted-foreground mt-0.5">{subtitle}</p>
+        <p className={cn('text-xs mt-0.5', error ? 'text-destructive' : 'text-muted-foreground')}>
+          {error ?? subtitle}
+        </p>
       </div>
       <Switch
         id="push-notifications-toggle"

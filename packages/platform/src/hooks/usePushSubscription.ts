@@ -16,6 +16,10 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
   return view
 }
 
+function describe(err: unknown): string {
+  return err instanceof Error ? `${err.name}: ${err.message}` : String(err)
+}
+
 export type PushSubscriptionState =
   | 'unknown'
   | 'unsupported'
@@ -26,6 +30,7 @@ export type PushSubscriptionState =
 export function usePushSubscription() {
   const [state, setState] = useState<PushSubscriptionState>('unknown')
   const [isLoading, setIsLoading] = useState(false)
+  const [error, setError] = useState<string | null>(null)
 
   // Read the *actual* subscription state off the active service worker. The
   // toggle must reflect the live push subscription, not a value captured once at
@@ -86,6 +91,7 @@ export function usePushSubscription() {
   const subscribe = useCallback(async () => {
     if (!('serviceWorker' in navigator)) return
     setIsLoading(true)
+    setError(null)
     try {
       const permission = await Notification.requestPermission()
       if (permission !== 'granted') {
@@ -123,7 +129,13 @@ export function usePushSubscription() {
       })
 
       setState('subscribed')
-    } catch {
+    } catch (err) {
+      // Swallowing this is what made the original report undiagnosable: the toggle
+      // flipped back with no reason recorded anywhere. console.error both reaches
+      // devtools and lands in the bug-report ring buffer, so the next report carries
+      // the reason the browser refused.
+      console.error('Push subscribe failed:', err)
+      setError(describe(err))
       setState('unsubscribed')
     } finally {
       setIsLoading(false)
@@ -151,12 +163,13 @@ export function usePushSubscription() {
         })
       }
       setState('unsubscribed')
-    } catch {
-      // subscription state unchanged on failure
+    } catch (err) {
+      console.error('Push unsubscribe failed:', err)
+      setError(describe(err))
     } finally {
       setIsLoading(false)
     }
   }, [])
 
-  return { state, isLoading, subscribe, unsubscribe }
+  return { state, isLoading, error, subscribe, unsubscribe }
 }
