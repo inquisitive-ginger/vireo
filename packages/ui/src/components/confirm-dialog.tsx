@@ -35,6 +35,7 @@ export function ConfirmDialog({
         <AlertDialog.Content
           className="fixed left-1/2 top-1/2 z-[60] -translate-x-1/2 -translate-y-1/2 bg-card border border-border rounded-xl p-6 w-[340px] focus:outline-none"
           style={{ boxShadow: 'var(--shadow-raised)' }}
+          onCloseAutoFocus={(e) => e.preventDefault()}
           onEscapeKeyDown={(e) => isPending && e.preventDefault()}
         >
           <AlertDialog.Title className="text-card-title mb-2 text-foreground">
