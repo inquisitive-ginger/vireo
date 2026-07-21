@@ -38,6 +38,12 @@ export function usePushSubscription() {
       setState('unsupported')
       return
     }
+    // Read outside the try below, so a missing `Notification` would throw past it
+    // and pin the toggle at 'unknown' (disabled, looks OFF) rather than saying so.
+    if (!('Notification' in window)) {
+      setState('unsupported')
+      return
+    }
     if (Notification.permission === 'denied') {
       setState('denied')
       return
@@ -83,13 +89,22 @@ export function usePushSubscription() {
     try {
       const permission = await Notification.requestPermission()
       if (permission !== 'granted') {
-        setState('denied')
+        // 'default' means the prompt was dismissed, not refused — the common outcome
+        // under Chrome's quiet notification UI, where the request is a bell chip that
+        // is easy to miss. Only 'denied' disables the toggle; treating a dismissal as
+        // a denial locks the user out of ever asking again without a reload.
+        setState(permission === 'denied' ? 'denied' : 'unsubscribed')
         return
       }
 
       const vapidKey = await getVapidKey()
       if (!vapidKey) throw new Error('VAPID key unavailable')
 
+      // `.ready` never resolves when nothing is registered, which would leave the
+      // toggle disabled behind isLoading forever. Same trap as sync() above.
+      if (!(await navigator.serviceWorker.getRegistration())) {
+        throw new Error('no service worker registered')
+      }
       const reg = await navigator.serviceWorker.ready
       const sub = await reg.pushManager.subscribe({
         userVisibleOnly: true,
@@ -119,7 +134,11 @@ export function usePushSubscription() {
     if (!('serviceWorker' in navigator)) return
     setIsLoading(true)
     try {
-      const reg = await navigator.serviceWorker.ready
+      const reg = await navigator.serviceWorker.getRegistration()
+      if (!reg) {
+        setState('unsubscribed')
+        return
+      }
       const sub = await reg.pushManager.getSubscription()
       if (sub) {
         const endpoint = sub.endpoint
