@@ -57,9 +57,6 @@ whole repository.
 Add both to `/opt/family-os/.env` on the Pi (the file is `chmod 600`), then
 `docker compose -f docker-compose.prod.yml --env-file .env up -d api`.
 
-Scope the token to this repo and to Issues only. It is a token that lives on a
-machine in a kitchen; it should not be able to push code.
-
 ---
 
 ## Running a fix session
