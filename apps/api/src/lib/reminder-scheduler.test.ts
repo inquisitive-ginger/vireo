@@ -88,6 +88,22 @@ describe('reminder scheduler', () => {
     expect(log).toHaveLength(1)
   })
 
+  it('states the real time to start, not the lead, when the event is nearer than the reminder', async () => {
+    await makeEvent({ startsAt: inMinutes(5), reminderMinutes: 30, attendeeIds: [TWEEN_ID] })
+    await runReminderTick(bus, NOW)
+
+    const notif = await prisma.notification.findFirst({ where: { profileId: TWEEN_ID } })
+    expect(notif?.body).toContain('Starts in 5 min')
+  })
+
+  it('states the configured lead when the event is exactly a lead away', async () => {
+    await makeEvent({ startsAt: inMinutes(30), reminderMinutes: 30, attendeeIds: [TWEEN_ID] })
+    await runReminderTick(bus, NOW)
+
+    const notif = await prisma.notification.findFirst({ where: { profileId: TWEEN_ID } })
+    expect(notif?.body).toContain('Starts in 30 min')
+  })
+
   it('fires nothing for an event with no reminder (AC2)', async () => {
     await makeEvent({ startsAt: inMinutes(30), reminderMinutes: null, attendeeIds: [TWEEN_ID] })
     await runReminderTick(bus, NOW)
