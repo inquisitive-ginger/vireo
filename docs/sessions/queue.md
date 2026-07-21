@@ -45,6 +45,21 @@ do not reach for `pnpm fetch` + `--offline`. _Reads: `docs/deployment.md` E2/E3,
 `logs/2026-07-21-infra-deploy-hardening.md`, memory `project-poc-hardware`._
 _Depends on: none (live)._
 
+### Bug reporting: live UI review + the follow-ups it left
+
+**Type:** qa / dev · **Kickoff:** _to be written_
+ADR 046 shipped and is verified end-to-end **on the API**, but the **UI has never
+been seen by a human** — the drawer, the tier-4 triage board, and the "Fixed —
+live" notification are integration-tested only. File one from the fridge iPad and
+review it. Three loose threads to close while there: **(1)** `sw.js` served no
+cache name to a grep during the live check — unconfirmed either way, but the SW
+stamp is what makes deploys reach installed PWAs, so rule it out; **(2)** the
+bridge PAT was pasted into a chat transcript and should be **rotated**; **(3)**
+`prisma generate` locally emits a **minified** `runtime/*` where the committed
+client is pretty-printed, so ~19k lines of churn must be stripped by hand on every
+regenerate — reconcile the two before it gets committed by accident. _Reads:
+`logs/2026-07-21-design-dev-bug-reporting.md`, ADR 046._ _Depends on: none._
+
 ### Platform: family-feed test addendum
 
 **Type:** development (test addendum) · **Kickoff:** _to be written_
@@ -73,6 +88,21 @@ suite mirroring chores/calendar. _Depends on: none._
 
 ### Platform v2 — post-M3 platform/mobile follow-ons
 
+- **Bug-report screenshots (ADR 046 v2)** — the strongest signal for visual bugs, and
+  the reason "the calendar looks funny" is hard to act on. Deferred out of v1 because
+  it needs a client capture dependency plus image storage (reuse the ADR 042
+  bytes-in-Postgres + magic-byte pattern). _Reads: ADR 046 §"Why not"._
+- **Autonomous fix agent (ADR 046)** — a GitHub Action on `auto-bug` issue open that
+  patches and opens a **PR only**, no auto-merge, until it has earned the trust.
+  Needs an `ANTHROPIC_API_KEY` repo secret. Do **not** run it on the Pi — the runner
+  there is for `docker pull`, not a build and test suite. _Reads:
+  `docs/fix-it-playbook.md` §"Making it automatic"._
+- **The household pseudo-profile has no `profiles` row in prod** — it works because
+  auth synthesizes one, but it means any FK or join to the _default_ profile fails in
+  production and passes in dev. Bug reporting hit this (#49). Decide whether the
+  household should be a real row everywhere or stay synthetic everywhere; today it is
+  environment-dependent, which is the worst of both. _Reads:
+  `logs/2026-07-21-design-dev-bug-reporting.md`._
 - **Push subscription reconciliation** — the orphaned-subscription case left over
   from the SW cache story (2026-07-19). `reset.ts` deletes `push_subscriptions` on any
   `db:reset` while the phone keeps its browser-local subscription, so the toggle reads
@@ -122,6 +152,12 @@ suite mirroring chores/calendar. _Depends on: none._
 
 > Two-line index; full detail in the linked log.
 
+- **2026-07-21 — In-situ bug reporting (PRs #47, #49). ADR 046.** "Report a problem"
+  in the tray footer captures route/build/viewport/errors, opens an `auto-bug` GitHub
+  issue best-effort, and tells the reporter when it ships. **Live check on prod caught
+  a 500**: no `profiles` row exists for the household pseudo-profile — the default
+  profile — so the `reporterId` FK made the likeliest report in the house fail.
+  _[log](logs/2026-07-21-design-dev-bug-reporting.md)_
 - **2026-07-21 — Deploy hardening: E3 auto-deploy + faster builds (PRs #45, #46).**
   Merging to `main` now deploys itself (`release` → `deploy` on a self-hosted runner
   on the Pi); release wall-clock ~15 min → **4m20s** (web builds native via
