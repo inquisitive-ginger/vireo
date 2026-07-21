@@ -26,6 +26,11 @@ services:
       SESSION_SECRET: ${SESSION_SECRET}
       VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY}
       VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY}
+      # Bug-report → GitHub issue bridge (ADR 046). Both optional: unset, the report
+      # still saves and only the issue is skipped. Defaulted so compose doesn't warn
+      # on a host that hasn't configured the bridge.
+      GITHUB_TOKEN: ${GITHUB_TOKEN:-}
+      GITHUB_REPO: ${GITHUB_REPO:-}
     depends_on:
       postgres: { condition: service_healthy }
 
