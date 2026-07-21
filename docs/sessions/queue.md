@@ -26,16 +26,12 @@ compressed → **off the Pi** (offsite bucket / second disk), on a systemd timer
 cron; test a restore once. _Reads: `docs/deployment.md` Part F._ _Depends on:
 none (live)._
 
-### Deployment: SSD data-root · shrink the api image
+### Deployment: shrink the api image
 
 **Type:** infra/tooling · **Kickoff:** _to be written_
 What's left of the deploy-hardening session (E3 auto-deploy and faster builds
-**shipped 2026-07-21**). Two items: **(1) Move Docker's data onto the SSD** —
-named volumes (`postgres_data`, `caddy_data`) sit on the **microSD** under
-`/var/lib/docker`, so the household DB + the 2 GB api image wear the SD card the
-`/mnt/data` SSD was meant to save; set `/etc/docker/daemon.json`
-`"data-root": "/mnt/data/docker"` (migrate + restart) or bind-mount the postgres
-volume. Touches **live data** — back up first. **(2) Shrink the api image** — at
+**shipped 2026-07-21**; the SSD storage move **done 2026-07-20**, both roots —
+`docs/deployment.md` Part C9). **Shrink the api image** — at
 **2.09 GB** (web is 150 MB) it is the whole reason a deploy takes ~6 min on the
 Pi; every source change rebuilds the `pnpm install` layer so ~2 GB is re-pulled.
 Split `node_modules` off the source layer (`COPY` manifests → install → `COPY`
@@ -156,6 +152,12 @@ suite mirroring chores/calendar. _Depends on: none._
 
 > Two-line index; full detail in the linked log.
 
+- **2026-07-20 — Docker storage onto the SSD (ad-hoc infra, no PR).** Both roots
+  moved to `/mnt/data` and verified across a reboot — **`data-root` alone would have
+  moved 48 MB**: Docker 29 uses the containerd image store, so the 2.8 GB of layers
+  live under `containerd`'s own `root`. `RequiresMountsFor` drop-ins stop a missing
+  SSD from silently handing Postgres an empty data dir.
+  _[log](logs/2026-07-20-infra-ssd-storage-move.md)_
 - **2026-07-21 — In-situ bug reporting (PRs #47, #49). ADR 046.** "Report a problem"
   in the tray footer captures route/build/viewport/errors, opens an `auto-bug` GitHub
   issue best-effort, and tells the reporter when it ships. **Live check on prod caught

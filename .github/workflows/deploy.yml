@@ -26,4 +26,7 @@ jobs:
           fi
           docker compose -f docker-compose.prod.yml --env-file .env pull
           docker compose -f docker-compose.prod.yml --env-file .env up -d
-          docker image prune -f
+          # -f alone only drops dangling layers, so every superseded release tag
+          # stayed on disk (13 images / 11.7 GB before the first sweep). The
+          # window keeps the last week of tags available for a TAG= rollback.
+          docker image prune -af --filter "until=168h"

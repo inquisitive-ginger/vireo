@@ -14,8 +14,10 @@
 > `pull && up -d` is retired. Release wall-clock is **~4m20s** (was ~15 min); the
 > Pi-side deploy adds ~6 min, dominated by pulling the 2 GB api image. See
 > `logs/2026-07-21-infra-deploy-hardening.md`.
-> **Remaining (non-blocking):** Part F offsite backups (most important), Docker
-> data-root still on the microSD, and shrinking the api image.
+> **Storage roots moved to the SSD (2026-07-20)** — both `data-root` and
+> containerd's `root`; see Part C9.
+> **Remaining (non-blocking):** Part F offsite backups (most important) and
+> shrinking the api image.
 
 Target: a Pi 4 bolted near the kitchen serves the app to a wall-mounted iPad as
 an installable PWA over trusted HTTPS, updated automatically on merge to `main`.
@@ -281,9 +283,10 @@ volumes:
 1. **OS:** flash **Raspberry Pi OS Lite (64-bit)** with Raspberry Pi Imager. In
    the imager's advanced settings, set hostname, enable SSH, and drop your key.
    64-bit is required — the images are `linux/arm64`.
-2. **Boot from SSD/USB, not the microSD.** Postgres will wear an SD card out.
-   A cheap USB-SSD and Pi OS's USB-boot is the difference between "runs for
-   years" and "corrupts in six months."
+2. **Get the write churn off the microSD.** Postgres and a 2 GB image pulled on
+   every deploy will wear a card out. Boot from USB if the board supports it; on
+   a 3B whose USB-boot OTP bit is unverified, boot from the card and move both
+   storage roots to the SSD instead — see Part C9.
 3. **Static LAN address:** give the Pi a DHCP reservation on your router so its
    IP never moves.
 4. **Install Docker:**
@@ -303,6 +306,52 @@ volumes:
    ```
    Watch the cert issue: `docker compose logs -f web`. First request to
    `https://family.example.com` from a LAN device should show a valid lock.
+9. **Storage roots onto the SSD** (done 2026-07-20 on the live box, if you boot
+   from the card). **There are two roots, and moving only the first moves almost
+   nothing:**
+
+   | What                         | Lives in              | Set by                               | Size here |
+   | ---------------------------- | --------------------- | ------------------------------------ | --------- |
+   | Volumes + container metadata | `/var/lib/docker`     | `data-root` in `daemon.json`         | ~48 MB    |
+   | Image content + snapshots    | `/var/lib/containerd` | `root =` in `containerd/config.toml` | ~2.8 GB   |
+
+   Docker 29 uses the **containerd image store** (`Storage Driver: overlayfs`),
+   so the layers — the bulk, and the part every release rewrites — are not under
+   `data-root` at all.
+
+   > **Do not `du /var/lib/docker` while Docker is running.** Live container
+   > rootfs are mounted under `/var/lib/docker/rootfs/overlayfs/`, so `du` walks
+   > into the mounts and reports the image size against the wrong directory. Stop
+   > Docker first, or you will "confirm" a move that didn't happen.
+
+   ```bash
+   docker image prune -af                       # copy less; stale tags accumulate
+   cd /opt/family-os
+   docker compose -f docker-compose.prod.yml --env-file .env down
+   sudo systemctl stop docker docker.socket containerd
+
+   sudo rsync -aHAX --numeric-ids /var/lib/docker/ /mnt/data/docker/
+   sudo rsync -aHAX --numeric-ids /var/lib/containerd/ /mnt/data/containerd/
+
+   printf '{\n  "data-root": "/mnt/data/docker"\n}\n' | sudo tee /etc/docker/daemon.json
+   sudo sed -i 's|^#root = "/var/lib/containerd"|root = "/mnt/data/containerd"|' \
+     /etc/containerd/config.toml
+
+   # Without this, an unmounted SSD gives Docker an empty data-root, Postgres
+   # initialises a blank database, and the stack comes up looking healthy with
+   # the household gone.
+   for u in docker containerd; do
+     sudo mkdir -p /etc/systemd/system/$u.service.d
+     printf '[Unit]\nRequiresMountsFor=/mnt/data\n' \
+       | sudo tee /etc/systemd/system/$u.service.d/ssd-mount.conf
+   done
+   sudo systemctl daemon-reload && sudo systemctl start containerd docker
+   ```
+
+   `-H` and `-X` are not optional (hardlinked layers, xattrs). Verify with
+   `docker info | grep 'Docker Root Dir'`, then **reboot** and re-check before
+   deleting `/var/lib/docker` and `/var/lib/containerd` — until then, rollback is
+   just removing the two config edits.
 
 ---
 
