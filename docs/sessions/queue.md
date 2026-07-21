@@ -152,6 +152,14 @@ suite mirroring chores/calendar. _Depends on: none._
 
 > Two-line index; full detail in the linked log.
 
+- **2026-07-21 — Push toggle stuck off, from auto-bug #53 (PRs #54–#58).** **Push had
+  never worked in prod**: a dismissed permission prompt read as a denial, and the
+  service worker was never registered (a `load` listener added after `load` fires never
+  runs). Alerts now send `urgency: 'high'` — Doze was batching them ~4 min late.
+  **The lesson is the blind `catch {}`**: four bugs hid behind swallowed errors, costing
+  three round trips through a human with a phone; the fix that broke it open (#55) fixed
+  nothing and only made the failure speak. Now a standing convention.
+  _[log](logs/2026-07-21-dev-push-toggle-stuck.md)_
 - **2026-07-20 — Docker storage onto the SSD (ad-hoc infra, no PR).** Both roots
   moved to `/mnt/data` and verified across a reboot — **`data-root` alone would have
   moved 48 MB**: Docker 29 uses the containerd image store, so the 2.8 GB of layers
