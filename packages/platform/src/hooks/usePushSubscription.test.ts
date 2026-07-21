@@ -131,6 +131,22 @@ describe('usePushSubscription', () => {
     expect(result.current.state).toBe('unsubscribed')
   })
 
+  it('surfaces why the browser refused instead of failing silently', async () => {
+    setup({ requestResult: 'granted' })
+    const reg = await navigator.serviceWorker.getRegistration()
+    vi.mocked(
+      (reg as { pushManager: { subscribe: () => Promise<unknown> } }).pushManager.subscribe
+    ).mockRejectedValue(Object.assign(new Error('Registration failed'), { name: 'AbortError' }))
+    const { result } = renderHook(() => usePushSubscription())
+
+    await act(async () => {
+      await result.current.subscribe()
+    })
+
+    expect(result.current.error).toBe('AbortError: Registration failed')
+    expect(result.current.state).toBe('unsubscribed')
+  })
+
   it('registers the subscription with the server on success', async () => {
     const { subscribe } = setup({ requestResult: 'granted' })
     const { result } = renderHook(() => usePushSubscription())
