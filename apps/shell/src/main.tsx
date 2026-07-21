@@ -23,9 +23,18 @@ installErrorCapture()
 
 if (import.meta.env.PROD) {
   if ('serviceWorker' in navigator) {
-    window.addEventListener('load', () => {
-      navigator.serviceWorker.register('/sw.js').catch(() => {})
-    })
+    // Registration failures were swallowed here, which is why "push won't turn on"
+    // could not be told apart from "the worker never registered". console.error puts
+    // the reason in the bug-report ring buffer.
+    const register = () => {
+      navigator.serviceWorker.register('/sw.js').catch((err: unknown) => {
+        console.error('Service worker registration failed:', err)
+      })
+    }
+    // `load` may already have fired by the time this module evaluates, and a listener
+    // added afterwards never runs — leaving the app with no worker at all.
+    if (document.readyState === 'complete') register()
+    else window.addEventListener('load', register)
   }
 } else if ('serviceWorker' in navigator) {
   // Dev: never run the cache-first service worker — it pins stale app bundles on

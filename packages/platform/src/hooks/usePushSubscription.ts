@@ -16,6 +16,31 @@ function urlBase64ToUint8Array(base64String: string): Uint8Array<ArrayBuffer> {
   return view
 }
 
+const ACTIVATION_TIMEOUT_MS = 10_000
+
+/** The registration a push subscription has to hang off, activated.
+ *
+ * Registers the worker if boot did not manage to — boot's registration is fire-and-forget
+ * on `load`, so a subscription must not assume it succeeded. Doing it here also means a
+ * genuine `register()` rejection reaches the caller as itself, rather than as this hook's
+ * guess about why there was nothing to find.
+ */
+async function activeRegistration(): Promise<ServiceWorkerRegistration> {
+  const reg =
+    (await navigator.serviceWorker.getRegistration()) ??
+    (await navigator.serviceWorker.register('/sw.js'))
+  if (reg.active) return reg
+
+  // `.ready` waits for activation but never settles if install fails, and a hang here
+  // leaves the toggle disabled with no reason given — the failure this whole thread was.
+  return await Promise.race([
+    navigator.serviceWorker.ready,
+    new Promise<never>((_, reject) =>
+      setTimeout(() => reject(new Error('service worker never activated')), ACTIVATION_TIMEOUT_MS)
+    ),
+  ])
+}
+
 function describe(err: unknown): string {
   return err instanceof Error ? `${err.name}: ${err.message}` : String(err)
 }
@@ -106,12 +131,7 @@ export function usePushSubscription() {
       const vapidKey = await getVapidKey()
       if (!vapidKey) throw new Error('VAPID key unavailable')
 
-      // `.ready` never resolves when nothing is registered, which would leave the
-      // toggle disabled behind isLoading forever. Same trap as sync() above.
-      if (!(await navigator.serviceWorker.getRegistration())) {
-        throw new Error('no service worker registered')
-      }
-      const reg = await navigator.serviceWorker.ready
+      const reg = await activeRegistration()
       const sub = await reg.pushManager.subscribe({
         userVisibleOnly: true,
         applicationServerKey: urlBase64ToUint8Array(vapidKey),
