@@ -30,6 +30,7 @@ function setup(opts: {
   const reg =
     registration === undefined
       ? {
+          active: {},
           pushManager: {
             getSubscription: vi.fn().mockResolvedValue(subscription),
             subscribe,
@@ -37,11 +38,18 @@ function setup(opts: {
         }
       : registration
 
+  const activeReg = {
+    active: {},
+    pushManager: { getSubscription: vi.fn().mockResolvedValue(subscription), subscribe },
+  }
+  const register = vi.fn().mockResolvedValue(activeReg)
+
   vi.stubGlobal('navigator', {
     serviceWorker: {
       getRegistration: vi.fn().mockResolvedValue(reg),
-      // A `.ready` that never settles is the real-browser behaviour when nothing
-      // is registered; any test that hangs on it has found a regression.
+      register,
+      // A `.ready` that never settles is the real-browser behaviour when install
+      // fails; any test that hangs on it has found a regression.
       ready: reg ? Promise.resolve(reg) : new Promise(() => {}),
     },
   })
@@ -52,7 +60,7 @@ function setup(opts: {
     vi.fn().mockResolvedValue({ json: async () => ({ publicKey: btoa('key') }) })
   )
 
-  return { requestPermission, subscribe, unsubscribe }
+  return { requestPermission, subscribe, unsubscribe, register }
 }
 
 afterEach(() => {
@@ -107,16 +115,31 @@ describe('usePushSubscription', () => {
     expect(result.current.state).toBe('denied')
   })
 
-  it('does not hang subscribing when no service worker is registered', async () => {
-    setup({ registration: null })
+  it('registers the worker itself when boot did not manage to', async () => {
+    const { register } = setup({ requestResult: 'granted', registration: null })
     const { result } = renderHook(() => usePushSubscription())
 
     await act(async () => {
       await result.current.subscribe()
     })
 
+    expect(register).toHaveBeenCalledWith('/sw.js')
+    expect(result.current.state).toBe('subscribed')
+  })
+
+  it('surfaces a registration failure as itself, not as a missing worker', async () => {
+    const { register } = setup({ requestResult: 'granted', registration: null })
+    register.mockRejectedValue(
+      Object.assign(new Error('script evaluation failed'), { name: 'SecurityError' })
+    )
+    const { result } = renderHook(() => usePushSubscription())
+
+    await act(async () => {
+      await result.current.subscribe()
+    })
+
+    expect(result.current.error).toBe('SecurityError: script evaluation failed')
     expect(result.current.isLoading).toBe(false)
-    expect(result.current.state).toBe('unsubscribed')
   })
 
   it('does not hang unsubscribing when no service worker is registered', async () => {
