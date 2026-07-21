@@ -87,11 +87,22 @@ async function reminderAudience(event: EventRow): Promise<string[]> {
   return [...new Set([...attendeeIds, ...parents.map((p) => p.id)])]
 }
 
-async function fireReminder(eventBus: EventBus, event: EventRow): Promise<void> {
+async function fireReminder(
+  eventBus: EventBus,
+  event: EventRow,
+  start: Date,
+  now: Date
+): Promise<void> {
   const audience = await reminderAudience(event)
-  const body = `Starts in ${formatLead(event.reminderMinutes!)}${
-    event.location ? ` · ${event.location}` : ''
-  }`
+  // The real time until this occurrence, not the configured lead: an event nearer
+  // than its reminder window (e.g. created 5 min out with a 10 min reminder) fires
+  // now but does not start in 10 min. Ceil so the common case still reads a round
+  // "10 min" rather than "9"; cap at the lead so it can never overstate.
+  const lead = Math.min(
+    event.reminderMinutes!,
+    Math.max(1, Math.ceil((start.getTime() - now.getTime()) / MINUTE_MS))
+  )
+  const body = `Starts in ${formatLead(lead)}${event.location ? ` · ${event.location}` : ''}`
   await Promise.all(
     audience.map((profileId) =>
       notify(eventBus, profileId, {
@@ -126,7 +137,7 @@ export async function runReminderTick(eventBus: EventBus, now = new Date()): Pro
         continue
       }
       try {
-        await fireReminder(eventBus, event)
+        await fireReminder(eventBus, event, occurrence.start, now)
       } catch (err) {
         console.error('[reminders] dispatch failed, releasing claim to retry', {
           eventId: event.id,
