@@ -44,6 +44,14 @@ export type Notification = $Result.DefaultSelection<Prisma.$NotificationPayload>
  *
  * `githubIssueNumber` is nullable and stays null when no token is configured: the
  * bridge is best-effort and must never cost the household its report (ADR 046).
+ *
+ * `reporterId` carries NO foreign key, deliberately. The household pseudo-profile
+ * (`FAMILY_PROFILE_ID`) is synthetic on installs whose onboarding never wrote a row —
+ * production is one — yet it is the DEFAULT profile, the one the fridge tablet sits
+ * on, and therefore the likeliest reporter of all. An FK made the single most likely
+ * report a 500. The reporter is resolved at read time instead, falling back to the
+ * household identity, which also keeps a report readable after its author is deleted:
+ * a report is evidence about the app, not a possession of the person who filed it.
  */
 export type BugReport = $Result.DefaultSelection<Prisma.$BugReportPayload>
 /**
@@ -1651,7 +1659,6 @@ export namespace Prisma {
     widgetLayouts: number
     notifications: number
     pushSubscriptions: number
-    bugReports: number
   }
 
   export type ProfileCountOutputTypeSelect<
@@ -1663,7 +1670,6 @@ export namespace Prisma {
     widgetLayouts?: boolean | ProfileCountOutputTypeCountWidgetLayoutsArgs
     notifications?: boolean | ProfileCountOutputTypeCountNotificationsArgs
     pushSubscriptions?: boolean | ProfileCountOutputTypeCountPushSubscriptionsArgs
-    bugReports?: boolean | ProfileCountOutputTypeCountBugReportsArgs
   }
 
   // Custom InputTypes
@@ -1731,15 +1737,6 @@ export namespace Prisma {
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
   > = {
     where?: PushSubscriptionWhereInput
-  }
-
-  /**
-   * ProfileCountOutputType without action
-   */
-  export type ProfileCountOutputTypeCountBugReportsArgs<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
-    where?: BugReportWhereInput
   }
 
   /**
@@ -1983,7 +1980,6 @@ export namespace Prisma {
         notifications?: boolean | Profile$notificationsArgs<ExtArgs>
         pushSubscriptions?: boolean | Profile$pushSubscriptionsArgs<ExtArgs>
         image?: boolean | Profile$imageArgs<ExtArgs>
-        bugReports?: boolean | Profile$bugReportsArgs<ExtArgs>
         _count?: boolean | ProfileCountOutputTypeDefaultArgs<ExtArgs>
       },
       ExtArgs['result']['profile']
@@ -2056,7 +2052,6 @@ export namespace Prisma {
     notifications?: boolean | Profile$notificationsArgs<ExtArgs>
     pushSubscriptions?: boolean | Profile$pushSubscriptionsArgs<ExtArgs>
     image?: boolean | Profile$imageArgs<ExtArgs>
-    bugReports?: boolean | Profile$bugReportsArgs<ExtArgs>
     _count?: boolean | ProfileCountOutputTypeDefaultArgs<ExtArgs>
   }
   export type ProfileIncludeCreateManyAndReturn<
@@ -2077,7 +2072,6 @@ export namespace Prisma {
         notifications: Prisma.$NotificationPayload<ExtArgs>[]
         pushSubscriptions: Prisma.$PushSubscriptionPayload<ExtArgs>[]
         image: Prisma.$ProfileImagePayload<ExtArgs> | null
-        bugReports: Prisma.$BugReportPayload<ExtArgs>[]
       }
       scalars: $Extensions.GetPayloadResult<
         {
@@ -2639,11 +2633,6 @@ export namespace Prisma {
       null,
       ExtArgs,
       GlobalOmitOptions
-    >
-    bugReports<T extends Profile$bugReportsArgs<ExtArgs> = {}>(
-      args?: Subset<T, Profile$bugReportsArgs<ExtArgs>>
-    ): Prisma.PrismaPromise<
-      $Result.GetResult<Prisma.$BugReportPayload<ExtArgs>, T, 'findMany', GlobalOmitOptions> | Null
     >
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
@@ -3283,32 +3272,6 @@ export namespace Prisma {
      */
     include?: ProfileImageInclude<ExtArgs> | null
     where?: ProfileImageWhereInput
-  }
-
-  /**
-   * Profile.bugReports
-   */
-  export type Profile$bugReportsArgs<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
-    /**
-     * Select specific fields to fetch from the BugReport
-     */
-    select?: BugReportSelect<ExtArgs> | null
-    /**
-     * Omit specific fields from the BugReport
-     */
-    omit?: BugReportOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: BugReportInclude<ExtArgs> | null
-    where?: BugReportWhereInput
-    orderBy?: BugReportOrderByWithRelationInput | BugReportOrderByWithRelationInput[]
-    cursor?: BugReportWhereUniqueInput
-    take?: number
-    skip?: number
-    distinct?: BugReportScalarFieldEnum | BugReportScalarFieldEnum[]
   }
 
   /**
@@ -7352,7 +7315,6 @@ export namespace Prisma {
         resolution?: boolean
         createdAt?: boolean
         updatedAt?: boolean
-        reporter?: boolean | ProfileDefaultArgs<ExtArgs>
       },
       ExtArgs['result']['bugReport']
     >
@@ -7370,7 +7332,6 @@ export namespace Prisma {
       resolution?: boolean
       createdAt?: boolean
       updatedAt?: boolean
-      reporter?: boolean | ProfileDefaultArgs<ExtArgs>
     },
     ExtArgs['result']['bugReport']
   >
@@ -7388,7 +7349,6 @@ export namespace Prisma {
       resolution?: boolean
       createdAt?: boolean
       updatedAt?: boolean
-      reporter?: boolean | ProfileDefaultArgs<ExtArgs>
     },
     ExtArgs['result']['bugReport']
   >
@@ -7418,28 +7378,12 @@ export namespace Prisma {
       | 'updatedAt',
       ExtArgs['result']['bugReport']
     >
-  export type BugReportInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    {
-      reporter?: boolean | ProfileDefaultArgs<ExtArgs>
-    }
-  export type BugReportIncludeCreateManyAndReturn<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
-    reporter?: boolean | ProfileDefaultArgs<ExtArgs>
-  }
-  export type BugReportIncludeUpdateManyAndReturn<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
-    reporter?: boolean | ProfileDefaultArgs<ExtArgs>
-  }
 
   export type $BugReportPayload<
     ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
   > = {
     name: 'BugReport'
-    objects: {
-      reporter: Prisma.$ProfilePayload<ExtArgs>
-    }
+    objects: {}
     scalars: $Extensions.GetPayloadResult<
       {
         id: string
@@ -7958,20 +7902,6 @@ export namespace Prisma {
     GlobalOmitOptions = {},
   > extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: 'PrismaPromise'
-    reporter<T extends ProfileDefaultArgs<ExtArgs> = {}>(
-      args?: Subset<T, ProfileDefaultArgs<ExtArgs>>
-    ): Prisma__ProfileClient<
-      | $Result.GetResult<
-          Prisma.$ProfilePayload<ExtArgs>,
-          T,
-          'findUniqueOrThrow',
-          GlobalOmitOptions
-        >
-      | Null,
-      Null,
-      ExtArgs,
-      GlobalOmitOptions
-    >
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -8030,10 +7960,6 @@ export namespace Prisma {
      */
     omit?: BugReportOmit<ExtArgs> | null
     /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: BugReportInclude<ExtArgs> | null
-    /**
      * Filter, which BugReport to fetch.
      */
     where: BugReportWhereUniqueInput
@@ -8054,10 +7980,6 @@ export namespace Prisma {
      */
     omit?: BugReportOmit<ExtArgs> | null
     /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: BugReportInclude<ExtArgs> | null
-    /**
      * Filter, which BugReport to fetch.
      */
     where: BugReportWhereUniqueInput
@@ -8077,10 +7999,6 @@ export namespace Prisma {
      * Omit specific fields from the BugReport
      */
     omit?: BugReportOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: BugReportInclude<ExtArgs> | null
     /**
      * Filter, which BugReport to fetch.
      */
@@ -8132,10 +8050,6 @@ export namespace Prisma {
      */
     omit?: BugReportOmit<ExtArgs> | null
     /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: BugReportInclude<ExtArgs> | null
-    /**
      * Filter, which BugReport to fetch.
      */
     where?: BugReportWhereInput
@@ -8185,10 +8099,6 @@ export namespace Prisma {
      * Omit specific fields from the BugReport
      */
     omit?: BugReportOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: BugReportInclude<ExtArgs> | null
     /**
      * Filter, which BugReports to fetch.
      */
@@ -8240,10 +8150,6 @@ export namespace Prisma {
      */
     omit?: BugReportOmit<ExtArgs> | null
     /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: BugReportInclude<ExtArgs> | null
-    /**
      * The data needed to create a BugReport.
      */
     data: XOR<BugReportCreateInput, BugReportUncheckedCreateInput>
@@ -8281,10 +8187,6 @@ export namespace Prisma {
      */
     data: BugReportCreateManyInput | BugReportCreateManyInput[]
     skipDuplicates?: boolean
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: BugReportIncludeCreateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -8301,10 +8203,6 @@ export namespace Prisma {
      * Omit specific fields from the BugReport
      */
     omit?: BugReportOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: BugReportInclude<ExtArgs> | null
     /**
      * The data needed to update a BugReport.
      */
@@ -8361,10 +8259,6 @@ export namespace Prisma {
      * Limit how many BugReports to update.
      */
     limit?: number
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: BugReportIncludeUpdateManyAndReturn<ExtArgs> | null
   }
 
   /**
@@ -8381,10 +8275,6 @@ export namespace Prisma {
      * Omit specific fields from the BugReport
      */
     omit?: BugReportOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: BugReportInclude<ExtArgs> | null
     /**
      * The filter to search for the BugReport to update in case it exists.
      */
@@ -8413,10 +8303,6 @@ export namespace Prisma {
      * Omit specific fields from the BugReport
      */
     omit?: BugReportOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: BugReportInclude<ExtArgs> | null
     /**
      * Filter which BugReport to delete.
      */
@@ -8453,10 +8339,6 @@ export namespace Prisma {
      * Omit specific fields from the BugReport
      */
     omit?: BugReportOmit<ExtArgs> | null
-    /**
-     * Choose, which related nodes to fetch as well
-     */
-    include?: BugReportInclude<ExtArgs> | null
   }
 
   /**
@@ -13724,7 +13606,6 @@ export namespace Prisma {
     notifications?: NotificationListRelationFilter
     pushSubscriptions?: PushSubscriptionListRelationFilter
     image?: XOR<ProfileImageNullableScalarRelationFilter, ProfileImageWhereInput> | null
-    bugReports?: BugReportListRelationFilter
   }
 
   export type ProfileOrderByWithRelationInput = {
@@ -13744,7 +13625,6 @@ export namespace Prisma {
     notifications?: NotificationOrderByRelationAggregateInput
     pushSubscriptions?: PushSubscriptionOrderByRelationAggregateInput
     image?: ProfileImageOrderByWithRelationInput
-    bugReports?: BugReportOrderByRelationAggregateInput
   }
 
   export type ProfileWhereUniqueInput = Prisma.AtLeast<
@@ -13768,7 +13648,6 @@ export namespace Prisma {
       notifications?: NotificationListRelationFilter
       pushSubscriptions?: PushSubscriptionListRelationFilter
       image?: XOR<ProfileImageNullableScalarRelationFilter, ProfileImageWhereInput> | null
-      bugReports?: BugReportListRelationFilter
     },
     'id' | 'identityHue'
   >
@@ -14016,7 +13895,6 @@ export namespace Prisma {
     resolution?: StringNullableFilter<'BugReport'> | string | null
     createdAt?: DateTimeFilter<'BugReport'> | Date | string
     updatedAt?: DateTimeFilter<'BugReport'> | Date | string
-    reporter?: XOR<ProfileScalarRelationFilter, ProfileWhereInput>
   }
 
   export type BugReportOrderByWithRelationInput = {
@@ -14029,7 +13907,6 @@ export namespace Prisma {
     resolution?: SortOrderInput | SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-    reporter?: ProfileOrderByWithRelationInput
   }
 
   export type BugReportWhereUniqueInput = Prisma.AtLeast<
@@ -14046,7 +13923,6 @@ export namespace Prisma {
       resolution?: StringNullableFilter<'BugReport'> | string | null
       createdAt?: DateTimeFilter<'BugReport'> | Date | string
       updatedAt?: DateTimeFilter<'BugReport'> | Date | string
-      reporter?: XOR<ProfileScalarRelationFilter, ProfileWhereInput>
     },
     'id'
   >
@@ -14343,7 +14219,6 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutProfileInput
     pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutProfileInput
     image?: ProfileImageCreateNestedOneWithoutProfileInput
-    bugReports?: BugReportCreateNestedManyWithoutReporterInput
   }
 
   export type ProfileUncheckedCreateInput = {
@@ -14363,7 +14238,6 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutProfileInput
     pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutProfileInput
     image?: ProfileImageUncheckedCreateNestedOneWithoutProfileInput
-    bugReports?: BugReportUncheckedCreateNestedManyWithoutReporterInput
   }
 
   export type ProfileUpdateInput = {
@@ -14383,7 +14257,6 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutProfileNestedInput
     pushSubscriptions?: PushSubscriptionUpdateManyWithoutProfileNestedInput
     image?: ProfileImageUpdateOneWithoutProfileNestedInput
-    bugReports?: BugReportUpdateManyWithoutReporterNestedInput
   }
 
   export type ProfileUncheckedUpdateInput = {
@@ -14403,7 +14276,6 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutProfileNestedInput
     pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutProfileNestedInput
     image?: ProfileImageUncheckedUpdateOneWithoutProfileNestedInput
-    bugReports?: BugReportUncheckedUpdateManyWithoutReporterNestedInput
   }
 
   export type ProfileCreateManyInput = {
@@ -14637,6 +14509,7 @@ export namespace Prisma {
 
   export type BugReportCreateInput = {
     id?: string
+    reporterId: string
     description: string
     context: JsonNullValueInput | InputJsonValue
     status?: string
@@ -14644,7 +14517,6 @@ export namespace Prisma {
     resolution?: string | null
     createdAt?: Date | string
     updatedAt?: Date | string
-    reporter: ProfileCreateNestedOneWithoutBugReportsInput
   }
 
   export type BugReportUncheckedCreateInput = {
@@ -14661,6 +14533,7 @@ export namespace Prisma {
 
   export type BugReportUpdateInput = {
     id?: StringFieldUpdateOperationsInput | string
+    reporterId?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     context?: JsonNullValueInput | InputJsonValue
     status?: StringFieldUpdateOperationsInput | string
@@ -14668,7 +14541,6 @@ export namespace Prisma {
     resolution?: NullableStringFieldUpdateOperationsInput | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    reporter?: ProfileUpdateOneRequiredWithoutBugReportsNestedInput
   }
 
   export type BugReportUncheckedUpdateInput = {
@@ -14697,6 +14569,7 @@ export namespace Prisma {
 
   export type BugReportUpdateManyMutationInput = {
     id?: StringFieldUpdateOperationsInput | string
+    reporterId?: StringFieldUpdateOperationsInput | string
     description?: StringFieldUpdateOperationsInput | string
     context?: JsonNullValueInput | InputJsonValue
     status?: StringFieldUpdateOperationsInput | string
@@ -15042,12 +14915,6 @@ export namespace Prisma {
     isNot?: ProfileImageWhereInput | null
   }
 
-  export type BugReportListRelationFilter = {
-    every?: BugReportWhereInput
-    some?: BugReportWhereInput
-    none?: BugReportWhereInput
-  }
-
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -15070,10 +14937,6 @@ export namespace Prisma {
   }
 
   export type PushSubscriptionOrderByRelationAggregateInput = {
-    _count?: SortOrder
-  }
-
-  export type BugReportOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -15637,18 +15500,6 @@ export namespace Prisma {
     connect?: ProfileImageWhereUniqueInput
   }
 
-  export type BugReportCreateNestedManyWithoutReporterInput = {
-    create?:
-      | XOR<BugReportCreateWithoutReporterInput, BugReportUncheckedCreateWithoutReporterInput>
-      | BugReportCreateWithoutReporterInput[]
-      | BugReportUncheckedCreateWithoutReporterInput[]
-    connectOrCreate?:
-      | BugReportCreateOrConnectWithoutReporterInput
-      | BugReportCreateOrConnectWithoutReporterInput[]
-    createMany?: BugReportCreateManyReporterInputEnvelope
-    connect?: BugReportWhereUniqueInput | BugReportWhereUniqueInput[]
-  }
-
   export type PermissionOverrideUncheckedCreateNestedManyWithoutProfileInput = {
     create?:
       | XOR<
@@ -15737,18 +15588,6 @@ export namespace Prisma {
     >
     connectOrCreate?: ProfileImageCreateOrConnectWithoutProfileInput
     connect?: ProfileImageWhereUniqueInput
-  }
-
-  export type BugReportUncheckedCreateNestedManyWithoutReporterInput = {
-    create?:
-      | XOR<BugReportCreateWithoutReporterInput, BugReportUncheckedCreateWithoutReporterInput>
-      | BugReportCreateWithoutReporterInput[]
-      | BugReportUncheckedCreateWithoutReporterInput[]
-    connectOrCreate?:
-      | BugReportCreateOrConnectWithoutReporterInput
-      | BugReportCreateOrConnectWithoutReporterInput[]
-    createMany?: BugReportCreateManyReporterInputEnvelope
-    connect?: BugReportWhereUniqueInput | BugReportWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -15957,31 +15796,6 @@ export namespace Prisma {
     >
   }
 
-  export type BugReportUpdateManyWithoutReporterNestedInput = {
-    create?:
-      | XOR<BugReportCreateWithoutReporterInput, BugReportUncheckedCreateWithoutReporterInput>
-      | BugReportCreateWithoutReporterInput[]
-      | BugReportUncheckedCreateWithoutReporterInput[]
-    connectOrCreate?:
-      | BugReportCreateOrConnectWithoutReporterInput
-      | BugReportCreateOrConnectWithoutReporterInput[]
-    upsert?:
-      | BugReportUpsertWithWhereUniqueWithoutReporterInput
-      | BugReportUpsertWithWhereUniqueWithoutReporterInput[]
-    createMany?: BugReportCreateManyReporterInputEnvelope
-    set?: BugReportWhereUniqueInput | BugReportWhereUniqueInput[]
-    disconnect?: BugReportWhereUniqueInput | BugReportWhereUniqueInput[]
-    delete?: BugReportWhereUniqueInput | BugReportWhereUniqueInput[]
-    connect?: BugReportWhereUniqueInput | BugReportWhereUniqueInput[]
-    update?:
-      | BugReportUpdateWithWhereUniqueWithoutReporterInput
-      | BugReportUpdateWithWhereUniqueWithoutReporterInput[]
-    updateMany?:
-      | BugReportUpdateManyWithWhereWithoutReporterInput
-      | BugReportUpdateManyWithWhereWithoutReporterInput[]
-    deleteMany?: BugReportScalarWhereInput | BugReportScalarWhereInput[]
-  }
-
   export type PermissionOverrideUncheckedUpdateManyWithoutProfileNestedInput = {
     create?:
       | XOR<
@@ -16160,31 +15974,6 @@ export namespace Prisma {
     >
   }
 
-  export type BugReportUncheckedUpdateManyWithoutReporterNestedInput = {
-    create?:
-      | XOR<BugReportCreateWithoutReporterInput, BugReportUncheckedCreateWithoutReporterInput>
-      | BugReportCreateWithoutReporterInput[]
-      | BugReportUncheckedCreateWithoutReporterInput[]
-    connectOrCreate?:
-      | BugReportCreateOrConnectWithoutReporterInput
-      | BugReportCreateOrConnectWithoutReporterInput[]
-    upsert?:
-      | BugReportUpsertWithWhereUniqueWithoutReporterInput
-      | BugReportUpsertWithWhereUniqueWithoutReporterInput[]
-    createMany?: BugReportCreateManyReporterInputEnvelope
-    set?: BugReportWhereUniqueInput | BugReportWhereUniqueInput[]
-    disconnect?: BugReportWhereUniqueInput | BugReportWhereUniqueInput[]
-    delete?: BugReportWhereUniqueInput | BugReportWhereUniqueInput[]
-    connect?: BugReportWhereUniqueInput | BugReportWhereUniqueInput[]
-    update?:
-      | BugReportUpdateWithWhereUniqueWithoutReporterInput
-      | BugReportUpdateWithWhereUniqueWithoutReporterInput[]
-    updateMany?:
-      | BugReportUpdateManyWithWhereWithoutReporterInput
-      | BugReportUpdateManyWithWhereWithoutReporterInput[]
-    deleteMany?: BugReportScalarWhereInput | BugReportScalarWhereInput[]
-  }
-
   export type ProfileCreateNestedOneWithoutImageInput = {
     create?: XOR<ProfileCreateWithoutImageInput, ProfileUncheckedCreateWithoutImageInput>
     connectOrCreate?: ProfileCreateOrConnectWithoutImageInput
@@ -16258,29 +16047,12 @@ export namespace Prisma {
     >
   }
 
-  export type ProfileCreateNestedOneWithoutBugReportsInput = {
-    create?: XOR<ProfileCreateWithoutBugReportsInput, ProfileUncheckedCreateWithoutBugReportsInput>
-    connectOrCreate?: ProfileCreateOrConnectWithoutBugReportsInput
-    connect?: ProfileWhereUniqueInput
-  }
-
   export type NullableIntFieldUpdateOperationsInput = {
     set?: number | null
     increment?: number
     decrement?: number
     multiply?: number
     divide?: number
-  }
-
-  export type ProfileUpdateOneRequiredWithoutBugReportsNestedInput = {
-    create?: XOR<ProfileCreateWithoutBugReportsInput, ProfileUncheckedCreateWithoutBugReportsInput>
-    connectOrCreate?: ProfileCreateOrConnectWithoutBugReportsInput
-    upsert?: ProfileUpsertWithoutBugReportsInput
-    connect?: ProfileWhereUniqueInput
-    update?: XOR<
-      XOR<ProfileUpdateToOneWithWhereWithoutBugReportsInput, ProfileUpdateWithoutBugReportsInput>,
-      ProfileUncheckedUpdateWithoutBugReportsInput
-    >
   }
 
   export type ProfileCreateNestedOneWithoutWidgetLayoutsInput = {
@@ -16825,38 +16597,6 @@ export namespace Prisma {
     >
   }
 
-  export type BugReportCreateWithoutReporterInput = {
-    id?: string
-    description: string
-    context: JsonNullValueInput | InputJsonValue
-    status?: string
-    githubIssueNumber?: number | null
-    resolution?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type BugReportUncheckedCreateWithoutReporterInput = {
-    id?: string
-    description: string
-    context: JsonNullValueInput | InputJsonValue
-    status?: string
-    githubIssueNumber?: number | null
-    resolution?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
-  }
-
-  export type BugReportCreateOrConnectWithoutReporterInput = {
-    where: BugReportWhereUniqueInput
-    create: XOR<BugReportCreateWithoutReporterInput, BugReportUncheckedCreateWithoutReporterInput>
-  }
-
-  export type BugReportCreateManyReporterInputEnvelope = {
-    data: BugReportCreateManyReporterInput | BugReportCreateManyReporterInput[]
-    skipDuplicates?: boolean
-  }
-
   export type PermissionOverrideUpsertWithWhereUniqueWithoutProfileInput = {
     where: PermissionOverrideWhereUniqueInput
     update: XOR<
@@ -17109,37 +16849,6 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type BugReportUpsertWithWhereUniqueWithoutReporterInput = {
-    where: BugReportWhereUniqueInput
-    update: XOR<BugReportUpdateWithoutReporterInput, BugReportUncheckedUpdateWithoutReporterInput>
-    create: XOR<BugReportCreateWithoutReporterInput, BugReportUncheckedCreateWithoutReporterInput>
-  }
-
-  export type BugReportUpdateWithWhereUniqueWithoutReporterInput = {
-    where: BugReportWhereUniqueInput
-    data: XOR<BugReportUpdateWithoutReporterInput, BugReportUncheckedUpdateWithoutReporterInput>
-  }
-
-  export type BugReportUpdateManyWithWhereWithoutReporterInput = {
-    where: BugReportScalarWhereInput
-    data: XOR<BugReportUpdateManyMutationInput, BugReportUncheckedUpdateManyWithoutReporterInput>
-  }
-
-  export type BugReportScalarWhereInput = {
-    AND?: BugReportScalarWhereInput | BugReportScalarWhereInput[]
-    OR?: BugReportScalarWhereInput[]
-    NOT?: BugReportScalarWhereInput | BugReportScalarWhereInput[]
-    id?: StringFilter<'BugReport'> | string
-    reporterId?: StringFilter<'BugReport'> | string
-    description?: StringFilter<'BugReport'> | string
-    context?: JsonFilter<'BugReport'>
-    status?: StringFilter<'BugReport'> | string
-    githubIssueNumber?: IntNullableFilter<'BugReport'> | number | null
-    resolution?: StringNullableFilter<'BugReport'> | string | null
-    createdAt?: DateTimeFilter<'BugReport'> | Date | string
-    updatedAt?: DateTimeFilter<'BugReport'> | Date | string
-  }
-
   export type ProfileCreateWithoutImageInput = {
     id?: string
     name: string
@@ -17156,7 +16865,6 @@ export namespace Prisma {
     widgetLayouts?: WidgetLayoutCreateNestedManyWithoutProfileInput
     notifications?: NotificationCreateNestedManyWithoutProfileInput
     pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutProfileInput
-    bugReports?: BugReportCreateNestedManyWithoutReporterInput
   }
 
   export type ProfileUncheckedCreateWithoutImageInput = {
@@ -17175,7 +16883,6 @@ export namespace Prisma {
     widgetLayouts?: WidgetLayoutUncheckedCreateNestedManyWithoutProfileInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutProfileInput
     pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutProfileInput
-    bugReports?: BugReportUncheckedCreateNestedManyWithoutReporterInput
   }
 
   export type ProfileCreateOrConnectWithoutImageInput = {
@@ -17210,7 +16917,6 @@ export namespace Prisma {
     widgetLayouts?: WidgetLayoutUpdateManyWithoutProfileNestedInput
     notifications?: NotificationUpdateManyWithoutProfileNestedInput
     pushSubscriptions?: PushSubscriptionUpdateManyWithoutProfileNestedInput
-    bugReports?: BugReportUpdateManyWithoutReporterNestedInput
   }
 
   export type ProfileUncheckedUpdateWithoutImageInput = {
@@ -17229,7 +16935,6 @@ export namespace Prisma {
     widgetLayouts?: WidgetLayoutUncheckedUpdateManyWithoutProfileNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutProfileNestedInput
     pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutProfileNestedInput
-    bugReports?: BugReportUncheckedUpdateManyWithoutReporterNestedInput
   }
 
   export type ProfileCreateWithoutPushSubscriptionsInput = {
@@ -17248,7 +16953,6 @@ export namespace Prisma {
     widgetLayouts?: WidgetLayoutCreateNestedManyWithoutProfileInput
     notifications?: NotificationCreateNestedManyWithoutProfileInput
     image?: ProfileImageCreateNestedOneWithoutProfileInput
-    bugReports?: BugReportCreateNestedManyWithoutReporterInput
   }
 
   export type ProfileUncheckedCreateWithoutPushSubscriptionsInput = {
@@ -17267,7 +16971,6 @@ export namespace Prisma {
     widgetLayouts?: WidgetLayoutUncheckedCreateNestedManyWithoutProfileInput
     notifications?: NotificationUncheckedCreateNestedManyWithoutProfileInput
     image?: ProfileImageUncheckedCreateNestedOneWithoutProfileInput
-    bugReports?: BugReportUncheckedCreateNestedManyWithoutReporterInput
   }
 
   export type ProfileCreateOrConnectWithoutPushSubscriptionsInput = {
@@ -17314,7 +17017,6 @@ export namespace Prisma {
     widgetLayouts?: WidgetLayoutUpdateManyWithoutProfileNestedInput
     notifications?: NotificationUpdateManyWithoutProfileNestedInput
     image?: ProfileImageUpdateOneWithoutProfileNestedInput
-    bugReports?: BugReportUpdateManyWithoutReporterNestedInput
   }
 
   export type ProfileUncheckedUpdateWithoutPushSubscriptionsInput = {
@@ -17333,7 +17035,6 @@ export namespace Prisma {
     widgetLayouts?: WidgetLayoutUncheckedUpdateManyWithoutProfileNestedInput
     notifications?: NotificationUncheckedUpdateManyWithoutProfileNestedInput
     image?: ProfileImageUncheckedUpdateOneWithoutProfileNestedInput
-    bugReports?: BugReportUncheckedUpdateManyWithoutReporterNestedInput
   }
 
   export type ProfileCreateWithoutNotificationsInput = {
@@ -17352,7 +17053,6 @@ export namespace Prisma {
     widgetLayouts?: WidgetLayoutCreateNestedManyWithoutProfileInput
     pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutProfileInput
     image?: ProfileImageCreateNestedOneWithoutProfileInput
-    bugReports?: BugReportCreateNestedManyWithoutReporterInput
   }
 
   export type ProfileUncheckedCreateWithoutNotificationsInput = {
@@ -17371,7 +17071,6 @@ export namespace Prisma {
     widgetLayouts?: WidgetLayoutUncheckedCreateNestedManyWithoutProfileInput
     pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutProfileInput
     image?: ProfileImageUncheckedCreateNestedOneWithoutProfileInput
-    bugReports?: BugReportUncheckedCreateNestedManyWithoutReporterInput
   }
 
   export type ProfileCreateOrConnectWithoutNotificationsInput = {
@@ -17418,7 +17117,6 @@ export namespace Prisma {
     widgetLayouts?: WidgetLayoutUpdateManyWithoutProfileNestedInput
     pushSubscriptions?: PushSubscriptionUpdateManyWithoutProfileNestedInput
     image?: ProfileImageUpdateOneWithoutProfileNestedInput
-    bugReports?: BugReportUpdateManyWithoutReporterNestedInput
   }
 
   export type ProfileUncheckedUpdateWithoutNotificationsInput = {
@@ -17435,99 +17133,6 @@ export namespace Prisma {
     grantedOverrides?: PermissionOverrideUncheckedUpdateManyWithoutGrantorNestedInput
     systemConfigs?: SystemConfigUncheckedUpdateManyWithoutProfileNestedInput
     widgetLayouts?: WidgetLayoutUncheckedUpdateManyWithoutProfileNestedInput
-    pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutProfileNestedInput
-    image?: ProfileImageUncheckedUpdateOneWithoutProfileNestedInput
-    bugReports?: BugReportUncheckedUpdateManyWithoutReporterNestedInput
-  }
-
-  export type ProfileCreateWithoutBugReportsInput = {
-    id?: string
-    name: string
-    tier: number
-    identityHue?: string | null
-    avatarUrl?: string | null
-    darkMode?: boolean | null
-    focusMode?: boolean | null
-    pushEnabled?: boolean
-    createdAt?: Date | string
-    permissionOverrides?: PermissionOverrideCreateNestedManyWithoutProfileInput
-    grantedOverrides?: PermissionOverrideCreateNestedManyWithoutGrantorInput
-    systemConfigs?: SystemConfigCreateNestedManyWithoutProfileInput
-    widgetLayouts?: WidgetLayoutCreateNestedManyWithoutProfileInput
-    notifications?: NotificationCreateNestedManyWithoutProfileInput
-    pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutProfileInput
-    image?: ProfileImageCreateNestedOneWithoutProfileInput
-  }
-
-  export type ProfileUncheckedCreateWithoutBugReportsInput = {
-    id?: string
-    name: string
-    tier: number
-    identityHue?: string | null
-    avatarUrl?: string | null
-    darkMode?: boolean | null
-    focusMode?: boolean | null
-    pushEnabled?: boolean
-    createdAt?: Date | string
-    permissionOverrides?: PermissionOverrideUncheckedCreateNestedManyWithoutProfileInput
-    grantedOverrides?: PermissionOverrideUncheckedCreateNestedManyWithoutGrantorInput
-    systemConfigs?: SystemConfigUncheckedCreateNestedManyWithoutProfileInput
-    widgetLayouts?: WidgetLayoutUncheckedCreateNestedManyWithoutProfileInput
-    notifications?: NotificationUncheckedCreateNestedManyWithoutProfileInput
-    pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutProfileInput
-    image?: ProfileImageUncheckedCreateNestedOneWithoutProfileInput
-  }
-
-  export type ProfileCreateOrConnectWithoutBugReportsInput = {
-    where: ProfileWhereUniqueInput
-    create: XOR<ProfileCreateWithoutBugReportsInput, ProfileUncheckedCreateWithoutBugReportsInput>
-  }
-
-  export type ProfileUpsertWithoutBugReportsInput = {
-    update: XOR<ProfileUpdateWithoutBugReportsInput, ProfileUncheckedUpdateWithoutBugReportsInput>
-    create: XOR<ProfileCreateWithoutBugReportsInput, ProfileUncheckedCreateWithoutBugReportsInput>
-    where?: ProfileWhereInput
-  }
-
-  export type ProfileUpdateToOneWithWhereWithoutBugReportsInput = {
-    where?: ProfileWhereInput
-    data: XOR<ProfileUpdateWithoutBugReportsInput, ProfileUncheckedUpdateWithoutBugReportsInput>
-  }
-
-  export type ProfileUpdateWithoutBugReportsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    tier?: IntFieldUpdateOperationsInput | number
-    identityHue?: NullableStringFieldUpdateOperationsInput | string | null
-    avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    darkMode?: NullableBoolFieldUpdateOperationsInput | boolean | null
-    focusMode?: NullableBoolFieldUpdateOperationsInput | boolean | null
-    pushEnabled?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    permissionOverrides?: PermissionOverrideUpdateManyWithoutProfileNestedInput
-    grantedOverrides?: PermissionOverrideUpdateManyWithoutGrantorNestedInput
-    systemConfigs?: SystemConfigUpdateManyWithoutProfileNestedInput
-    widgetLayouts?: WidgetLayoutUpdateManyWithoutProfileNestedInput
-    notifications?: NotificationUpdateManyWithoutProfileNestedInput
-    pushSubscriptions?: PushSubscriptionUpdateManyWithoutProfileNestedInput
-    image?: ProfileImageUpdateOneWithoutProfileNestedInput
-  }
-
-  export type ProfileUncheckedUpdateWithoutBugReportsInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    name?: StringFieldUpdateOperationsInput | string
-    tier?: IntFieldUpdateOperationsInput | number
-    identityHue?: NullableStringFieldUpdateOperationsInput | string | null
-    avatarUrl?: NullableStringFieldUpdateOperationsInput | string | null
-    darkMode?: NullableBoolFieldUpdateOperationsInput | boolean | null
-    focusMode?: NullableBoolFieldUpdateOperationsInput | boolean | null
-    pushEnabled?: BoolFieldUpdateOperationsInput | boolean
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    permissionOverrides?: PermissionOverrideUncheckedUpdateManyWithoutProfileNestedInput
-    grantedOverrides?: PermissionOverrideUncheckedUpdateManyWithoutGrantorNestedInput
-    systemConfigs?: SystemConfigUncheckedUpdateManyWithoutProfileNestedInput
-    widgetLayouts?: WidgetLayoutUncheckedUpdateManyWithoutProfileNestedInput
-    notifications?: NotificationUncheckedUpdateManyWithoutProfileNestedInput
     pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutProfileNestedInput
     image?: ProfileImageUncheckedUpdateOneWithoutProfileNestedInput
   }
@@ -17548,7 +17153,6 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutProfileInput
     pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutProfileInput
     image?: ProfileImageCreateNestedOneWithoutProfileInput
-    bugReports?: BugReportCreateNestedManyWithoutReporterInput
   }
 
   export type ProfileUncheckedCreateWithoutWidgetLayoutsInput = {
@@ -17567,7 +17171,6 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutProfileInput
     pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutProfileInput
     image?: ProfileImageUncheckedCreateNestedOneWithoutProfileInput
-    bugReports?: BugReportUncheckedCreateNestedManyWithoutReporterInput
   }
 
   export type ProfileCreateOrConnectWithoutWidgetLayoutsInput = {
@@ -17614,7 +17217,6 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutProfileNestedInput
     pushSubscriptions?: PushSubscriptionUpdateManyWithoutProfileNestedInput
     image?: ProfileImageUpdateOneWithoutProfileNestedInput
-    bugReports?: BugReportUpdateManyWithoutReporterNestedInput
   }
 
   export type ProfileUncheckedUpdateWithoutWidgetLayoutsInput = {
@@ -17633,7 +17235,6 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutProfileNestedInput
     pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutProfileNestedInput
     image?: ProfileImageUncheckedUpdateOneWithoutProfileNestedInput
-    bugReports?: BugReportUncheckedUpdateManyWithoutReporterNestedInput
   }
 
   export type ProfileCreateWithoutPermissionOverridesInput = {
@@ -17652,7 +17253,6 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutProfileInput
     pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutProfileInput
     image?: ProfileImageCreateNestedOneWithoutProfileInput
-    bugReports?: BugReportCreateNestedManyWithoutReporterInput
   }
 
   export type ProfileUncheckedCreateWithoutPermissionOverridesInput = {
@@ -17671,7 +17271,6 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutProfileInput
     pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutProfileInput
     image?: ProfileImageUncheckedCreateNestedOneWithoutProfileInput
-    bugReports?: BugReportUncheckedCreateNestedManyWithoutReporterInput
   }
 
   export type ProfileCreateOrConnectWithoutPermissionOverridesInput = {
@@ -17698,7 +17297,6 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutProfileInput
     pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutProfileInput
     image?: ProfileImageCreateNestedOneWithoutProfileInput
-    bugReports?: BugReportCreateNestedManyWithoutReporterInput
   }
 
   export type ProfileUncheckedCreateWithoutGrantedOverridesInput = {
@@ -17717,7 +17315,6 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutProfileInput
     pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutProfileInput
     image?: ProfileImageUncheckedCreateNestedOneWithoutProfileInput
-    bugReports?: BugReportUncheckedCreateNestedManyWithoutReporterInput
   }
 
   export type ProfileCreateOrConnectWithoutGrantedOverridesInput = {
@@ -17764,7 +17361,6 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutProfileNestedInput
     pushSubscriptions?: PushSubscriptionUpdateManyWithoutProfileNestedInput
     image?: ProfileImageUpdateOneWithoutProfileNestedInput
-    bugReports?: BugReportUpdateManyWithoutReporterNestedInput
   }
 
   export type ProfileUncheckedUpdateWithoutPermissionOverridesInput = {
@@ -17783,7 +17379,6 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutProfileNestedInput
     pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutProfileNestedInput
     image?: ProfileImageUncheckedUpdateOneWithoutProfileNestedInput
-    bugReports?: BugReportUncheckedUpdateManyWithoutReporterNestedInput
   }
 
   export type ProfileUpsertWithoutGrantedOverridesInput = {
@@ -17822,7 +17417,6 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutProfileNestedInput
     pushSubscriptions?: PushSubscriptionUpdateManyWithoutProfileNestedInput
     image?: ProfileImageUpdateOneWithoutProfileNestedInput
-    bugReports?: BugReportUpdateManyWithoutReporterNestedInput
   }
 
   export type ProfileUncheckedUpdateWithoutGrantedOverridesInput = {
@@ -17841,7 +17435,6 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutProfileNestedInput
     pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutProfileNestedInput
     image?: ProfileImageUncheckedUpdateOneWithoutProfileNestedInput
-    bugReports?: BugReportUncheckedUpdateManyWithoutReporterNestedInput
   }
 
   export type ProfileCreateWithoutSystemConfigsInput = {
@@ -17860,7 +17453,6 @@ export namespace Prisma {
     notifications?: NotificationCreateNestedManyWithoutProfileInput
     pushSubscriptions?: PushSubscriptionCreateNestedManyWithoutProfileInput
     image?: ProfileImageCreateNestedOneWithoutProfileInput
-    bugReports?: BugReportCreateNestedManyWithoutReporterInput
   }
 
   export type ProfileUncheckedCreateWithoutSystemConfigsInput = {
@@ -17879,7 +17471,6 @@ export namespace Prisma {
     notifications?: NotificationUncheckedCreateNestedManyWithoutProfileInput
     pushSubscriptions?: PushSubscriptionUncheckedCreateNestedManyWithoutProfileInput
     image?: ProfileImageUncheckedCreateNestedOneWithoutProfileInput
-    bugReports?: BugReportUncheckedCreateNestedManyWithoutReporterInput
   }
 
   export type ProfileCreateOrConnectWithoutSystemConfigsInput = {
@@ -17926,7 +17517,6 @@ export namespace Prisma {
     notifications?: NotificationUpdateManyWithoutProfileNestedInput
     pushSubscriptions?: PushSubscriptionUpdateManyWithoutProfileNestedInput
     image?: ProfileImageUpdateOneWithoutProfileNestedInput
-    bugReports?: BugReportUpdateManyWithoutReporterNestedInput
   }
 
   export type ProfileUncheckedUpdateWithoutSystemConfigsInput = {
@@ -17945,7 +17535,6 @@ export namespace Prisma {
     notifications?: NotificationUncheckedUpdateManyWithoutProfileNestedInput
     pushSubscriptions?: PushSubscriptionUncheckedUpdateManyWithoutProfileNestedInput
     image?: ProfileImageUncheckedUpdateOneWithoutProfileNestedInput
-    bugReports?: BugReportUncheckedUpdateManyWithoutReporterNestedInput
   }
 
   export type PermissionOverrideCreateManyProfileInput = {
@@ -17997,17 +17586,6 @@ export namespace Prisma {
     p256dhKey: string
     authKey: string
     createdAt?: Date | string
-  }
-
-  export type BugReportCreateManyReporterInput = {
-    id?: string
-    description: string
-    context: JsonNullValueInput | InputJsonValue
-    status?: string
-    githubIssueNumber?: number | null
-    resolution?: string | null
-    createdAt?: Date | string
-    updatedAt?: Date | string
   }
 
   export type PermissionOverrideUpdateWithoutProfileInput = {
@@ -18161,39 +17739,6 @@ export namespace Prisma {
     p256dhKey?: StringFieldUpdateOperationsInput | string
     authKey?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type BugReportUpdateWithoutReporterInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    description?: StringFieldUpdateOperationsInput | string
-    context?: JsonNullValueInput | InputJsonValue
-    status?: StringFieldUpdateOperationsInput | string
-    githubIssueNumber?: NullableIntFieldUpdateOperationsInput | number | null
-    resolution?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type BugReportUncheckedUpdateWithoutReporterInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    description?: StringFieldUpdateOperationsInput | string
-    context?: JsonNullValueInput | InputJsonValue
-    status?: StringFieldUpdateOperationsInput | string
-    githubIssueNumber?: NullableIntFieldUpdateOperationsInput | number | null
-    resolution?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
-  }
-
-  export type BugReportUncheckedUpdateManyWithoutReporterInput = {
-    id?: StringFieldUpdateOperationsInput | string
-    description?: StringFieldUpdateOperationsInput | string
-    context?: JsonNullValueInput | InputJsonValue
-    status?: StringFieldUpdateOperationsInput | string
-    githubIssueNumber?: NullableIntFieldUpdateOperationsInput | number | null
-    resolution?: NullableStringFieldUpdateOperationsInput | string | null
-    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   /**

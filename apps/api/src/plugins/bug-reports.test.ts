@@ -99,6 +99,52 @@ describe('POST /api/bug-reports', () => {
     expect(saved?.description).toBe('the chores page went white')
   })
 
+  // Regression: production has no `profiles` row for the household pseudo-profile, and
+  // it is the DEFAULT profile — the one the fridge tablet sits on. A foreign key on
+  // reporterId made the single likeliest report in the house a 500 (P2003).
+  it('lets the synthetic household profile file a report', async () => {
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/bug-reports',
+      payload: { description: 'reported from the fridge tablet', context: CONTEXT },
+    })
+
+    expect(res.statusCode).toBe(201)
+    expect(res.json().reporter.name).toBe('Family')
+
+    const saved = await prisma.bugReport.findFirst({
+      where: { description: 'reported from the fridge tablet' },
+    })
+    expect(saved).toBeTruthy()
+  })
+
+  it('still serves a report whose reporter no longer has a profile', async () => {
+    const ghost = await prisma.profile.create({ data: { name: 'Ghost', tier: 2 } })
+    const cookie = getCookie(
+      await app.inject({
+        method: 'POST',
+        url: '/api/auth/switch',
+        payload: { targetProfileId: ghost.id },
+      })
+    )
+    await fileReport(cookie, 'filed before the profile went away')
+    await prisma.profile.delete({ where: { id: ghost.id } })
+
+    const parentCookie = await getTier4Cookie()
+    const res = await app.inject({
+      method: 'GET',
+      url: '/api/bug-reports',
+      headers: { cookie: parentCookie },
+    })
+
+    expect(res.statusCode).toBe(200)
+    const orphan = res
+      .json()
+      .find((r: { description: string }) => r.description === 'filed before the profile went away')
+    expect(orphan).toBeTruthy()
+    expect(orphan.reporter.name).toBe('Someone')
+  })
+
   it('rejects an empty description', async () => {
     const cookie = await getTier4Cookie()
     const res = await app.inject({
