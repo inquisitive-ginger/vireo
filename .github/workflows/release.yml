@@ -1,6 +1,13 @@
 name: release
 on:
-  push: { branches: [main] }
+  push:
+    branches: [main]
+    # Docs never reach an image, and a release now auto-deploys — without this a
+    # session close-out rebuilds 2 GB and blips the live API for nothing.
+    paths-ignore:
+      - 'docs/**'
+      - '**/*.md'
+      - '.github/ISSUE_TEMPLATE/**'
   workflow_dispatch:
 permissions: { contents: read, packages: write }
 
