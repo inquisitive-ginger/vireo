@@ -5,17 +5,18 @@
 # entrypoint before the server binds, so devDependencies are kept.
 #
 # This image ships arm64 node_modules (esbuild binaries for tsx), so it must be
-# built for the target arch under QEMU. `pnpm fetch` needs only the lockfile, so
-# its layer (the slow emulated download) is cached across every code-only deploy
-# and only re-runs when pnpm-lock.yaml changes.
+# built for the target arch under QEMU. Do NOT split this into
+# `pnpm fetch` + `pnpm install --offline`: that build produces a structurally
+# identical tree that nonetheless fails at runtime under tsx's resolver with
+# "Cannot find module '@prisma/client-runtime-utils'" (a transitive dep of
+# @prisma/client required by the committed generated clients). See
+# logs/2026-07-21-infra-deploy-hardening.md.
 FROM node:22-slim
 RUN apt-get update && apt-get install -y openssl && rm -rf /var/lib/apt/lists/*
 RUN corepack enable
 WORKDIR /repo
-COPY pnpm-lock.yaml pnpm-workspace.yaml ./
-RUN pnpm fetch
 COPY . .
-RUN pnpm install --frozen-lockfile --offline
+RUN pnpm install --frozen-lockfile
 RUN chmod +x apps/api/docker-entrypoint.sh
 ENV NODE_ENV=production
 EXPOSE 3000
