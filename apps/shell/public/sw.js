@@ -65,7 +65,7 @@ async function cacheFirst(request) {
 }
 
 self.addEventListener('push', (e) => {
-  let data = { title: 'Family OS', body: '' }
+  let data = { title: 'Vireo', body: '' }
   try {
     data = e.data ? e.data.json() : data
   } catch {
@@ -74,8 +74,8 @@ self.addEventListener('push', (e) => {
   e.waitUntil(
     self.registration.showNotification(data.title, {
       body: data.body,
-      icon: '/icons/icon-192x192.png',
-      badge: '/icons/icon-192x192.png',
+      icon: '/icons/icon-192.png',
+      badge: '/icons/icon-192.png',
     })
   )
 })

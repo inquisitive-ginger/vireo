@@ -6,8 +6,8 @@ test('manifest.webmanifest is served with required installability fields', async
   expect(response.headers()['content-type']).toMatch(/json|manifest/)
 
   const manifest = (await response.json()) as Record<string, unknown>
-  expect(manifest.name).toBe('Family OS')
-  expect(manifest.short_name).toBe('Family OS')
+  expect(manifest.name).toBe('Vireo')
+  expect(manifest.short_name).toBe('Vireo')
   expect(manifest.display).toBe('standalone')
   expect(manifest.start_url).toBe('/')
   expect(Array.isArray(manifest.icons)).toBe(true)
@@ -18,12 +18,15 @@ test('manifest.webmanifest is served with required installability fields', async
 })
 
 test('app icons are served', async ({ page }) => {
-  const res192 = await page.request.get('/icons/icon-192x192.png')
+  const res192 = await page.request.get('/icons/icon-192.png')
   expect(res192.ok()).toBe(true)
   expect(res192.headers()['content-type']).toMatch(/png/)
 
-  const res512 = await page.request.get('/icons/icon-512x512.png')
+  const res512 = await page.request.get('/icons/icon-512.png')
   expect(res512.ok()).toBe(true)
+
+  const maskable = await page.request.get('/icons/maskable-512.png')
+  expect(maskable.ok()).toBe(true)
 })
 
 test('service worker is registered after first visit', async ({ page }) => {
