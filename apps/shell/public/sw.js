@@ -25,10 +25,13 @@ self.addEventListener('fetch', (e) => {
   // Dynamic surfaces, and navigations (HTML): network-first so a new deploy's
   // index.html — and the content-hashed bundles it points at — is always picked
   // up. Hashed assets are immutable, so they alone are safe to serve cache-first.
+  // The manifest is not content-hashed, so a cached copy outlives the deploy that
+  // replaced it — and an installed PWA reads its name and icon paths from there.
   const dynamic =
     url.pathname.startsWith('/api/') ||
     url.pathname.startsWith('/events') ||
-    url.pathname.startsWith('/plugins/')
+    url.pathname.startsWith('/plugins/') ||
+    url.pathname === '/manifest.webmanifest'
 
   if (dynamic || req.mode === 'navigate') {
     e.respondWith(networkFirst(req))
