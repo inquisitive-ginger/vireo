@@ -11,7 +11,18 @@
 
 	handle {
 		root * /srv
-		try_files {path} /index.html
-		file_server
+
+		# The SPA fallback must not answer for assets: a missing icon would come
+		# back as index.html under a 200, which a client cannot decode and cannot
+		# distinguish from success.
+		@asset path *.png *.jpg *.jpeg *.webp *.svg *.ico *.webmanifest *.js *.css *.map *.json *.woff *.woff2 *.txt
+		handle @asset {
+			file_server
+		}
+
+		handle {
+			try_files {path} /index.html
+			file_server
+		}
 	}
 }
