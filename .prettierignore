@@ -2,3 +2,6 @@ node_modules/
 dist/
 storybook-static/
 pnpm-lock.yaml
+# Prisma emits these. Reformatting them churns every committed client and the
+# diff then has to be stripped by hand before each commit.
+**/src/generated/

@@ -16,7 +16,7 @@ import { Pool } from 'pg'
 import { PrismaPg } from '@prisma/adapter-pg'
 import { PrismaClient } from '../src/generated/prisma'
 
-const KNOWN_MODULES = ['family-feed', 'chores', 'calendar'] as const
+const KNOWN_MODULES = ['family-feed', 'chores', 'calendar', 'rewards'] as const
 type Module = (typeof KNOWN_MODULES)[number]
 
 type Options = { modules: Set<Module>; platformOnly: boolean; keepProfiles: boolean }
@@ -95,6 +95,12 @@ async function resetCalendar() {
   await pool.query('DELETE FROM calendar.events')
 }
 
+// Balances go with the entries — the cache is meaningless without them.
+async function resetRewards() {
+  await pool.query('DELETE FROM rewards.ledger_entries')
+  await pool.query('DELETE FROM rewards.balances')
+}
+
 async function main() {
   const { modules, platformOnly, keepProfiles } = parseArgs()
 
@@ -125,6 +131,11 @@ async function main() {
   if (modules.has('calendar')) {
     await resetCalendar()
     console.log('  calendar: events cleared')
+  }
+
+  if (modules.has('rewards')) {
+    await resetRewards()
+    console.log('  rewards: ledger + balances cleared')
   }
 
   console.log(keepProfiles ? 'Done.' : 'Done. Navigate to / to start onboarding.')

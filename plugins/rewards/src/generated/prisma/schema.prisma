@@ -1,0 +1,39 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  schemas  = ["rewards"]
+}
+
+model LedgerEntry {
+  id         String   @id @default(uuid()) @db.Uuid
+  profileId  String   @map("profile_id") @db.Uuid
+  delta      Int
+  reason     String
+  sourceType String   @map("source_type")
+  sourceId   String?  @map("source_id")
+  createdBy  String?  @map("created_by") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  // The idempotency claim (ADR 047): a replayed event cannot credit twice. Postgres
+  // treats NULLs as distinct under a unique index, so this IS the spec's partial
+  // index — entries with no provenance (a manual correction) coexist freely.
+  @@unique([sourceType, sourceId])
+  @@index([profileId, createdAt])
+  @@map("ledger_entries")
+  @@schema("rewards")
+}
+
+// A cache, not the source of truth — recomputable from the entries at any time
+// (ADR 047). It exists so a widget doesn't sum a growing table on every render.
+model Balance {
+  profileId String   @id @map("profile_id") @db.Uuid
+  balance   Int      @default(0)
+  updatedAt DateTime @updatedAt @map("updated_at")
+
+  @@map("balances")
+  @@schema("rewards")
+}
