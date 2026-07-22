@@ -134,6 +134,14 @@ export const PERMISSION_REGISTRY = {
     action: 'complete',
     subject: 'chores.Task',
   },
+  // Tier 1 included (ADR 053) — the youngest kid is who the module exists for, and
+  // "no financial data" at tier 1 means the household's money (M8), not a kid's own F$.
+  'rewards.wallet.view': {
+    label: 'See your own F$ balance',
+    module: 'rewards',
+    action: 'view',
+    subject: 'rewards.Wallet',
+  },
   'calendar.event.view': {
     label: 'View the calendar',
     module: 'calendar',

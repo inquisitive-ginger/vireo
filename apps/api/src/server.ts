@@ -12,6 +12,7 @@ import pushPlugin, { initVapidKeys } from './plugins/push'
 import familyFeedPlugin from './plugins/family-feed'
 import choresPlugin from './plugins/chores'
 import calendarPlugin from './plugins/calendar'
+import rewardsPlugin from './plugins/rewards'
 import devPlugin from './plugins/dev'
 
 export async function buildServer() {
@@ -38,6 +39,7 @@ export async function buildServer() {
       await api.register(familyFeedPlugin)
       await api.register(choresPlugin)
       await api.register(calendarPlugin)
+      await api.register(rewardsPlugin)
 
       api.get('/health', async () => ({ status: 'ok' }))
 
