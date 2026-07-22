@@ -123,6 +123,22 @@ describe('UpNextView', () => {
     expect(screen.getByText('1:00 PM')).toBeInTheDocument()
   })
 
+  /* A single-day all-day event has no clock, and printing its midnight start as
+     "12:00 am" states a time the event doesn't have. */
+  it('labels a single-day all-day row "all day", not midnight', () => {
+    const picnic = mk({
+      id: 'allday',
+      title: 'School closed',
+      startsAt: '2026-07-12T00:00:00',
+      allDay: true,
+      attendeeIds: ['zoe'],
+    })
+    renderWidget({ events: [...EVENTS, picnic] })
+
+    expect(screen.getByText('all day')).toBeInTheDocument()
+    expect(screen.queryByText('12:00 am')).not.toBeInTheDocument()
+  })
+
   it('states a multi-day span once in the all-week band, not on every day it touches', () => {
     renderWidget({})
     const band = screen.getByTestId('span-band')

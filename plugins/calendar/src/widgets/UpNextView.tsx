@@ -12,7 +12,7 @@ import {
   relativeDayLabel,
 } from '@family-os/ui'
 import type { CalendarEvent, CalendarMember } from '../types'
-import { formatTime } from '../lib/grid'
+import { agendaWhenLabel } from '../lib/grid'
 import { buildWeek, spanWhenLabel, type WeekDay, type WeekModel } from '../lib/week'
 import { huesForEvent, spineColorsForEvent } from '../lib/hues'
 import { EventOwners } from '../components/EventOwners'
@@ -126,7 +126,7 @@ function EventRow({
   return (
     <div className={cn(ROW_BAND, 'gap-3')}>
       <span className="text-sm-token w-16 shrink-0 tabular-nums text-muted-foreground">
-        {formatTime(event.startsAt).toLowerCase()}
+        {agendaWhenLabel(event).toLowerCase()}
       </span>
       {/* The spine, not the avatar, carries the hue (ADR 042). An avatar can hold a
           PHOTO now, so it is no longer a strict superset of the spine — the premise
@@ -380,7 +380,7 @@ function Compact({ week, membersById, now, framing }: ZoneProps) {
               Then{' '}
               {rest
                 .slice(0, 2)
-                .map((e) => `${formatTime(e.startsAt)} ${e.title}`)
+                .map((e) => `${agendaWhenLabel(e)} ${e.title}`)
                 .join(' · ')}
             </span>
           )

@@ -109,6 +109,15 @@ const FAMILY_EVENTS: CalendarEvent[] = [
     startsAt: '2026-07-17T16:45:00',
     attendeeIds: ['teddy'],
   }),
+  // A single-day all-day event — the case the day list had no fixture for, and
+  // therefore printed as "12:00 am" until #61.
+  ev({
+    id: 'closed',
+    title: 'School closed',
+    startsAt: '2026-07-15T00:00:00',
+    allDay: true,
+    attendeeIds: [],
+  }),
 ]
 
 // "Mine" = Hallie's own + Family events.
