@@ -1,5 +1,5 @@
 [
-  { "name": "family-feed", "baseUrl": "http://localhost:3011" },
+  { "name": "calendar", "baseUrl": "http://localhost:3013" },
   { "name": "chores", "baseUrl": "http://localhost:3012" },
-  { "name": "calendar", "baseUrl": "http://localhost:3013" }
+  { "name": "family-feed", "baseUrl": "http://localhost:3011" }
 ]

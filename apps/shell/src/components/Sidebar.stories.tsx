@@ -9,9 +9,9 @@ import type { Profile } from '@family-os/platform'
 // ─── All planned module nav items (injected as the shell's plugin-nav will eventually do) ──
 
 const ALL_MODULE_ITEMS: PluginNavItem[] = [
-  { to: '/family-feed', icon: <Rss size={18} aria-hidden />, label: 'Family Feed', minTier: 1 },
-  { to: '/chores', icon: <ClipboardList size={18} aria-hidden />, label: 'Chores', minTier: 1 },
   { to: '/calendar', icon: <Calendar size={18} aria-hidden />, label: 'Calendar', minTier: 1 },
+  { to: '/chores', icon: <ClipboardList size={18} aria-hidden />, label: 'Chores', minTier: 1 },
+  { to: '/family-feed', icon: <Rss size={18} aria-hidden />, label: 'Family Feed', minTier: 1 },
   { to: '/school', icon: <BookOpen size={18} aria-hidden />, label: 'School', minTier: 2 },
   { to: '/finance', icon: <Wallet size={18} aria-hidden />, label: 'Finance', minTier: 3 },
   { to: '/smart-home', icon: <Zap size={18} aria-hidden />, label: 'Smart Home', minTier: 3 },
