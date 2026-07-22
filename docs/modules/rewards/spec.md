@@ -1,7 +1,7 @@
 # Rewards & Wallet — Module Spec
 
-> Spec drafted in the M4/M5 planning session (2026-07-21). Story-level design
-> decisions are still owed to a design session; this is the scope boundary.
+> Spec drafted in the M4/M5 planning session (2026-07-21); pricing, surfaces and the
+> currency mark settled at the design gate (2026-07-22, ADRs 051–053).
 
 ---
 
@@ -46,12 +46,38 @@ nothing about it changes. **F$ goes up and down.** A chore completion mints both
 
 ---
 
-## Pricing is a design output, not a code output
+## Pricing — settled (ADR 052)
 
-The economy dies in either direction: unaffordable is demoralising, instantly
-affordable is worthless. The design session picks the **weekly earn rate first**, then
-prices the small reward at **~1 week** and the big one at **~1 month**. Seed the catalog
-with real numbers before the first kid sees it.
+**A normal week earns about 10 F$.** Everything else derives from that.
+
+**Chores opt IN to paying.** `coinReward` defaults to **0**; a parent ticks the chores
+that pay when setting them up. XP is unchanged and still lands on every chore.
+
+| Chore                                 | `coinReward` |
+| ------------------------------------- | ------------ |
+| Routine (bed, plate in the sink)      | 0            |
+| Weekly effort (dishwasher, recycling) | 2            |
+| Real effort (mow, bathroom)           | 5            |
+| Big or unpleasant                     | 10           |
+
+Two to four paying chores a week is the target shape. Balances stay in **tens** — no
+cents, no thousands: a kid has to do the subtraction in their head while spending.
+
+### Seed catalog
+
+| Reward               | Emoji | Cost | Approval | Reads as |
+| -------------------- | ----- | ---- | -------- | -------- |
+| Pick the car music   | 🎧    | 5    | —        | impulse  |
+| Extra 30 min screen  | 🎮    | 10   | —        | ~1 week  |
+| Stay up 30 min late  | 🌙    | 10   | —        | ~1 week  |
+| Pick the movie       | 🍿    | 15   | —        | choice   |
+| Pick Friday's dinner | 🍕    | 15   | —        | choice   |
+| Ice cream run        | 🍦    | 25   | yes      | outing   |
+| One-on-one outing    | 🎡    | 40   | yes      | ~1 month |
+| Trip to the shop     | 🧸    | 40   | yes      | ~1 month |
+
+**No real-money exchange rate.** F$ buys catalog rewards and nothing else; M8 may price
+F$ against cash later and nothing in M4 assumes it will.
 
 ---
 
@@ -101,6 +127,8 @@ precedent):
 
 > **Tier 1 must reach its own balance and the store.** That is the entire point of the
 > module — a capability with no surface is not a capability (ADR 044's lesson).
+> Settled in **ADR 053**, which also amends the `design-system.md` tier table: "no
+> financial data" at tier 1 means the **household's** money (M8), not a kid's own F$.
 
 ---
 
@@ -118,8 +146,14 @@ precedent):
 | `requiredPermission` | `rewards.wallet.view`                              |
 | `description`        | Your F$ balance and what you can afford right now. |
 
-**Affordability is the motivating fact, not the number.** At `standard`, lead with
-"3 rewards you can afford" over a bare balance.
+**Affordability is the motivating fact, not the number.** `compact` states the balance
+and then **one adaptive line**: "3 rewards you can get", or — when nothing is affordable —
+"3 more for 🍿 Pick the movie" with a meter. The zero state is the one that decides the
+widget, because it is where a kid spends most of their time. `standard` moves the balance
+into the header and makes what you can have the body. See `design-system.md`
+§Rewards surfaces.
+
+**Not on the family pseudo-profile** (ADR 053) — a household has no balance.
 
 ---
 
@@ -146,6 +180,7 @@ rewards
   id                uuid  PK
   name              text
   emoji             text
+  description       text  nullable        -- one line, shown on the confirm ("Friday night is yours")
   cost              integer
   requires_approval boolean  default false
   audience          uuid[]  nullable   -- null = everyone
@@ -163,6 +198,7 @@ redemptions
   requested_at  timestamptz
   decided_by    uuid  nullable
   decided_at    timestamptz nullable
+  decided_note  text  nullable          -- OPTIONAL reason, quoted back to the kid verbatim
 
 punch_card_templates
   id                uuid  PK
@@ -194,6 +230,13 @@ punches
 ```
 
 **Debit on request, refund on decline** — not escrow. Same effect, half the state.
+
+**`profile_id` is never the `family` pseudo-profile** (ADR 053) — enforced in the route,
+not left to convention. Only a person holds a balance.
+
+**The store endpoint returns the whole catalog plus the balance**, never a pre-filtered
+affordable list: the store shows unaffordable rewards with their distance, so filtering
+server-side would delete the feature.
 
 ---
 

@@ -1,6 +1,6 @@
 # Design System
 
-> Last updated: 2026-07-12 — **ADR 044: a colour is assigned, not derived; and it is not the only channel.** The member palette grows to **eight** (`moss`, `indigo`); a member's hue is **persisted and unique** (`resolveHue`, never `identityColor(name)`), so palette size is now a **cap on household size**. The **tint layer is rebuilt** — it flattened every hue to off-white on the one surface (the month grid) where colour does all the work. Eight nameable hues cannot survive red-green colour-blindness, so **any surface where a hue is the sole discriminator owes a second channel** — the calendar chip carries its owner's initial.
+> Last updated: 2026-07-22 — **ADR 051: the coin belongs to the currency that buys things.** F$ takes gold, the disc and the coin glyph; **XP demotes to a quiet star**. The coin's gold moves off `--identity-marigold`, and what separates it from a member's hue is **form** — one struck disc, never a disc inside a ring (a washer) and never notched (a gear). See [Currency marks](#currency-marks). Prior: 2026-07-12 — **ADR 044: a colour is assigned, not derived; and it is not the only channel.** The member palette grows to **eight** (`moss`, `indigo`); a member's hue is **persisted and unique** (`resolveHue`, never `identityColor(name)`), so palette size is now a **cap on household size**. The **tint layer is rebuilt** — it flattened every hue to off-white on the one surface (the month grid) where colour does all the work. Eight nameable hues cannot survive red-green colour-blindness, so **any surface where a hue is the sole discriminator owes a second channel** — the calendar chip carries its owner's initial.
 
 This document records settled design decisions. Deferred items are
 explicitly marked — do not treat absence of a spec as a free choice.
@@ -28,6 +28,8 @@ explicitly marked — do not treat absence of a spec as a free choice.
 - [Mobile Surface](#mobile-surface)
 - [Status vs identity colour](#status-vs-identity-colour)
 - [Page containers](#page-containers)
+- [Currency marks](#currency-marks)
+- [Rewards surfaces](#rewards-surfaces)
 - [To Be Defined](#to-be-defined)
 
 ---
@@ -648,16 +650,23 @@ Permission strings follow `module.noun.verb` convention.
 
 ### Tier rendering intent
 
-| Tier       | General intent                                                                |
-| ---------- | ----------------------------------------------------------------------------- |
-| 1          | Simplified vocabulary, large targets, no financial data, task completion only |
-| 2          | Earning progress visible, full task detail, no management UI                  |
-| 3          | Family schedule visible, can propose/create tasks, light management UI        |
-| 4 (parent) | Full management, approval queues, all financial data, system settings         |
+| Tier       | General intent                                                                                      |
+| ---------- | --------------------------------------------------------------------------------------------------- |
+| 1          | Simplified vocabulary, large targets, no **household** financial data, task completion + own wallet |
+| 2          | Earning progress visible, full task detail, no management UI                                        |
+| 3          | Family schedule visible, can propose/create tasks, light management UI                              |
+| 4 (parent) | Full management, approval queues, all financial data, system settings                               |
 
 Specific capability rules per module are defined in module specs,
 not here. Individual grants and revocations are managed at runtime
 by parents — not hardcoded.
+
+> **Amended 2026-07-22 (ADR 053).** Tier 1 read _"no financial data"_, written before any
+> in-app currency existed. It means the **household's** money — budgets, real balances,
+> cashout, Monarch — which is M8 and stays tier 4. It does **not** mean a kid's own F$:
+> **tier 1 holds a wallet, reaches the store, and punches its own card.** Chores have
+> minted XP for a tier-1 kid since M2 and M4 exists to give that loop its second half;
+> granting the capability and withholding the surface is ADR 044's failure repeated.
 
 ---
 
@@ -1741,6 +1750,110 @@ gutter does it on a **child**, not by renegotiating the page frame.
 > stock `max-w-2xl` (672px — 8px off our token) _without_ `mx-auto`, so it silently
 > hugged the left edge while every sibling route sat centred.** None of that was
 > decided. Compose `PageContainer`; do not hand-roll `mx-auto max-w-… px-…`.
+
+## Currency marks
+
+**Settled** — ADR 051, Rewards & Wallet design session, 2026-07-22.
+
+Two currencies appear on the same row (a paying chore shows both), so they are told
+apart by **metaphor**, not by shade.
+
+| Currency | Mark                                                  | Meaning                     |
+| -------- | ----------------------------------------------------- | --------------------------- |
+| **F$**   | A struck **gold coin** + the value                    | Money. Goes up and down.    |
+| **XP**   | A **quiet star** + the value, in `--muted-foreground` | A score. Only ever goes up. |
+
+**XP kept its pill shape and gave up its metal.** It held gold, the disc and the coin
+glyph from M2 — assigned when nothing was spendable and the conflict could not appear.
+A score is a fact about you; money is a thing you hold.
+
+### Coin anatomy
+
+The coin's gold is **brass, not marigold**: `hi oklch(0.95 0.09 96)` ·
+`base oklch(0.79 0.155 90)` · `deep oklch(0.55 0.125 74)` · `tint oklch(0.96 0.05 95)` ·
+`ink oklch(0.44 0.105 78)`. The old XP gold sat at hue 80 against
+`--identity-marigold`'s 78 — the same colour saying two different things.
+
+**It is ONE disc**, built from a single element:
+
+- a radial face (light at 34%/28%, deepening to the edge),
+- an outer **rim** — a conic metallic sweep masked to the outer ~9% of the same circle,
+- a **specular gloss** crossing the face,
+- a **raised relief** ring just inside the rim,
+- the `Coins` glyph at ~48% of the diameter.
+
+Two things it is **not**, both tried and rejected on sight: a smaller disc nested inside
+a ring (the pale step between them reads as a **washer**), and radial notches (milling
+reads as a **gear** — machinery, not money). Relief holds down to 18px, so the row mark
+and the 64px celebration coin are the same object at different sizes.
+
+**The separation from a member's identity hue is form, not colour** (ADR 044's second
+channel). A spine is a flat 4px bar; it can never be struck metal. That is what allows
+brass to sit two millimetres from a marigold-spined row without the colour meaning two
+things at once.
+
+**Rendered hierarchy check.** XP is always the larger number (1,240 vs 24) and gold puts
+the smaller one on top. That is the true reading — the small number is the one that can
+be spent — and any future currency treatment has to preserve it.
+
+---
+
+## Rewards surfaces
+
+**Provisional** — Rewards & Wallet design session, 2026-07-22. These are **build
+targets for M4/4–M4/6, revisable without an ADR**: each is a different rendering of the
+same fields, so a better one can replace it without touching the data contract. The
+settled parts are in ADRs 051–053.
+
+### Store — distance, not denial
+
+A **tile grid**, emoji-forward, ordered affordable → nearest → furthest. An unaffordable
+reward keeps **full colour** and states how far away it is (`4 more`) over a meter; it is
+never greyed out and never hidden. The gap is the motivation, so the surface must show
+it.
+
+The store endpoint returns the **whole catalog plus the balance** — never a
+pre-filtered affordable list. Affordability is a rendering decision, not a server one.
+
+### Wallet widget — adaptive, never a dead end
+
+`compact` leads with the balance and follows it with **one line that changes with
+state**: _"3 rewards you can get"_ when something is affordable, otherwise _"3 more for
+🍿 Pick the movie"_ with a meter. A bare balance is a score plate, not a wallet, and an
+always-on next-goal line tells a kid who can afford three things that they are short of a
+fourth. **The zero state decides this widget** — it is where a kid spends most of their
+time.
+
+`standard` moves the balance into the header's trailing slot and makes **what you can
+have** the body.
+
+### Redemption — the confirm states the arithmetic
+
+The confirm shows cost as **before → after** (`24 → 9`), not as a price tag: ADR 047's
+claim is that a kid can explain their balance, and this is where that starts.
+
+Three end states that must never blur:
+
+| State        | Reads as                                                                                                                                                 |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Granted**  | Celebration. The new balance is stated.                                                                                                                  |
+| **Pending**  | _"Asked for"_ + a `Waiting` badge, and it says the F$ is **already held**. It must never look granted.                                                   |
+| **Declined** | The **refund is the headline** (`25 F$ back in your wallet`), with the parent's reason quoted in their own words when they gave one. Not an error state. |
+
+A decline reason is **optional** — a forced field gets "no" typed into it — and is quoted
+verbatim when present.
+
+History renders the ledger as rows a kid can read: the refund is a **row**, and the debit
+above it stays.
+
+### Punch card — the paper sheet
+
+A row of squares with the payout as a **finish line** at the end. The next square is the
+tap target (dashed outline); **the kid punches their own card** (ADR 049). A meter with a
+count was rejected: a meter is a progress bar for an adult, and the fridge sheet works
+because each square is a thing you did, countable by eye.
+
+---
 
 ## To Be Defined
 
