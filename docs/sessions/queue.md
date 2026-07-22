@@ -17,6 +17,134 @@
 
 ## Up Next
 
+> **M4 — Rewards & Wallet is the active milestone** as of the 2026-07-21 planning
+> session, followed by **M5 — Meals & Groceries**. The infra items below still come
+> first in wall-clock terms where they are cheap (Part F is a real risk to the
+> household's data), but the feature work is what the family is waiting on.
+
+### M4/1 — Design: Rewards & Wallet
+
+**Type:** design · **Kickoff:** _to be written_
+The gate for the whole milestone. Decide the **store surface**, the **wallet widget**
+(lead with _what you can afford_, not a bare number), the **redemption confirm
+moment** — this is the emotional payoff of everything M2 shipped, so it earns real
+design — and how a **punch card** renders. **Pricing is an output of this session,
+not of code:** pick the weekly earn rate first, then price the small reward at ~1 week
+and the big one at ~1 month; seed the catalog with real numbers. Per
+`feedback-design-sessions-gate`, present rendered options and wait for approval.
+_Reads: `docs/modules/rewards/spec.md`, ADR 002, 005, 047, 048, 049, 043, 044._
+_Depends on: none._
+
+### M4/2 — Dev: Ledger + Balance
+
+**Type:** development · **Kickoff:** _to be written_
+The `rewards` plugin skeleton (mirror `family-feed`'s structure) plus `ledger_entries`
+(append-only, **ADR 047**) and the `balances` cache. `GET /rewards/wallet` returns
+balance + history. **Do not copy `chores.xp_balances`** — a bare mutable total is fine
+for a number that only goes up and wrong for one that goes down.
+_Reads: `docs/modules/rewards/spec.md`, ADR 047._ _Depends on: M4/1 for surfaces only;
+the data layer can start immediately._
+
+### M4/3 — Dev: Chores Earn
+
+**Type:** development · **Kickoff:** _to be written_
+`coinReward` on `chores.Task` next to `xpReward`; `rewards` subscribes to
+`chores.task.completed` (credit) and `.reopened` (debit) per **ADR 048**. Idempotent on
+`(source_type, source_id)`. **`rewards` must not import `chores`** — if the contract
+only fits chores it is a chores hook wearing a costume, and M5's cook award is the test.
+_Reads: ADR 048, `chores/spec.md` events table._ _Depends on: M4/2._
+
+### M4/4 — Dev: Catalog + Redemption
+
+**Type:** development · **Kickoff:** _to be written_
+Tier-4 catalog CRUD with a **per-reward `requiresApproval`** flag; request → debit →
+parent decide → fulfil. **Debit on request, refund on decline** — not escrow. Cost is
+**snapshotted** onto the redemption so repricing can't move a pending request. Parent
+notified via `notify()` at `alert`. _Reads: `docs/modules/rewards/spec.md`, ADR 029._
+_Depends on: M4/2, M4/1._
+
+### M4/5 — Dev: Store + Wallet Widget
+
+**Type:** development · **Kickoff:** _to be written_
+`/rewards` store page + the `rewards.wallet` home widget; reserve slots in the ADR 028
+default layouts. **Tier 1 must reach its own balance and the store** — that is the whole
+module, and a capability with no surface is not a capability. _Depends on: M4/4._
+
+### M4/6 — Dev: Punch Cards
+
+**Type:** development · **Kickoff:** _to be written_
+Template / card / punch per **ADR 049**; auto-payout (coins _or_ a catalog reward) and
+reset at goal, completed cards retained. **The kid punches their own card**; a parent
+can undo. Consumed by M5 try bites. _Depends on: M4/4._
+
+### M4/7 — Dev: Parent Bonus Grant
+
+**Type:** development · **Kickoff:** _to be written_
+Tier-4 "give N F$, reason: …". Small, and it is what makes the ledger's `reason` field
+earn its keep. _Depends on: M4/2._
+
+---
+
+### M5/1 — Design: Meals & Groceries
+
+**Type:** design · **Kickoff:** _to be written_
+Two surfaces that barely resemble each other. **Tonight's Dinner** must be readable
+**from the door** at the across-room 18px floor, and its **unclaimed** state is the most
+valuable one it has. **Shop mode is a different app from build mode** — aisle grouping,
+big targets, checked items dim in place rather than vanish. Also the **day-mark
+density** (month cell = avatar + glyph, no words; agenda = label). _Reads:
+`docs/modules/meals/spec.md`, ADR 050, 044, 039._ _Depends on: none._
+
+### M5/2 — Dev: Week Plan + Tonight's Dinner
+
+**Type:** development · **Kickoff:** _to be written_
+The `meals` plugin, `planned_meals`, the week view, and the `meals.tonight` widget.
+The title/try-bite split is the anti-ambush mechanism — make the input placeholder
+teach the parent to write "Rigatoni", not "creamy sausage rigatoni with veggies".
+_Depends on: M5/1._
+
+### M5/3 — Dev: Who's Got Dinner
+
+**Type:** development · **Kickoff:** _to be written_
+Owner + `kind` (cooked/takeout/leftovers/out — calling it in still counts as having
+dinner), the **unclaimed** state with one-tap claim, and an afternoon `notify()` poll
+(ADR 045's in-plugin scheduler is the precedent): to the owner, or to tier 4 if nobody
+has it. Optional `coinReward` on the meal — **this is the second earn source and the
+proof that ADR 048 generalizes.** _Depends on: M5/2, M4/3._
+
+### M5/4 — Platform: Calendar Day Marks
+
+**Type:** development (platform) · **Kickoff:** _to be written_
+The read-time provider contract from **ADR 050**: for a date range, a plugin returns at
+most one mark per day; a month cell renders at most two. **Small** — no positioning, no
+spans, no reminders. Shared with M7 School. Plugins never write `calendar.events`.
+_Reads: ADR 050, `plugins/calendar` month grid + mobile agenda._ _Depends on: M5/3._
+
+### M5/5 — Dev: Try Bites
+
+**Type:** development · **Kickoff:** _to be written_
+`meals.trybite.taken` → punches a `rewards` card. Replaces the paper sheet (15 squares →
+small reward → reset). `meals` knows nothing about cards. _Depends on: M5/2, M4/6._
+
+### M5/6 — Dev: Grocery Build Mode
+
+**Type:** development · **Kickoff:** _to be written_
+`grocery_items` + `staples`; three-second manual adds from a phone, **tier 1+ can add**
+(low-stakes participation, and it closes the loop: kid adds a vegetable → it becomes the
+try bite). One tap pushes a meal's free-text `needs` onto the list — **no recipe model**.
+_Depends on: M5/2._
+
+### M5/7 — Dev: Grocery Shop Mode + Offline
+
+**Type:** development · **Kickoff:** _to be written_
+Aisle grouping, live sync between two shoppers, and **offline**. The SW is network-first
+for `/api`, so today the list fails in the exact place it is used — this touches the
+service worker, which has bitten twice. Treat the offline half as its own reviewable
+chunk. _Reads: `apps/shell/public/sw.js`, `logs/2026-07-19-dev-sw-cache-strategy.md`._
+_Depends on: M5/6._
+
+---
+
 ### Deployment: Part F — offsite backups (most important)
 
 **Type:** infra · **Kickoff:** _to be written_
@@ -152,6 +280,14 @@ suite mirroring chores/calendar. _Depends on: none._
 
 > Two-line index; full detail in the linked log.
 
+- **2026-07-21 — Planning: Rewards & Meals (docs only).** Roadmap renumbered — the old
+  M6 Finance **split**, with the reward economy pulled forward to **M4** and
+  allowance/cashout/Monarch left in **M8**; Meals moved up to **M5** and grew groceries.
+  Four ADRs: **047** append-only F$ ledger · **048** earning is contributed over the bus,
+  not owned by chores · **049** punch cards are a rewards primitive (try bites are one
+  instance) · **050** a day mark is a property of a day, not an event — dinner has no time
+  a family can honour to ±30 min. **ADR 002/005 already settled the currency**, so no new
+  currency decision was made. _[log](logs/2026-07-21-planning-rewards-meals.md)_
 - **2026-07-21 — Push toggle stuck off, from auto-bug #53 (PRs #54–#58).** **Push had
   never worked in prod**: a dismissed permission prompt read as a denial, and the
   service worker was never registered (a `load` listener added after `load` fires never

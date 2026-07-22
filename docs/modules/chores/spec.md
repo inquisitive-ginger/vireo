@@ -27,7 +27,7 @@ The chores module lets parents assign tasks to family members, tracks kid comple
 - Multiple assignees per task
 - Teen self-assignment (tier 3 propose flow)
 - XP levels, badges, leaderboards, streaks
-- F$ earning from chores (wired in M6 — ADR 002)
+- F$ earning from chores (wired in **M4 Rewards** — ADR 002; `coinReward` lands on `Task` and rides `chores.task.completed` per ADR 048)
 - Due-date filtering UI
 - Reversal / dispute flow
 

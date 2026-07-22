@@ -4,6 +4,13 @@
 > genuinely useful to the family. Subsequent versions are added to the
 > roadmap as earlier milestones complete and needs become clearer.
 
+> **Renumbered 2026-07-21.** M4–M8 were reordered to bring the reward economy and
+> meals forward. **Old → new:** Smart Home M4→M6 · School M5→M7 · Finance M6→**split**
+> (rewards → M4, allowance/cashout/Monarch → M8) · Meals M7→M5 · Marketplace M8→M9.
+> Every milestone that moved was unstarted, so no shipped work is affected — but a
+> session log or spec written before this date may name the old number. This file is
+> authoritative.
+
 ## Active Milestone
 
 **M3 — Calendar** is ✅ **MVP-complete** (2026-07-19): all 7 MVP stories shipped
@@ -11,9 +18,12 @@
 a 60s in-process poll (ADR 045) firing `platform.notify()` at reminder time. Story 8
 (Suggested Events Inbox) is the deferred north star, gated by the external-ingest ADR. MVP
 thesis delivered: a glanceable tablet twin of the paper calendar + mobile capture +
-reminders. M2 — Chores ✅ done (2026-06-20). **No milestone is currently active — pick the
-next one.** Platform cleanup (Service Worker cache strategy) sits in **Platform v2** and now
-gates native Web Push actually landing on a phone; see the queue's Deferred Backlog.
+reminders. M2 — Chores ✅ done (2026-06-20).
+
+**Next up: M4 — Rewards & Wallet**, then **M5 — Meals & Groceries** (planning session
+2026-07-21). M2 has minted XP with nothing to spend it on since June; M4 closes that
+loop. M5 depends on M4 only for try bites — its dinner and grocery stories can start
+independently.
 
 ## Completed
 
@@ -58,7 +68,7 @@ the first module anchors the home screen.
 
 - Task creation and assignment
 - Completion flow (kid marks done)
-- XP + gamification basics (chore completion awards XP only — F$ earning from chores is wired in M6 when the finance module exists)
+- XP + gamification basics (chore completion awards XP only — F$ earning from chores is wired in M4 when the rewards module exists)
 - Parent notification on completion
 
 **Done when:** A kid completes a chore and a parent sees it happen.
@@ -75,7 +85,54 @@ the first module anchors the home screen.
 
 ---
 
-### M4 — Smart Home
+### M4 — Rewards & Wallet
+
+The sink for everything the family earns. Chores have minted XP since M2 with nothing
+to spend it on; this is the second half of the loop. Currency model is already settled
+by **ADR 002** (XP never converts; F$ is the redeemable wallet) and **ADR 005** (a
+ledger, never a bank) — not reopened here.
+
+- F$ ledger + derived balance (**ADR 047** — append-only, balance is a cache)
+- Chores earn: `coinReward` on the task, credited off the event bus (**ADR 048**)
+- Reward catalog with a per-reward approval flag; redemption + refund-on-decline
+- Store surface + wallet widget (lead with affordability, not the number)
+- Punch cards (**ADR 049**) — a fixed-goal counter with a payout, kid-punched
+- Parent bonus grant
+
+**Explicitly not here:** allowance schedules, cashout to real money, Monarch — those
+are M8. The wallet is built so cashout is another **sink**, not a second balance.
+
+**Done when:** A kid completes a chore, watches their F$ balance go up, and spends it
+on something they chose.
+
+_Spec: `docs/modules/rewards/spec.md`_
+
+---
+
+### M5 — Meals & Groceries
+
+Two jobs that turn out to be one module: **nobody gets ambushed by dinner**, and
+**somebody has dinner**.
+
+- Week plan + **Tonight's Dinner** widget — readable from the door, no tap
+- **Who's got dinner** — owner + kind (cooked/takeout/leftovers/out); **unclaimed is a
+  first-class state**, and at 4pm on a Thursday it is the most valuable one
+- Calendar presence as a **day mark**, not an event (**ADR 050**) — a small platform
+  story shared with M7 School
+- **Try bites** — punches a rewards card (**ADR 049**); depends on M4
+- **Grocery list** — build mode, shop mode (aisle-grouped), and offline
+
+**Deferred deliberately:** the recipe bank. A free-text `needs` field on the planned
+meal pushes to groceries and removes the reason to build ingredient parsing.
+
+**Done when:** Nobody has to ask what's for dinner or who's making it, and the week's
+shopping happens off the list in the app.
+
+_Spec: `docs/modules/meals/spec.md`_
+
+---
+
+### M6 — Smart Home
 
 - Home Assistant integration
 - At least one working routine trigger
@@ -85,39 +142,33 @@ the first module anchors the home screen.
 
 ---
 
-### M5 — School
+### M7 — School
 
 Scope defined in product session. At minimum: homework tracking,
 assignment due dates, school events surfaced into the family calendar (depends on M3 Calendar).
+
+Day-level facts — no school Monday, half day, teacher inservice — are **day marks**
+(ADR 050), reusing the provider built in M5, not events.
 
 **Done when:** A kid's homework and due dates are tracked in the system
 and school events appear on the family calendar.
 
 ---
 
-### M6 — Finance
+### M8 — Finance
 
-- F$ earning and balance tracking (chore completions from M2 now credit F$)
-- Cashout flow with parent approval
+The half of the old M6 that touches real money. Reward redemption already shipped in M4.
+
+- Allowance schedules and recurring income
+- Cashout flow with parent approval (**ADR 005** — the system never moves money)
 - Monarch sync
-- In-app reward redemption
 
 **Done when:** Allowance is tracked entirely in the system and shows
 up in Monarch.
 
 ---
 
-### M7 — Meals
-
-Scope defined in product session. At minimum: meal planning, grocery
-lists, recipe bank.
-
-**Done when:** Family plans the week's meals and generates a grocery
-list without leaving the system.
-
----
-
-### M8 — Marketplace
+### M9 — Marketplace
 
 - Plugin API opened and documented
 - Plugin registry
@@ -131,7 +182,8 @@ list without leaving the system.
 
 _Added here as MVP milestones complete and v2 needs emerge._
 
-- **Family Feed v2** — activity feed aggregation (chore completions, calendar events, F$ milestones surfaced as feed items via event subscriptions); richer post types; reactions. Scoped once M2–M6 modules have shipped and the feed has real events to aggregate.
+- **Family Feed v2** — activity feed aggregation (chore completions, calendar events, F$ milestones surfaced as feed items via event subscriptions); richer post types; reactions. Scoped once M2–M5 modules have shipped and the feed has real events to aggregate.
+- **Meals v2** — recipe bank, meal history ("we had this three days ago"), pantry/leftovers, grocery spend → Monarch (depends on M8).
 
 ---
 
