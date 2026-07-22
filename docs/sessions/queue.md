@@ -22,19 +22,6 @@
 > first in wall-clock terms where they are cheap (Part F is a real risk to the
 > household's data), but the feature work is what the family is waiting on.
 
-### M4/1 — Design: Rewards & Wallet
-
-**Type:** design · **Kickoff:** _to be written_
-The gate for the whole milestone. Decide the **store surface**, the **wallet widget**
-(lead with _what you can afford_, not a bare number), the **redemption confirm
-moment** — this is the emotional payoff of everything M2 shipped, so it earns real
-design — and how a **punch card** renders. **Pricing is an output of this session,
-not of code:** pick the weekly earn rate first, then price the small reward at ~1 week
-and the big one at ~1 month; seed the catalog with real numbers. Per
-`feedback-design-sessions-gate`, present rendered options and wait for approval.
-_Reads: `docs/modules/rewards/spec.md`, ADR 002, 005, 047, 048, 049, 043, 044._
-_Depends on: none._
-
 ### M4/2 — Dev: Ledger + Balance
 
 **Type:** development · **Kickoff:** _to be written_
@@ -45,14 +32,18 @@ for a number that only goes up and wrong for one that goes down.
 _Reads: `docs/modules/rewards/spec.md`, ADR 047._ _Depends on: M4/1 for surfaces only;
 the data layer can start immediately._
 
-### M4/3 — Dev: Chores Earn
+### M4/3 — Dev: Chores Earn + the XP re-strike
 
 **Type:** development · **Kickoff:** _to be written_
-`coinReward` on `chores.Task` next to `xpReward`; `rewards` subscribes to
-`chores.task.completed` (credit) and `.reopened` (debit) per **ADR 048**. Idempotent on
-`(source_type, source_id)`. **`rewards` must not import `chores`** — if the contract
-only fits chores it is a chores hook wearing a costume, and M5's cook award is the test.
-_Reads: ADR 048, `chores/spec.md` events table._ _Depends on: M4/2._
+`coinReward` on `chores.Task` next to `xpReward`, **defaulting to 0** — chores opt in to
+paying (ADR 052); `rewards` subscribes to `chores.task.completed` (credit) and
+`.reopened` (debit) per **ADR 048**. Idempotent on `(source_type, source_id)`.
+**`rewards` must not import `chores`** — if the contract only fits chores it is a chores
+hook wearing a costume, and M5's cook award is the test. **Also carries ADR 051's
+re-strike**: XP gives up gold and the coin to F$ and becomes a quiet star, across
+`ScorePlate`, `XpPill`, `FlightChip`, `FocusView`, `CreateTaskDrawer` — same files, so it
+lands here rather than in its own story.
+_Reads: ADR 048, 051, 052, `chores/spec.md` events table._ _Depends on: M4/2._
 
 ### M4/4 — Dev: Catalog + Redemption
 
@@ -279,6 +270,15 @@ suite mirroring chores/calendar. _Depends on: none._
 ## Recently Completed
 
 > Two-line index; full detail in the linked log.
+
+- **2026-07-22 — Design: Rewards & Wallet (M4/1).** Pricing settled first: **~10 F$ a
+  week**, chores opt **in** to paying (`coinReward` default 0), small reward 10 · big 40,
+  catalog seeded. Three ADRs — **051** the coin belongs to the currency that buys things
+  (F$ takes gold and the disc; **XP demotes to a quiet star**) · **052** the economy is
+  priced from a weekly earn rate · **053** a balance belongs to a person (no household
+  pot; **tier 1 holds a wallet**, amending the tier table). Store/wallet/punch renders are
+  **provisional build targets**, revisable without an ADR.
+  See `logs/2026-07-22-design-rewards-wallet.md`.
 
 - **2026-07-21 — Planning: Rewards & Meals (docs only).** Roadmap renumbered — the old
   M6 Finance **split**, with the reward economy pulled forward to **M4** and

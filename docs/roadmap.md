@@ -20,9 +20,10 @@ a 60s in-process poll (ADR 045) firing `platform.notify()` at reminder time. Sto
 thesis delivered: a glanceable tablet twin of the paper calendar + mobile capture +
 reminders. M2 — Chores ✅ done (2026-06-20).
 
-**Next up: M4 — Rewards & Wallet**, then **M5 — Meals & Groceries** (planning session
-2026-07-21). M2 has minted XP with nothing to spend it on since June; M4 closes that
-loop. M5 depends on M4 only for try bites — its dinner and grocery stories can start
+**In flight: M4 — Rewards & Wallet** — the design gate closed 2026-07-22 (ADRs 051–053;
+the economy is priced at ~10 F$/week), and **M4/2 Ledger + Balance is next**. Then
+**M5 — Meals & Groceries** (planning session 2026-07-21). M2 has minted XP with nothing
+to spend it on since June; M4 closes that loop. M5 depends on M4 only for try bites — its dinner and grocery stories can start
 independently.
 
 ## Completed
@@ -93,6 +94,8 @@ by **ADR 002** (XP never converts; F$ is the redeemable wallet) and **ADR 005** 
 ledger, never a bank) — not reopened here.
 
 - F$ ledger + derived balance (**ADR 047** — append-only, balance is a cache)
+- Priced at **~10 F$ a week** (**ADR 052**); chores opt in to paying, `coinReward` default 0
+- **F$ takes the coin; XP demotes to a quiet star** (**ADR 051**) — re-strikes the M2 XP surfaces
 - Chores earn: `coinReward` on the task, credited off the event bus (**ADR 048**)
 - Reward catalog with a per-reward approval flag; redemption + refund-on-decline
 - Store surface + wallet widget (lead with affordability, not the number)
