@@ -22,28 +22,32 @@
 > first in wall-clock terms where they are cheap (Part F is a real risk to the
 > household's data), but the feature work is what the family is waiting on.
 
-### M4/2 — Dev: Ledger + Balance
-
-**Type:** development · **Kickoff:** _to be written_
-The `rewards` plugin skeleton (mirror `family-feed`'s structure) plus `ledger_entries`
-(append-only, **ADR 047**) and the `balances` cache. `GET /rewards/wallet` returns
-balance + history. **Do not copy `chores.xp_balances`** — a bare mutable total is fine
-for a number that only goes up and wrong for one that goes down.
-_Reads: `docs/modules/rewards/spec.md`, ADR 047._ _Depends on: M4/1 for surfaces only;
-the data layer can start immediately._
-
 ### M4/3 — Dev: Chores Earn + the XP re-strike
 
 **Type:** development · **Kickoff:** _to be written_
 `coinReward` on `chores.Task` next to `xpReward`, **defaulting to 0** — chores opt in to
 paying (ADR 052); `rewards` subscribes to `chores.task.completed` (credit) and
-`.reopened` (debit) per **ADR 048**. Idempotent on `(source_type, source_id)`.
+`.reopened` (debit) per **ADR 048**. Idempotent on `(source_type, source_id)` — call `postEntry` from `apps/api/src/lib/ledger.ts`
+and give the reopen debit a **different** `sourceType`, or it is swallowed as a replay of
+the credit.
 **`rewards` must not import `chores`** — if the contract only fits chores it is a chores
 hook wearing a costume, and M5's cook award is the test. **Also carries ADR 051's
 re-strike**: XP gives up gold and the coin to F$ and becomes a quiet star, across
 `ScorePlate`, `XpPill`, `FlightChip`, `FocusView`, `CreateTaskDrawer` — same files, so it
 lands here rather than in its own story.
 _Reads: ADR 048, 051, 052, `chores/spec.md` events table._ _Depends on: M4/2._
+
+### M4/3b — Dev: Payout Approval on High-Value Chores
+
+**Type:** development · **Kickoff:** _to be written_
+Raised in M4/2. Chore completion is **auto-accepted** (settled in M2, correct for XP),
+so once a store exists a kid can complete a 10 F$ chore, spend it, and a parent's
+reopen lands the balance at **−10**. The ledger permits that deliberately — the fix
+belongs upstream. **Hold the payout, not the chore**: a per-chore `requiresApproval`
+flag, a `pending_payouts` row released as the normal entry with the same provenance
+pair. **Must land before M4/5** — a wrong balance is harmless until it is spendable.
+_Reads: `docs/modules/rewards/stories/payout-approval.md`, ADR 047, 048, 052._
+_Depends on: M4/3._
 
 ### M4/4 — Dev: Catalog + Redemption
 
@@ -270,6 +274,12 @@ suite mirroring chores/calendar. _Depends on: none._
 ## Recently Completed
 
 > Two-line index; full detail in the linked log.
+
+- **2026-07-22 — Dev: Ledger + Balance (M4/2, PR #63).** Append-only `ledger_entries` +
+  a `balances` cache behind `GET /rewards/wallet`; the ledger service every later story
+  calls. **Overdrafts are permitted** — a symmetric reversal is legitimate and
+  affordability belongs at the spend site, which is what queued **M4/3b**.
+  See `logs/2026-07-22-dev-rewards-ledger-balance.md`.
 
 - **2026-07-22 — Design: Rewards & Wallet (M4/1).** Pricing settled first: **~10 F$ a
   week**, chores opt **in** to paying (`coinReward` default 0), small reward 10 · big 40,
