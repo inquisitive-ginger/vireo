@@ -72,11 +72,11 @@ knob). This kills the "worth 100 XP but 1 F$" mismatch: more F$ always means mor
 inversions. **Not conversion** (ADR 002 holds — balances stay independent and
 non-exchangeable; deriving the _award_ ≠ exchanging the _balance_); **XP stays up-only**
 (the balance is still a monotonic accumulator; reopen debits F$, never XP). Removes the
-XP picker from `CreateTaskDrawer`. **Coupled to the F$ launch (M4/5):** with F$ flagged
+XP picker from `CreateTaskDrawer`. Coupled to the F$ launch (M4/5): with F$ flagged
 off, `coinReward` is always 0, so dropping the XP picker would flatten every chore to
-base-5 XP in prod — so this lands *with* the flag flip, not before. Second half: give XP a
-**sink** — an **avatar / gear cosmetic ladder** unlocked at XP thresholds (unlock, never
-deduct, so up-only holds). **Never microtransactions\*\* — XP unlocks cosmetics; neither F$
+base-5 XP in prod — so this lands with the flag flip, not before. Second half: give XP a
+sink — an avatar / gear cosmetic ladder unlocked at XP thresholds (unlock, never
+deduct, so up-only holds). Never microtransactions — XP unlocks cosmetics; neither F$
 nor real money buys gear. _Reads: ADR 002, 051, 052; `CreateTaskDrawer`, `chores.xp_balances`._
 _Depends on: M4/3; lands with M4/5._
 
