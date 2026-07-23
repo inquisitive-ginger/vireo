@@ -22,21 +22,6 @@
 > first in wall-clock terms where they are cheap (Part F is a real risk to the
 > household's data), but the feature work is what the family is waiting on.
 
-### M4/3 — Dev: Chores Earn + the XP re-strike
-
-**Type:** development · **Kickoff:** _to be written_
-`coinReward` on `chores.Task` next to `xpReward`, **defaulting to 0** — chores opt in to
-paying (ADR 052); `rewards` subscribes to `chores.task.completed` (credit) and
-`.reopened` (debit) per **ADR 048**. Idempotent on `(source_type, source_id)` — call `postEntry` from `apps/api/src/lib/ledger.ts`
-and give the reopen debit a **different** `sourceType`, or it is swallowed as a replay of
-the credit.
-**`rewards` must not import `chores`** — if the contract only fits chores it is a chores
-hook wearing a costume, and M5's cook award is the test. **Also carries ADR 051's
-re-strike**: XP gives up gold and the coin to F$ and becomes a quiet star, across
-`ScorePlate`, `XpPill`, `FlightChip`, `FocusView`, `CreateTaskDrawer` — same files, so it
-lands here rather than in its own story.
-_Reads: ADR 048, 051, 052, `chores/spec.md` events table._ _Depends on: M4/2._
-
 ### M4/3b — Dev: Payout Approval on High-Value Chores
 
 **Type:** development · **Kickoff:** _to be written_
@@ -77,6 +62,23 @@ can undo. Consumed by M5 try bites. _Depends on: M4/4._
 **Type:** development · **Kickoff:** _to be written_
 Tier-4 "give N F$, reason: …". Small, and it is what makes the ledger's `reason` field
 earn its keep. _Depends on: M4/2._
+
+### M4/8 — Design: XP Derived from F$ + XP Progression
+
+**Type:** design · **Kickoff:** _to be written_
+**Amends ADR 052.** A parent sets **one** value at assignment (F$); XP is **derived**
+(`xp = 5 + coinReward × 10` → routine 5 · weekly 15–25 · effort 55 · big 105 — a tuning
+knob). This kills the "worth 100 XP but 1 F$" mismatch: more F$ always means more XP, no
+inversions. **Not conversion** (ADR 002 holds — balances stay independent and
+non-exchangeable; deriving the _award_ ≠ exchanging the _balance_); **XP stays up-only**
+(the balance is still a monotonic accumulator; reopen debits F$, never XP). Removes the
+XP picker from `CreateTaskDrawer`. **Coupled to the F$ launch (M4/5):** with F$ flagged
+off, `coinReward` is always 0, so dropping the XP picker would flatten every chore to
+base-5 XP in prod — so this lands *with* the flag flip, not before. Second half: give XP a
+**sink** — an **avatar / gear cosmetic ladder** unlocked at XP thresholds (unlock, never
+deduct, so up-only holds). **Never microtransactions\*\* — XP unlocks cosmetics; neither F$
+nor real money buys gear. _Reads: ADR 002, 051, 052; `CreateTaskDrawer`, `chores.xp_balances`._
+_Depends on: M4/3; lands with M4/5._
 
 ---
 
@@ -274,6 +276,13 @@ suite mirroring chores/calendar. _Depends on: none._
 ## Recently Completed
 
 > Two-line index; full detail in the linked log.
+
+- **2026-07-23 — Dev: Chores Earn + the XP re-strike (M4/3, PR #64).** `coinReward` on the
+  task credits/debits the ledger off chore events (ADR 048), keyed by the completion
+  **instance** `taskId@completedAt` so reopen→re-complete re-earns. XP re-struck to a quiet
+  star, F$ takes the brass coin (ADR 051, shared `Coin`/`CoinValue`). **F$ surfaces behind
+  `REWARDS_UI_ENABLED` — off in prod until M4/5.** F$ tiers landed as `1/2/5/10` (minor ADR 052
+  deviation). See `logs/2026-07-23-dev-chores-earn-xp-restrike.md`.
 
 - **2026-07-22 — Dev: Ledger + Balance (M4/2, PR #63).** Append-only `ledger_entries` +
   a `balances` cache behind `GET /rewards/wallet`; the ledger service every later story
