@@ -2,6 +2,7 @@ import type { ReactNode } from 'react'
 import { CheckSquare, Star, TrendingUp } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import {
+  CoinValue,
   EmptyState,
   ProfileAvatar,
   Spine,
@@ -12,13 +13,13 @@ import {
 } from '@family-os/ui'
 import type { ChoreTask } from '../types'
 import { isOverdue } from '../lib/dates'
-import { GOLD, GOLD_DEEP, GOLD_HI, GOLD_INK, GOLD_TINT } from '../lib/gold'
+import { showCoinReward } from '../lib/flags'
 
 /* `chores.today-summary` — taskee + family framings, three sizes.
 
    Visual direction: "Hero split" (design.md §4, gated 2026-06-20 Today Widget
    Rework). A big text-metric count anchors the glance; the taskee framing carries
-   per-task +XP on filled rows, daily XP in the header, and the lifetime coin
+   per-task +XP on filled rows, daily XP in the header, and the lifetime XP
    score; the family framing keeps identity (avatars/hues) and labelled chips, no
    XP. The Focus-mode "Next up" widget variant is owed to the Focus Mode session
    (it needs the per-profile focusMode setting to branch on). */
@@ -102,32 +103,26 @@ function ProgressBar({ done, total }: { done: number; total: number }) {
   )
 }
 
-/* Lifetime XP coin (design §4 "gold coin score"). No animation in the read-only
-   widget; the full-page ScorePlate is the flight target. */
+/* Lifetime XP score (design §4 header). Stone, not gold — F$ took the coin and XP
+   is a quiet star now (ADR 051). No animation in the read-only widget; the
+   full-page ScorePlate is the flight target. */
 function CoinScore({ value }: { value: number }) {
   return (
     <span
-      className="inline-flex items-center gap-1.5 rounded-full"
-      style={{ background: GOLD_TINT, padding: '4px 10px 4px 4px', border: `1px solid ${GOLD}` }}
+      className="inline-flex items-center gap-1.5 rounded-full bg-secondary"
+      style={{ padding: '4px 10px 4px 4px', border: '1px solid var(--border)' }}
     >
       <span
-        className="grid size-5 shrink-0 place-items-center rounded-full"
-        style={{
-          background: `radial-gradient(circle at 34% 28%, ${GOLD_HI}, ${GOLD} 62%, ${GOLD_DEEP})`,
-          boxShadow: 'inset 0 1px 1px oklch(1 0 0 / 0.4)',
-        }}
+        className="grid size-5 shrink-0 place-items-center rounded-full bg-muted text-muted-foreground"
         aria-hidden
       >
-        <Star size={10} fill="white" style={{ color: 'white' }} />
+        <Star size={10} strokeWidth={2.5} />
       </span>
       <span className="inline-flex items-baseline gap-0.5">
-        {/* Geometry-coupled: bold gold numeral, tight line-height, baseline-aligned to the coin. */}
-        <span style={{ fontSize: 15, fontWeight: 700, color: GOLD_DEEP, lineHeight: 1 }}>
+        <span className="text-foreground" style={{ fontSize: 15, fontWeight: 700, lineHeight: 1 }}>
           {value.toLocaleString()}
         </span>
-        <span className="text-xs-token font-bold tracking-[0.04em]" style={{ color: GOLD_INK }}>
-          XP
-        </span>
+        <span className="text-xs-token font-bold tracking-[0.04em] text-muted-foreground">XP</span>
       </span>
     </span>
   )
@@ -137,8 +132,8 @@ function CoinScore({ value }: { value: number }) {
 function DailyXp({ earned }: { earned: number }) {
   return (
     <span className="inline-flex items-center gap-1.5">
-      <TrendingUp size={13} style={{ color: GOLD_DEEP }} aria-hidden />
-      <span className="text-sm-token" style={{ color: GOLD_INK, lineHeight: 1 }}>
+      <TrendingUp size={13} className="text-muted-foreground" aria-hidden />
+      <span className="text-sm-token text-muted-foreground" style={{ lineHeight: 1 }}>
         <span className="font-bold">+{earned}</span> today
       </span>
     </span>
@@ -208,8 +203,9 @@ function TaskRow({ task }: { task: ChoreTask }) {
           Overdue
         </span>
       )}
-      <span className="text-sm-token shrink-0 font-bold" style={{ color: GOLD_INK }}>
-        +{task.xpReward}
+      {showCoinReward(task.coinReward) && <CoinValue value={task.coinReward} size={14} />}
+      <span className="text-sm-token shrink-0 font-bold text-muted-foreground">
+        {task.xpReward} XP
       </span>
     </div>
   )
@@ -337,11 +333,11 @@ function TaskeeAllDone({
         <span className="text-card-title text-foreground">All done today</span>
         {!compact && dailyXp > 0 && (
           <span
-            className="inline-flex items-center gap-1.5 rounded-full"
-            style={{ background: GOLD_TINT, border: `1px solid ${GOLD}`, padding: '4px 12px' }}
+            className="inline-flex items-center gap-1.5 rounded-full bg-secondary"
+            style={{ border: '1px solid var(--border)', padding: '4px 12px' }}
           >
-            <TrendingUp size={14} style={{ color: GOLD_DEEP }} aria-hidden />
-            <span className="text-sm-token font-bold" style={{ color: GOLD_INK }}>
+            <TrendingUp size={14} className="text-muted-foreground" aria-hidden />
+            <span className="text-sm-token font-bold text-muted-foreground">
               +{dailyXp} XP earned today
             </span>
           </span>
@@ -517,8 +513,9 @@ function NextUpRow({ task, large = false }: { task: ChoreTask; large?: boolean }
           Overdue
         </span>
       )}
-      <span className="text-sm-token shrink-0 font-bold" style={{ color: GOLD_INK }}>
-        +{task.xpReward}
+      {showCoinReward(task.coinReward) && <CoinValue value={task.coinReward} size={14} />}
+      <span className="text-sm-token shrink-0 font-bold text-muted-foreground">
+        {task.xpReward} XP
       </span>
     </div>
   )

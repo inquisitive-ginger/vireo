@@ -17,6 +17,10 @@ export interface ChoreTask {
   status: TaskStatus
   dueDate: string | null
   xpReward: number
+  /** F$ this chore pays on completion (ADR 052). Defaults to 0 — most chores earn a
+      score only; a parent opts a chore in to paying. Credited off `chores.task.completed`
+      by the rewards ledger (ADR 048). */
+  coinReward: number
   createdBy: string
   createdAt: string
   completedAt: string | null

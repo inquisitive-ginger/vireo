@@ -3,13 +3,27 @@ import { Controller, useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { z } from 'zod'
 import { Star } from 'lucide-react'
-import { Button, Chip, DatePicker, Drawer, FieldLabel, Input, MemberChip } from '@family-os/ui'
+import {
+  Button,
+  Chip,
+  Coin,
+  DatePicker,
+  Drawer,
+  FieldLabel,
+  Input,
+  MemberChip,
+} from '@family-os/ui'
 import type { Profile } from '@family-os/platform/types'
 import type { ChoreTask } from '../types'
-import { GOLD, GOLD_INK, GOLD_TINT } from '../lib/gold'
+import { REWARDS_UI_ENABLED } from '../lib/flags'
 
 const XP_PRESETS = [5, 10, 15, 20, 25]
 const DEFAULT_XP = 10
+// The F$ paying tiers. ADR 052's ladder is 0/2/5/10; here 0 is expressed as "no tier
+// selected" (the default — chores still opt IN to paying) and the paying options are
+// 1/2/5/10. Balances stay in tens — whole F$, no cents.
+const COIN_PRESETS = [1, 2, 5, 10]
+const DEFAULT_COINS = 0
 
 // The due date is persisted as `YYYY-MM-DD`; the shared DatePicker works in Date,
 // so convert at the field boundary (local components, no UTC day-shift).
@@ -24,6 +38,7 @@ export interface CreateTaskInput {
   title: string
   assigneeId: string
   xpReward: number
+  coinReward: number
   dueDate: string | null
 }
 
@@ -34,6 +49,7 @@ const TaskFormSchema = z
     title: z.string().trim().min(1),
     assigneeId: z.string().nullable(),
     xpReward: z.number(),
+    coinReward: z.number(),
     dueDate: z.string(),
   })
   .refine((v) => v.assigneeId !== null, { path: ['assigneeId'], message: 'Pick someone' })
@@ -78,7 +94,13 @@ export function CreateTaskDrawer({
   } = useForm<TaskForm>({
     resolver: zodResolver(TaskFormSchema),
     mode: 'onChange',
-    defaultValues: { title: '', assigneeId: null, xpReward: DEFAULT_XP, dueDate: '' },
+    defaultValues: {
+      title: '',
+      assigneeId: null,
+      xpReward: DEFAULT_XP,
+      coinReward: DEFAULT_COINS,
+      dueDate: '',
+    },
   })
 
   // Reset the form each time the drawer opens: prefill from the task in edit mode,
@@ -89,6 +111,7 @@ export function CreateTaskDrawer({
       title: editingTask?.title ?? '',
       assigneeId: editingTask?.assigneeId ?? prefillAssigneeId ?? null,
       xpReward: editingTask?.xpReward ?? DEFAULT_XP,
+      coinReward: editingTask?.coinReward ?? DEFAULT_COINS,
       dueDate: editingTask?.dueDate ?? '',
     })
   }, [open, prefillAssigneeId, editingTask, reset])
@@ -102,6 +125,7 @@ export function CreateTaskDrawer({
       title: values.title.trim(),
       assigneeId: values.assigneeId as string,
       xpReward: values.xpReward,
+      coinReward: values.coinReward,
       dueDate: values.dueDate || null,
     })
   })
@@ -138,7 +162,7 @@ export function CreateTaskDrawer({
             </div>
 
             <div>
-              <FieldLabel>Reward</FieldLabel>
+              <FieldLabel>Score</FieldLabel>
               <Controller
                 control={control}
                 name="xpReward"
@@ -152,13 +176,38 @@ export function CreateTaskDrawer({
                         onClick={() => field.onChange(v)}
                       />
                     ))}
-                    <span className="text-section-label ml-0.5" style={{ color: GOLD_INK }}>
-                      XP
-                    </span>
+                    <span className="text-section-label ml-0.5 text-muted-foreground">XP</span>
                   </div>
                 )}
               />
             </div>
+
+            {/* F$ earn is held behind a flag until the wallet + store ship (see lib/flags). */}
+            {REWARDS_UI_ENABLED && (
+              <div>
+                <FieldLabel>Pays</FieldLabel>
+                {/* Chores opt IN to paying (ADR 052): 0 is the default. Most chores earn a
+                    score only; a parent ticks the few that pay F$ when setting them up. */}
+                <Controller
+                  control={control}
+                  name="coinReward"
+                  render={({ field }) => (
+                    <div className="flex flex-wrap items-center gap-2">
+                      {COIN_PRESETS.map((v) => (
+                        <CoinChip
+                          key={v}
+                          value={v}
+                          selected={field.value === v}
+                          // Tapping the selected tier clears back to free (0) — nothing
+                          // is selected in the free state, which is the default.
+                          onClick={() => field.onChange(field.value === v ? 0 : v)}
+                        />
+                      ))}
+                    </div>
+                  )}
+                />
+              </div>
+            )}
 
             <div>
               <FieldLabel htmlFor="chore-due" optional>
@@ -197,8 +246,8 @@ export function CreateTaskDrawer({
   )
 }
 
-// A reward preset on the shared Chip — gold "treasure" fill when selected (gold
-// isn't in the token set, so the colors come inline from lib/gold).
+// An XP preset on the shared Chip — a quiet score, not a reward (ADR 051): the
+// selected state is the neutral secondary fill with a star, no metal.
 function XpChip({
   value,
   selected,
@@ -212,13 +261,42 @@ function XpChip({
     <Chip
       selected={selected}
       onClick={onClick}
-      leading={selected ? <Star size={12} fill={GOLD} style={{ color: GOLD }} /> : undefined}
-      selectedStyle={{ borderColor: GOLD, background: GOLD_TINT, color: GOLD_INK }}
+      leading={selected ? <Star size={12} strokeWidth={2.5} /> : undefined}
       selectedClassName="font-bold"
       idleClassName="font-medium text-muted-foreground"
       className="min-w-touch justify-center gap-1 px-3"
     >
       {value}
+    </Chip>
+  )
+}
+
+// An F$ paying tier on the shared Chip — brass with the coin when selected. Free is
+// the absence of a selection, not a chip.
+function CoinChip({
+  value,
+  selected,
+  onClick,
+}: {
+  value: number
+  selected: boolean
+  onClick: () => void
+}) {
+  return (
+    <Chip
+      selected={selected}
+      onClick={onClick}
+      leading={selected ? <Coin size={14} /> : undefined}
+      selectedStyle={{
+        borderColor: 'var(--coin)',
+        background: 'var(--coin-tint)',
+        color: 'var(--coin-ink)',
+      }}
+      selectedClassName="font-bold"
+      idleClassName="font-medium text-muted-foreground"
+      className="min-w-touch justify-center gap-1 px-3"
+    >
+      {value} F$
     </Chip>
   )
 }

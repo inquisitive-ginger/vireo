@@ -125,6 +125,7 @@ exports.Prisma.TaskScalarFieldEnum = {
   status: 'status',
   dueDate: 'dueDate',
   xpReward: 'xpReward',
+  coinReward: 'coinReward',
   createdAt: 'createdAt',
   completedAt: 'completedAt',
 }

@@ -4,6 +4,7 @@ import bcrypt from 'bcryptjs'
 import { buildServer } from '../server'
 import { prisma } from '@family-os/platform/server'
 import { rewardsPrisma } from '@family-os/plugin-rewards/db'
+import { chorePrisma } from '@family-os/plugin-chores/db'
 import { postEntry, getBalance, recomputeBalance, LedgerError } from '../lib/ledger'
 
 let app: FastifyInstance
@@ -72,7 +73,20 @@ afterAll(async () => {
 beforeEach(async () => {
   await rewardsPrisma.ledgerEntry.deleteMany({})
   await rewardsPrisma.balance.deleteMany({})
+  await chorePrisma.task.deleteMany({})
 })
+
+// The earn subscribers run off the event bus and are not awaited by the route
+// (a failed credit must never fail the completion), so poll the balance until it
+// settles rather than assuming it moved by the time inject() returns.
+async function waitForBalance(profileId: string, expected: number): Promise<number> {
+  for (let i = 0; i < 50; i++) {
+    const balance = await getBalance(profileId)
+    if (balance === expected) return balance
+    await new Promise((r) => setTimeout(r, 10))
+  }
+  return getBalance(profileId)
+}
 
 describe('ledger service', () => {
   it('appends an entry and moves the cached balance', async () => {
@@ -270,5 +284,106 @@ describe('GET /rewards/wallet', () => {
     })
 
     expect(res.statusCode).toBe(400)
+  })
+})
+
+// ─── Chores earn (ADR 048) ────────────────────────────────────────────────────
+
+describe('chores earn subscriber', () => {
+  async function payingTask(coinReward: number, assigneeId = KID_ID) {
+    return chorePrisma.task.create({
+      data: { title: 'Mow the lawn', assigneeId, createdBy: PARENT_ID, coinReward },
+    })
+  }
+
+  async function complete(taskId: string, cookie: string) {
+    return app.inject({
+      method: 'PATCH',
+      url: `/api/chores/tasks/${taskId}/complete`,
+      headers: { cookie },
+    })
+  }
+
+  async function reopen(taskId: string, cookie: string) {
+    return app.inject({
+      method: 'PATCH',
+      url: `/api/chores/tasks/${taskId}/reopen`,
+      headers: { cookie },
+    })
+  }
+
+  it('credits coinReward to the assignee when a paying chore is completed', async () => {
+    const task = await payingTask(5)
+    const cookie = await getCookieForProfile(KID_ID)
+
+    await complete(task.id, cookie)
+
+    expect(await waitForBalance(KID_ID, 5)).toBe(5)
+    const entries = await rewardsPrisma.ledgerEntry.findMany({ where: { profileId: KID_ID } })
+    expect(entries).toHaveLength(1)
+    expect(entries[0]).toMatchObject({
+      delta: 5,
+      sourceType: 'chores.task',
+      reason: 'Mow the lawn',
+    })
+  })
+
+  it('moves nothing for a chore that pays 0 F$ (the default)', async () => {
+    const task = await payingTask(0)
+    const cookie = await getCookieForProfile(KID_ID)
+
+    await complete(task.id, cookie)
+    // Give the (no-op) subscriber a chance to have run.
+    await new Promise((r) => setTimeout(r, 40))
+
+    expect(await getBalance(KID_ID)).toBe(0)
+    expect(await rewardsPrisma.ledgerEntry.count()).toBe(0)
+  })
+
+  it('debits by the same amount when the completion is reopened', async () => {
+    const task = await payingTask(5)
+    const kid = await getCookieForProfile(KID_ID)
+    const parent = await getCookieForProfile(PARENT_ID)
+
+    await complete(task.id, kid)
+    await waitForBalance(KID_ID, 5)
+    await reopen(task.id, parent)
+
+    expect(await waitForBalance(KID_ID, 0)).toBe(0)
+    // The debit is a distinct entry, not a deletion — the ledger is append-only.
+    expect(await rewardsPrisma.ledgerEntry.count({ where: { profileId: KID_ID } })).toBe(2)
+  })
+
+  it('re-earns on a reopen→re-complete cycle (keyed by the completion instance)', async () => {
+    const task = await payingTask(5)
+    const kid = await getCookieForProfile(KID_ID)
+    const parent = await getCookieForProfile(PARENT_ID)
+
+    await complete(task.id, kid)
+    await waitForBalance(KID_ID, 5)
+    await reopen(task.id, parent)
+    await waitForBalance(KID_ID, 0)
+    await complete(task.id, kid)
+
+    // A taskId-only key would swallow this as a replay and leave the balance at 0.
+    expect(await waitForBalance(KID_ID, 5)).toBe(5)
+  })
+
+  it('is idempotent — a redelivered completed event does not double-credit', async () => {
+    const task = await payingTask(5)
+    const completedAt = new Date().toISOString()
+    const payload = {
+      taskId: task.id,
+      assigneeId: KID_ID,
+      coinReward: 5,
+      completedAt,
+      title: 'Mow the lawn',
+    }
+
+    app.eventBus.emit('chores.task.completed', payload)
+    app.eventBus.emit('chores.task.completed', payload)
+
+    expect(await waitForBalance(KID_ID, 5)).toBe(5)
+    expect(await rewardsPrisma.ledgerEntry.count({ where: { profileId: KID_ID } })).toBe(1)
   })
 })

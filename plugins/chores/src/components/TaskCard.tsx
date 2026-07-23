@@ -1,7 +1,8 @@
 import { useRef } from 'react'
-import { Badge, CompletionToggle, ItemCard } from '@family-os/ui'
+import { Badge, CoinValue, CompletionToggle, ItemCard } from '@family-os/ui'
 import type { ChoreTask } from '../types'
 import { isOverdue, dueLabel } from '../lib/dates'
+import { showCoinReward } from '../lib/flags'
 import { XpPill } from './XpPill'
 
 /** Display status drives the card: `inFlight` is the brief window during the XP
@@ -69,6 +70,10 @@ export function TaskCard({ task, displayStatus, onComplete }: TaskCardProps) {
             <span className={`text-sm-token ${overdue ? 'text-error' : 'text-muted-foreground'}`}>
               {label}
             </span>
+          )}
+          {/* F$ leads XP — the coin is what a kid can spend. */}
+          {showCoinReward(task.coinReward) && !done && (
+            <CoinValue value={task.coinReward} size={16} />
           )}
           {/* Badge is the flight's launch point — hidden while airborne. */}
           <span ref={badgeRef} className={inFlight ? 'invisible' : 'visible'}>

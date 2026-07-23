@@ -2,6 +2,7 @@ import { useMemo, useRef, useState } from 'react'
 import { Plus } from 'lucide-react'
 import {
   Badge,
+  CoinValue,
   CompletionToggle,
   ItemCard,
   MemberGroupHeader,
@@ -12,6 +13,7 @@ import {
 } from '@family-os/ui'
 import type { ChoreTask } from '../types'
 import { isOverdue, dueLabel } from '../lib/dates'
+import { showCoinReward } from '../lib/flags'
 import { XpPill } from './XpPill'
 
 export interface AdminLane {
@@ -314,6 +316,7 @@ function AdminRow({
           </span>
         </div>
       </div>
+      {!done && showCoinReward(task.coinReward) && <CoinValue value={task.coinReward} size={16} />}
       {!done && <XpPill value={task.xpReward} />}
     </ItemCard>
   )

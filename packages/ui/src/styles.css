@@ -292,6 +292,18 @@
     --identity-family-tint: oklch(0.9 0.018 70);
     --identity-family-ink: oklch(0.36 0.02 62);
 
+    /* The currency mark — F$ owns gold, the coin disc and the Coins glyph (ADR 051).
+       Brass (hue ~90), moved off --identity-marigold (78) so the coin is no longer a
+       member's colour doing a second job. The metal (hi/base/deep) is theme-invariant —
+       struck metal looks the same on light or dark; only the tint wash and ink text
+       take dark overrides below. XP demotes to a quiet --muted-foreground star and owns
+       no token here. */
+    --coin-hi: oklch(0.95 0.09 96);
+    --coin: oklch(0.79 0.155 90);
+    --coin-deep: oklch(0.55 0.125 74);
+    --coin-tint: oklch(0.96 0.05 95);
+    --coin-ink: oklch(0.44 0.105 78);
+
     /* Semantic status — error is source of truth; destructive aliases it */
     --info: oklch(0.45 0.09 200);
     --info-foreground: oklch(0.99 0 0);
@@ -367,6 +379,11 @@
       --identity-family-tint: oklch(0.285 0.014 65);
       --identity-family-ink: oklch(0.9 0.018 70);
 
+      /* Coin (ADR 051) — the metal is theme-invariant; the wash inverts to a dark
+         brass ground and the ink lightens so a value stays legible on a dark card. */
+      --coin-tint: oklch(0.32 0.06 90);
+      --coin-ink: oklch(0.86 0.09 92);
+
       --info: oklch(0.56 0.09 200);
       --info-foreground: oklch(0.99 0 0);
       --success: oklch(0.57 0.1 148);
@@ -441,6 +458,10 @@
     --identity-family: oklch(0.72 0.022 68);
     --identity-family-tint: oklch(0.285 0.014 65);
     --identity-family-ink: oklch(0.9 0.018 70);
+
+    /* Coin (ADR 051) — dark wash + light ink; metal stays theme-invariant. */
+    --coin-tint: oklch(0.32 0.06 90);
+    --coin-ink: oklch(0.86 0.09 92);
 
     --info: oklch(0.56 0.09 200);
     --info-foreground: oklch(0.99 0 0);

@@ -51,6 +51,8 @@ export type {
 } from './components/permission-toggle-list'
 export { Spine } from './components/spine'
 export type { SpineProps } from './components/spine'
+export { Coin, CoinValue } from './components/coin'
+export type { CoinProps, CoinValueProps } from './components/coin'
 export { ColorPicker, isPaletteFull } from './components/color-picker'
 export type { ColorPickerProps } from './components/color-picker'
 export { cn } from './lib/utils'
