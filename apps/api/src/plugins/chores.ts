@@ -7,6 +7,7 @@ import { chorePrisma } from '@family-os/plugin-chores/db'
 import { notify } from '../lib/notify'
 
 const DEFAULT_XP_REWARD = 10
+const DEFAULT_COIN_REWARD = 0
 
 // ─── XP subscriber ───────────────────────────────────────────────────────────
 
@@ -89,7 +90,11 @@ type CreateTaskBody = {
   description?: unknown
   dueDate?: unknown
   xpReward?: unknown
+  coinReward?: unknown
 }
+
+const coinRewardOr = (value: unknown, fallback: number): number =>
+  typeof value === 'number' && Number.isInteger(value) && value >= 0 ? value : fallback
 
 const choresPlugin: FastifyPluginAsync = async (fastify) => {
   // POST /chores/tasks — create and assign a task (tier 4 only)
@@ -125,10 +130,8 @@ const choresPlugin: FastifyPluginAsync = async (fastify) => {
       return reply.status(400).send({ error: 'Invalid dueDate' })
     }
 
-    const xpReward =
-      typeof body.xpReward === 'number' && Number.isInteger(body.xpReward) && body.xpReward >= 0
-        ? body.xpReward
-        : DEFAULT_XP_REWARD
+    const xpReward = coinRewardOr(body.xpReward, DEFAULT_XP_REWARD)
+    const coinReward = coinRewardOr(body.coinReward, DEFAULT_COIN_REWARD)
 
     const task = await chorePrisma.task.create({
       data: {
@@ -138,6 +141,7 @@ const choresPlugin: FastifyPluginAsync = async (fastify) => {
         createdBy: request.profile.id,
         dueDate,
         xpReward,
+        coinReward,
       },
     })
 
@@ -191,14 +195,12 @@ const choresPlugin: FastifyPluginAsync = async (fastify) => {
       return reply.status(400).send({ error: 'Invalid dueDate' })
     }
 
-    const xpReward =
-      typeof body.xpReward === 'number' && Number.isInteger(body.xpReward) && body.xpReward >= 0
-        ? body.xpReward
-        : existing.xpReward
+    const xpReward = coinRewardOr(body.xpReward, existing.xpReward)
+    const coinReward = coinRewardOr(body.coinReward, existing.coinReward)
 
     const task = await chorePrisma.task.update({
       where: { id },
-      data: { title, description, assigneeId: assignee.id, dueDate, xpReward },
+      data: { title, description, assigneeId: assignee.id, dueDate, xpReward, coinReward },
     })
 
     return serializeTask(task, assignee)
@@ -283,6 +285,7 @@ const choresPlugin: FastifyPluginAsync = async (fastify) => {
       taskId: updated.id,
       assigneeId: updated.assigneeId,
       xpReward: updated.xpReward,
+      coinReward: updated.coinReward,
       completedAt: updated.completedAt?.toISOString() ?? new Date().toISOString(),
       title: updated.title,
       createdBy: updated.createdBy,
@@ -311,6 +314,11 @@ const choresPlugin: FastifyPluginAsync = async (fastify) => {
       return reply.status(409).send({ error: 'Task is not completed' })
     }
 
+    // The completion instance being reversed — the rewards debit is keyed by it
+    // (source_id = `${taskId}@${completedAt}`) so a later re-completion re-earns
+    // rather than colliding with the original credit.
+    const reversedCompletedAt = task.completedAt?.toISOString() ?? null
+
     const updated = await chorePrisma.task.update({
       where: { id },
       data: { status: 'pending', completedAt: null },
@@ -320,6 +328,9 @@ const choresPlugin: FastifyPluginAsync = async (fastify) => {
       taskId: updated.id,
       assigneeId: updated.assigneeId,
       xpReward: updated.xpReward,
+      coinReward: updated.coinReward,
+      completedAt: reversedCompletedAt,
+      title: updated.title,
     })
 
     const assignee = await prisma.profile.findUnique({ where: { id: updated.assigneeId } })
@@ -357,6 +368,7 @@ type TaskRow = {
   status: string
   dueDate: Date | null
   xpReward: number
+  coinReward: number
   createdAt: Date
   completedAt: Date | null
 }
@@ -386,6 +398,7 @@ function serializeTask(task: TaskRow, assignee: AssigneeRef) {
     status: task.status,
     dueDate: task.dueDate ? task.dueDate.toISOString().slice(0, 10) : null,
     xpReward: task.xpReward,
+    coinReward: task.coinReward,
     createdBy: task.createdBy,
     createdAt: task.createdAt.toISOString(),
     completedAt: task.completedAt ? task.completedAt.toISOString() : null,

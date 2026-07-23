@@ -28,7 +28,11 @@ export const SAMPLE_MEMBERS: Profile[] = [
 
 /* One taskee's list (all assigned to Maya) — used for the taskee stories. */
 export const SAMPLE_TASKEE_TASKS: ChoreTask[] = [
-  task('t1', 'Feed the dog', 'm-maya', 'Maya', { dueDate: isoDay(-1), xpReward: 10 }),
+  task('t1', 'Feed the dog', 'm-maya', 'Maya', {
+    dueDate: isoDay(-1),
+    xpReward: 10,
+    coinReward: 2,
+  }),
   task('t2', 'Make your bed', 'm-maya', 'Maya', { dueDate: isoDay(0), xpReward: 5 }),
   task('t3', 'Practice piano', 'm-maya', 'Maya', { dueDate: isoDay(1), xpReward: 15 }),
   task('t4', 'Read for 20 minutes', 'm-maya', 'Maya', { xpReward: 10 }),
@@ -39,9 +43,13 @@ export const SAMPLE_TASKEE_TASKS: ChoreTask[] = [
 export const SAMPLE_FAMILY_TASKS: ChoreTask[] = [
   task('f1', 'Feed the dog', 'm-maya', 'Maya', { dueDate: isoDay(-1), xpReward: 10 }),
   task('f2', 'Make your bed', 'm-maya', 'Maya', { dueDate: isoDay(0), xpReward: 5 }),
-  task('f3', 'Empty dishwasher', 'm-zach', 'Zach', { dueDate: isoDay(0), xpReward: 15 }),
+  task('f3', 'Empty dishwasher', 'm-zach', 'Zach', {
+    dueDate: isoDay(0),
+    xpReward: 15,
+    coinReward: 2,
+  }),
   task('f4', 'Take out recycling', 'm-zach', 'Zach', { xpReward: 10 }),
-  task('f5', 'Mow the lawn', 'm-emma', 'Emma', { dueDate: isoDay(2), xpReward: 25 }),
+  task('f5', 'Mow the lawn', 'm-emma', 'Emma', { dueDate: isoDay(2), xpReward: 25, coinReward: 5 }),
   task('f6', 'Vacuum stairs', 'm-emma', 'Emma', { status: 'completed', xpReward: 15 }),
   task('f7', 'Water the plants', 'm-luca', 'Luca', { dueDate: isoDay(-2), xpReward: 5 }),
 ]
@@ -59,7 +67,10 @@ function task(
   assigneeId: string,
   assigneeName: string,
   opts: Partial<
-    Pick<ChoreTask, 'status' | 'dueDate' | 'xpReward' | 'assigneeAvatarUrl' | 'assigneeHue'>
+    Pick<
+      ChoreTask,
+      'status' | 'dueDate' | 'xpReward' | 'coinReward' | 'assigneeAvatarUrl' | 'assigneeHue'
+    >
   > = {}
 ): ChoreTask {
   return {
@@ -75,6 +86,7 @@ function task(
     status: opts.status ?? 'pending',
     dueDate: opts.dueDate ?? null,
     xpReward: opts.xpReward ?? 10,
+    coinReward: opts.coinReward ?? 0,
     createdBy: 'm-parent',
     createdAt: new Date().toISOString(),
     completedAt: opts.status === 'completed' ? new Date().toISOString() : null,

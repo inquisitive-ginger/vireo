@@ -1,11 +1,58 @@
 import fp from 'fastify-plugin'
 import type { FastifyPluginAsync } from 'fastify'
 import { prisma } from '@family-os/platform/server'
+import type { EventBus } from '@family-os/platform/server'
 import { FAMILY_PROFILE_ID } from '@family-os/platform/types'
-import { getBalance, listEntries } from '../lib/ledger'
+import { getBalance, listEntries, postEntry } from '../lib/ledger'
 
 const DEFAULT_LIMIT = 20
 const MAX_LIMIT = 50
+
+// ─── Chores earn subscriber (ADR 048) ────────────────────────────────────────
+//
+// `rewards` never imports `chores` — it credits whatever a chore event carries.
+// `coinReward` is priced on the task (defaults to 0), so most completions move
+// nothing. The ledger keys by the completion INSTANCE (`taskId@completedAt`), not
+// the task, so a reopen→re-complete cycle re-earns instead of colliding with the
+// original credit; the reversal uses a distinct sourceType against the same
+// instance id. Both directions are idempotent under the ledger's unique key.
+
+type ChoreEarnPayload = {
+  taskId: string
+  assigneeId: string
+  coinReward: number
+  completedAt: string | null
+  title?: string
+}
+
+const instanceId = (taskId: string, completedAt: string): string => `${taskId}@${completedAt}`
+
+async function handleChoreCredit(payload: unknown, bus: EventBus): Promise<void> {
+  const { taskId, assigneeId, coinReward, completedAt, title } = payload as ChoreEarnPayload
+  if (coinReward <= 0 || !completedAt) return
+
+  await postEntry(bus, {
+    profileId: assigneeId,
+    delta: coinReward,
+    reason: title ?? 'Chore',
+    sourceType: 'chores.task',
+    sourceId: instanceId(taskId, completedAt),
+  })
+}
+
+async function handleChoreReversal(payload: unknown, bus: EventBus): Promise<void> {
+  const { taskId, assigneeId, coinReward, completedAt, title } = payload as ChoreEarnPayload
+  // A reopen with no prior completedAt reverses nothing (it was never credited).
+  if (coinReward <= 0 || !completedAt) return
+
+  await postEntry(bus, {
+    profileId: assigneeId,
+    delta: -coinReward,
+    reason: title ? `Reopened: ${title}` : 'Chore reopened',
+    sourceType: 'chores.task.reversal',
+    sourceId: instanceId(taskId, completedAt),
+  })
+}
 
 const rewardsPlugin: FastifyPluginAsync = async (fastify) => {
   // GET /rewards/wallet?profileId=&cursor=&limit= — balance plus the history that
@@ -58,6 +105,21 @@ const rewardsPlugin: FastifyPluginAsync = async (fastify) => {
       })),
       nextCursor,
     }
+  })
+
+  // ─── Event subscribers ─────────────────────────────────────────────────────
+  // Earning is contributed (ADR 048): rewards listens to chore events and moves
+  // the ledger. Errors are logged and swallowed so a failed credit never fails
+  // the chore completion that triggered it.
+  fastify.eventBus.on('chores.task.completed', (payload) => {
+    void handleChoreCredit(payload, fastify.eventBus).catch((err) =>
+      fastify.log.error({ err }, '[rewards] chore credit subscriber failed')
+    )
+  })
+  fastify.eventBus.on('chores.task.reopened', (payload) => {
+    void handleChoreReversal(payload, fastify.eventBus).catch((err) =>
+      fastify.log.error({ err }, '[rewards] chore reversal subscriber failed')
+    )
   })
 }
 

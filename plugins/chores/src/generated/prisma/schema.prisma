@@ -17,6 +17,7 @@ model Task {
   status      String    @default("pending")
   dueDate     DateTime? @map("due_date") @db.Date
   xpReward    Int       @default(10) @map("xp_reward")
+  coinReward  Int       @default(0) @map("coin_reward")
   createdAt   DateTime  @default(now()) @map("created_at")
   completedAt DateTime? @map("completed_at")
 

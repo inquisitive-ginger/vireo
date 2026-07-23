@@ -1,6 +1,5 @@
 import { forwardRef, useEffect, useRef, useState } from 'react'
-import { Coins } from 'lucide-react'
-import { GOLD, GOLD_HI, GOLD_DEEP, GOLD_INK, GOLD_TINT } from '../lib/gold'
+import { Star } from 'lucide-react'
 import { usePrefersReducedMotion } from '../lib/use-reduced-motion'
 
 export interface ScorePlateProps {
@@ -10,11 +9,11 @@ export interface ScorePlateProps {
 
 const easeInOutCubic = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2)
 
-/* The lifetime XP "coin score" (design §1 header / §2 flight target). Gold =
-   treasure semantic; the numeral is DM Sans (`text-metric`). When `value` rises
-   the plate grows to 1.09 then settles (~860ms) while the number counts up
-   (easeInOutCubic ~640ms) — the landing beat of the XP flight. The forwarded ref
-   is the flight's measured endpoint.
+/* The lifetime XP score plate (design §1 header / §2 flight target). Stone, not
+   gold — F$ took the coin and XP is a quiet star now (ADR 051); the numeral is DM
+   Sans (`text-metric`). When `value` rises the plate grows to 1.09 then settles
+   (~860ms) while the number counts up (easeInOutCubic ~640ms) — the landing beat
+   of the XP flight. The forwarded ref is the flight's measured endpoint.
 
    Local/optimistic in M2 Completion Flow (seeded from completed tasks). The XP
    Award story swaps the seed for the persisted balance via GET /api/chores/xp. */
@@ -66,30 +65,20 @@ export const ScorePlate = forwardRef<HTMLDivElement, ScorePlateProps>(function S
     <div ref={ref}>
       <div
         ref={innerRef}
-        className="flex items-center gap-2 rounded-full"
+        className="flex items-center gap-2 rounded-full bg-secondary"
         style={{
           padding: '7px 13px 7px 10px',
-          background: `linear-gradient(135deg, ${GOLD_HI}, ${GOLD_TINT})`,
-          border: `1px solid ${GOLD}`,
+          border: '1px solid var(--border)',
           boxShadow: 'var(--shadow-card)',
         }}
       >
-        <span
-          className="grid size-6 shrink-0 place-items-center rounded-full"
-          style={{
-            background: `radial-gradient(circle at 32% 30%, ${GOLD_HI}, ${GOLD} 70%, ${GOLD_DEEP})`,
-            color: GOLD_DEEP,
-          }}
-        >
-          <Coins size={13} strokeWidth={2.5} />
+        <span className="grid size-6 shrink-0 place-items-center rounded-full bg-muted text-muted-foreground">
+          <Star size={13} strokeWidth={2.5} />
         </span>
-        <span className="text-metric leading-none" style={{ color: GOLD_INK }}>
+        <span className="text-metric leading-none text-foreground">
           {displayed.toLocaleString()}
         </span>
-        <span
-          className="text-xs-token font-bold tracking-[0.04em] opacity-70"
-          style={{ color: GOLD_INK }}
-        >
+        <span className="text-xs-token font-bold tracking-[0.04em] text-muted-foreground opacity-70">
           XP
         </span>
       </div>

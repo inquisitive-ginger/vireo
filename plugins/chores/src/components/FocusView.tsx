@@ -1,12 +1,12 @@
 import { useRef, useState } from 'react'
-import { Check, ChevronDown, ChevronRight } from 'lucide-react'
-import { Button, PageContainer, PageHeader, Spine } from '@family-os/ui'
+import { Check, ChevronDown, ChevronRight, Star } from 'lucide-react'
+import { Button, CoinValue, PageContainer, PageHeader, Spine } from '@family-os/ui'
 import type { ChoreTask } from '../types'
 import { isOverdue, dueLabel } from '../lib/dates'
+import { showCoinReward } from '../lib/flags'
 import { ScorePlate } from './ScorePlate'
 import { FlightChip } from './FlightChip'
 import { useXpFlight } from '../lib/use-xp-flight'
-import { GOLD_INK, GOLD_TINT } from '../lib/gold'
 
 export interface FocusViewProps {
   tasks: ChoreTask[]
@@ -33,8 +33,8 @@ function byUrgency(a: ChoreTask, b: ChoreTask): number {
    One obvious next action: a single hero "Next up" card with a big green Mark done,
    the rest collapsed to quiet "Coming up" / "Done" disclosure rows. Minimises
    executive-function load (younger / ADHD). Shares the XP flight engine with the
-   Agency `TaskeeView` (`useXpFlight`): the hero's gold XP chip is the flight's
-   launch point; on landing the plate banks and the next task promotes to hero. */
+   Agency `TaskeeView` (`useXpFlight`): the hero's XP chip is the flight's launch
+   point; on landing the plate banks and the next task promotes to hero. */
 export function FocusView({ tasks, onCompleteTask, initialXp }: FocusViewProps) {
   const { plateRef, lifetime, flights, handleComplete, onFlightDone, effectiveStatus } =
     useXpFlight({ tasks, onCompleteTask, initialXp })
@@ -94,9 +94,9 @@ export function FocusView({ tasks, onCompleteTask, initialXp }: FocusViewProps) 
   )
 }
 
-/* The hero "Next up" card. The gold XP chip is the flight's launch point (it
-   lifts off on tap, mirroring the Agency badge); the big green Mark done is the
-   tap target (design §2 "focus = green Mark done button"). */
+/* The hero "Next up" card. The XP chip is the flight's launch point (it lifts off
+   on tap, mirroring the Agency badge); the big green Mark done is the tap target
+   (design §2 "focus = green Mark done button"). */
 function HeroCard({
   task,
   inFlight,
@@ -145,13 +145,15 @@ function HeroCard({
             {overdue ? `Overdue · ${label}` : label}
           </span>
         )}
+        {/* F$ leads XP — the coin is what a kid can spend. */}
+        {showCoinReward(task.coinReward) && <CoinValue value={task.coinReward} />}
         {/* The XP chip is the flight's launch point — hidden while airborne. */}
         <span
           ref={chipRef}
-          className={`text-sm-token inline-flex items-center rounded-full px-2.5 py-0.5 font-bold ${inFlight ? 'invisible' : 'visible'}`}
-          style={{ background: GOLD_TINT, color: GOLD_INK }}
+          className={`text-sm-token inline-flex items-center gap-1 rounded-full bg-secondary px-2.5 py-0.5 font-bold text-muted-foreground ${inFlight ? 'invisible' : 'visible'}`}
         >
-          +{task.xpReward} XP
+          <Star size={12} strokeWidth={2.5} />
+          {task.xpReward} XP
         </span>
       </div>
       <Button
@@ -218,11 +220,11 @@ function MiniRow({ task }: { task: ChoreTask }) {
           {label}
         </span>
       )}
+      {showCoinReward(task.coinReward) && <CoinValue value={task.coinReward} size={14} />}
       <span
-        className="text-xs-token shrink-0 font-bold"
-        style={{ color: done ? 'var(--success)' : GOLD_INK }}
+        className={`text-xs-token shrink-0 font-bold ${done ? 'text-success' : 'text-muted-foreground'}`}
       >
-        {done ? `✓ +${task.xpReward}` : `+${task.xpReward}`}
+        {done ? `✓ ${task.xpReward}` : task.xpReward} XP
       </span>
     </div>
   )

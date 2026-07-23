@@ -1002,10 +1002,12 @@ export namespace Prisma {
 
   export type TaskAvgAggregateOutputType = {
     xpReward: number | null
+    coinReward: number | null
   }
 
   export type TaskSumAggregateOutputType = {
     xpReward: number | null
+    coinReward: number | null
   }
 
   export type TaskMinAggregateOutputType = {
@@ -1017,6 +1019,7 @@ export namespace Prisma {
     status: string | null
     dueDate: Date | null
     xpReward: number | null
+    coinReward: number | null
     createdAt: Date | null
     completedAt: Date | null
   }
@@ -1030,6 +1033,7 @@ export namespace Prisma {
     status: string | null
     dueDate: Date | null
     xpReward: number | null
+    coinReward: number | null
     createdAt: Date | null
     completedAt: Date | null
   }
@@ -1043,6 +1047,7 @@ export namespace Prisma {
     status: number
     dueDate: number
     xpReward: number
+    coinReward: number
     createdAt: number
     completedAt: number
     _all: number
@@ -1050,10 +1055,12 @@ export namespace Prisma {
 
   export type TaskAvgAggregateInputType = {
     xpReward?: true
+    coinReward?: true
   }
 
   export type TaskSumAggregateInputType = {
     xpReward?: true
+    coinReward?: true
   }
 
   export type TaskMinAggregateInputType = {
@@ -1065,6 +1072,7 @@ export namespace Prisma {
     status?: true
     dueDate?: true
     xpReward?: true
+    coinReward?: true
     createdAt?: true
     completedAt?: true
   }
@@ -1078,6 +1086,7 @@ export namespace Prisma {
     status?: true
     dueDate?: true
     xpReward?: true
+    coinReward?: true
     createdAt?: true
     completedAt?: true
   }
@@ -1091,6 +1100,7 @@ export namespace Prisma {
     status?: true
     dueDate?: true
     xpReward?: true
+    coinReward?: true
     createdAt?: true
     completedAt?: true
     _all?: true
@@ -1191,6 +1201,7 @@ export namespace Prisma {
     status: string
     dueDate: Date | null
     xpReward: number
+    coinReward: number
     createdAt: Date
     completedAt: Date | null
     _count: TaskCountAggregateOutputType | null
@@ -1223,6 +1234,7 @@ export namespace Prisma {
         status?: boolean
         dueDate?: boolean
         xpReward?: boolean
+        coinReward?: boolean
         createdAt?: boolean
         completedAt?: boolean
       },
@@ -1241,6 +1253,7 @@ export namespace Prisma {
       status?: boolean
       dueDate?: boolean
       xpReward?: boolean
+      coinReward?: boolean
       createdAt?: boolean
       completedAt?: boolean
     },
@@ -1259,6 +1272,7 @@ export namespace Prisma {
       status?: boolean
       dueDate?: boolean
       xpReward?: boolean
+      coinReward?: boolean
       createdAt?: boolean
       completedAt?: boolean
     },
@@ -1274,6 +1288,7 @@ export namespace Prisma {
     status?: boolean
     dueDate?: boolean
     xpReward?: boolean
+    coinReward?: boolean
     createdAt?: boolean
     completedAt?: boolean
   }
@@ -1288,6 +1303,7 @@ export namespace Prisma {
       | 'status'
       | 'dueDate'
       | 'xpReward'
+      | 'coinReward'
       | 'createdAt'
       | 'completedAt',
       ExtArgs['result']['task']
@@ -1306,6 +1322,7 @@ export namespace Prisma {
         status: string
         dueDate: Date | null
         xpReward: number
+        coinReward: number
         createdAt: Date
         completedAt: Date | null
       },
@@ -1825,6 +1842,7 @@ export namespace Prisma {
     readonly status: FieldRef<'Task', 'String'>
     readonly dueDate: FieldRef<'Task', 'DateTime'>
     readonly xpReward: FieldRef<'Task', 'Int'>
+    readonly coinReward: FieldRef<'Task', 'Int'>
     readonly createdAt: FieldRef<'Task', 'DateTime'>
     readonly completedAt: FieldRef<'Task', 'DateTime'>
   }
@@ -3406,6 +3424,7 @@ export namespace Prisma {
     status: 'status'
     dueDate: 'dueDate'
     xpReward: 'xpReward'
+    coinReward: 'coinReward'
     createdAt: 'createdAt'
     completedAt: 'completedAt'
   }
@@ -3505,6 +3524,7 @@ export namespace Prisma {
     status?: StringFilter<'Task'> | string
     dueDate?: DateTimeNullableFilter<'Task'> | Date | string | null
     xpReward?: IntFilter<'Task'> | number
+    coinReward?: IntFilter<'Task'> | number
     createdAt?: DateTimeFilter<'Task'> | Date | string
     completedAt?: DateTimeNullableFilter<'Task'> | Date | string | null
   }
@@ -3518,6 +3538,7 @@ export namespace Prisma {
     status?: SortOrder
     dueDate?: SortOrderInput | SortOrder
     xpReward?: SortOrder
+    coinReward?: SortOrder
     createdAt?: SortOrder
     completedAt?: SortOrderInput | SortOrder
   }
@@ -3535,6 +3556,7 @@ export namespace Prisma {
       status?: StringFilter<'Task'> | string
       dueDate?: DateTimeNullableFilter<'Task'> | Date | string | null
       xpReward?: IntFilter<'Task'> | number
+      coinReward?: IntFilter<'Task'> | number
       createdAt?: DateTimeFilter<'Task'> | Date | string
       completedAt?: DateTimeNullableFilter<'Task'> | Date | string | null
     },
@@ -3550,6 +3572,7 @@ export namespace Prisma {
     status?: SortOrder
     dueDate?: SortOrderInput | SortOrder
     xpReward?: SortOrder
+    coinReward?: SortOrder
     createdAt?: SortOrder
     completedAt?: SortOrderInput | SortOrder
     _count?: TaskCountOrderByAggregateInput
@@ -3571,6 +3594,7 @@ export namespace Prisma {
     status?: StringWithAggregatesFilter<'Task'> | string
     dueDate?: DateTimeNullableWithAggregatesFilter<'Task'> | Date | string | null
     xpReward?: IntWithAggregatesFilter<'Task'> | number
+    coinReward?: IntWithAggregatesFilter<'Task'> | number
     createdAt?: DateTimeWithAggregatesFilter<'Task'> | Date | string
     completedAt?: DateTimeNullableWithAggregatesFilter<'Task'> | Date | string | null
   }
@@ -3631,6 +3655,7 @@ export namespace Prisma {
     status?: string
     dueDate?: Date | string | null
     xpReward?: number
+    coinReward?: number
     createdAt?: Date | string
     completedAt?: Date | string | null
   }
@@ -3644,6 +3669,7 @@ export namespace Prisma {
     status?: string
     dueDate?: Date | string | null
     xpReward?: number
+    coinReward?: number
     createdAt?: Date | string
     completedAt?: Date | string | null
   }
@@ -3657,6 +3683,7 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     xpReward?: IntFieldUpdateOperationsInput | number
+    coinReward?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
@@ -3670,6 +3697,7 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     xpReward?: IntFieldUpdateOperationsInput | number
+    coinReward?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
@@ -3683,6 +3711,7 @@ export namespace Prisma {
     status?: string
     dueDate?: Date | string | null
     xpReward?: number
+    coinReward?: number
     createdAt?: Date | string
     completedAt?: Date | string | null
   }
@@ -3696,6 +3725,7 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     xpReward?: IntFieldUpdateOperationsInput | number
+    coinReward?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
@@ -3709,6 +3739,7 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     xpReward?: IntFieldUpdateOperationsInput | number
+    coinReward?: IntFieldUpdateOperationsInput | number
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
@@ -3844,12 +3875,14 @@ export namespace Prisma {
     status?: SortOrder
     dueDate?: SortOrder
     xpReward?: SortOrder
+    coinReward?: SortOrder
     createdAt?: SortOrder
     completedAt?: SortOrder
   }
 
   export type TaskAvgOrderByAggregateInput = {
     xpReward?: SortOrder
+    coinReward?: SortOrder
   }
 
   export type TaskMaxOrderByAggregateInput = {
@@ -3861,6 +3894,7 @@ export namespace Prisma {
     status?: SortOrder
     dueDate?: SortOrder
     xpReward?: SortOrder
+    coinReward?: SortOrder
     createdAt?: SortOrder
     completedAt?: SortOrder
   }
@@ -3874,12 +3908,14 @@ export namespace Prisma {
     status?: SortOrder
     dueDate?: SortOrder
     xpReward?: SortOrder
+    coinReward?: SortOrder
     createdAt?: SortOrder
     completedAt?: SortOrder
   }
 
   export type TaskSumOrderByAggregateInput = {
     xpReward?: SortOrder
+    coinReward?: SortOrder
   }
 
   export type UuidWithAggregatesFilter<$PrismaModel = never> = {

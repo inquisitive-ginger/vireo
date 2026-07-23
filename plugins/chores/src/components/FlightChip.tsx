@@ -1,6 +1,6 @@
 import { useEffect, useRef } from 'react'
 import { createPortal } from 'react-dom'
-import { GOLD, GOLD_HI, GOLD_INK, GOLD_TINT } from '../lib/gold'
+import { Star } from 'lucide-react'
 
 export interface FlightChipProps {
   /** Live rect of the source XP badge (flight start). */
@@ -67,18 +67,9 @@ export function FlightChip({ from, to, value, onDone }: FlightChipProps) {
       // left/top/size track the badge's live rect — centre the chip on its centre.
       style={{ left: from.left, top: from.top, minWidth: from.width, height: from.height }}
     >
-      <span
-        className="text-sm-token rounded-full font-bold whitespace-nowrap"
-        style={{
-          padding: '2px 9px',
-          background: `linear-gradient(135deg, ${GOLD_HI}, ${GOLD_TINT})`,
-          border: `1px solid ${GOLD}`,
-          color: GOLD_INK,
-          // Gold reward-glow — inline until the --reward-* tokens are promoted.
-          boxShadow: '0 2px 8px oklch(0.74 0.13 80 / 0.4)',
-        }}
-      >
-        +{value} XP
+      <span className="text-sm-token inline-flex items-center gap-1 rounded-full bg-secondary px-2.5 py-0.5 font-bold whitespace-nowrap text-muted-foreground">
+        <Star size={12} strokeWidth={2.5} />
+        {value} XP
       </span>
     </div>,
     document.body

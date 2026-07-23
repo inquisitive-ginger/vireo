@@ -19,6 +19,7 @@ function task(over: Partial<ChoreTask> & Pick<ChoreTask, 'id' | 'title'>): Chore
     status: 'pending',
     dueDate: null,
     xpReward: 10,
+    coinReward: 0,
     createdBy: 'm-parent',
     createdAt: new Date().toISOString(),
     completedAt: null,
