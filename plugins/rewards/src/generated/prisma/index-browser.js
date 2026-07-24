@@ -137,6 +137,20 @@ exports.Prisma.BalanceScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.PendingPayoutScalarFieldEnum = {
+  id: 'id',
+  profileId: 'profileId',
+  amount: 'amount',
+  reason: 'reason',
+  sourceType: 'sourceType',
+  sourceId: 'sourceId',
+  status: 'status',
+  decidedBy: 'decidedBy',
+  decidedNote: 'decidedNote',
+  decidedAt: 'decidedAt',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -155,7 +169,8 @@ exports.Prisma.NullsOrder = {
 
 exports.Prisma.ModelName = {
   LedgerEntry: 'LedgerEntry',
-  Balance: 'Balance'
+  Balance: 'Balance',
+  PendingPayout: 'PendingPayout'
 };
 
 /**

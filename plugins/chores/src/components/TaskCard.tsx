@@ -1,9 +1,11 @@
 import { useRef } from 'react'
-import { Badge, CoinValue, CompletionToggle, ItemCard } from '@family-os/ui'
-import type { ChoreTask } from '../types'
-import { isOverdue, dueLabel } from '../lib/dates'
-import { showCoinReward } from '../lib/flags'
-import { XpPill } from './XpPill'
+import { CompletionToggle, ItemCard } from '@family-os/ui'
+import type { ChoreTask, PendingPayout } from '../types'
+import { isOverdue } from '../lib/dates'
+import { REWARDS_UI_ENABLED } from '../lib/flags'
+import { kidPayoutView } from '../lib/payouts'
+import { DeclinedNote } from './KidPayoutBadge'
+import { TaskReward, TaskStatusLine } from './TaskMeta'
 
 /** Display status drives the card: `inFlight` is the brief window during the XP
     flight — the card holds its pending shape but the badge has "lifted off". */
@@ -16,24 +18,34 @@ export interface TaskCardProps {
   /** When provided, a pending task shows a tappable completion circle. The rect
       is the live position of the XP badge — the flight's launch point. */
   onComplete?: (taskId: string, badgeRect: DOMRect) => void
+  /** This completion instance's held/decided F$ payout (M4/3b), if any — drives the
+      "when Mom or Dad checks" / "No F$ this time" state on a done card. */
+  payout?: PendingPayout
 }
 
 /* Taskee card — STATUS-encoded (design-system "Status vs identity colour").
    The owner is always the viewer here, so identity hue carries no information:
-   the 4px spine and accents encode status only (neutral / red=overdue /
-   green=done). The 40px circle is the completion target; tapping it launches the
-   XP flight (design §2) — the badge lifts off and the card holds still until the
-   chip lands.
+   the 4px spine encodes status only (neutral / red=overdue / green=done). The
+   40px circle is the completion target; tapping it launches the XP flight
+   (design §2) — the badge lifts off and the card holds still until the chip lands.
+
+   Layout follows the "chip = reward" system (see `TaskMeta`): the STATE + timing
+   sit left in the content column as colour-coded text; the REWARD group (F$ chip +
+   quiet XP) sits in the trailing cluster, vertically centred with the completion
+   circle — once the reward crosses to the right edge, the circle is its alignment
+   context, not the status baseline.
 
    Styled utility-first like the shell (ADR 035); only genuinely dynamic values
-   (status-driven spine/text color, optimistic opacity) stay inline. */
-export function TaskCard({ task, displayStatus, onComplete }: TaskCardProps) {
+   (status-driven spine color, optimistic opacity) stay inline. */
+export function TaskCard({ task, displayStatus, onComplete, payout }: TaskCardProps) {
   const status = displayStatus ?? (task.status as TaskDisplayStatus)
   const done = status === 'completed'
+  // Held / earned / declined F$ for a done paying chore (M4/3b). Derived from the
+  // task so it is right the instant a completion lands (no wait on the payout row).
+  const payoutView = done && REWARDS_UI_ENABLED ? kidPayoutView(task, payout) : null
   const inFlight = status === 'inFlight'
   const overdue = !done && !inFlight && isOverdue(task.dueDate, task.status)
   const spine = done ? 'var(--success)' : overdue ? 'var(--error)' : 'var(--border)'
-  const label = dueLabel(task.dueDate)
   const badgeRef = useRef<HTMLSpanElement>(null)
   const completable = status === 'pending' && !!onComplete
 
@@ -49,37 +61,32 @@ export function TaskCard({ task, displayStatus, onComplete }: TaskCardProps) {
       dimmed={done}
       className="transition-opacity duration-200"
       trailing={
-        <CompletionToggle
-          checked={done}
-          size={40}
-          muted={inFlight}
-          onToggle={completable ? handleComplete : undefined}
-          label={`Mark “${task.title}” done`}
-        />
+        <div className="flex items-center gap-3">
+          <TaskReward
+            ref={badgeRef}
+            task={task}
+            done={done}
+            inFlight={inFlight}
+            payoutView={payoutView}
+          />
+          <CompletionToggle
+            checked={done}
+            size={40}
+            muted={inFlight}
+            onToggle={completable ? handleComplete : undefined}
+            label={`Mark “${task.title}” done`}
+          />
+        </div>
       }
     >
       <div className="min-w-0 flex-1">
         <span
-          className={`text-card-title block ${done ? 'text-muted-foreground line-through' : 'text-foreground'}`}
+          className={`text-card-title block truncate ${done ? 'text-muted-foreground line-through' : 'text-foreground'}`}
         >
           {task.title}
         </span>
-        <div className="mt-1 flex items-center gap-2">
-          {overdue && <Badge variant="destructive">Overdue</Badge>}
-          {label && !done && (
-            <span className={`text-sm-token ${overdue ? 'text-error' : 'text-muted-foreground'}`}>
-              {label}
-            </span>
-          )}
-          {/* F$ leads XP — the coin is what a kid can spend. */}
-          {showCoinReward(task.coinReward) && !done && (
-            <CoinValue value={task.coinReward} size={16} />
-          )}
-          {/* Badge is the flight's launch point — hidden while airborne. */}
-          <span ref={badgeRef} className={inFlight ? 'invisible' : 'visible'}>
-            <XpPill value={task.xpReward} earned={done} />
-          </span>
-        </div>
+        <TaskStatusLine task={task} className="mt-1" />
+        <DeclinedNote view={payoutView} />
       </div>
     </ItemCard>
   )

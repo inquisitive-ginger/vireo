@@ -1,9 +1,13 @@
 import { useRef, useState } from 'react'
-import { Check, ChevronDown, ChevronRight, Star } from 'lucide-react'
+import { Check, ChevronDown, ChevronRight } from 'lucide-react'
 import { Button, CoinValue, PageContainer, PageHeader, Spine } from '@family-os/ui'
-import type { ChoreTask } from '../types'
+import { isReopened, type ChoreTask, type PendingPayout } from '../types'
 import { isOverdue, dueLabel } from '../lib/dates'
-import { showCoinReward } from '../lib/flags'
+import { REWARDS_UI_ENABLED, showCoinReward } from '../lib/flags'
+import { kidPayoutView, payoutForTask, type PayoutsByInstance } from '../lib/payouts'
+import { KidPayoutBadge } from './KidPayoutBadge'
+import { ReopenedBadge } from './ReopenedBadge'
+import { TaskReward, TaskStatusLine } from './TaskMeta'
 import { ScorePlate } from './ScorePlate'
 import { FlightChip } from './FlightChip'
 import { useXpFlight } from '../lib/use-xp-flight'
@@ -15,6 +19,8 @@ export interface FocusViewProps {
   onCompleteTask?: (taskId: string) => Promise<unknown>
   /** Persisted lifetime XP seed (GET /api/chores/xp). */
   initialXp?: number
+  /** Held/decided F$ payouts keyed by completion instance (M4/3b). */
+  payoutIndex?: PayoutsByInstance
 }
 
 /* Most urgent first — overdue, then earliest due, then undated (design §1, the
@@ -35,7 +41,7 @@ function byUrgency(a: ChoreTask, b: ChoreTask): number {
    executive-function load (younger / ADHD). Shares the XP flight engine with the
    Agency `TaskeeView` (`useXpFlight`): the hero's XP chip is the flight's launch
    point; on landing the plate banks and the next task promotes to hero. */
-export function FocusView({ tasks, onCompleteTask, initialXp }: FocusViewProps) {
+export function FocusView({ tasks, onCompleteTask, initialXp, payoutIndex }: FocusViewProps) {
   const { plateRef, lifetime, flights, handleComplete, onFlightDone, effectiveStatus } =
     useXpFlight({ tasks, onCompleteTask, initialXp })
 
@@ -79,7 +85,7 @@ export function FocusView({ tasks, onCompleteTask, initialXp }: FocusViewProps) 
       )}
 
       <CollapsibleSection label="Coming up" tasks={rest} />
-      <CollapsibleSection label="Done" tasks={completed} />
+      <CollapsibleSection label="Done" tasks={completed} payoutIndex={payoutIndex} />
 
       {flights.map((flight) => (
         <FlightChip
@@ -107,7 +113,6 @@ function HeroCard({
   onComplete: (taskId: string, badgeRect: DOMRect) => void
 }) {
   const overdue = isOverdue(task.dueDate, task.status)
-  const label = dueLabel(task.dueDate)
   const chipRef = useRef<HTMLSpanElement>(null)
 
   function handleClick() {
@@ -131,30 +136,14 @@ function HeroCard({
       >
         {task.title}
       </h2>
-      <div className="mt-3 mb-5 flex flex-wrap items-center gap-2">
-        {label && (
-          <span
-            className="text-sm-token inline-flex items-center rounded-full px-2.5 py-0.5 font-medium"
-            style={{
-              background: overdue
-                ? 'color-mix(in oklch, var(--error) 12%, transparent)'
-                : 'var(--muted)',
-              color: overdue ? 'var(--error)' : 'var(--muted-foreground)',
-            }}
-          >
-            {overdue ? `Overdue · ${label}` : label}
-          </span>
-        )}
-        {/* F$ leads XP — the coin is what a kid can spend. */}
-        {showCoinReward(task.coinReward) && <CoinValue value={task.coinReward} />}
-        {/* The XP chip is the flight's launch point — hidden while airborne. */}
-        <span
-          ref={chipRef}
-          className={`text-sm-token inline-flex items-center gap-1 rounded-full bg-secondary px-2.5 py-0.5 font-bold text-muted-foreground ${inFlight ? 'invisible' : 'visible'}`}
-        >
-          <Star size={12} strokeWidth={2.5} />
-          {task.xpReward} XP
-        </span>
+      {/* Same meta system as the Agency card, but the hero has no completion circle
+          for the reward to align to. State and reward each get their own line, both
+          anchored at the card's left edge — so the reward's position never depends on
+          whether a status line is present, which otherwise slides it sideways as one
+          task completes and the next promotes in. */}
+      <div className="mt-3 mb-5 flex flex-col items-start gap-2">
+        <TaskStatusLine task={task} />
+        <TaskReward ref={chipRef} task={task} done={false} inFlight={inFlight} payoutView={null} />
       </div>
       <Button
         type="button"
@@ -172,7 +161,15 @@ function HeroCard({
 
 /* Quiet, collapsed secondary section (Coming up / Done). Collapsed by default so
    the hero stays the single focus; tap to reveal the mini-rows. */
-function CollapsibleSection({ label, tasks }: { label: string; tasks: ChoreTask[] }) {
+function CollapsibleSection({
+  label,
+  tasks,
+  payoutIndex,
+}: {
+  label: string
+  tasks: ChoreTask[]
+  payoutIndex?: PayoutsByInstance
+}) {
   const [open, setOpen] = useState(false)
   if (tasks.length === 0) return null
   return (
@@ -189,7 +186,7 @@ function CollapsibleSection({ label, tasks }: { label: string; tasks: ChoreTask[
       {open && (
         <div className="flex flex-col gap-1.5 pt-1">
           {tasks.map((t) => (
-            <MiniRow key={t.id} task={t} />
+            <MiniRow key={t.id} task={t} payout={payoutIndex && payoutForTask(t, payoutIndex)} />
           ))}
         </div>
       )}
@@ -197,11 +194,12 @@ function CollapsibleSection({ label, tasks }: { label: string; tasks: ChoreTask[
   )
 }
 
-function MiniRow({ task }: { task: ChoreTask }) {
+function MiniRow({ task, payout }: { task: ChoreTask; payout?: PendingPayout }) {
   const done = task.status === 'completed'
   const overdue = isOverdue(task.dueDate, task.status)
   const spine = done ? 'var(--success)' : overdue ? 'var(--error)' : 'var(--border)'
   const label = dueLabel(task.dueDate)
+  const payoutView = done && REWARDS_UI_ENABLED ? kidPayoutView(task, payout) : null
   return (
     <div
       className="flex items-center gap-2.5 rounded-panel px-3 py-2.5"
@@ -213,6 +211,7 @@ function MiniRow({ task }: { task: ChoreTask }) {
       >
         {task.title}
       </span>
+      {isReopened(task) && <ReopenedBadge />}
       {!done && label && (
         <span
           className={`text-xs-token shrink-0 ${overdue ? 'text-error' : 'text-muted-foreground'}`}
@@ -220,7 +219,12 @@ function MiniRow({ task }: { task: ChoreTask }) {
           {label}
         </span>
       )}
-      {showCoinReward(task.coinReward) && <CoinValue value={task.coinReward} size={14} />}
+      {/* Held / earned / declined F$ takes the coin's slot on a done row (M4/3b). */}
+      {payoutView ? (
+        <KidPayoutBadge view={payoutView} />
+      ) : (
+        !done && showCoinReward(task.coinReward) && <CoinValue value={task.coinReward} size={14} />
+      )}
       <span
         className={`text-xs-token shrink-0 font-bold ${done ? 'text-success' : 'text-muted-foreground'}`}
       >

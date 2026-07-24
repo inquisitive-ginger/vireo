@@ -37,3 +37,34 @@ model Balance {
   @@map("balances")
   @@schema("rewards")
 }
+
+// A payout awaiting a parent's OK (M4/3b). NOT a ledger entry — ADR 047 makes
+// entries immutable and the balance their sum, so a "pending" entry would either
+// move the balance or break that identity. This row holds the SAME provenance pair
+// (sourceType, sourceId) the auto-credit path would have used; approving releases it
+// by writing the normal ledger entry with that pair, so release and idempotency are
+// one mechanism. Deliberately plugin-agnostic (ADR 048): no `taskId` column — the
+// earner encodes what it needs inside sourceId, and rewards knows nothing of chores.
+//
+// status: pending → approved (ledger entry written) | declined (nothing) | voided
+// (the completion was reopened before a decision — nothing was ever owed).
+model PendingPayout {
+  id          String    @id @default(uuid()) @db.Uuid
+  profileId   String    @map("profile_id") @db.Uuid
+  amount      Int // > 0, the F$ to credit on release
+  reason      String
+  sourceType  String    @map("source_type")
+  sourceId    String    @map("source_id")
+  status      String    @default("pending")
+  decidedBy   String?   @map("decided_by") @db.Uuid
+  decidedNote String?   @map("decided_note")
+  decidedAt   DateTime? @map("decided_at")
+  createdAt   DateTime  @default(now()) @map("created_at")
+
+  // One held payout per completion instance — a redelivered completed event is a
+  // no-op, mirroring the ledger's idempotency claim.
+  @@unique([sourceType, sourceId])
+  @@index([status, createdAt])
+  @@map("pending_payouts")
+  @@schema("rewards")
+}

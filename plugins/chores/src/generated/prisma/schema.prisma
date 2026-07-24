@@ -9,17 +9,27 @@ datasource db {
 }
 
 model Task {
-  id          String    @id @default(uuid()) @db.Uuid
-  title       String
-  description String?
-  assigneeId  String    @map("assignee_id") @db.Uuid
-  createdBy   String    @map("created_by") @db.Uuid
-  status      String    @default("pending")
-  dueDate     DateTime? @map("due_date") @db.Date
-  xpReward    Int       @default(10) @map("xp_reward")
-  coinReward  Int       @default(0) @map("coin_reward")
-  createdAt   DateTime  @default(now()) @map("created_at")
-  completedAt DateTime? @map("completed_at")
+  id               String    @id @default(uuid()) @db.Uuid
+  title            String
+  description      String?
+  assigneeId       String    @map("assignee_id") @db.Uuid
+  createdBy        String    @map("created_by") @db.Uuid
+  status           String    @default("pending")
+  dueDate          DateTime? @map("due_date") @db.Date
+  xpReward         Int       @default(10) @map("xp_reward")
+  coinReward       Int       @default(0) @map("coin_reward")
+  // Hold the F$ payout for a parent's OK instead of auto-crediting on completion
+  // (M4/3b). Per-chore, not a household threshold (ADR 052 puts the price on the
+  // task; the same place decides whether it needs signing off). Only meaningful
+  // when coinReward > 0.
+  requiresApproval Boolean   @default(false) @map("requires_approval")
+  // Set true the first time a task is completed, never reset. Two jobs: it makes the
+  // XP award idempotent (XP is up-only and never debited on reopen, so re-completing
+  // must not re-award), and it doubles as "has been completed before" — a pending
+  // task with this set was reopened, not freshly assigned.
+  xpAwarded        Boolean   @default(false) @map("xp_awarded")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  completedAt      DateTime? @map("completed_at")
 
   @@map("tasks")
   @@schema("chores")

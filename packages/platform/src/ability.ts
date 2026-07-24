@@ -4,7 +4,16 @@ import type { Profile, PermissionOverride } from './types'
 
 // Subjects are namespaced strings per ADR 018.
 // 'all' is CASL's wildcard subject, used by the manage rule for tier-4.
-type Actions = 'view' | 'switch' | 'create' | 'update' | 'delete' | 'complete' | 'reopen' | 'manage'
+type Actions =
+  | 'view'
+  | 'switch'
+  | 'create'
+  | 'update'
+  | 'delete'
+  | 'complete'
+  | 'reopen'
+  | 'decide'
+  | 'manage'
 type Subjects =
   | 'platform.Profile'
   | 'platform.Plugin'
@@ -15,6 +24,7 @@ type Subjects =
   | 'chores.Task'
   | 'calendar.Event'
   | 'rewards.Wallet'
+  | 'rewards.Payout'
   | 'all'
 
 export type AppAbility = PrismaAbility<[Actions, Subjects]>

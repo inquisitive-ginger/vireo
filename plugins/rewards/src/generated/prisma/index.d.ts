@@ -23,6 +23,11 @@ export type LedgerEntry = $Result.DefaultSelection<Prisma.$LedgerEntryPayload>
  * 
  */
 export type Balance = $Result.DefaultSelection<Prisma.$BalancePayload>
+/**
+ * Model PendingPayout
+ * 
+ */
+export type PendingPayout = $Result.DefaultSelection<Prisma.$PendingPayoutPayload>
 
 /**
  * ##  Prisma Client ʲˢ
@@ -164,6 +169,16 @@ export class PrismaClient<
     * ```
     */
   get balance(): Prisma.BalanceDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.pendingPayout`: Exposes CRUD operations for the **PendingPayout** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more PendingPayouts
+    * const pendingPayouts = await prisma.pendingPayout.findMany()
+    * ```
+    */
+  get pendingPayout(): Prisma.PendingPayoutDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -599,7 +614,8 @@ export namespace Prisma {
 
   export const ModelName: {
     LedgerEntry: 'LedgerEntry',
-    Balance: 'Balance'
+    Balance: 'Balance',
+    PendingPayout: 'PendingPayout'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -615,7 +631,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "ledgerEntry" | "balance"
+      modelProps: "ledgerEntry" | "balance" | "pendingPayout"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -767,6 +783,80 @@ export namespace Prisma {
           }
         }
       }
+      PendingPayout: {
+        payload: Prisma.$PendingPayoutPayload<ExtArgs>
+        fields: Prisma.PendingPayoutFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.PendingPayoutFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PendingPayoutPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.PendingPayoutFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PendingPayoutPayload>
+          }
+          findFirst: {
+            args: Prisma.PendingPayoutFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PendingPayoutPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.PendingPayoutFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PendingPayoutPayload>
+          }
+          findMany: {
+            args: Prisma.PendingPayoutFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PendingPayoutPayload>[]
+          }
+          create: {
+            args: Prisma.PendingPayoutCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PendingPayoutPayload>
+          }
+          createMany: {
+            args: Prisma.PendingPayoutCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.PendingPayoutCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PendingPayoutPayload>[]
+          }
+          delete: {
+            args: Prisma.PendingPayoutDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PendingPayoutPayload>
+          }
+          update: {
+            args: Prisma.PendingPayoutUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PendingPayoutPayload>
+          }
+          deleteMany: {
+            args: Prisma.PendingPayoutDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.PendingPayoutUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.PendingPayoutUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PendingPayoutPayload>[]
+          }
+          upsert: {
+            args: Prisma.PendingPayoutUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PendingPayoutPayload>
+          }
+          aggregate: {
+            args: Prisma.PendingPayoutAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregatePendingPayout>
+          }
+          groupBy: {
+            args: Prisma.PendingPayoutGroupByArgs<ExtArgs>
+            result: $Utils.Optional<PendingPayoutGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.PendingPayoutCountArgs<ExtArgs>
+            result: $Utils.Optional<PendingPayoutCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -877,6 +967,7 @@ export namespace Prisma {
   export type GlobalOmitConfig = {
     ledgerEntry?: LedgerEntryOmit
     balance?: BalanceOmit
+    pendingPayout?: PendingPayoutOmit
   }
 
   /* Types for Logging */
@@ -3039,6 +3130,1118 @@ export namespace Prisma {
 
 
   /**
+   * Model PendingPayout
+   */
+
+  export type AggregatePendingPayout = {
+    _count: PendingPayoutCountAggregateOutputType | null
+    _avg: PendingPayoutAvgAggregateOutputType | null
+    _sum: PendingPayoutSumAggregateOutputType | null
+    _min: PendingPayoutMinAggregateOutputType | null
+    _max: PendingPayoutMaxAggregateOutputType | null
+  }
+
+  export type PendingPayoutAvgAggregateOutputType = {
+    amount: number | null
+  }
+
+  export type PendingPayoutSumAggregateOutputType = {
+    amount: number | null
+  }
+
+  export type PendingPayoutMinAggregateOutputType = {
+    id: string | null
+    profileId: string | null
+    amount: number | null
+    reason: string | null
+    sourceType: string | null
+    sourceId: string | null
+    status: string | null
+    decidedBy: string | null
+    decidedNote: string | null
+    decidedAt: Date | null
+    createdAt: Date | null
+  }
+
+  export type PendingPayoutMaxAggregateOutputType = {
+    id: string | null
+    profileId: string | null
+    amount: number | null
+    reason: string | null
+    sourceType: string | null
+    sourceId: string | null
+    status: string | null
+    decidedBy: string | null
+    decidedNote: string | null
+    decidedAt: Date | null
+    createdAt: Date | null
+  }
+
+  export type PendingPayoutCountAggregateOutputType = {
+    id: number
+    profileId: number
+    amount: number
+    reason: number
+    sourceType: number
+    sourceId: number
+    status: number
+    decidedBy: number
+    decidedNote: number
+    decidedAt: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type PendingPayoutAvgAggregateInputType = {
+    amount?: true
+  }
+
+  export type PendingPayoutSumAggregateInputType = {
+    amount?: true
+  }
+
+  export type PendingPayoutMinAggregateInputType = {
+    id?: true
+    profileId?: true
+    amount?: true
+    reason?: true
+    sourceType?: true
+    sourceId?: true
+    status?: true
+    decidedBy?: true
+    decidedNote?: true
+    decidedAt?: true
+    createdAt?: true
+  }
+
+  export type PendingPayoutMaxAggregateInputType = {
+    id?: true
+    profileId?: true
+    amount?: true
+    reason?: true
+    sourceType?: true
+    sourceId?: true
+    status?: true
+    decidedBy?: true
+    decidedNote?: true
+    decidedAt?: true
+    createdAt?: true
+  }
+
+  export type PendingPayoutCountAggregateInputType = {
+    id?: true
+    profileId?: true
+    amount?: true
+    reason?: true
+    sourceType?: true
+    sourceId?: true
+    status?: true
+    decidedBy?: true
+    decidedNote?: true
+    decidedAt?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type PendingPayoutAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PendingPayout to aggregate.
+     */
+    where?: PendingPayoutWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PendingPayouts to fetch.
+     */
+    orderBy?: PendingPayoutOrderByWithRelationInput | PendingPayoutOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: PendingPayoutWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PendingPayouts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PendingPayouts.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned PendingPayouts
+    **/
+    _count?: true | PendingPayoutCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: PendingPayoutAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: PendingPayoutSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: PendingPayoutMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: PendingPayoutMaxAggregateInputType
+  }
+
+  export type GetPendingPayoutAggregateType<T extends PendingPayoutAggregateArgs> = {
+        [P in keyof T & keyof AggregatePendingPayout]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregatePendingPayout[P]>
+      : GetScalarType<T[P], AggregatePendingPayout[P]>
+  }
+
+
+
+
+  export type PendingPayoutGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PendingPayoutWhereInput
+    orderBy?: PendingPayoutOrderByWithAggregationInput | PendingPayoutOrderByWithAggregationInput[]
+    by: PendingPayoutScalarFieldEnum[] | PendingPayoutScalarFieldEnum
+    having?: PendingPayoutScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: PendingPayoutCountAggregateInputType | true
+    _avg?: PendingPayoutAvgAggregateInputType
+    _sum?: PendingPayoutSumAggregateInputType
+    _min?: PendingPayoutMinAggregateInputType
+    _max?: PendingPayoutMaxAggregateInputType
+  }
+
+  export type PendingPayoutGroupByOutputType = {
+    id: string
+    profileId: string
+    amount: number
+    reason: string
+    sourceType: string
+    sourceId: string
+    status: string
+    decidedBy: string | null
+    decidedNote: string | null
+    decidedAt: Date | null
+    createdAt: Date
+    _count: PendingPayoutCountAggregateOutputType | null
+    _avg: PendingPayoutAvgAggregateOutputType | null
+    _sum: PendingPayoutSumAggregateOutputType | null
+    _min: PendingPayoutMinAggregateOutputType | null
+    _max: PendingPayoutMaxAggregateOutputType | null
+  }
+
+  type GetPendingPayoutGroupByPayload<T extends PendingPayoutGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<PendingPayoutGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof PendingPayoutGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], PendingPayoutGroupByOutputType[P]>
+            : GetScalarType<T[P], PendingPayoutGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type PendingPayoutSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    profileId?: boolean
+    amount?: boolean
+    reason?: boolean
+    sourceType?: boolean
+    sourceId?: boolean
+    status?: boolean
+    decidedBy?: boolean
+    decidedNote?: boolean
+    decidedAt?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["pendingPayout"]>
+
+  export type PendingPayoutSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    profileId?: boolean
+    amount?: boolean
+    reason?: boolean
+    sourceType?: boolean
+    sourceId?: boolean
+    status?: boolean
+    decidedBy?: boolean
+    decidedNote?: boolean
+    decidedAt?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["pendingPayout"]>
+
+  export type PendingPayoutSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    profileId?: boolean
+    amount?: boolean
+    reason?: boolean
+    sourceType?: boolean
+    sourceId?: boolean
+    status?: boolean
+    decidedBy?: boolean
+    decidedNote?: boolean
+    decidedAt?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["pendingPayout"]>
+
+  export type PendingPayoutSelectScalar = {
+    id?: boolean
+    profileId?: boolean
+    amount?: boolean
+    reason?: boolean
+    sourceType?: boolean
+    sourceId?: boolean
+    status?: boolean
+    decidedBy?: boolean
+    decidedNote?: boolean
+    decidedAt?: boolean
+    createdAt?: boolean
+  }
+
+  export type PendingPayoutOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "profileId" | "amount" | "reason" | "sourceType" | "sourceId" | "status" | "decidedBy" | "decidedNote" | "decidedAt" | "createdAt", ExtArgs["result"]["pendingPayout"]>
+
+  export type $PendingPayoutPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "PendingPayout"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      profileId: string
+      amount: number
+      reason: string
+      sourceType: string
+      sourceId: string
+      status: string
+      decidedBy: string | null
+      decidedNote: string | null
+      decidedAt: Date | null
+      createdAt: Date
+    }, ExtArgs["result"]["pendingPayout"]>
+    composites: {}
+  }
+
+  type PendingPayoutGetPayload<S extends boolean | null | undefined | PendingPayoutDefaultArgs> = $Result.GetResult<Prisma.$PendingPayoutPayload, S>
+
+  type PendingPayoutCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<PendingPayoutFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: PendingPayoutCountAggregateInputType | true
+    }
+
+  export interface PendingPayoutDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['PendingPayout'], meta: { name: 'PendingPayout' } }
+    /**
+     * Find zero or one PendingPayout that matches the filter.
+     * @param {PendingPayoutFindUniqueArgs} args - Arguments to find a PendingPayout
+     * @example
+     * // Get one PendingPayout
+     * const pendingPayout = await prisma.pendingPayout.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends PendingPayoutFindUniqueArgs>(args: SelectSubset<T, PendingPayoutFindUniqueArgs<ExtArgs>>): Prisma__PendingPayoutClient<$Result.GetResult<Prisma.$PendingPayoutPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one PendingPayout that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {PendingPayoutFindUniqueOrThrowArgs} args - Arguments to find a PendingPayout
+     * @example
+     * // Get one PendingPayout
+     * const pendingPayout = await prisma.pendingPayout.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends PendingPayoutFindUniqueOrThrowArgs>(args: SelectSubset<T, PendingPayoutFindUniqueOrThrowArgs<ExtArgs>>): Prisma__PendingPayoutClient<$Result.GetResult<Prisma.$PendingPayoutPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PendingPayout that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PendingPayoutFindFirstArgs} args - Arguments to find a PendingPayout
+     * @example
+     * // Get one PendingPayout
+     * const pendingPayout = await prisma.pendingPayout.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends PendingPayoutFindFirstArgs>(args?: SelectSubset<T, PendingPayoutFindFirstArgs<ExtArgs>>): Prisma__PendingPayoutClient<$Result.GetResult<Prisma.$PendingPayoutPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PendingPayout that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PendingPayoutFindFirstOrThrowArgs} args - Arguments to find a PendingPayout
+     * @example
+     * // Get one PendingPayout
+     * const pendingPayout = await prisma.pendingPayout.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends PendingPayoutFindFirstOrThrowArgs>(args?: SelectSubset<T, PendingPayoutFindFirstOrThrowArgs<ExtArgs>>): Prisma__PendingPayoutClient<$Result.GetResult<Prisma.$PendingPayoutPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more PendingPayouts that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PendingPayoutFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all PendingPayouts
+     * const pendingPayouts = await prisma.pendingPayout.findMany()
+     * 
+     * // Get first 10 PendingPayouts
+     * const pendingPayouts = await prisma.pendingPayout.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const pendingPayoutWithIdOnly = await prisma.pendingPayout.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends PendingPayoutFindManyArgs>(args?: SelectSubset<T, PendingPayoutFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PendingPayoutPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a PendingPayout.
+     * @param {PendingPayoutCreateArgs} args - Arguments to create a PendingPayout.
+     * @example
+     * // Create one PendingPayout
+     * const PendingPayout = await prisma.pendingPayout.create({
+     *   data: {
+     *     // ... data to create a PendingPayout
+     *   }
+     * })
+     * 
+     */
+    create<T extends PendingPayoutCreateArgs>(args: SelectSubset<T, PendingPayoutCreateArgs<ExtArgs>>): Prisma__PendingPayoutClient<$Result.GetResult<Prisma.$PendingPayoutPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many PendingPayouts.
+     * @param {PendingPayoutCreateManyArgs} args - Arguments to create many PendingPayouts.
+     * @example
+     * // Create many PendingPayouts
+     * const pendingPayout = await prisma.pendingPayout.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends PendingPayoutCreateManyArgs>(args?: SelectSubset<T, PendingPayoutCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many PendingPayouts and returns the data saved in the database.
+     * @param {PendingPayoutCreateManyAndReturnArgs} args - Arguments to create many PendingPayouts.
+     * @example
+     * // Create many PendingPayouts
+     * const pendingPayout = await prisma.pendingPayout.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many PendingPayouts and only return the `id`
+     * const pendingPayoutWithIdOnly = await prisma.pendingPayout.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends PendingPayoutCreateManyAndReturnArgs>(args?: SelectSubset<T, PendingPayoutCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PendingPayoutPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a PendingPayout.
+     * @param {PendingPayoutDeleteArgs} args - Arguments to delete one PendingPayout.
+     * @example
+     * // Delete one PendingPayout
+     * const PendingPayout = await prisma.pendingPayout.delete({
+     *   where: {
+     *     // ... filter to delete one PendingPayout
+     *   }
+     * })
+     * 
+     */
+    delete<T extends PendingPayoutDeleteArgs>(args: SelectSubset<T, PendingPayoutDeleteArgs<ExtArgs>>): Prisma__PendingPayoutClient<$Result.GetResult<Prisma.$PendingPayoutPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one PendingPayout.
+     * @param {PendingPayoutUpdateArgs} args - Arguments to update one PendingPayout.
+     * @example
+     * // Update one PendingPayout
+     * const pendingPayout = await prisma.pendingPayout.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends PendingPayoutUpdateArgs>(args: SelectSubset<T, PendingPayoutUpdateArgs<ExtArgs>>): Prisma__PendingPayoutClient<$Result.GetResult<Prisma.$PendingPayoutPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more PendingPayouts.
+     * @param {PendingPayoutDeleteManyArgs} args - Arguments to filter PendingPayouts to delete.
+     * @example
+     * // Delete a few PendingPayouts
+     * const { count } = await prisma.pendingPayout.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends PendingPayoutDeleteManyArgs>(args?: SelectSubset<T, PendingPayoutDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PendingPayouts.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PendingPayoutUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many PendingPayouts
+     * const pendingPayout = await prisma.pendingPayout.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends PendingPayoutUpdateManyArgs>(args: SelectSubset<T, PendingPayoutUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PendingPayouts and returns the data updated in the database.
+     * @param {PendingPayoutUpdateManyAndReturnArgs} args - Arguments to update many PendingPayouts.
+     * @example
+     * // Update many PendingPayouts
+     * const pendingPayout = await prisma.pendingPayout.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more PendingPayouts and only return the `id`
+     * const pendingPayoutWithIdOnly = await prisma.pendingPayout.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends PendingPayoutUpdateManyAndReturnArgs>(args: SelectSubset<T, PendingPayoutUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PendingPayoutPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one PendingPayout.
+     * @param {PendingPayoutUpsertArgs} args - Arguments to update or create a PendingPayout.
+     * @example
+     * // Update or create a PendingPayout
+     * const pendingPayout = await prisma.pendingPayout.upsert({
+     *   create: {
+     *     // ... data to create a PendingPayout
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the PendingPayout we want to update
+     *   }
+     * })
+     */
+    upsert<T extends PendingPayoutUpsertArgs>(args: SelectSubset<T, PendingPayoutUpsertArgs<ExtArgs>>): Prisma__PendingPayoutClient<$Result.GetResult<Prisma.$PendingPayoutPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of PendingPayouts.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PendingPayoutCountArgs} args - Arguments to filter PendingPayouts to count.
+     * @example
+     * // Count the number of PendingPayouts
+     * const count = await prisma.pendingPayout.count({
+     *   where: {
+     *     // ... the filter for the PendingPayouts we want to count
+     *   }
+     * })
+    **/
+    count<T extends PendingPayoutCountArgs>(
+      args?: Subset<T, PendingPayoutCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], PendingPayoutCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a PendingPayout.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PendingPayoutAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends PendingPayoutAggregateArgs>(args: Subset<T, PendingPayoutAggregateArgs>): Prisma.PrismaPromise<GetPendingPayoutAggregateType<T>>
+
+    /**
+     * Group by PendingPayout.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PendingPayoutGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends PendingPayoutGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: PendingPayoutGroupByArgs['orderBy'] }
+        : { orderBy?: PendingPayoutGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, PendingPayoutGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetPendingPayoutGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the PendingPayout model
+   */
+  readonly fields: PendingPayoutFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for PendingPayout.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__PendingPayoutClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the PendingPayout model
+   */
+  interface PendingPayoutFieldRefs {
+    readonly id: FieldRef<"PendingPayout", 'String'>
+    readonly profileId: FieldRef<"PendingPayout", 'String'>
+    readonly amount: FieldRef<"PendingPayout", 'Int'>
+    readonly reason: FieldRef<"PendingPayout", 'String'>
+    readonly sourceType: FieldRef<"PendingPayout", 'String'>
+    readonly sourceId: FieldRef<"PendingPayout", 'String'>
+    readonly status: FieldRef<"PendingPayout", 'String'>
+    readonly decidedBy: FieldRef<"PendingPayout", 'String'>
+    readonly decidedNote: FieldRef<"PendingPayout", 'String'>
+    readonly decidedAt: FieldRef<"PendingPayout", 'DateTime'>
+    readonly createdAt: FieldRef<"PendingPayout", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * PendingPayout findUnique
+   */
+  export type PendingPayoutFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PendingPayout
+     */
+    select?: PendingPayoutSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PendingPayout
+     */
+    omit?: PendingPayoutOmit<ExtArgs> | null
+    /**
+     * Filter, which PendingPayout to fetch.
+     */
+    where: PendingPayoutWhereUniqueInput
+  }
+
+  /**
+   * PendingPayout findUniqueOrThrow
+   */
+  export type PendingPayoutFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PendingPayout
+     */
+    select?: PendingPayoutSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PendingPayout
+     */
+    omit?: PendingPayoutOmit<ExtArgs> | null
+    /**
+     * Filter, which PendingPayout to fetch.
+     */
+    where: PendingPayoutWhereUniqueInput
+  }
+
+  /**
+   * PendingPayout findFirst
+   */
+  export type PendingPayoutFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PendingPayout
+     */
+    select?: PendingPayoutSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PendingPayout
+     */
+    omit?: PendingPayoutOmit<ExtArgs> | null
+    /**
+     * Filter, which PendingPayout to fetch.
+     */
+    where?: PendingPayoutWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PendingPayouts to fetch.
+     */
+    orderBy?: PendingPayoutOrderByWithRelationInput | PendingPayoutOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PendingPayouts.
+     */
+    cursor?: PendingPayoutWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PendingPayouts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PendingPayouts.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PendingPayouts.
+     */
+    distinct?: PendingPayoutScalarFieldEnum | PendingPayoutScalarFieldEnum[]
+  }
+
+  /**
+   * PendingPayout findFirstOrThrow
+   */
+  export type PendingPayoutFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PendingPayout
+     */
+    select?: PendingPayoutSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PendingPayout
+     */
+    omit?: PendingPayoutOmit<ExtArgs> | null
+    /**
+     * Filter, which PendingPayout to fetch.
+     */
+    where?: PendingPayoutWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PendingPayouts to fetch.
+     */
+    orderBy?: PendingPayoutOrderByWithRelationInput | PendingPayoutOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PendingPayouts.
+     */
+    cursor?: PendingPayoutWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PendingPayouts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PendingPayouts.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PendingPayouts.
+     */
+    distinct?: PendingPayoutScalarFieldEnum | PendingPayoutScalarFieldEnum[]
+  }
+
+  /**
+   * PendingPayout findMany
+   */
+  export type PendingPayoutFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PendingPayout
+     */
+    select?: PendingPayoutSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PendingPayout
+     */
+    omit?: PendingPayoutOmit<ExtArgs> | null
+    /**
+     * Filter, which PendingPayouts to fetch.
+     */
+    where?: PendingPayoutWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PendingPayouts to fetch.
+     */
+    orderBy?: PendingPayoutOrderByWithRelationInput | PendingPayoutOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing PendingPayouts.
+     */
+    cursor?: PendingPayoutWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PendingPayouts from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PendingPayouts.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PendingPayouts.
+     */
+    distinct?: PendingPayoutScalarFieldEnum | PendingPayoutScalarFieldEnum[]
+  }
+
+  /**
+   * PendingPayout create
+   */
+  export type PendingPayoutCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PendingPayout
+     */
+    select?: PendingPayoutSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PendingPayout
+     */
+    omit?: PendingPayoutOmit<ExtArgs> | null
+    /**
+     * The data needed to create a PendingPayout.
+     */
+    data: XOR<PendingPayoutCreateInput, PendingPayoutUncheckedCreateInput>
+  }
+
+  /**
+   * PendingPayout createMany
+   */
+  export type PendingPayoutCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many PendingPayouts.
+     */
+    data: PendingPayoutCreateManyInput | PendingPayoutCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * PendingPayout createManyAndReturn
+   */
+  export type PendingPayoutCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PendingPayout
+     */
+    select?: PendingPayoutSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the PendingPayout
+     */
+    omit?: PendingPayoutOmit<ExtArgs> | null
+    /**
+     * The data used to create many PendingPayouts.
+     */
+    data: PendingPayoutCreateManyInput | PendingPayoutCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * PendingPayout update
+   */
+  export type PendingPayoutUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PendingPayout
+     */
+    select?: PendingPayoutSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PendingPayout
+     */
+    omit?: PendingPayoutOmit<ExtArgs> | null
+    /**
+     * The data needed to update a PendingPayout.
+     */
+    data: XOR<PendingPayoutUpdateInput, PendingPayoutUncheckedUpdateInput>
+    /**
+     * Choose, which PendingPayout to update.
+     */
+    where: PendingPayoutWhereUniqueInput
+  }
+
+  /**
+   * PendingPayout updateMany
+   */
+  export type PendingPayoutUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update PendingPayouts.
+     */
+    data: XOR<PendingPayoutUpdateManyMutationInput, PendingPayoutUncheckedUpdateManyInput>
+    /**
+     * Filter which PendingPayouts to update
+     */
+    where?: PendingPayoutWhereInput
+    /**
+     * Limit how many PendingPayouts to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * PendingPayout updateManyAndReturn
+   */
+  export type PendingPayoutUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PendingPayout
+     */
+    select?: PendingPayoutSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the PendingPayout
+     */
+    omit?: PendingPayoutOmit<ExtArgs> | null
+    /**
+     * The data used to update PendingPayouts.
+     */
+    data: XOR<PendingPayoutUpdateManyMutationInput, PendingPayoutUncheckedUpdateManyInput>
+    /**
+     * Filter which PendingPayouts to update
+     */
+    where?: PendingPayoutWhereInput
+    /**
+     * Limit how many PendingPayouts to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * PendingPayout upsert
+   */
+  export type PendingPayoutUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PendingPayout
+     */
+    select?: PendingPayoutSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PendingPayout
+     */
+    omit?: PendingPayoutOmit<ExtArgs> | null
+    /**
+     * The filter to search for the PendingPayout to update in case it exists.
+     */
+    where: PendingPayoutWhereUniqueInput
+    /**
+     * In case the PendingPayout found by the `where` argument doesn't exist, create a new PendingPayout with this data.
+     */
+    create: XOR<PendingPayoutCreateInput, PendingPayoutUncheckedCreateInput>
+    /**
+     * In case the PendingPayout was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<PendingPayoutUpdateInput, PendingPayoutUncheckedUpdateInput>
+  }
+
+  /**
+   * PendingPayout delete
+   */
+  export type PendingPayoutDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PendingPayout
+     */
+    select?: PendingPayoutSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PendingPayout
+     */
+    omit?: PendingPayoutOmit<ExtArgs> | null
+    /**
+     * Filter which PendingPayout to delete.
+     */
+    where: PendingPayoutWhereUniqueInput
+  }
+
+  /**
+   * PendingPayout deleteMany
+   */
+  export type PendingPayoutDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PendingPayouts to delete
+     */
+    where?: PendingPayoutWhereInput
+    /**
+     * Limit how many PendingPayouts to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * PendingPayout without action
+   */
+  export type PendingPayoutDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PendingPayout
+     */
+    select?: PendingPayoutSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PendingPayout
+     */
+    omit?: PendingPayoutOmit<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -3073,6 +4276,23 @@ export namespace Prisma {
   };
 
   export type BalanceScalarFieldEnum = (typeof BalanceScalarFieldEnum)[keyof typeof BalanceScalarFieldEnum]
+
+
+  export const PendingPayoutScalarFieldEnum: {
+    id: 'id',
+    profileId: 'profileId',
+    amount: 'amount',
+    reason: 'reason',
+    sourceType: 'sourceType',
+    sourceId: 'sourceId',
+    status: 'status',
+    decidedBy: 'decidedBy',
+    decidedNote: 'decidedNote',
+    decidedAt: 'decidedAt',
+    createdAt: 'createdAt'
+  };
+
+  export type PendingPayoutScalarFieldEnum = (typeof PendingPayoutScalarFieldEnum)[keyof typeof PendingPayoutScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -3277,6 +4497,91 @@ export namespace Prisma {
     updatedAt?: DateTimeWithAggregatesFilter<"Balance"> | Date | string
   }
 
+  export type PendingPayoutWhereInput = {
+    AND?: PendingPayoutWhereInput | PendingPayoutWhereInput[]
+    OR?: PendingPayoutWhereInput[]
+    NOT?: PendingPayoutWhereInput | PendingPayoutWhereInput[]
+    id?: UuidFilter<"PendingPayout"> | string
+    profileId?: UuidFilter<"PendingPayout"> | string
+    amount?: IntFilter<"PendingPayout"> | number
+    reason?: StringFilter<"PendingPayout"> | string
+    sourceType?: StringFilter<"PendingPayout"> | string
+    sourceId?: StringFilter<"PendingPayout"> | string
+    status?: StringFilter<"PendingPayout"> | string
+    decidedBy?: UuidNullableFilter<"PendingPayout"> | string | null
+    decidedNote?: StringNullableFilter<"PendingPayout"> | string | null
+    decidedAt?: DateTimeNullableFilter<"PendingPayout"> | Date | string | null
+    createdAt?: DateTimeFilter<"PendingPayout"> | Date | string
+  }
+
+  export type PendingPayoutOrderByWithRelationInput = {
+    id?: SortOrder
+    profileId?: SortOrder
+    amount?: SortOrder
+    reason?: SortOrder
+    sourceType?: SortOrder
+    sourceId?: SortOrder
+    status?: SortOrder
+    decidedBy?: SortOrderInput | SortOrder
+    decidedNote?: SortOrderInput | SortOrder
+    decidedAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type PendingPayoutWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    sourceType_sourceId?: PendingPayoutSourceTypeSourceIdCompoundUniqueInput
+    AND?: PendingPayoutWhereInput | PendingPayoutWhereInput[]
+    OR?: PendingPayoutWhereInput[]
+    NOT?: PendingPayoutWhereInput | PendingPayoutWhereInput[]
+    profileId?: UuidFilter<"PendingPayout"> | string
+    amount?: IntFilter<"PendingPayout"> | number
+    reason?: StringFilter<"PendingPayout"> | string
+    sourceType?: StringFilter<"PendingPayout"> | string
+    sourceId?: StringFilter<"PendingPayout"> | string
+    status?: StringFilter<"PendingPayout"> | string
+    decidedBy?: UuidNullableFilter<"PendingPayout"> | string | null
+    decidedNote?: StringNullableFilter<"PendingPayout"> | string | null
+    decidedAt?: DateTimeNullableFilter<"PendingPayout"> | Date | string | null
+    createdAt?: DateTimeFilter<"PendingPayout"> | Date | string
+  }, "id" | "sourceType_sourceId">
+
+  export type PendingPayoutOrderByWithAggregationInput = {
+    id?: SortOrder
+    profileId?: SortOrder
+    amount?: SortOrder
+    reason?: SortOrder
+    sourceType?: SortOrder
+    sourceId?: SortOrder
+    status?: SortOrder
+    decidedBy?: SortOrderInput | SortOrder
+    decidedNote?: SortOrderInput | SortOrder
+    decidedAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    _count?: PendingPayoutCountOrderByAggregateInput
+    _avg?: PendingPayoutAvgOrderByAggregateInput
+    _max?: PendingPayoutMaxOrderByAggregateInput
+    _min?: PendingPayoutMinOrderByAggregateInput
+    _sum?: PendingPayoutSumOrderByAggregateInput
+  }
+
+  export type PendingPayoutScalarWhereWithAggregatesInput = {
+    AND?: PendingPayoutScalarWhereWithAggregatesInput | PendingPayoutScalarWhereWithAggregatesInput[]
+    OR?: PendingPayoutScalarWhereWithAggregatesInput[]
+    NOT?: PendingPayoutScalarWhereWithAggregatesInput | PendingPayoutScalarWhereWithAggregatesInput[]
+    id?: UuidWithAggregatesFilter<"PendingPayout"> | string
+    profileId?: UuidWithAggregatesFilter<"PendingPayout"> | string
+    amount?: IntWithAggregatesFilter<"PendingPayout"> | number
+    reason?: StringWithAggregatesFilter<"PendingPayout"> | string
+    sourceType?: StringWithAggregatesFilter<"PendingPayout"> | string
+    sourceId?: StringWithAggregatesFilter<"PendingPayout"> | string
+    status?: StringWithAggregatesFilter<"PendingPayout"> | string
+    decidedBy?: UuidNullableWithAggregatesFilter<"PendingPayout"> | string | null
+    decidedNote?: StringNullableWithAggregatesFilter<"PendingPayout"> | string | null
+    decidedAt?: DateTimeNullableWithAggregatesFilter<"PendingPayout"> | Date | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"PendingPayout"> | Date | string
+  }
+
   export type LedgerEntryCreateInput = {
     id?: string
     profileId: string
@@ -3394,6 +4699,104 @@ export namespace Prisma {
     profileId?: StringFieldUpdateOperationsInput | string
     balance?: IntFieldUpdateOperationsInput | number
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PendingPayoutCreateInput = {
+    id?: string
+    profileId: string
+    amount: number
+    reason: string
+    sourceType: string
+    sourceId: string
+    status?: string
+    decidedBy?: string | null
+    decidedNote?: string | null
+    decidedAt?: Date | string | null
+    createdAt?: Date | string
+  }
+
+  export type PendingPayoutUncheckedCreateInput = {
+    id?: string
+    profileId: string
+    amount: number
+    reason: string
+    sourceType: string
+    sourceId: string
+    status?: string
+    decidedBy?: string | null
+    decidedNote?: string | null
+    decidedAt?: Date | string | null
+    createdAt?: Date | string
+  }
+
+  export type PendingPayoutUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    profileId?: StringFieldUpdateOperationsInput | string
+    amount?: IntFieldUpdateOperationsInput | number
+    reason?: StringFieldUpdateOperationsInput | string
+    sourceType?: StringFieldUpdateOperationsInput | string
+    sourceId?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    decidedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    decidedNote?: NullableStringFieldUpdateOperationsInput | string | null
+    decidedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PendingPayoutUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    profileId?: StringFieldUpdateOperationsInput | string
+    amount?: IntFieldUpdateOperationsInput | number
+    reason?: StringFieldUpdateOperationsInput | string
+    sourceType?: StringFieldUpdateOperationsInput | string
+    sourceId?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    decidedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    decidedNote?: NullableStringFieldUpdateOperationsInput | string | null
+    decidedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PendingPayoutCreateManyInput = {
+    id?: string
+    profileId: string
+    amount: number
+    reason: string
+    sourceType: string
+    sourceId: string
+    status?: string
+    decidedBy?: string | null
+    decidedNote?: string | null
+    decidedAt?: Date | string | null
+    createdAt?: Date | string
+  }
+
+  export type PendingPayoutUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    profileId?: StringFieldUpdateOperationsInput | string
+    amount?: IntFieldUpdateOperationsInput | number
+    reason?: StringFieldUpdateOperationsInput | string
+    sourceType?: StringFieldUpdateOperationsInput | string
+    sourceId?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    decidedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    decidedNote?: NullableStringFieldUpdateOperationsInput | string | null
+    decidedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PendingPayoutUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    profileId?: StringFieldUpdateOperationsInput | string
+    amount?: IntFieldUpdateOperationsInput | number
+    reason?: StringFieldUpdateOperationsInput | string
+    sourceType?: StringFieldUpdateOperationsInput | string
+    sourceId?: StringFieldUpdateOperationsInput | string
+    status?: StringFieldUpdateOperationsInput | string
+    decidedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    decidedNote?: NullableStringFieldUpdateOperationsInput | string | null
+    decidedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type UuidFilter<$PrismaModel = never> = {
@@ -3645,6 +5048,86 @@ export namespace Prisma {
     balance?: SortOrder
   }
 
+  export type DateTimeNullableFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+  }
+
+  export type PendingPayoutSourceTypeSourceIdCompoundUniqueInput = {
+    sourceType: string
+    sourceId: string
+  }
+
+  export type PendingPayoutCountOrderByAggregateInput = {
+    id?: SortOrder
+    profileId?: SortOrder
+    amount?: SortOrder
+    reason?: SortOrder
+    sourceType?: SortOrder
+    sourceId?: SortOrder
+    status?: SortOrder
+    decidedBy?: SortOrder
+    decidedNote?: SortOrder
+    decidedAt?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type PendingPayoutAvgOrderByAggregateInput = {
+    amount?: SortOrder
+  }
+
+  export type PendingPayoutMaxOrderByAggregateInput = {
+    id?: SortOrder
+    profileId?: SortOrder
+    amount?: SortOrder
+    reason?: SortOrder
+    sourceType?: SortOrder
+    sourceId?: SortOrder
+    status?: SortOrder
+    decidedBy?: SortOrder
+    decidedNote?: SortOrder
+    decidedAt?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type PendingPayoutMinOrderByAggregateInput = {
+    id?: SortOrder
+    profileId?: SortOrder
+    amount?: SortOrder
+    reason?: SortOrder
+    sourceType?: SortOrder
+    sourceId?: SortOrder
+    status?: SortOrder
+    decidedBy?: SortOrder
+    decidedNote?: SortOrder
+    decidedAt?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type PendingPayoutSumOrderByAggregateInput = {
+    amount?: SortOrder
+  }
+
+  export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>
+  }
+
   export type StringFieldUpdateOperationsInput = {
     set?: string
   }
@@ -3663,6 +5146,10 @@ export namespace Prisma {
 
   export type DateTimeFieldUpdateOperationsInput = {
     set?: Date | string
+  }
+
+  export type NullableDateTimeFieldUpdateOperationsInput = {
+    set?: Date | string | null
   }
 
   export type NestedUuidFilter<$PrismaModel = never> = {
@@ -3849,6 +5336,31 @@ export namespace Prisma {
     _count?: NestedIntFilter<$PrismaModel>
     _min?: NestedDateTimeFilter<$PrismaModel>
     _max?: NestedDateTimeFilter<$PrismaModel>
+  }
+
+  export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+  }
+
+  export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
 

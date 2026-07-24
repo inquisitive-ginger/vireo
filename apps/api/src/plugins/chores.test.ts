@@ -730,6 +730,43 @@ describe('XP event subscriber', () => {
     expect(balance).toBeNull()
   })
 
+  it('awards XP only once across a reopen → re-complete cycle', async () => {
+    // XP is up-only and never debited on reopen, so re-completing must not re-award —
+    // otherwise a reopen/complete loop farms XP without bound.
+    const kid = await getCookieForProfile(KID_ID)
+    const parent = await getCookieForProfile(PARENT_ID)
+    const task = await chorePrisma.task.create({
+      data: { title: 'Mow', assigneeId: KID_ID, createdBy: PARENT_ID, xpReward: 20 },
+    })
+    const complete = () =>
+      app.inject({
+        method: 'PATCH',
+        url: `/api/chores/tasks/${task.id}/complete`,
+        headers: { cookie: kid },
+      })
+    const reopen = () =>
+      app.inject({
+        method: 'PATCH',
+        url: `/api/chores/tasks/${task.id}/reopen`,
+        headers: { cookie: parent },
+      })
+
+    await complete()
+    await new Promise((r) => setTimeout(r, 40))
+    await reopen()
+    await complete()
+    await reopen()
+    await complete()
+    await new Promise((r) => setTimeout(r, 60))
+
+    // Three completions, one award.
+    const balance = await chorePrisma.xpBalance.findUnique({ where: { profileId: KID_ID } })
+    expect(balance?.totalXp).toBe(20)
+    // ...and the task carries the claim.
+    const row = await chorePrisma.task.findUnique({ where: { id: task.id } })
+    expect(row?.xpAwarded).toBe(true)
+  })
+
   it('credits XP to the assignee, not the active session profile', async () => {
     // Parent (tier 4) completes a task on behalf of the kid.
     const task = await chorePrisma.task.create({
