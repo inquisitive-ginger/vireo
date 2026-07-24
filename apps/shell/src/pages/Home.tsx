@@ -1,12 +1,13 @@
-import { type ReactNode, Suspense, useCallback, useState } from 'react'
+import { type ReactNode, useCallback, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
 import { Loader2, Users, ClipboardList, CalendarDays } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { WidgetGrid, PlaceholderCard, PageContainer } from '@family-os/ui'
 import type { WidgetLayoutItem } from '@family-os/ui'
 import { useAuth } from '@family-os/platform'
-import { getLazyWidget } from '../lib/load-plugin'
+import { hasLazyWidget } from '../lib/load-plugin'
 import { WidgetErrorBoundary } from '../components/WidgetErrorBoundary'
+import { WidgetView } from '../components/WidgetView'
 
 type WidgetMeta = { moduleName: string; description: string; icon: LucideIcon }
 
@@ -69,17 +70,13 @@ export function Home({ widgetRemotes }: HomeProps) {
 
     const remoteName = widgetRemotes[item.widgetId]
     if (remoteName) {
-      const Widget = getLazyWidget(remoteName)
-      widgetChildren[item.widgetId] = Widget ? (
+      widgetChildren[item.widgetId] = hasLazyWidget(remoteName) ? (
         <WidgetErrorBoundary
           moduleName={meta.moduleName}
+          remoteName={remoteName}
           onErrorChange={(hasError) => handleErrorChange(item.widgetId, hasError)}
         >
-          <Suspense fallback={<PlaceholderCard {...meta} />}>
-            {/* No size prop — content widgets self-size to their slot via CSS
-                container queries (design-system.md). */}
-            <Widget />
-          </Suspense>
+          <WidgetView remoteName={remoteName} fallback={<PlaceholderCard {...meta} />} />
         </WidgetErrorBoundary>
       ) : (
         <PlaceholderCard {...meta} />

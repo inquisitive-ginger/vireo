@@ -125,7 +125,7 @@ createRoot(document.getElementById('root')!).render(
                     key={route}
                     path={route.replace(/^\//, '')}
                     element={
-                      <PluginErrorBoundary>
+                      <PluginErrorBoundary remoteName={plugin.remoteName}>
                         <PluginView remoteName={plugin.remoteName} />
                       </PluginErrorBoundary>
                     }

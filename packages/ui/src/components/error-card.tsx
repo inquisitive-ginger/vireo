@@ -5,10 +5,16 @@ import { Button } from './button'
 export interface ErrorCardProps {
   moduleName: string
   onRetry?: () => void
+  retryLabel?: string
   className?: string
 }
 
-export function ErrorCard({ moduleName, onRetry, className }: ErrorCardProps) {
+export function ErrorCard({
+  moduleName,
+  onRetry,
+  retryLabel = 'Retry',
+  className,
+}: ErrorCardProps) {
   return (
     <div
       className={cn(
@@ -35,7 +41,7 @@ export function ErrorCard({ moduleName, onRetry, className }: ErrorCardProps) {
             className="h-7 px-2 text-xs-body text-muted-foreground hover:text-foreground"
             onClick={onRetry}
           >
-            Retry
+            {retryLabel}
           </Button>
         )}
       </div>

@@ -1,6 +1,9 @@
-import { describe, it, expect, vi, afterEach } from 'vitest'
+import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { WidgetErrorBoundary } from './WidgetErrorBoundary'
+import { evictWidget } from '@/lib/load-plugin'
+
+vi.mock('@/lib/load-plugin', () => ({ evictWidget: vi.fn() }))
 
 // Flipped by the test to simulate a widget that fails, then loads on retry.
 let shouldThrow = true
@@ -10,18 +13,17 @@ function Flaky() {
 }
 
 describe('WidgetErrorBoundary', () => {
-  afterEach(() => {
+  beforeEach(() => {
+    vi.mocked(evictWidget).mockClear()
     shouldThrow = true
+    vi.spyOn(console, 'error').mockImplementation(() => {})
   })
 
   it('renders the ErrorCard copy and notifies on catch, then remounts on retry', () => {
-    shouldThrow = true
     const onErrorChange = vi.fn()
-    const consoleError = console.error
-    console.error = () => {}
 
     render(
-      <WidgetErrorBoundary moduleName="Chores" onErrorChange={onErrorChange}>
+      <WidgetErrorBoundary moduleName="Chores" remoteName="chores" onErrorChange={onErrorChange}>
         <Flaky />
       </WidgetErrorBoundary>
     )
@@ -32,8 +34,27 @@ describe('WidgetErrorBoundary', () => {
     shouldThrow = false
     fireEvent.click(screen.getByRole('button', { name: 'Retry' }))
 
+    expect(evictWidget).toHaveBeenCalledWith('chores')
     expect(screen.getByText('widget content')).toBeDefined()
     expect(onErrorChange).toHaveBeenLastCalledWith(false)
-    console.error = consoleError
+  })
+
+  it('offers a reload once a retry has been spent', () => {
+    const reload = vi.fn()
+    Object.defineProperty(window, 'location', {
+      configurable: true,
+      value: { ...window.location, reload },
+    })
+
+    render(
+      <WidgetErrorBoundary moduleName="Chores" remoteName="chores">
+        <Flaky />
+      </WidgetErrorBoundary>
+    )
+
+    fireEvent.click(screen.getByRole('button', { name: 'Retry' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Reload' }))
+
+    expect(reload).toHaveBeenCalled()
   })
 })

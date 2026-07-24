@@ -35,3 +35,18 @@ export function getLazyWidget(moduleName: string): LazyExoticComponent<Component
   }
   return widgetCache.get(moduleName)!
 }
+
+export function hasLazyWidget(moduleName: string): boolean {
+  return moduleName in widgetLoaders
+}
+
+// React never re-runs a lazy() whose promise rejected — it caches the rejection and
+// rethrows on every later render. Retrying a failed remote therefore means discarding
+// the cached component so the next getLazy* call builds a fresh one.
+export function evictPlugin(remoteName: string): void {
+  pluginCache.delete(remoteName)
+}
+
+export function evictWidget(moduleName: string): void {
+  widgetCache.delete(moduleName)
+}
