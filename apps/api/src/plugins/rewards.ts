@@ -3,7 +3,16 @@ import type { FastifyPluginAsync } from 'fastify'
 import { prisma } from '@family-os/platform/server'
 import type { EventBus } from '@family-os/platform/server'
 import { FAMILY_PROFILE_ID } from '@family-os/platform/types'
+import {
+  RewardCreateSchema,
+  RewardUpdateSchema,
+  RedemptionCreateSchema,
+  RedemptionDecideSchema,
+  REDEMPTION_STATUSES,
+} from '@family-os/schemas'
+import { rewardsPrisma } from '@family-os/plugin-rewards/db'
 import { getBalance, listEntries, postEntry } from '../lib/ledger'
+import { notify } from '../lib/notify'
 import {
   approvePayout,
   declinePayout,
@@ -15,6 +24,15 @@ import {
   voidPayout,
   type PendingPayoutRecord,
 } from '../lib/payouts'
+import {
+  decideRedemption,
+  listRedemptions,
+  requestRedemption,
+  RedemptionError,
+  type RedemptionRecord,
+  type RedemptionWithReward,
+  type RewardRecord,
+} from '../lib/redemptions'
 
 const DEFAULT_LIMIT = 20
 const MAX_LIMIT = 50
@@ -119,6 +137,55 @@ function serializePayout(p: PendingPayoutRecord) {
     decidedAt: p.decidedAt ? p.decidedAt.toISOString() : null,
     createdAt: p.createdAt.toISOString(),
   }
+}
+
+function serializeReward(r: RewardRecord & { createdAt?: Date }) {
+  return {
+    id: r.id,
+    name: r.name,
+    emoji: r.emoji,
+    description: r.description,
+    cost: r.cost,
+    requiresApproval: r.requiresApproval,
+    // Empty audience = everyone. Null is friendlier to render than [] on the client.
+    audience: r.audience.length > 0 ? r.audience : null,
+    stock: r.stock,
+    active: r.active,
+  }
+}
+
+function serializeRedemption(r: RedemptionRecord | RedemptionWithReward) {
+  return {
+    id: r.id,
+    rewardId: r.rewardId,
+    profileId: r.profileId,
+    cost: r.cost,
+    status: r.status,
+    requestedAt: r.requestedAt.toISOString(),
+    decidedBy: r.decidedBy,
+    decidedAt: r.decidedAt ? r.decidedAt.toISOString() : null,
+    decidedNote: r.decidedNote,
+    reward: 'reward' in r ? r.reward : undefined,
+  }
+}
+
+/** Alert every parent that a request is waiting. notify() skips tier < 2, so this is
+    naturally the set of tier-4 parents; `alert` pushes to their handsets (ADR 029). */
+async function notifyParents(
+  bus: EventBus,
+  input: { title: string; body?: string | null }
+): Promise<void> {
+  const parents = await prisma.profile.findMany({ where: { tier: 4 }, select: { id: true } })
+  await Promise.all(
+    parents.map((p) =>
+      notify(bus, p.id, {
+        title: input.title,
+        body: input.body,
+        variant: 'rewards',
+        priority: 'alert',
+      })
+    )
+  )
 }
 
 const rewardsPlugin: FastifyPluginAsync = async (fastify) => {
@@ -240,6 +307,202 @@ const rewardsPlugin: FastifyPluginAsync = async (fastify) => {
       if (err instanceof PayoutError) {
         return reply.status(409).send({ error: err.message })
       }
+      throw err
+    }
+  })
+
+  // ─── Catalog (M4/4) ──────────────────────────────────────────────────────────
+  // Tier-4 CRUD (`manage rewards.Reward`). A kid never reaches these — browsing the
+  // store to redeem is M4/5 and reads a different, kid-scoped endpoint.
+
+  fastify.get('/rewards/rewards', async (request, reply) => {
+    if (!request.ability.can('manage', 'rewards.Reward')) {
+      return reply.status(403).send({ error: 'Permission denied' })
+    }
+    const query = request.query as { includeRetired?: string }
+    const rewards = await rewardsPrisma.reward.findMany({
+      where: query.includeRetired === 'true' ? {} : { active: true },
+      orderBy: [{ active: 'desc' }, { cost: 'asc' }],
+    })
+    return { rewards: rewards.map(serializeReward) }
+  })
+
+  fastify.post('/rewards/rewards', async (request, reply) => {
+    if (!request.ability.can('manage', 'rewards.Reward')) {
+      return reply.status(403).send({ error: 'Permission denied' })
+    }
+    const parsed = RewardCreateSchema.safeParse(request.body)
+    if (!parsed.success) return reply.status(400).send({ error: parsed.error.flatten() })
+    const d = parsed.data
+    const reward = await rewardsPrisma.reward.create({
+      data: {
+        name: d.name,
+        emoji: d.emoji,
+        description: d.description,
+        cost: d.cost,
+        requiresApproval: d.requiresApproval,
+        audience: d.audience ?? [],
+        stock: d.stock ?? null,
+        active: d.active,
+        createdBy: request.profile.id,
+      },
+    })
+    return reply.status(201).send({ reward: serializeReward(reward) })
+  })
+
+  fastify.patch('/rewards/rewards/:id', async (request, reply) => {
+    if (!request.ability.can('manage', 'rewards.Reward')) {
+      return reply.status(403).send({ error: 'Permission denied' })
+    }
+    const { id } = request.params as { id: string }
+    const parsed = RewardUpdateSchema.safeParse(request.body)
+    if (!parsed.success) return reply.status(400).send({ error: parsed.error.flatten() })
+    const existing = await rewardsPrisma.reward.findUnique({ where: { id } })
+    if (!existing) return reply.status(404).send({ error: 'Reward not found' })
+    const d = parsed.data
+    const reward = await rewardsPrisma.reward.update({
+      where: { id },
+      data: {
+        ...(d.name !== undefined ? { name: d.name } : {}),
+        ...(d.emoji !== undefined ? { emoji: d.emoji } : {}),
+        ...(d.description !== undefined ? { description: d.description } : {}),
+        ...(d.cost !== undefined ? { cost: d.cost } : {}),
+        ...(d.requiresApproval !== undefined ? { requiresApproval: d.requiresApproval } : {}),
+        ...(d.audience !== undefined ? { audience: d.audience ?? [] } : {}),
+        ...(d.stock !== undefined ? { stock: d.stock } : {}),
+        ...(d.active !== undefined ? { active: d.active } : {}),
+      },
+    })
+    return { reward: serializeReward(reward) }
+  })
+
+  // DELETE retires a reward that redemptions reference — those keep their cost
+  // snapshot, so the row must survive (the FK is RESTRICT) — and hard-deletes an
+  // unused one. Either way the store stops showing it.
+  fastify.delete('/rewards/rewards/:id', async (request, reply) => {
+    if (!request.ability.can('manage', 'rewards.Reward')) {
+      return reply.status(403).send({ error: 'Permission denied' })
+    }
+    const { id } = request.params as { id: string }
+    const existing = await rewardsPrisma.reward.findUnique({ where: { id } })
+    if (!existing) return reply.status(404).send({ error: 'Reward not found' })
+    const used = await rewardsPrisma.redemption.count({ where: { rewardId: id } })
+    if (used > 0) {
+      const reward = await rewardsPrisma.reward.update({ where: { id }, data: { active: false } })
+      return { retired: true, reward: serializeReward(reward) }
+    }
+    await rewardsPrisma.reward.delete({ where: { id } })
+    return { deleted: true }
+  })
+
+  // ─── Redemptions (M4/4) ──────────────────────────────────────────────────────
+  // A kid requests a reward (create-own, every tier — ADR 053); the F$ is debited on
+  // request. An approval reward waits in the queue, otherwise it's granted at once.
+  // Tier 4 decides and fulfils.
+
+  fastify.post('/rewards/redemptions', async (request, reply) => {
+    // Create-own only: the redemption is always for the caller, so row-level ownership
+    // is guaranteed by construction. The bare check still honours a revocation override.
+    if (!request.ability.can('create', 'rewards.Redemption')) {
+      return reply.status(403).send({ error: 'Permission denied' })
+    }
+    const parsed = RedemptionCreateSchema.safeParse(request.body)
+    if (!parsed.success) return reply.status(400).send({ error: parsed.error.flatten() })
+
+    const reward = await rewardsPrisma.reward.findUnique({ where: { id: parsed.data.rewardId } })
+    if (!reward) return reply.status(404).send({ error: 'Reward not found' })
+
+    try {
+      const { redemption, balance } = await requestRedemption(fastify.eventBus, {
+        profileId: request.profile.id,
+        reward,
+      })
+      if (redemption.status === 'pending') {
+        await notifyParents(fastify.eventBus, {
+          title: `${request.profile.name} wants ${reward.emoji} ${reward.name}`,
+          body: `${reward.cost} F$ — waiting on your OK`,
+        })
+      }
+      return reply.status(201).send({ redemption: serializeRedemption(redemption), balance })
+    } catch (err) {
+      if (err instanceof RedemptionError)
+        return reply.status(err.status).send({ error: err.message })
+      throw err
+    }
+  })
+
+  // GET /rewards/redemptions?status=&profileId= — the tier-4 queue reads everyone's
+  // (`pending` to decide, `granted` to fulfil); a kid reads its own history. Scope
+  // mirrors the wallet: tier 4 sees all, below that forced to own.
+  fastify.get('/rewards/redemptions', async (request, reply) => {
+    if (!request.ability.can('view', 'rewards.Wallet')) {
+      return reply.status(403).send({ error: 'Permission denied' })
+    }
+    const query = request.query as { status?: string; profileId?: string; limit?: string }
+    const isAdmin = request.profile.tier >= 4
+    const profileId = isAdmin ? query.profileId : request.profile.id
+    if (profileId === FAMILY_PROFILE_ID) {
+      return reply.status(403).send({ error: 'The family profile holds no balance' })
+    }
+
+    const statuses = (query.status ?? 'pending')
+      .split(',')
+      .map((s) => s.trim())
+      .filter((s) => (REDEMPTION_STATUSES as readonly string[]).includes(s))
+    if (statuses.length === 0) {
+      return reply.status(400).send({ error: 'Invalid status' })
+    }
+
+    const limit = Math.min(parseInt(query.limit ?? String(DEFAULT_LIMIT), 10) || DEFAULT_LIMIT, 100)
+    const redemptions = await listRedemptions({
+      profileId: profileId ?? undefined,
+      statuses,
+      limit,
+    })
+    return { redemptions: redemptions.map(serializeRedemption) }
+  })
+
+  // PATCH /rewards/redemptions/:id — a parent grants/declines a pending request, or
+  // fulfils a granted one. Tier 4 only (`decide` via `manage all`). Decline refunds
+  // the snapshot cost and stores the optional note; a decision out of turn is a 409.
+  fastify.patch('/rewards/redemptions/:id', async (request, reply) => {
+    if (!request.ability.can('decide', 'rewards.Redemption')) {
+      return reply.status(403).send({ error: 'Permission denied' })
+    }
+    const { id } = request.params as { id: string }
+    const parsed = RedemptionDecideSchema.safeParse(request.body)
+    if (!parsed.success) return reply.status(400).send({ error: parsed.error.flatten() })
+
+    try {
+      const { redemption, balance } = await decideRedemption(
+        fastify.eventBus,
+        id,
+        request.profile.id,
+        parsed.data.action,
+        parsed.data.note ?? null
+      )
+      // Tell the kid the news (notify() skips tier 1 — they'll see it in the store).
+      // A fulfil is a hand-off the parent does with the kid present, so no ping.
+      if (parsed.data.action !== 'fulfil') {
+        const reward = await rewardsPrisma.reward.findUnique({ where: { id: redemption.rewardId } })
+        const label = reward ? `${reward.emoji} ${reward.name}` : 'your reward'
+        await notify(
+          fastify.eventBus,
+          redemption.profileId,
+          parsed.data.action === 'grant'
+            ? { title: `Yes! ${label}`, variant: 'rewards', priority: 'alert' }
+            : {
+                title: `Not this time — ${label}`,
+                body: redemption.decidedNote,
+                variant: 'rewards',
+                priority: 'alert',
+              }
+        )
+      }
+      return { redemption: serializeRedemption(redemption), balance }
+    } catch (err) {
+      if (err instanceof RedemptionError)
+        return reply.status(err.status).send({ error: err.message })
       throw err
     }
   })

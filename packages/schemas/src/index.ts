@@ -201,3 +201,60 @@ export type BugReportStatus = (typeof BUG_REPORT_STATUSES)[number]
 export type BugReportContext = z.infer<typeof BugReportContextSchema>
 export type BugReportCreateInput = z.infer<typeof BugReportCreateSchema>
 export type BugReportUpdateInput = z.infer<typeof BugReportUpdateSchema>
+
+// ─── Rewards: catalog + redemptions (M4/4) ────────────────────────────────────
+
+/** The redemption lifecycle (spec). A no-approval reward skips `pending`
+    (request → `granted`); an approval reward waits (`pending` → `granted`/`declined`);
+    `granted` → `fulfilled` when the reward is handed over. */
+export const REDEMPTION_STATUSES = ['pending', 'granted', 'declined', 'fulfilled'] as const
+export type RedemptionStatus = (typeof REDEMPTION_STATUSES)[number]
+
+// Cost stays in tens (ADR 052) — a kid does the subtraction in their head while
+// spending, so the ceiling is deliberately low, not a technical limit.
+const CostSchema = z.number().int().min(1, 'Cost must be at least 1').max(1000)
+
+export const RewardCreateSchema = z.object({
+  name: z.string().trim().min(1, 'Name is required').max(60),
+  emoji: z.string().trim().min(1, 'Pick an emoji').max(16),
+  description: OptionalText,
+  cost: CostSchema,
+  requiresApproval: z.boolean().optional().default(false),
+  // null = everyone; a list scopes the reward to specific kids.
+  audience: z.array(UuidSchema).nullish(),
+  // null = unlimited stock.
+  stock: z.number().int().min(0).nullish(),
+  active: z.boolean().optional().default(true),
+})
+
+export const RewardUpdateSchema = z
+  .object({
+    name: z.string().trim().min(1).max(60).optional(),
+    emoji: z.string().trim().min(1).max(16).optional(),
+    description: OptionalText,
+    cost: CostSchema.optional(),
+    requiresApproval: z.boolean().optional(),
+    audience: z.array(UuidSchema).nullish(),
+    stock: z.number().int().min(0).nullish(),
+    active: z.boolean().optional(),
+  })
+  .refine((d) => Object.values(d).some((v) => v !== undefined), {
+    message: 'At least one field is required',
+  })
+
+export const RedemptionCreateSchema = z.object({
+  rewardId: UuidSchema,
+})
+
+/** A parent's decision, or a fulfilment. `grant`/`decline` act on a `pending`
+    request; `fulfil` acts on a `granted` one. `note` is the optional decline reason,
+    quoted back to the kid verbatim (M4/1 gate). */
+export const RedemptionDecideSchema = z.object({
+  action: z.enum(['grant', 'decline', 'fulfil']),
+  note: OptionalText,
+})
+
+export type RewardCreateInput = z.infer<typeof RewardCreateSchema>
+export type RewardUpdateInput = z.infer<typeof RewardUpdateSchema>
+export type RedemptionCreateInput = z.infer<typeof RedemptionCreateSchema>
+export type RedemptionDecideInput = z.infer<typeof RedemptionDecideSchema>

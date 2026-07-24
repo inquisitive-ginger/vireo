@@ -28,6 +28,16 @@ export type Balance = $Result.DefaultSelection<Prisma.$BalancePayload>
  * 
  */
 export type PendingPayout = $Result.DefaultSelection<Prisma.$PendingPayoutPayload>
+/**
+ * Model Reward
+ * 
+ */
+export type Reward = $Result.DefaultSelection<Prisma.$RewardPayload>
+/**
+ * Model Redemption
+ * 
+ */
+export type Redemption = $Result.DefaultSelection<Prisma.$RedemptionPayload>
 
 /**
  * ##  Prisma Client ʲˢ
@@ -179,6 +189,26 @@ export class PrismaClient<
     * ```
     */
   get pendingPayout(): Prisma.PendingPayoutDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.reward`: Exposes CRUD operations for the **Reward** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Rewards
+    * const rewards = await prisma.reward.findMany()
+    * ```
+    */
+  get reward(): Prisma.RewardDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.redemption`: Exposes CRUD operations for the **Redemption** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Redemptions
+    * const redemptions = await prisma.redemption.findMany()
+    * ```
+    */
+  get redemption(): Prisma.RedemptionDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -615,7 +645,9 @@ export namespace Prisma {
   export const ModelName: {
     LedgerEntry: 'LedgerEntry',
     Balance: 'Balance',
-    PendingPayout: 'PendingPayout'
+    PendingPayout: 'PendingPayout',
+    Reward: 'Reward',
+    Redemption: 'Redemption'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -631,7 +663,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "ledgerEntry" | "balance" | "pendingPayout"
+      modelProps: "ledgerEntry" | "balance" | "pendingPayout" | "reward" | "redemption"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -857,6 +889,154 @@ export namespace Prisma {
           }
         }
       }
+      Reward: {
+        payload: Prisma.$RewardPayload<ExtArgs>
+        fields: Prisma.RewardFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.RewardFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RewardPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.RewardFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RewardPayload>
+          }
+          findFirst: {
+            args: Prisma.RewardFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RewardPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.RewardFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RewardPayload>
+          }
+          findMany: {
+            args: Prisma.RewardFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RewardPayload>[]
+          }
+          create: {
+            args: Prisma.RewardCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RewardPayload>
+          }
+          createMany: {
+            args: Prisma.RewardCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.RewardCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RewardPayload>[]
+          }
+          delete: {
+            args: Prisma.RewardDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RewardPayload>
+          }
+          update: {
+            args: Prisma.RewardUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RewardPayload>
+          }
+          deleteMany: {
+            args: Prisma.RewardDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.RewardUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.RewardUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RewardPayload>[]
+          }
+          upsert: {
+            args: Prisma.RewardUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RewardPayload>
+          }
+          aggregate: {
+            args: Prisma.RewardAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateReward>
+          }
+          groupBy: {
+            args: Prisma.RewardGroupByArgs<ExtArgs>
+            result: $Utils.Optional<RewardGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.RewardCountArgs<ExtArgs>
+            result: $Utils.Optional<RewardCountAggregateOutputType> | number
+          }
+        }
+      }
+      Redemption: {
+        payload: Prisma.$RedemptionPayload<ExtArgs>
+        fields: Prisma.RedemptionFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.RedemptionFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RedemptionPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.RedemptionFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RedemptionPayload>
+          }
+          findFirst: {
+            args: Prisma.RedemptionFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RedemptionPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.RedemptionFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RedemptionPayload>
+          }
+          findMany: {
+            args: Prisma.RedemptionFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RedemptionPayload>[]
+          }
+          create: {
+            args: Prisma.RedemptionCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RedemptionPayload>
+          }
+          createMany: {
+            args: Prisma.RedemptionCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.RedemptionCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RedemptionPayload>[]
+          }
+          delete: {
+            args: Prisma.RedemptionDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RedemptionPayload>
+          }
+          update: {
+            args: Prisma.RedemptionUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RedemptionPayload>
+          }
+          deleteMany: {
+            args: Prisma.RedemptionDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.RedemptionUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.RedemptionUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RedemptionPayload>[]
+          }
+          upsert: {
+            args: Prisma.RedemptionUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RedemptionPayload>
+          }
+          aggregate: {
+            args: Prisma.RedemptionAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateRedemption>
+          }
+          groupBy: {
+            args: Prisma.RedemptionGroupByArgs<ExtArgs>
+            result: $Utils.Optional<RedemptionGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.RedemptionCountArgs<ExtArgs>
+            result: $Utils.Optional<RedemptionCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -968,6 +1148,8 @@ export namespace Prisma {
     ledgerEntry?: LedgerEntryOmit
     balance?: BalanceOmit
     pendingPayout?: PendingPayoutOmit
+    reward?: RewardOmit
+    redemption?: RedemptionOmit
   }
 
   /* Types for Logging */
@@ -1042,6 +1224,36 @@ export namespace Prisma {
    * Count Types
    */
 
+
+  /**
+   * Count Type RewardCountOutputType
+   */
+
+  export type RewardCountOutputType = {
+    redemptions: number
+  }
+
+  export type RewardCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    redemptions?: boolean | RewardCountOutputTypeCountRedemptionsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * RewardCountOutputType without action
+   */
+  export type RewardCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the RewardCountOutputType
+     */
+    select?: RewardCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * RewardCountOutputType without action
+   */
+  export type RewardCountOutputTypeCountRedemptionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: RedemptionWhereInput
+  }
 
 
   /**
@@ -4242,6 +4454,2342 @@ export namespace Prisma {
 
 
   /**
+   * Model Reward
+   */
+
+  export type AggregateReward = {
+    _count: RewardCountAggregateOutputType | null
+    _avg: RewardAvgAggregateOutputType | null
+    _sum: RewardSumAggregateOutputType | null
+    _min: RewardMinAggregateOutputType | null
+    _max: RewardMaxAggregateOutputType | null
+  }
+
+  export type RewardAvgAggregateOutputType = {
+    cost: number | null
+    stock: number | null
+  }
+
+  export type RewardSumAggregateOutputType = {
+    cost: number | null
+    stock: number | null
+  }
+
+  export type RewardMinAggregateOutputType = {
+    id: string | null
+    name: string | null
+    emoji: string | null
+    description: string | null
+    cost: number | null
+    requiresApproval: boolean | null
+    stock: number | null
+    active: boolean | null
+    createdBy: string | null
+    createdAt: Date | null
+  }
+
+  export type RewardMaxAggregateOutputType = {
+    id: string | null
+    name: string | null
+    emoji: string | null
+    description: string | null
+    cost: number | null
+    requiresApproval: boolean | null
+    stock: number | null
+    active: boolean | null
+    createdBy: string | null
+    createdAt: Date | null
+  }
+
+  export type RewardCountAggregateOutputType = {
+    id: number
+    name: number
+    emoji: number
+    description: number
+    cost: number
+    requiresApproval: number
+    audience: number
+    stock: number
+    active: number
+    createdBy: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type RewardAvgAggregateInputType = {
+    cost?: true
+    stock?: true
+  }
+
+  export type RewardSumAggregateInputType = {
+    cost?: true
+    stock?: true
+  }
+
+  export type RewardMinAggregateInputType = {
+    id?: true
+    name?: true
+    emoji?: true
+    description?: true
+    cost?: true
+    requiresApproval?: true
+    stock?: true
+    active?: true
+    createdBy?: true
+    createdAt?: true
+  }
+
+  export type RewardMaxAggregateInputType = {
+    id?: true
+    name?: true
+    emoji?: true
+    description?: true
+    cost?: true
+    requiresApproval?: true
+    stock?: true
+    active?: true
+    createdBy?: true
+    createdAt?: true
+  }
+
+  export type RewardCountAggregateInputType = {
+    id?: true
+    name?: true
+    emoji?: true
+    description?: true
+    cost?: true
+    requiresApproval?: true
+    audience?: true
+    stock?: true
+    active?: true
+    createdBy?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type RewardAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Reward to aggregate.
+     */
+    where?: RewardWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Rewards to fetch.
+     */
+    orderBy?: RewardOrderByWithRelationInput | RewardOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: RewardWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Rewards from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Rewards.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Rewards
+    **/
+    _count?: true | RewardCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: RewardAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: RewardSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: RewardMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: RewardMaxAggregateInputType
+  }
+
+  export type GetRewardAggregateType<T extends RewardAggregateArgs> = {
+        [P in keyof T & keyof AggregateReward]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateReward[P]>
+      : GetScalarType<T[P], AggregateReward[P]>
+  }
+
+
+
+
+  export type RewardGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: RewardWhereInput
+    orderBy?: RewardOrderByWithAggregationInput | RewardOrderByWithAggregationInput[]
+    by: RewardScalarFieldEnum[] | RewardScalarFieldEnum
+    having?: RewardScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: RewardCountAggregateInputType | true
+    _avg?: RewardAvgAggregateInputType
+    _sum?: RewardSumAggregateInputType
+    _min?: RewardMinAggregateInputType
+    _max?: RewardMaxAggregateInputType
+  }
+
+  export type RewardGroupByOutputType = {
+    id: string
+    name: string
+    emoji: string
+    description: string | null
+    cost: number
+    requiresApproval: boolean
+    audience: string[]
+    stock: number | null
+    active: boolean
+    createdBy: string
+    createdAt: Date
+    _count: RewardCountAggregateOutputType | null
+    _avg: RewardAvgAggregateOutputType | null
+    _sum: RewardSumAggregateOutputType | null
+    _min: RewardMinAggregateOutputType | null
+    _max: RewardMaxAggregateOutputType | null
+  }
+
+  type GetRewardGroupByPayload<T extends RewardGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<RewardGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof RewardGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], RewardGroupByOutputType[P]>
+            : GetScalarType<T[P], RewardGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type RewardSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    name?: boolean
+    emoji?: boolean
+    description?: boolean
+    cost?: boolean
+    requiresApproval?: boolean
+    audience?: boolean
+    stock?: boolean
+    active?: boolean
+    createdBy?: boolean
+    createdAt?: boolean
+    redemptions?: boolean | Reward$redemptionsArgs<ExtArgs>
+    _count?: boolean | RewardCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["reward"]>
+
+  export type RewardSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    name?: boolean
+    emoji?: boolean
+    description?: boolean
+    cost?: boolean
+    requiresApproval?: boolean
+    audience?: boolean
+    stock?: boolean
+    active?: boolean
+    createdBy?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["reward"]>
+
+  export type RewardSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    name?: boolean
+    emoji?: boolean
+    description?: boolean
+    cost?: boolean
+    requiresApproval?: boolean
+    audience?: boolean
+    stock?: boolean
+    active?: boolean
+    createdBy?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["reward"]>
+
+  export type RewardSelectScalar = {
+    id?: boolean
+    name?: boolean
+    emoji?: boolean
+    description?: boolean
+    cost?: boolean
+    requiresApproval?: boolean
+    audience?: boolean
+    stock?: boolean
+    active?: boolean
+    createdBy?: boolean
+    createdAt?: boolean
+  }
+
+  export type RewardOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "emoji" | "description" | "cost" | "requiresApproval" | "audience" | "stock" | "active" | "createdBy" | "createdAt", ExtArgs["result"]["reward"]>
+  export type RewardInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    redemptions?: boolean | Reward$redemptionsArgs<ExtArgs>
+    _count?: boolean | RewardCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type RewardIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+  export type RewardIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+
+  export type $RewardPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Reward"
+    objects: {
+      redemptions: Prisma.$RedemptionPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      name: string
+      emoji: string
+      description: string | null
+      cost: number
+      requiresApproval: boolean
+      audience: string[]
+      stock: number | null
+      active: boolean
+      createdBy: string
+      createdAt: Date
+    }, ExtArgs["result"]["reward"]>
+    composites: {}
+  }
+
+  type RewardGetPayload<S extends boolean | null | undefined | RewardDefaultArgs> = $Result.GetResult<Prisma.$RewardPayload, S>
+
+  type RewardCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<RewardFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: RewardCountAggregateInputType | true
+    }
+
+  export interface RewardDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Reward'], meta: { name: 'Reward' } }
+    /**
+     * Find zero or one Reward that matches the filter.
+     * @param {RewardFindUniqueArgs} args - Arguments to find a Reward
+     * @example
+     * // Get one Reward
+     * const reward = await prisma.reward.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends RewardFindUniqueArgs>(args: SelectSubset<T, RewardFindUniqueArgs<ExtArgs>>): Prisma__RewardClient<$Result.GetResult<Prisma.$RewardPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Reward that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {RewardFindUniqueOrThrowArgs} args - Arguments to find a Reward
+     * @example
+     * // Get one Reward
+     * const reward = await prisma.reward.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends RewardFindUniqueOrThrowArgs>(args: SelectSubset<T, RewardFindUniqueOrThrowArgs<ExtArgs>>): Prisma__RewardClient<$Result.GetResult<Prisma.$RewardPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Reward that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RewardFindFirstArgs} args - Arguments to find a Reward
+     * @example
+     * // Get one Reward
+     * const reward = await prisma.reward.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends RewardFindFirstArgs>(args?: SelectSubset<T, RewardFindFirstArgs<ExtArgs>>): Prisma__RewardClient<$Result.GetResult<Prisma.$RewardPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Reward that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RewardFindFirstOrThrowArgs} args - Arguments to find a Reward
+     * @example
+     * // Get one Reward
+     * const reward = await prisma.reward.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends RewardFindFirstOrThrowArgs>(args?: SelectSubset<T, RewardFindFirstOrThrowArgs<ExtArgs>>): Prisma__RewardClient<$Result.GetResult<Prisma.$RewardPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Rewards that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RewardFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Rewards
+     * const rewards = await prisma.reward.findMany()
+     * 
+     * // Get first 10 Rewards
+     * const rewards = await prisma.reward.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const rewardWithIdOnly = await prisma.reward.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends RewardFindManyArgs>(args?: SelectSubset<T, RewardFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RewardPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Reward.
+     * @param {RewardCreateArgs} args - Arguments to create a Reward.
+     * @example
+     * // Create one Reward
+     * const Reward = await prisma.reward.create({
+     *   data: {
+     *     // ... data to create a Reward
+     *   }
+     * })
+     * 
+     */
+    create<T extends RewardCreateArgs>(args: SelectSubset<T, RewardCreateArgs<ExtArgs>>): Prisma__RewardClient<$Result.GetResult<Prisma.$RewardPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Rewards.
+     * @param {RewardCreateManyArgs} args - Arguments to create many Rewards.
+     * @example
+     * // Create many Rewards
+     * const reward = await prisma.reward.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends RewardCreateManyArgs>(args?: SelectSubset<T, RewardCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Rewards and returns the data saved in the database.
+     * @param {RewardCreateManyAndReturnArgs} args - Arguments to create many Rewards.
+     * @example
+     * // Create many Rewards
+     * const reward = await prisma.reward.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Rewards and only return the `id`
+     * const rewardWithIdOnly = await prisma.reward.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends RewardCreateManyAndReturnArgs>(args?: SelectSubset<T, RewardCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RewardPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a Reward.
+     * @param {RewardDeleteArgs} args - Arguments to delete one Reward.
+     * @example
+     * // Delete one Reward
+     * const Reward = await prisma.reward.delete({
+     *   where: {
+     *     // ... filter to delete one Reward
+     *   }
+     * })
+     * 
+     */
+    delete<T extends RewardDeleteArgs>(args: SelectSubset<T, RewardDeleteArgs<ExtArgs>>): Prisma__RewardClient<$Result.GetResult<Prisma.$RewardPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Reward.
+     * @param {RewardUpdateArgs} args - Arguments to update one Reward.
+     * @example
+     * // Update one Reward
+     * const reward = await prisma.reward.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends RewardUpdateArgs>(args: SelectSubset<T, RewardUpdateArgs<ExtArgs>>): Prisma__RewardClient<$Result.GetResult<Prisma.$RewardPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Rewards.
+     * @param {RewardDeleteManyArgs} args - Arguments to filter Rewards to delete.
+     * @example
+     * // Delete a few Rewards
+     * const { count } = await prisma.reward.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends RewardDeleteManyArgs>(args?: SelectSubset<T, RewardDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Rewards.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RewardUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Rewards
+     * const reward = await prisma.reward.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends RewardUpdateManyArgs>(args: SelectSubset<T, RewardUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Rewards and returns the data updated in the database.
+     * @param {RewardUpdateManyAndReturnArgs} args - Arguments to update many Rewards.
+     * @example
+     * // Update many Rewards
+     * const reward = await prisma.reward.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more Rewards and only return the `id`
+     * const rewardWithIdOnly = await prisma.reward.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends RewardUpdateManyAndReturnArgs>(args: SelectSubset<T, RewardUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RewardPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one Reward.
+     * @param {RewardUpsertArgs} args - Arguments to update or create a Reward.
+     * @example
+     * // Update or create a Reward
+     * const reward = await prisma.reward.upsert({
+     *   create: {
+     *     // ... data to create a Reward
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Reward we want to update
+     *   }
+     * })
+     */
+    upsert<T extends RewardUpsertArgs>(args: SelectSubset<T, RewardUpsertArgs<ExtArgs>>): Prisma__RewardClient<$Result.GetResult<Prisma.$RewardPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of Rewards.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RewardCountArgs} args - Arguments to filter Rewards to count.
+     * @example
+     * // Count the number of Rewards
+     * const count = await prisma.reward.count({
+     *   where: {
+     *     // ... the filter for the Rewards we want to count
+     *   }
+     * })
+    **/
+    count<T extends RewardCountArgs>(
+      args?: Subset<T, RewardCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], RewardCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Reward.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RewardAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends RewardAggregateArgs>(args: Subset<T, RewardAggregateArgs>): Prisma.PrismaPromise<GetRewardAggregateType<T>>
+
+    /**
+     * Group by Reward.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RewardGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends RewardGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: RewardGroupByArgs['orderBy'] }
+        : { orderBy?: RewardGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, RewardGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetRewardGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Reward model
+   */
+  readonly fields: RewardFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Reward.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__RewardClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    redemptions<T extends Reward$redemptionsArgs<ExtArgs> = {}>(args?: Subset<T, Reward$redemptionsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RedemptionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Reward model
+   */
+  interface RewardFieldRefs {
+    readonly id: FieldRef<"Reward", 'String'>
+    readonly name: FieldRef<"Reward", 'String'>
+    readonly emoji: FieldRef<"Reward", 'String'>
+    readonly description: FieldRef<"Reward", 'String'>
+    readonly cost: FieldRef<"Reward", 'Int'>
+    readonly requiresApproval: FieldRef<"Reward", 'Boolean'>
+    readonly audience: FieldRef<"Reward", 'String[]'>
+    readonly stock: FieldRef<"Reward", 'Int'>
+    readonly active: FieldRef<"Reward", 'Boolean'>
+    readonly createdBy: FieldRef<"Reward", 'String'>
+    readonly createdAt: FieldRef<"Reward", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Reward findUnique
+   */
+  export type RewardFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Reward
+     */
+    select?: RewardSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Reward
+     */
+    omit?: RewardOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RewardInclude<ExtArgs> | null
+    /**
+     * Filter, which Reward to fetch.
+     */
+    where: RewardWhereUniqueInput
+  }
+
+  /**
+   * Reward findUniqueOrThrow
+   */
+  export type RewardFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Reward
+     */
+    select?: RewardSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Reward
+     */
+    omit?: RewardOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RewardInclude<ExtArgs> | null
+    /**
+     * Filter, which Reward to fetch.
+     */
+    where: RewardWhereUniqueInput
+  }
+
+  /**
+   * Reward findFirst
+   */
+  export type RewardFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Reward
+     */
+    select?: RewardSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Reward
+     */
+    omit?: RewardOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RewardInclude<ExtArgs> | null
+    /**
+     * Filter, which Reward to fetch.
+     */
+    where?: RewardWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Rewards to fetch.
+     */
+    orderBy?: RewardOrderByWithRelationInput | RewardOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Rewards.
+     */
+    cursor?: RewardWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Rewards from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Rewards.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Rewards.
+     */
+    distinct?: RewardScalarFieldEnum | RewardScalarFieldEnum[]
+  }
+
+  /**
+   * Reward findFirstOrThrow
+   */
+  export type RewardFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Reward
+     */
+    select?: RewardSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Reward
+     */
+    omit?: RewardOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RewardInclude<ExtArgs> | null
+    /**
+     * Filter, which Reward to fetch.
+     */
+    where?: RewardWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Rewards to fetch.
+     */
+    orderBy?: RewardOrderByWithRelationInput | RewardOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Rewards.
+     */
+    cursor?: RewardWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Rewards from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Rewards.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Rewards.
+     */
+    distinct?: RewardScalarFieldEnum | RewardScalarFieldEnum[]
+  }
+
+  /**
+   * Reward findMany
+   */
+  export type RewardFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Reward
+     */
+    select?: RewardSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Reward
+     */
+    omit?: RewardOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RewardInclude<ExtArgs> | null
+    /**
+     * Filter, which Rewards to fetch.
+     */
+    where?: RewardWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Rewards to fetch.
+     */
+    orderBy?: RewardOrderByWithRelationInput | RewardOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Rewards.
+     */
+    cursor?: RewardWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Rewards from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Rewards.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Rewards.
+     */
+    distinct?: RewardScalarFieldEnum | RewardScalarFieldEnum[]
+  }
+
+  /**
+   * Reward create
+   */
+  export type RewardCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Reward
+     */
+    select?: RewardSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Reward
+     */
+    omit?: RewardOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RewardInclude<ExtArgs> | null
+    /**
+     * The data needed to create a Reward.
+     */
+    data: XOR<RewardCreateInput, RewardUncheckedCreateInput>
+  }
+
+  /**
+   * Reward createMany
+   */
+  export type RewardCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Rewards.
+     */
+    data: RewardCreateManyInput | RewardCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Reward createManyAndReturn
+   */
+  export type RewardCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Reward
+     */
+    select?: RewardSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Reward
+     */
+    omit?: RewardOmit<ExtArgs> | null
+    /**
+     * The data used to create many Rewards.
+     */
+    data: RewardCreateManyInput | RewardCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Reward update
+   */
+  export type RewardUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Reward
+     */
+    select?: RewardSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Reward
+     */
+    omit?: RewardOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RewardInclude<ExtArgs> | null
+    /**
+     * The data needed to update a Reward.
+     */
+    data: XOR<RewardUpdateInput, RewardUncheckedUpdateInput>
+    /**
+     * Choose, which Reward to update.
+     */
+    where: RewardWhereUniqueInput
+  }
+
+  /**
+   * Reward updateMany
+   */
+  export type RewardUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Rewards.
+     */
+    data: XOR<RewardUpdateManyMutationInput, RewardUncheckedUpdateManyInput>
+    /**
+     * Filter which Rewards to update
+     */
+    where?: RewardWhereInput
+    /**
+     * Limit how many Rewards to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Reward updateManyAndReturn
+   */
+  export type RewardUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Reward
+     */
+    select?: RewardSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Reward
+     */
+    omit?: RewardOmit<ExtArgs> | null
+    /**
+     * The data used to update Rewards.
+     */
+    data: XOR<RewardUpdateManyMutationInput, RewardUncheckedUpdateManyInput>
+    /**
+     * Filter which Rewards to update
+     */
+    where?: RewardWhereInput
+    /**
+     * Limit how many Rewards to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Reward upsert
+   */
+  export type RewardUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Reward
+     */
+    select?: RewardSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Reward
+     */
+    omit?: RewardOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RewardInclude<ExtArgs> | null
+    /**
+     * The filter to search for the Reward to update in case it exists.
+     */
+    where: RewardWhereUniqueInput
+    /**
+     * In case the Reward found by the `where` argument doesn't exist, create a new Reward with this data.
+     */
+    create: XOR<RewardCreateInput, RewardUncheckedCreateInput>
+    /**
+     * In case the Reward was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<RewardUpdateInput, RewardUncheckedUpdateInput>
+  }
+
+  /**
+   * Reward delete
+   */
+  export type RewardDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Reward
+     */
+    select?: RewardSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Reward
+     */
+    omit?: RewardOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RewardInclude<ExtArgs> | null
+    /**
+     * Filter which Reward to delete.
+     */
+    where: RewardWhereUniqueInput
+  }
+
+  /**
+   * Reward deleteMany
+   */
+  export type RewardDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Rewards to delete
+     */
+    where?: RewardWhereInput
+    /**
+     * Limit how many Rewards to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * Reward.redemptions
+   */
+  export type Reward$redemptionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Redemption
+     */
+    select?: RedemptionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Redemption
+     */
+    omit?: RedemptionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RedemptionInclude<ExtArgs> | null
+    where?: RedemptionWhereInput
+    orderBy?: RedemptionOrderByWithRelationInput | RedemptionOrderByWithRelationInput[]
+    cursor?: RedemptionWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: RedemptionScalarFieldEnum | RedemptionScalarFieldEnum[]
+  }
+
+  /**
+   * Reward without action
+   */
+  export type RewardDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Reward
+     */
+    select?: RewardSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Reward
+     */
+    omit?: RewardOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RewardInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model Redemption
+   */
+
+  export type AggregateRedemption = {
+    _count: RedemptionCountAggregateOutputType | null
+    _avg: RedemptionAvgAggregateOutputType | null
+    _sum: RedemptionSumAggregateOutputType | null
+    _min: RedemptionMinAggregateOutputType | null
+    _max: RedemptionMaxAggregateOutputType | null
+  }
+
+  export type RedemptionAvgAggregateOutputType = {
+    cost: number | null
+  }
+
+  export type RedemptionSumAggregateOutputType = {
+    cost: number | null
+  }
+
+  export type RedemptionMinAggregateOutputType = {
+    id: string | null
+    rewardId: string | null
+    profileId: string | null
+    cost: number | null
+    status: string | null
+    requestedAt: Date | null
+    decidedBy: string | null
+    decidedAt: Date | null
+    decidedNote: string | null
+  }
+
+  export type RedemptionMaxAggregateOutputType = {
+    id: string | null
+    rewardId: string | null
+    profileId: string | null
+    cost: number | null
+    status: string | null
+    requestedAt: Date | null
+    decidedBy: string | null
+    decidedAt: Date | null
+    decidedNote: string | null
+  }
+
+  export type RedemptionCountAggregateOutputType = {
+    id: number
+    rewardId: number
+    profileId: number
+    cost: number
+    status: number
+    requestedAt: number
+    decidedBy: number
+    decidedAt: number
+    decidedNote: number
+    _all: number
+  }
+
+
+  export type RedemptionAvgAggregateInputType = {
+    cost?: true
+  }
+
+  export type RedemptionSumAggregateInputType = {
+    cost?: true
+  }
+
+  export type RedemptionMinAggregateInputType = {
+    id?: true
+    rewardId?: true
+    profileId?: true
+    cost?: true
+    status?: true
+    requestedAt?: true
+    decidedBy?: true
+    decidedAt?: true
+    decidedNote?: true
+  }
+
+  export type RedemptionMaxAggregateInputType = {
+    id?: true
+    rewardId?: true
+    profileId?: true
+    cost?: true
+    status?: true
+    requestedAt?: true
+    decidedBy?: true
+    decidedAt?: true
+    decidedNote?: true
+  }
+
+  export type RedemptionCountAggregateInputType = {
+    id?: true
+    rewardId?: true
+    profileId?: true
+    cost?: true
+    status?: true
+    requestedAt?: true
+    decidedBy?: true
+    decidedAt?: true
+    decidedNote?: true
+    _all?: true
+  }
+
+  export type RedemptionAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Redemption to aggregate.
+     */
+    where?: RedemptionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Redemptions to fetch.
+     */
+    orderBy?: RedemptionOrderByWithRelationInput | RedemptionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: RedemptionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Redemptions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Redemptions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Redemptions
+    **/
+    _count?: true | RedemptionCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: RedemptionAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: RedemptionSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: RedemptionMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: RedemptionMaxAggregateInputType
+  }
+
+  export type GetRedemptionAggregateType<T extends RedemptionAggregateArgs> = {
+        [P in keyof T & keyof AggregateRedemption]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateRedemption[P]>
+      : GetScalarType<T[P], AggregateRedemption[P]>
+  }
+
+
+
+
+  export type RedemptionGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: RedemptionWhereInput
+    orderBy?: RedemptionOrderByWithAggregationInput | RedemptionOrderByWithAggregationInput[]
+    by: RedemptionScalarFieldEnum[] | RedemptionScalarFieldEnum
+    having?: RedemptionScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: RedemptionCountAggregateInputType | true
+    _avg?: RedemptionAvgAggregateInputType
+    _sum?: RedemptionSumAggregateInputType
+    _min?: RedemptionMinAggregateInputType
+    _max?: RedemptionMaxAggregateInputType
+  }
+
+  export type RedemptionGroupByOutputType = {
+    id: string
+    rewardId: string
+    profileId: string
+    cost: number
+    status: string
+    requestedAt: Date
+    decidedBy: string | null
+    decidedAt: Date | null
+    decidedNote: string | null
+    _count: RedemptionCountAggregateOutputType | null
+    _avg: RedemptionAvgAggregateOutputType | null
+    _sum: RedemptionSumAggregateOutputType | null
+    _min: RedemptionMinAggregateOutputType | null
+    _max: RedemptionMaxAggregateOutputType | null
+  }
+
+  type GetRedemptionGroupByPayload<T extends RedemptionGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<RedemptionGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof RedemptionGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], RedemptionGroupByOutputType[P]>
+            : GetScalarType<T[P], RedemptionGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type RedemptionSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    rewardId?: boolean
+    profileId?: boolean
+    cost?: boolean
+    status?: boolean
+    requestedAt?: boolean
+    decidedBy?: boolean
+    decidedAt?: boolean
+    decidedNote?: boolean
+    reward?: boolean | RewardDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["redemption"]>
+
+  export type RedemptionSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    rewardId?: boolean
+    profileId?: boolean
+    cost?: boolean
+    status?: boolean
+    requestedAt?: boolean
+    decidedBy?: boolean
+    decidedAt?: boolean
+    decidedNote?: boolean
+    reward?: boolean | RewardDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["redemption"]>
+
+  export type RedemptionSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    rewardId?: boolean
+    profileId?: boolean
+    cost?: boolean
+    status?: boolean
+    requestedAt?: boolean
+    decidedBy?: boolean
+    decidedAt?: boolean
+    decidedNote?: boolean
+    reward?: boolean | RewardDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["redemption"]>
+
+  export type RedemptionSelectScalar = {
+    id?: boolean
+    rewardId?: boolean
+    profileId?: boolean
+    cost?: boolean
+    status?: boolean
+    requestedAt?: boolean
+    decidedBy?: boolean
+    decidedAt?: boolean
+    decidedNote?: boolean
+  }
+
+  export type RedemptionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "rewardId" | "profileId" | "cost" | "status" | "requestedAt" | "decidedBy" | "decidedAt" | "decidedNote", ExtArgs["result"]["redemption"]>
+  export type RedemptionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    reward?: boolean | RewardDefaultArgs<ExtArgs>
+  }
+  export type RedemptionIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    reward?: boolean | RewardDefaultArgs<ExtArgs>
+  }
+  export type RedemptionIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    reward?: boolean | RewardDefaultArgs<ExtArgs>
+  }
+
+  export type $RedemptionPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Redemption"
+    objects: {
+      reward: Prisma.$RewardPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      rewardId: string
+      profileId: string
+      cost: number
+      status: string
+      requestedAt: Date
+      decidedBy: string | null
+      decidedAt: Date | null
+      decidedNote: string | null
+    }, ExtArgs["result"]["redemption"]>
+    composites: {}
+  }
+
+  type RedemptionGetPayload<S extends boolean | null | undefined | RedemptionDefaultArgs> = $Result.GetResult<Prisma.$RedemptionPayload, S>
+
+  type RedemptionCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<RedemptionFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: RedemptionCountAggregateInputType | true
+    }
+
+  export interface RedemptionDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Redemption'], meta: { name: 'Redemption' } }
+    /**
+     * Find zero or one Redemption that matches the filter.
+     * @param {RedemptionFindUniqueArgs} args - Arguments to find a Redemption
+     * @example
+     * // Get one Redemption
+     * const redemption = await prisma.redemption.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends RedemptionFindUniqueArgs>(args: SelectSubset<T, RedemptionFindUniqueArgs<ExtArgs>>): Prisma__RedemptionClient<$Result.GetResult<Prisma.$RedemptionPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Redemption that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {RedemptionFindUniqueOrThrowArgs} args - Arguments to find a Redemption
+     * @example
+     * // Get one Redemption
+     * const redemption = await prisma.redemption.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends RedemptionFindUniqueOrThrowArgs>(args: SelectSubset<T, RedemptionFindUniqueOrThrowArgs<ExtArgs>>): Prisma__RedemptionClient<$Result.GetResult<Prisma.$RedemptionPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Redemption that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RedemptionFindFirstArgs} args - Arguments to find a Redemption
+     * @example
+     * // Get one Redemption
+     * const redemption = await prisma.redemption.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends RedemptionFindFirstArgs>(args?: SelectSubset<T, RedemptionFindFirstArgs<ExtArgs>>): Prisma__RedemptionClient<$Result.GetResult<Prisma.$RedemptionPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Redemption that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RedemptionFindFirstOrThrowArgs} args - Arguments to find a Redemption
+     * @example
+     * // Get one Redemption
+     * const redemption = await prisma.redemption.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends RedemptionFindFirstOrThrowArgs>(args?: SelectSubset<T, RedemptionFindFirstOrThrowArgs<ExtArgs>>): Prisma__RedemptionClient<$Result.GetResult<Prisma.$RedemptionPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Redemptions that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RedemptionFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Redemptions
+     * const redemptions = await prisma.redemption.findMany()
+     * 
+     * // Get first 10 Redemptions
+     * const redemptions = await prisma.redemption.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const redemptionWithIdOnly = await prisma.redemption.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends RedemptionFindManyArgs>(args?: SelectSubset<T, RedemptionFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RedemptionPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Redemption.
+     * @param {RedemptionCreateArgs} args - Arguments to create a Redemption.
+     * @example
+     * // Create one Redemption
+     * const Redemption = await prisma.redemption.create({
+     *   data: {
+     *     // ... data to create a Redemption
+     *   }
+     * })
+     * 
+     */
+    create<T extends RedemptionCreateArgs>(args: SelectSubset<T, RedemptionCreateArgs<ExtArgs>>): Prisma__RedemptionClient<$Result.GetResult<Prisma.$RedemptionPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Redemptions.
+     * @param {RedemptionCreateManyArgs} args - Arguments to create many Redemptions.
+     * @example
+     * // Create many Redemptions
+     * const redemption = await prisma.redemption.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends RedemptionCreateManyArgs>(args?: SelectSubset<T, RedemptionCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Redemptions and returns the data saved in the database.
+     * @param {RedemptionCreateManyAndReturnArgs} args - Arguments to create many Redemptions.
+     * @example
+     * // Create many Redemptions
+     * const redemption = await prisma.redemption.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Redemptions and only return the `id`
+     * const redemptionWithIdOnly = await prisma.redemption.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends RedemptionCreateManyAndReturnArgs>(args?: SelectSubset<T, RedemptionCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RedemptionPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a Redemption.
+     * @param {RedemptionDeleteArgs} args - Arguments to delete one Redemption.
+     * @example
+     * // Delete one Redemption
+     * const Redemption = await prisma.redemption.delete({
+     *   where: {
+     *     // ... filter to delete one Redemption
+     *   }
+     * })
+     * 
+     */
+    delete<T extends RedemptionDeleteArgs>(args: SelectSubset<T, RedemptionDeleteArgs<ExtArgs>>): Prisma__RedemptionClient<$Result.GetResult<Prisma.$RedemptionPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Redemption.
+     * @param {RedemptionUpdateArgs} args - Arguments to update one Redemption.
+     * @example
+     * // Update one Redemption
+     * const redemption = await prisma.redemption.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends RedemptionUpdateArgs>(args: SelectSubset<T, RedemptionUpdateArgs<ExtArgs>>): Prisma__RedemptionClient<$Result.GetResult<Prisma.$RedemptionPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Redemptions.
+     * @param {RedemptionDeleteManyArgs} args - Arguments to filter Redemptions to delete.
+     * @example
+     * // Delete a few Redemptions
+     * const { count } = await prisma.redemption.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends RedemptionDeleteManyArgs>(args?: SelectSubset<T, RedemptionDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Redemptions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RedemptionUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Redemptions
+     * const redemption = await prisma.redemption.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends RedemptionUpdateManyArgs>(args: SelectSubset<T, RedemptionUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Redemptions and returns the data updated in the database.
+     * @param {RedemptionUpdateManyAndReturnArgs} args - Arguments to update many Redemptions.
+     * @example
+     * // Update many Redemptions
+     * const redemption = await prisma.redemption.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more Redemptions and only return the `id`
+     * const redemptionWithIdOnly = await prisma.redemption.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends RedemptionUpdateManyAndReturnArgs>(args: SelectSubset<T, RedemptionUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RedemptionPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one Redemption.
+     * @param {RedemptionUpsertArgs} args - Arguments to update or create a Redemption.
+     * @example
+     * // Update or create a Redemption
+     * const redemption = await prisma.redemption.upsert({
+     *   create: {
+     *     // ... data to create a Redemption
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Redemption we want to update
+     *   }
+     * })
+     */
+    upsert<T extends RedemptionUpsertArgs>(args: SelectSubset<T, RedemptionUpsertArgs<ExtArgs>>): Prisma__RedemptionClient<$Result.GetResult<Prisma.$RedemptionPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of Redemptions.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RedemptionCountArgs} args - Arguments to filter Redemptions to count.
+     * @example
+     * // Count the number of Redemptions
+     * const count = await prisma.redemption.count({
+     *   where: {
+     *     // ... the filter for the Redemptions we want to count
+     *   }
+     * })
+    **/
+    count<T extends RedemptionCountArgs>(
+      args?: Subset<T, RedemptionCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], RedemptionCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Redemption.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RedemptionAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends RedemptionAggregateArgs>(args: Subset<T, RedemptionAggregateArgs>): Prisma.PrismaPromise<GetRedemptionAggregateType<T>>
+
+    /**
+     * Group by Redemption.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {RedemptionGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends RedemptionGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: RedemptionGroupByArgs['orderBy'] }
+        : { orderBy?: RedemptionGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, RedemptionGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetRedemptionGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Redemption model
+   */
+  readonly fields: RedemptionFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Redemption.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__RedemptionClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    reward<T extends RewardDefaultArgs<ExtArgs> = {}>(args?: Subset<T, RewardDefaultArgs<ExtArgs>>): Prisma__RewardClient<$Result.GetResult<Prisma.$RewardPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Redemption model
+   */
+  interface RedemptionFieldRefs {
+    readonly id: FieldRef<"Redemption", 'String'>
+    readonly rewardId: FieldRef<"Redemption", 'String'>
+    readonly profileId: FieldRef<"Redemption", 'String'>
+    readonly cost: FieldRef<"Redemption", 'Int'>
+    readonly status: FieldRef<"Redemption", 'String'>
+    readonly requestedAt: FieldRef<"Redemption", 'DateTime'>
+    readonly decidedBy: FieldRef<"Redemption", 'String'>
+    readonly decidedAt: FieldRef<"Redemption", 'DateTime'>
+    readonly decidedNote: FieldRef<"Redemption", 'String'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Redemption findUnique
+   */
+  export type RedemptionFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Redemption
+     */
+    select?: RedemptionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Redemption
+     */
+    omit?: RedemptionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RedemptionInclude<ExtArgs> | null
+    /**
+     * Filter, which Redemption to fetch.
+     */
+    where: RedemptionWhereUniqueInput
+  }
+
+  /**
+   * Redemption findUniqueOrThrow
+   */
+  export type RedemptionFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Redemption
+     */
+    select?: RedemptionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Redemption
+     */
+    omit?: RedemptionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RedemptionInclude<ExtArgs> | null
+    /**
+     * Filter, which Redemption to fetch.
+     */
+    where: RedemptionWhereUniqueInput
+  }
+
+  /**
+   * Redemption findFirst
+   */
+  export type RedemptionFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Redemption
+     */
+    select?: RedemptionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Redemption
+     */
+    omit?: RedemptionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RedemptionInclude<ExtArgs> | null
+    /**
+     * Filter, which Redemption to fetch.
+     */
+    where?: RedemptionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Redemptions to fetch.
+     */
+    orderBy?: RedemptionOrderByWithRelationInput | RedemptionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Redemptions.
+     */
+    cursor?: RedemptionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Redemptions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Redemptions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Redemptions.
+     */
+    distinct?: RedemptionScalarFieldEnum | RedemptionScalarFieldEnum[]
+  }
+
+  /**
+   * Redemption findFirstOrThrow
+   */
+  export type RedemptionFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Redemption
+     */
+    select?: RedemptionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Redemption
+     */
+    omit?: RedemptionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RedemptionInclude<ExtArgs> | null
+    /**
+     * Filter, which Redemption to fetch.
+     */
+    where?: RedemptionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Redemptions to fetch.
+     */
+    orderBy?: RedemptionOrderByWithRelationInput | RedemptionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Redemptions.
+     */
+    cursor?: RedemptionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Redemptions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Redemptions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Redemptions.
+     */
+    distinct?: RedemptionScalarFieldEnum | RedemptionScalarFieldEnum[]
+  }
+
+  /**
+   * Redemption findMany
+   */
+  export type RedemptionFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Redemption
+     */
+    select?: RedemptionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Redemption
+     */
+    omit?: RedemptionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RedemptionInclude<ExtArgs> | null
+    /**
+     * Filter, which Redemptions to fetch.
+     */
+    where?: RedemptionWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Redemptions to fetch.
+     */
+    orderBy?: RedemptionOrderByWithRelationInput | RedemptionOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Redemptions.
+     */
+    cursor?: RedemptionWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Redemptions from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Redemptions.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Redemptions.
+     */
+    distinct?: RedemptionScalarFieldEnum | RedemptionScalarFieldEnum[]
+  }
+
+  /**
+   * Redemption create
+   */
+  export type RedemptionCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Redemption
+     */
+    select?: RedemptionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Redemption
+     */
+    omit?: RedemptionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RedemptionInclude<ExtArgs> | null
+    /**
+     * The data needed to create a Redemption.
+     */
+    data: XOR<RedemptionCreateInput, RedemptionUncheckedCreateInput>
+  }
+
+  /**
+   * Redemption createMany
+   */
+  export type RedemptionCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Redemptions.
+     */
+    data: RedemptionCreateManyInput | RedemptionCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Redemption createManyAndReturn
+   */
+  export type RedemptionCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Redemption
+     */
+    select?: RedemptionSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Redemption
+     */
+    omit?: RedemptionOmit<ExtArgs> | null
+    /**
+     * The data used to create many Redemptions.
+     */
+    data: RedemptionCreateManyInput | RedemptionCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RedemptionIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Redemption update
+   */
+  export type RedemptionUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Redemption
+     */
+    select?: RedemptionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Redemption
+     */
+    omit?: RedemptionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RedemptionInclude<ExtArgs> | null
+    /**
+     * The data needed to update a Redemption.
+     */
+    data: XOR<RedemptionUpdateInput, RedemptionUncheckedUpdateInput>
+    /**
+     * Choose, which Redemption to update.
+     */
+    where: RedemptionWhereUniqueInput
+  }
+
+  /**
+   * Redemption updateMany
+   */
+  export type RedemptionUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Redemptions.
+     */
+    data: XOR<RedemptionUpdateManyMutationInput, RedemptionUncheckedUpdateManyInput>
+    /**
+     * Filter which Redemptions to update
+     */
+    where?: RedemptionWhereInput
+    /**
+     * Limit how many Redemptions to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Redemption updateManyAndReturn
+   */
+  export type RedemptionUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Redemption
+     */
+    select?: RedemptionSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Redemption
+     */
+    omit?: RedemptionOmit<ExtArgs> | null
+    /**
+     * The data used to update Redemptions.
+     */
+    data: XOR<RedemptionUpdateManyMutationInput, RedemptionUncheckedUpdateManyInput>
+    /**
+     * Filter which Redemptions to update
+     */
+    where?: RedemptionWhereInput
+    /**
+     * Limit how many Redemptions to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RedemptionIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Redemption upsert
+   */
+  export type RedemptionUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Redemption
+     */
+    select?: RedemptionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Redemption
+     */
+    omit?: RedemptionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RedemptionInclude<ExtArgs> | null
+    /**
+     * The filter to search for the Redemption to update in case it exists.
+     */
+    where: RedemptionWhereUniqueInput
+    /**
+     * In case the Redemption found by the `where` argument doesn't exist, create a new Redemption with this data.
+     */
+    create: XOR<RedemptionCreateInput, RedemptionUncheckedCreateInput>
+    /**
+     * In case the Redemption was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<RedemptionUpdateInput, RedemptionUncheckedUpdateInput>
+  }
+
+  /**
+   * Redemption delete
+   */
+  export type RedemptionDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Redemption
+     */
+    select?: RedemptionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Redemption
+     */
+    omit?: RedemptionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RedemptionInclude<ExtArgs> | null
+    /**
+     * Filter which Redemption to delete.
+     */
+    where: RedemptionWhereUniqueInput
+  }
+
+  /**
+   * Redemption deleteMany
+   */
+  export type RedemptionDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Redemptions to delete
+     */
+    where?: RedemptionWhereInput
+    /**
+     * Limit how many Redemptions to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * Redemption without action
+   */
+  export type RedemptionDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Redemption
+     */
+    select?: RedemptionSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Redemption
+     */
+    omit?: RedemptionOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: RedemptionInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -4293,6 +6841,38 @@ export namespace Prisma {
   };
 
   export type PendingPayoutScalarFieldEnum = (typeof PendingPayoutScalarFieldEnum)[keyof typeof PendingPayoutScalarFieldEnum]
+
+
+  export const RewardScalarFieldEnum: {
+    id: 'id',
+    name: 'name',
+    emoji: 'emoji',
+    description: 'description',
+    cost: 'cost',
+    requiresApproval: 'requiresApproval',
+    audience: 'audience',
+    stock: 'stock',
+    active: 'active',
+    createdBy: 'createdBy',
+    createdAt: 'createdAt'
+  };
+
+  export type RewardScalarFieldEnum = (typeof RewardScalarFieldEnum)[keyof typeof RewardScalarFieldEnum]
+
+
+  export const RedemptionScalarFieldEnum: {
+    id: 'id',
+    rewardId: 'rewardId',
+    profileId: 'profileId',
+    cost: 'cost',
+    status: 'status',
+    requestedAt: 'requestedAt',
+    decidedBy: 'decidedBy',
+    decidedAt: 'decidedAt',
+    decidedNote: 'decidedNote'
+  };
+
+  export type RedemptionScalarFieldEnum = (typeof RedemptionScalarFieldEnum)[keyof typeof RedemptionScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -4363,6 +6943,13 @@ export namespace Prisma {
    * Reference to a field of type 'DateTime[]'
    */
   export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'Boolean'
+   */
+  export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
     
 
 
@@ -4582,6 +7169,170 @@ export namespace Prisma {
     createdAt?: DateTimeWithAggregatesFilter<"PendingPayout"> | Date | string
   }
 
+  export type RewardWhereInput = {
+    AND?: RewardWhereInput | RewardWhereInput[]
+    OR?: RewardWhereInput[]
+    NOT?: RewardWhereInput | RewardWhereInput[]
+    id?: UuidFilter<"Reward"> | string
+    name?: StringFilter<"Reward"> | string
+    emoji?: StringFilter<"Reward"> | string
+    description?: StringNullableFilter<"Reward"> | string | null
+    cost?: IntFilter<"Reward"> | number
+    requiresApproval?: BoolFilter<"Reward"> | boolean
+    audience?: StringNullableListFilter<"Reward">
+    stock?: IntNullableFilter<"Reward"> | number | null
+    active?: BoolFilter<"Reward"> | boolean
+    createdBy?: UuidFilter<"Reward"> | string
+    createdAt?: DateTimeFilter<"Reward"> | Date | string
+    redemptions?: RedemptionListRelationFilter
+  }
+
+  export type RewardOrderByWithRelationInput = {
+    id?: SortOrder
+    name?: SortOrder
+    emoji?: SortOrder
+    description?: SortOrderInput | SortOrder
+    cost?: SortOrder
+    requiresApproval?: SortOrder
+    audience?: SortOrder
+    stock?: SortOrderInput | SortOrder
+    active?: SortOrder
+    createdBy?: SortOrder
+    createdAt?: SortOrder
+    redemptions?: RedemptionOrderByRelationAggregateInput
+  }
+
+  export type RewardWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: RewardWhereInput | RewardWhereInput[]
+    OR?: RewardWhereInput[]
+    NOT?: RewardWhereInput | RewardWhereInput[]
+    name?: StringFilter<"Reward"> | string
+    emoji?: StringFilter<"Reward"> | string
+    description?: StringNullableFilter<"Reward"> | string | null
+    cost?: IntFilter<"Reward"> | number
+    requiresApproval?: BoolFilter<"Reward"> | boolean
+    audience?: StringNullableListFilter<"Reward">
+    stock?: IntNullableFilter<"Reward"> | number | null
+    active?: BoolFilter<"Reward"> | boolean
+    createdBy?: UuidFilter<"Reward"> | string
+    createdAt?: DateTimeFilter<"Reward"> | Date | string
+    redemptions?: RedemptionListRelationFilter
+  }, "id">
+
+  export type RewardOrderByWithAggregationInput = {
+    id?: SortOrder
+    name?: SortOrder
+    emoji?: SortOrder
+    description?: SortOrderInput | SortOrder
+    cost?: SortOrder
+    requiresApproval?: SortOrder
+    audience?: SortOrder
+    stock?: SortOrderInput | SortOrder
+    active?: SortOrder
+    createdBy?: SortOrder
+    createdAt?: SortOrder
+    _count?: RewardCountOrderByAggregateInput
+    _avg?: RewardAvgOrderByAggregateInput
+    _max?: RewardMaxOrderByAggregateInput
+    _min?: RewardMinOrderByAggregateInput
+    _sum?: RewardSumOrderByAggregateInput
+  }
+
+  export type RewardScalarWhereWithAggregatesInput = {
+    AND?: RewardScalarWhereWithAggregatesInput | RewardScalarWhereWithAggregatesInput[]
+    OR?: RewardScalarWhereWithAggregatesInput[]
+    NOT?: RewardScalarWhereWithAggregatesInput | RewardScalarWhereWithAggregatesInput[]
+    id?: UuidWithAggregatesFilter<"Reward"> | string
+    name?: StringWithAggregatesFilter<"Reward"> | string
+    emoji?: StringWithAggregatesFilter<"Reward"> | string
+    description?: StringNullableWithAggregatesFilter<"Reward"> | string | null
+    cost?: IntWithAggregatesFilter<"Reward"> | number
+    requiresApproval?: BoolWithAggregatesFilter<"Reward"> | boolean
+    audience?: StringNullableListFilter<"Reward">
+    stock?: IntNullableWithAggregatesFilter<"Reward"> | number | null
+    active?: BoolWithAggregatesFilter<"Reward"> | boolean
+    createdBy?: UuidWithAggregatesFilter<"Reward"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"Reward"> | Date | string
+  }
+
+  export type RedemptionWhereInput = {
+    AND?: RedemptionWhereInput | RedemptionWhereInput[]
+    OR?: RedemptionWhereInput[]
+    NOT?: RedemptionWhereInput | RedemptionWhereInput[]
+    id?: UuidFilter<"Redemption"> | string
+    rewardId?: UuidFilter<"Redemption"> | string
+    profileId?: UuidFilter<"Redemption"> | string
+    cost?: IntFilter<"Redemption"> | number
+    status?: StringFilter<"Redemption"> | string
+    requestedAt?: DateTimeFilter<"Redemption"> | Date | string
+    decidedBy?: UuidNullableFilter<"Redemption"> | string | null
+    decidedAt?: DateTimeNullableFilter<"Redemption"> | Date | string | null
+    decidedNote?: StringNullableFilter<"Redemption"> | string | null
+    reward?: XOR<RewardScalarRelationFilter, RewardWhereInput>
+  }
+
+  export type RedemptionOrderByWithRelationInput = {
+    id?: SortOrder
+    rewardId?: SortOrder
+    profileId?: SortOrder
+    cost?: SortOrder
+    status?: SortOrder
+    requestedAt?: SortOrder
+    decidedBy?: SortOrderInput | SortOrder
+    decidedAt?: SortOrderInput | SortOrder
+    decidedNote?: SortOrderInput | SortOrder
+    reward?: RewardOrderByWithRelationInput
+  }
+
+  export type RedemptionWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: RedemptionWhereInput | RedemptionWhereInput[]
+    OR?: RedemptionWhereInput[]
+    NOT?: RedemptionWhereInput | RedemptionWhereInput[]
+    rewardId?: UuidFilter<"Redemption"> | string
+    profileId?: UuidFilter<"Redemption"> | string
+    cost?: IntFilter<"Redemption"> | number
+    status?: StringFilter<"Redemption"> | string
+    requestedAt?: DateTimeFilter<"Redemption"> | Date | string
+    decidedBy?: UuidNullableFilter<"Redemption"> | string | null
+    decidedAt?: DateTimeNullableFilter<"Redemption"> | Date | string | null
+    decidedNote?: StringNullableFilter<"Redemption"> | string | null
+    reward?: XOR<RewardScalarRelationFilter, RewardWhereInput>
+  }, "id">
+
+  export type RedemptionOrderByWithAggregationInput = {
+    id?: SortOrder
+    rewardId?: SortOrder
+    profileId?: SortOrder
+    cost?: SortOrder
+    status?: SortOrder
+    requestedAt?: SortOrder
+    decidedBy?: SortOrderInput | SortOrder
+    decidedAt?: SortOrderInput | SortOrder
+    decidedNote?: SortOrderInput | SortOrder
+    _count?: RedemptionCountOrderByAggregateInput
+    _avg?: RedemptionAvgOrderByAggregateInput
+    _max?: RedemptionMaxOrderByAggregateInput
+    _min?: RedemptionMinOrderByAggregateInput
+    _sum?: RedemptionSumOrderByAggregateInput
+  }
+
+  export type RedemptionScalarWhereWithAggregatesInput = {
+    AND?: RedemptionScalarWhereWithAggregatesInput | RedemptionScalarWhereWithAggregatesInput[]
+    OR?: RedemptionScalarWhereWithAggregatesInput[]
+    NOT?: RedemptionScalarWhereWithAggregatesInput | RedemptionScalarWhereWithAggregatesInput[]
+    id?: UuidWithAggregatesFilter<"Redemption"> | string
+    rewardId?: UuidWithAggregatesFilter<"Redemption"> | string
+    profileId?: UuidWithAggregatesFilter<"Redemption"> | string
+    cost?: IntWithAggregatesFilter<"Redemption"> | number
+    status?: StringWithAggregatesFilter<"Redemption"> | string
+    requestedAt?: DateTimeWithAggregatesFilter<"Redemption"> | Date | string
+    decidedBy?: UuidNullableWithAggregatesFilter<"Redemption"> | string | null
+    decidedAt?: DateTimeNullableWithAggregatesFilter<"Redemption"> | Date | string | null
+    decidedNote?: StringNullableWithAggregatesFilter<"Redemption"> | string | null
+  }
+
   export type LedgerEntryCreateInput = {
     id?: string
     profileId: string
@@ -4797,6 +7548,191 @@ export namespace Prisma {
     decidedNote?: NullableStringFieldUpdateOperationsInput | string | null
     decidedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type RewardCreateInput = {
+    id?: string
+    name: string
+    emoji: string
+    description?: string | null
+    cost: number
+    requiresApproval?: boolean
+    audience?: RewardCreateaudienceInput | string[]
+    stock?: number | null
+    active?: boolean
+    createdBy: string
+    createdAt?: Date | string
+    redemptions?: RedemptionCreateNestedManyWithoutRewardInput
+  }
+
+  export type RewardUncheckedCreateInput = {
+    id?: string
+    name: string
+    emoji: string
+    description?: string | null
+    cost: number
+    requiresApproval?: boolean
+    audience?: RewardCreateaudienceInput | string[]
+    stock?: number | null
+    active?: boolean
+    createdBy: string
+    createdAt?: Date | string
+    redemptions?: RedemptionUncheckedCreateNestedManyWithoutRewardInput
+  }
+
+  export type RewardUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    emoji?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    cost?: IntFieldUpdateOperationsInput | number
+    requiresApproval?: BoolFieldUpdateOperationsInput | boolean
+    audience?: RewardUpdateaudienceInput | string[]
+    stock?: NullableIntFieldUpdateOperationsInput | number | null
+    active?: BoolFieldUpdateOperationsInput | boolean
+    createdBy?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    redemptions?: RedemptionUpdateManyWithoutRewardNestedInput
+  }
+
+  export type RewardUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    emoji?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    cost?: IntFieldUpdateOperationsInput | number
+    requiresApproval?: BoolFieldUpdateOperationsInput | boolean
+    audience?: RewardUpdateaudienceInput | string[]
+    stock?: NullableIntFieldUpdateOperationsInput | number | null
+    active?: BoolFieldUpdateOperationsInput | boolean
+    createdBy?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    redemptions?: RedemptionUncheckedUpdateManyWithoutRewardNestedInput
+  }
+
+  export type RewardCreateManyInput = {
+    id?: string
+    name: string
+    emoji: string
+    description?: string | null
+    cost: number
+    requiresApproval?: boolean
+    audience?: RewardCreateaudienceInput | string[]
+    stock?: number | null
+    active?: boolean
+    createdBy: string
+    createdAt?: Date | string
+  }
+
+  export type RewardUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    emoji?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    cost?: IntFieldUpdateOperationsInput | number
+    requiresApproval?: BoolFieldUpdateOperationsInput | boolean
+    audience?: RewardUpdateaudienceInput | string[]
+    stock?: NullableIntFieldUpdateOperationsInput | number | null
+    active?: BoolFieldUpdateOperationsInput | boolean
+    createdBy?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type RewardUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    emoji?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    cost?: IntFieldUpdateOperationsInput | number
+    requiresApproval?: BoolFieldUpdateOperationsInput | boolean
+    audience?: RewardUpdateaudienceInput | string[]
+    stock?: NullableIntFieldUpdateOperationsInput | number | null
+    active?: BoolFieldUpdateOperationsInput | boolean
+    createdBy?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type RedemptionCreateInput = {
+    id?: string
+    profileId: string
+    cost: number
+    status?: string
+    requestedAt?: Date | string
+    decidedBy?: string | null
+    decidedAt?: Date | string | null
+    decidedNote?: string | null
+    reward: RewardCreateNestedOneWithoutRedemptionsInput
+  }
+
+  export type RedemptionUncheckedCreateInput = {
+    id?: string
+    rewardId: string
+    profileId: string
+    cost: number
+    status?: string
+    requestedAt?: Date | string
+    decidedBy?: string | null
+    decidedAt?: Date | string | null
+    decidedNote?: string | null
+  }
+
+  export type RedemptionUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    profileId?: StringFieldUpdateOperationsInput | string
+    cost?: IntFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    requestedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    decidedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    decidedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    decidedNote?: NullableStringFieldUpdateOperationsInput | string | null
+    reward?: RewardUpdateOneRequiredWithoutRedemptionsNestedInput
+  }
+
+  export type RedemptionUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    rewardId?: StringFieldUpdateOperationsInput | string
+    profileId?: StringFieldUpdateOperationsInput | string
+    cost?: IntFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    requestedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    decidedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    decidedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    decidedNote?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type RedemptionCreateManyInput = {
+    id?: string
+    rewardId: string
+    profileId: string
+    cost: number
+    status?: string
+    requestedAt?: Date | string
+    decidedBy?: string | null
+    decidedAt?: Date | string | null
+    decidedNote?: string | null
+  }
+
+  export type RedemptionUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    profileId?: StringFieldUpdateOperationsInput | string
+    cost?: IntFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    requestedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    decidedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    decidedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    decidedNote?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type RedemptionUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    rewardId?: StringFieldUpdateOperationsInput | string
+    profileId?: StringFieldUpdateOperationsInput | string
+    cost?: IntFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    requestedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    decidedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    decidedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    decidedNote?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
   export type UuidFilter<$PrismaModel = never> = {
@@ -5128,6 +8064,163 @@ export namespace Prisma {
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
+  export type BoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
+  export type StringNullableListFilter<$PrismaModel = never> = {
+    equals?: string[] | ListStringFieldRefInput<$PrismaModel> | null
+    has?: string | StringFieldRefInput<$PrismaModel> | null
+    hasEvery?: string[] | ListStringFieldRefInput<$PrismaModel>
+    hasSome?: string[] | ListStringFieldRefInput<$PrismaModel>
+    isEmpty?: boolean
+  }
+
+  export type IntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
+  }
+
+  export type RedemptionListRelationFilter = {
+    every?: RedemptionWhereInput
+    some?: RedemptionWhereInput
+    none?: RedemptionWhereInput
+  }
+
+  export type RedemptionOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type RewardCountOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    emoji?: SortOrder
+    description?: SortOrder
+    cost?: SortOrder
+    requiresApproval?: SortOrder
+    audience?: SortOrder
+    stock?: SortOrder
+    active?: SortOrder
+    createdBy?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type RewardAvgOrderByAggregateInput = {
+    cost?: SortOrder
+    stock?: SortOrder
+  }
+
+  export type RewardMaxOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    emoji?: SortOrder
+    description?: SortOrder
+    cost?: SortOrder
+    requiresApproval?: SortOrder
+    stock?: SortOrder
+    active?: SortOrder
+    createdBy?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type RewardMinOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    emoji?: SortOrder
+    description?: SortOrder
+    cost?: SortOrder
+    requiresApproval?: SortOrder
+    stock?: SortOrder
+    active?: SortOrder
+    createdBy?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type RewardSumOrderByAggregateInput = {
+    cost?: SortOrder
+    stock?: SortOrder
+  }
+
+  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
+  }
+
+  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
+  }
+
+  export type RewardScalarRelationFilter = {
+    is?: RewardWhereInput
+    isNot?: RewardWhereInput
+  }
+
+  export type RedemptionCountOrderByAggregateInput = {
+    id?: SortOrder
+    rewardId?: SortOrder
+    profileId?: SortOrder
+    cost?: SortOrder
+    status?: SortOrder
+    requestedAt?: SortOrder
+    decidedBy?: SortOrder
+    decidedAt?: SortOrder
+    decidedNote?: SortOrder
+  }
+
+  export type RedemptionAvgOrderByAggregateInput = {
+    cost?: SortOrder
+  }
+
+  export type RedemptionMaxOrderByAggregateInput = {
+    id?: SortOrder
+    rewardId?: SortOrder
+    profileId?: SortOrder
+    cost?: SortOrder
+    status?: SortOrder
+    requestedAt?: SortOrder
+    decidedBy?: SortOrder
+    decidedAt?: SortOrder
+    decidedNote?: SortOrder
+  }
+
+  export type RedemptionMinOrderByAggregateInput = {
+    id?: SortOrder
+    rewardId?: SortOrder
+    profileId?: SortOrder
+    cost?: SortOrder
+    status?: SortOrder
+    requestedAt?: SortOrder
+    decidedBy?: SortOrder
+    decidedAt?: SortOrder
+    decidedNote?: SortOrder
+  }
+
+  export type RedemptionSumOrderByAggregateInput = {
+    cost?: SortOrder
+  }
+
   export type StringFieldUpdateOperationsInput = {
     set?: string
   }
@@ -5150,6 +8243,83 @@ export namespace Prisma {
 
   export type NullableDateTimeFieldUpdateOperationsInput = {
     set?: Date | string | null
+  }
+
+  export type RewardCreateaudienceInput = {
+    set: string[]
+  }
+
+  export type RedemptionCreateNestedManyWithoutRewardInput = {
+    create?: XOR<RedemptionCreateWithoutRewardInput, RedemptionUncheckedCreateWithoutRewardInput> | RedemptionCreateWithoutRewardInput[] | RedemptionUncheckedCreateWithoutRewardInput[]
+    connectOrCreate?: RedemptionCreateOrConnectWithoutRewardInput | RedemptionCreateOrConnectWithoutRewardInput[]
+    createMany?: RedemptionCreateManyRewardInputEnvelope
+    connect?: RedemptionWhereUniqueInput | RedemptionWhereUniqueInput[]
+  }
+
+  export type RedemptionUncheckedCreateNestedManyWithoutRewardInput = {
+    create?: XOR<RedemptionCreateWithoutRewardInput, RedemptionUncheckedCreateWithoutRewardInput> | RedemptionCreateWithoutRewardInput[] | RedemptionUncheckedCreateWithoutRewardInput[]
+    connectOrCreate?: RedemptionCreateOrConnectWithoutRewardInput | RedemptionCreateOrConnectWithoutRewardInput[]
+    createMany?: RedemptionCreateManyRewardInputEnvelope
+    connect?: RedemptionWhereUniqueInput | RedemptionWhereUniqueInput[]
+  }
+
+  export type BoolFieldUpdateOperationsInput = {
+    set?: boolean
+  }
+
+  export type RewardUpdateaudienceInput = {
+    set?: string[]
+    push?: string | string[]
+  }
+
+  export type NullableIntFieldUpdateOperationsInput = {
+    set?: number | null
+    increment?: number
+    decrement?: number
+    multiply?: number
+    divide?: number
+  }
+
+  export type RedemptionUpdateManyWithoutRewardNestedInput = {
+    create?: XOR<RedemptionCreateWithoutRewardInput, RedemptionUncheckedCreateWithoutRewardInput> | RedemptionCreateWithoutRewardInput[] | RedemptionUncheckedCreateWithoutRewardInput[]
+    connectOrCreate?: RedemptionCreateOrConnectWithoutRewardInput | RedemptionCreateOrConnectWithoutRewardInput[]
+    upsert?: RedemptionUpsertWithWhereUniqueWithoutRewardInput | RedemptionUpsertWithWhereUniqueWithoutRewardInput[]
+    createMany?: RedemptionCreateManyRewardInputEnvelope
+    set?: RedemptionWhereUniqueInput | RedemptionWhereUniqueInput[]
+    disconnect?: RedemptionWhereUniqueInput | RedemptionWhereUniqueInput[]
+    delete?: RedemptionWhereUniqueInput | RedemptionWhereUniqueInput[]
+    connect?: RedemptionWhereUniqueInput | RedemptionWhereUniqueInput[]
+    update?: RedemptionUpdateWithWhereUniqueWithoutRewardInput | RedemptionUpdateWithWhereUniqueWithoutRewardInput[]
+    updateMany?: RedemptionUpdateManyWithWhereWithoutRewardInput | RedemptionUpdateManyWithWhereWithoutRewardInput[]
+    deleteMany?: RedemptionScalarWhereInput | RedemptionScalarWhereInput[]
+  }
+
+  export type RedemptionUncheckedUpdateManyWithoutRewardNestedInput = {
+    create?: XOR<RedemptionCreateWithoutRewardInput, RedemptionUncheckedCreateWithoutRewardInput> | RedemptionCreateWithoutRewardInput[] | RedemptionUncheckedCreateWithoutRewardInput[]
+    connectOrCreate?: RedemptionCreateOrConnectWithoutRewardInput | RedemptionCreateOrConnectWithoutRewardInput[]
+    upsert?: RedemptionUpsertWithWhereUniqueWithoutRewardInput | RedemptionUpsertWithWhereUniqueWithoutRewardInput[]
+    createMany?: RedemptionCreateManyRewardInputEnvelope
+    set?: RedemptionWhereUniqueInput | RedemptionWhereUniqueInput[]
+    disconnect?: RedemptionWhereUniqueInput | RedemptionWhereUniqueInput[]
+    delete?: RedemptionWhereUniqueInput | RedemptionWhereUniqueInput[]
+    connect?: RedemptionWhereUniqueInput | RedemptionWhereUniqueInput[]
+    update?: RedemptionUpdateWithWhereUniqueWithoutRewardInput | RedemptionUpdateWithWhereUniqueWithoutRewardInput[]
+    updateMany?: RedemptionUpdateManyWithWhereWithoutRewardInput | RedemptionUpdateManyWithWhereWithoutRewardInput[]
+    deleteMany?: RedemptionScalarWhereInput | RedemptionScalarWhereInput[]
+  }
+
+  export type RewardCreateNestedOneWithoutRedemptionsInput = {
+    create?: XOR<RewardCreateWithoutRedemptionsInput, RewardUncheckedCreateWithoutRedemptionsInput>
+    connectOrCreate?: RewardCreateOrConnectWithoutRedemptionsInput
+    connect?: RewardWhereUniqueInput
+  }
+
+  export type RewardUpdateOneRequiredWithoutRedemptionsNestedInput = {
+    create?: XOR<RewardCreateWithoutRedemptionsInput, RewardUncheckedCreateWithoutRedemptionsInput>
+    connectOrCreate?: RewardCreateOrConnectWithoutRedemptionsInput
+    upsert?: RewardUpsertWithoutRedemptionsInput
+    connect?: RewardWhereUniqueInput
+    update?: XOR<XOR<RewardUpdateToOneWithWhereWithoutRedemptionsInput, RewardUpdateWithoutRedemptionsInput>, RewardUncheckedUpdateWithoutRedemptionsInput>
   }
 
   export type NestedUuidFilter<$PrismaModel = never> = {
@@ -5361,6 +8531,225 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedDateTimeNullableFilter<$PrismaModel>
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
+  }
+
+  export type NestedBoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
+  export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
+  }
+
+  export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _avg?: NestedFloatNullableFilter<$PrismaModel>
+    _sum?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedIntNullableFilter<$PrismaModel>
+    _max?: NestedIntNullableFilter<$PrismaModel>
+  }
+
+  export type NestedFloatNullableFilter<$PrismaModel = never> = {
+    equals?: number | FloatFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
+    lt?: number | FloatFieldRefInput<$PrismaModel>
+    lte?: number | FloatFieldRefInput<$PrismaModel>
+    gt?: number | FloatFieldRefInput<$PrismaModel>
+    gte?: number | FloatFieldRefInput<$PrismaModel>
+    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
+  }
+
+  export type RedemptionCreateWithoutRewardInput = {
+    id?: string
+    profileId: string
+    cost: number
+    status?: string
+    requestedAt?: Date | string
+    decidedBy?: string | null
+    decidedAt?: Date | string | null
+    decidedNote?: string | null
+  }
+
+  export type RedemptionUncheckedCreateWithoutRewardInput = {
+    id?: string
+    profileId: string
+    cost: number
+    status?: string
+    requestedAt?: Date | string
+    decidedBy?: string | null
+    decidedAt?: Date | string | null
+    decidedNote?: string | null
+  }
+
+  export type RedemptionCreateOrConnectWithoutRewardInput = {
+    where: RedemptionWhereUniqueInput
+    create: XOR<RedemptionCreateWithoutRewardInput, RedemptionUncheckedCreateWithoutRewardInput>
+  }
+
+  export type RedemptionCreateManyRewardInputEnvelope = {
+    data: RedemptionCreateManyRewardInput | RedemptionCreateManyRewardInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type RedemptionUpsertWithWhereUniqueWithoutRewardInput = {
+    where: RedemptionWhereUniqueInput
+    update: XOR<RedemptionUpdateWithoutRewardInput, RedemptionUncheckedUpdateWithoutRewardInput>
+    create: XOR<RedemptionCreateWithoutRewardInput, RedemptionUncheckedCreateWithoutRewardInput>
+  }
+
+  export type RedemptionUpdateWithWhereUniqueWithoutRewardInput = {
+    where: RedemptionWhereUniqueInput
+    data: XOR<RedemptionUpdateWithoutRewardInput, RedemptionUncheckedUpdateWithoutRewardInput>
+  }
+
+  export type RedemptionUpdateManyWithWhereWithoutRewardInput = {
+    where: RedemptionScalarWhereInput
+    data: XOR<RedemptionUpdateManyMutationInput, RedemptionUncheckedUpdateManyWithoutRewardInput>
+  }
+
+  export type RedemptionScalarWhereInput = {
+    AND?: RedemptionScalarWhereInput | RedemptionScalarWhereInput[]
+    OR?: RedemptionScalarWhereInput[]
+    NOT?: RedemptionScalarWhereInput | RedemptionScalarWhereInput[]
+    id?: UuidFilter<"Redemption"> | string
+    rewardId?: UuidFilter<"Redemption"> | string
+    profileId?: UuidFilter<"Redemption"> | string
+    cost?: IntFilter<"Redemption"> | number
+    status?: StringFilter<"Redemption"> | string
+    requestedAt?: DateTimeFilter<"Redemption"> | Date | string
+    decidedBy?: UuidNullableFilter<"Redemption"> | string | null
+    decidedAt?: DateTimeNullableFilter<"Redemption"> | Date | string | null
+    decidedNote?: StringNullableFilter<"Redemption"> | string | null
+  }
+
+  export type RewardCreateWithoutRedemptionsInput = {
+    id?: string
+    name: string
+    emoji: string
+    description?: string | null
+    cost: number
+    requiresApproval?: boolean
+    audience?: RewardCreateaudienceInput | string[]
+    stock?: number | null
+    active?: boolean
+    createdBy: string
+    createdAt?: Date | string
+  }
+
+  export type RewardUncheckedCreateWithoutRedemptionsInput = {
+    id?: string
+    name: string
+    emoji: string
+    description?: string | null
+    cost: number
+    requiresApproval?: boolean
+    audience?: RewardCreateaudienceInput | string[]
+    stock?: number | null
+    active?: boolean
+    createdBy: string
+    createdAt?: Date | string
+  }
+
+  export type RewardCreateOrConnectWithoutRedemptionsInput = {
+    where: RewardWhereUniqueInput
+    create: XOR<RewardCreateWithoutRedemptionsInput, RewardUncheckedCreateWithoutRedemptionsInput>
+  }
+
+  export type RewardUpsertWithoutRedemptionsInput = {
+    update: XOR<RewardUpdateWithoutRedemptionsInput, RewardUncheckedUpdateWithoutRedemptionsInput>
+    create: XOR<RewardCreateWithoutRedemptionsInput, RewardUncheckedCreateWithoutRedemptionsInput>
+    where?: RewardWhereInput
+  }
+
+  export type RewardUpdateToOneWithWhereWithoutRedemptionsInput = {
+    where?: RewardWhereInput
+    data: XOR<RewardUpdateWithoutRedemptionsInput, RewardUncheckedUpdateWithoutRedemptionsInput>
+  }
+
+  export type RewardUpdateWithoutRedemptionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    emoji?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    cost?: IntFieldUpdateOperationsInput | number
+    requiresApproval?: BoolFieldUpdateOperationsInput | boolean
+    audience?: RewardUpdateaudienceInput | string[]
+    stock?: NullableIntFieldUpdateOperationsInput | number | null
+    active?: BoolFieldUpdateOperationsInput | boolean
+    createdBy?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type RewardUncheckedUpdateWithoutRedemptionsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    emoji?: StringFieldUpdateOperationsInput | string
+    description?: NullableStringFieldUpdateOperationsInput | string | null
+    cost?: IntFieldUpdateOperationsInput | number
+    requiresApproval?: BoolFieldUpdateOperationsInput | boolean
+    audience?: RewardUpdateaudienceInput | string[]
+    stock?: NullableIntFieldUpdateOperationsInput | number | null
+    active?: BoolFieldUpdateOperationsInput | boolean
+    createdBy?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type RedemptionCreateManyRewardInput = {
+    id?: string
+    profileId: string
+    cost: number
+    status?: string
+    requestedAt?: Date | string
+    decidedBy?: string | null
+    decidedAt?: Date | string | null
+    decidedNote?: string | null
+  }
+
+  export type RedemptionUpdateWithoutRewardInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    profileId?: StringFieldUpdateOperationsInput | string
+    cost?: IntFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    requestedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    decidedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    decidedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    decidedNote?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type RedemptionUncheckedUpdateWithoutRewardInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    profileId?: StringFieldUpdateOperationsInput | string
+    cost?: IntFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    requestedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    decidedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    decidedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    decidedNote?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type RedemptionUncheckedUpdateManyWithoutRewardInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    profileId?: StringFieldUpdateOperationsInput | string
+    cost?: IntFieldUpdateOperationsInput | number
+    status?: StringFieldUpdateOperationsInput | string
+    requestedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    decidedBy?: NullableStringFieldUpdateOperationsInput | string | null
+    decidedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    decidedNote?: NullableStringFieldUpdateOperationsInput | string | null
   }
 
 

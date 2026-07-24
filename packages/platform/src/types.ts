@@ -142,6 +142,12 @@ export const PERMISSION_REGISTRY = {
     action: 'view',
     subject: 'rewards.Wallet',
   },
+  'rewards.redemption.create': {
+    label: 'Redeem your F$ in the store',
+    module: 'rewards',
+    action: 'create',
+    subject: 'rewards.Redemption',
+  },
   'calendar.event.view': {
     label: 'View the calendar',
     module: 'calendar',
