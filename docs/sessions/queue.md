@@ -22,26 +22,18 @@
 > first in wall-clock terms where they are cheap (Part F is a real risk to the
 > household's data), but the feature work is what the family is waiting on.
 
-### M4/3b — Dev: Payout Approval on High-Value Chores
-
-**Type:** development · **Kickoff:** _to be written_
-Raised in M4/2. Chore completion is **auto-accepted** (settled in M2, correct for XP),
-so once a store exists a kid can complete a 10 F$ chore, spend it, and a parent's
-reopen lands the balance at **−10**. The ledger permits that deliberately — the fix
-belongs upstream. **Hold the payout, not the chore**: a per-chore `requiresApproval`
-flag, a `pending_payouts` row released as the normal entry with the same provenance
-pair. **Must land before M4/5** — a wrong balance is harmless until it is spendable.
-_Reads: `docs/modules/rewards/stories/payout-approval.md`, ADR 047, 048, 052._
-_Depends on: M4/3._
-
 ### M4/4 — Dev: Catalog + Redemption
 
 **Type:** development · **Kickoff:** _to be written_
 Tier-4 catalog CRUD with a **per-reward `requiresApproval`** flag; request → debit →
 parent decide → fulfil. **Debit on request, refund on decline** — not escrow. Cost is
 **snapshotted** onto the redemption so repricing can't move a pending request. Parent
-notified via `notify()` at `alert`. _Reads: `docs/modules/rewards/spec.md`, ADR 029._
-_Depends on: M4/2, M4/1._
+notified via `notify()` at `alert`. **Build the tier-4 approvals queue here, and list
+chore payouts (M4/3b) in it alongside redemption decisions** — the payout `PATCH` is
+idempotent so it's one shared release endpoint; this queue is where the **decline-note
+input** lands (the board decline defers it; the note plumbing already exists
+end-to-end). Make the held-payout row a shared component so the board and queue don't
+diverge. _Reads: `docs/modules/rewards/spec.md`, ADR 029._ _Depends on: M4/2, M4/1._
 
 ### M4/5 — Dev: Store + Wallet Widget
 
@@ -276,6 +268,17 @@ suite mirroring chores/calendar. _Depends on: none._
 ## Recently Completed
 
 > Two-line index; full detail in the linked log.
+
+- **2026-07-24 — Dev: Payout Approval (M4/3b, PR #65).** Per-chore `requiresApproval`
+  holds the F$ payout in `pending_payouts` (rewards stays plugin-agnostic, ADR 048);
+  approve releases the normal entry with the same provenance pair, decline writes
+  nothing. Reopen-before-decision **voids**, reopen-after-payout **debits** (clawback
+  confirmed with the resulting balance), delete voids a held payout. **Review-driven:**
+  XP now awarded **once per task** (`xp_awarded` — reopen/complete no longer farms XP;
+  F$ nets correctly), a **Redo** state for reopened tasks, and a "chip = reward" meta
+  rework (only F$ is a chip; shared `TaskMeta` unifies Focus + Agency). Editing a
+  completed chore is locked — reopen is the way back. Behind `REWARDS_UI_ENABLED`.
+  See `logs/2026-07-24-dev-rewards-payout-approval.md`.
 
 - **2026-07-23 — Dev: Chores Earn + the XP re-strike (M4/3, PR #64).** `coinReward` on the
   task credits/debits the ledger off chore events (ADR 048), keyed by the completion

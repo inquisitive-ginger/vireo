@@ -1,7 +1,7 @@
 # Story: Payout Approval on High-Value Chores
 
 **Module:** rewards
-**Status:** ⬜ Not Started · **stub** — raised during M4/2 (2026-07-22), not yet designed
+**Status:** ✅ Done — shipped 2026-07-24 (PR #65). See `logs/2026-07-24-dev-rewards-payout-approval.md`.
 
 ## User story
 
