@@ -87,6 +87,8 @@ function task(
     dueDate: opts.dueDate ?? null,
     xpReward: opts.xpReward ?? 10,
     coinReward: opts.coinReward ?? 0,
+    requiresApproval: false,
+    xpAwarded: opts.status === 'completed',
     createdBy: 'm-parent',
     createdAt: new Date().toISOString(),
     completedAt: opts.status === 'completed' ? new Date().toISOString() : null,

@@ -2,6 +2,7 @@ import { useMemo, useRef, useState } from 'react'
 import { Plus } from 'lucide-react'
 import {
   Badge,
+  Coin,
   CoinValue,
   CompletionToggle,
   ItemCard,
@@ -11,10 +12,13 @@ import {
   identityToken,
   resolveHue,
 } from '@family-os/ui'
-import type { ChoreTask } from '../types'
+import { isReopened, type ChoreTask, type PendingPayout } from '../types'
+import type { DecidePayoutInput } from '../pages/ChoresPage'
 import { isOverdue, dueLabel } from '../lib/dates'
 import { showCoinReward } from '../lib/flags'
+import { payoutForTask, reopenClawback, type PayoutsByInstance } from '../lib/payouts'
 import { XpPill } from './XpPill'
+import { ReopenedBadge } from './ReopenedBadge'
 
 export interface AdminLane {
   assigneeId: string
@@ -35,8 +39,13 @@ export interface AdminBoardProps {
   /** Complete a task (tier-4 may complete anyone's — Option A). Omitted = read-only.
       Plain check-off; no XP flight (the board carries no score plate). */
   onCompleteTask?: (taskId: string) => Promise<unknown>
-  /** Un-complete a task (tier-4 only) — it resurfaces on the assignee's list. */
+  /** Un-complete a task (tier-4 only) — it resurfaces on the assignee's list. Used
+      directly when reopening claws back no money. */
   onReopenTask?: (taskId: string) => Promise<unknown>
+  /** Reopen a chore whose F$ was already paid (M4/3b) — the host confirms the
+      clawback first (it takes the paid amount back, maybe overdrawing the kid).
+      Omitted → a paid reopen falls back to `onReopenTask`. */
+  onReopenPaidTask?: (task: ChoreTask, clawback: number) => void
   /** Edit a task (tier-4 only) — opens the drawer prefilled. Omitted = no edit action. */
   onEditTask?: (task: ChoreTask) => void
   /** Remove a task (tier-4 only) — host confirms then deletes. Omitted = no remove action. */
@@ -44,6 +53,12 @@ export interface AdminBoardProps {
   /** Drop completed rows from the board (design.md §1). A member left with nothing
       to show is dropped with them — a header over an empty list says nothing. */
   hideCompleted?: boolean
+  /** Held/decided F$ payouts keyed by completion instance (M4/3b). A completed row
+      with a `pending` payout grows the approve/decline tray. Empty when the earn UI
+      is flagged off. */
+  payoutIndex?: PayoutsByInstance
+  /** Approve/decline a held payout. Omitted → the tray renders read-only (it won't). */
+  onDecidePayout?: (input: DecidePayoutInput) => Promise<unknown>
 }
 
 /* The by-assignee admin board.
@@ -71,9 +86,12 @@ export function AdminBoard({
   showAdd = true,
   onCompleteTask,
   onReopenTask,
+  onReopenPaidTask,
   onEditTask,
   onRemoveTask,
   hideCompleted = false,
+  payoutIndex,
+  onDecidePayout,
 }: AdminBoardProps) {
   const maxLoad = Math.max(1, ...lanes.map(laneLoad))
 
@@ -139,8 +157,11 @@ export function AdminBoard({
                 <AdminRow
                   key={task.id}
                   task={task}
+                  payout={payoutIndex && payoutForTask(task, payoutIndex)}
+                  onDecidePayout={onDecidePayout}
                   onComplete={onCompleteTask}
                   onReopen={onReopenTask}
+                  onReopenPaid={onReopenPaidTask}
                   onEdit={onEditTask}
                   onRemove={onRemoveTask}
                 />
@@ -228,17 +249,27 @@ function LoadMeter({ lane, maxLoad }: { lane: AdminLane; maxLoad: number }) {
 
 /* A task row. The spine is the assignee's hue — always, in every state. Status is
    the row's field: the overdue wash, the badge, the red due text, and the dim +
-   strikethrough + green check of a completed row. */
+   strikethrough + green check of a completed row.
+
+   A completed row whose payout is HELD (M4/3b) takes a distinct shape — see
+   `HeldRow`: it grows a full-width payout tray and is NOT dimmed, because a held
+   payout is asking the parent for a decision. */
 function AdminRow({
   task,
+  payout,
+  onDecidePayout,
   onComplete,
   onReopen,
+  onReopenPaid,
   onEdit,
   onRemove,
 }: {
   task: ChoreTask
+  payout?: PendingPayout
+  onDecidePayout?: (input: DecidePayoutInput) => Promise<unknown>
   onComplete?: (taskId: string) => Promise<unknown>
   onReopen?: (taskId: string) => Promise<unknown>
+  onReopenPaid?: (task: ChoreTask, clawback: number) => void
   onEdit?: (task: ChoreTask) => void
   onRemove?: (task: ChoreTask) => void
 }) {
@@ -249,6 +280,11 @@ function AdminRow({
   const done = status === 'completed'
   const overdue = !done && isOverdue(task.dueDate, task.status)
   const label = dueLabel(task.dueDate)
+  // Done is locked: a completed chore is not edited in place. Reopen it (the check)
+  // to make it editable again — which also voids a held payout, so re-completing
+  // re-prices it. This kills the mismatch of editing terms behind a snapshotted
+  // payout, and reads the same on every completed row, held or not.
+  const canEdit = !done && !!onEdit
 
   function complete() {
     if (!onComplete) return
@@ -256,9 +292,30 @@ function AdminRow({
     onComplete(task.id).catch(() => setOverride(null))
   }
   function reopen() {
+    // Reopening a paid chore claws the F$ back (maybe overdrawing the kid), so it
+    // goes through the host's confirm rather than firing optimistically here.
+    const clawback = reopenClawback(task, payout)
+    if (clawback > 0 && onReopenPaid) {
+      onReopenPaid(task, clawback)
+      return
+    }
     if (!onReopen) return
     setOverride('pending')
     onReopen(task.id).catch(() => setOverride(null))
+  }
+
+  // A held payout only applies to a still-completed row (an optimistic reopen drops
+  // the tray immediately). The tray needs the decide handler to do anything.
+  if (done && payout?.status === 'pending' && onDecidePayout) {
+    return (
+      <HeldRow
+        task={task}
+        payout={payout}
+        onDecidePayout={onDecidePayout}
+        onReopen={onReopen ? reopen : undefined}
+        onRemove={onRemove}
+      />
+    )
   }
 
   return (
@@ -272,14 +329,14 @@ function AdminRow({
       style={
         overdue ? { background: 'color-mix(in oklch, var(--error) 7%, var(--card))' } : undefined
       }
-      onActivate={onEdit ? () => onEdit(task) : undefined}
-      activateLabel={onEdit ? `Edit “${task.title}”` : undefined}
+      onActivate={canEdit ? () => onEdit!(task) : undefined}
+      activateLabel={canEdit ? `Edit “${task.title}”` : undefined}
       trailing={
         <>
           <RowActions
             label={task.title}
             noun="task"
-            onEdit={onEdit ? () => onEdit(task) : undefined}
+            onEdit={canEdit ? () => onEdit!(task) : undefined}
             onRemove={onRemove ? () => onRemove(task) : undefined}
           />
           {/* Option A check-off (no flight — the board has no score plate). A completed
@@ -307,8 +364,9 @@ function AdminRow({
         >
           {task.title}
         </span>
-        <div className="mt-0.5 flex items-center gap-2">
+        <div className="mt-0.5 flex flex-wrap items-center gap-2">
           {overdue && <Badge variant="destructive">Overdue</Badge>}
+          {isReopened(task) && <ReopenedBadge />}
           <span
             className={`text-sm-token ${overdue ? 'font-semibold text-error' : 'text-muted-foreground'}`}
           >
@@ -319,5 +377,147 @@ function AdminRow({
       {!done && showCoinReward(task.coinReward) && <CoinValue value={task.coinReward} size={16} />}
       {!done && <XpPill value={task.xpReward} />}
     </ItemCard>
+  )
+}
+
+/* A completed row whose F$ payout is HELD for the parent's OK (M4/3b, the approved
+   "A1 — payout tray" direction). The card is a column: the completed title line with
+   the reopen check (and remove) on the right, then a full-width brass tray at the
+   base carrying the decision.
+
+   Like every completed row, it is NOT editable in place — a held payout freezes the
+   chore's terms, so the only ways to change it are to decide the tray or reopen
+   (which voids the payout). Hence no pencil and no tap-to-edit; the reopen check is
+   the way back. NOT dimmed — a held payout wants attention. The spine is the
+   assignee's hue like every other row (ADR 043). */
+function HeldRow({
+  task,
+  payout,
+  onDecidePayout,
+  onReopen,
+  onRemove,
+}: {
+  task: ChoreTask
+  payout: PendingPayout
+  onDecidePayout: (input: DecidePayoutInput) => Promise<unknown>
+  onReopen?: () => void
+  onRemove?: (task: ChoreTask) => void
+}) {
+  // Optimistic decision — the tray shows "Paid"/"Declined" the instant it's tapped,
+  // reverting if the request fails. A query refetch reconciles underneath.
+  const [decided, setDecided] = useState<'approve' | 'decline' | null>(null)
+  const [deciding, setDeciding] = useState(false)
+
+  function decide(decision: 'approve' | 'decline') {
+    setDecided(decision)
+    setDeciding(true)
+    onDecidePayout({ id: payout.id, decision })
+      .catch(() => setDecided(null))
+      .finally(() => setDeciding(false))
+  }
+
+  return (
+    <ItemCard
+      spine={identityToken(resolveHue(task.assigneeName, task.assigneeHue))}
+      align="stretch"
+    >
+      <div className="flex min-w-0 flex-1 flex-col gap-3">
+        <div className="flex items-center gap-3">
+          <div className="min-w-0 flex-1">
+            <span className="text-card-title block truncate text-muted-foreground line-through">
+              {task.title}
+            </span>
+            <div className="mt-0.5">
+              <XpPill value={task.xpReward} earned />
+            </div>
+          </div>
+          <div className="flex shrink-0 items-center gap-0.5">
+            <RowActions
+              label={task.title}
+              noun="task"
+              onRemove={onRemove ? () => onRemove(task) : undefined}
+            />
+            {onReopen && (
+              <div className="flex size-11 shrink-0 items-center justify-center">
+                <CompletionToggle
+                  checked
+                  size={28}
+                  onToggle={onReopen}
+                  label={`Reopen “${task.title}” (mark not done)`}
+                  title="Mark not done"
+                />
+              </div>
+            )}
+          </div>
+        </div>
+        <PayoutTray
+          amount={payout.amount}
+          decided={decided}
+          deciding={deciding}
+          onDecide={decide}
+        />
+      </div>
+    </ItemCard>
+  )
+}
+
+/* The held-payout tray — a full-width brass band at the base of a held row. The coin
+   marks it as money, the amount lives in the Pay button so the parent reads the figure
+   before committing (never "Pay" alone). Once decided it collapses to a quiet
+   confirmation line, so a busy board doesn't keep a resolved payout shouting. */
+function PayoutTray({
+  amount,
+  decided,
+  deciding,
+  onDecide,
+}: {
+  amount: number
+  decided: 'approve' | 'decline' | null
+  deciding: boolean
+  onDecide: (decision: 'approve' | 'decline') => void
+}) {
+  const trayStyle = {
+    background: 'color-mix(in oklch, var(--coin) 12%, var(--card))',
+    borderColor: 'color-mix(in oklch, var(--coin) 42%, var(--card))',
+  }
+
+  if (decided) {
+    return (
+      <div
+        className="relative z-20 flex items-center gap-2 rounded-card border px-3 py-2.5"
+        style={trayStyle}
+      >
+        <Coin size={18} />
+        <span className="text-sm-token font-semibold" style={{ color: 'var(--coin-ink)' }}>
+          {decided === 'approve' ? `Paid ${amount} F$` : 'Not paid'}
+        </span>
+      </div>
+    )
+  }
+
+  return (
+    <div
+      className="relative z-20 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-card border py-2 pr-2 pl-3"
+      style={trayStyle}
+    >
+      <Coin size={22} />
+      <span className="text-sm-token flex-1 font-semibold" style={{ color: 'var(--coin-ink)' }}>
+        Waiting on your OK
+      </span>
+      <div className="flex items-center gap-2">
+        <Button
+          size="sm"
+          disabled={deciding}
+          onClick={() => onDecide('approve')}
+          className="font-bold text-[oklch(0.28_0.09_74)] shadow-[var(--shadow-card)] hover:brightness-95"
+          style={{ background: 'var(--coin)' }}
+        >
+          Pay {amount} F$
+        </Button>
+        <Button size="sm" variant="outline" disabled={deciding} onClick={() => onDecide('decline')}>
+          Not yet
+        </Button>
+      </div>
+    </div>
   )
 }

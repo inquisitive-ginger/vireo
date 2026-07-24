@@ -6,6 +6,7 @@ import { prisma } from '@family-os/platform/server'
 import { rewardsPrisma } from '@family-os/plugin-rewards/db'
 import { chorePrisma } from '@family-os/plugin-chores/db'
 import { postEntry, getBalance, recomputeBalance, LedgerError } from '../lib/ledger'
+import { findPayout } from '../lib/payouts'
 
 let app: FastifyInstance
 
@@ -73,6 +74,7 @@ afterAll(async () => {
 beforeEach(async () => {
   await rewardsPrisma.ledgerEntry.deleteMany({})
   await rewardsPrisma.balance.deleteMany({})
+  await rewardsPrisma.pendingPayout.deleteMany({})
   await chorePrisma.task.deleteMany({})
 })
 
@@ -369,6 +371,26 @@ describe('chores earn subscriber', () => {
     expect(await waitForBalance(KID_ID, 5)).toBe(5)
   })
 
+  it('nets to a single credit across repeated reopen/complete cycles — no F$ farming', async () => {
+    const task = await payingTask(5)
+    const kid = await getCookieForProfile(KID_ID)
+    const parent = await getCookieForProfile(PARENT_ID)
+
+    // Credit on complete, symmetric debit on reopen — each cycle cancels, so hammering
+    // the loop can never accumulate. Three completions end at exactly one credit.
+    await complete(task.id, kid)
+    await waitForBalance(KID_ID, 5)
+    await reopen(task.id, parent)
+    await waitForBalance(KID_ID, 0)
+    await complete(task.id, kid)
+    await waitForBalance(KID_ID, 5)
+    await reopen(task.id, parent)
+    await waitForBalance(KID_ID, 0)
+    await complete(task.id, kid)
+
+    expect(await waitForBalance(KID_ID, 5)).toBe(5)
+  })
+
   it('is idempotent — a redelivered completed event does not double-credit', async () => {
     const task = await payingTask(5)
     const completedAt = new Date().toISOString()
@@ -385,5 +407,302 @@ describe('chores earn subscriber', () => {
 
     expect(await waitForBalance(KID_ID, 5)).toBe(5)
     expect(await rewardsPrisma.ledgerEntry.count({ where: { profileId: KID_ID } })).toBe(1)
+  })
+})
+
+// ─── Payout approval (M4/3b) ──────────────────────────────────────────────────
+
+describe('payout approval', () => {
+  async function heldTask(coinReward = 10, assigneeId = KID_ID) {
+    return chorePrisma.task.create({
+      data: {
+        title: 'Mow the lawn',
+        assigneeId,
+        createdBy: PARENT_ID,
+        coinReward,
+        requiresApproval: true,
+      },
+    })
+  }
+
+  const complete = (taskId: string, cookie: string) =>
+    app.inject({
+      method: 'PATCH',
+      url: `/api/chores/tasks/${taskId}/complete`,
+      headers: { cookie },
+    })
+  const reopen = (taskId: string, cookie: string) =>
+    app.inject({ method: 'PATCH', url: `/api/chores/tasks/${taskId}/reopen`, headers: { cookie } })
+
+  // The held payout is written by the async earn subscriber; poll for it.
+  async function waitForPayout(taskId: string) {
+    for (let i = 0; i < 50; i++) {
+      const rows = await rewardsPrisma.pendingPayout.findMany({
+        where: { sourceType: 'chores.task' },
+      })
+      const found = rows.find((r) => r.sourceId.startsWith(`${taskId}@`))
+      if (found) return found
+      await new Promise((r) => setTimeout(r, 10))
+    }
+    return null
+  }
+
+  it('holds the payout instead of crediting when a chore requires approval', async () => {
+    const task = await heldTask(10)
+    const kid = await getCookieForProfile(KID_ID)
+
+    await complete(task.id, kid)
+    const payout = await waitForPayout(task.id)
+
+    expect(payout).not.toBeNull()
+    expect(payout).toMatchObject({
+      profileId: KID_ID,
+      amount: 10,
+      status: 'pending',
+      reason: 'Mow the lawn',
+    })
+    // No ledger movement — the balance is untouched until a parent approves.
+    await new Promise((r) => setTimeout(r, 20))
+    expect(await getBalance(KID_ID)).toBe(0)
+    expect(await rewardsPrisma.ledgerEntry.count()).toBe(0)
+  })
+
+  it('approve releases the held amount as the normal ledger credit', async () => {
+    const task = await heldTask(10)
+    const kid = await getCookieForProfile(KID_ID)
+    const parent = await getCookieForProfile(PARENT_ID)
+
+    await complete(task.id, kid)
+    const payout = await waitForPayout(task.id)
+
+    const res = await app.inject({
+      method: 'PATCH',
+      url: `/api/rewards/payouts/${payout!.id}`,
+      headers: { cookie: parent },
+      payload: { decision: 'approve' },
+    })
+
+    expect(res.statusCode).toBe(200)
+    expect(res.json().balance).toBe(10)
+    expect(await getBalance(KID_ID)).toBe(10)
+    const entries = await rewardsPrisma.ledgerEntry.findMany({ where: { profileId: KID_ID } })
+    expect(entries).toHaveLength(1)
+    expect(entries[0]).toMatchObject({ delta: 10, sourceType: 'chores.task', createdBy: PARENT_ID })
+    expect(
+      (await rewardsPrisma.pendingPayout.findUnique({ where: { id: payout!.id } }))?.status
+    ).toBe('approved')
+  })
+
+  it('re-approving does not double-credit (409, balance unchanged)', async () => {
+    const task = await heldTask(10)
+    const kid = await getCookieForProfile(KID_ID)
+    const parent = await getCookieForProfile(PARENT_ID)
+
+    await complete(task.id, kid)
+    const payout = await waitForPayout(task.id)
+    const decide = () =>
+      app.inject({
+        method: 'PATCH',
+        url: `/api/rewards/payouts/${payout!.id}`,
+        headers: { cookie: parent },
+        payload: { decision: 'approve' },
+      })
+
+    expect((await decide()).statusCode).toBe(200)
+    expect((await decide()).statusCode).toBe(409)
+    expect(await getBalance(KID_ID)).toBe(10)
+    expect(await rewardsPrisma.ledgerEntry.count({ where: { profileId: KID_ID } })).toBe(1)
+  })
+
+  it('decline stores the note verbatim and moves nothing', async () => {
+    const task = await heldTask(10)
+    const kid = await getCookieForProfile(KID_ID)
+    const parent = await getCookieForProfile(PARENT_ID)
+
+    await complete(task.id, kid)
+    const payout = await waitForPayout(task.id)
+
+    const res = await app.inject({
+      method: 'PATCH',
+      url: `/api/rewards/payouts/${payout!.id}`,
+      headers: { cookie: parent },
+      payload: { decision: 'decline', note: 'The corners are still full of leaves' },
+    })
+
+    expect(res.statusCode).toBe(200)
+    const decided = await rewardsPrisma.pendingPayout.findUnique({ where: { id: payout!.id } })
+    expect(decided).toMatchObject({
+      status: 'declined',
+      decidedNote: 'The corners are still full of leaves',
+      decidedBy: PARENT_ID,
+    })
+    expect(await getBalance(KID_ID)).toBe(0)
+    expect(await rewardsPrisma.ledgerEntry.count()).toBe(0)
+  })
+
+  it('reopening a still-pending payout voids it with no ledger movement', async () => {
+    const task = await heldTask(10)
+    const kid = await getCookieForProfile(KID_ID)
+    const parent = await getCookieForProfile(PARENT_ID)
+
+    await complete(task.id, kid)
+    const payout = await waitForPayout(task.id)
+    await reopen(task.id, parent)
+
+    // Give the reversal subscriber time to run.
+    for (let i = 0; i < 50; i++) {
+      const row = await rewardsPrisma.pendingPayout.findUnique({ where: { id: payout!.id } })
+      if (row?.status === 'voided') break
+      await new Promise((r) => setTimeout(r, 10))
+    }
+
+    expect(
+      (await rewardsPrisma.pendingPayout.findUnique({ where: { id: payout!.id } }))?.status
+    ).toBe('voided')
+    expect(await getBalance(KID_ID)).toBe(0)
+    expect(await rewardsPrisma.ledgerEntry.count()).toBe(0)
+  })
+
+  it('reopening an already-approved payout debits the released amount', async () => {
+    const task = await heldTask(10)
+    const kid = await getCookieForProfile(KID_ID)
+    const parent = await getCookieForProfile(PARENT_ID)
+
+    await complete(task.id, kid)
+    const payout = await waitForPayout(task.id)
+    await app.inject({
+      method: 'PATCH',
+      url: `/api/rewards/payouts/${payout!.id}`,
+      headers: { cookie: parent },
+      payload: { decision: 'approve' },
+    })
+    await waitForBalance(KID_ID, 10)
+
+    await reopen(task.id, parent)
+
+    // The reversal is the symmetric debit against the same instance (M4/3 behaviour).
+    expect(await waitForBalance(KID_ID, 0)).toBe(0)
+    expect(await rewardsPrisma.ledgerEntry.count({ where: { profileId: KID_ID } })).toBe(2)
+  })
+
+  it('auto-credits (no hold) when the chore does not require approval', async () => {
+    const task = await chorePrisma.task.create({
+      data: { title: 'Dishes', assigneeId: KID_ID, createdBy: PARENT_ID, coinReward: 5 },
+    })
+    const kid = await getCookieForProfile(KID_ID)
+
+    await complete(task.id, kid)
+
+    expect(await waitForBalance(KID_ID, 5)).toBe(5)
+    expect(await rewardsPrisma.pendingPayout.count()).toBe(0)
+  })
+
+  it('a redelivered completed event holds only once', async () => {
+    const task = await heldTask(10)
+    const completedAt = new Date().toISOString()
+    const payload = {
+      taskId: task.id,
+      assigneeId: KID_ID,
+      coinReward: 10,
+      completedAt,
+      title: 'Mow the lawn',
+      requiresApproval: true,
+    }
+    app.eventBus.emit('chores.task.completed', payload)
+    app.eventBus.emit('chores.task.completed', payload)
+
+    await waitForPayout(task.id)
+    await new Promise((r) => setTimeout(r, 20))
+    expect(await rewardsPrisma.pendingPayout.count()).toBe(1)
+  })
+
+  it('GET /rewards/payouts returns a kid their own held payout', async () => {
+    const task = await heldTask(10)
+    const kid = await getCookieForProfile(KID_ID)
+
+    await complete(task.id, kid)
+    await waitForPayout(task.id)
+
+    const res = await app.inject({
+      method: 'GET',
+      url: '/api/rewards/payouts?status=pending',
+      headers: { cookie: kid },
+    })
+    expect(res.statusCode).toBe(200)
+    const payouts = res.json().payouts
+    expect(payouts).toHaveLength(1)
+    expect(payouts[0]).toMatchObject({ profileId: KID_ID, amount: 10, status: 'pending' })
+  })
+
+  it('voids a still-pending payout when its chore is deleted', async () => {
+    const task = await heldTask(10)
+    const kid = await getCookieForProfile(KID_ID)
+    const parent = await getCookieForProfile(PARENT_ID)
+
+    await complete(task.id, kid)
+    const payout = await waitForPayout(task.id)
+
+    await app.inject({
+      method: 'DELETE',
+      url: `/api/chores/tasks/${task.id}`,
+      headers: { cookie: parent },
+    })
+
+    for (let i = 0; i < 50; i++) {
+      const row = await rewardsPrisma.pendingPayout.findUnique({ where: { id: payout!.id } })
+      if (row?.status === 'voided') break
+      await new Promise((r) => setTimeout(r, 10))
+    }
+    expect(
+      (await rewardsPrisma.pendingPayout.findUnique({ where: { id: payout!.id } }))?.status
+    ).toBe('voided')
+    expect(await getBalance(KID_ID)).toBe(0)
+    expect(await rewardsPrisma.ledgerEntry.count()).toBe(0)
+  })
+
+  it('leaves an approved payout paid when its chore is later deleted', async () => {
+    const task = await heldTask(10)
+    const kid = await getCookieForProfile(KID_ID)
+    const parent = await getCookieForProfile(PARENT_ID)
+
+    await complete(task.id, kid)
+    const payout = await waitForPayout(task.id)
+    await app.inject({
+      method: 'PATCH',
+      url: `/api/rewards/payouts/${payout!.id}`,
+      headers: { cookie: parent },
+      payload: { decision: 'approve' },
+    })
+    await waitForBalance(KID_ID, 10)
+
+    await app.inject({
+      method: 'DELETE',
+      url: `/api/chores/tasks/${task.id}`,
+      headers: { cookie: parent },
+    })
+    await new Promise((r) => setTimeout(r, 40))
+
+    // Deleting the chore record does not claw back money already paid.
+    expect(await getBalance(KID_ID)).toBe(10)
+    expect(
+      (await rewardsPrisma.pendingPayout.findUnique({ where: { id: payout!.id } }))?.status
+    ).toBe('approved')
+  })
+
+  it('a kid cannot decide a payout (tier < 4 → 403)', async () => {
+    const task = await heldTask(10)
+    const kid = await getCookieForProfile(KID_ID)
+
+    await complete(task.id, kid)
+    const payout = await waitForPayout(task.id)
+
+    const res = await app.inject({
+      method: 'PATCH',
+      url: `/api/rewards/payouts/${payout!.id}`,
+      headers: { cookie: kid },
+      payload: { decision: 'approve' },
+    })
+    expect(res.statusCode).toBe(403)
+    expect(await findPayout('chores.task', payout!.sourceId).then((p) => p?.status)).toBe('pending')
   })
 })

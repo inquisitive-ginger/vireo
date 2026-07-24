@@ -1020,6 +1020,8 @@ export namespace Prisma {
     dueDate: Date | null
     xpReward: number | null
     coinReward: number | null
+    requiresApproval: boolean | null
+    xpAwarded: boolean | null
     createdAt: Date | null
     completedAt: Date | null
   }
@@ -1034,6 +1036,8 @@ export namespace Prisma {
     dueDate: Date | null
     xpReward: number | null
     coinReward: number | null
+    requiresApproval: boolean | null
+    xpAwarded: boolean | null
     createdAt: Date | null
     completedAt: Date | null
   }
@@ -1048,6 +1052,8 @@ export namespace Prisma {
     dueDate: number
     xpReward: number
     coinReward: number
+    requiresApproval: number
+    xpAwarded: number
     createdAt: number
     completedAt: number
     _all: number
@@ -1073,6 +1079,8 @@ export namespace Prisma {
     dueDate?: true
     xpReward?: true
     coinReward?: true
+    requiresApproval?: true
+    xpAwarded?: true
     createdAt?: true
     completedAt?: true
   }
@@ -1087,6 +1095,8 @@ export namespace Prisma {
     dueDate?: true
     xpReward?: true
     coinReward?: true
+    requiresApproval?: true
+    xpAwarded?: true
     createdAt?: true
     completedAt?: true
   }
@@ -1101,6 +1111,8 @@ export namespace Prisma {
     dueDate?: true
     xpReward?: true
     coinReward?: true
+    requiresApproval?: true
+    xpAwarded?: true
     createdAt?: true
     completedAt?: true
     _all?: true
@@ -1202,6 +1214,8 @@ export namespace Prisma {
     dueDate: Date | null
     xpReward: number
     coinReward: number
+    requiresApproval: boolean
+    xpAwarded: boolean
     createdAt: Date
     completedAt: Date | null
     _count: TaskCountAggregateOutputType | null
@@ -1235,6 +1249,8 @@ export namespace Prisma {
         dueDate?: boolean
         xpReward?: boolean
         coinReward?: boolean
+        requiresApproval?: boolean
+        xpAwarded?: boolean
         createdAt?: boolean
         completedAt?: boolean
       },
@@ -1254,6 +1270,8 @@ export namespace Prisma {
       dueDate?: boolean
       xpReward?: boolean
       coinReward?: boolean
+      requiresApproval?: boolean
+      xpAwarded?: boolean
       createdAt?: boolean
       completedAt?: boolean
     },
@@ -1273,6 +1291,8 @@ export namespace Prisma {
       dueDate?: boolean
       xpReward?: boolean
       coinReward?: boolean
+      requiresApproval?: boolean
+      xpAwarded?: boolean
       createdAt?: boolean
       completedAt?: boolean
     },
@@ -1289,6 +1309,8 @@ export namespace Prisma {
     dueDate?: boolean
     xpReward?: boolean
     coinReward?: boolean
+    requiresApproval?: boolean
+    xpAwarded?: boolean
     createdAt?: boolean
     completedAt?: boolean
   }
@@ -1304,6 +1326,8 @@ export namespace Prisma {
       | 'dueDate'
       | 'xpReward'
       | 'coinReward'
+      | 'requiresApproval'
+      | 'xpAwarded'
       | 'createdAt'
       | 'completedAt',
       ExtArgs['result']['task']
@@ -1323,6 +1347,8 @@ export namespace Prisma {
         dueDate: Date | null
         xpReward: number
         coinReward: number
+        requiresApproval: boolean
+        xpAwarded: boolean
         createdAt: Date
         completedAt: Date | null
       },
@@ -1843,6 +1869,8 @@ export namespace Prisma {
     readonly dueDate: FieldRef<'Task', 'DateTime'>
     readonly xpReward: FieldRef<'Task', 'Int'>
     readonly coinReward: FieldRef<'Task', 'Int'>
+    readonly requiresApproval: FieldRef<'Task', 'Boolean'>
+    readonly xpAwarded: FieldRef<'Task', 'Boolean'>
     readonly createdAt: FieldRef<'Task', 'DateTime'>
     readonly completedAt: FieldRef<'Task', 'DateTime'>
   }
@@ -3425,6 +3453,8 @@ export namespace Prisma {
     dueDate: 'dueDate'
     xpReward: 'xpReward'
     coinReward: 'coinReward'
+    requiresApproval: 'requiresApproval'
+    xpAwarded: 'xpAwarded'
     createdAt: 'createdAt'
     completedAt: 'completedAt'
   }
@@ -3499,6 +3529,11 @@ export namespace Prisma {
   export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
 
   /**
+   * Reference to a field of type 'Boolean'
+   */
+  export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+
+  /**
    * Reference to a field of type 'Float'
    */
   export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
@@ -3525,6 +3560,8 @@ export namespace Prisma {
     dueDate?: DateTimeNullableFilter<'Task'> | Date | string | null
     xpReward?: IntFilter<'Task'> | number
     coinReward?: IntFilter<'Task'> | number
+    requiresApproval?: BoolFilter<'Task'> | boolean
+    xpAwarded?: BoolFilter<'Task'> | boolean
     createdAt?: DateTimeFilter<'Task'> | Date | string
     completedAt?: DateTimeNullableFilter<'Task'> | Date | string | null
   }
@@ -3539,6 +3576,8 @@ export namespace Prisma {
     dueDate?: SortOrderInput | SortOrder
     xpReward?: SortOrder
     coinReward?: SortOrder
+    requiresApproval?: SortOrder
+    xpAwarded?: SortOrder
     createdAt?: SortOrder
     completedAt?: SortOrderInput | SortOrder
   }
@@ -3557,6 +3596,8 @@ export namespace Prisma {
       dueDate?: DateTimeNullableFilter<'Task'> | Date | string | null
       xpReward?: IntFilter<'Task'> | number
       coinReward?: IntFilter<'Task'> | number
+      requiresApproval?: BoolFilter<'Task'> | boolean
+      xpAwarded?: BoolFilter<'Task'> | boolean
       createdAt?: DateTimeFilter<'Task'> | Date | string
       completedAt?: DateTimeNullableFilter<'Task'> | Date | string | null
     },
@@ -3573,6 +3614,8 @@ export namespace Prisma {
     dueDate?: SortOrderInput | SortOrder
     xpReward?: SortOrder
     coinReward?: SortOrder
+    requiresApproval?: SortOrder
+    xpAwarded?: SortOrder
     createdAt?: SortOrder
     completedAt?: SortOrderInput | SortOrder
     _count?: TaskCountOrderByAggregateInput
@@ -3595,6 +3638,8 @@ export namespace Prisma {
     dueDate?: DateTimeNullableWithAggregatesFilter<'Task'> | Date | string | null
     xpReward?: IntWithAggregatesFilter<'Task'> | number
     coinReward?: IntWithAggregatesFilter<'Task'> | number
+    requiresApproval?: BoolWithAggregatesFilter<'Task'> | boolean
+    xpAwarded?: BoolWithAggregatesFilter<'Task'> | boolean
     createdAt?: DateTimeWithAggregatesFilter<'Task'> | Date | string
     completedAt?: DateTimeNullableWithAggregatesFilter<'Task'> | Date | string | null
   }
@@ -3656,6 +3701,8 @@ export namespace Prisma {
     dueDate?: Date | string | null
     xpReward?: number
     coinReward?: number
+    requiresApproval?: boolean
+    xpAwarded?: boolean
     createdAt?: Date | string
     completedAt?: Date | string | null
   }
@@ -3670,6 +3717,8 @@ export namespace Prisma {
     dueDate?: Date | string | null
     xpReward?: number
     coinReward?: number
+    requiresApproval?: boolean
+    xpAwarded?: boolean
     createdAt?: Date | string
     completedAt?: Date | string | null
   }
@@ -3684,6 +3733,8 @@ export namespace Prisma {
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     xpReward?: IntFieldUpdateOperationsInput | number
     coinReward?: IntFieldUpdateOperationsInput | number
+    requiresApproval?: BoolFieldUpdateOperationsInput | boolean
+    xpAwarded?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
@@ -3698,6 +3749,8 @@ export namespace Prisma {
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     xpReward?: IntFieldUpdateOperationsInput | number
     coinReward?: IntFieldUpdateOperationsInput | number
+    requiresApproval?: BoolFieldUpdateOperationsInput | boolean
+    xpAwarded?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
@@ -3712,6 +3765,8 @@ export namespace Prisma {
     dueDate?: Date | string | null
     xpReward?: number
     coinReward?: number
+    requiresApproval?: boolean
+    xpAwarded?: boolean
     createdAt?: Date | string
     completedAt?: Date | string | null
   }
@@ -3726,6 +3781,8 @@ export namespace Prisma {
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     xpReward?: IntFieldUpdateOperationsInput | number
     coinReward?: IntFieldUpdateOperationsInput | number
+    requiresApproval?: BoolFieldUpdateOperationsInput | boolean
+    xpAwarded?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
@@ -3740,6 +3797,8 @@ export namespace Prisma {
     dueDate?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     xpReward?: IntFieldUpdateOperationsInput | number
     coinReward?: IntFieldUpdateOperationsInput | number
+    requiresApproval?: BoolFieldUpdateOperationsInput | boolean
+    xpAwarded?: BoolFieldUpdateOperationsInput | boolean
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
   }
@@ -3850,6 +3909,11 @@ export namespace Prisma {
     not?: NestedIntFilter<$PrismaModel> | number
   }
 
+  export type BoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
   export type DateTimeFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
@@ -3876,6 +3940,8 @@ export namespace Prisma {
     dueDate?: SortOrder
     xpReward?: SortOrder
     coinReward?: SortOrder
+    requiresApproval?: SortOrder
+    xpAwarded?: SortOrder
     createdAt?: SortOrder
     completedAt?: SortOrder
   }
@@ -3895,6 +3961,8 @@ export namespace Prisma {
     dueDate?: SortOrder
     xpReward?: SortOrder
     coinReward?: SortOrder
+    requiresApproval?: SortOrder
+    xpAwarded?: SortOrder
     createdAt?: SortOrder
     completedAt?: SortOrder
   }
@@ -3909,6 +3977,8 @@ export namespace Prisma {
     dueDate?: SortOrder
     xpReward?: SortOrder
     coinReward?: SortOrder
+    requiresApproval?: SortOrder
+    xpAwarded?: SortOrder
     createdAt?: SortOrder
     completedAt?: SortOrder
   }
@@ -3999,6 +4069,14 @@ export namespace Prisma {
     _max?: NestedIntFilter<$PrismaModel>
   }
 
+  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
+  }
+
   export type DateTimeWithAggregatesFilter<$PrismaModel = never> = {
     equals?: Date | string | DateTimeFieldRefInput<$PrismaModel>
     in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel>
@@ -4057,6 +4135,10 @@ export namespace Prisma {
     decrement?: number
     multiply?: number
     divide?: number
+  }
+
+  export type BoolFieldUpdateOperationsInput = {
+    set?: boolean
   }
 
   export type DateTimeFieldUpdateOperationsInput = {
@@ -4122,6 +4204,11 @@ export namespace Prisma {
     gt?: number | IntFieldRefInput<$PrismaModel>
     gte?: number | IntFieldRefInput<$PrismaModel>
     not?: NestedIntFilter<$PrismaModel> | number
+  }
+
+  export type NestedBoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
   }
 
   export type NestedDateTimeFilter<$PrismaModel = never> = {
@@ -4233,6 +4320,14 @@ export namespace Prisma {
     gt?: number | FloatFieldRefInput<$PrismaModel>
     gte?: number | FloatFieldRefInput<$PrismaModel>
     not?: NestedFloatFilter<$PrismaModel> | number
+  }
+
+  export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
   }
 
   export type NestedDateTimeWithAggregatesFilter<$PrismaModel = never> = {

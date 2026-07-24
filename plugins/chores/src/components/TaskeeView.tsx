@@ -1,6 +1,7 @@
 import { useMemo, useRef } from 'react'
 import { PageContainer, PageHeader } from '@family-os/ui'
 import type { ChoreTask } from '../types'
+import { payoutForTask, type PayoutsByInstance } from '../lib/payouts'
 import { TaskCard } from './TaskCard'
 import { ScorePlate } from './ScorePlate'
 import { FlightChip } from './FlightChip'
@@ -17,6 +18,9 @@ export interface TaskeeViewProps {
       first render — not reactive to subsequent fetches, which would double-count
       in-session completions. */
   initialXp?: number
+  /** Held/decided F$ payouts keyed by completion instance (M4/3b). Empty when the
+      earn UI is flagged off. */
+  payoutIndex?: PayoutsByInstance
 }
 
 /* The taskee surface (tiers 1–3, Agency variant) — renders the full status-encoded
@@ -24,7 +28,7 @@ export interface TaskeeViewProps {
    Header carries the lifetime score plate (the flight's landing target). On tap:
    the badge lifts off, a portal chip arcs to the plate, and on landing the card
    morphs to done while the plate banks + counts up. */
-export function TaskeeView({ tasks, onCompleteTask, initialXp }: TaskeeViewProps) {
+export function TaskeeView({ tasks, onCompleteTask, initialXp, payoutIndex }: TaskeeViewProps) {
   const { plateRef, lifetime, flights, handleComplete, onFlightDone, effectiveStatus } =
     useXpFlight({ tasks, onCompleteTask, initialXp })
 
@@ -66,6 +70,7 @@ export function TaskeeView({ tasks, onCompleteTask, initialXp }: TaskeeViewProps
             task={t}
             displayStatus={effectiveStatus(t)}
             onComplete={handleComplete}
+            payout={payoutIndex && payoutForTask(t, payoutIndex)}
           />
         ))}
       </div>

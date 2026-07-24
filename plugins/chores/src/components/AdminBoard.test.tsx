@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent, within } from '@testing-library/react'
 import { AdminBoard, type AdminLane } from './AdminBoard'
+import { indexPayouts } from '../lib/payouts'
 import type { ChoreTask } from '../types'
 
 function isoDay(offset: number): string {
@@ -20,6 +21,8 @@ function task(over: Partial<ChoreTask> & Pick<ChoreTask, 'id' | 'title'>): Chore
     dueDate: null,
     xpReward: 10,
     coinReward: 0,
+    requiresApproval: false,
+    xpAwarded: false,
     createdBy: 'm-parent',
     createdAt: new Date().toISOString(),
     completedAt: null,
@@ -372,12 +375,91 @@ describe('AdminBoard — tier-4 controls', () => {
     expect(onReopen).toHaveBeenCalledWith('t3')
   })
 
+  it('routes a PAID reopen through the confirm handler, an unpaid one directly (M4/3b)', () => {
+    const onReopen = vi.fn().mockResolvedValue({})
+    const onReopenPaid = vi.fn()
+    const paid = task({
+      id: 'tp',
+      title: 'Paid chore',
+      status: 'completed',
+      coinReward: 10,
+      completedAt: '2026-07-23T16:12:00.000Z',
+    })
+    render(
+      <AdminBoard
+        lanes={[
+          {
+            assigneeId: 'm-maya',
+            assigneeName: 'Maya',
+            assigneeAvatarUrl: null,
+            assigneeHue: 'sage',
+            tasks: [paid, DONE], // DONE pays 0
+          },
+        ]}
+        onAddForAssignee={vi.fn()}
+        onReopenTask={onReopen}
+        onReopenPaidTask={onReopenPaid}
+      />
+    )
+
+    // The paid chore (auto-credited 10 F$) confirms first — no direct reopen.
+    fireEvent.click(screen.getByRole('checkbox', { name: 'Reopen “Paid chore” (mark not done)' }))
+    expect(onReopenPaid).toHaveBeenCalledWith(expect.objectContaining({ id: 'tp' }), 10)
+    expect(onReopen).not.toHaveBeenCalled()
+
+    // The unpaid completed chore reopens straight away.
+    fireEvent.click(
+      screen.getByRole('checkbox', { name: 'Reopen “Tidy the playroom” (mark not done)' })
+    )
+    expect(onReopen).toHaveBeenCalledWith('t3')
+  })
+
   it('makes the row itself the edit target (the touch affordance)', () => {
     const onEdit = vi.fn()
     render(<AdminBoard lanes={lanes()} onAddForAssignee={vi.fn()} onEditTask={onEdit} />)
     // Two controls share the label: the stretched row overlay and the sm+ pencil.
     fireEvent.click(screen.getAllByRole('button', { name: 'Edit “Make your bed”' })[0])
     expect(onEdit).toHaveBeenCalledWith(PENDING)
+  })
+
+  it('marks a reopened pending task with Redo, but not a fresh one (M4/3b)', () => {
+    const reopened = task({ id: 'tr', title: 'Redo me', status: 'pending', xpAwarded: true })
+    render(
+      <AdminBoard
+        lanes={[
+          {
+            assigneeId: 'm-maya',
+            assigneeName: 'Maya',
+            assigneeAvatarUrl: null,
+            assigneeHue: 'sage',
+            tasks: [reopened, PENDING],
+          },
+        ]}
+        onAddForAssignee={vi.fn()}
+      />
+    )
+    expect(within(rowFor('Redo me')).getByText('Redo')).toBeInTheDocument()
+    // A never-completed pending task is not a redo.
+    expect(within(rowFor('Make your bed')).queryByText('Redo')).not.toBeInTheDocument()
+  })
+
+  it('locks a completed row from editing — reopen is the way back (M4/3b)', () => {
+    render(
+      <AdminBoard
+        lanes={lanes()}
+        onAddForAssignee={vi.fn()}
+        onEditTask={vi.fn()}
+        onReopenTask={vi.fn()}
+      />
+    )
+    // Done row: no pencil and no tap-to-edit overlay share the edit label.
+    expect(
+      screen.queryByRole('button', { name: 'Edit “Tidy the playroom”' })
+    ).not.toBeInTheDocument()
+    // ...but a pending row still edits.
+    expect(screen.getAllByRole('button', { name: 'Edit “Make your bed”' }).length).toBeGreaterThan(
+      0
+    )
   })
 
   it('delegates Remove to the host (which confirms)', () => {
@@ -394,5 +476,120 @@ describe('AdminBoard — tier-4 controls', () => {
     expect(screen.queryByRole('button', { name: /^Edit / })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /^Remove / })).not.toBeInTheDocument()
     expect(screen.queryByRole('checkbox')).not.toBeInTheDocument()
+  })
+})
+
+describe('AdminBoard — held payout tray (M4/3b)', () => {
+  const COMPLETED_AT = '2026-07-23T16:12:00.000Z'
+  const HELD = task({
+    id: 'th',
+    title: 'Mow the lawn',
+    status: 'completed',
+    coinReward: 10,
+    requiresApproval: true,
+    completedAt: COMPLETED_AT,
+  })
+
+  function heldLanes(): AdminLane[] {
+    return [
+      {
+        assigneeId: 'm-maya',
+        assigneeName: 'Maya',
+        assigneeAvatarUrl: null,
+        assigneeHue: 'sage',
+        tasks: [HELD],
+      },
+    ]
+  }
+
+  const payoutIndex = indexPayouts([
+    {
+      id: 'p1',
+      profileId: 'm-maya',
+      amount: 10,
+      reason: 'Mow the lawn',
+      sourceType: 'chores.task',
+      sourceId: `th@${COMPLETED_AT}`,
+      status: 'pending',
+      decidedNote: null,
+      createdAt: COMPLETED_AT,
+    },
+  ])
+
+  it('grows the tray on a held completed row, amount in the Pay button', () => {
+    render(
+      <AdminBoard
+        lanes={heldLanes()}
+        onAddForAssignee={vi.fn()}
+        payoutIndex={payoutIndex}
+        onDecidePayout={vi.fn()}
+      />
+    )
+    expect(screen.getByText('Waiting on your OK')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Pay 10 F$' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Not yet' })).toBeInTheDocument()
+  })
+
+  it('Pay approves and Not yet declines the payout', () => {
+    const onDecide = vi.fn().mockResolvedValue(undefined)
+    render(
+      <AdminBoard
+        lanes={heldLanes()}
+        onAddForAssignee={vi.fn()}
+        payoutIndex={payoutIndex}
+        onDecidePayout={onDecide}
+      />
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Pay 10 F$' }))
+    expect(onDecide).toHaveBeenCalledWith({ id: 'p1', decision: 'approve' })
+  })
+
+  it('declines via Not yet', () => {
+    const onDecide = vi.fn().mockResolvedValue(undefined)
+    render(
+      <AdminBoard
+        lanes={heldLanes()}
+        onAddForAssignee={vi.fn()}
+        payoutIndex={payoutIndex}
+        onDecidePayout={onDecide}
+      />
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Not yet' }))
+    expect(onDecide).toHaveBeenCalledWith({ id: 'p1', decision: 'decline' })
+  })
+
+  it('no tray on a completed row without a held payout', () => {
+    render(<AdminBoard lanes={heldLanes()} onAddForAssignee={vi.fn()} onDecidePayout={vi.fn()} />)
+    expect(screen.queryByText('Waiting on your OK')).not.toBeInTheDocument()
+  })
+
+  it('still keeps the assignee hue on the held row spine (ADR 043)', () => {
+    render(
+      <AdminBoard
+        lanes={heldLanes()}
+        onAddForAssignee={vi.fn()}
+        payoutIndex={payoutIndex}
+        onDecidePayout={vi.fn()}
+      />
+    )
+    expect(spineColorOf('Mow the lawn')).toBe(MAYA_HUE)
+  })
+
+  it('exposes no edit affordance on a held row — reopen to change it', () => {
+    render(
+      <AdminBoard
+        lanes={heldLanes()}
+        onAddForAssignee={vi.fn()}
+        payoutIndex={payoutIndex}
+        onDecidePayout={vi.fn()}
+        onEditTask={vi.fn()}
+        onReopenTask={vi.fn()}
+      />
+    )
+    expect(screen.queryByRole('button', { name: 'Edit “Mow the lawn”' })).not.toBeInTheDocument()
+    // The reopen check is present — the one way back to editable.
+    expect(
+      screen.getByRole('checkbox', { name: 'Reopen “Mow the lawn” (mark not done)' })
+    ).toBeInTheDocument()
   })
 })

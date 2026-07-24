@@ -1,7 +1,9 @@
-import { useState, type ReactNode } from 'react'
+import { useMemo, useState, type ReactNode } from 'react'
 import { Label, PageContainer, PageHeader, Switch } from '@family-os/ui'
-import type { ChoreTask } from '../types'
+import type { ChoreTask, PendingPayout } from '../types'
+import type { DecidePayoutInput } from './ChoresPage'
 import { isOverdue } from '../lib/dates'
+import { indexPayouts } from '../lib/payouts'
 import { TaskeeView } from '../components/TaskeeView'
 import { FocusView } from '../components/FocusView'
 import { AdminBoard, type AdminLane } from '../components/AdminBoard'
@@ -26,6 +28,8 @@ export interface ChoresPageViewProps {
   onCompleteTask?: (taskId: string) => Promise<unknown>
   /** Un-complete a task (tier-4 only, admin board). Rejects to revert. */
   onReopenTask?: (taskId: string) => Promise<unknown>
+  /** Reopen a paid chore — the container confirms the F$ clawback first (M4/3b). */
+  onReopenPaidTask?: (task: ChoreTask, clawback: number) => void
   /** Edit a task (tier-4 only) — opens the drawer prefilled. */
   onEditTask?: (task: ChoreTask) => void
   /** Remove a task (tier-4 only) — container confirms then deletes. */
@@ -35,6 +39,12 @@ export interface ChoresPageViewProps {
   /** Effective Focus-mode setting (ADR 036). Taskee + on → the Focus variant;
       off → the Agency `TaskeeView`. Ignored by the admin/family board. */
   focusMode?: boolean
+  /** Held/decided F$ payouts (M4/3b), flagged. Empty when the earn UI is off. The
+      board overlays a pending payout's approve/decline tray onto its row; a taskee
+      shows the held badge and the declined note. */
+  payouts?: PendingPayout[]
+  /** Approve/decline a held payout (tier-4 board only). */
+  onDecidePayout?: (input: DecidePayoutInput) => Promise<unknown>
 }
 
 export function ChoresPageView({
@@ -47,13 +57,17 @@ export function ChoresPageView({
   onAddForAssignee,
   onCompleteTask,
   onReopenTask,
+  onReopenPaidTask,
   onEditTask,
   onRemoveTask,
   initialXp,
   focusMode,
+  payouts,
+  onDecidePayout,
 }: ChoresPageViewProps) {
   // Declared before the taskee early-return so the hook order stays unconditional.
   const [hideCompleted, setHideCompleted] = useState(false)
+  const payoutIndex = useMemo(() => indexPayouts(payouts ?? []), [payouts])
 
   // Taskee, non-empty → the dedicated taskee surface (owns its header, the
   // lifetime score plate, and the XP-flight completion — design §1/§2). The
@@ -61,7 +75,14 @@ export function ChoresPageView({
   // full status-encoded list); both share the flight engine (ADR 036).
   if (!seesAllTasks && tasks.length > 0) {
     const TaskeeSurface = focusMode ? FocusView : TaskeeView
-    return <TaskeeSurface tasks={tasks} onCompleteTask={onCompleteTask} initialXp={initialXp} />
+    return (
+      <TaskeeSurface
+        tasks={tasks}
+        onCompleteTask={onCompleteTask}
+        initialXp={initialXp}
+        payoutIndex={payoutIndex}
+      />
+    )
   }
 
   const done = tasks.filter((t) => t.status === 'completed').length
@@ -105,9 +126,12 @@ export function ChoresPageView({
             lanes={toLanes(tasks)}
             showAdd={canManage}
             hideCompleted={hideCompleted}
+            payoutIndex={payoutIndex}
+            onDecidePayout={canManage ? onDecidePayout : undefined}
             onAddForAssignee={onAddForAssignee ?? (() => {})}
             onCompleteTask={canManage ? onCompleteTask : undefined}
             onReopenTask={canManage ? onReopenTask : undefined}
+            onReopenPaidTask={canManage ? onReopenPaidTask : undefined}
             onEditTask={canManage ? onEditTask : undefined}
             onRemoveTask={canManage ? onRemoveTask : undefined}
           />

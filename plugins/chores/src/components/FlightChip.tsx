@@ -67,7 +67,9 @@ export function FlightChip({ from, to, value, onDone }: FlightChipProps) {
       // left/top/size track the badge's live rect — centre the chip on its centre.
       style={{ left: from.left, top: from.top, minWidth: from.width, height: from.height }}
     >
-      <span className="text-sm-token inline-flex items-center gap-1 rounded-full bg-secondary px-2.5 py-0.5 font-bold whitespace-nowrap text-muted-foreground">
+      {/* Plain quiet star — matches the resting XpPill, which no longer wears a pill
+          (ADR 051), so the chip that lifts off looks like the badge it left. */}
+      <span className="text-sm-token inline-flex items-center gap-1 font-semibold whitespace-nowrap text-muted-foreground">
         <Star size={12} strokeWidth={2.5} />
         {value} XP
       </span>

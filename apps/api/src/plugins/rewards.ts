@@ -4,9 +4,21 @@ import { prisma } from '@family-os/platform/server'
 import type { EventBus } from '@family-os/platform/server'
 import { FAMILY_PROFILE_ID } from '@family-os/platform/types'
 import { getBalance, listEntries, postEntry } from '../lib/ledger'
+import {
+  approvePayout,
+  declinePayout,
+  findPayout,
+  getPayout,
+  holdPayout,
+  listPayouts,
+  PayoutError,
+  voidPayout,
+  type PendingPayoutRecord,
+} from '../lib/payouts'
 
 const DEFAULT_LIMIT = 20
 const MAX_LIMIT = 50
+const CHORE_SOURCE = 'chores.task'
 
 // ─── Chores earn subscriber (ADR 048) ────────────────────────────────────────
 //
@@ -16,6 +28,10 @@ const MAX_LIMIT = 50
 // the task, so a reopen→re-complete cycle re-earns instead of colliding with the
 // original credit; the reversal uses a distinct sourceType against the same
 // instance id. Both directions are idempotent under the ledger's unique key.
+//
+// M4/3b: a chore may opt into approval (`requiresApproval`). Its payout is HELD in
+// `pending_payouts` instead of crediting on completion, and a parent releases it
+// (see the routes below). The auto path is unchanged.
 
 type ChoreEarnPayload = {
   taskId: string
@@ -23,35 +39,86 @@ type ChoreEarnPayload = {
   coinReward: number
   completedAt: string | null
   title?: string
+  requiresApproval?: boolean
 }
 
 const instanceId = (taskId: string, completedAt: string): string => `${taskId}@${completedAt}`
 
 async function handleChoreCredit(payload: unknown, bus: EventBus): Promise<void> {
-  const { taskId, assigneeId, coinReward, completedAt, title } = payload as ChoreEarnPayload
-  if (coinReward <= 0 || !completedAt) return
+  const { taskId, assigneeId, coinReward, completedAt, title, requiresApproval } =
+    payload as ChoreEarnPayload
+  if (!(coinReward > 0) || !completedAt) return
+
+  const source = { sourceType: CHORE_SOURCE, sourceId: instanceId(taskId, completedAt) }
+
+  // Held, not credited: the balance doesn't move until a parent approves.
+  if (requiresApproval) {
+    await holdPayout({
+      profileId: assigneeId,
+      amount: coinReward,
+      reason: title ?? 'Chore',
+      ...source,
+    })
+    return
+  }
 
   await postEntry(bus, {
     profileId: assigneeId,
     delta: coinReward,
     reason: title ?? 'Chore',
-    sourceType: 'chores.task',
-    sourceId: instanceId(taskId, completedAt),
+    ...source,
   })
 }
 
 async function handleChoreReversal(payload: unknown, bus: EventBus): Promise<void> {
   const { taskId, assigneeId, coinReward, completedAt, title } = payload as ChoreEarnPayload
   // A reopen with no prior completedAt reverses nothing (it was never credited).
-  if (coinReward <= 0 || !completedAt) return
+  if (!(coinReward > 0) || !completedAt) return
+
+  const sourceId = instanceId(taskId, completedAt)
+
+  // A payout still awaiting a decision was never credited, so voiding it moves no
+  // balance (ADR 047). Once released (approved) — or on the auto path, where no
+  // payout row exists — the reversal debits, exactly as M4/3 did. A declined or
+  // already-voided payout never credited, so there is nothing to reverse.
+  const payout = await findPayout(CHORE_SOURCE, sourceId)
+  if (payout?.status === 'pending') {
+    await voidPayout(CHORE_SOURCE, sourceId)
+    return
+  }
+  if (payout && payout.status !== 'approved') return
 
   await postEntry(bus, {
     profileId: assigneeId,
     delta: -coinReward,
     reason: title ? `Reopened: ${title}` : 'Chore reopened',
     sourceType: 'chores.task.reversal',
-    sourceId: instanceId(taskId, completedAt),
+    sourceId,
   })
+}
+
+async function handleChoreDeleted(payload: unknown): Promise<void> {
+  const { taskId, coinReward, completedAt } = payload as ChoreEarnPayload
+  // Only a still-pending payout is voided. An already-approved one leaves its ledger
+  // entry alone — deleting the chore record does not claw back money already paid.
+  if (!(coinReward > 0) || !completedAt) return
+  await voidPayout(CHORE_SOURCE, instanceId(taskId, completedAt))
+}
+
+function serializePayout(p: PendingPayoutRecord) {
+  return {
+    id: p.id,
+    profileId: p.profileId,
+    amount: p.amount,
+    reason: p.reason,
+    sourceType: p.sourceType,
+    sourceId: p.sourceId,
+    status: p.status,
+    decidedBy: p.decidedBy,
+    decidedNote: p.decidedNote,
+    decidedAt: p.decidedAt ? p.decidedAt.toISOString() : null,
+    createdAt: p.createdAt.toISOString(),
+  }
 }
 
 const rewardsPlugin: FastifyPluginAsync = async (fastify) => {
@@ -107,6 +174,76 @@ const rewardsPlugin: FastifyPluginAsync = async (fastify) => {
     }
   })
 
+  // GET /rewards/payouts?status=&profileId= — held payouts. The tier-4 board reads
+  // ALL pending payouts (to overlay the tray onto its rows); a kid reads their OWN
+  // (pending → the "held" badge, declined → the note). `status` is a comma list,
+  // default `pending`. Scope mirrors the wallet: tier 4 sees everyone; below that,
+  // forced to own.
+  fastify.get('/rewards/payouts', async (request, reply) => {
+    const query = request.query as { status?: string; profileId?: string; limit?: string }
+
+    if (!request.ability.can('view', 'rewards.Wallet')) {
+      return reply.status(403).send({ error: 'Permission denied' })
+    }
+    const isAdmin = request.profile.tier >= 4
+
+    // Below tier 4 the scope is always the caller's own profile, whatever they ask.
+    const profileId = isAdmin ? query.profileId : request.profile.id
+    if (profileId === FAMILY_PROFILE_ID) {
+      return reply.status(403).send({ error: 'The family profile holds no balance' })
+    }
+
+    const statuses = (query.status ?? 'pending')
+      .split(',')
+      .map((s) => s.trim())
+      .filter((s) => ['pending', 'approved', 'declined', 'voided'].includes(s))
+    if (statuses.length === 0) {
+      return reply.status(400).send({ error: 'Invalid status' })
+    }
+
+    const limit = Math.min(parseInt(query.limit ?? String(DEFAULT_LIMIT), 10) || DEFAULT_LIMIT, 100)
+
+    const payouts = await listPayouts({ profileId: profileId ?? undefined, statuses, limit })
+    return { payouts: payouts.map(serializePayout) }
+  })
+
+  // PATCH /rewards/payouts/:id — a parent releases or refuses a held payout. Tier 4
+  // only (`decide` via `manage all`). Approve writes the normal ledger credit;
+  // decline stores the optional note and moves nothing. Deciding an
+  // already-decided payout is a 409 — the decision is final.
+  fastify.patch('/rewards/payouts/:id', async (request, reply) => {
+    if (!request.ability.can('decide', 'rewards.Payout')) {
+      return reply.status(403).send({ error: 'Permission denied' })
+    }
+
+    const { id } = request.params as { id: string }
+    const body = (request.body ?? {}) as { decision?: unknown; note?: unknown }
+    if (body.decision !== 'approve' && body.decision !== 'decline') {
+      return reply.status(400).send({ error: "decision must be 'approve' or 'decline'" })
+    }
+
+    const existing = await getPayout(id)
+    if (!existing) {
+      return reply.status(404).send({ error: 'Payout not found' })
+    }
+
+    try {
+      if (body.decision === 'approve') {
+        const { payout, balance } = await approvePayout(fastify.eventBus, id, request.profile.id)
+        return { payout: serializePayout(payout), balance }
+      }
+      const note =
+        typeof body.note === 'string' && body.note.trim().length > 0 ? body.note.trim() : null
+      const { payout } = await declinePayout(id, request.profile.id, note)
+      return { payout: serializePayout(payout), balance: null }
+    } catch (err) {
+      if (err instanceof PayoutError) {
+        return reply.status(409).send({ error: err.message })
+      }
+      throw err
+    }
+  })
+
   // ─── Event subscribers ─────────────────────────────────────────────────────
   // Earning is contributed (ADR 048): rewards listens to chore events and moves
   // the ledger. Errors are logged and swallowed so a failed credit never fails
@@ -119,6 +256,11 @@ const rewardsPlugin: FastifyPluginAsync = async (fastify) => {
   fastify.eventBus.on('chores.task.reopened', (payload) => {
     void handleChoreReversal(payload, fastify.eventBus).catch((err) =>
       fastify.log.error({ err }, '[rewards] chore reversal subscriber failed')
+    )
+  })
+  fastify.eventBus.on('chores.task.deleted', (payload) => {
+    void handleChoreDeleted(payload).catch((err) =>
+      fastify.log.error({ err }, '[rewards] chore deleted subscriber failed')
     )
   })
 }

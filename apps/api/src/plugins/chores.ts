@@ -22,21 +22,30 @@ type TaskCompletedPayload = {
   completedBy?: string
 }
 
-/** Credits `xpReward` to the assignee's running `xp_balances` total.
+/** Credits `xpReward` to the assignee's running `xp_balances` total — ONCE per task,
+ *  ever.
  *
- * Idempotency guard: re-fetches the task before crediting and bails out if it
- * is no longer `completed` (guards against replayed or reversed events). */
+ * XP is progression: it only goes up and is never debited on reopen (unlike F$).
+ * So re-completing a reopened chore must not re-award, or a reopen→complete cycle
+ * farms XP without bound. `xp_awarded` is the claim: an atomic `updateMany` flips it
+ * false→true and only the winner credits, which also makes a redelivered event a
+ * no-op. The whole thing is one transaction so a failed credit doesn't leave the
+ * task marked awarded. */
 async function handleXpAward(payload: unknown): Promise<void> {
   const { taskId, assigneeId, xpReward } = payload as TaskCompletedPayload
 
-  // Idempotency guard — confirm the task is still completed.
-  const task = await chorePrisma.task.findUnique({ where: { id: taskId } })
-  if (!task || task.status !== 'completed') return
+  await chorePrisma.$transaction(async (tx) => {
+    const claimed = await tx.task.updateMany({
+      where: { id: taskId, status: 'completed', xpAwarded: false },
+      data: { xpAwarded: true },
+    })
+    if (claimed.count === 0) return // already awarded, or no longer completed
 
-  await chorePrisma.xpBalance.upsert({
-    where: { profileId: assigneeId },
-    update: { totalXp: { increment: xpReward } },
-    create: { profileId: assigneeId, totalXp: xpReward },
+    await tx.xpBalance.upsert({
+      where: { profileId: assigneeId },
+      update: { totalXp: { increment: xpReward } },
+      create: { profileId: assigneeId, totalXp: xpReward },
+    })
   })
 }
 
@@ -91,6 +100,7 @@ type CreateTaskBody = {
   dueDate?: unknown
   xpReward?: unknown
   coinReward?: unknown
+  requiresApproval?: unknown
 }
 
 const coinRewardOr = (value: unknown, fallback: number): number =>
@@ -132,6 +142,8 @@ const choresPlugin: FastifyPluginAsync = async (fastify) => {
 
     const xpReward = coinRewardOr(body.xpReward, DEFAULT_XP_REWARD)
     const coinReward = coinRewardOr(body.coinReward, DEFAULT_COIN_REWARD)
+    // Only holds when the chore actually pays — a free chore has nothing to hold.
+    const requiresApproval = body.requiresApproval === true && coinReward > 0
 
     const task = await chorePrisma.task.create({
       data: {
@@ -142,6 +154,7 @@ const choresPlugin: FastifyPluginAsync = async (fastify) => {
         dueDate,
         xpReward,
         coinReward,
+        requiresApproval,
       },
     })
 
@@ -197,10 +210,22 @@ const choresPlugin: FastifyPluginAsync = async (fastify) => {
 
     const xpReward = coinRewardOr(body.xpReward, existing.xpReward)
     const coinReward = coinRewardOr(body.coinReward, existing.coinReward)
+    const requiresApproval =
+      (typeof body.requiresApproval === 'boolean'
+        ? body.requiresApproval
+        : existing.requiresApproval) && coinReward > 0
 
     const task = await chorePrisma.task.update({
       where: { id },
-      data: { title, description, assigneeId: assignee.id, dueDate, xpReward, coinReward },
+      data: {
+        title,
+        description,
+        assigneeId: assignee.id,
+        dueDate,
+        xpReward,
+        coinReward,
+        requiresApproval,
+      },
     })
 
     return serializeTask(task, assignee)
@@ -219,6 +244,17 @@ const choresPlugin: FastifyPluginAsync = async (fastify) => {
     }
 
     await chorePrisma.task.delete({ where: { id } })
+
+    // A held payout is voided when its chore is deleted (M4/3b) — the rewards ledger
+    // listens (ADR 048), so chores stays ignorant of it. Carries the completion
+    // instance so rewards can void the exact pending payout, if any.
+    fastify.eventBus.emit('chores.task.deleted', {
+      taskId: existing.id,
+      assigneeId: existing.assigneeId,
+      coinReward: existing.coinReward,
+      completedAt: existing.completedAt?.toISOString() ?? null,
+    })
+
     return reply.status(204).send()
   })
 
@@ -286,6 +322,9 @@ const choresPlugin: FastifyPluginAsync = async (fastify) => {
       assigneeId: updated.assigneeId,
       xpReward: updated.xpReward,
       coinReward: updated.coinReward,
+      // The rewards ledger holds the payout instead of crediting when this is set
+      // (M4/3b) — the earner owns the flag (ADR 048).
+      requiresApproval: updated.requiresApproval,
       completedAt: updated.completedAt?.toISOString() ?? new Date().toISOString(),
       title: updated.title,
       createdBy: updated.createdBy,
@@ -369,6 +408,8 @@ type TaskRow = {
   dueDate: Date | null
   xpReward: number
   coinReward: number
+  requiresApproval: boolean
+  xpAwarded: boolean
   createdAt: Date
   completedAt: Date | null
 }
@@ -399,6 +440,9 @@ function serializeTask(task: TaskRow, assignee: AssigneeRef) {
     dueDate: task.dueDate ? task.dueDate.toISOString().slice(0, 10) : null,
     xpReward: task.xpReward,
     coinReward: task.coinReward,
+    requiresApproval: task.requiresApproval,
+    // A pending task with this set was completed before → reopened, not fresh.
+    xpAwarded: task.xpAwarded,
     createdBy: task.createdBy,
     createdAt: task.createdAt.toISOString(),
     completedAt: task.completedAt ? task.completedAt.toISOString() : null,

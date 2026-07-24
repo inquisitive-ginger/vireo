@@ -1,10 +1,12 @@
+import type { ReactNode } from 'react'
 import * as AlertDialog from '@radix-ui/react-alert-dialog'
 import { Button } from './button'
 
 export interface ConfirmDialogProps {
   open: boolean
   title: string
-  description: string
+  /** Body copy — a string, or rich content when parts need emphasis. */
+  description: ReactNode
   confirmLabel?: string
   onConfirm: () => void
   onCancel: () => void

@@ -12,6 +12,7 @@ import {
   FieldLabel,
   Input,
   MemberChip,
+  Switch,
 } from '@family-os/ui'
 import type { Profile } from '@family-os/platform/types'
 import type { ChoreTask } from '../types'
@@ -39,6 +40,7 @@ export interface CreateTaskInput {
   assigneeId: string
   xpReward: number
   coinReward: number
+  requiresApproval: boolean
   dueDate: string | null
 }
 
@@ -50,6 +52,7 @@ const TaskFormSchema = z
     assigneeId: z.string().nullable(),
     xpReward: z.number(),
     coinReward: z.number(),
+    requiresApproval: z.boolean(),
     dueDate: z.string(),
   })
   .refine((v) => v.assigneeId !== null, { path: ['assigneeId'], message: 'Pick someone' })
@@ -99,6 +102,7 @@ export function CreateTaskDrawer({
       assigneeId: null,
       xpReward: DEFAULT_XP,
       coinReward: DEFAULT_COINS,
+      requiresApproval: false,
       dueDate: '',
     },
   })
@@ -112,11 +116,13 @@ export function CreateTaskDrawer({
       assigneeId: editingTask?.assigneeId ?? prefillAssigneeId ?? null,
       xpReward: editingTask?.xpReward ?? DEFAULT_XP,
       coinReward: editingTask?.coinReward ?? DEFAULT_COINS,
+      requiresApproval: editingTask?.requiresApproval ?? false,
       dueDate: editingTask?.dueDate ?? '',
     })
   }, [open, prefillAssigneeId, editingTask, reset])
 
   const title = watch('title')
+  const coinReward = watch('coinReward')
   const canSubmit = title.trim().length > 0 && Boolean(watch('assigneeId'))
 
   const submit = handleSubmit(async (values) => {
@@ -126,6 +132,8 @@ export function CreateTaskDrawer({
       assigneeId: values.assigneeId as string,
       xpReward: values.xpReward,
       coinReward: values.coinReward,
+      // A free chore has nothing to hold; the server also enforces this.
+      requiresApproval: values.coinReward > 0 && values.requiresApproval,
       dueDate: values.dueDate || null,
     })
   })
@@ -206,6 +214,36 @@ export function CreateTaskDrawer({
                     </div>
                   )}
                 />
+
+                {/* Only a paying chore has a payout to hold (M4/3b). The toggle
+                    appears once a tier is picked; the parent opts the few big ones in. */}
+                {coinReward > 0 && (
+                  <Controller
+                    control={control}
+                    name="requiresApproval"
+                    render={({ field }) => (
+                      <label
+                        htmlFor="chore-approval"
+                        className="mt-3 flex cursor-pointer items-center justify-between gap-3 rounded-card border border-border bg-card px-3 py-2.5"
+                      >
+                        <span className="min-w-0">
+                          <span className="text-sm-token block font-semibold text-foreground">
+                            Hold the F$ for my OK
+                          </span>
+                          <span className="text-xs-body block text-muted-foreground">
+                            Pays out only after you check it's done.
+                          </span>
+                        </span>
+                        <Switch
+                          id="chore-approval"
+                          checked={field.value}
+                          onCheckedChange={field.onChange}
+                          aria-label="Hold the F$ payout for my approval"
+                        />
+                      </label>
+                    )}
+                  />
+                )}
               </div>
             )}
 
