@@ -2,8 +2,8 @@ import { useMemo, useRef, useState } from 'react'
 import { Plus } from 'lucide-react'
 import {
   Badge,
-  Coin,
   CoinValue,
+  CoinDecisionTray,
   CompletionToggle,
   ItemCard,
   MemberGroupHeader,
@@ -404,19 +404,6 @@ function HeldRow({
   onReopen?: () => void
   onRemove?: (task: ChoreTask) => void
 }) {
-  // Optimistic decision — the tray shows "Paid"/"Declined" the instant it's tapped,
-  // reverting if the request fails. A query refetch reconciles underneath.
-  const [decided, setDecided] = useState<'approve' | 'decline' | null>(null)
-  const [deciding, setDeciding] = useState(false)
-
-  function decide(decision: 'approve' | 'decline') {
-    setDecided(decision)
-    setDeciding(true)
-    onDecidePayout({ id: payout.id, decision })
-      .catch(() => setDecided(null))
-      .finally(() => setDeciding(false))
-  }
-
   return (
     <ItemCard
       spine={identityToken(resolveHue(task.assigneeName, task.assigneeHue))}
@@ -451,74 +438,20 @@ function HeldRow({
             )}
           </div>
         </div>
-        <PayoutTray
+        {/* The shared brass tray (M4/4) — the same component the rewards queue uses, so
+            the board's payout decision and the queue's can't drift. The board defers the
+            decline note (no `withDeclineNote`); the queue collects it. */}
+        <CoinDecisionTray
           amount={payout.amount}
-          decided={decided}
-          deciding={deciding}
-          onDecide={decide}
+          prompt="Waiting on your OK"
+          approveLabel={`Pay ${bucks(payout.amount)}`}
+          declineLabel="Not yet"
+          approvedLabel={`Paid ${bucks(payout.amount)}`}
+          declinedLabel="Not paid"
+          onApprove={() => onDecidePayout({ id: payout.id, decision: 'approve' })}
+          onDecline={() => onDecidePayout({ id: payout.id, decision: 'decline' })}
         />
       </div>
     </ItemCard>
-  )
-}
-
-/* The held-payout tray — a full-width brass band at the base of a held row. The coin
-   marks it as money, the amount lives in the Pay button so the parent reads the figure
-   before committing (never "Pay" alone). Once decided it collapses to a quiet
-   confirmation line, so a busy board doesn't keep a resolved payout shouting. */
-function PayoutTray({
-  amount,
-  decided,
-  deciding,
-  onDecide,
-}: {
-  amount: number
-  decided: 'approve' | 'decline' | null
-  deciding: boolean
-  onDecide: (decision: 'approve' | 'decline') => void
-}) {
-  const trayStyle = {
-    background: 'color-mix(in oklch, var(--coin) 12%, var(--card))',
-    borderColor: 'color-mix(in oklch, var(--coin) 42%, var(--card))',
-  }
-
-  if (decided) {
-    return (
-      <div
-        className="relative z-20 flex items-center gap-2 rounded-card border px-3 py-2.5"
-        style={trayStyle}
-      >
-        <Coin size={18} />
-        <span className="text-sm-token font-semibold" style={{ color: 'var(--coin-ink)' }}>
-          {decided === 'approve' ? `Paid ${bucks(amount)}` : 'Not paid'}
-        </span>
-      </div>
-    )
-  }
-
-  return (
-    <div
-      className="relative z-20 flex flex-wrap items-center gap-x-3 gap-y-2 rounded-card border py-2 pr-2 pl-3"
-      style={trayStyle}
-    >
-      <Coin size={22} />
-      <span className="text-sm-token flex-1 font-semibold" style={{ color: 'var(--coin-ink)' }}>
-        Waiting on your OK
-      </span>
-      <div className="flex items-center gap-2">
-        <Button
-          size="sm"
-          disabled={deciding}
-          onClick={() => onDecide('approve')}
-          className="font-bold text-[oklch(0.28_0.09_74)] shadow-[var(--shadow-card)] hover:brightness-95"
-          style={{ background: 'var(--coin)' }}
-        >
-          Pay {bucks(amount)}
-        </Button>
-        <Button size="sm" variant="outline" disabled={deciding} onClick={() => onDecide('decline')}>
-          Not yet
-        </Button>
-      </div>
-    </div>
   )
 }

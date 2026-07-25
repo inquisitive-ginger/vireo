@@ -1,0 +1,22 @@
+{
+  "name": "rewards",
+  "version": "0.0.1",
+  "remoteEntry": "http://localhost:3014/assets/remoteEntry.js",
+  "exposes": ["./Plugin"],
+  "routes": ["/rewards"],
+  "schema": "rewards",
+  "events": {
+    "publishes": [
+      "rewards.redemption.requested",
+      "rewards.redemption.decided",
+      "rewards.redemption.fulfilled"
+    ],
+    "subscribes": ["chores.task.completed", "chores.task.reopened", "chores.task.deleted"]
+  },
+  "navItem": {
+    "label": "Rewards",
+    "route": "/rewards",
+    "icon": "gift",
+    "minTier": 4
+  }
+}
