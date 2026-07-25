@@ -284,7 +284,34 @@ export const FamilyLarge: Story = {
   },
   parameters: {
     annotation:
-      'family · tall · pending hero + progress, then the full per-person list (every member, urgent-first) · overdue wash + chips · "✓ all done" when a person clears',
+      'family · tall · the aggregate is held to ONE line (inline hero + done-count, bare meter) so the per-person list — this tile’s actual subject — gets the height · every member, urgent-first · overdue wash + chips · "✓ all done" when a person clears',
+  },
+}
+
+/* A household bigger than the slot. The list must state what it is not showing —
+   a row cut through the middle reads as a broken tile, not as "there is more"
+   (auto-bug #70). */
+export const FamilyOverflow: Story = {
+  name: 'Family — more members than the slot',
+  args: {
+    tasks: [
+      ...SAMPLE_FAMILY_TASKS,
+      ...['Nora', 'Teddy', 'Ana'].map((name, i) => ({
+        ...SAMPLE_FAMILY_TASKS[0],
+        id: `x${i}`,
+        assigneeId: `m-${name.toLowerCase()}`,
+        assigneeName: name,
+        assigneeHue: null,
+        dueDate: null,
+      })),
+    ],
+    tier: 4,
+    isFamily: false,
+    size: 'large',
+  },
+  parameters: {
+    annotation:
+      'The list measures its slot and shows only WHOLE tiles, then "+N more" — never a half-rendered member. Urgent-first ordering decides who survives the clamp, so the members the tile drops are the ones with the least outstanding.',
   },
 }
 

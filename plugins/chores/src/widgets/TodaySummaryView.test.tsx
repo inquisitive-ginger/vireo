@@ -87,3 +87,38 @@ describe('TodaySummaryView — a completed row states the payout OUTCOME', () =>
     expect(screen.queryByText(/when Mom or Dad checks/)).not.toBeInTheDocument()
   })
 })
+
+const familyView = (tasks: ChoreTask[], size?: 'compact' | 'standard' | 'large') =>
+  render(
+    <MemoryRouter>
+      <TodaySummaryView tasks={tasks} tier={4} isFamily size={size} />
+    </MemoryRouter>
+  )
+
+const HOUSEHOLD = ['Zach', 'Emma', 'Teddy', 'Nora'].map((name, i) =>
+  task({ id: `t${i}`, title: `${name}'s chore`, assigneeName: name, status: 'pending' })
+)
+
+/* auto-bug #70 — the fourth member was sliced in half by the slot on the fridge iPad. */
+describe('TodaySummaryView — the family list', () => {
+  it('renders every member with work today', () => {
+    familyView(HOUSEHOLD, 'large')
+    for (const name of ['Zach', 'Emma', 'Teddy', 'Nora']) {
+      expect(screen.getByText(name)).toBeInTheDocument()
+    }
+  })
+
+  it('spends one line on the aggregate, not three', () => {
+    familyView(HOUSEHOLD, 'large')
+    // The count and its label share a line, and the done-count moved up beside
+    // them — the meter no longer restates it on a line of its own.
+    expect(screen.getByText('pending today')).toBeInTheDocument()
+    expect(screen.getByText('0 of 4 done')).toBeInTheDocument()
+    expect(screen.queryByText(/done today$/)).not.toBeInTheDocument()
+  })
+
+  it('keeps the stacked hero on the compact slot, which has nothing to make room for', () => {
+    familyView(HOUSEHOLD, 'compact')
+    expect(screen.getByText('0 of 4 done today')).toBeInTheDocument()
+  })
+})
