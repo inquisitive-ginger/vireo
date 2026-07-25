@@ -1,4 +1,4 @@
-import { useCallback, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from 'react'
+import { useMemo, type ReactNode } from 'react'
 import { CalendarDays } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import {
@@ -10,6 +10,7 @@ import {
   cn,
   isSameDay,
   relativeDayLabel,
+  useFitRows,
 } from '@family-os/ui'
 import type { CalendarEvent, CalendarMember } from '../types'
 import { agendaWhenLabel } from '../lib/grid'
@@ -224,9 +225,7 @@ function buildRows(days: WeekDay[], now: Date): Row[] {
 const MORE_RESERVE = 26
 
 /* Renders only the whole rows that fit the slot height, then a "+N more" line —
-   never a partial row, never a scrollbar. A measuring pass renders every row once
-   and caches its bottom offset (rows are single-line, so heights don't change with
-   width); a ResizeObserver re-clamps from that cache. New data → a fresh pass. */
+   never a partial row, never a scrollbar. `useFitRows` owns the measure/clamp. */
 function DayList({
   week,
   membersById,
@@ -235,61 +234,12 @@ function DayList({
   showOwners = true,
 }: ZoneProps & { showOwners?: boolean }) {
   const rows = useMemo(() => buildRows(week.days, now), [week.days, now])
-  const boxRef = useRef<HTMLDivElement | null>(null)
-  const listRef = useRef<HTMLDivElement | null>(null)
-  const bottomsRef = useRef<number[]>([])
-  const [cut, setCut] = useState(rows.length)
-  const [hidden, setHidden] = useState(0)
-  const [measured, setMeasured] = useState<Row[] | null>(null)
-  const measuring = measured !== rows
+  const { boxRef, listRef, shown, measuring } = useFitRows(rows, MORE_RESERVE)
 
-  const clamp = useCallback(
-    (avail: number) => {
-      const bottoms = bottomsRef.current
-      if (avail <= 0 || bottoms.length !== rows.length || bottoms[rows.length - 1] <= avail) {
-        setCut(rows.length)
-        setHidden(0)
-        return
-      }
-      const limit = avail - MORE_RESERVE
-      let c = rows.length
-      for (let i = 0; i < rows.length; i++) {
-        if (bottoms[i] > limit) {
-          c = i
-          break
-        }
-      }
-      setCut(c)
-      setHidden(rows.slice(c).filter((r) => r.event).length)
-    },
-    [rows]
-  )
-
-  useLayoutEffect(() => {
-    if (!measuring) return
-    const box = boxRef.current
-    const list = listRef.current
-    if (!box || !list) return
-    const kids = Array.from(list.children) as HTMLElement[]
-    bottomsRef.current = kids.slice(0, rows.length).map((el) => el.offsetTop + el.offsetHeight)
-    setMeasured(rows)
-    clamp(box.clientHeight)
-  }, [measuring, rows, clamp])
-
-  useLayoutEffect(() => {
-    const box = boxRef.current
-    if (!box) return
-    const ro = new ResizeObserver(() => {
-      if (!measuring) clamp(box.clientHeight)
-    })
-    ro.observe(box)
-    return () => ro.disconnect()
-  }, [measuring, rows, clamp])
-
-  const shown = measuring ? rows : rows.slice(0, cut)
   // Everything the tile isn't showing: rows clipped by the clamp, plus the
-  // appointments that fall past the week's edge entirely.
-  const more = hidden + week.beyond
+  // appointments that fall past the week's edge entirely. A clipped row only
+  // counts if it carries an event — an empty day's band is not news withheld.
+  const more = rows.slice(shown.length).filter((r) => r.event).length + week.beyond
 
   return (
     <div ref={boxRef} className="relative min-h-0 flex-1 overflow-hidden">
