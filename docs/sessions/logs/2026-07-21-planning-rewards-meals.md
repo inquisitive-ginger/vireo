@@ -1,5 +1,7 @@
 # 2026-07-21 — Planning: Rewards & Meals
 
+> **Naming note (ADR 054, 2026-07-24):** the currency called "F$" / "Family Dollars" below is now "Pritchett Bucks" — "P$" in compact text, "P-Bucks" in a sentence, and the P-mark struck on the coin. This log is a dated record and is not rewritten.
+
 **Type:** planning · **Outcome:** docs only, no code
 **Produced:** ADRs 047–050 · `docs/modules/rewards/` · `docs/modules/meals/` ·
 roadmap renumber · queue restructure

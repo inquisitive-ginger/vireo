@@ -14,6 +14,8 @@ import {
 import type { ChoreTask } from '../types'
 import { isOverdue } from '../lib/dates'
 import { showCoinReward } from '../lib/flags'
+import { kidPayoutView, payoutForTask, type PayoutsByInstance } from '../lib/payouts'
+import { KidPayoutBadge } from '../components/KidPayoutBadge'
 
 /* `chores.today-summary` — taskee + family framings, three sizes.
 
@@ -103,7 +105,7 @@ function ProgressBar({ done, total }: { done: number; total: number }) {
   )
 }
 
-/* Lifetime XP score (design §4 header). Stone, not gold — F$ took the coin and XP
+/* Lifetime XP score (design §4 header). Stone, not gold — P-Bucks took the coin and XP
    is a quiet star now (ADR 051). No animation in the read-only widget; the
    full-page ScorePlate is the flight target. */
 function CoinScore({ value }: { value: number }) {
@@ -180,7 +182,7 @@ function AllDoneChip() {
 /* Rows */
 
 /* Taskee task row — filled (muted / overdue-wash) pill, status spine, +XP. */
-function TaskRow({ task }: { task: ChoreTask }) {
+function TaskRow({ task, payoutIndex }: { task: ChoreTask; payoutIndex?: PayoutsByInstance }) {
   const done = task.status === 'completed'
   const overdue = isOverdue(task.dueDate, task.status)
   return (
@@ -203,11 +205,26 @@ function TaskRow({ task }: { task: ChoreTask }) {
           Overdue
         </span>
       )}
-      {showCoinReward(task.coinReward) && <CoinValue value={task.coinReward} size={14} />}
+      <RowReward task={task} payoutIndex={payoutIndex} />
       <span className="text-sm-token shrink-0 font-bold text-muted-foreground">
         {task.xpReward} XP
       </span>
     </div>
+  )
+}
+
+/* A row's money. A PENDING row shows the promise — what the chore pays. A COMPLETED
+   row must show the OUTCOME, because "held for a parent" and "declined" are not the
+   same fact as "banked", and rendering `coinReward` raw states all three as banked
+   (the gap M4/3b left in this widget: it taught the page the difference and not the
+   widget). `kidPayoutView` derives held/earned from the TASK alone, so the row is
+   right the instant a completion lands; the payout row only refines it once a parent
+   has decided. */
+function RowReward({ task, payoutIndex }: { task: ChoreTask; payoutIndex?: PayoutsByInstance }) {
+  if (!showCoinReward(task.coinReward)) return null
+  if (task.status !== 'completed') return <CoinValue value={task.coinReward} size={14} />
+  return (
+    <KidPayoutBadge view={kidPayoutView(task, payoutIndex && payoutForTask(task, payoutIndex))} />
   )
 }
 
@@ -385,11 +402,13 @@ function TaskeeStandard({
   lifetimeXp,
   dailyXp,
   tier,
+  payoutIndex,
 }: {
   tasks: ChoreTask[]
   lifetimeXp: number
   dailyXp: number
   tier: number
+  payoutIndex?: PayoutsByInstance
 }) {
   const pending = todayPending(tasks)
   const total = tasks.length
@@ -419,7 +438,7 @@ function TaskeeStandard({
         </div>
         <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-1.5 overflow-hidden">
           {[...pending].sort(byUrgency).map((t) => (
-            <TaskRow key={t.id} task={t} />
+            <TaskRow key={t.id} task={t} payoutIndex={payoutIndex} />
           ))}
         </div>
       </div>
@@ -432,11 +451,13 @@ function TaskeeLarge({
   lifetimeXp,
   dailyXp,
   tier,
+  payoutIndex,
 }: {
   tasks: ChoreTask[]
   lifetimeXp: number
   dailyXp: number
   tier: number
+  payoutIndex?: PayoutsByInstance
 }) {
   const pending = todayPending(tasks)
   const done = todayCompleted(tasks).length
@@ -472,7 +493,7 @@ function TaskeeLarge({
       <ProgressBar done={done} total={total} />
       <div className="mt-3 flex min-h-0 flex-1 flex-col gap-1.5 overflow-hidden">
         {[...tasks].sort(byUrgency).map((t) => (
-          <TaskRow key={t.id} task={t} />
+          <TaskRow key={t.id} task={t} payoutIndex={payoutIndex} />
         ))}
       </div>
     </div>
@@ -760,6 +781,10 @@ export interface TodaySummaryViewProps {
   /** Effective Focus-mode setting (ADR 036). Taskee framing + on → the Focus
       "Next up" variant; off → the Agency Hero-split variant. */
   focusMode?: boolean
+  /** Held/decided payouts keyed by completion instance (M4/3b). Without it a completed
+      paying row cannot tell banked from held from declined — see `RowReward`. Empty
+      when the earn UI is flagged off. */
+  payoutIndex?: PayoutsByInstance
 }
 
 /* Container-query density toggle. The widget ships every variant's markup and CSS
@@ -813,6 +838,7 @@ export function TodaySummaryView({
   lifetimeXp = 0,
   dailyXp = 0,
   focusMode = false,
+  payoutIndex,
 }: TodaySummaryViewProps) {
   const usesFamilyFraming = isFamily || tier >= 4
 
@@ -821,12 +847,24 @@ export function TodaySummaryView({
   const taskeeStandard = focusMode ? (
     <FocusStandard tasks={tasks} lifetimeXp={lifetimeXp} dailyXp={dailyXp} tier={tier} />
   ) : (
-    <TaskeeStandard tasks={tasks} lifetimeXp={lifetimeXp} dailyXp={dailyXp} tier={tier} />
+    <TaskeeStandard
+      tasks={tasks}
+      lifetimeXp={lifetimeXp}
+      dailyXp={dailyXp}
+      tier={tier}
+      payoutIndex={payoutIndex}
+    />
   )
   const taskeeLarge = focusMode ? (
     <FocusLarge tasks={tasks} lifetimeXp={lifetimeXp} dailyXp={dailyXp} tier={tier} />
   ) : (
-    <TaskeeLarge tasks={tasks} lifetimeXp={lifetimeXp} dailyXp={dailyXp} tier={tier} />
+    <TaskeeLarge
+      tasks={tasks}
+      lifetimeXp={lifetimeXp}
+      dailyXp={dailyXp}
+      tier={tier}
+      payoutIndex={payoutIndex}
+    />
   )
   const taskeeCompact = focusMode ? (
     <FocusCompact tasks={tasks} lifetimeXp={lifetimeXp} tier={tier} />

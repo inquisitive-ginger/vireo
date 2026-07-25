@@ -6,16 +6,16 @@
 ## User story
 
 As a parent, a chore worth real money doesn't pay out until I've seen it done, so a
-kid can't check off "mow the lawn", spend the 10 F$, and leave me reopening a chore
+kid can't check off "mow the lawn", spend the 10 P-Bucks, and leave me reopening a chore
 against a balance that's already gone.
 
 ## The problem
 
 Chore completion is **auto-accepted** — settled in M2 and correct for XP, which only
-ever goes up. F$ goes down, and once M4/5 ships a store, the same auto-accept means:
+ever goes up. P-Bucks goes down, and once M4/5 ships a store, the same auto-accept means:
 
-1. kid completes a 10 F$ chore that isn't actually done
-2. kid spends the 10 F$
+1. kid completes a 10 P-Bucks chore that isn't actually done
+2. kid spends the 10 P-Bucks
 3. parent reopens → `chores.task.reopened` debits 10 → **balance −10**
 
 The ledger permits negative balances **deliberately** (M4/2): a symmetric reversal

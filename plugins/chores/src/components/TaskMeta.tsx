@@ -18,7 +18,7 @@ import { ReopenedBadge } from './ReopenedBadge'
    reopened task leads with the amber Redo tag. Nothing on a completed row (the struck
    title + check already say it).
 
-   `TaskReward` — the REWARD group: F$ (the one chip) then XP (the quiet star, ADR
+   `TaskReward` — the REWARD group: P-Bucks (the one chip) then XP (the quiet star, ADR
    051). The XP element takes the forwarded ref because it is the flight's launch
    point on the taskee surfaces. */
 
@@ -55,7 +55,7 @@ export interface TaskRewardProps {
   done: boolean
   /** Hide the XP while the flight chip is airborne (taskee surfaces). */
   inFlight?: boolean
-  /** The completed-card F$ state (held / earned / declined); null on a pending row. */
+  /** The completed-card P-Bucks state (held / earned / declined); null on a pending row. */
   payoutView: KidPayoutView
   className?: string
 }
@@ -66,7 +66,7 @@ export const TaskReward = forwardRef<HTMLSpanElement, TaskRewardProps>(function 
 ) {
   return (
     <div className={`flex shrink-0 items-center gap-2.5 ${className ?? ''}`}>
-      {/* F$ leads — the coin is what a kid can spend. Pending shows the promise, a
+      {/* P-Bucks leads — the coin is what a kid can spend. Pending shows the promise, a
           done card shows the held/earned/declined outcome. */}
       {!done && showCoinReward(task.coinReward) && <CoinValue value={task.coinReward} size={16} />}
       <KidPayoutBadge view={payoutView} />

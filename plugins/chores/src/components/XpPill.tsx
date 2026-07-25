@@ -6,7 +6,7 @@ export interface XpPillProps {
   earned?: boolean
 }
 
-/* The XP score on a task. XP demoted off gold when F$ took the coin (ADR 051): a
+/* The XP score on a task. XP demoted off gold when P-Bucks took the coin (ADR 051): a
    score is a fact about you, not a thing you hold, so it is a quiet star in
    --muted-foreground and keeps no metal.
 

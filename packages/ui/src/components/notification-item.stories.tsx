@@ -48,7 +48,7 @@ export const ReadVsUnread: StoryObj = {
       />
       <NotificationItem
         title="Allowance low"
-        body="F$ balance is below 10"
+        body="P-Bucks balance is below 10"
         variant="warning"
         createdAt={DAY_AGO}
         isRead={true}
@@ -85,7 +85,7 @@ export const AllVariantsUnread: StoryObj = {
       />
       <NotificationItem
         title="Allowance low"
-        body="F$ balance is below 10"
+        body="P-Bucks balance is below 10"
         variant="warning"
         createdAt={DAY_AGO}
         isRead={false}
@@ -120,7 +120,7 @@ export const AllVariantsRead: StoryObj = {
       />
       <NotificationItem
         title="Allowance low"
-        body="F$ balance is below 10"
+        body="P-Bucks balance is below 10"
         variant="warning"
         createdAt={DAY_AGO}
         isRead={true}
@@ -215,7 +215,7 @@ export const SwipeDelete: StoryObj = {
         {
           id: '2',
           title: 'Allowance low',
-          body: 'F$ balance is below 10',
+          body: 'P-Bucks balance is below 10',
           variant: 'warning' as const,
           createdAt: DAY_AGO,
           isRead: true,

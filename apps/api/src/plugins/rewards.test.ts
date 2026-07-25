@@ -216,7 +216,7 @@ describe('GET /rewards/wallet', () => {
     expect(res.json()).toMatchObject({ profileId: KID_ID, balance: 8 })
   })
 
-  it('403s when a kid asks for someone else’s wallet — F$ is not a leaderboard', async () => {
+  it('403s when a kid asks for someone else’s wallet — a wallet is not a leaderboard', async () => {
     const cookie = await getCookieForProfile(TWEEN_ID)
 
     const res = await app.inject({
@@ -330,7 +330,7 @@ describe('chores earn subscriber', () => {
     })
   })
 
-  it('moves nothing for a chore that pays 0 F$ (the default)', async () => {
+  it('moves nothing for a chore that pays 0 P-Bucks (the default)', async () => {
     const task = await payingTask(0)
     const cookie = await getCookieForProfile(KID_ID)
 
@@ -371,7 +371,7 @@ describe('chores earn subscriber', () => {
     expect(await waitForBalance(KID_ID, 5)).toBe(5)
   })
 
-  it('nets to a single credit across repeated reopen/complete cycles — no F$ farming', async () => {
+  it('nets to a single credit across repeated reopen/complete cycles — no P-Bucks farming', async () => {
     const task = await payingTask(5)
     const kid = await getCookieForProfile(KID_ID)
     const parent = await getCookieForProfile(PARENT_ID)

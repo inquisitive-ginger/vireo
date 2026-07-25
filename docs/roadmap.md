@@ -21,7 +21,7 @@ thesis delivered: a glanceable tablet twin of the paper calendar + mobile captur
 reminders. M2 — Chores ✅ done (2026-06-20).
 
 **In flight: M4 — Rewards & Wallet** — the design gate closed 2026-07-22 (ADRs 051–053;
-the economy is priced at ~10 F$/week), and **M4/2 Ledger + Balance is next**. Then
+the economy is priced at ~10 P-Bucks/week), and **M4/2 Ledger + Balance is next**. Then
 **M5 — Meals & Groceries** (planning session 2026-07-21). M2 has minted XP with nothing
 to spend it on since June; M4 closes that loop. M5 depends on M4 only for try bites — its dinner and grocery stories can start
 independently.
@@ -69,7 +69,7 @@ the first module anchors the home screen.
 
 - Task creation and assignment
 - Completion flow (kid marks done)
-- XP + gamification basics (chore completion awards XP only — F$ earning from chores is wired in M4 when the rewards module exists)
+- XP + gamification basics (chore completion awards XP only — P-Bucks earning from chores is wired in M4 when the rewards module exists)
 - Parent notification on completion
 
 **Done when:** A kid completes a chore and a parent sees it happen.
@@ -90,12 +90,12 @@ the first module anchors the home screen.
 
 The sink for everything the family earns. Chores have minted XP since M2 with nothing
 to spend it on; this is the second half of the loop. Currency model is already settled
-by **ADR 002** (XP never converts; F$ is the redeemable wallet) and **ADR 005** (a
+by **ADR 002** (XP never converts; P-Bucks is the redeemable wallet) and **ADR 005** (a
 ledger, never a bank) — not reopened here.
 
-- F$ ledger + derived balance (**ADR 047** — append-only, balance is a cache)
-- Priced at **~10 F$ a week** (**ADR 052**); chores opt in to paying, `coinReward` default 0
-- **F$ takes the coin; XP demotes to a quiet star** (**ADR 051**) — re-strikes the M2 XP surfaces
+- P-Bucks ledger + derived balance (**ADR 047** — append-only, balance is a cache)
+- Priced at **~10 P-Bucks a week** (**ADR 052**); chores opt in to paying, `coinReward` default 0
+- **P-Bucks takes the coin; XP demotes to a quiet star** (**ADR 051**) — re-strikes the M2 XP surfaces
 - Chores earn: `coinReward` on the task, credited off the event bus (**ADR 048**)
 - Reward catalog with a per-reward approval flag; redemption + refund-on-decline
 - Store surface + wallet widget (lead with affordability, not the number)
@@ -105,7 +105,7 @@ ledger, never a bank) — not reopened here.
 **Explicitly not here:** allowance schedules, cashout to real money, Monarch — those
 are M8. The wallet is built so cashout is another **sink**, not a second balance.
 
-**Done when:** A kid completes a chore, watches their F$ balance go up, and spends it
+**Done when:** A kid completes a chore, watches their P-Bucks balance go up, and spends it
 on something they chose.
 
 _Spec: `docs/modules/rewards/spec.md`_
@@ -185,7 +185,7 @@ up in Monarch.
 
 _Added here as MVP milestones complete and v2 needs emerge._
 
-- **Family Feed v2** — activity feed aggregation (chore completions, calendar events, F$ milestones surfaced as feed items via event subscriptions); richer post types; reactions. Scoped once M2–M5 modules have shipped and the feed has real events to aggregate.
+- **Family Feed v2** — activity feed aggregation (chore completions, calendar events, P-Bucks milestones surfaced as feed items via event subscriptions); richer post types; reactions. Scoped once M2–M5 modules have shipped and the feed has real events to aggregate.
 - **Meals v2** — recipe bank, meal history ("we had this three days ago"), pantry/leftovers, grocery spend → Monarch (depends on M8).
 
 ---

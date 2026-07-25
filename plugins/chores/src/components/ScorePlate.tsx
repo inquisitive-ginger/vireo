@@ -10,7 +10,7 @@ export interface ScorePlateProps {
 const easeInOutCubic = (t: number) => (t < 0.5 ? 4 * t * t * t : 1 - Math.pow(-2 * t + 2, 3) / 2)
 
 /* The lifetime XP score plate (design §1 header / §2 flight target). Stone, not
-   gold — F$ took the coin and XP is a quiet star now (ADR 051); the numeral is DM
+   gold — P-Bucks took the coin and XP is a quiet star now (ADR 051); the numeral is DM
    Sans (`text-metric`). When `value` rises the plate grows to 1.09 then settles
    (~860ms) while the number counts up (easeInOutCubic ~640ms) — the landing beat
    of the XP flight. The forwarded ref is the flight's measured endpoint.

@@ -19,7 +19,7 @@ export interface FocusViewProps {
   onCompleteTask?: (taskId: string) => Promise<unknown>
   /** Persisted lifetime XP seed (GET /api/chores/xp). */
   initialXp?: number
-  /** Held/decided F$ payouts keyed by completion instance (M4/3b). */
+  /** Held/decided payouts keyed by completion instance (M4/3b). */
   payoutIndex?: PayoutsByInstance
 }
 
@@ -219,7 +219,7 @@ function MiniRow({ task, payout }: { task: ChoreTask; payout?: PendingPayout }) 
           {label}
         </span>
       )}
-      {/* Held / earned / declined F$ takes the coin's slot on a done row (M4/3b). */}
+      {/* Held / earned / declined P-Bucks takes the coin's slot on a done row (M4/3b). */}
       {payoutView ? (
         <KidPayoutBadge view={payoutView} />
       ) : (

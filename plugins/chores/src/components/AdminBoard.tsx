@@ -9,6 +9,7 @@ import {
   MemberGroupHeader,
   RowActions,
   Button,
+  bucks,
   identityToken,
   resolveHue,
 } from '@family-os/ui'
@@ -42,7 +43,7 @@ export interface AdminBoardProps {
   /** Un-complete a task (tier-4 only) — it resurfaces on the assignee's list. Used
       directly when reopening claws back no money. */
   onReopenTask?: (taskId: string) => Promise<unknown>
-  /** Reopen a chore whose F$ was already paid (M4/3b) — the host confirms the
+  /** Reopen a chore whose payout was already made (M4/3b) — the host confirms the
       clawback first (it takes the paid amount back, maybe overdrawing the kid).
       Omitted → a paid reopen falls back to `onReopenTask`. */
   onReopenPaidTask?: (task: ChoreTask, clawback: number) => void
@@ -53,7 +54,7 @@ export interface AdminBoardProps {
   /** Drop completed rows from the board (design.md §1). A member left with nothing
       to show is dropped with them — a header over an empty list says nothing. */
   hideCompleted?: boolean
-  /** Held/decided F$ payouts keyed by completion instance (M4/3b). A completed row
+  /** Held/decided payouts keyed by completion instance (M4/3b). A completed row
       with a `pending` payout grows the approve/decline tray. Empty when the earn UI
       is flagged off. */
   payoutIndex?: PayoutsByInstance
@@ -292,7 +293,7 @@ function AdminRow({
     onComplete(task.id).catch(() => setOverride(null))
   }
   function reopen() {
-    // Reopening a paid chore claws the F$ back (maybe overdrawing the kid), so it
+    // Reopening a paid chore claws the P-Bucks back (maybe overdrawing the kid), so it
     // goes through the host's confirm rather than firing optimistically here.
     const clawback = reopenClawback(task, payout)
     if (clawback > 0 && onReopenPaid) {
@@ -380,7 +381,7 @@ function AdminRow({
   )
 }
 
-/* A completed row whose F$ payout is HELD for the parent's OK (M4/3b, the approved
+/* A completed row whose P-Bucks payout is HELD for the parent's OK (M4/3b, the approved
    "A1 — payout tray" direction). The card is a column: the completed title line with
    the reopen check (and remove) on the right, then a full-width brass tray at the
    base carrying the decision.
@@ -489,7 +490,7 @@ function PayoutTray({
       >
         <Coin size={18} />
         <span className="text-sm-token font-semibold" style={{ color: 'var(--coin-ink)' }}>
-          {decided === 'approve' ? `Paid ${amount} F$` : 'Not paid'}
+          {decided === 'approve' ? `Paid ${bucks(amount)}` : 'Not paid'}
         </span>
       </div>
     )
@@ -512,7 +513,7 @@ function PayoutTray({
           className="font-bold text-[oklch(0.28_0.09_74)] shadow-[var(--shadow-card)] hover:brightness-95"
           style={{ background: 'var(--coin)' }}
         >
-          Pay {amount} F$
+          Pay {bucks(amount)}
         </Button>
         <Button size="sm" variant="outline" disabled={deciding} onClick={() => onDecide('decline')}>
           Not yet

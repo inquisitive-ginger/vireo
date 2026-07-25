@@ -54,10 +54,10 @@ export function createAbility(profile: Profile, overrides: PermissionOverride[])
   // Triage (viewing everyone's, moving a status) is tier-4, via `manage all` below.
   can('create', 'platform.BugReport')
 
-  // Every profile reaches its OWN F$ wallet, tier 1 included (ADR 053) — the module
+  // Every profile reaches its OWN wallet, tier 1 included (ADR 053) — the module
   // exists for the youngest kid, and granting the capability while withholding the
   // surface is ADR 044's failure repeated. Tier 4 reads anyone's via `manage all`;
-  // F$ is not a leaderboard, so nobody else does. Row condition enforced in the route.
+  // a wallet is not a leaderboard, so nobody else does. Row condition enforced in the route.
   can('view', 'rewards.Wallet', { profileId: profile.id })
 
   // Calendar is one shared family surface — every tier reads it (tier-4 creates/

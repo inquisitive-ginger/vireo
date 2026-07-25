@@ -3,10 +3,11 @@ import { Coin, CoinValue } from './coin'
 import { ItemCard } from './item-card'
 import { identityToken } from '../lib/identity'
 
-/* The F$ currency mark (ADR 051). The coin is one struck brass disc — separated from a
-   member's identity spine by FORM (relief, a swept rim, a specular gloss), which a flat
-   4px spine can never have. Review it beside a marigold spine: the two must not read as
-   the same colour doing two jobs. */
+/* The Pritchett Buck (ADR 051, ADR 054). One struck brass disc bearing the P-mark —
+   separated from a member's identity spine by FORM (relief, a swept rim, a specular
+   gloss), which a flat 4px spine can never have. Two things to review here: the coin
+   beside a marigold spine, which must not read as the same colour doing two jobs; and
+   the mark at 14–18px, where its counters close and it becomes a silhouette. */
 
 const meta: Meta<typeof Coin> = {
   title: 'Primitives/Coin',
@@ -39,7 +40,7 @@ export const Values: Story = {
   ),
 }
 
-/* The collision check ADR 051 exists to pass: a gold coin beside a member assigned
+/* The collision check ADR 051 exists to pass: a brass coin beside a member assigned
    marigold. Separation is form, not hue. */
 export const OnChoreRows: Story = {
   render: () => (

@@ -20,7 +20,7 @@ the family dashboard without requiring any other module to be installed.
 
 ## Deferred to Family Feed v2
 
-- Activity feed aggregation (chore completions, calendar events, F$ milestones
+- Activity feed aggregation (chore completions, calendar events, P-Bucks milestones
   surfaced as feed items via event subscriptions)
 - Richer post types (images, links)
 - Reactions

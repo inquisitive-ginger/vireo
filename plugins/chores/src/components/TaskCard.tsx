@@ -18,8 +18,8 @@ export interface TaskCardProps {
   /** When provided, a pending task shows a tappable completion circle. The rect
       is the live position of the XP badge — the flight's launch point. */
   onComplete?: (taskId: string, badgeRect: DOMRect) => void
-  /** This completion instance's held/decided F$ payout (M4/3b), if any — drives the
-      "when Mom or Dad checks" / "No F$ this time" state on a done card. */
+  /** This completion instance's held/decided P-Bucks payout (M4/3b), if any — drives the
+      "when Mom or Dad checks" / "No P-Bucks this time" state on a done card. */
   payout?: PendingPayout
 }
 
@@ -30,7 +30,7 @@ export interface TaskCardProps {
    (design §2) — the badge lifts off and the card holds still until the chip lands.
 
    Layout follows the "chip = reward" system (see `TaskMeta`): the STATE + timing
-   sit left in the content column as colour-coded text; the REWARD group (F$ chip +
+   sit left in the content column as colour-coded text; the REWARD group (P-Bucks chip +
    quiet XP) sits in the trailing cluster, vertically centred with the completion
    circle — once the reward crosses to the right edge, the circle is its alignment
    context, not the status baseline.
@@ -40,7 +40,7 @@ export interface TaskCardProps {
 export function TaskCard({ task, displayStatus, onComplete, payout }: TaskCardProps) {
   const status = displayStatus ?? (task.status as TaskDisplayStatus)
   const done = status === 'completed'
-  // Held / earned / declined F$ for a done paying chore (M4/3b). Derived from the
+  // Held / earned / declined P-Bucks for a done paying chore (M4/3b). Derived from the
   // task so it is right the instant a completion lands (no wait on the payout row).
   const payoutView = done && REWARDS_UI_ENABLED ? kidPayoutView(task, payout) : null
   const inFlight = status === 'inFlight'

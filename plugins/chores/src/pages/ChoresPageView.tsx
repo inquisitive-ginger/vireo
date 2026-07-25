@@ -28,7 +28,7 @@ export interface ChoresPageViewProps {
   onCompleteTask?: (taskId: string) => Promise<unknown>
   /** Un-complete a task (tier-4 only, admin board). Rejects to revert. */
   onReopenTask?: (taskId: string) => Promise<unknown>
-  /** Reopen a paid chore — the container confirms the F$ clawback first (M4/3b). */
+  /** Reopen a paid chore — the container confirms the P-Bucks clawback first (M4/3b). */
   onReopenPaidTask?: (task: ChoreTask, clawback: number) => void
   /** Edit a task (tier-4 only) — opens the drawer prefilled. */
   onEditTask?: (task: ChoreTask) => void
@@ -39,7 +39,7 @@ export interface ChoresPageViewProps {
   /** Effective Focus-mode setting (ADR 036). Taskee + on → the Focus variant;
       off → the Agency `TaskeeView`. Ignored by the admin/family board. */
   focusMode?: boolean
-  /** Held/decided F$ payouts (M4/3b), flagged. Empty when the earn UI is off. The
+  /** Held/decided payouts (M4/3b), flagged. Empty when the earn UI is off. The
       board overlays a pending payout's approve/decline tray onto its row; a taskee
       shows the held badge and the declined note. */
   payouts?: PendingPayout[]
