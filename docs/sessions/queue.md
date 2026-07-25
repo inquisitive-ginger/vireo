@@ -52,23 +52,23 @@ can undo. Consumed by M5 try bites. _Depends on: M4/4._
 ### M4/7 — Dev: Parent Bonus Grant
 
 **Type:** development · **Kickoff:** _to be written_
-Tier-4 "give N F$, reason: …". Small, and it is what makes the ledger's `reason` field
+Tier-4 "give N P-Bucks, reason: …". Small, and it is what makes the ledger's `reason` field
 earn its keep. _Depends on: M4/2._
 
-### M4/8 — Design: XP Derived from F$ + XP Progression
+### M4/8 — Design: XP Derived from P-Bucks + XP Progression
 
 **Type:** design · **Kickoff:** _to be written_
-**Amends ADR 052.** A parent sets **one** value at assignment (F$); XP is **derived**
+**Amends ADR 052.** A parent sets **one** value at assignment (P-Bucks); XP is **derived**
 (`xp = 5 + coinReward × 10` → routine 5 · weekly 15–25 · effort 55 · big 105 — a tuning
-knob). This kills the "worth 100 XP but 1 F$" mismatch: more F$ always means more XP, no
+knob). This kills the "worth 100 XP but 1 P-Bucks" mismatch: more P-Bucks always means more XP, no
 inversions. **Not conversion** (ADR 002 holds — balances stay independent and
 non-exchangeable; deriving the _award_ ≠ exchanging the _balance_); **XP stays up-only**
-(the balance is still a monotonic accumulator; reopen debits F$, never XP). Removes the
-XP picker from `CreateTaskDrawer`. Coupled to the F$ launch (M4/5): with F$ flagged
+(the balance is still a monotonic accumulator; reopen debits P-Bucks, never XP). Removes the
+XP picker from `CreateTaskDrawer`. Coupled to the P-Bucks launch (M4/5): with P-Bucks flagged
 off, `coinReward` is always 0, so dropping the XP picker would flatten every chore to
 base-5 XP in prod — so this lands with the flag flip, not before. Second half: give XP a
 sink — an avatar / gear cosmetic ladder unlocked at XP thresholds (unlock, never
-deduct, so up-only holds). Never microtransactions — XP unlocks cosmetics; neither F$
+deduct, so up-only holds). Never microtransactions — XP unlocks cosmetics; neither P-Bucks
 nor real money buys gear. _Reads: ADR 002, 051, 052; `CreateTaskDrawer`, `chores.xp_balances`._
 _Depends on: M4/3; lands with M4/5._
 
@@ -269,22 +269,29 @@ suite mirroring chores/calendar. _Depends on: none._
 
 > Two-line index; full detail in the linked log.
 
+- **2026-07-24 — Ad-hoc: Pritchett Bucks (ADR 054, PR #68).** The currency is renamed and
+  the coin bears a struck **P-mark**; four registers (mark · `P$` · `P-Bucks` ·
+  `Pritchett Bucks`), one per medium, from `packages/ui/src/lib/currency.ts`. Free to do
+  because nothing had shipped visibly and the schema was already currency-agnostic — no
+  migration. Also fixed an M4/3b gap: the chores widget showed **held** and **declined**
+  payouts as banked. See `logs/2026-07-24-adhoc-pritchett-bucks.md`.
+
 - **2026-07-24 — Dev: Payout Approval (M4/3b, PR #65).** Per-chore `requiresApproval`
-  holds the F$ payout in `pending_payouts` (rewards stays plugin-agnostic, ADR 048);
+  holds the P-Bucks payout in `pending_payouts` (rewards stays plugin-agnostic, ADR 048);
   approve releases the normal entry with the same provenance pair, decline writes
   nothing. Reopen-before-decision **voids**, reopen-after-payout **debits** (clawback
   confirmed with the resulting balance), delete voids a held payout. **Review-driven:**
   XP now awarded **once per task** (`xp_awarded` — reopen/complete no longer farms XP;
-  F$ nets correctly), a **Redo** state for reopened tasks, and a "chip = reward" meta
-  rework (only F$ is a chip; shared `TaskMeta` unifies Focus + Agency). Editing a
+  P-Bucks nets correctly), a **Redo** state for reopened tasks, and a "chip = reward" meta
+  rework (only P-Bucks is a chip; shared `TaskMeta` unifies Focus + Agency). Editing a
   completed chore is locked — reopen is the way back. Behind `REWARDS_UI_ENABLED`.
   See `logs/2026-07-24-dev-rewards-payout-approval.md`.
 
 - **2026-07-23 — Dev: Chores Earn + the XP re-strike (M4/3, PR #64).** `coinReward` on the
   task credits/debits the ledger off chore events (ADR 048), keyed by the completion
   **instance** `taskId@completedAt` so reopen→re-complete re-earns. XP re-struck to a quiet
-  star, F$ takes the brass coin (ADR 051, shared `Coin`/`CoinValue`). **F$ surfaces behind
-  `REWARDS_UI_ENABLED` — off in prod until M4/5.** F$ tiers landed as `1/2/5/10` (minor ADR 052
+  star, P-Bucks takes the brass coin (ADR 051, shared `Coin`/`CoinValue`). **P-Bucks surfaces behind
+  `REWARDS_UI_ENABLED` — off in prod until M4/5.** P-Bucks tiers landed as `1/2/5/10` (minor ADR 052
   deviation). See `logs/2026-07-23-dev-chores-earn-xp-restrike.md`.
 
 - **2026-07-22 — Dev: Ledger + Balance (M4/2, PR #63).** Append-only `ledger_entries` +
@@ -293,10 +300,10 @@ suite mirroring chores/calendar. _Depends on: none._
   affordability belongs at the spend site, which is what queued **M4/3b**.
   See `logs/2026-07-22-dev-rewards-ledger-balance.md`.
 
-- **2026-07-22 — Design: Rewards & Wallet (M4/1).** Pricing settled first: **~10 F$ a
+- **2026-07-22 — Design: Rewards & Wallet (M4/1).** Pricing settled first: **~10 P-Bucks a
   week**, chores opt **in** to paying (`coinReward` default 0), small reward 10 · big 40,
   catalog seeded. Three ADRs — **051** the coin belongs to the currency that buys things
-  (F$ takes gold and the disc; **XP demotes to a quiet star**) · **052** the economy is
+  (P-Bucks takes gold and the disc; **XP demotes to a quiet star**) · **052** the economy is
   priced from a weekly earn rate · **053** a balance belongs to a person (no household
   pot; **tier 1 holds a wallet**, amending the tier table). Store/wallet/punch renders are
   **provisional build targets**, revisable without an ADR.
@@ -305,7 +312,7 @@ suite mirroring chores/calendar. _Depends on: none._
 - **2026-07-21 — Planning: Rewards & Meals (docs only).** Roadmap renumbered — the old
   M6 Finance **split**, with the reward economy pulled forward to **M4** and
   allowance/cashout/Monarch left in **M8**; Meals moved up to **M5** and grew groceries.
-  Four ADRs: **047** append-only F$ ledger · **048** earning is contributed over the bus,
+  Four ADRs: **047** append-only P-Bucks ledger · **048** earning is contributed over the bus,
   not owned by chores · **049** punch cards are a rewards primitive (try bites are one
   instance) · **050** a day mark is a property of a day, not an event — dinner has no time
   a family can honour to ±30 min. **ADR 002/005 already settled the currency**, so no new

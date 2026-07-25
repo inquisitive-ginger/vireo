@@ -7,6 +7,7 @@ import {
   Button,
   Chip,
   Coin,
+  CURRENCY,
   DatePicker,
   Drawer,
   FieldLabel,
@@ -20,9 +21,9 @@ import { REWARDS_UI_ENABLED } from '../lib/flags'
 
 const XP_PRESETS = [5, 10, 15, 20, 25]
 const DEFAULT_XP = 10
-// The F$ paying tiers. ADR 052's ladder is 0/2/5/10; here 0 is expressed as "no tier
+// The paying tiers. ADR 052's ladder is 0/2/5/10; here 0 is expressed as "no tier
 // selected" (the default — chores still opt IN to paying) and the paying options are
-// 1/2/5/10. Balances stay in tens — whole F$, no cents.
+// 1/2/5/10. Balances stay in tens — whole P-Bucks, no cents.
 const COIN_PRESETS = [1, 2, 5, 10]
 const DEFAULT_COINS = 0
 
@@ -190,12 +191,12 @@ export function CreateTaskDrawer({
               />
             </div>
 
-            {/* F$ earn is held behind a flag until the wallet + store ship (see lib/flags). */}
+            {/* The earn UI is held behind a flag until the wallet + store ship (see lib/flags). */}
             {REWARDS_UI_ENABLED && (
               <div>
                 <FieldLabel>Pays</FieldLabel>
                 {/* Chores opt IN to paying (ADR 052): 0 is the default. Most chores earn a
-                    score only; a parent ticks the few that pay F$ when setting them up. */}
+                    score only; a parent ticks the few that pay when setting them up. */}
                 <Controller
                   control={control}
                   name="coinReward"
@@ -211,6 +212,11 @@ export function CreateTaskDrawer({
                           onClick={() => field.onChange(field.value === v ? 0 : v)}
                         />
                       ))}
+                      {/* One unit label for the row, as the Score row does with XP —
+                          an unselected chip has no coin to state the unit for it. */}
+                      <span className="text-section-label ml-0.5 text-muted-foreground">
+                        {CURRENCY.code}
+                      </span>
                     </div>
                   )}
                 />
@@ -228,7 +234,7 @@ export function CreateTaskDrawer({
                       >
                         <span className="min-w-0">
                           <span className="text-sm-token block font-semibold text-foreground">
-                            Hold the F$ for my OK
+                            Hold the payout for my OK
                           </span>
                           <span className="text-xs-body block text-muted-foreground">
                             Pays out only after you check it's done.
@@ -238,7 +244,7 @@ export function CreateTaskDrawer({
                           id="chore-approval"
                           checked={field.value}
                           onCheckedChange={field.onChange}
-                          aria-label="Hold the F$ payout for my approval"
+                          aria-label="Hold the payout for my approval"
                         />
                       </label>
                     )}
@@ -309,8 +315,9 @@ function XpChip({
   )
 }
 
-// An F$ paying tier on the shared Chip — brass with the coin when selected. Free is
-// the absence of a selection, not a chip.
+// A paying tier on the shared Chip — brass with the coin when selected, and a bare
+// number: the row's one `P$` label states the unit. Free is the absence of a selection,
+// not a chip.
 function CoinChip({
   value,
   selected,
@@ -334,7 +341,7 @@ function CoinChip({
       idleClassName="font-medium text-muted-foreground"
       className="min-w-touch justify-center gap-1 px-3"
     >
-      {value} F$
+      {value}
     </Chip>
   )
 }

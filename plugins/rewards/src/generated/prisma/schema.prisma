@@ -51,7 +51,7 @@ model Balance {
 model PendingPayout {
   id          String    @id @default(uuid()) @db.Uuid
   profileId   String    @map("profile_id") @db.Uuid
-  amount      Int // > 0, the F$ to credit on release
+  amount      Int // > 0, the P-Bucks to credit on release
   reason      String
   sourceType  String    @map("source_type")
   sourceId    String    @map("source_id")

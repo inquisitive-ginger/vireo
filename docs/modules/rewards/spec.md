@@ -8,7 +8,7 @@
 ## What it is
 
 The sink for everything the family earns. Chores have minted XP since M2 with nothing
-to spend it on — this module gives the loop its second half: **do a thing → earn F$ →
+to spend it on — this module gives the loop its second half: **do a thing → earn P-Bucks →
 spend it on something you want.**
 
 It is the **top half of the old M6 Finance milestone**, pulled forward. The bottom half
@@ -18,21 +18,21 @@ wallet is built so **cashout is another sink**, not a second balance.
 ## Currency model — already settled
 
 **ADR 002** decides this and is not reopened: two currencies. **XP** is pure
-gamification and never converts. **F$** is earnable and redeemable and can convert to
+gamification and never converts. **P-Bucks** is earnable and redeemable and can convert to
 real money later. **ADR 005** keeps the system a ledger, never a bank.
 
 So: **XP only ever goes up** — it stays the lifetime score plate shipped in M2, and
-nothing about it changes. **F$ goes up and down.** A chore completion mints both.
+nothing about it changes. **P-Bucks goes up and down.** A chore completion mints both.
 
 ## M4 scope (MVP)
 
-- F$ ledger + derived balance (ADR 047)
+- P-Bucks ledger + derived balance (ADR 047)
 - Chores earn: `coinReward` on the task, credited off `chores.task.completed` (ADR 048)
 - Reward catalog — tier-4 CRUD, per-reward `requiresApproval` flag
 - Redemption: kid requests → debit → parent decides → fulfilled; **refund on decline**
 - Reward store surface + `rewards.wallet` home widget
 - Punch cards (ADR 049) — template, per-profile card, punch, auto-payout + reset
-- Parent bonus grant — tier-4 "give N F$, reason: …"
+- Parent bonus grant — tier-4 "give N P-Bucks, reason: …"
 
 ## Explicitly deferred
 
@@ -48,7 +48,7 @@ nothing about it changes. **F$ goes up and down.** A chore completion mints both
 
 ## Pricing — settled (ADR 052)
 
-**A normal week earns about 10 F$.** Everything else derives from that.
+**A normal week earns about 10 P-Bucks.** Everything else derives from that.
 
 **Chores opt IN to paying.** `coinReward` defaults to **0**; a parent ticks the chores
 that pay when setting them up. XP is unchanged and still lands on every chore.
@@ -76,8 +76,8 @@ cents, no thousands: a kid has to do the subtraction in their head while spendin
 | One-on-one outing    | 🎡    | 40   | yes      | ~1 month |
 | Trip to the shop     | 🧸    | 40   | yes      | ~1 month |
 
-**No real-money exchange rate.** F$ buys catalog rewards and nothing else; M8 may price
-F$ against cash later and nothing in M4 assumes it will.
+**No real-money exchange rate.** P-Bucks buys catalog rewards and nothing else; M8 may price
+P-Bucks against cash later and nothing in M4 assumes it will.
 
 ---
 
@@ -128,7 +128,7 @@ precedent):
 > **Tier 1 must reach its own balance and the store.** That is the entire point of the
 > module — a capability with no surface is not a capability (ADR 044's lesson).
 > Settled in **ADR 053**, which also amends the `design-system.md` tier table: "no
-> financial data" at tier 1 means the **household's** money (M8), not a kid's own F$.
+> financial data" at tier 1 means the **household's** money (M8), not a kid's own P-Bucks.
 
 ---
 
@@ -136,15 +136,15 @@ precedent):
 
 ### `rewards.wallet`
 
-| Field                | Value                                              |
-| -------------------- | -------------------------------------------------- |
-| `id`                 | `rewards.wallet`                                   |
-| `displayName`        | Wallet                                             |
-| `defaultSize`        | `compact`                                          |
-| `supportedSizes`     | `compact`, `standard`                              |
-| `minTier`            | 1                                                  |
-| `requiredPermission` | `rewards.wallet.view`                              |
-| `description`        | Your F$ balance and what you can afford right now. |
+| Field                | Value                                                   |
+| -------------------- | ------------------------------------------------------- |
+| `id`                 | `rewards.wallet`                                        |
+| `displayName`        | Wallet                                                  |
+| `defaultSize`        | `compact`                                               |
+| `supportedSizes`     | `compact`, `standard`                                   |
+| `minTier`            | 1                                                       |
+| `requiredPermission` | `rewards.wallet.view`                                   |
+| `description`        | Your P-Bucks balance and what you can afford right now. |
 
 **Affordability is the motivating fact, not the number.** `compact` states the balance
 and then **one adaptive line**: "3 rewards you can get", or — when nothing is affordable —

@@ -1,4 +1,4 @@
-import { useMemo, useState, type ReactNode } from 'react'
+import { useMemo, type ReactNode } from 'react'
 import { Label, PageContainer, PageHeader, Switch } from '@family-os/ui'
 import type { ChoreTask, PendingPayout } from '../types'
 import type { DecidePayoutInput } from './ChoresPage'
@@ -7,7 +7,8 @@ import { indexPayouts } from '../lib/payouts'
 import { TaskeeView } from '../components/TaskeeView'
 import { FocusView } from '../components/FocusView'
 import { AdminBoard, type AdminLane } from '../components/AdminBoard'
-import { ChoresEmptyState } from '../components/ChoresEmptyState'
+import { ChoresEmptyState, CompletedHiddenEmptyState } from '../components/ChoresEmptyState'
+import { useHideCompleted } from '../lib/device-prefs'
 
 export interface ChoresPageViewProps {
   tasks: ChoreTask[]
@@ -28,7 +29,7 @@ export interface ChoresPageViewProps {
   onCompleteTask?: (taskId: string) => Promise<unknown>
   /** Un-complete a task (tier-4 only, admin board). Rejects to revert. */
   onReopenTask?: (taskId: string) => Promise<unknown>
-  /** Reopen a paid chore — the container confirms the F$ clawback first (M4/3b). */
+  /** Reopen a paid chore — the container confirms the P-Bucks clawback first (M4/3b). */
   onReopenPaidTask?: (task: ChoreTask, clawback: number) => void
   /** Edit a task (tier-4 only) — opens the drawer prefilled. */
   onEditTask?: (task: ChoreTask) => void
@@ -39,12 +40,14 @@ export interface ChoresPageViewProps {
   /** Effective Focus-mode setting (ADR 036). Taskee + on → the Focus variant;
       off → the Agency `TaskeeView`. Ignored by the admin/family board. */
   focusMode?: boolean
-  /** Held/decided F$ payouts (M4/3b), flagged. Empty when the earn UI is off. The
+  /** Held/decided payouts (M4/3b), flagged. Empty when the earn UI is off. The
       board overlays a pending payout's approve/decline tray onto its row; a taskee
       shows the held badge and the declined note. */
   payouts?: PendingPayout[]
   /** Approve/decline a held payout (tier-4 board only). */
   onDecidePayout?: (input: DecidePayoutInput) => Promise<unknown>
+  /** Scopes the device-local board prefs (Hide completed). Null → not persisted. */
+  profileId?: string | null
 }
 
 export function ChoresPageView({
@@ -64,9 +67,10 @@ export function ChoresPageView({
   focusMode,
   payouts,
   onDecidePayout,
+  profileId = null,
 }: ChoresPageViewProps) {
   // Declared before the taskee early-return so the hook order stays unconditional.
-  const [hideCompleted, setHideCompleted] = useState(false)
+  const [hideCompleted, setHideCompleted] = useHideCompleted(profileId)
   const payoutIndex = useMemo(() => indexPayouts(payouts ?? []), [payouts])
 
   // Taskee, non-empty → the dedicated taskee surface (owns its header, the
@@ -122,19 +126,23 @@ export function ChoresPageView({
               />
             </div>
           )}
-          <AdminBoard
-            lanes={toLanes(tasks)}
-            showAdd={canManage}
-            hideCompleted={hideCompleted}
-            payoutIndex={payoutIndex}
-            onDecidePayout={canManage ? onDecidePayout : undefined}
-            onAddForAssignee={onAddForAssignee ?? (() => {})}
-            onCompleteTask={canManage ? onCompleteTask : undefined}
-            onReopenTask={canManage ? onReopenTask : undefined}
-            onReopenPaidTask={canManage ? onReopenPaidTask : undefined}
-            onEditTask={canManage ? onEditTask : undefined}
-            onRemoveTask={canManage ? onRemoveTask : undefined}
-          />
+          {hideCompleted && pending === 0 ? (
+            <CompletedHiddenEmptyState />
+          ) : (
+            <AdminBoard
+              lanes={toLanes(tasks)}
+              showAdd={canManage}
+              hideCompleted={hideCompleted}
+              payoutIndex={payoutIndex}
+              onDecidePayout={canManage ? onDecidePayout : undefined}
+              onAddForAssignee={onAddForAssignee ?? (() => {})}
+              onCompleteTask={canManage ? onCompleteTask : undefined}
+              onReopenTask={canManage ? onReopenTask : undefined}
+              onReopenPaidTask={canManage ? onReopenPaidTask : undefined}
+              onEditTask={canManage ? onEditTask : undefined}
+              onRemoveTask={canManage ? onRemoveTask : undefined}
+            />
+          )}
         </>
       )}
     </PageContainer>

@@ -1,6 +1,10 @@
 # 002 — Two-Layer Currency Model
 
-**Status:** Decided
+**Status:** Decided · **Amended by ADR 054**
+
+> **Amendment (ADR 054, 2026-07-24).** The currency is named **Pritchett Bucks**
+> (`P$` / `P-Bucks`), not Family Dollars (`F$`). Nothing else in this ADR changes —
+> two currencies, and XP never converts.
 
 **Decision:** Two distinct currencies — XP (pure gamification, never
 converts) and Family Dollars (F$, earnable and redeemable, can convert

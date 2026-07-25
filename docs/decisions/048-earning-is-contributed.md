@@ -1,6 +1,8 @@
 # 048 — Earning Is Contributed, Not Owned
 
-**Status:** Decided
+**Status:** Decided · **Naming amended by ADR 054**
+
+> **Naming amendment (ADR 054, 2026-07-24).** Every "F$" / "Family Dollars" below is now "Pritchett Bucks" — written "P$" in compact text beside a number, "P-Bucks" in any sentence a person reads or hears, and struck as the P-mark on the coin face. Strings come from one module, packages/ui/src/lib/currency.ts, so a register is chosen by naming an export rather than by typing two characters. The decision recorded here is unchanged — only the name is. See [ADR 054](054-pritchett-bucks.md).
 
 ## Decision
 

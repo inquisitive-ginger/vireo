@@ -402,7 +402,7 @@ describe('AdminBoard — tier-4 controls', () => {
       />
     )
 
-    // The paid chore (auto-credited 10 F$) confirms first — no direct reopen.
+    // The paid chore (auto-credited 10 P-Bucks) confirms first — no direct reopen.
     fireEvent.click(screen.getByRole('checkbox', { name: 'Reopen “Paid chore” (mark not done)' }))
     expect(onReopenPaid).toHaveBeenCalledWith(expect.objectContaining({ id: 'tp' }), 10)
     expect(onReopen).not.toHaveBeenCalled()
@@ -526,7 +526,7 @@ describe('AdminBoard — held payout tray (M4/3b)', () => {
       />
     )
     expect(screen.getByText('Waiting on your OK')).toBeInTheDocument()
-    expect(screen.getByRole('button', { name: 'Pay 10 F$' })).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Pay 10 P$' })).toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'Not yet' })).toBeInTheDocument()
   })
 
@@ -540,7 +540,7 @@ describe('AdminBoard — held payout tray (M4/3b)', () => {
         onDecidePayout={onDecide}
       />
     )
-    fireEvent.click(screen.getByRole('button', { name: 'Pay 10 F$' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Pay 10 P$' }))
     expect(onDecide).toHaveBeenCalledWith({ id: 'p1', decision: 'approve' })
   })
 

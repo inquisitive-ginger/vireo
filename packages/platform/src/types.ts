@@ -135,9 +135,9 @@ export const PERMISSION_REGISTRY = {
     subject: 'chores.Task',
   },
   // Tier 1 included (ADR 053) — the youngest kid is who the module exists for, and
-  // "no financial data" at tier 1 means the household's money (M8), not a kid's own F$.
+  // "no financial data" at tier 1 means the household's money (M8), not a kid's own P-Bucks.
   'rewards.wallet.view': {
-    label: 'See your own F$ balance',
+    label: 'See your own P-Bucks balance',
     module: 'rewards',
     action: 'view',
     subject: 'rewards.Wallet',

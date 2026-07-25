@@ -18,7 +18,7 @@ model Task {
   dueDate          DateTime? @map("due_date") @db.Date
   xpReward         Int       @default(10) @map("xp_reward")
   coinReward       Int       @default(0) @map("coin_reward")
-  // Hold the F$ payout for a parent's OK instead of auto-crediting on completion
+  // Hold the P-Bucks payout for a parent's OK instead of auto-crediting on completion
   // (M4/3b). Per-chore, not a household threshold (ADR 052 puts the price on the
   // task; the same place decides whether it needs signing off). Only meaningful
   // when coinReward > 0.

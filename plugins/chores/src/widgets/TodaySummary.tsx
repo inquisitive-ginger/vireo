@@ -1,6 +1,8 @@
 import { Loader2 } from 'lucide-react'
 import { FAMILY_PROFILE_ID, useAuth, useQuery } from '@family-os/platform'
-import type { TasksResponse } from '../types'
+import type { PendingPayout, TasksResponse } from '../types'
+import { REWARDS_UI_ENABLED } from '../lib/flags'
+import { indexPayouts } from '../lib/payouts'
 import { TodaySummaryView, type WidgetSize } from './TodaySummaryView'
 
 /* `chores.today-summary` widget — registered in manifest.json `widgets[]`.
@@ -57,6 +59,24 @@ export default function TodaySummary({ size }: TodaySummaryProps) {
     retry: 1,
   })
 
+  // The payout outcome for each completed paying chore (M4/3b). Without it the widget
+  // renders a completed row's `coinReward` raw, so a HELD payout and a DECLINED one both
+  // read as banked — the row says a kid has money that is waiting on a parent, or that
+  // a parent already refused. Key prefix `['rewards/payouts']` is shared with the page,
+  // so a decision there refreshes this widget. Taskee framing only: the family/admin
+  // dashboard shows other people's rows and decides nothing here.
+  const { data: payoutData } = useQuery<{ payouts: PendingPayout[] }>({
+    queryKey: ['rewards/payouts', id, 'widget'],
+    queryFn: () =>
+      fetch('/api/rewards/payouts?status=pending,approved,declined&limit=100').then((r) => {
+        if (!r.ok) throw new Error(String(r.status))
+        return r.json() as Promise<{ payouts: PendingPayout[] }>
+      }),
+    enabled: REWARDS_UI_ENABLED && !usesFamilyFraming,
+    staleTime: 60_000,
+    retry: 1,
+  })
+
   if (isLoading) {
     return (
       <div className="flex size-full items-center justify-center">
@@ -85,6 +105,7 @@ export default function TodaySummary({ size }: TodaySummaryProps) {
       lifetimeXp={lifetimeXp}
       dailyXp={dailyXp}
       focusMode={focusMode}
+      payoutIndex={indexPayouts(payoutData?.payouts ?? [])}
     />
   )
 }

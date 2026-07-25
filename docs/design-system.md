@@ -1,6 +1,6 @@
 # Design System
 
-> Last updated: 2026-07-22 — **ADR 051: the coin belongs to the currency that buys things.** F$ takes gold, the disc and the coin glyph; **XP demotes to a quiet star**. The coin's gold moves off `--identity-marigold`, and what separates it from a member's hue is **form** — one struck disc, never a disc inside a ring (a washer) and never notched (a gear). See [Currency marks](#currency-marks). Prior: 2026-07-12 — **ADR 044: a colour is assigned, not derived; and it is not the only channel.** The member palette grows to **eight** (`moss`, `indigo`); a member's hue is **persisted and unique** (`resolveHue`, never `identityColor(name)`), so palette size is now a **cap on household size**. The **tint layer is rebuilt** — it flattened every hue to off-white on the one surface (the month grid) where colour does all the work. Eight nameable hues cannot survive red-green colour-blindness, so **any surface where a hue is the sole discriminator owes a second channel** — the calendar chip carries its owner's initial.
+> Last updated: 2026-07-24 — **ADR 054: the currency is named Pritchett Bucks.** The coin now bears a struck **P-mark** (0.66 of the face, stroke 2.5) in place of ADR 051's placeholder `Coins` glyph, and the name has **four registers** — the mark · `P$` · `P-Bucks` · `Pritchett Bucks` — one per medium, chosen by naming an export in `packages/ui/src/lib/currency.ts`. See [Currency marks](#currency-marks). Prior: 2026-07-22 — **ADR 051: the coin belongs to the currency that buys things.** P-Bucks takes gold, the disc and the coin glyph; **XP demotes to a quiet star**. The coin's gold moves off `--identity-marigold`, and what separates it from a member's hue is **form** — one struck disc, never a disc inside a ring (a washer) and never notched (a gear). See [Currency marks](#currency-marks). Prior: 2026-07-12 — **ADR 044: a colour is assigned, not derived; and it is not the only channel.** The member palette grows to **eight** (`moss`, `indigo`); a member's hue is **persisted and unique** (`resolveHue`, never `identityColor(name)`), so palette size is now a **cap on household size**. The **tint layer is rebuilt** — it flattened every hue to off-white on the one surface (the month grid) where colour does all the work. Eight nameable hues cannot survive red-green colour-blindness, so **any surface where a hue is the sole discriminator owes a second channel** — the calendar chip carries its owner's initial.
 
 This document records settled design decisions. Deferred items are
 explicitly marked — do not treat absence of a spec as a free choice.
@@ -663,7 +663,7 @@ by parents — not hardcoded.
 
 > **Amended 2026-07-22 (ADR 053).** Tier 1 read _"no financial data"_, written before any
 > in-app currency existed. It means the **household's** money — budgets, real balances,
-> cashout, Monarch — which is M8 and stays tier 4. It does **not** mean a kid's own F$:
+> cashout, Monarch — which is M8 and stays tier 4. It does **not** mean a kid's own P-Bucks:
 > **tier 1 holds a wallet, reaches the store, and punches its own card.** Chores have
 > minted XP for a tier-1 kid since M2 and M4 exists to give that loop its second half;
 > granting the capability and withholding the surface is ADR 044's failure repeated.
@@ -1753,15 +1753,34 @@ gutter does it on a **child**, not by renegotiating the page frame.
 
 ## Currency marks
 
-**Settled** — ADR 051, Rewards & Wallet design session, 2026-07-22.
+**Settled** — ADR 051 (2026-07-22) and ADR 054 (2026-07-24).
 
 Two currencies appear on the same row (a paying chore shows both), so they are told
 apart by **metaphor**, not by shade.
 
-| Currency | Mark                                                  | Meaning                     |
-| -------- | ----------------------------------------------------- | --------------------------- |
-| **F$**   | A struck **gold coin** + the value                    | Money. Goes up and down.    |
-| **XP**   | A **quiet star** + the value, in `--muted-foreground` | A score. Only ever goes up. |
+| Currency            | Mark                                                   | Meaning                     |
+| ------------------- | ------------------------------------------------------ | --------------------------- |
+| **Pritchett Bucks** | A struck **brass coin** bearing the P-mark + the value | Money. Goes up and down.    |
+| **XP**              | A **quiet star** + the value, in `--muted-foreground`  | A score. Only ever goes up. |
+
+### The four registers
+
+Each exists because a medium ruled the others out. Pick one by **naming it** — the
+exports in `packages/ui/src/lib/currency.ts` — never by typing two characters.
+
+| Register              | Where                                                                 |
+| --------------------- | --------------------------------------------------------------------- |
+| The struck mark       | the coin face — anywhere a value renders with its coin                |
+| **`P$`**              | compact text beside a number: chips, buttons, prose, the ledger       |
+| **`P-Bucks`**         | any sentence a person reads or **hears** — push, toasts, `aria-label` |
+| **`Pritchett Bucks`** | the wallet hero, settings, first use — where the name is taught once  |
+
+**A coin beside a value means the text is the amount alone** — `[◉] 10`, never
+`[◉] 10 P$`. The coin states the unit, and the chore row is the tightest surface in the
+app. **A value inside a sentence is the exception**: a sentence has to name what it
+counts, so the held chip reads `[◉] 10 P$ when Mom or Dad checks` and the declined chip
+reads `No P$ this time`. The coin is decorative either way, so every such chip pairs an
+`aria-hidden` rendering with an `sr-only` one spelling `P-Bucks`.
 
 **XP kept its pill shape and gave up its metal.** It held gold, the disc and the coin
 glyph from M2 — assigned when nothing was spendable and the conflict could not appear.
@@ -1780,12 +1799,20 @@ The coin's gold is **brass, not marigold**: `hi oklch(0.95 0.09 96)` ·
 - an outer **rim** — a conic metallic sweep masked to the outer ~9% of the same circle,
 - a **specular gloss** crossing the face,
 - a **raised relief** ring just inside the rim,
-- the `Coins` glyph at ~48% of the diameter.
+- the **P-mark** struck at **66%** of the diameter, stroke **2.5**.
 
 Two things it is **not**, both tried and rejected on sight: a smaller disc nested inside
 a ring (the pale step between them reads as a **washer**), and radial notches (milling
 reads as a **gear** — machinery, not money). Relief holds down to 18px, so the row mark
 and the 64px celebration coin are the same object at different sizes.
+
+**The mark's weight is set by where its counters close.** The bowl's arms run y=4→12 and
+the bar crosses at y=8, so each counter is **(4 − stroke)** units tall. At a 0.66 share on
+a **16px coin every weight closes** — the mark is a **silhouette, not a letter**, which is
+what a struck coin looks like from across a kitchen. Weight is therefore decided at 26px
+and up, where **2.5 is the heaviest that still holds an open counter at 44px**. The mark
+also needs **no centring transform**: its bowl arc is a semicircle bulging right to x=18,
+so extents are 5→19 and the centre is exactly 12.
 
 **The separation from a member's identity hue is form, not colour** (ADR 044's second
 channel). A spine is a flat 4px bar; it can never be struck metal. That is what allows
@@ -1834,11 +1861,11 @@ claim is that a kid can explain their balance, and this is where that starts.
 
 Three end states that must never blur:
 
-| State        | Reads as                                                                                                                                                 |
-| ------------ | -------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Granted**  | Celebration. The new balance is stated.                                                                                                                  |
-| **Pending**  | _"Asked for"_ + a `Waiting` badge, and it says the F$ is **already held**. It must never look granted.                                                   |
-| **Declined** | The **refund is the headline** (`25 F$ back in your wallet`), with the parent's reason quoted in their own words when they gave one. Not an error state. |
+| State        | Reads as                                                                                                                                                      |
+| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| **Granted**  | Celebration. The new balance is stated.                                                                                                                       |
+| **Pending**  | _"Asked for"_ + a `Waiting` badge, and it says the P-Bucks is **already held**. It must never look granted.                                                   |
+| **Declined** | The **refund is the headline** (`25 P-Bucks back in your wallet`), with the parent's reason quoted in their own words when they gave one. Not an error state. |
 
 A decline reason is **optional** — a forced field gets "no" typed into it — and is quoted
 verbatim when present.

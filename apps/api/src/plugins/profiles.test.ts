@@ -625,7 +625,7 @@ describe('GET /api/profiles/:id/permissions', () => {
     // choosing how you appear is not administration) + create platform.BugReport
     // (every tier reports a problem — ADR 046: the youngest user is the likeliest
     // to hit a rough edge and the least able to route around it) + view
-    // rewards.Wallet (every tier reaches its OWN F$ balance — ADR 053)
+    // rewards.Wallet (every tier reaches its OWN P-Bucks balance — ADR 053)
     expect(permissions.find((p) => p.key === 'platform.plugin.view')?.inBaseline).toBe(true)
     expect(permissions.find((p) => p.key === 'chores.task.view')?.inBaseline).toBe(true)
     expect(permissions.find((p) => p.key === 'chores.task.complete')?.inBaseline).toBe(true)

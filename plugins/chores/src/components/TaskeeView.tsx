@@ -18,7 +18,7 @@ export interface TaskeeViewProps {
       first render — not reactive to subsequent fetches, which would double-count
       in-session completions. */
   initialXp?: number
-  /** Held/decided F$ payouts keyed by completion instance (M4/3b). Empty when the
+  /** Held/decided payouts keyed by completion instance (M4/3b). Empty when the
       earn UI is flagged off. */
   payoutIndex?: PayoutsByInstance
 }

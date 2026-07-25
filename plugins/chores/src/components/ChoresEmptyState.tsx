@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { CheckSquare } from 'lucide-react'
+import { CheckCircle2, CheckSquare } from 'lucide-react'
 import { EmptyState } from '@family-os/ui'
 
 export interface ChoresEmptyStateProps {
@@ -16,6 +16,19 @@ export interface ChoresEmptyStateProps {
 export function ChoresEmptyState({ warmTone, isAdmin, action }: ChoresEmptyStateProps) {
   const { heading, body } = copy(warmTone, isAdmin)
   return <EmptyState icon={CheckSquare} heading={heading} body={body} action={action} />
+}
+
+/* The board with Hide completed on and nothing left pending. It is not the same
+   state as an empty board — the work exists and it is done — and the toggle sits
+   directly above, so the way back is named rather than duplicated as a button. */
+export function CompletedHiddenEmptyState() {
+  return (
+    <EmptyState
+      icon={CheckCircle2}
+      heading="All caught up"
+      body="Every chore is done. Switch off Hide completed to see them."
+    />
+  )
 }
 
 function copy(warmTone: boolean, isAdmin: boolean): { heading: string; body: string } {

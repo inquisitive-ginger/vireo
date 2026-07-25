@@ -1,5 +1,7 @@
 # 2026-07-23 — Dev: Chores Earn + the XP re-strike (M4/3, PR #64)
 
+> **Naming note (ADR 054, 2026-07-24):** the currency called "F$" / "Family Dollars" below is now "Pritchett Bucks" — "P$" in compact text, "P-Bucks" in a sentence, and the P-mark struck on the coin. This log is a dated record and is not rewritten.
+
 Backend earn wiring + the ADR-051 coin/star re-strike, with the F$ surfaces behind a flag.
 
 ## What was built
