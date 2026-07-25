@@ -22,25 +22,20 @@
 > first in wall-clock terms where they are cheap (Part F is a real risk to the
 > household's data), but the feature work is what the family is waiting on.
 
-### M4/4 — Dev: Catalog + Redemption
-
-**Type:** development · **Kickoff:** _to be written_
-Tier-4 catalog CRUD with a **per-reward `requiresApproval`** flag; request → debit →
-parent decide → fulfil. **Debit on request, refund on decline** — not escrow. Cost is
-**snapshotted** onto the redemption so repricing can't move a pending request. Parent
-notified via `notify()` at `alert`. **Build the tier-4 approvals queue here, and list
-chore payouts (M4/3b) in it alongside redemption decisions** — the payout `PATCH` is
-idempotent so it's one shared release endpoint; this queue is where the **decline-note
-input** lands (the board decline defers it; the note plumbing already exists
-end-to-end). Make the held-payout row a shared component so the board and queue don't
-diverge. _Reads: `docs/modules/rewards/spec.md`, ADR 029._ _Depends on: M4/2, M4/1._
-
 ### M4/5 — Dev: Store + Wallet Widget
 
 **Type:** development · **Kickoff:** _to be written_
 `/rewards` store page + the `rewards.wallet` home widget; reserve slots in the ADR 028
 default layouts. **Tier 1 must reach its own balance and the store** — that is the whole
-module, and a capability with no surface is not a capability. _Depends on: M4/4._
+module, and a capability with no surface is not a capability. **This is the prod flip for
+the whole rewards frontend:** register `rewards` in `plugins.json` (order: after chores)
+
+- `apps/shell/src/lib/load-plugin.ts`, and turn `REWARDS_UI` on — M4/4 left both files
+  dev-only so the tier-4 surfaces stayed dormant in prod. Build the kid-facing **request**
+  UI (the store) — M4/4's redemption backend + queue only saw seeded data. **Code-seed the
+  grounded starter catalog** (spec §Seed catalog, updated 2026-07-25). **Self-host the
+  emojibase data** before the full `EmojiPicker` mode is used (rewards' scoped mode is
+  local — no concern; family-feed's future full picker is). _Depends on: M4/4._
 
 ### M4/6 — Dev: Punch Cards
 
@@ -268,6 +263,14 @@ suite mirroring chores/calendar. _Depends on: none._
 ## Recently Completed
 
 > Two-line index; full detail in the linked log.
+
+- **2026-07-25 — Dev: Catalog + Redemption (M4/4, PR #71).** Reward catalog (tier-4 CRUD,
+  retire-not-delete) + redemption flow (debit on request, refund on decline, cost
+  snapshotted) + the module's first frontend: a **by-kid approvals queue** deciding chore
+  payouts + redemptions via one shared `CoinDecisionTray`, and a Faces-&-seal catalog with
+  a **"?" seal** for approval and a **grounded, scoped `EmojiPicker`**. Frontend ships
+  **dormant** — not registered in `plugins.json`/`load-plugin.ts` until M4/5 flips it. See
+  `logs/2026-07-25-dev-rewards-catalog-redemption.md`.
 
 - **2026-07-24 — Ad-hoc: Pritchett Bucks (ADR 054, PR #68).** The currency is renamed and
   the coin bears a struck **P-mark**; four registers (mark · `P$` · `P-Bucks` ·

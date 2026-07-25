@@ -65,16 +65,21 @@ cents, no thousands: a kid has to do the subtraction in their head while spendin
 
 ### Seed catalog
 
+> Grounded in the reward emoji set settled 2026-07-25 (one emoji per real reward, not an
+> emoji keyboard — see `plugins/rewards/src/lib/reward-emojis.ts`). This is the starter
+> set a fresh family gets; the code-seed lands with the store (M4/5).
+
 | Reward               | Emoji | Cost | Approval | Reads as |
 | -------------------- | ----- | ---- | -------- | -------- |
 | Pick the car music   | 🎧    | 5    | —        | impulse  |
 | Extra 30 min screen  | 🎮    | 10   | —        | ~1 week  |
 | Stay up 30 min late  | 🌙    | 10   | —        | ~1 week  |
-| Pick the movie       | 🍿    | 15   | —        | choice   |
-| Pick Friday's dinner | 🍕    | 15   | —        | choice   |
+| Bake something       | 🍪    | 10   | —        | choice   |
+| Movie night          | 🍿    | 15   | —        | choice   |
+| Pick Friday's dinner | 🍗    | 15   | —        | choice   |
 | Ice cream run        | 🍦    | 25   | yes      | outing   |
-| One-on-one outing    | 🎡    | 40   | yes      | ~1 month |
-| Trip to the shop     | 🧸    | 40   | yes      | ~1 month |
+| Day out / adventure  | 🎡    | 40   | yes      | ~1 month |
+| Yes day              | 👑    | 40   | yes      | ~1 month |
 
 **No real-money exchange rate.** P-Bucks buys catalog rewards and nothing else; M8 may price
 P-Bucks against cash later and nothing in M4 assumes it will.
