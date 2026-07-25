@@ -231,6 +231,7 @@ export function ChoresPage() {
     <>
       <ChoresPageView
         tasks={tasks}
+        profileId={id}
         tier={tier}
         seesAllTasks={seesAllTasks}
         canManage={canManage}
