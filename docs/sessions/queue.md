@@ -29,13 +29,12 @@
 default layouts. **Tier 1 must reach its own balance and the store** — that is the whole
 module, and a capability with no surface is not a capability. **This is the prod flip for
 the whole rewards frontend:** register `rewards` in `plugins.json` (order: after chores)
-
-- `apps/shell/src/lib/load-plugin.ts`, and turn `REWARDS_UI` on — M4/4 left both files
-  dev-only so the tier-4 surfaces stayed dormant in prod. Build the kid-facing **request**
-  UI (the store) — M4/4's redemption backend + queue only saw seeded data. **Code-seed the
-  grounded starter catalog** (spec §Seed catalog, updated 2026-07-25). **Self-host the
-  emojibase data** before the full `EmojiPicker` mode is used (rewards' scoped mode is
-  local — no concern; family-feed's future full picker is). _Depends on: M4/4._
+and in `apps/shell/src/lib/load-plugin.ts`, and turn `REWARDS_UI` on — M4/4 left both
+files dev-only so the tier-4 surfaces stayed dormant in prod. Build the kid-facing
+**request** UI (the store) — M4/4's redemption backend + queue only saw seeded data.
+**Code-seed the grounded starter catalog** (spec §Seed catalog, updated 2026-07-25).
+**Self-host the emojibase data** before the full `EmojiPicker` mode is used (rewards'
+scoped mode is local — no concern; family-feed's future full picker is). _Depends on: M4/4._
 
 ### M4/6 — Dev: Punch Cards
 
