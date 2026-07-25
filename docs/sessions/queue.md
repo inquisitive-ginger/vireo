@@ -263,6 +263,14 @@ suite mirroring chores/calendar. _Depends on: none._
 
 > Two-line index; full detail in the linked log.
 
+- **2026-07-25 — Dev: chores widget clipped its family list (auto-bug #70, PR #72).** The
+  family framing had 185px of list room in a 363px slot and sliced the fourth member. The
+  aggregate above it drops to one line (~46px back, a whole tile), and every chores list
+  now measures its slot via a new shared **`useFitRows`** — whole rows plus `+N more`,
+  never a mid-tile crop. Extracted from calendar's `DayList`, which had solved it first.
+  **The in-app report is still open until prod deploys and it is moved to `deployed`.**
+  See `logs/2026-07-25-dev-chores-widget-family-overflow.md`.
+
 - **2026-07-25 — Dev: Catalog + Redemption (M4/4, PR #71).** Reward catalog (tier-4 CRUD,
   retire-not-delete) + redemption flow (debit on request, refund on decline, cost
   snapshotted) + the module's first frontend: a **by-kid approvals queue** deciding chore
