@@ -88,13 +88,29 @@ Storybook story `Family — more members than the slot` covers the overflow path
 ui **181** (+3 — the clamp, under stubbed jsdom layout) · chores **59** (+3) ·
 calendar **105** (unchanged). Typecheck + lint clean across all three.
 
+## Shipped, and the twenty minutes after
+
+`release` built `3a6e213`, `deploy` pinned that tag and recreated the stack —
+green at 20:34 UTC. The iPad still showed the old widget, and **that is the
+expected state, not a broken pipeline.** The service worker is network-first for
+navigations, but **an installed iOS PWA in standalone mode never issues one on
+resume** — it restores the existing page, and standalone has no reload control.
+Quitting the app from the app switcher fixed it.
+
+The generalizable part is the order of the check: **verify the server before
+touching the device.** Prod's entry script was `D8jn4xGC` against the report's
+`CU0XRQue`, and the deployed chores chunk grepped positive for markup only the
+new code emits (`items-baseline justify-between`) and negative for the old
+(`mt-2 mb-3 flex items-end`). That settles "did it deploy" in one command and
+leaves only the client to explain. Written up in `docs/deployment.md` Part D.
+
+Report #70 was then moved to `deployed` on the triage board, which notified the
+reporter in-app — **ADR 046's loop closed end to end for the first time**:
+in-app report → GitHub issue → fix → deploy → notification back to the person
+who filed it.
+
 ## What the next session needs to know
 
-- **#70 is not closed for the reporter yet.** The GitHub issue closed with the
-  merge, but the in-app notification fires when the **report row** moves to
-  `deployed` on the tier-4 triage board — and that is a **prod** row, so it is
-  only true once `release.yml` → `deploy.yml` lands this commit on the Pi. Flip
-  it there, not in dev.
 - **`useFitRows` is now the standing answer for a home-widget list.** Any list
   rendering into a `WidgetGrid` slot has a height it cannot know at author time;
   `overflow: hidden` is not a strategy, it is a silent failure. Family-feed's

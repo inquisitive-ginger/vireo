@@ -373,6 +373,25 @@ psql -U familyos -c 'select count(*) from push_subscriptions;'`).
 > with no server row. Don't `db:reset` the production DB; on the rare time you
 > must, re-subscribe from each device afterward.
 
+### A deploy does not reach the fridge iPad until the PWA is quit
+
+The service worker is network-first for navigations, so any online page load
+picks up a new build. **An installed iOS PWA in standalone mode does not perform
+one** — switching back to it resumes the existing page, and standalone mode has
+no reload control. So a green `deploy` run and an unchanged iPad are the normal,
+expected state, not a broken pipeline.
+
+Quit the app from the app switcher and reopen it. That issues a real navigation
+→ fresh `index.html` → the new content-hashed bundles, and the rebuilt `sw.js`
+(its cache name carries the shell's content hash) reinstalls and purges the old
+cache.
+
+**Check the server before touching the device.** Compare the entry script in
+`curl -s https://vireohome.app/ | grep assets/` against the hash in the bug
+report's Build field, and grep the deployed chunk for markup only the new code
+has. If the server is right, the device is stale — first diagnosed 2026-07-25
+chasing auto-bug #70's fix, which had in fact deployed 20 minutes earlier.
+
 ---
 
 ## Part E — CI/CD

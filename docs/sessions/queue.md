@@ -268,7 +268,7 @@ suite mirroring chores/calendar. _Depends on: none._
   aggregate above it drops to one line (~46px back, a whole tile), and every chores list
   now measures its slot via a new shared **`useFitRows`** — whole rows plus `+N more`,
   never a mid-tile crop. Extracted from calendar's `DayList`, which had solved it first.
-  **The in-app report is still open until prod deploys and it is moved to `deployed`.**
+  **Deployed and confirmed live; report moved to `deployed`, closing ADR 046's loop.**
   See `logs/2026-07-25-dev-chores-widget-family-overflow.md`.
 
 - **2026-07-25 — Dev: Catalog + Redemption (M4/4, PR #71).** Reward catalog (tier-4 CRUD,
