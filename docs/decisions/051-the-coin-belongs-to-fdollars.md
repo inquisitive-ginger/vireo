@@ -1,6 +1,12 @@
 # 051 — The Coin Belongs to the Currency That Buys Things
 
-**Status:** Decided
+**Status:** Decided · **Amended by ADR 054**
+
+> **Amendment (ADR 054, 2026-07-24).** The currency is **Pritchett Bucks**, and the coin's
+> face now bears the **struck P-mark** at 0.66 of the face, stroke 2.5 — not the lucide
+> `Coins` glyph named below, which was a placeholder kept only because there was nothing
+> else to strike. Everything else here stands: the currency owns gold and the disc, XP is
+> a quiet star, and separation from a member's hue rests on **form**.
 
 ## Decision
 

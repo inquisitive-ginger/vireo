@@ -1,5 +1,7 @@
 # Session Log — Audit: Roadmap & Planning
 
+> **Naming note (ADR 054, 2026-07-24):** the currency called "F$" / "Family Dollars" below is now "Pritchett Bucks" — "P$" in compact text, "P-Bucks" in a sentence, and the P-mark struck on the coin. This log is a dated record and is not rewritten.
+
 ![Type](https://img.shields.io/badge/Type-Audit-yellow) ![Date](https://img.shields.io/badge/Date-2026--05--30-lightgrey) ![Milestone](https://img.shields.io/badge/Milestone-M0-informational) ![Status](https://img.shields.io/badge/Status-Complete-brightgreen)
 
 ---

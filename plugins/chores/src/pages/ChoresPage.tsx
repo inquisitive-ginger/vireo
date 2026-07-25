@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Loader2, Plus } from 'lucide-react'
-import { Button, ConfirmDialog } from '@family-os/ui'
+import { Button, ConfirmDialog, bucks } from '@family-os/ui'
 import {
   FAMILY_PROFILE_ID,
   PermissionGate,
@@ -59,7 +59,7 @@ export function ChoresPage() {
     enabled: !seesAllTasks,
   })
 
-  // Held F$ payouts (M4/3b), flagged with the rest of the earn UI. The tier-4 board
+  // Held payouts (M4/3b), flagged with the rest of the earn UI. The tier-4 board
   // reads all pending (to overlay the approve/decline tray); a taskee reads their own
   // pending + declined (the held badge and the declined note). The family dashboard
   // (sees-all but tier 1, not a manager) fetches none — it cannot decide anyway.
@@ -78,7 +78,7 @@ export function ChoresPage() {
     enabled: wantsPayouts,
   })
 
-  // A paid chore being reopened claws the F$ back — confirm first, showing the kid's
+  // A paid chore being reopened claws the payout back — confirm first, showing the kid's
   // resulting balance (fetched on demand) so an overdraw isn't a surprise (M4/3b).
   const [reopenTarget, setReopenTarget] = useState<{ task: ChoreTask; clawback: number } | null>(
     null
@@ -177,7 +177,7 @@ export function ChoresPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['chores/tasks'] })
       // A paying completion may have created a held payout — refetch so the card's
-      // F$ state reconciles (the held badge already shows from the task itself).
+      // the payout state reconciles (the held badge already shows from the task itself).
       queryClient.invalidateQueries({ queryKey: ['rewards/payouts'] })
     },
   })
@@ -343,7 +343,7 @@ function Amount({ value, tone = 'normal' }: { value: number; tone?: 'normal' | '
       className="font-semibold"
       style={{ color: tone === 'error' ? 'var(--error)' : 'var(--foreground)' }}
     >
-      {value} F$
+      {bucks(value)}
     </strong>
   )
 }

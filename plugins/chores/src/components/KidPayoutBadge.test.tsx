@@ -98,19 +98,29 @@ describe('reopenClawback (M4/3b)', () => {
 })
 
 describe('KidPayoutBadge (M4/3b)', () => {
-  it('held reads "when Mom or Dad checks" with the amount', () => {
+  it('held reads "10 P$ when Mom or Dad checks" — a sentence names its unit', () => {
     render(<KidPayoutBadge view={{ kind: 'held', amount: 10 }} />)
-    expect(screen.getByText('10 F$ when Mom or Dad checks')).toBeInTheDocument()
+    expect(screen.getByText('10 P$ when Mom or Dad checks')).toBeInTheDocument()
   })
 
-  it('earned shows the amount', () => {
+  it('earned shows the bare amount — the coin states the unit', () => {
     render(<KidPayoutBadge view={{ kind: 'earned', amount: 10 }} />)
-    expect(screen.getByText('10 F$')).toBeInTheDocument()
+    expect(screen.getByText('10')).toBeInTheDocument()
   })
 
-  it('declined reads "No F$ this time"', () => {
+  it('declined reads "No P$ this time"', () => {
     render(<KidPayoutBadge view={{ kind: 'declined', note: null }} />)
-    expect(screen.getByText('No F$ this time')).toBeInTheDocument()
+    expect(screen.getByText('No P$ this time')).toBeInTheDocument()
+  })
+
+  // A reader handed `P$` says "P dollar sign", and gets nothing at all from the coin.
+  it.each([
+    [{ kind: 'earned', amount: 10 } as const, '10 P-Bucks'],
+    [{ kind: 'held', amount: 10 } as const, '10 P-Bucks when Mom or Dad checks'],
+    [{ kind: 'declined', note: null } as const, 'No P-Bucks this time'],
+  ])('speaks the currency rather than the code (%o)', (view, spoken) => {
+    render(<KidPayoutBadge view={view} />)
+    expect(screen.getByText(spoken)).toHaveClass('sr-only')
   })
 
   it('renders nothing for a null view', () => {

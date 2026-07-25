@@ -1,5 +1,7 @@
 # 2026-07-22 — Design: Rewards & Wallet (M4/1)
 
+> **Naming note (ADR 054, 2026-07-24):** the currency called "F$" / "Family Dollars" below is now "Pritchett Bucks" — "P$" in compact text, "P-Bucks" in a sentence, and the P-mark struck on the coin. This log is a dated record and is not rewritten.
+
 **Type:** design · **Outcome:** ADRs 051–053 · `design-system.md` §Currency marks +
 §Rewards surfaces · seeded catalog · a Storybook exploration (`Explorations/Rewards &
 Wallet`) · one Storybook config fix

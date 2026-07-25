@@ -5,8 +5,8 @@
 
 ## User story
 
-As a kid, I have an F$ balance I can see and a history that explains it, so "where
-did my 12 F$ go" has an answer that isn't "trust the number."
+As a kid, I have an P-Bucks balance I can see and a history that explains it, so "where
+did my 12 P-Bucks go" has an answer that isn't "trust the number."
 
 ## Scope
 

@@ -20,7 +20,7 @@ As a kid, I see my XP total go up when I complete a chore so that I feel rewarde
 - XP total displayed in the chores full-page view: `text-metric` (32px, DM Sans 700) number + "XP" label in `text-section-label`, positioned above or beside the task list
 - Unit tests for the XP subscriber logic; route test for `GET /api/chores/xp`
 
-**Out:** XP levels, level-up animations, badges, leaderboards, streaks; F$ earning from chores (wired in M6); XP decay or expiry; per-task XP history
+**Out:** XP levels, level-up animations, badges, leaderboards, streaks; P-Bucks earning from chores (wired in M6); XP decay or expiry; per-task XP history
 
 ## Acceptance criteria
 
@@ -42,5 +42,5 @@ As a kid, I see my XP total go up when I complete a chore so that I feel rewarde
 - The XP subscriber registers in the chore-engine plugin startup using `eventBus.on('chores.task.completed', handler)` — same pattern as other event subscribers in M1
 - `xp_balances` is in the `chore_engine` schema, not the platform schema — the chores plugin owns its own XP data
 - XP credit goes to the assignee profile even if that profile is no longer the active session (e.g. a parent is viewing the app when XP is credited in the background)
-- In M2, XP never converts to F$ — ADR 002. Do not add any F$ wiring.
+- In M2, XP never converts to P-Bucks — ADR 002. Do not add any P-Bucks wiring.
 - The "XP" display in the widget is handled in the today-widget story, not here — this story only handles the chores full-page view display

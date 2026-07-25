@@ -2,7 +2,7 @@ import { rewardsPrisma } from '@family-os/plugin-rewards/db'
 import { FAMILY_PROFILE_ID } from '@family-os/platform/types'
 import type { EventBus } from '@family-os/platform/server'
 
-/* The F$ ledger (ADR 047). Entries are immutable; `rewards.balances` is a cache
+/* The P-Bucks ledger (ADR 047). Entries are immutable; `rewards.balances` is a cache
    written in the same transaction. Every earn and spend in M4 goes through
    postEntry() — routes, event subscribers, punch payouts — so the guards below
    are inherited rather than re-implemented per caller.

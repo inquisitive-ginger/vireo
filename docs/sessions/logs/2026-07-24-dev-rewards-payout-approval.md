@@ -1,5 +1,7 @@
 # Dev — Payout Approval on High-Value Chores (M4/3b, PR #65)
 
+> **Naming note (ADR 054, 2026-07-24):** the currency called "F$" / "Family Dollars" below is now "Pritchett Bucks" — "P$" in compact text, "P-Bucks" in a sentence, and the P-mark struck on the coin. This log is a dated record and is not rewritten.
+
 **Type:** development · **Merged:** 2026-07-24 → `main` (`60a1029`)
 **Story:** `docs/modules/rewards/stories/payout-approval.md`
 

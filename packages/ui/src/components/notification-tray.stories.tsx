@@ -34,7 +34,7 @@ const SAMPLE: NotificationEntry[] = [
   {
     id: '3',
     title: 'Allowance low',
-    body: 'F$ balance below 10',
+    body: 'P-Bucks balance below 10',
     variant: 'warning',
     createdAt: DAY_AGO,
     isRead: true,

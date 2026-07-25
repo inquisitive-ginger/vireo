@@ -25,7 +25,7 @@ type TaskCompletedPayload = {
 /** Credits `xpReward` to the assignee's running `xp_balances` total — ONCE per task,
  *  ever.
  *
- * XP is progression: it only goes up and is never debited on reopen (unlike F$).
+ * XP is progression: it only goes up and is never debited on reopen (unlike P-Bucks).
  * So re-completing a reopened chore must not re-award, or a reopen→complete cycle
  * farms XP without bound. `xp_awarded` is the claim: an atomic `updateMany` flips it
  * false→true and only the winner credits, which also makes a redelivered event a

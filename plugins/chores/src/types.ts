@@ -17,11 +17,11 @@ export interface ChoreTask {
   status: TaskStatus
   dueDate: string | null
   xpReward: number
-  /** F$ this chore pays on completion (ADR 052). Defaults to 0 — most chores earn a
+  /** P-Bucks this chore pays on completion (ADR 052). Defaults to 0 — most chores earn a
       score only; a parent opts a chore in to paying. Credited off `chores.task.completed`
       by the rewards ledger (ADR 048). */
   coinReward: number
-  /** Hold the F$ payout for a parent's OK instead of crediting on completion
+  /** Hold the payout for a parent's OK instead of crediting on completion
       (M4/3b). Only meaningful when `coinReward > 0`. */
   requiresApproval: boolean
   /** True once the task has been completed at least once (XP is awarded once, ever).

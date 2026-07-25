@@ -13,7 +13,7 @@ import { postEntry } from './ledger'
 
 export type HoldPayoutInput = {
   profileId: string
-  /** Signed positive, the F$ to credit on release. */
+  /** Signed positive, the P-Bucks to credit on release. */
   amount: number
   reason: string
   sourceType: string

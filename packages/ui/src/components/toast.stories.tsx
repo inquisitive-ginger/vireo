@@ -43,7 +43,10 @@ export const Variants: StoryObj = {
       <Button
         variant="outline"
         onClick={() =>
-          toast.warning('Allowance low', { description: 'F$ balance is below 10', duration: 8000 })
+          toast.warning('Allowance low', {
+            description: 'P-Bucks balance is below 10',
+            duration: 8000,
+          })
         }
       >
         Warning (8s)

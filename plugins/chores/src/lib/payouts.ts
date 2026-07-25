@@ -25,7 +25,7 @@ export function payoutForTask(
   return key ? index.get(key) : undefined
 }
 
-/* What a kid sees for the F$ on a completed paying chore. Derived mostly from the
+/* What a kid sees for the P-Bucks on a completed paying chore. Derived mostly from the
    TASK so the state is correct the instant a completion lands — the held payout is
    written by an async subscriber, so waiting on the payout row would leave the card
    blank until a refetch. The payout row only refines the outcome once a parent has
@@ -36,7 +36,7 @@ export type KidPayoutView =
   | { kind: 'declined'; note: string | null }
   | null
 
-/* The F$ that reopening this completed chore would claw back from the kid's wallet —
+/* The P-Bucks that reopening this completed chore would claw back from the kid's wallet —
    0 when nothing was paid. Reopening posts the symmetric reversal only when the
    completion actually credited: an auto-credited paying chore always did; an approval
    chore only once a parent approved it (a still-held payout voids on reopen, moving
