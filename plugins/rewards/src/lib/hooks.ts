@@ -3,9 +3,14 @@ import type { Profile } from '@family-os/platform/types'
 import type { Reward, Redemption, PendingPayout, RewardInput, RedemptionAction } from '../types'
 
 async function jsonFetch<T>(url: string, init?: RequestInit): Promise<T> {
+  // Only declare a JSON body when there IS one — Fastify's JSON parser 400s an empty
+  // body sent with `Content-Type: application/json`, which a bodyless DELETE would trip.
   const res = await fetch(url, {
     ...init,
-    headers: { 'Content-Type': 'application/json', ...(init?.headers ?? {}) },
+    headers: {
+      ...(init?.body != null ? { 'Content-Type': 'application/json' } : {}),
+      ...(init?.headers ?? {}),
+    },
   })
   if (!res.ok) {
     const body = (await res.json().catch(() => null)) as { error?: unknown } | null

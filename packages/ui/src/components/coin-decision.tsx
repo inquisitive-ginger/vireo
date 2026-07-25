@@ -4,7 +4,7 @@ import { Button } from './button'
 import { Textarea } from './textarea'
 import { bucks } from '../lib/currency'
 
-/* The "needs a grown-up's yes" mark (M4/4). A gold wax seal — a seal IS
+/* The "needs a parent's yes" mark (M4/4). A gold wax seal — a seal IS
    authorization — struck with a "?", which reads as *ask*: not "done" like a check,
    not "blocked" like a lock. A single glyph stays crisp where a check or star blurs,
    and it wears the coin family's metal so it belongs beside a price. Positioned by the
@@ -23,8 +23,8 @@ export function AskSeal({ size = 20, ring = true, className, style }: AskSealPro
     <span
       className={`inline-grid place-items-center rounded-full${className ? ` ${className}` : ''}`}
       role="img"
-      aria-label="Needs a grown-up's OK"
-      title="Needs a grown-up's OK"
+      aria-label="Needs a parent's OK"
+      title="Needs a parent's OK"
       style={{
         width: size,
         height: size,

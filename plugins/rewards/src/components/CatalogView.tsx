@@ -1,6 +1,6 @@
 import { useState } from 'react'
-import { Loader2, Plus } from 'lucide-react'
-import { Button, ConfirmDialog } from '@family-os/ui'
+import { Gift, Loader2, Plus } from 'lucide-react'
+import { Button, ConfirmDialog, EmptyState } from '@family-os/ui'
 import { FAMILY_PROFILE_ID } from '@family-os/platform'
 import { useCatalog, useCatalogMutations, useProfiles } from '../lib/hooks'
 import type { Reward, RewardInput } from '../types'
@@ -11,7 +11,9 @@ import { RewardDrawer } from './RewardDrawer'
    edit, and retire (a reward that redemptions reference is hidden, not deleted, so
    an old redemption keeps its cost snapshot). */
 export function CatalogView() {
-  const catalog = useCatalog(true)
+  // Active only — retiring a redeemed reward should clear it from the manager, not
+  // leave it lingering. The row survives in the DB for its redemptions' snapshots.
+  const catalog = useCatalog(false)
   const profiles = useProfiles()
   const { create, update, remove } = useCatalogMutations()
 
@@ -53,9 +55,16 @@ export function CatalogView() {
           <Loader2 className="size-5 animate-spin" />
         </div>
       ) : rewards.length === 0 ? (
-        <p className="rounded-card border border-dashed border-border p-8 text-center text-sm-token text-muted-foreground">
-          No rewards yet. Add the first thing a kid can spend Pritchett Bucks on.
-        </p>
+        <EmptyState
+          icon={Gift}
+          heading="No rewards yet"
+          body="Add the first thing a kid can spend Pritchett Bucks on."
+          action={
+            <Button size="sm" onClick={openCreate}>
+              <Plus className="mr-1 size-4" /> New reward
+            </Button>
+          }
+        />
       ) : (
         <div className="flex flex-col gap-2">
           {rewards.map((reward) => (

@@ -1,7 +1,18 @@
 import { useEffect, useState } from 'react'
-import { Button, Drawer, FieldLabel, Input, ProfileAvatar, Switch, resolveHue } from '@family-os/ui'
+import {
+  Button,
+  Chip,
+  Drawer,
+  EmojiPicker,
+  FieldLabel,
+  Input,
+  MemberChip,
+  Switch,
+} from '@family-os/ui'
+import { ChevronDown } from 'lucide-react'
 import type { Profile } from '@family-os/platform/types'
 import type { Reward, RewardInput } from '../types'
+import { REWARD_EMOJI_GROUPS } from '../lib/reward-emojis'
 
 const COST_PRESETS = [5, 10, 15, 25, 40]
 
@@ -36,6 +47,7 @@ export function RewardDrawer({
   const [audience, setAudience] = useState<string[]>([])
   const [capped, setCapped] = useState(false)
   const [stock, setStock] = useState('1')
+  const [pickerOpen, setPickerOpen] = useState(false)
   const [localError, setLocalError] = useState<string | null>(null)
 
   // Re-seed the form whenever the drawer opens or its subject changes.
@@ -92,45 +104,73 @@ export function RewardDrawer({
               />
             </div>
 
-            <div className="flex gap-4">
-              <div className="w-20">
-                <FieldLabel htmlFor="reward-emoji">Emoji</FieldLabel>
-                <Input
-                  id="reward-emoji"
-                  className="text-center text-xl"
-                  value={emoji}
-                  onChange={(e) => setEmoji(e.target.value)}
+            <div>
+              <FieldLabel>Emoji</FieldLabel>
+              <button
+                type="button"
+                aria-expanded={pickerOpen}
+                onClick={() => setPickerOpen((o) => !o)}
+                className="flex w-full items-center gap-3 rounded-lg border border-border px-3 py-2 text-left hover:bg-muted"
+              >
+                <span className="grid size-11 place-items-center rounded-lg bg-secondary text-2xl">
+                  {emoji || '🎁'}
+                </span>
+                <span className="text-sm-token flex-1 text-muted-foreground">
+                  {pickerOpen ? 'Pick one below' : 'Choose an emoji'}
+                </span>
+                <ChevronDown
+                  className={`size-4 text-muted-foreground transition-transform ${pickerOpen ? 'rotate-180' : ''}`}
                 />
-              </div>
-              <div className="flex-1">
-                <FieldLabel htmlFor="reward-cost">Cost (P$)</FieldLabel>
+              </button>
+              {pickerOpen && (
+                <div className="mt-2 rounded-lg border border-border p-3">
+                  <EmojiPicker
+                    groups={REWARD_EMOJI_GROUPS}
+                    selected={emoji}
+                    onSelect={(e) => {
+                      setEmoji(e)
+                      setPickerOpen(false)
+                    }}
+                  />
+                </div>
+              )}
+            </div>
+
+            <div>
+              <FieldLabel htmlFor="reward-cost">Cost (P$)</FieldLabel>
+              <div className="flex items-center gap-2">
                 <Input
                   id="reward-cost"
+                  className="w-14 px-2 text-center"
                   inputMode="numeric"
                   value={cost}
                   onChange={(e) => setCost(e.target.value.replace(/[^0-9]/g, ''))}
                 />
-                <div className="mt-2 flex flex-wrap gap-1.5">
+                <span className="text-muted-foreground">·</span>
+                <div className="flex flex-wrap gap-1.5">
                   {COST_PRESETS.map((v) => (
-                    <button
+                    <Chip
                       key={v}
-                      type="button"
+                      selected={cost === String(v)}
                       onClick={() => setCost(String(v))}
-                      className={`rounded-full border px-2.5 py-0.5 text-xs-token ${
-                        cost === String(v)
-                          ? 'border-transparent bg-primary text-primary-foreground'
-                          : 'border-border text-muted-foreground'
-                      }`}
+                      selectedStyle={{
+                        borderColor: 'var(--coin)',
+                        background: 'var(--coin-tint)',
+                        color: 'var(--coin-ink)',
+                      }}
+                      selectedClassName="font-bold"
+                      idleClassName="text-muted-foreground"
+                      className="min-w-touch justify-center px-3"
                     >
                       {v}
-                    </button>
+                    </Chip>
                   ))}
                 </div>
               </div>
             </div>
 
             <ToggleField
-              title="Needs a grown-up's yes"
+              title="Needs a parent's yes"
               hint="Holds the reward in your queue until you approve it"
               checked={requiresApproval}
               onChange={setRequiresApproval}
@@ -145,29 +185,15 @@ export function RewardDrawer({
               />
               {limited && (
                 <div className="mt-3 flex flex-wrap gap-2">
-                  {members.map((m) => {
-                    const on = audience.includes(m.id)
-                    return (
-                      <button
-                        key={m.id}
-                        type="button"
-                        onClick={() => toggleMember(m.id)}
-                        className={`flex items-center gap-2 rounded-full border py-1 pr-3 pl-1 text-sm-token ${
-                          on
-                            ? 'border-primary bg-primary/10 text-foreground'
-                            : 'border-border text-muted-foreground'
-                        }`}
-                      >
-                        <ProfileAvatar
-                          name={m.name}
-                          size="sm"
-                          avatarUrl={m.avatarUrl}
-                          identity={resolveHue(m.name, m.identityHue)}
-                        />
-                        {m.name}
-                      </button>
-                    )
-                  })}
+                  {members.map((m) => (
+                    <MemberChip
+                      key={m.id}
+                      name={m.name}
+                      hue={m.identityHue}
+                      selected={audience.includes(m.id)}
+                      onClick={() => toggleMember(m.id)}
+                    />
+                  ))}
                 </div>
               )}
             </div>

@@ -1,7 +1,8 @@
-import { Loader2 } from 'lucide-react'
+import { CheckCheck, Loader2 } from 'lucide-react'
 import {
   Button,
   CoinDecisionTray,
+  EmptyState,
   ItemCard,
   MemberGroupHeader,
   bucks,
@@ -67,9 +68,11 @@ export function ApprovalsQueue() {
 
   if (items.length === 0) {
     return (
-      <p className="rounded-card border border-dashed border-border p-10 text-center text-sm-token text-muted-foreground">
-        Nothing waiting on you. Held chore payouts and reward requests land here.
-      </p>
+      <EmptyState
+        icon={CheckCheck}
+        heading="All caught up"
+        body="Held chore payouts and reward requests land here for your OK."
+      />
     )
   }
 

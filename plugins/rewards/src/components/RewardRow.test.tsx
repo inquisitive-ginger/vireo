@@ -32,12 +32,12 @@ describe('RewardRow', () => {
     renderRow()
     expect(screen.getByText('15')).toBeInTheDocument()
     expect(screen.getByText('Anyone can get this')).toBeInTheDocument()
-    expect(screen.queryByRole('img', { name: "Needs a grown-up's OK" })).not.toBeInTheDocument()
+    expect(screen.queryByRole('img', { name: "Needs a parent's OK" })).not.toBeInTheDocument()
   })
 
   it('wears the "?" seal when it needs approval', () => {
     renderRow({ requiresApproval: true })
-    expect(screen.getByRole('img', { name: "Needs a grown-up's OK" })).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: "Needs a parent's OK" })).toBeInTheDocument()
   })
 
   it('names the audience instead of "anyone" when scoped', () => {

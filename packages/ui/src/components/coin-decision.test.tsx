@@ -74,6 +74,6 @@ describe('CoinDecisionTray', () => {
 describe('AskSeal', () => {
   it('labels itself as needing approval', () => {
     render(<AskSeal />)
-    expect(screen.getByRole('img', { name: "Needs a grown-up's OK" })).toBeInTheDocument()
+    expect(screen.getByRole('img', { name: "Needs a parent's OK" })).toBeInTheDocument()
   })
 })
