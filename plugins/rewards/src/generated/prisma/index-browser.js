@@ -151,6 +151,32 @@ exports.Prisma.PendingPayoutScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.RewardScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  emoji: 'emoji',
+  description: 'description',
+  cost: 'cost',
+  requiresApproval: 'requiresApproval',
+  audience: 'audience',
+  stock: 'stock',
+  active: 'active',
+  createdBy: 'createdBy',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.RedemptionScalarFieldEnum = {
+  id: 'id',
+  rewardId: 'rewardId',
+  profileId: 'profileId',
+  cost: 'cost',
+  status: 'status',
+  requestedAt: 'requestedAt',
+  decidedBy: 'decidedBy',
+  decidedAt: 'decidedAt',
+  decidedNote: 'decidedNote'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -170,7 +196,9 @@ exports.Prisma.NullsOrder = {
 exports.Prisma.ModelName = {
   LedgerEntry: 'LedgerEntry',
   Balance: 'Balance',
-  PendingPayout: 'PendingPayout'
+  PendingPayout: 'PendingPayout',
+  Reward: 'Reward',
+  Redemption: 'Redemption'
 };
 
 /**

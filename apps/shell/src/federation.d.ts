@@ -37,3 +37,9 @@ declare module 'calendar/widgets/UpNext' {
   const UpNext: ComponentType
   export default UpNext
 }
+
+declare module 'rewards/Plugin' {
+  import type { ComponentType } from 'react'
+  const Plugin: ComponentType
+  export default Plugin
+}

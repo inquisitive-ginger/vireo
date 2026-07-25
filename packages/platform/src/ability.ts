@@ -25,6 +25,8 @@ type Subjects =
   | 'calendar.Event'
   | 'rewards.Wallet'
   | 'rewards.Payout'
+  | 'rewards.Reward'
+  | 'rewards.Redemption'
   | 'all'
 
 export type AppAbility = PrismaAbility<[Actions, Subjects]>
@@ -59,6 +61,12 @@ export function createAbility(profile: Profile, overrides: PermissionOverride[])
   // surface is ADR 044's failure repeated. Tier 4 reads anyone's via `manage all`;
   // a wallet is not a leaderboard, so nobody else does. Row condition enforced in the route.
   can('view', 'rewards.Wallet', { profileId: profile.id })
+
+  // Every profile redeems from the store for ITSELF (ADR 053) — spending your own P-Bucks
+  // is the point of the module, not administration. Tier 4 decides (grant/decline) and
+  // manages the catalog via `manage all`; a kid never approves its own request. Row
+  // condition enforced in the route.
+  can('create', 'rewards.Redemption', { profileId: profile.id })
 
   // Calendar is one shared family surface — every tier reads it (tier-4 creates/
   // edits/deletes via `manage all`). The view grant is duplicated across the

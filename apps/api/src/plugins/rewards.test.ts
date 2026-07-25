@@ -72,6 +72,8 @@ afterAll(async () => {
 })
 
 beforeEach(async () => {
+  await rewardsPrisma.redemption.deleteMany({})
+  await rewardsPrisma.reward.deleteMany({})
   await rewardsPrisma.ledgerEntry.deleteMany({})
   await rewardsPrisma.balance.deleteMany({})
   await rewardsPrisma.pendingPayout.deleteMany({})
@@ -704,5 +706,311 @@ describe('payout approval', () => {
     })
     expect(res.statusCode).toBe(403)
     expect(await findPayout('chores.task', payout!.sourceId).then((p) => p?.status)).toBe('pending')
+  })
+})
+
+// ─── Catalog (M4/4) ───────────────────────────────────────────────────────────
+
+describe('reward catalog', () => {
+  const create = (cookie: string, payload: Record<string, unknown>) =>
+    app.inject({ method: 'POST', url: '/api/rewards/rewards', headers: { cookie }, payload })
+
+  it('lets a parent create a reward', async () => {
+    const parent = await getCookieForProfile(PARENT_ID)
+    const res = await create(parent, { name: 'Pick the movie', emoji: '🍿', cost: 15 })
+
+    expect(res.statusCode).toBe(201)
+    expect(res.json().reward).toMatchObject({
+      name: 'Pick the movie',
+      emoji: '🍿',
+      cost: 15,
+      requiresApproval: false,
+      audience: null,
+      stock: null,
+      active: true,
+    })
+  })
+
+  it('400s on an invalid reward (missing name)', async () => {
+    const parent = await getCookieForProfile(PARENT_ID)
+    const res = await create(parent, { emoji: '🍿', cost: 15 })
+    expect(res.statusCode).toBe(400)
+  })
+
+  it('403s a non-parent creating a reward', async () => {
+    const kid = await getCookieForProfile(KID_ID)
+    const res = await create(kid, { name: 'Sneaky', emoji: '😈', cost: 1 })
+    expect(res.statusCode).toBe(403)
+    expect(await rewardsPrisma.reward.count()).toBe(0)
+  })
+
+  it('lists active rewards, and includes retired ones on demand', async () => {
+    const parent = await getCookieForProfile(PARENT_ID)
+    const a = (await create(parent, { name: 'Ice cream', emoji: '🍦', cost: 25 })).json().reward
+    await create(parent, { name: 'Car music', emoji: '🎧', cost: 5 })
+    await app.inject({
+      method: 'PATCH',
+      url: `/api/rewards/rewards/${a.id}`,
+      headers: { cookie: parent },
+      payload: { active: false },
+    })
+
+    const active = await app.inject({
+      method: 'GET',
+      url: '/api/rewards/rewards',
+      headers: { cookie: parent },
+    })
+    expect(active.json().rewards.map((r: { name: string }) => r.name)).toEqual(['Car music'])
+
+    const all = await app.inject({
+      method: 'GET',
+      url: '/api/rewards/rewards?includeRetired=true',
+      headers: { cookie: parent },
+    })
+    expect(all.json().rewards).toHaveLength(2)
+  })
+
+  it('updates a reward', async () => {
+    const parent = await getCookieForProfile(PARENT_ID)
+    const reward = (await create(parent, { name: 'Screen time', emoji: '🎮', cost: 10 })).json()
+      .reward
+
+    const res = await app.inject({
+      method: 'PATCH',
+      url: `/api/rewards/rewards/${reward.id}`,
+      headers: { cookie: parent },
+      payload: { cost: 12, requiresApproval: true },
+    })
+    expect(res.statusCode).toBe(200)
+    expect(res.json().reward).toMatchObject({ cost: 12, requiresApproval: true })
+  })
+
+  it('hard-deletes an unused reward', async () => {
+    const parent = await getCookieForProfile(PARENT_ID)
+    const reward = (await create(parent, { name: 'Oops', emoji: '❌', cost: 5 })).json().reward
+
+    const res = await app.inject({
+      method: 'DELETE',
+      url: `/api/rewards/rewards/${reward.id}`,
+      headers: { cookie: parent },
+    })
+    expect(res.json()).toMatchObject({ deleted: true })
+    expect(await rewardsPrisma.reward.count()).toBe(0)
+  })
+
+  it('retires (does not delete) a reward that redemptions reference', async () => {
+    const parent = await getCookieForProfile(PARENT_ID)
+    const kid = await getCookieForProfile(KID_ID)
+    const reward = (await create(parent, { name: 'Music', emoji: '🎧', cost: 5 })).json().reward
+    await credit(KID_ID, 5, 'seed')
+    await app.inject({
+      method: 'POST',
+      url: '/api/rewards/redemptions',
+      headers: { cookie: kid },
+      payload: { rewardId: reward.id },
+    })
+
+    const res = await app.inject({
+      method: 'DELETE',
+      url: `/api/rewards/rewards/${reward.id}`,
+      headers: { cookie: parent },
+    })
+    expect(res.json()).toMatchObject({ retired: true })
+    // The row survives so the redemption keeps its cost snapshot.
+    expect((await rewardsPrisma.reward.findUnique({ where: { id: reward.id } }))?.active).toBe(
+      false
+    )
+  })
+})
+
+// ─── Redemptions (M4/4) ─────────────────────────────────────────────────────────
+
+describe('redemptions', () => {
+  async function reward(overrides: Record<string, unknown> = {}) {
+    const parent = await getCookieForProfile(PARENT_ID)
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/rewards/rewards',
+      headers: { cookie: parent },
+      payload: { name: 'Pick the movie', emoji: '🍿', cost: 15, ...overrides },
+    })
+    return res.json().reward as { id: string; cost: number }
+  }
+
+  const request = (cookie: string, rewardId: string) =>
+    app.inject({
+      method: 'POST',
+      url: '/api/rewards/redemptions',
+      headers: { cookie },
+      payload: { rewardId },
+    })
+
+  const decide = (cookie: string, id: string, action: string, note?: string) =>
+    app.inject({
+      method: 'PATCH',
+      url: `/api/rewards/redemptions/${id}`,
+      headers: { cookie },
+      payload: { action, note },
+    })
+
+  it('debits on request and grants immediately for a no-approval reward', async () => {
+    const kid = await getCookieForProfile(KID_ID)
+    await credit(KID_ID, 20, 'seed')
+    const r = await reward()
+
+    const res = await request(kid, r.id)
+    expect(res.statusCode).toBe(201)
+    expect(res.json().redemption).toMatchObject({ status: 'granted', cost: 15 })
+    expect(res.json().balance).toBe(5)
+    expect(await getBalance(KID_ID)).toBe(5)
+  })
+
+  it('holds an approval reward as pending, debited', async () => {
+    const kid = await getCookieForProfile(KID_ID)
+    await credit(KID_ID, 40, 'seed')
+    const r = await reward({ cost: 40, requiresApproval: true })
+
+    const res = await request(kid, r.id)
+    expect(res.json().redemption.status).toBe('pending')
+    // The F$ leaves on request, not on approval — debit now, refund only if declined.
+    expect(await getBalance(KID_ID)).toBe(0)
+  })
+
+  it('refuses a request the kid cannot afford — nothing moves', async () => {
+    const kid = await getCookieForProfile(KID_ID)
+    await credit(KID_ID, 5, 'seed')
+    const r = await reward({ cost: 15 })
+
+    const res = await request(kid, r.id)
+    expect(res.statusCode).toBe(400)
+    expect(await getBalance(KID_ID)).toBe(5)
+    expect(await rewardsPrisma.redemption.count()).toBe(0)
+  })
+
+  it('grant moves nothing further; fulfil then records the hand-off', async () => {
+    const kid = await getCookieForProfile(KID_ID)
+    const parent = await getCookieForProfile(PARENT_ID)
+    await credit(KID_ID, 15, 'seed')
+    const r = await reward({ requiresApproval: true })
+    const redemption = (await request(kid, r.id)).json().redemption
+
+    const granted = await decide(parent, redemption.id, 'grant')
+    expect(granted.json().redemption.status).toBe('granted')
+    expect(await getBalance(KID_ID)).toBe(0) // still debited, nothing refunded
+
+    const fulfilled = await decide(parent, redemption.id, 'fulfil')
+    expect(fulfilled.json().redemption.status).toBe('fulfilled')
+  })
+
+  it('decline refunds the snapshot cost and quotes the note back', async () => {
+    const kid = await getCookieForProfile(KID_ID)
+    const parent = await getCookieForProfile(PARENT_ID)
+    await credit(KID_ID, 15, 'seed')
+    const r = await reward({ requiresApproval: true })
+    const redemption = (await request(kid, r.id)).json().redemption
+    expect(await getBalance(KID_ID)).toBe(0)
+
+    const res = await decide(parent, redemption.id, 'decline', 'Not before your homework')
+    expect(res.statusCode).toBe(200)
+    expect(res.json().redemption).toMatchObject({
+      status: 'declined',
+      decidedNote: 'Not before your homework',
+    })
+    // Refunded — a distinct ledger entry, not a reversal of the debit row.
+    expect(await getBalance(KID_ID)).toBe(15)
+  })
+
+  it('a second decision is a 409 — the decision is final', async () => {
+    const kid = await getCookieForProfile(KID_ID)
+    const parent = await getCookieForProfile(PARENT_ID)
+    await credit(KID_ID, 15, 'seed')
+    const r = await reward({ requiresApproval: true })
+    const redemption = (await request(kid, r.id)).json().redemption
+
+    expect((await decide(parent, redemption.id, 'grant')).statusCode).toBe(200)
+    expect((await decide(parent, redemption.id, 'decline')).statusCode).toBe(409)
+    // The refund never ran, so the balance stays where the grant left it.
+    expect(await getBalance(KID_ID)).toBe(0)
+  })
+
+  it('snapshots the cost — repricing the reward does not move a pending request', async () => {
+    const kid = await getCookieForProfile(KID_ID)
+    const parent = await getCookieForProfile(PARENT_ID)
+    await credit(KID_ID, 15, 'seed')
+    const r = await reward({ cost: 15, requiresApproval: true })
+    const redemption = (await request(kid, r.id)).json().redemption
+
+    await app.inject({
+      method: 'PATCH',
+      url: `/api/rewards/rewards/${r.id}`,
+      headers: { cookie: parent },
+      payload: { cost: 5 },
+    })
+
+    // Declining refunds the SNAPSHOT (15), not the new price (5).
+    await decide(parent, redemption.id, 'decline')
+    expect(await getBalance(KID_ID)).toBe(15)
+  })
+
+  it('refuses a request outside the reward’s audience', async () => {
+    const kid = await getCookieForProfile(KID_ID)
+    await credit(KID_ID, 20, 'seed')
+    const r = await reward({ audience: [TWEEN_ID] })
+
+    const res = await request(kid, r.id)
+    expect(res.statusCode).toBe(400)
+    expect(await getBalance(KID_ID)).toBe(20)
+  })
+
+  it('refuses a request once stock is exhausted', async () => {
+    const kid = await getCookieForProfile(KID_ID)
+    await credit(KID_ID, 30, 'seed')
+    const r = await reward({ cost: 10, stock: 1 })
+
+    expect((await request(kid, r.id)).statusCode).toBe(201)
+    const second = await request(kid, r.id)
+    expect(second.statusCode).toBe(400)
+    expect(await getBalance(KID_ID)).toBe(20) // only the first debited
+  })
+
+  it('a kid cannot decide a redemption (tier < 4 → 403)', async () => {
+    const kid = await getCookieForProfile(KID_ID)
+    await credit(KID_ID, 15, 'seed')
+    const r = await reward({ requiresApproval: true })
+    const redemption = (await request(kid, r.id)).json().redemption
+
+    const res = await decide(kid, redemption.id, 'grant')
+    expect(res.statusCode).toBe(403)
+    expect(
+      (await rewardsPrisma.redemption.findUnique({ where: { id: redemption.id } }))?.status
+    ).toBe('pending')
+  })
+
+  it('the queue shows a parent every pending request; a kid only its own history', async () => {
+    const kid = await getCookieForProfile(KID_ID)
+    const tween = await getCookieForProfile(TWEEN_ID)
+    const parent = await getCookieForProfile(PARENT_ID)
+    await credit(KID_ID, 15, 'seed-kid')
+    await credit(TWEEN_ID, 15, 'seed-tween')
+    const r = await reward({ requiresApproval: true })
+    await request(kid, r.id)
+    await request(tween, r.id)
+
+    const queue = await app.inject({
+      method: 'GET',
+      url: '/api/rewards/redemptions?status=pending',
+      headers: { cookie: parent },
+    })
+    expect(queue.json().redemptions).toHaveLength(2)
+    // The queue carries the reward for rendering without a second fetch.
+    expect(queue.json().redemptions[0].reward).toMatchObject({ emoji: '🍿' })
+
+    const own = await app.inject({
+      method: 'GET',
+      url: '/api/rewards/redemptions?status=pending',
+      headers: { cookie: kid },
+    })
+    expect(own.json().redemptions).toHaveLength(1)
+    expect(own.json().redemptions[0].profileId).toBe(KID_ID)
   })
 })
