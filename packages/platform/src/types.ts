@@ -143,7 +143,7 @@ export const PERMISSION_REGISTRY = {
     subject: 'rewards.Wallet',
   },
   'rewards.redemption.create': {
-    label: 'Redeem your F$ in the store',
+    label: 'Redeem your P-Bucks in the store',
     module: 'rewards',
     action: 'create',
     subject: 'rewards.Redemption',

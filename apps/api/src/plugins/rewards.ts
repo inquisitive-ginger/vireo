@@ -396,7 +396,7 @@ const rewardsPlugin: FastifyPluginAsync = async (fastify) => {
   })
 
   // ─── Redemptions (M4/4) ──────────────────────────────────────────────────────
-  // A kid requests a reward (create-own, every tier — ADR 053); the F$ is debited on
+  // A kid requests a reward (create-own, every tier — ADR 053); the P-Bucks is debited on
   // request. An approval reward waits in the queue, otherwise it's granted at once.
   // Tier 4 decides and fulfils.
 
@@ -420,7 +420,7 @@ const rewardsPlugin: FastifyPluginAsync = async (fastify) => {
       if (redemption.status === 'pending') {
         await notifyParents(fastify.eventBus, {
           title: `${request.profile.name} wants ${reward.emoji} ${reward.name}`,
-          body: `${reward.cost} F$ — waiting on your OK`,
+          body: `${reward.cost} P-Bucks — waiting on your OK`,
         })
       }
       return reply.status(201).send({ redemption: serializeRedemption(redemption), balance })

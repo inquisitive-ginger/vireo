@@ -3,7 +3,7 @@ import { FAMILY_PROFILE_ID } from '@family-os/platform/types'
 import type { EventBus } from '@family-os/platform/server'
 import { getBalance, postEntry } from './ledger'
 
-/* Redemptions (M4/4). A kid spends F$ on a catalog reward. The F$ is DEBITED on
+/* Redemptions (M4/4). A kid spends P-Bucks on a catalog reward. The P-Bucks is DEBITED on
    request and REFUNDED on decline — not escrow, same effect with half the state
    (spec). `cost` is snapshotted onto the redemption at request time, so repricing
    the reward never moves a request already in flight.
@@ -53,7 +53,7 @@ export class RedemptionError extends Error {
   }
 }
 
-/** A kid requests a reward. Snapshots the cost, debits the F$, and files the request
+/** A kid requests a reward. Snapshots the cost, debits the P-Bucks, and files the request
  *  — `pending` when the reward needs a parent's OK, `granted` immediately otherwise.
  *
  *  Affordability is checked HERE (the spend site, per ADR 047 — the ledger itself
@@ -82,7 +82,7 @@ export async function requestRedemption(
 
   const balance = await getBalance(profileId)
   if (balance < reward.cost) {
-    throw new RedemptionError('Not enough F$ for that yet')
+    throw new RedemptionError('Not enough P-Bucks for that yet')
   }
 
   const status = reward.requiresApproval ? 'pending' : 'granted'
@@ -141,7 +141,7 @@ export type DecideAction = 'grant' | 'decline' | 'fulfil'
 
 /** A parent grants or declines a pending request, or fulfils a granted one.
  *
- *  - grant:   pending → granted. Nothing moves — the F$ left on request.
+ *  - grant:   pending → granted. Nothing moves — the P-Bucks left on request.
  *  - decline: pending → declined. Refunds the snapshot cost (`refund` / id), so a
  *             double-decline refunds once (the ledger's idempotency key).
  *  - fulfil:  granted → fulfilled. Nothing moves; it records the hand-off.

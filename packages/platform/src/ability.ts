@@ -62,7 +62,7 @@ export function createAbility(profile: Profile, overrides: PermissionOverride[])
   // a wallet is not a leaderboard, so nobody else does. Row condition enforced in the route.
   can('view', 'rewards.Wallet', { profileId: profile.id })
 
-  // Every profile redeems from the store for ITSELF (ADR 053) — spending your own F$
+  // Every profile redeems from the store for ITSELF (ADR 053) — spending your own P-Bucks
   // is the point of the module, not administration. Tier 4 decides (grant/decline) and
   // manages the catalog via `manage all`; a kid never approves its own request. Row
   // condition enforced in the route.

@@ -101,7 +101,7 @@ model Reward {
 //
 // status: pending → granted → fulfilled (approval path) | granted → fulfilled
 // (no-approval reward skips pending) | pending → declined (F$ refunded). The debit's
-// ledger entry is keyed `(redemption, id)`; the refund is `(redemption.refund, id)`.
+// ledger entry is keyed `(redemption, id)`; the refund is `(refund, id)`.
 model Redemption {
   id          String    @id @default(uuid()) @db.Uuid
   rewardId    String    @map("reward_id") @db.Uuid
