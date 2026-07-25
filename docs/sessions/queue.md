@@ -269,6 +269,13 @@ suite mirroring chores/calendar. _Depends on: none._
 
 > Two-line index; full detail in the linked log.
 
+- **2026-07-24 — Ad-hoc: Pritchett Bucks (ADR 054, PR #68).** The currency is renamed and
+  the coin bears a struck **P-mark**; four registers (mark · `P$` · `P-Bucks` ·
+  `Pritchett Bucks`), one per medium, from `packages/ui/src/lib/currency.ts`. Free to do
+  because nothing had shipped visibly and the schema was already currency-agnostic — no
+  migration. Also fixed an M4/3b gap: the chores widget showed **held** and **declined**
+  payouts as banked. See `logs/2026-07-24-adhoc-pritchett-bucks.md`.
+
 - **2026-07-24 — Dev: Payout Approval (M4/3b, PR #65).** Per-chore `requiresApproval`
   holds the P-Bucks payout in `pending_payouts` (rewards stays plugin-agnostic, ADR 048);
   approve releases the normal entry with the same provenance pair, decline writes
