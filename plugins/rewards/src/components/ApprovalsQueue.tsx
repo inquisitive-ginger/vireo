@@ -1,6 +1,5 @@
 import { CheckCheck, Loader2 } from 'lucide-react'
 import {
-  Button,
   CoinDecisionTray,
   EmptyState,
   ItemCard,
@@ -45,7 +44,7 @@ export function ApprovalsQueue() {
     ...(redemptions.data ?? []).map(
       (redemption): Item => ({
         kind: 'redemption',
-        at: Date.parse(redemption.requestedAt),
+        at: Date.parse(redemption.useRequestedAt ?? redemption.purchasedAt),
         redemption,
       })
     ),
@@ -162,32 +161,11 @@ function RedemptionCard({
   redemption: Redemption
   kidName: string
   spine: string
-  onDecide: (action: 'grant' | 'decline' | 'fulfil', note: string | null) => Promise<unknown>
+  onDecide: (action: 'yes' | 'not_now', note: string | null) => Promise<unknown>
 }) {
   const label = redemption.reward
     ? `${redemption.reward.emoji} ${redemption.reward.name}`
     : 'a reward'
-
-  // A granted request is no longer a coin decision — the P-Bucks already moved. It
-  // waits to be handed over.
-  if (redemption.status === 'granted') {
-    return (
-      <ItemCard
-        spine={spine}
-        align="center"
-        trailing={
-          <Button size="sm" variant="outline" onClick={() => onDecide('fulfil', null)}>
-            Mark as given
-          </Button>
-        }
-      >
-        <div className="min-w-0 flex-1">
-          <span className="text-card-title block truncate">{label}</span>
-          <span className="text-xs-body text-muted-foreground">approved · hand it over</span>
-        </div>
-      </ItemCard>
-    )
-  }
 
   return (
     <ItemCard spine={spine} align="stretch">
@@ -211,8 +189,8 @@ function RedemptionCard({
             </>
           }
           declineNotePlaceholder="Maybe after homework…"
-          onApprove={() => onDecide('grant', null)}
-          onDecline={(note) => onDecide('decline', note)}
+          onApprove={() => onDecide('yes', null)}
+          onDecline={(note) => onDecide('not_now', note)}
         />
       </div>
     </ItemCard>

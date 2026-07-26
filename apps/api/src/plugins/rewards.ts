@@ -25,9 +25,11 @@ import {
   type PendingPayoutRecord,
 } from '../lib/payouts'
 import {
-  decideRedemption,
+  decideUse,
   listRedemptions,
-  requestRedemption,
+  purchaseRedemption,
+  requestUse,
+  revokeRedemption,
   RedemptionError,
   type RedemptionRecord,
   type RedemptionWithReward,
@@ -161,7 +163,9 @@ function serializeRedemption(r: RedemptionRecord | RedemptionWithReward) {
     profileId: r.profileId,
     cost: r.cost,
     status: r.status,
-    requestedAt: r.requestedAt.toISOString(),
+    purchasedAt: r.purchasedAt.toISOString(),
+    useRequestedAt: r.useRequestedAt ? r.useRequestedAt.toISOString() : null,
+    usedAt: r.usedAt ? r.usedAt.toISOString() : null,
     decidedBy: r.decidedBy,
     decidedAt: r.decidedAt ? r.decidedAt.toISOString() : null,
     decidedNote: r.decidedNote,
@@ -239,6 +243,33 @@ const rewardsPlugin: FastifyPluginAsync = async (fastify) => {
       })),
       nextCursor,
     }
+  })
+
+  // GET /rewards/store — the kid store (M4/5). Returns the caller's balance plus the
+  // WHOLE active catalog scoped to them — never a pre-filtered affordable list, because
+  // the store shows unaffordable rewards with their distance (spec: "distance, not
+  // denial"). Affordability is a client rendering decision. Always own-scope: a store is
+  // where you spend your own P-Bucks (`view rewards.Wallet`, tier 1+, own).
+  fastify.get('/rewards/store', async (request, reply) => {
+    if (!request.ability.can('view', 'rewards.Wallet')) {
+      return reply.status(403).send({ error: 'Permission denied' })
+    }
+    const profileId = request.profile.id
+    if (profileId === FAMILY_PROFILE_ID) {
+      return reply.status(403).send({ error: 'The family profile holds no balance' })
+    }
+
+    const [balance, active] = await Promise.all([
+      getBalance(profileId),
+      rewardsPrisma.reward.findMany({ where: { active: true }, orderBy: { cost: 'asc' } }),
+    ])
+
+    // Empty audience = everyone; a non-empty list scopes the reward to named kids.
+    const rewards = active
+      .filter((r) => r.audience.length === 0 || r.audience.includes(profileId))
+      .map(serializeReward)
+
+    return { profileId, balance, rewards }
   })
 
   // GET /rewards/payouts?status=&profileId= — held payouts. The tier-4 board reads
@@ -395,14 +426,14 @@ const rewardsPlugin: FastifyPluginAsync = async (fastify) => {
     return { deleted: true }
   })
 
-  // ─── Redemptions (M4/4) ──────────────────────────────────────────────────────
-  // A kid requests a reward (create-own, every tier — ADR 053); the P-Bucks is debited on
-  // request. An approval reward waits in the queue, otherwise it's granted at once.
-  // Tier 4 decides and fulfils.
+  // ─── Redemptions (M4/4, reworked by ADR 055) ─────────────────────────────────
+  // A redemption is a TICKET. Buy (create-own, every tier — ADR 053) debits at once
+  // and lands `owned` — no parent gate at any price. Using it is a separate,
+  // explicit act; `requiresApproval` gates use, and tier 4 answers yes / not-now.
 
   fastify.post('/rewards/redemptions', async (request, reply) => {
-    // Create-own only: the redemption is always for the caller, so row-level ownership
-    // is guaranteed by construction. The bare check still honours a revocation override.
+    // Create-own only: the ticket is always the caller's, so row-level ownership is
+    // guaranteed by construction. The bare check still honours a revocation override.
     if (!request.ability.can('create', 'rewards.Redemption')) {
       return reply.status(403).send({ error: 'Permission denied' })
     }
@@ -413,16 +444,10 @@ const rewardsPlugin: FastifyPluginAsync = async (fastify) => {
     if (!reward) return reply.status(404).send({ error: 'Reward not found' })
 
     try {
-      const { redemption, balance } = await requestRedemption(fastify.eventBus, {
+      const { redemption, balance } = await purchaseRedemption(fastify.eventBus, {
         profileId: request.profile.id,
         reward,
       })
-      if (redemption.status === 'pending') {
-        await notifyParents(fastify.eventBus, {
-          title: `${request.profile.name} wants ${reward.emoji} ${reward.name}`,
-          body: `${reward.cost} P-Bucks — waiting on your OK`,
-        })
-      }
       return reply.status(201).send({ redemption: serializeRedemption(redemption), balance })
     } catch (err) {
       if (err instanceof RedemptionError)
@@ -431,8 +456,34 @@ const rewardsPlugin: FastifyPluginAsync = async (fastify) => {
     }
   })
 
+  // POST /rewards/redemptions/:id/use — the kid tears an owned ticket. Same ability
+  // as buying (using what you bought is not a second capability): a non-approval
+  // ticket is `used` on the spot with no parent interaction at all; an approval one
+  // waits as `use_requested` and the parents get the ask.
+  fastify.post('/rewards/redemptions/:id/use', async (request, reply) => {
+    if (!request.ability.can('create', 'rewards.Redemption')) {
+      return reply.status(403).send({ error: 'Permission denied' })
+    }
+    const { id } = request.params as { id: string }
+
+    try {
+      const { redemption } = await requestUse(fastify.eventBus, id, request.profile.id)
+      if (redemption.status === 'use_requested') {
+        await notifyParents(fastify.eventBus, {
+          title: `${request.profile.name} wants to use ${redemption.reward.emoji} ${redemption.reward.name}`,
+          body: 'Waiting on your OK',
+        })
+      }
+      return { redemption: serializeRedemption(redemption) }
+    } catch (err) {
+      if (err instanceof RedemptionError)
+        return reply.status(err.status).send({ error: err.message })
+      throw err
+    }
+  })
+
   // GET /rewards/redemptions?status=&profileId= — the tier-4 queue reads everyone's
-  // (`pending` to decide, `granted` to fulfil); a kid reads its own history. Scope
+  // `use_requested` (the default); a kid reads their own pocket and history. Scope
   // mirrors the wallet: tier 4 sees all, below that forced to own.
   fastify.get('/rewards/redemptions', async (request, reply) => {
     if (!request.ability.can('view', 'rewards.Wallet')) {
@@ -445,7 +496,7 @@ const rewardsPlugin: FastifyPluginAsync = async (fastify) => {
       return reply.status(403).send({ error: 'The family profile holds no balance' })
     }
 
-    const statuses = (query.status ?? 'pending')
+    const statuses = (query.status ?? 'use_requested')
       .split(',')
       .map((s) => s.trim())
       .filter((s) => (REDEMPTION_STATUSES as readonly string[]).includes(s))
@@ -462,9 +513,10 @@ const rewardsPlugin: FastifyPluginAsync = async (fastify) => {
     return { redemptions: redemptions.map(serializeRedemption) }
   })
 
-  // PATCH /rewards/redemptions/:id — a parent grants/declines a pending request, or
-  // fulfils a granted one. Tier 4 only (`decide` via `manage all`). Decline refunds
-  // the snapshot cost and stores the optional note; a decision out of turn is a 409.
+  // PATCH /rewards/redemptions/:id — a parent answers a use request. Tier 4 only
+  // (`decide` via `manage all`). Yes tears the ticket; not-now returns it to the
+  // pocket with the optional note and NO refund — the ask was about timing, not
+  // permission to spend (ADR 055). A decision with no request waiting is a 409.
   fastify.patch('/rewards/redemptions/:id', async (request, reply) => {
     if (!request.ability.can('decide', 'rewards.Redemption')) {
       return reply.status(403).send({ error: 'Permission denied' })
@@ -474,32 +526,57 @@ const rewardsPlugin: FastifyPluginAsync = async (fastify) => {
     if (!parsed.success) return reply.status(400).send({ error: parsed.error.flatten() })
 
     try {
-      const { redemption, balance } = await decideRedemption(
+      const { redemption } = await decideUse(
         fastify.eventBus,
         id,
         request.profile.id,
         parsed.data.action,
         parsed.data.note ?? null
       )
-      // Tell the kid the news (notify() skips tier 1 — they'll see it in the store).
-      // A fulfil is a hand-off the parent does with the kid present, so no ping.
-      if (parsed.data.action !== 'fulfil') {
-        const reward = await rewardsPrisma.reward.findUnique({ where: { id: redemption.rewardId } })
-        const label = reward ? `${reward.emoji} ${reward.name}` : 'your reward'
-        await notify(
-          fastify.eventBus,
-          redemption.profileId,
-          parsed.data.action === 'grant'
-            ? { title: `Yes! ${label}`, variant: 'rewards', priority: 'alert' }
-            : {
-                title: `Not this time — ${label}`,
-                body: redemption.decidedNote,
-                variant: 'rewards',
-                priority: 'alert',
-              }
-        )
-      }
-      return { redemption: serializeRedemption(redemption), balance }
+      // Tell the kid the news (notify() skips tier 1 — they'll see it in the pocket).
+      const label = `${redemption.reward.emoji} ${redemption.reward.name}`
+      await notify(
+        fastify.eventBus,
+        redemption.profileId,
+        parsed.data.action === 'yes'
+          ? { title: `Yes! ${label}`, variant: 'rewards', priority: 'alert' }
+          : {
+              title: `Not right now — ${label}`,
+              body: redemption.decidedNote,
+              variant: 'rewards',
+              priority: 'alert',
+            }
+      )
+      return { redemption: serializeRedemption(redemption) }
+    } catch (err) {
+      if (err instanceof RedemptionError)
+        return reply.status(err.status).send({ error: err.message })
+      throw err
+    }
+  })
+
+  // DELETE /rewards/redemptions/:id — the tier-4 revoke exception (ADR 055): refund
+  // the snapshot cost, remove the ticket. Never reachable from kid UI; a used
+  // ticket was consumed and cannot be revoked (409).
+  fastify.delete('/rewards/redemptions/:id', async (request, reply) => {
+    if (!request.ability.can('decide', 'rewards.Redemption')) {
+      return reply.status(403).send({ error: 'Permission denied' })
+    }
+    const { id } = request.params as { id: string }
+
+    try {
+      const { redemption, balance } = await revokeRedemption(
+        fastify.eventBus,
+        id,
+        request.profile.id
+      )
+      await notify(fastify.eventBus, redemption.profileId, {
+        title: `${redemption.reward.emoji} ${redemption.reward.name} refunded`,
+        body: `${redemption.cost} P-Bucks back in your wallet`,
+        variant: 'rewards',
+        priority: 'alert',
+      })
+      return { revoked: true, balance }
     } catch (err) {
       if (err instanceof RedemptionError)
         return reply.status(err.status).send({ error: err.message })

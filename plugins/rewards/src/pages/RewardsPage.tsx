@@ -3,30 +3,34 @@ import { PageContainer } from '@family-os/ui'
 import { useAuth } from '@family-os/platform'
 import { ApprovalsQueue } from '../components/ApprovalsQueue'
 import { CatalogView } from '../components/CatalogView'
+import { Store } from '../components/Store'
 import { useQueuePayouts, useQueueRedemptions } from '../lib/hooks'
 
 type Tab = 'approvals' | 'catalog'
 
-/* The rewards plugin's tier-4 home: the approvals queue and the catalog. The kid
-   store + wallet are a later story (M4/5); until then this surface is parents only.
-   The whole plugin stays unregistered in prod (plugins.json) until that lands. */
+/* The rewards plugin's home (M4/5). A kid (tier 1–3) lands straight on the store — the
+   whole point of the module (ADR 053: tier 1 reaches its own balance and the store). A
+   parent doesn't spend in the kid store; tier 4 gets its real work — the approvals queue
+   and the catalog. */
 export function RewardsPage() {
   const { tier } = useAuth()
   const [tab, setTab] = useState<Tab>('approvals')
 
-  const payouts = useQueuePayouts()
-  const redemptions = useQueueRedemptions()
-  const waiting = (payouts.data?.length ?? 0) + (redemptions.data?.length ?? 0)
-
   if (tier < 4) {
     return (
       <PageContainer width="list">
-        <p className="rounded-card border border-dashed border-border p-10 text-center text-sm-token text-muted-foreground">
-          The store is coming soon.
-        </p>
+        <Store />
       </PageContainer>
     )
   }
+
+  return <ParentRewards tab={tab} setTab={setTab} />
+}
+
+function ParentRewards({ tab, setTab }: { tab: Tab; setTab: (t: Tab) => void }) {
+  const payouts = useQueuePayouts()
+  const redemptions = useQueueRedemptions()
+  const waiting = (payouts.data?.length ?? 0) + (redemptions.data?.length ?? 0)
 
   return (
     <PageContainer width="list">

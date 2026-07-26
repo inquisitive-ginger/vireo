@@ -14,7 +14,7 @@ export interface Reward {
   active: boolean
 }
 
-export type RedemptionStatus = 'pending' | 'granted' | 'declined' | 'fulfilled'
+export type RedemptionStatus = 'owned' | 'use_requested' | 'used'
 
 export interface Redemption {
   id: string
@@ -22,12 +22,20 @@ export interface Redemption {
   profileId: string
   cost: number
   status: RedemptionStatus
-  requestedAt: string
+  purchasedAt: string
+  useRequestedAt: string | null
+  usedAt: string | null
   decidedBy: string | null
   decidedAt: string | null
   decidedNote: string | null
   /** Present on the queue/history list — the reward for rendering without a second fetch. */
-  reward?: { id: string; name: string; emoji: string; description: string | null }
+  reward?: {
+    id: string
+    name: string
+    emoji: string
+    description: string | null
+    requiresApproval: boolean
+  }
 }
 
 /** A held chore payout (M4/3b), surfaced in the queue beside redemptions. */
@@ -56,4 +64,12 @@ export interface RewardInput {
   active?: boolean
 }
 
-export type RedemptionAction = 'grant' | 'decline' | 'fulfil'
+export type RedemptionAction = 'yes' | 'not_now'
+
+/** GET /rewards/store — the kid's balance plus the whole active catalog scoped to them
+    (never pre-filtered by affordability; distance is a client rendering decision). */
+export interface StoreData {
+  profileId: string
+  balance: number
+  rewards: Reward[]
+}

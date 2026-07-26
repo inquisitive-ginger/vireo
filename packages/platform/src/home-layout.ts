@@ -41,11 +41,13 @@ export const DEFAULT_LAYOUTS: Record<string, LayoutDefault[]> = {
     { widgetId: 'chores.today-summary', x: 0, y: 1, w: 2, h: 1, prominence: 'card' },
     { widgetId: 'calendar.up-next', x: 2, y: 1, w: 2, h: 1, prominence: 'card' },
   ],
-  // Kids — the day's chores are the primary action (feature); calendar rests, feed recedes.
+  // Kids — the day's chores are the primary action (feature); the wallet sits high
+  // beside it (the reward loop's other half, M4/5); calendar rests, feed recedes.
   default_layout_tier_1_2: [
     { widgetId: 'chores.today-summary', x: 0, y: 0, w: 2, h: 2, prominence: 'feature' },
-    { widgetId: 'calendar.up-next', x: 2, y: 0, w: 2, h: 1, prominence: 'card' },
-    { widgetId: 'family-feed.feed', x: 2, y: 1, w: 2, h: 1, prominence: 'quiet' },
+    { widgetId: 'rewards.wallet', x: 2, y: 0, w: 2, h: 1, prominence: 'card' },
+    { widgetId: 'calendar.up-next', x: 2, y: 1, w: 2, h: 1, prominence: 'card' },
+    { widgetId: 'family-feed.feed', x: 0, y: 2, w: 4, h: 1, prominence: 'quiet' },
   ],
   /* Parents / teens — NO feature (ADR 039, amended). A parent opens this surface to
      triage, and the calendar, the chores and the feed are all live answers to "what
