@@ -52,13 +52,14 @@ export const DEFAULT_LAYOUTS: Record<string, LayoutDefault[]> = {
     { widgetId: 'family-feed.feed', x: 2, y: 2, w: 2, h: 1, prominence: 'quiet' },
   ],
   /* Teens — the same kid ranking, one register down: no feature (a teen's surface
-     declines to shout, same as the parent's), so the wallet leads by size and
-     position alone. */
+     declines to shout, same as the parent's), so the wallet leads by position, not
+     size. Four equal 2×1 tiles — at desktop row heights a 2×2 wallet is mostly air
+     above its footnote. */
   default_layout_tier_3: [
-    { widgetId: 'rewards.wallet', x: 0, y: 0, w: 2, h: 2, prominence: 'card' },
-    { widgetId: 'chores.today-summary', x: 2, y: 0, w: 2, h: 2, prominence: 'card' },
-    { widgetId: 'calendar.up-next', x: 0, y: 2, w: 2, h: 1, prominence: 'quiet' },
-    { widgetId: 'family-feed.feed', x: 2, y: 2, w: 2, h: 1, prominence: 'quiet' },
+    { widgetId: 'rewards.wallet', x: 0, y: 0, w: 2, h: 1, prominence: 'card' },
+    { widgetId: 'chores.today-summary', x: 2, y: 0, w: 2, h: 1, prominence: 'card' },
+    { widgetId: 'calendar.up-next', x: 0, y: 1, w: 2, h: 1, prominence: 'quiet' },
+    { widgetId: 'family-feed.feed', x: 2, y: 1, w: 2, h: 1, prominence: 'quiet' },
   ],
   /* Parents — NO feature (ADR 039, amended). A parent opens this surface to
      triage, and the calendar, the chores and the feed are all live answers to "what
