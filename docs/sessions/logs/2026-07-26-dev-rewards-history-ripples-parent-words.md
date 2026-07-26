@@ -104,9 +104,10 @@ chores 56 · calendar 105; typecheck + lint clean workspace-wide.
 - **Kid grids reworked at the user's direction** (`e7a0408`): both tier-1/2 and
   tier-3 now rank **wallet > chores > feed = calendar**. The tier-1/2 **feature moved
   from chores to the wallet** — the payoff is what a kid opens the app for, chores
-  stand tall (2×2 card) beside it as the way to fill it; tier 3 takes the identical
-  order with no feature (a teen's surface declines to shout, like the parent's);
-  calendar and feed sit as equal quiet 2×1 peers on the bottom row. Dev's stale
+  stand tall (2×2 card) beside it as the way to fill it; tier 3 takes the same
+  order with no feature (a teen's surface declines to shout, like the parent's) as
+  **four equal 2×1 tiles** — a 2×2 wallet was mostly air at desktop row heights
+  (user catch); calendar and feed sit as equal quiet peers on the bottom row. Dev's stale
   `system_config` `default_layout_*` rows were deleted (a cache of the old default —
   `/dev/reset` rewrites them from code). Live-checked as Teddy and Zoë at fridge +
   phone. The 2×2 wallet reads airy on a near-empty balance — the same breathing-room
