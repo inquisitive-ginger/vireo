@@ -42,14 +42,15 @@ export const DEFAULT_LAYOUTS: Record<string, LayoutDefault[]> = {
     { widgetId: 'calendar.up-next', x: 2, y: 1, w: 2, h: 1, prominence: 'card' },
   ],
   /* Kids (and teens below) rank by what a kid actually opens the app for:
-     wallet > chores > feed = calendar. The wallet is the payoff and features;
-     chores stand tall beside it as the way to fill it; calendar and feed rest
-     as equal quiet peers on the bottom row. */
+     wallet > chores > feed = calendar. Four equal 2×1 tiles — kids see this on
+     tablets, where a 2×2 slot is mostly air — so the wallet leads by position and
+     its feature elevation, chores beside it as the way to fill it, calendar and
+     feed as equal quiet peers on the bottom row. */
   default_layout_tier_1_2: [
-    { widgetId: 'rewards.wallet', x: 0, y: 0, w: 2, h: 2, prominence: 'feature' },
-    { widgetId: 'chores.today-summary', x: 2, y: 0, w: 2, h: 2, prominence: 'card' },
-    { widgetId: 'calendar.up-next', x: 0, y: 2, w: 2, h: 1, prominence: 'quiet' },
-    { widgetId: 'family-feed.feed', x: 2, y: 2, w: 2, h: 1, prominence: 'quiet' },
+    { widgetId: 'rewards.wallet', x: 0, y: 0, w: 2, h: 1, prominence: 'feature' },
+    { widgetId: 'chores.today-summary', x: 2, y: 0, w: 2, h: 1, prominence: 'card' },
+    { widgetId: 'calendar.up-next', x: 0, y: 1, w: 2, h: 1, prominence: 'quiet' },
+    { widgetId: 'family-feed.feed', x: 2, y: 1, w: 2, h: 1, prominence: 'quiet' },
   ],
   /* Teens — the same kid ranking, one register down: no feature (a teen's surface
      declines to shout, same as the parent's), so the wallet leads by position, not
