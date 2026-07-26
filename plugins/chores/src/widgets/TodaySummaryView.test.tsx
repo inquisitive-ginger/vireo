@@ -13,7 +13,9 @@ vi.mock('../lib/flags', () => ({
   showCoinReward: (coinReward: number) => coinReward > 0,
 }))
 
-const COMPLETED_AT = '2026-07-24T16:12:00.000Z'
+// Completed "just now" so the today-scoping fix (auto-bug #73) doesn't drop these
+// fixtures out of the widget's working set regardless of when the suite runs.
+const COMPLETED_AT = new Date().toISOString()
 
 function task(over: Partial<ChoreTask> = {}): ChoreTask {
   return {
@@ -85,6 +87,33 @@ describe('TodaySummaryView — a completed row states the payout OUTCOME', () =>
     view([task({ status: 'pending', completedAt: null, requiresApproval: true })])
     expect(screen.getAllByText('10').length).toBeGreaterThan(0)
     expect(screen.queryByText(/when Mom or Dad checks/)).not.toBeInTheDocument()
+  })
+})
+
+// A completed task from a prior day — never today's calendar day, regardless of
+// when the suite runs.
+const YESTERDAY = new Date(Date.now() - 2 * 86_400_000).toISOString()
+
+/* auto-bug #73 — "done today" and its XP kept accumulating across days because
+   nothing checked `completedAt` against today's date; a chore finished days ago
+   still counted as "done today" forever. */
+describe('TodaySummaryView — "done today" is scoped to today (auto-bug #73)', () => {
+  it('does not count a task completed on a prior day as done today', () => {
+    view([
+      task({ id: 'old', status: 'completed', completedAt: YESTERDAY }),
+      task({ id: 'new', status: 'pending', completedAt: null }),
+    ])
+    expect(screen.getAllByText('0 of 1 done today').length).toBeGreaterThan(0)
+  })
+
+  it("does not render a prior day's completed row in the working list", () => {
+    view([task({ id: 'old', title: 'Old Chore', status: 'completed', completedAt: YESTERDAY })])
+    expect(screen.queryByText('Old Chore')).not.toBeInTheDocument()
+  })
+
+  it('still counts a task completed earlier today', () => {
+    view([task({ id: 'today', status: 'completed', completedAt: COMPLETED_AT })])
+    expect(screen.getAllByText('All done today').length).toBeGreaterThan(0)
   })
 })
 

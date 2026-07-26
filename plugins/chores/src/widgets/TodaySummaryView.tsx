@@ -13,7 +13,7 @@ import {
   useFitRows,
 } from '@family-os/ui'
 import type { ChoreTask } from '../types'
-import { isOverdue } from '../lib/dates'
+import { isOverdue, isToday } from '../lib/dates'
 import { showCoinReward } from '../lib/flags'
 import { kidPayoutView, payoutForTask, type PayoutsByInstance } from '../lib/payouts'
 import { KidPayoutBadge } from '../components/KidPayoutBadge'
@@ -36,7 +36,7 @@ function todayPending(tasks: ChoreTask[]): ChoreTask[] {
 }
 
 function todayCompleted(tasks: ChoreTask[]): ChoreTask[] {
-  return tasks.filter((t) => t.status === 'completed')
+  return tasks.filter((t) => t.status === 'completed' && isToday(t.completedAt))
 }
 
 function overdueCount(tasks: ChoreTask[]): number {
@@ -442,7 +442,7 @@ function TaskeeCompact({
 }) {
   const pending = todayPending(tasks).length
   const done = todayCompleted(tasks).length
-  const total = tasks.length
+  const total = pending + done
 
   if (total === 0) {
     return <CenteredState heading={tier === 1 ? 'All done!' : 'No tasks'} />
@@ -478,7 +478,8 @@ function TaskeeStandard({
   /* Memoised because `FitList` measures its rows and re-measures whenever the
      array identity changes — a fresh sort every render would never settle. */
   const pending = useMemo(() => todayPending(tasks).sort(byUrgency), [tasks])
-  const total = tasks.length
+  const done = todayCompleted(tasks).length
+  const total = pending.length + done
 
   if (total === 0) {
     return (
@@ -528,8 +529,13 @@ function TaskeeLarge({
 }) {
   const pendingCount = todayPending(tasks).length
   const done = todayCompleted(tasks).length
-  const total = tasks.length
-  const rows = useMemo(() => [...tasks].sort(byUrgency), [tasks])
+  const total = pendingCount + done
+  // The list is today's working set — the outstanding backlog plus what was
+  // finished today — not every task the profile has ever completed.
+  const rows = useMemo(
+    () => [...todayPending(tasks), ...todayCompleted(tasks)].sort(byUrgency),
+    [tasks]
+  )
 
   if (total === 0) {
     return (
@@ -628,7 +634,7 @@ function NextUpLabel() {
 function FocusCompact({ tasks, tier }: { tasks: ChoreTask[]; lifetimeXp: number; tier: number }) {
   const pending = todayPending(tasks).sort(focusSort)
   const done = todayCompleted(tasks).length
-  const total = tasks.length
+  const total = pending.length + done
 
   if (total === 0) return <CenteredState heading={tier === 1 ? 'All done!' : 'No tasks'} />
   if (pending.length === 0) return <TaskeeAllDone compact />
@@ -664,7 +670,7 @@ function FocusStandard({
 }) {
   const pending = todayPending(tasks).sort(focusSort)
   const done = todayCompleted(tasks).length
-  const total = tasks.length
+  const total = pending.length + done
 
   if (total === 0)
     return (
@@ -705,7 +711,7 @@ function FocusLarge({
 }) {
   const pending = todayPending(tasks).sort(focusSort)
   const done = todayCompleted(tasks).length
-  const total = tasks.length
+  const total = pending.length + done
 
   if (total === 0)
     return (
@@ -742,8 +748,8 @@ function FocusLarge({
    the mobile stack) where the stacked list would clip mid-tile. */
 function FamilyCompact({ tasks }: { tasks: ChoreTask[] }) {
   const done = todayCompleted(tasks).length
-  const total = tasks.length
-  const pending = total - done
+  const pending = todayPending(tasks).length
+  const total = pending + done
   const overdue = overdueCount(tasks)
 
   if (total === 0) {
@@ -763,8 +769,8 @@ function FamilyCompact({ tasks }: { tasks: ChoreTask[] }) {
 
 function FamilyStandard({ tasks }: { tasks: ChoreTask[] }) {
   const done = todayCompleted(tasks).length
-  const total = tasks.length
-  const pending = total - done
+  const pending = todayPending(tasks).length
+  const total = pending + done
   const overdue = overdueCount(tasks)
   const groups = useMemo(() => groupByAssignee(tasks).sort(byMemberUrgency), [tasks])
 
@@ -802,8 +808,8 @@ function FamilyStandard({ tasks }: { tasks: ChoreTask[] }) {
    a whole member tile — which is what the fourth face needed on the fridge iPad. */
 function FamilyLarge({ tasks }: { tasks: ChoreTask[] }) {
   const done = todayCompleted(tasks).length
-  const total = tasks.length
-  const pending = total - done
+  const pending = todayPending(tasks).length
+  const total = pending + done
   const overdue = overdueCount(tasks)
   const groups = useMemo(() => groupByAssignee(tasks).sort(byMemberUrgency), [tasks])
 
