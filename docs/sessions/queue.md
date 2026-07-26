@@ -282,6 +282,15 @@ suite mirroring chores/calendar. _Depends on: none._
 
 > Two-line index; full detail in the linked log.
 
+- **2026-07-26 — Dev: chores widget's "today" never checked the date (auto-bug
+  #73, PR #74).** `todayCompleted`/daily-XP filtered on `status === 'completed'`
+  alone, no `completedAt` check — with no archive, completions from any day ever
+  kept accumulating as "today," forever. Scoped to `isToday()` across all six
+  size×framing variants (fixing the numerator alone would have broken the family
+  framings' `total - done` pending math). Deployed and confirmed live; **report
+  #73 still needs a tier-4 parent to move it to `deployed`** on the triage board
+  (no CLI path exists). See `logs/2026-07-26-dev-auto-bug-73-chores-widget-today.md`.
+
 - **2026-07-26 — Dev: Ticket Lifecycle (M4/5a).** ADR 055 in the API: buy always
   debits and lands `owned`, use is explicit (`POST :id/use`), not-now keeps the ticket,
   tier-4 `DELETE` revoke refunds-and-deletes. Migration **stacked, not edited** — the
