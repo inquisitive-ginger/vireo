@@ -70,6 +70,22 @@ describe('TabBar', () => {
     expect(onChange).toHaveBeenCalledWith('activities')
   })
 
+  it('rides a badge count on a tab, hidden at zero', () => {
+    render(
+      <TabBar
+        aria-label="Rewards"
+        options={[
+          { value: 'store', label: 'Store', badge: 0 },
+          { value: 'stuff', label: 'My stuff', badge: 2 },
+        ]}
+        value="store"
+        onChange={vi.fn()}
+      />
+    )
+    expect(screen.getByText('2')).toBeInTheDocument()
+    expect(screen.queryByText('0')).not.toBeInTheDocument()
+  })
+
   it('emits tab ids from idBase so a tabpanel can be associated', () => {
     setup('calendar', vi.fn(), 'surface')
     expect(screen.getByRole('tab', { name: 'Calendar' })).toHaveAttribute(

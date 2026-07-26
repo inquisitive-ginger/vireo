@@ -5,15 +5,13 @@ import { useRequestRedemption } from '../lib/hooks'
 import { redeemMode } from '../lib/affordability'
 import type { Reward } from '../types'
 
-/* The buy confirm (M4/5) — a centered MODAL, not a drawer. The drawer is the app's
-   create/edit capture surface; buying a ticket is a one-tap decision, so it belongs in a
-   focused dialog sized like ConfirmDialog. It derives its own mode from the reward and the
-   balance:
-     · affordable → spend confirm, arithmetic shown before → after (ADR 055: buying always
-       debits, no parent gate at any price — approval gates USE, later, in the pocket)
+/* The register (ADR 055) — a centered MODAL, not a drawer. Buying is always allowed
+   and always the same moment: P-Bucks leave once, with the before → after arithmetic,
+   and the ticket lands in the pocket. Approval gates USE, later — so an ask-first
+   ticket adds one quiet line here and nothing else. It derives its own mode:
+     · affordable → the buy confirm
      · can't afford → a nudge, not a wall: how close, and a way to go earn it
-   On success it flips to the it's-yours outcome before it closes. M4/5b rebuilds this
-   into the ticket purchase flow proper. */
+   On success it flips to the it's-yours outcome before it closes. */
 export function RedeemDialog({
   reward,
   balance,
@@ -27,7 +25,7 @@ export function RedeemDialog({
 }) {
   const navigate = useNavigate()
   const request = useRequestRedemption()
-  const [done, setDone] = useState<{ status: string; balance: number } | null>(null)
+  const [done, setDone] = useState<{ balance: number } | null>(null)
 
   const close = () => {
     onClose()
@@ -41,21 +39,26 @@ export function RedeemDialog({
 
   const mode = redeemMode(reward, balance)
   const gap = Math.max(0, reward.cost - balance)
-  const title = done ? 'All yours' : mode === 'nudge' ? 'Almost there' : 'Get this reward?'
+  const title = done ? 'It’s yours' : mode === 'nudge' ? 'Almost there' : 'Buy this ticket?'
 
   return (
     <Modal open={open} onClose={close} title={title}>
       <div className="flex flex-col items-center gap-2 text-center">
+        <h3 className="text-card-title">{title}</h3>
         <div
-          className="grid size-16 place-items-center rounded-panel text-[38px] leading-none"
-          style={{ background: 'var(--surface-sunken)' }}
+          className="mt-1 grid size-16 place-items-center rounded-panel text-[38px] leading-none"
+          style={{ background: 'var(--surface-sunken)', boxShadow: 'var(--shadow-inset)' }}
           aria-hidden
         >
           {reward.emoji}
         </div>
-        <h3 className="text-card-title mt-1">{reward.name}</h3>
-        {reward.description && (
-          <p className="text-sm-token text-muted-foreground">{reward.description}</p>
+        {!done && (
+          <>
+            <p className="text-base-token font-semibold">{reward.name}</p>
+            {reward.description && (
+              <p className="text-sm-token text-muted-foreground">{reward.description}</p>
+            )}
+          </>
         )}
 
         {done ? (
@@ -79,8 +82,7 @@ export function RedeemDialog({
             error={request.error instanceof Error ? request.error.message : null}
             onConfirm={() =>
               request.mutate(reward.id, {
-                onSuccess: (data) =>
-                  setDone({ status: data.redemption.status, balance: data.balance }),
+                onSuccess: (data) => setDone({ balance: data.balance }),
               })
             }
             onCancel={close}
@@ -120,12 +122,20 @@ function Confirm({
       <span className="sr-only">
         {`Spend ${bucksSpoken(reward.cost)} on ${reward.name}. You will have ${bucksSpoken(after)} left.`}
       </span>
+      <p className="text-xs-body text-muted-foreground">
+        It goes in your pocket — use it whenever you&rsquo;re ready.
+      </p>
+      {reward.requiresApproval && (
+        <p className="text-xs-body text-muted-foreground">
+          You&rsquo;ll ask a parent when you use it.
+        </p>
+      )}
 
       {error && <p className="text-sm-token mt-2 font-medium text-[var(--error)]">{error}</p>}
 
       <div className="mt-5 flex w-full flex-col gap-2">
         <Button onClick={onConfirm} disabled={pending} className="w-full">
-          Get it
+          Buy it
         </Button>
         <Button variant="ghost" onClick={onCancel} disabled={pending} className="w-full">
           Maybe later
@@ -174,14 +184,14 @@ function Outcome({ balance, onDone }: { balance: number; onDone: () => void }) {
   // A purchase always lands `owned` (ADR 055) — buying is a celebration, every time.
   return (
     <>
+      <p className="text-base-token font-semibold text-foreground">
+        🎟️ The ticket&rsquo;s in your pocket — find it under My stuff.
+      </p>
       <div className="mt-2 flex items-center gap-2">
         <Coin size={20} />
         <span className="text-heading">{balance}</span>
         <span className="text-sm-token font-semibold text-muted-foreground">P$ left</span>
       </div>
-      <p className="text-base-token mt-2 font-semibold text-foreground">
-        🎉 It&rsquo;s yours! Find it in your pocket.
-      </p>
       <Button onClick={onDone} className="mt-5 w-full">
         Done
       </Button>
@@ -189,12 +199,13 @@ function Outcome({ balance, onDone }: { balance: number; onDone: () => void }) {
   )
 }
 
-/** Matte progress: a statement of fact ("12 of 15"), never an ever-climbing bar. */
+/** Matte progress: a statement of fact ("12 of 15"), never an ever-climbing bar.
+    5px on purpose — a nearly-full meter at row width must not outshout the purse. */
 export function Track({ have, total, label }: { have: number; total: number; label: string }) {
   const pct = Math.max(3, Math.min(100, Math.round((have / total) * 100)))
   return (
     <div
-      className="h-2 overflow-hidden rounded-full"
+      className="h-[5px] overflow-hidden rounded-full"
       style={{ background: 'var(--muted)' }}
       role="progressbar"
       aria-valuenow={have}

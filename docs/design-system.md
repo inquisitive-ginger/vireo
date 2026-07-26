@@ -1827,20 +1827,65 @@ be spent — and any future currency treatment has to preserve it.
 
 ## Rewards surfaces
 
-**Provisional** — Rewards & Wallet design session, 2026-07-22. These are **build
-targets for M4/4–M4/6, revisable without an ADR**: each is a different rendering of the
-same fields, so a better one can replace it without touching the data contract. The
-settled parts are in ADRs 051–053.
+The kid surfaces are the **ticket system** (ADR 055, gated 2026-07-26 on the rework
+artifact): a redemption is a ticket — buy → own → explicit use. The wallet widget and
+punch card remain build targets from the 2026-07-22 session, revisable without an ADR.
 
-### Store — distance, not denial
+### The ticket
 
-A **tile grid**, emoji-forward, ordered affordable → nearest → furthest. An unaffordable
-reward keeps **full colour** and states how far away it is (`4 more`) over a meter; it is
-never greyed out and never hidden. The gap is the motivation, so the surface must show
-it.
+One anatomy renders the store, the pocket, and the loading skeleton (`TicketFrame`): a
+**perforated stub** (2px dashed brass) beside the body — emoji, name, **description**.
+The stub carries the **cost** in the store (coin + numeral) and the **emoji** once
+owned: it's paid for; the price is history.
 
-The store endpoint returns the **whole catalog plus the balance** — never a
-pre-filtered affordable list. Affordability is a rendering decision, not a server one.
+- **The notches are die-cut, not drawn** — a mask punches real holes through the card
+  (border, wash and all) and the shadow is a `drop-shadow` recomputed off the cut
+  silhouette, so nothing can extend past an edge at any width.
+- **Affordable = a brass-warmed border, no wash.** The two-shelf split already carries
+  affordability (only reachable tickets sit under "Get it now"), so a fill would restate
+  it; the money-warmth lives in the border, the coin, and the stub numeral. Never the
+  green success edge — affordability is a fact of the wallet, not a status of the
+  reward.
+- **Ask-first = a quiet corner seal** (`AskSeal` + "ask to use") — informational, never
+  a gate. The seal means "you'll ask when you **use** it"; buying is always allowed.
+- Out-of-reach rewards stay calm rows in full colour with quiet `N more P$` text —
+  **distance, not denial** — under "Almost there", two-up at `md:`. **No meter and no
+  pill on the shelf**: a balance-fed bar drops on every spend, taxing every goal at
+  once, and a distance is not a collectible (the chip rule). The meter survives where
+  it answers a one-time "how close?" — the nudge modal and the wallet widget's
+  next-up line.
+
+**At width, a store ticket is a unit off THE ROLL** (gated 2026-07-26 addendum): the
+live ticket keeps a fixed 430px — the tap target never stretches — and the rest of the
+row is the same ticket echoing at the perforation, dimmed in two steps, bleeding off
+the cut edge (no right border). Echoes are decoration (`aria-hidden`, no pointer); the
+phone shows none and is unchanged. Pocket tickets are already off the roll, so they
+stay single and cap at 560px; the purse caps at the roll's 430px — a purse is
+hand-sized, not a banner.
+
+The store endpoint returns the **whole catalog plus the balance** — never a pre-filtered
+affordable list. Affordability is a rendering decision, not a server one.
+
+### Two kid tabs — Store · My stuff
+
+**Store spends, My stuff owns and remembers, the history sheet explains** (sheet lands
+M4/5c). The tabs are the shared **`TabBar`** — a top-level split between peer surfaces,
+per the TabBar/SegmentedControl rule — with a `badge` option carrying the pocket's
+ready count (the parent page's Approvals tab rides the same badge). The purse is the
+store's hero — whose money, the struck coin, the metric numeral. "My stuff" holds the
+pocket (ready tickets → "Use it" / "Ask to use"; an asked ticket quiets down under a
+waiting pill) and the **stub shelf** — torn-stub chips with counts, the trophy row
+moved out of the shop. Punch cards (M4/6) land in My stuff too — that's why it isn't
+"My tickets".
+
+### The moments
+
+The buy confirm keeps the **before → after arithmetic** (`35 → 20 P$ left`) and says
+where the ticket goes ("It goes in your pocket"). The ask happens at **use time** and
+talks about timing, never money. **The tear is the module's one flourish** — the ticket
+splits at the perforation (480ms settle, skipped under reduced motion) and the stub
+joins the shelf. A parent's **"not now" is deliberately soft**: the ticket returns
+whole, the optional note is quoted verbatim, nothing needs an error state.
 
 ### Wallet widget — adaptive, never a dead end
 
@@ -1849,29 +1894,11 @@ state**: _"3 rewards you can get"_ when something is affordable, otherwise _"3 m
 🍿 Pick the movie"_ with a meter. A bare balance is a score plate, not a wallet, and an
 always-on next-goal line tells a kid who can afford three things that they are short of a
 fourth. **The zero state decides this widget** — it is where a kid spends most of their
-time.
+time. (M4/5c adds the top-priority ticket-ready line: the thing you already have beats
+the thing you could buy.)
 
 `standard` moves the balance into the header's trailing slot and makes **what you can
 have** the body.
-
-### Redemption — the confirm states the arithmetic
-
-The confirm shows cost as **before → after** (`24 → 9`), not as a price tag: ADR 047's
-claim is that a kid can explain their balance, and this is where that starts.
-
-Three end states that must never blur:
-
-| State        | Reads as                                                                                                                                                      |
-| ------------ | ------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| **Granted**  | Celebration. The new balance is stated.                                                                                                                       |
-| **Pending**  | _"Asked for"_ + a `Waiting` badge, and it says the P-Bucks is **already held**. It must never look granted.                                                   |
-| **Declined** | The **refund is the headline** (`25 P-Bucks back in your wallet`), with the parent's reason quoted in their own words when they gave one. Not an error state. |
-
-A decline reason is **optional** — a forced field gets "no" typed into it — and is quoted
-verbatim when present.
-
-History renders the ledger as rows a kid can read: the refund is a **row**, and the debit
-above it stays.
 
 ### Punch card — the paper sheet
 

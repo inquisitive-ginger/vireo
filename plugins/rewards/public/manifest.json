@@ -7,9 +7,11 @@
   "schema": "rewards",
   "events": {
     "publishes": [
-      "rewards.redemption.requested",
-      "rewards.redemption.decided",
-      "rewards.redemption.fulfilled"
+      "rewards.redemption.purchased",
+      "rewards.redemption.use-requested",
+      "rewards.redemption.used",
+      "rewards.redemption.deferred",
+      "rewards.redemption.revoked"
     ],
     "subscribes": ["chores.task.completed", "chores.task.reopened", "chores.task.deleted"]
   },

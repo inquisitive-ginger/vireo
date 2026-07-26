@@ -150,6 +150,22 @@ export function useRequestRedemption() {
   })
 }
 
+/** The tear (ADR 055): kid-initiated use of an owned ticket. A non-approval ticket
+    lands `used` on the spot; an ask-first one lands `use_requested` and pings the
+    parents. No money moves, so only the redemptions prefix refreshes. */
+export function useUseRedemption() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) =>
+      jsonFetch<{ redemption: Redemption }>(`/api/rewards/redemptions/${id}/use`, {
+        method: 'POST',
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['rewards/redemptions'] })
+    },
+  })
+}
+
 // ─── Mutations ────────────────────────────────────────────────────────────────
 
 export function useCatalogMutations() {

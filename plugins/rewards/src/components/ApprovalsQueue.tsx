@@ -15,6 +15,7 @@ import {
   useQueuePayouts,
   useQueueRedemptions,
 } from '../lib/hooks'
+import { askedLabel, boughtLabel } from '../lib/when'
 import type { PendingPayout, Redemption } from '../types'
 
 type Item =
@@ -152,6 +153,9 @@ function PayoutCard({
   )
 }
 
+/* A use request (ADR 055). The ticket is already bought and paid for — no cost, no
+   coin, no money words: the parent's question is timing, and a "not now" keeps the
+   ticket in the kid's pocket. */
 function RedemptionCard({
   redemption,
   kidName,
@@ -166,26 +170,31 @@ function RedemptionCard({
   const label = redemption.reward
     ? `${redemption.reward.emoji} ${redemption.reward.name}`
     : 'a reward'
+  const asked = redemption.useRequestedAt
+    ? askedLabel(redemption.useRequestedAt).replace(/^Asked/, 'asked')
+    : null
 
   return (
     <ItemCard spine={spine} align="stretch">
       <div className="flex min-w-0 flex-1 flex-col gap-3">
         <div>
           <span className="text-card-title block truncate">{label}</span>
-          <span className="text-xs-body text-muted-foreground">wants to spend</span>
+          <span className="text-xs-body text-muted-foreground">
+            wants to use · {boughtLabel(redemption.purchasedAt).toLowerCase()}
+            {asked ? ` · ${asked}` : ''}
+          </span>
         </div>
         <CoinDecisionTray
-          amount={redemption.cost}
-          prompt={`${bucks(redemption.cost)} to spend`}
-          approveLabel="Approve"
-          declineLabel="Not this time"
-          approvedLabel="Approved"
-          declinedLabel="Not this time"
+          prompt="Is now a good moment?"
+          approveLabel="Yes — enjoy!"
+          declineLabel="Not now…"
+          approvedLabel="Yes — ticket torn"
+          declinedLabel="Not now — the ticket stays in their pocket"
           withDeclineNote
           declineNoteLabel={
             <>
-              Add a reason — <b className="font-semibold text-foreground">{kidName} sees this</b>{' '}
-              (optional)
+              Add a note — <b className="font-semibold text-foreground">{kidName} sees this</b>{' '}
+              (optional). The ticket stays theirs either way.
             </>
           }
           declineNotePlaceholder="Maybe after homework…"

@@ -6,6 +6,8 @@ export interface TabBarOption<T extends string> {
   label: string
   /** Optional leading icon (e.g. a Lucide icon component). */
   icon?: ComponentType<{ className?: string }>
+  /** A quiet count riding the tab (waiting approvals, tickets in the pocket). Hidden at 0. */
+  badge?: number
 }
 
 export interface TabBarProps<T extends string> {
@@ -102,6 +104,11 @@ export function TabBar<T extends string>({
           >
             {Icon && <Icon className="size-4" />}
             {option.label}
+            {!!option.badge && (
+              <span className="inline-grid min-w-[17px] place-items-center rounded-full bg-primary px-1 text-xs-token font-bold text-primary-foreground">
+                {option.badge}
+              </span>
+            )}
           </button>
         )
       })}

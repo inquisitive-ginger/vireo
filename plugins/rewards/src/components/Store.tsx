@@ -1,87 +1,107 @@
-import { useState } from 'react'
-import { ChevronDown, ChevronRight, Loader2, Tag } from 'lucide-react'
-import { Coin, EmptyState, ErrorCard, PageHeader } from '@family-os/ui'
+import { useMemo, useState } from 'react'
+import { Tag, Ticket as TicketIcon } from 'lucide-react'
+import { CURRENCY, Coin, EmptyState, ErrorCard, TabBar } from '@family-os/ui'
+import { useAuth } from '@family-os/platform'
 import { useEarnedRewards, useMyRedemptions, useStore } from '../lib/hooks'
 import { gapFor, storeShelves } from '../lib/affordability'
+import { askedLabel, boughtLabel, enjoyedSince } from '../lib/when'
 import type { Redemption, Reward } from '../types'
-import { AskPill } from './AskPill'
+import { EmojiStub, StoreTicket, StubChip, TicketFrame, TicketSkeleton } from './Ticket'
 import { RedeemDialog } from './RedeemDialog'
+import { UseTicketDialog } from './UseTicketDialog'
 
-/* The kid store (M4/5). PROGRESSIVE DISCLOSURE, not the whole catalog at once — a wall of
-   nine tiles is overwhelming, especially for a kid with ADHD. The default screen shows
-   only what's actionable: what you can get now, and the SINGLE closest thing you're saving
-   for. The rest of the catalog is one calm "See all rewards" tap away. Nothing is greyed
-   or hidden — an out-of-reach reward keeps full colour and states exactly how many more
-   P-Bucks it needs; it's just not all shown up front. Tapping anything opens the redeem
-   sheet, which derives afford / ask / nudge on its own. */
+/* The kid rewards surface (ADR 055): two tabs, two jobs.
+     · Store    — spending well. The purse leads, then "Get it now" tickets and
+                  "Almost there" striving rows. One tense: what you can do next.
+     · My stuff — owning and remembering. The pocket of tickets you hold, and the
+                  shelf of stubs you've torn. Punch cards land here later (M4/6),
+                  which is why it's "My stuff", not "My tickets".
+   The tab badge is the pocket's ready count — the same grammar as the parent's
+   approvals badge. History ("Where'd it go?") joins the purse in M4/5c. */
+
+type KidTab = 'store' | 'stuff'
 
 export function Store() {
+  const { name } = useAuth()
   const store = useStore()
   const mine = useMyRedemptions()
   const earned = useEarnedRewards()
+  const [tab, setTab] = useState<KidTab>('store')
   const [picked, setPicked] = useState<Reward | null>(null)
+  const [using, setUsing] = useState<Redemption | null>(null)
 
-  if (store.isLoading) {
-    return (
-      <div className="flex justify-center py-16 text-muted-foreground">
-        <Loader2 className="size-5 animate-spin" />
-      </div>
-    )
-  }
-  if (store.isError || !store.data) {
+  const pocket = mine.data ?? []
+  const readyCount = pocket.filter((t) => t.status === 'owned').length
+
+  if (store.isError) {
     return <ErrorCard moduleName="Store" onRetry={() => store.refetch()} />
   }
 
   return (
     <>
-      <StoreView
-        balance={store.data.balance}
-        rewards={store.data.rewards}
-        mine={mine.data ?? []}
-        earned={earned.data ?? []}
-        onPick={setPicked}
+      <h1 className="sr-only">Rewards</h1>
+      <TabBar<KidTab>
+        aria-label="Rewards"
+        className="mb-5"
+        value={tab}
+        onChange={setTab}
+        options={[
+          { value: 'store', label: 'Store' },
+          { value: 'stuff', label: 'My stuff', badge: readyCount },
+        ]}
       />
-      <RedeemDialog
-        reward={picked}
-        balance={store.data.balance}
-        open={picked !== null}
-        onClose={() => setPicked(null)}
-      />
+
+      {store.isLoading || !store.data ? (
+        <StoreSkeleton />
+      ) : tab === 'store' ? (
+        <StoreTab
+          name={name}
+          balance={store.data.balance}
+          rewards={store.data.rewards}
+          onPick={setPicked}
+        />
+      ) : (
+        <PocketTab pocket={pocket} used={earned.data ?? []} onUse={setUsing} />
+      )}
+
+      {store.data && (
+        <RedeemDialog
+          reward={picked}
+          balance={store.data.balance}
+          open={picked !== null}
+          onClose={() => setPicked(null)}
+        />
+      )}
+      <UseTicketDialog ticket={using} open={using !== null} onClose={() => setUsing(null)} />
     </>
   )
 }
 
-export function StoreView({
+// ─── The Store tab ──────────────────────────────────────────────────────────
+
+export function StoreTab({
+  name,
   balance,
   rewards,
-  mine = [],
-  earned = [],
   onPick,
 }: {
+  name: string
   balance: number
   rewards: Reward[]
-  /** The kid's pocket (ADR 055): owned tickets + any use request in flight. */
-  mine?: Redemption[]
-  /** Used tickets, all time — the "Rewards you've earned" collection. */
-  earned?: Redemption[]
   onPick: (reward: Reward) => void
 }) {
-  const [showAll, setShowAll] = useState(false)
-  const { afford, almost, big } = storeShelves(rewards, balance)
-  const saving = [...almost, ...big] // every out-of-reach reward, cheapest-first
-  // Calm by default: only the closest goal. "See all" reveals the rest.
-  const visibleSaving = showAll ? saving : saving.slice(0, 1)
-  const hidden = saving.length - visibleSaving.length
+  const [showAllNow, setShowAllNow] = useState(false)
+  const [showAllNear, setShowAllNear] = useState(false)
+  const { afford, almost, big } = useMemo(() => storeShelves(rewards, balance), [rewards, balance])
+  // "Get it now" leads with the biggest thing in reach — top three by price descending.
+  const now = useMemo(() => [...afford].sort((a, b) => b.cost - a.cost), [afford])
+  const near = useMemo(() => [...almost, ...big], [almost, big])
+  const visibleNow = showAllNow ? now : now.slice(0, 3)
+  const visibleNear = showAllNear ? near : near.slice(0, 3)
 
   return (
     <div>
-      <PageHeader
-        title="Store"
-        subtitle="Tap a reward to get it"
-        action={<BalancePlate balance={balance} />}
-      />
-
-      {mine.length > 0 && <MyRewards items={mine} />}
+      <PurseHero name={name} balance={balance} />
 
       {rewards.length === 0 ? (
         <EmptyState
@@ -91,21 +111,36 @@ export function StoreView({
         />
       ) : (
         <div className="flex flex-col gap-6">
-          {afford.length > 0 && (
-            <Section label="You can get">
-              <div className="grid grid-cols-3 gap-2.5">
-                {afford.map((r) => (
-                  <StoreTile key={r.id} reward={r} onPick={() => onPick(r)} />
+          {now.length > 0 && (
+            <Shelf label="Get it now">
+              <div className="flex flex-col gap-2.5">
+                {visibleNow.map((r) => (
+                  <StoreTicket
+                    key={r.id}
+                    emoji={r.emoji}
+                    name={r.name}
+                    description={r.description}
+                    cost={r.cost}
+                    askFirst={r.requiresApproval}
+                    onPick={() => onPick(r)}
+                  />
                 ))}
               </div>
-            </Section>
+              <SeeAll
+                shown={visibleNow.length}
+                total={now.length}
+                open={showAllNow}
+                openLabel={`See all ${now.length} you can get ›`}
+                onToggle={setShowAllNow}
+              />
+            </Shelf>
           )}
 
-          {saving.length > 0 && (
-            <Section label="Saving up for">
-              <div className="flex flex-col gap-2">
-                {visibleSaving.map((r) => (
-                  <SavingRow
+          {near.length > 0 && (
+            <Shelf label="Almost there">
+              <div className="grid gap-2 md:grid-cols-2">
+                {visibleNear.map((r) => (
+                  <NearRow
                     key={r.id}
                     reward={r}
                     gap={gapFor(r, balance)}
@@ -113,37 +148,50 @@ export function StoreView({
                   />
                 ))}
               </div>
-              {hidden > 0 ? (
-                <button
-                  type="button"
-                  onClick={() => setShowAll(true)}
-                  className="text-sm-token mt-3 font-semibold text-primary"
-                >
-                  See all rewards ({saving.length}) ›
-                </button>
-              ) : (
-                showAll &&
-                saving.length > 1 && (
-                  <button
-                    type="button"
-                    onClick={() => setShowAll(false)}
-                    className="text-sm-token mt-3 font-semibold text-muted-foreground"
-                  >
-                    Show less
-                  </button>
-                )
-              )}
-            </Section>
+              <SeeAll
+                shown={visibleNear.length}
+                total={near.length}
+                open={showAllNear}
+                openLabel={`See all ${near.length} ›`}
+                onToggle={setShowAllNear}
+              />
+            </Shelf>
           )}
         </div>
       )}
-
-      {earned.length > 0 && <EarnedRewards items={earned} />}
     </div>
   )
 }
 
-function Section({ label, children }: { label: string; children: React.ReactNode }) {
+/* The purse — the hero, and it's personal: whose money, the struck coin, the metric
+   numeral. The balance stops being a plate in a corner and becomes what the page is
+   about. Capped at the roll's unit width at md: — a purse is hand-sized, not a
+   banner. ("Where'd it go?" opens the history sheet — M4/5c.) */
+function PurseHero({ name, balance }: { name: string; balance: number }) {
+  return (
+    <div
+      className="mb-5 flex items-center gap-3.5 rounded-panel border p-4 md:max-w-[430px]"
+      style={{
+        background: 'var(--coin-tint)',
+        borderColor: 'color-mix(in oklch, var(--coin) 55%, var(--border))',
+        boxShadow: 'var(--shadow-card)',
+      }}
+    >
+      <Coin size={40} />
+      <div className="min-w-0">
+        <div className="text-section-label text-muted-foreground">
+          {name}&rsquo;s {CURRENCY.short}
+        </div>
+        <div className="flex items-baseline gap-1.5" style={{ color: 'var(--coin-ink)' }}>
+          <span className="text-metric leading-none">{balance}</span>
+          <span className="text-sm-token font-bold text-muted-foreground">P$</span>
+        </div>
+      </div>
+    </div>
+  )
+}
+
+function Shelf({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <section>
       <div className="mb-3 flex items-center gap-2">
@@ -155,206 +203,233 @@ function Section({ label, children }: { label: string; children: React.ReactNode
   )
 }
 
-/* An affordable reward — the fun part, so it keeps the tile with a green "you can get
-   this" edge. (Out-of-reach rewards render as calm SavingRows instead.) */
-function StoreTile({ reward, onPick }: { reward: Reward; onPick: () => void }) {
+function SeeAll({
+  shown,
+  total,
+  open,
+  openLabel,
+  onToggle,
+}: {
+  shown: number
+  total: number
+  open: boolean
+  openLabel: string
+  onToggle: (open: boolean) => void
+}) {
+  if (total <= shown && !open) return null
+  return (
+    <button
+      type="button"
+      onClick={() => onToggle(!open)}
+      className={`text-sm-token mt-3 font-semibold ${open ? 'text-muted-foreground' : 'text-primary'}`}
+    >
+      {open ? 'Show less' : openLabel}
+    </button>
+  )
+}
+
+/* A reward you're striving for — a calm row: emoji, name, and the one number that
+   matters as quiet text. Full colour, never greyed: distance, not denial. No meter —
+   a balance-fed bar drops on every spend, taxing every goal at once (the nudge and
+   the widget keep theirs: a one-time "how close?" answer, not an ambient loss meter).
+   No pill either — a distance is not a collectible (the chip rule). Tapping opens
+   the nudge. */
+function NearRow({ reward, gap, onPick }: { reward: Reward; gap: number; onPick: () => void }) {
   return (
     <button
       type="button"
       onClick={onPick}
-      aria-label={
-        `${reward.name}, ${reward.cost} P-Bucks. You can get this now. ` +
-        (reward.requiresApproval ? 'A parent says yes first.' : '')
-      }
-      className="relative flex min-h-[124px] cursor-pointer flex-col items-center gap-2 rounded-panel border bg-card p-3 text-center transition-transform hover:-translate-y-0.5 active:scale-[0.97]"
-      style={{ borderColor: 'color-mix(in oklch, var(--success) 45%, var(--border))' }}
+      aria-label={`${reward.name}, ${reward.cost} P-Bucks. You need ${gap} more P-Bucks.`}
+      className="flex w-full items-center gap-3 rounded-card border border-border bg-card px-3.5 py-3 text-left transition-transform active:scale-[0.99]"
+      style={{ boxShadow: 'var(--shadow-card)' }}
     >
-      {reward.requiresApproval && (
-        <span className="absolute right-2 top-2">
-          <AskPill />
-        </span>
+      <span className="flex-none text-2xl leading-none" aria-hidden>
+        {reward.emoji}
+      </span>
+      <span className="text-sm-token min-w-0 flex-1 truncate font-semibold" aria-hidden>
+        {reward.name}
+      </span>
+      <span className="text-sm-token flex-none font-semibold text-muted-foreground" aria-hidden>
+        {gap} more P$
+      </span>
+    </button>
+  )
+}
+
+// ─── The My stuff tab ───────────────────────────────────────────────────────
+
+export function PocketTab({
+  pocket,
+  used,
+  onUse,
+}: {
+  /** Owned tickets + any ask in flight. */
+  pocket: Redemption[]
+  /** Torn tickets, all time — the stub shelf. */
+  used: Redemption[]
+  onUse: (ticket: Redemption) => void
+}) {
+  // The longest-held ticket leads — it's the one you've been looking forward to.
+  const tickets = useMemo(
+    () =>
+      [...pocket].sort((a, b) => {
+        if (a.status !== b.status) return a.status === 'owned' ? -1 : 1
+        return a.purchasedAt.localeCompare(b.purchasedAt)
+      }),
+    [pocket]
+  )
+  const shelf = useMemo(() => {
+    const groups = new Map<string, { emoji: string; name: string; count: number }>()
+    for (const rd of used) {
+      const g = groups.get(rd.rewardId)
+      if (g) g.count += 1
+      else
+        groups.set(rd.rewardId, {
+          emoji: rd.reward?.emoji ?? '🎁',
+          name: rd.reward?.name ?? 'A reward',
+          count: 1,
+        })
+    }
+    return [...groups.values()].sort((a, b) => b.count - a.count)
+  }, [used])
+  const earliestUsed = useMemo(
+    () =>
+      used.reduce<string | null>((m, rd) => (!m || (rd.usedAt ?? '') < m ? rd.usedAt : m), null),
+    [used]
+  )
+
+  if (tickets.length === 0 && used.length === 0) {
+    return (
+      <EmptyState
+        icon={TicketIcon}
+        heading="Nothing in your pocket yet"
+        body="Buy a ticket in the Store and it lands here, yours to use whenever."
+      />
+    )
+  }
+
+  return (
+    <div className="flex flex-col gap-6">
+      {tickets.length > 0 && (
+        <Shelf label="Ready when you are">
+          <div className="flex flex-col gap-2.5">
+            {tickets.map((t) => (
+              <PocketTicket key={t.id} ticket={t} onUse={() => onUse(t)} />
+            ))}
+          </div>
+        </Shelf>
       )}
-      <span
-        className="grid size-12 place-items-center rounded-card text-[30px] leading-none"
-        style={{ background: 'color-mix(in oklch, var(--success) 12%, var(--card))' }}
-        aria-hidden
-      >
-        {reward.emoji}
-      </span>
-      <span className="text-base-token font-semibold leading-snug text-foreground" aria-hidden>
-        {reward.name}
-      </span>
-      <span className="text-sm-token mt-auto font-bold" aria-hidden>
-        {reward.cost} <span className="font-medium text-muted-foreground">P$</span>
-      </span>
-    </button>
-  )
-}
 
-/* A reward you're saving for — one calm row, not a tile in a wall. Emoji, name, and the
-   one number that matters ("N more P$"). Tapping opens the nudge. */
-function SavingRow({ reward, gap, onPick }: { reward: Reward; gap: number; onPick: () => void }) {
-  return (
-    <button
-      type="button"
-      onClick={onPick}
-      aria-label={
-        `${reward.name}, ${reward.cost} P-Bucks. You need ${gap} more P-Bucks. ` +
-        (reward.requiresApproval ? 'A parent says yes first.' : '')
-      }
-      className="flex w-full items-center gap-3 rounded-card border border-border bg-card p-3 text-left transition-transform active:scale-[0.99]"
-    >
-      <span
-        className="grid size-11 place-items-center rounded-card text-2xl leading-none"
-        style={{ background: 'var(--surface-sunken)' }}
-        aria-hidden
-      >
-        {reward.emoji}
-      </span>
-      <span className="text-base-token min-w-0 flex-1 truncate font-semibold" aria-hidden>
-        {reward.name}
-      </span>
-      <span className="flex flex-none items-center gap-2" aria-hidden>
-        {reward.requiresApproval && <AskPill />}
-        <span className="text-sm-token font-semibold text-muted-foreground">{gap} more P$</span>
-      </span>
-    </button>
-  )
-}
-
-/* The kid's pocket (ADR 055): owned tickets, plus any ask waiting on a parent.
-   M4/5b rebuilds this into the ticket/pocket UI proper. */
-function MyRewards({ items }: { items: Redemption[] }) {
-  return (
-    <section className="mb-6">
-      <div className="mb-3 flex items-center gap-2">
-        <span className="text-section-label text-muted-foreground">Yours</span>
-        <span className="h-px flex-1 bg-border" />
-      </div>
-      <div className="flex flex-col gap-2">
-        {items.map((rd) => {
-          const owned = rd.status === 'owned'
-          return (
-            <div
-              key={rd.id}
-              className="flex items-center gap-3 rounded-card border border-border bg-card p-3"
-            >
-              <span
-                className="grid size-10 place-items-center rounded-card text-2xl leading-none"
-                style={{ background: 'var(--surface-sunken)' }}
-                aria-hidden
-              >
-                {rd.reward?.emoji ?? '🎁'}
-              </span>
-              <span className="text-base-token flex-1 truncate font-semibold">
-                {rd.reward?.name ?? 'A reward'}
-              </span>
-              <span
-                className="flex-none rounded-full px-2.5 py-1 text-xs-token font-bold"
-                style={
-                  owned
-                    ? {
-                        background: 'color-mix(in oklch, var(--success) 16%, var(--card))',
-                        color: 'var(--success)',
-                      }
-                    : {
-                        background: 'color-mix(in oklch, var(--warning) 22%, var(--card))',
-                        color: 'color-mix(in oklch, var(--warning) 60%, var(--foreground))',
-                      }
-                }
-              >
-                {owned ? '🎟️ Yours' : '⏳ Waiting on a yes'}
-              </span>
-            </div>
-          )
-        })}
-      </div>
-    </section>
-  )
-}
-
-/* The store's hero balance — the brass counterpart to the chores XP ScorePlate: a
-   `text-metric` numeral in a rounded plate, with the coin as its icon. Sits in the page
-   header so a kid's own P-Bucks lead the screen, exactly as their XP leads the chores page. */
-function BalancePlate({ balance }: { balance: number }) {
-  return (
-    <div
-      className="flex items-center gap-2 rounded-full"
-      style={{
-        padding: '7px 15px 7px 8px',
-        background: 'var(--coin-tint)',
-        border: '1px solid color-mix(in oklch, var(--coin) 55%, var(--border))',
-        boxShadow: 'var(--shadow-card)',
-      }}
-    >
-      <Coin size={26} />
-      <span className="text-metric leading-none" style={{ color: 'var(--coin-ink)' }}>
-        {balance}
-      </span>
-      <span className="text-xs-token font-bold tracking-[0.04em] text-muted-foreground opacity-70">
-        P$
-      </span>
-      <span className="sr-only">Pritchett Bucks in your wallet</span>
+      {shelf.length > 0 && (
+        <Shelf label="Torn & enjoyed">
+          <div className="flex flex-wrap gap-2">
+            {shelf.map((g) => (
+              <StubChip key={g.name} emoji={g.emoji} name={g.name} count={g.count} />
+            ))}
+          </div>
+          {earliestUsed && (
+            <p className="text-xs-body mt-3 text-muted-foreground">
+              {enjoyedSince(used.length, earliestUsed)}
+            </p>
+          )}
+        </Shelf>
+      )}
     </div>
   )
 }
 
-/* The kid's collection — every reward they've actually earned, all time. Calm by default
-   (one motivating line, collapsed), because it's a look-back, not an action; it opens to a
-   trophy shelf grouped by reward (🎮 ×5), so a kid sees what they've built up. */
-function EarnedRewards({ items }: { items: Redemption[] }) {
-  const [open, setOpen] = useState(false)
-  const groups = new Map<string, { emoji: string; name: string; count: number }>()
-  for (const rd of items) {
-    const g = groups.get(rd.rewardId)
-    if (g) g.count += 1
-    else
-      groups.set(rd.rewardId, {
-        emoji: rd.reward?.emoji ?? '🎁',
-        name: rd.reward?.name ?? 'A reward',
-        count: 1,
-      })
-  }
-  const shelf = [...groups.values()].sort((a, b) => b.count - a.count)
+/* A ticket in the pocket. The stub keeps the emoji — it's paid for; the price is
+   history. Three states, one anatomy: ready ("Use it"), ask-first ("Ask to use"),
+   and asked (waiting pill, slightly quieted). A "not now" simply returns the ticket
+   to ready with the parent's words on it — nothing is lost. */
+function PocketTicket({ ticket, onUse }: { ticket: Redemption; onUse: () => void }) {
+  const waiting = ticket.status === 'use_requested'
+  const askFirst = ticket.reward?.requiresApproval ?? false
+  const name = ticket.reward?.name ?? 'A reward'
+  const notNowNote = !waiting && ticket.decidedNote ? ticket.decidedNote : null
 
   return (
-    <section className="mt-8 border-t border-border pt-5">
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        aria-expanded={open}
-        className="flex w-full items-center gap-2"
-      >
-        <span className="text-lg" aria-hidden>
-          🏆
-        </span>
-        <span className="text-base-token font-semibold">
-          You&rsquo;ve earned {items.length} reward{items.length === 1 ? '' : 's'}
-        </span>
-        {open ? (
-          <ChevronDown className="ml-auto size-4 text-muted-foreground" aria-hidden />
-        ) : (
-          <ChevronRight className="ml-auto size-4 text-muted-foreground" aria-hidden />
-        )}
-      </button>
-      {open && (
-        <div className="mt-3 flex flex-wrap gap-2">
-          {shelf.map((g) => (
-            <span
-              key={g.name}
-              className="text-sm-token inline-flex items-center gap-1.5 rounded-full border border-border bg-card px-3 py-1.5 font-semibold"
-            >
-              <span aria-hidden>{g.emoji}</span> {g.name}
-              {g.count > 1 && <span className="text-muted-foreground">×{g.count}</span>}
-            </span>
-          ))}
+    <TicketFrame waiting={waiting} className="md:max-w-[560px]">
+      <EmojiStub emoji={ticket.reward?.emoji ?? '🎟️'} />
+      <div className="flex min-w-0 flex-1 items-center gap-3.5 px-4 py-4">
+        <div className="min-w-0 flex-1">
+          <div className="text-base-token font-bold leading-tight">{name}</div>
+          {ticket.reward?.description && (
+            <div className="mt-0.5 text-xs-body leading-snug text-muted-foreground">
+              {ticket.reward.description}
+            </div>
+          )}
+          {notNowNote && (
+            <div className="mt-0.5 text-xs-body leading-snug text-muted-foreground">
+              &ldquo;{notNowNote}&rdquo; — ask again anytime
+            </div>
+          )}
+          <div className="text-xs-token mt-1 text-muted-foreground">
+            {waiting && ticket.useRequestedAt
+              ? askedLabel(ticket.useRequestedAt)
+              : boughtLabel(ticket.purchasedAt)}
+          </div>
         </div>
-      )}
-    </section>
+        <div className="flex flex-none flex-col items-end gap-1.5">
+          {waiting ? (
+            <span
+              className="text-xs-token inline-flex items-center gap-1.5 rounded-full px-2.5 py-1 font-bold"
+              style={{
+                background: 'color-mix(in oklch, var(--warning) 22%, var(--card))',
+                color: 'color-mix(in oklch, var(--warning) 60%, var(--foreground))',
+              }}
+            >
+              ⏳ Waiting on a yes
+            </span>
+          ) : askFirst ? (
+            <button
+              type="button"
+              onClick={onUse}
+              aria-label={`Ask to use ${name}`}
+              className="text-sm-token cursor-pointer rounded-full bg-card px-4 py-2 font-bold"
+              style={{
+                color: 'var(--coin-ink)',
+                border: '1.5px solid color-mix(in oklch, var(--coin) 65%, var(--border))',
+                boxShadow: 'var(--shadow-card)',
+              }}
+            >
+              Ask to use
+            </button>
+          ) : (
+            <button
+              type="button"
+              onClick={onUse}
+              aria-label={`Use ${name}`}
+              className="text-sm-token cursor-pointer rounded-full bg-primary px-4 py-2 font-bold text-primary-foreground"
+              style={{ boxShadow: 'var(--shadow-card)' }}
+            >
+              Use it
+            </button>
+          )}
+        </div>
+      </div>
+    </TicketFrame>
   )
 }
 
-/** Coin + balance — the one place a coin and an amount live together on the store. */
+// ─── Loading ────────────────────────────────────────────────────────────────
+
+/** Skeleton tickets — the page keeps its shape while it fetches (no centered spinner). */
+function StoreSkeleton() {
+  return (
+    <div aria-busy="true" aria-label="Loading the store">
+      <div
+        className="mb-5 h-[72px] animate-pulse rounded-panel border border-border md:max-w-[430px]"
+        style={{ background: 'var(--surface-sunken)' }}
+      />
+      <TicketSkeleton />
+      <TicketSkeleton />
+      <TicketSkeleton />
+    </div>
+  )
+}
+
+/** Coin + balance — kept for the wallet widget's header chip. */
 export function BalanceChip({ balance }: { balance: number }) {
   return (
     <span
