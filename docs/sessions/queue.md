@@ -23,37 +23,34 @@
 > household's data), but the feature work is what the family is waiting on.
 
 > **M4/5 was reworked mid-flight** by the 2026-07-26 design review (ADR 055 — a
-> redemption is a ticket): the first cut of the store lives on
-> `dev/rewards-store-wallet` and is reshaped, not restarted, by the sessions
-> below. **M4/5a (ticket lifecycle API) is ✅ done** — see
-> `logs/2026-07-26-dev-rewards-ticket-lifecycle.md`; the branch commit carries the
-> store WIP, with `plugins.json`/`load-plugin.ts` still uncommitted (the prod gate).
-
-### M4/5b — Dev: Ticket Store + Pocket UI
-
-**Type:** development · **Kickoff:** `dev-rewards-ticket-store-ui.md`
-Build to the artifact: two kid tabs (Store · My stuff), purse hero, perforated
-tickets with descriptions, the tear, stub shelf. **Carries the prod flip**
-(register `rewards` in `plugins.json` + `load-plugin.ts`, `REWARDS_UI` on, M4/8
-lands with it) and the **code-seed with descriptions** (the seed itself is already
-committed on the branch). **Self-host the emojibase data** before the full
-`EmojiPicker` mode is used. _Depends on: M4/5a ✅._
+> redemption is a ticket): it lives on `dev/rewards-store-wallet`. **M4/5a (API) and
+> M4/5b (store + pocket UI) are ✅ done**; the branch now carries the **prod flip**
+> (`rewards` registered, flag defaults on), so **merging the branch IS the launch —
+> M4/8 must land on the branch before the PR.**
 
 ### M4/5c — Dev: History Sheet + Ripple Fixes
 
 **Type:** development · **Kickoff:** `dev-rewards-history-and-ripples.md`
-"Where'd it go?" ledger sheet (ADR 047's promise), widget ticket-ready line,
+"Where'd it go?" ledger sheet (ADR 047's promise — the purse deliberately ships
+without the affordance until the sheet exists), widget ticket-ready line,
 family-profile `/rewards` chooser (audit: infinite spinner on the fridge's default
 profile), wallet widget into the tier-3 layout. _Depends on: M4/5a ✅; parallel with
 M4/5d._
 
-### M4/5d — Dev: Parent Drawer + Queue Words
+### M4/5d — Dev: Parent Drawer Words
 
 **Type:** development · **Kickoff:** `dev-rewards-parent-words.md`
-The description field (schema column captured nowhere since M4/1), the approval
-toggle's new meaning, queue cards in use-tense, fulfil button removed (the
-protocol is already `yes`/`not_now` — only the words remain). _Depends on:
+**Shrunk by M4/5b**, which pulled the queue rework forward (use-tense cards, cost
+dropped, refund copy deleted). Remaining: the RewardDrawer **description field**
+(schema column captured nowhere since M4/1) and the approval toggle's re-worded
+hint ("They'll ask before using it — buying is always allowed"). _Depends on:
 M4/5a ✅; parallel with M4/5c._
+
+### M4/8 — Design: XP Derived from P-Bucks (gates the M4/5 branch PR)
+
+**Type:** design+dev · see full entry below. **Must land on
+`dev/rewards-store-wallet` before it merges** — the branch flips `REWARDS_UI` on,
+and shipping the flag without M4/8 launches the XP-vs-P$ double-picker mismatch.
 
 ### M4/6 — Dev: Punch Cards
 
@@ -281,6 +278,12 @@ suite mirroring chores/calendar. _Depends on: none._
 ## Recently Completed
 
 > Two-line index; full detail in the linked log.
+
+- **2026-07-26 — Dev: Ticket Store + Pocket UI (M4/5b).** The kid surface built to
+  ADR 055: TabBar tabs, die-cut tickets, the roll at fridge width, the tear, the stub
+  shelf — plus the queue's use-tense pulled forward from M4/5d (a decline button still
+  promised the deleted refund). **Carries the prod flip: merging the branch is the
+  launch, M4/8 gates the PR.** See `logs/2026-07-26-dev-rewards-ticket-store-ui.md`.
 
 - **2026-07-26 — Dev: chores widget's "today" never checked the date (auto-bug
   #73, PR #74).** `todayCompleted`/daily-XP filtered on `status === 'completed'`
