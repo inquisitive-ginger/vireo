@@ -11,12 +11,17 @@ describe('default layouts + widget prominence (ADR 039)', () => {
     expect(defaultLayoutKey('p', 4)).toBe('default_layout_tier_3_4')
   })
 
-  /* M4/5c: a teen earns and spends the currency, so home owes them the wallet the
-     tier-1/2 layout already carries. The parent layout stays wallet-free. */
-  it('gives a teen the wallet beneath the triage row, and a parent none', () => {
+  /* The kid surfaces rank wallet > chores > feed = calendar. A teen gets the same
+     order without a feature (their surface declines to shout, like the parent's);
+     the parent layout stays wallet-free. */
+  it('leads both kid surfaces with the wallet, and gives a parent none', () => {
     const teen = DEFAULT_LAYOUTS['default_layout_tier_3']
-    const wallet = teen.find((i) => i.widgetId === 'rewards.wallet')
-    expect(wallet).toMatchObject({ y: 2, prominence: 'quiet' })
+    expect(teen.find((i) => i.widgetId === 'rewards.wallet')).toMatchObject({
+      x: 0,
+      y: 0,
+      prominence: 'card',
+    })
+    expect(teen.filter((i) => i.prominence === 'feature')).toHaveLength(0)
     expect(
       DEFAULT_LAYOUTS['default_layout_tier_3_4'].some((i) => i.widgetId === 'rewards.wallet')
     ).toBe(false)
@@ -34,7 +39,7 @@ describe('default layouts + widget prominence (ADR 039)', () => {
   it('features the profile-appropriate widget, where a surface has one at all', () => {
     const feature = (key: string) =>
       DEFAULT_LAYOUTS[key].find((i) => i.prominence === 'feature')?.widgetId
-    expect(feature('default_layout_tier_1_2')).toBe('chores.today-summary')
+    expect(feature('default_layout_tier_1_2')).toBe('rewards.wallet')
     expect(feature('default_layout_family')).toBe('family-feed.feed')
     // Parents triage — no single widget is "the one they came for", so no feature.
     expect(feature('default_layout_tier_3_4')).toBeUndefined()
@@ -63,7 +68,7 @@ describe('default layouts + widget prominence (ADR 039)', () => {
   })
 
   it('resolves prominence by (key, widgetId), defaulting to card', () => {
-    expect(prominenceFor('default_layout_tier_1_2', 'chores.today-summary')).toBe('feature')
+    expect(prominenceFor('default_layout_tier_1_2', 'rewards.wallet')).toBe('feature')
     expect(prominenceFor('default_layout_tier_3_4', 'calendar.up-next')).toBe('card')
     expect(prominenceFor('default_layout_tier_3_4', 'family-feed.feed')).toBe('quiet')
     expect(prominenceFor('default_layout_tier_3_4', 'chores.today-summary')).toBe('card')
