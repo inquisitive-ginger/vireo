@@ -44,8 +44,8 @@ invalidates the story too, and the query only runs while the sheet is open.
   store re-renders as that kid. Parents are excluded: switching to one needs the PIN
   this surface doesn't carry. Rows carry the identity spine (the legend rule, ADR
   042 — this surface pairs faces with names).
-- **Teen home layout** — new `default_layout_tier_3`: the parent triage row plus
-  `rewards.wallet` quiet at (0,2). **The `default_layout_tier_3_4` key survives as
+- **Teen home layout** — new `default_layout_tier_3`. (Reworked later the same
+  day — see the addendum.) **The `default_layout_tier_3_4` key survives as
   the tier-4 layout under its stale name** — deployed `system_config` geometry
   overrides are looked up by key (and `POST /dev/reset` seeds one per key), so
   renaming it would orphan them; a comment says so. The new key simply falls through
@@ -98,3 +98,23 @@ chores 56 · calendar 105; typecheck + lint clean workspace-wide.
 - The widget is one `Link` to `/rewards`, so the ticket-ready line lands on the
   Store tab, not My stuff — fine at this size; a `?tab=` deep link is a cheap later
   nicety if it ever grates.
+
+## Addendum (same day)
+
+- **Kid grids reworked at the user's direction** (`e7a0408`): both tier-1/2 and
+  tier-3 now rank **wallet > chores > feed = calendar**. The tier-1/2 **feature moved
+  from chores to the wallet** — the payoff is what a kid opens the app for, chores
+  stand tall (2×2 card) beside it as the way to fill it; tier 3 takes the identical
+  order with no feature (a teen's surface declines to shout, like the parent's);
+  calendar and feed sit as equal quiet 2×1 peers on the bottom row. Dev's stale
+  `system_config` `default_layout_*` rows were deleted (a cache of the old default —
+  `/dev/reset` rewrites them from code). Live-checked as Teddy and Zoë at fridge +
+  phone. The 2×2 wallet reads airy on a near-empty balance — the same breathing-room
+  language as the chores celebration slot; revisit only if it grates with real data.
+- **Cherry-picked `ec2303e`** (the notification tray blanked the whole app on any
+  `variant: 'rewards'` row) onto the branch — the fix landed on main **after** the
+  branch was cut, so dev still crashed on open while prod was fixed. The rewards.ts
+  conflict was resolved by keeping the ADR 055 routes and applying the fix's
+  semantic mapping (the parent's yes → `success`; asks, not-nows, refunds → `info`).
+  Verified live: the tray opens as Teddy, old `'rewards'` rows render with the info
+  fallback. api 350 · ui 181 green.
