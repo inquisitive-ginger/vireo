@@ -1,7 +1,7 @@
 import fp from 'fastify-plugin'
 import type { FastifyPluginAsync } from 'fastify'
 import { prisma } from '@family-os/platform/server'
-import { notify, MAX_NOTIFICATIONS } from '../lib/notify'
+import { notify, isNotifyVariant, MAX_NOTIFICATIONS } from '../lib/notify'
 
 const notificationsPlugin: FastifyPluginAsync = async (fastify) => {
   // POST /notifications — persist a notification for tier 2+ profiles
@@ -17,6 +17,7 @@ const notificationsPlugin: FastifyPluginAsync = async (fastify) => {
     }
 
     if (!body?.title || !body?.variant) return { ok: false, error: 'title and variant required' }
+    if (!isNotifyVariant(body.variant)) return { ok: false, error: `unknown variant` }
 
     // Persist + prune + Web Push all live in the shared server notify() path.
     const result = await notify(fastify.eventBus, profile.id, {

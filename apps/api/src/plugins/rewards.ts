@@ -181,7 +181,7 @@ async function notifyParents(
       notify(bus, p.id, {
         title: input.title,
         body: input.body,
-        variant: 'rewards',
+        variant: 'info',
         priority: 'alert',
       })
     )
@@ -490,11 +490,11 @@ const rewardsPlugin: FastifyPluginAsync = async (fastify) => {
           fastify.eventBus,
           redemption.profileId,
           parsed.data.action === 'grant'
-            ? { title: `Yes! ${label}`, variant: 'rewards', priority: 'alert' }
+            ? { title: `Yes! ${label}`, variant: 'success', priority: 'alert' }
             : {
                 title: `Not this time — ${label}`,
                 body: redemption.decidedNote,
-                variant: 'rewards',
+                variant: 'info',
                 priority: 'alert',
               }
         )

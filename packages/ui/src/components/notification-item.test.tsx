@@ -30,4 +30,12 @@ describe('NotificationItem', () => {
     render(<NotificationItem {...baseProps} />)
     expect(screen.queryByRole('button', { name: /delete/i })).not.toBeInTheDocument()
   })
+
+  it('renders a variant it does not know rather than taking the shell down', () => {
+    // A stored row whose variant is outside the union used to resolve to an
+    // undefined icon component, which throws during render — and there is no
+    // error boundary above the tray, so the whole app went white.
+    render(<NotificationItem {...baseProps} variant={'rewards' as never} />)
+    expect(screen.getByText('Chore assigned')).toBeInTheDocument()
+  })
 })
