@@ -185,7 +185,7 @@ async function notifyParents(
       notify(bus, p.id, {
         title: input.title,
         body: input.body,
-        variant: 'rewards',
+        variant: 'info',
         priority: 'alert',
       })
     )
@@ -539,11 +539,11 @@ const rewardsPlugin: FastifyPluginAsync = async (fastify) => {
         fastify.eventBus,
         redemption.profileId,
         parsed.data.action === 'yes'
-          ? { title: `Yes! ${label}`, variant: 'rewards', priority: 'alert' }
+          ? { title: `Yes! ${label}`, variant: 'success', priority: 'alert' }
           : {
               title: `Not right now — ${label}`,
               body: redemption.decidedNote,
-              variant: 'rewards',
+              variant: 'info',
               priority: 'alert',
             }
       )
@@ -573,7 +573,7 @@ const rewardsPlugin: FastifyPluginAsync = async (fastify) => {
       await notify(fastify.eventBus, redemption.profileId, {
         title: `${redemption.reward.emoji} ${redemption.reward.name} refunded`,
         body: `${redemption.cost} P-Bucks back in your wallet`,
-        variant: 'rewards',
+        variant: 'info',
         priority: 'alert',
       })
       return { revoked: true, balance }

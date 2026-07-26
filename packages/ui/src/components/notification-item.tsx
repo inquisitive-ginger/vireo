@@ -16,8 +16,11 @@ export interface NotificationItemProps {
   className?: string
 }
 
+// Keyed by string, not NotifyVariant: the rows come off the server, so an unknown
+// variant is a data fact, not a type error — and rendering `undefined` as an element
+// takes the whole shell down (there is no boundary above the tray).
 const VARIANT_ICON: Record<
-  NotifyVariant,
+  string,
   React.ComponentType<{ size?: number; className?: string; style?: React.CSSProperties }>
 > = {
   success: CheckCircle,
@@ -26,7 +29,7 @@ const VARIANT_ICON: Record<
   error: XCircle,
 }
 
-const VARIANT_COLOR: Record<NotifyVariant, string> = {
+const VARIANT_COLOR: Record<string, string> = {
   success: 'text-success',
   info: 'text-info',
   warning: 'text-warning',
@@ -57,7 +60,7 @@ export function NotificationItem({
   onDelete,
   className,
 }: NotificationItemProps) {
-  const Icon = VARIANT_ICON[variant]
+  const Icon = VARIANT_ICON[variant] ?? Info
   const [anim, setAnim] = useState<{ x: number; easing: AnimEasing }>({ x: 0, easing: 'none' })
   const dismissingRef = useRef(false)
 
@@ -134,7 +137,7 @@ export function NotificationItem({
       >
         <Icon
           size={15}
-          className={cn('shrink-0 mt-0.5', VARIANT_COLOR[variant])}
+          className={cn('shrink-0 mt-0.5', VARIANT_COLOR[variant] ?? VARIANT_COLOR.info)}
           style={{ opacity: isRead ? 0.45 : 1 }}
           aria-hidden
         />

@@ -5,7 +5,7 @@ import { FAMILY_PROFILE_ID } from '@family-os/platform/types'
 import { BugReportCreateSchema, BugReportUpdateSchema } from '@family-os/schemas'
 import type { BugReportContext, BugReportStatus } from '@family-os/schemas'
 import { createBugIssue } from '../lib/github-issue'
-import { notify } from '../lib/notify'
+import { notify, type NotifyInput } from '../lib/notify'
 
 type ReportRow = {
   id: string
@@ -57,7 +57,7 @@ function serializeReport(report: ReportRow, reporter: Reporter) {
 /** What the reporter is told when their bug ships. Deliberately warm and specific —
     it quotes their own words back, because "a fix was deployed" means nothing to a
     child who reported that the calendar looked funny (ADR 046). */
-function deployedNotification(description: string, resolution: string | null) {
+function deployedNotification(description: string, resolution: string | null): NotifyInput {
   const quoted = description.length > 60 ? `${description.slice(0, 57)}…` : description
   return {
     title: 'Fixed and live',

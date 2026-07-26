@@ -4,10 +4,19 @@ import { sendPushToProfile } from '../plugins/push'
 
 export const MAX_NOTIFICATIONS = 50
 
+/** The four the tray can render. A variant outside this set has no icon and takes
+    the whole shell down with it, so the union is the contract, not documentation. */
+export const NOTIFY_VARIANTS = ['success', 'info', 'warning', 'error'] as const
+export type NotifyVariant = (typeof NOTIFY_VARIANTS)[number]
+
+export function isNotifyVariant(v: unknown): v is NotifyVariant {
+  return NOTIFY_VARIANTS.includes(v as NotifyVariant)
+}
+
 export type NotifyInput = {
   title: string
   body?: string | null
-  variant: string
+  variant: NotifyVariant
   priority?: string
 }
 
