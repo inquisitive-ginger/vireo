@@ -23,18 +23,11 @@
 > household's data), but the feature work is what the family is waiting on.
 
 > **M4/5 was reworked mid-flight** by the 2026-07-26 design review (ADR 055 — a
-> redemption is a ticket): the first cut of the store lives uncommitted on
-> `dev/rewards-store-wallet` and is reshaped, not restarted, by the four sessions
-> below. See `logs/2026-07-26-design-rewards-store-rework.md` + the artifact linked
-> there.
-
-### M4/5a — Dev: Ticket Lifecycle (API)
-
-**Type:** development · **Kickoff:** `dev-rewards-ticket-lifecycle.md`
-ADR 055 in the API: statuses → `owned·use_requested·used`, buy always debits (no
-gate), ask moves to use-time, not-now keeps the ticket, fulfil deleted, tier-4
-revoke-refund as the exception. Edit the branch migration in place (unmerged,
-prod-dormant). _Depends on: M4/4._
+> redemption is a ticket): the first cut of the store lives on
+> `dev/rewards-store-wallet` and is reshaped, not restarted, by the sessions
+> below. **M4/5a (ticket lifecycle API) is ✅ done** — see
+> `logs/2026-07-26-dev-rewards-ticket-lifecycle.md`; the branch commit carries the
+> store WIP, with `plugins.json`/`load-plugin.ts` still uncommitted (the prod gate).
 
 ### M4/5b — Dev: Ticket Store + Pocket UI
 
@@ -42,23 +35,25 @@ prod-dormant). _Depends on: M4/4._
 Build to the artifact: two kid tabs (Store · My stuff), purse hero, perforated
 tickets with descriptions, the tear, stub shelf. **Carries the prod flip**
 (register `rewards` in `plugins.json` + `load-plugin.ts`, `REWARDS_UI` on, M4/8
-lands with it) and the **code-seed with descriptions**. **Self-host the emojibase
-data** before the full `EmojiPicker` mode is used. _Depends on: M4/5a._
+lands with it) and the **code-seed with descriptions** (the seed itself is already
+committed on the branch). **Self-host the emojibase data** before the full
+`EmojiPicker` mode is used. _Depends on: M4/5a ✅._
 
 ### M4/5c — Dev: History Sheet + Ripple Fixes
 
 **Type:** development · **Kickoff:** `dev-rewards-history-and-ripples.md`
 "Where'd it go?" ledger sheet (ADR 047's promise), widget ticket-ready line,
 family-profile `/rewards` chooser (audit: infinite spinner on the fridge's default
-profile), wallet widget into the tier-3 layout. _Depends on: M4/5a; parallel with
+profile), wallet widget into the tier-3 layout. _Depends on: M4/5a ✅; parallel with
 M4/5d._
 
 ### M4/5d — Dev: Parent Drawer + Queue Words
 
 **Type:** development · **Kickoff:** `dev-rewards-parent-words.md`
 The description field (schema column captured nowhere since M4/1), the approval
-toggle's new meaning, queue cards in use-tense, fulfil button removed. _Depends
-on: M4/5a; parallel with M4/5c._
+toggle's new meaning, queue cards in use-tense, fulfil button removed (the
+protocol is already `yes`/`not_now` — only the words remain). _Depends on:
+M4/5a ✅; parallel with M4/5c._
 
 ### M4/6 — Dev: Punch Cards
 
@@ -286,6 +281,12 @@ suite mirroring chores/calendar. _Depends on: none._
 ## Recently Completed
 
 > Two-line index; full detail in the linked log.
+
+- **2026-07-26 — Dev: Ticket Lifecycle (M4/5a).** ADR 055 in the API: buy always
+  debits and lands `owned`, use is explicit (`POST :id/use`), not-now keeps the ticket,
+  tier-4 `DELETE` revoke refunds-and-deletes. Migration **stacked, not edited** — the
+  M4/4 one is merged and applied in prod, contrary to the kickoff. See
+  `logs/2026-07-26-dev-rewards-ticket-lifecycle.md`.
 
 - **2026-07-26 — Design: Rewards Store Rework (mid-M4/5 review, ADR 055).** Live-drove
   the in-flight store and reworked it around one idea: a redemption is a **ticket** —
