@@ -23,28 +23,10 @@
 > household's data), but the feature work is what the family is waiting on.
 
 > **M4/5 was reworked mid-flight** by the 2026-07-26 design review (ADR 055 — a
-> redemption is a ticket): it lives on `dev/rewards-store-wallet`. **M4/5a (API) and
-> M4/5b (store + pocket UI) are ✅ done**; the branch now carries the **prod flip**
-> (`rewards` registered, flag defaults on), so **merging the branch IS the launch —
-> M4/8 must land on the branch before the PR.**
-
-### M4/5c — Dev: History Sheet + Ripple Fixes
-
-**Type:** development · **Kickoff:** `dev-rewards-history-and-ripples.md`
-"Where'd it go?" ledger sheet (ADR 047's promise — the purse deliberately ships
-without the affordance until the sheet exists), widget ticket-ready line,
-family-profile `/rewards` chooser (audit: infinite spinner on the fridge's default
-profile), wallet widget into the tier-3 layout. _Depends on: M4/5a ✅; parallel with
-M4/5d._
-
-### M4/5d — Dev: Parent Drawer Words
-
-**Type:** development · **Kickoff:** `dev-rewards-parent-words.md`
-**Shrunk by M4/5b**, which pulled the queue rework forward (use-tense cards, cost
-dropped, refund copy deleted). Remaining: the RewardDrawer **description field**
-(schema column captured nowhere since M4/1) and the approval toggle's re-worded
-hint ("They'll ask before using it — buying is always allowed"). _Depends on:
-M4/5a ✅; parallel with M4/5c._
+> redemption is a ticket): it lives on `dev/rewards-store-wallet`. **M4/5a–d are all
+> ✅ done on the branch**; it carries the **prod flip** (`rewards` registered, flag
+> defaults on), so **merging the branch IS the launch — M4/8 is the one remaining
+> gate and must land on the branch before the PR.**
 
 ### M4/8 — Design: XP Derived from P-Bucks (gates the M4/5 branch PR)
 
@@ -279,6 +261,11 @@ suite mirroring chores/calendar. _Depends on: none._
 
 > Two-line index; full detail in the linked log.
 
+- **2026-07-26 — Dev: History Sheet + Ripples ∥ Parent Drawer Words (M4/5c+d).** The
+  purse's "Where'd it go?" sheet (no new endpoint — `/rewards/wallet` already was the
+  ledger), widget ticket-ready line, family-profile chooser, tier-3 wallet layout,
+  drawer description field + tear-grammar hint. See
+  `logs/2026-07-26-dev-rewards-history-ripples-parent-words.md`.
 - **2026-07-26 — Dev: Ticket Store + Pocket UI (M4/5b).** The kid surface built to
   ADR 055: TabBar tabs, die-cut tickets, the roll at fridge width, the tear, the stub
   shelf — plus the queue's use-tense pulled forward from M4/5d (a decline button still
