@@ -7,6 +7,7 @@ import { gapFor, storeShelves } from '../lib/affordability'
 import { askedLabel, boughtLabel, enjoyedSince } from '../lib/when'
 import type { Redemption, Reward } from '../types'
 import { EmojiStub, StoreTicket, StubChip, TicketFrame, TicketSkeleton } from './Ticket'
+import { HistorySheet } from './HistorySheet'
 import { RedeemDialog } from './RedeemDialog'
 import { UseTicketDialog } from './UseTicketDialog'
 
@@ -29,6 +30,7 @@ export function Store() {
   const [tab, setTab] = useState<KidTab>('store')
   const [picked, setPicked] = useState<Reward | null>(null)
   const [using, setUsing] = useState<Redemption | null>(null)
+  const [historyOpen, setHistoryOpen] = useState(false)
 
   const pocket = mine.data ?? []
   const readyCount = pocket.filter((t) => t.status === 'owned').length
@@ -59,6 +61,7 @@ export function Store() {
           balance={store.data.balance}
           rewards={store.data.rewards}
           onPick={setPicked}
+          onOpenHistory={() => setHistoryOpen(true)}
         />
       ) : (
         <PocketTab pocket={pocket} used={earned.data ?? []} onUse={setUsing} />
@@ -73,6 +76,7 @@ export function Store() {
         />
       )}
       <UseTicketDialog ticket={using} open={using !== null} onClose={() => setUsing(null)} />
+      <HistorySheet open={historyOpen} onClose={() => setHistoryOpen(false)} />
     </>
   )
 }
@@ -84,11 +88,13 @@ export function StoreTab({
   balance,
   rewards,
   onPick,
+  onOpenHistory,
 }: {
   name: string
   balance: number
   rewards: Reward[]
   onPick: (reward: Reward) => void
+  onOpenHistory?: () => void
 }) {
   const [showAllNow, setShowAllNow] = useState(false)
   const [showAllNear, setShowAllNear] = useState(false)
@@ -101,7 +107,7 @@ export function StoreTab({
 
   return (
     <div>
-      <PurseHero name={name} balance={balance} />
+      <PurseHero name={name} balance={balance} onOpenHistory={onOpenHistory} />
 
       {rewards.length === 0 ? (
         <EmptyState
@@ -166,11 +172,21 @@ export function StoreTab({
 /* The purse — the hero, and it's personal: whose money, the struck coin, the metric
    numeral. The balance stops being a plate in a corner and becomes what the page is
    about. Capped at the roll's unit width at md: — a purse is hand-sized, not a
-   banner. ("Where'd it go?" opens the history sheet — M4/5c.) */
-function PurseHero({ name, balance }: { name: string; balance: number }) {
+   banner. Tapping it asks "Where'd it go?" — the history sheet (M4/5c). */
+function PurseHero({
+  name,
+  balance,
+  onOpenHistory,
+}: {
+  name: string
+  balance: number
+  onOpenHistory?: () => void
+}) {
+  const Frame = onOpenHistory ? 'button' : 'div'
   return (
-    <div
-      className="mb-5 flex items-center gap-3.5 rounded-panel border p-4 md:max-w-[430px]"
+    <Frame
+      {...(onOpenHistory ? { type: 'button' as const, onClick: onOpenHistory } : {})}
+      className="mb-5 flex w-full items-center gap-3.5 rounded-panel border p-4 text-left transition-transform active:scale-[0.995] md:max-w-[430px]"
       style={{
         background: 'var(--coin-tint)',
         borderColor: 'color-mix(in oklch, var(--coin) 55%, var(--border))',
@@ -178,7 +194,7 @@ function PurseHero({ name, balance }: { name: string; balance: number }) {
       }}
     >
       <Coin size={40} />
-      <div className="min-w-0">
+      <div className="min-w-0 flex-1">
         <div className="text-section-label text-muted-foreground">
           {name}&rsquo;s {CURRENCY.short}
         </div>
@@ -187,7 +203,12 @@ function PurseHero({ name, balance }: { name: string; balance: number }) {
           <span className="text-sm-token font-bold text-muted-foreground">P$</span>
         </div>
       </div>
-    </div>
+      {onOpenHistory && (
+        <span className="text-sm-token flex-none font-semibold text-primary">
+          Where&rsquo;d it go? ›
+        </span>
+      )}
+    </Frame>
   )
 }
 

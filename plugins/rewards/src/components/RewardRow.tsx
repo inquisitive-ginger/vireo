@@ -56,6 +56,9 @@ export function RewardRow({
           <span className="text-card-title truncate">{reward.name}</span>
           {!reward.active && <span className="text-xs-body text-muted-foreground">· hidden</span>}
         </div>
+        {reward.description && (
+          <div className="text-xs-body truncate text-muted-foreground">{reward.description}</div>
+        )}
         <div className="mt-0.5 flex flex-wrap items-center gap-x-2 gap-y-1">
           {audience.length > 0 ? (
             <>

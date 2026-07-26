@@ -40,6 +40,7 @@ export function RewardDrawer({
   error,
 }: RewardDrawerProps) {
   const [name, setName] = useState('')
+  const [description, setDescription] = useState('')
   const [emoji, setEmoji] = useState('🎁')
   const [cost, setCost] = useState('10')
   const [requiresApproval, setRequiresApproval] = useState(false)
@@ -54,6 +55,7 @@ export function RewardDrawer({
   useEffect(() => {
     if (!open) return
     setName(editing?.name ?? '')
+    setDescription(editing?.description ?? '')
     setEmoji(editing?.emoji ?? '🎁')
     setCost(String(editing?.cost ?? 10))
     setRequiresApproval(editing?.requiresApproval ?? false)
@@ -79,6 +81,7 @@ export function RewardDrawer({
     setLocalError(null)
     void onSubmit({
       name: name.trim(),
+      description: description.trim() || null,
       emoji: emoji.trim(),
       cost: costNum,
       requiresApproval,
@@ -102,6 +105,19 @@ export function RewardDrawer({
                 value={name}
                 onChange={(e) => setName(e.target.value)}
               />
+            </div>
+
+            <div>
+              <FieldLabel htmlFor="reward-description">What they get</FieldLabel>
+              <Input
+                id="reward-description"
+                placeholder="Friday night is yours — you pick the movie."
+                value={description}
+                onChange={(e) => setDescription(e.target.value)}
+              />
+              <p className="text-xs-body mt-1.5 text-muted-foreground">
+                One line, on the ticket and the confirm.
+              </p>
             </div>
 
             <div>
@@ -169,9 +185,11 @@ export function RewardDrawer({
               </div>
             </div>
 
+            {/* ADR 055: the gate moved from the register to the tear — approval
+                holds USE, never purchase. */}
             <ToggleField
               title="Needs a parent's yes"
-              hint="Holds the reward in your queue until you approve it"
+              hint="They'll ask before using it — buying is always allowed"
               checked={requiresApproval}
               onChange={setRequiresApproval}
             />

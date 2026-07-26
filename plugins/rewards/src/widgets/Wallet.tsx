@@ -1,6 +1,6 @@
 import { Loader2 } from 'lucide-react'
 import { FAMILY_PROFILE_ID, useAuth } from '@family-os/platform'
-import { useStore, useXp } from '../lib/hooks'
+import { useMyRedemptions, useStore, useXp } from '../lib/hooks'
 import { WalletView } from './WalletView'
 
 /* `rewards.wallet` widget container — registered in manifest.json `widgets[]`. Reads the
@@ -14,6 +14,7 @@ export default function Wallet() {
   const isTaskee = tier < 4 && !isFamily
 
   const store = useStore()
+  const mine = useMyRedemptions()
   const xp = useXp(isTaskee)
 
   if (isFamily) return null
@@ -30,6 +31,7 @@ export default function Wallet() {
     <WalletView
       balance={store.data.balance}
       rewards={store.data.rewards}
+      tickets={(mine.data ?? []).filter((t) => t.status === 'owned')}
       lifetimeXp={isTaskee ? xp.data?.totalXp : undefined}
     />
   )

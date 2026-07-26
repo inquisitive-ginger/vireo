@@ -1,4 +1,10 @@
-import { useQuery, useMutation, useQueryClient, useAuth } from '@family-os/platform'
+import {
+  useQuery,
+  useMutation,
+  useQueryClient,
+  useInfiniteQuery,
+  useAuth,
+} from '@family-os/platform'
 import type { Profile } from '@family-os/platform/types'
 import type {
   Reward,
@@ -7,6 +13,7 @@ import type {
   RewardInput,
   RedemptionAction,
   StoreData,
+  WalletPage,
 } from '../types'
 
 async function jsonFetch<T>(url: string, init?: RequestInit): Promise<T> {
@@ -80,6 +87,25 @@ export function useStore() {
     queryFn: () => jsonFetch<StoreData>('/api/rewards/store'),
     enabled: !!id,
     staleTime: 60_000,
+  })
+}
+
+/** The history sheet's pages (M4/5c): the caller's ledger, newest first, off the
+    same GET /rewards/wallet the balance comes from — no second endpoint, the promise
+    and its explanation are one response (ADR 047). Shares the `['rewards/wallet']`
+    prefix so a purchase refreshes the story too. Fetched only while the sheet is
+    open (`enabled`) — the purse must not cost a wallet read per page view. */
+export function useLedger(enabled: boolean) {
+  const { id } = useAuth()
+  return useInfiniteQuery({
+    queryKey: ['rewards/wallet', 'ledger', id],
+    queryFn: ({ pageParam }: { pageParam: string | null }) =>
+      jsonFetch<WalletPage>(
+        `/api/rewards/wallet?limit=50${pageParam ? `&cursor=${pageParam}` : ''}`
+      ),
+    initialPageParam: null as string | null,
+    getNextPageParam: (last) => last.nextCursor,
+    enabled: enabled && !!id,
   })
 }
 

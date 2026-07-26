@@ -1,9 +1,10 @@
 import { useState } from 'react'
 import { PageContainer, TabBar } from '@family-os/ui'
-import { useAuth } from '@family-os/platform'
+import { FAMILY_PROFILE_ID, useAuth } from '@family-os/platform'
 import { ApprovalsQueue } from '../components/ApprovalsQueue'
 import { CatalogView } from '../components/CatalogView'
 import { Store } from '../components/Store'
+import { WalletChooser } from '../components/WalletChooser'
 import { useQueuePayouts, useQueueRedemptions } from '../lib/hooks'
 
 type Tab = 'approvals' | 'catalog'
@@ -12,10 +13,19 @@ type Tab = 'approvals' | 'catalog'
    whole point of the module (ADR 053: tier 1 reaches its own balance and the store). A
    parent doesn't spend in the kid store; tier 4 gets its real work — the approvals queue
    and the catalog. Both halves split their surfaces with the shared TabBar (a top-level
-   split between peer surfaces — the calendar precedent). */
+   split between peer surfaces — the calendar precedent). The family pseudo-profile
+   holds no wallet (ADR 053), so it gets the chooser and never fetches one. */
 export function RewardsPage() {
-  const { tier } = useAuth()
+  const { id, tier } = useAuth()
   const [tab, setTab] = useState<Tab>('approvals')
+
+  if (id === FAMILY_PROFILE_ID) {
+    return (
+      <PageContainer width="list">
+        <WalletChooser />
+      </PageContainer>
+    )
+  }
 
   if (tier < 4) {
     return (

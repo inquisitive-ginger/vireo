@@ -2,7 +2,7 @@ import { describe, it, expect } from 'vitest'
 import { render, screen } from '@testing-library/react'
 import { MemoryRouter } from 'react-router-dom'
 import { WalletView } from './WalletView'
-import type { Reward } from '../types'
+import type { Redemption, Reward } from '../types'
 
 const r = (over: Partial<Reward> & Pick<Reward, 'id' | 'name' | 'cost'>): Reward => ({
   emoji: '🎧',
@@ -58,5 +58,40 @@ describe('WalletView', () => {
       </MemoryRouter>
     )
     expect(screen.queryByText(/XP earned all-time/)).not.toBeInTheDocument()
+  })
+})
+
+const ticket = (id: string, emoji: string, purchasedAt: string): Redemption => ({
+  id,
+  rewardId: id,
+  profileId: 'kid',
+  cost: 10,
+  status: 'owned',
+  purchasedAt,
+  useRequestedAt: null,
+  usedAt: null,
+  decidedBy: null,
+  decidedAt: null,
+  decidedNote: null,
+  reward: { id, name: id, emoji, description: null, requiresApproval: false },
+})
+
+/* M4/5c — AC3: ticket-ready › affordable › next-goal › first-earn. The thing you
+   already have beats the thing you could buy. */
+describe('WalletView ticket-ready line', () => {
+  it('an owned ticket beats the affordability line', () => {
+    renderWallet({ balance: 12, rewards: catalog, tickets: [ticket('t1', '🍿', '2026-07-20')] })
+    expect(screen.getByText(/A ticket’s waiting in your pocket/)).toBeInTheDocument()
+    expect(screen.queryByText(/you can get/)).not.toBeInTheDocument()
+  })
+
+  it('leads with the longest-held ticket, and counts several', () => {
+    renderWallet({
+      balance: 0,
+      rewards: catalog,
+      tickets: [ticket('new', '🎨', '2026-07-25'), ticket('old', '🍿', '2026-07-18')],
+    })
+    expect(screen.getByText('🍿')).toBeInTheDocument()
+    expect(screen.getByText(/2 tickets are waiting in your pocket/)).toBeInTheDocument()
   })
 })

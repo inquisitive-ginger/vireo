@@ -7,8 +7,19 @@ describe('default layouts + widget prominence (ADR 039)', () => {
     expect(defaultLayoutKey(FAMILY_PROFILE_ID, 1)).toBe('default_layout_family')
     expect(defaultLayoutKey('p', 1)).toBe('default_layout_tier_1_2')
     expect(defaultLayoutKey('p', 2)).toBe('default_layout_tier_1_2')
-    expect(defaultLayoutKey('p', 3)).toBe('default_layout_tier_3_4')
+    expect(defaultLayoutKey('p', 3)).toBe('default_layout_tier_3')
     expect(defaultLayoutKey('p', 4)).toBe('default_layout_tier_3_4')
+  })
+
+  /* M4/5c: a teen earns and spends the currency, so home owes them the wallet the
+     tier-1/2 layout already carries. The parent layout stays wallet-free. */
+  it('gives a teen the wallet beneath the triage row, and a parent none', () => {
+    const teen = DEFAULT_LAYOUTS['default_layout_tier_3']
+    const wallet = teen.find((i) => i.widgetId === 'rewards.wallet')
+    expect(wallet).toMatchObject({ y: 2, prominence: 'quiet' })
+    expect(
+      DEFAULT_LAYOUTS['default_layout_tier_3_4'].some((i) => i.widgetId === 'rewards.wallet')
+    ).toBe(false)
   })
 
   /* AT MOST one — never two. The rung means "this is what you came for", and two of

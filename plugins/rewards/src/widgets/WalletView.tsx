@@ -2,7 +2,7 @@ import type { ReactNode } from 'react'
 import { Link } from 'react-router-dom'
 import { Star, Wallet } from 'lucide-react'
 import { Coin, WidgetHeader, WIDGET_CQ } from '@family-os/ui'
-import type { Reward } from '../types'
+import type { Redemption, Reward } from '../types'
 import { walletReach } from '../lib/affordability'
 import { BalanceChip } from '../components/Store'
 import { Track } from '../components/RedeemDialog'
@@ -23,6 +23,9 @@ export type WalletSize = 'compact' | 'standard'
 export interface WalletViewProps {
   balance: number
   rewards: Reward[]
+  /** Owned, un-torn tickets. One waiting beats the affordability line (M4/5c) —
+      the thing you already have beats the thing you could buy. */
+  tickets?: Redemption[]
   /** Lifetime XP for the footnote; omit for a parent's wallet (no XP accrues at tier 4). */
   lifetimeXp?: number
   size?: WalletSize
@@ -52,9 +55,35 @@ function XpFootnote({ xp }: { xp: number }) {
   )
 }
 
-/** The affordability line — the widget's whole reason to exist over a score plate. */
-function Adaptive({ balance, rewards }: { balance: number; rewards: Reward[] }) {
+/** An owned ticket waiting in the pocket — the longest-held one leads. */
+function TicketLine({ tickets }: { tickets: Redemption[] }) {
+  const lead = [...tickets].sort((a, b) => a.purchasedAt.localeCompare(b.purchasedAt))[0]
+  return (
+    <div className="text-sm-token font-semibold">
+      <span className="text-lg" aria-hidden>
+        {lead?.reward?.emoji ?? '🎟️'}
+      </span>{' '}
+      {tickets.length === 1
+        ? 'A ticket’s waiting in your pocket ›'
+        : `${tickets.length} tickets are waiting in your pocket ›`}
+    </div>
+  )
+}
+
+/** The adaptive line: ticket-ready › affordable › next-goal › first-earn. */
+function Adaptive({
+  balance,
+  rewards,
+  tickets = [],
+}: {
+  balance: number
+  rewards: Reward[]
+  tickets?: Redemption[]
+}) {
   const { affordable, nextUp } = walletReach(rewards, balance)
+  if (tickets.length > 0) {
+    return <TicketLine tickets={tickets} />
+  }
   if (affordable.length > 0) {
     return (
       <div className="text-sm-token">
@@ -89,24 +118,29 @@ function Adaptive({ balance, rewards }: { balance: number; rewards: Reward[] }) 
   )
 }
 
-function CompactBody({ balance, rewards, lifetimeXp }: WalletViewProps) {
+function CompactBody({ balance, rewards, tickets, lifetimeXp }: WalletViewProps) {
   return (
     <div className="flex size-full flex-col p-4">
       <WidgetHeader icon={Wallet} label="Wallet" />
       <div className="my-3">
         <Balance balance={balance} size={26} />
       </div>
-      <Adaptive balance={balance} rewards={rewards} />
+      <Adaptive balance={balance} rewards={rewards} tickets={tickets} />
       {lifetimeXp !== undefined && <XpFootnote xp={lifetimeXp} />}
     </div>
   )
 }
 
-function StandardBody({ balance, rewards, lifetimeXp }: WalletViewProps) {
+function StandardBody({ balance, rewards, tickets = [], lifetimeXp }: WalletViewProps) {
   const { affordable, nextUp } = walletReach(rewards, balance)
   return (
     <div className="flex size-full flex-col p-5">
       <WidgetHeader icon={Wallet} label="Wallet" trailing={<BalanceChip balance={balance} />} />
+      {tickets.length > 0 && (
+        <div className="mt-4">
+          <TicketLine tickets={tickets} />
+        </div>
+      )}
       {affordable.length > 0 && (
         <>
           <div className="mb-2 mt-4 text-xs-token text-muted-foreground">You can get</div>

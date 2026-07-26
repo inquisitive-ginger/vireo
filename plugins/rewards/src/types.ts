@@ -66,6 +66,26 @@ export interface RewardInput {
 
 export type RedemptionAction = 'yes' | 'not_now'
 
+/** One ledger move (ADR 047) as GET /rewards/wallet serializes it. `reason` is
+    already human text ("Emptied the dishwasher", "Bought 🍦 Ice cream run"). */
+export interface LedgerEntry {
+  id: string
+  delta: number
+  reason: string
+  sourceType: string
+  sourceId: string | null
+  createdBy: string | null
+  createdAt: string
+}
+
+/** One GET /rewards/wallet page — the balance plus the entries that explain it. */
+export interface WalletPage {
+  profileId: string
+  balance: number
+  entries: LedgerEntry[]
+  nextCursor: string | null
+}
+
 /** GET /rewards/store — the kid's balance plus the whole active catalog scoped to them
     (never pre-filtered by affordability; distance is a client rendering decision). */
 export interface StoreData {
