@@ -22,19 +22,20 @@
 > first in wall-clock terms where they are cheap (Part F is a real risk to the
 > household's data), but the feature work is what the family is waiting on.
 
-> **M4/5 was reworked mid-flight** by the 2026-07-26 design review (ADR 055 — a
-> redemption is a ticket): it lives on `dev/rewards-store-wallet`. **M4/5a–d AND
-> M4/8 (ADR 056) are all ✅ done on the branch**; it carries the **prod flip**
-> (`rewards` registered, flag defaults on). **The PR is unblocked — opening and
-> merging it IS the P-Bucks launch.** At the flip, run the standing fridge-distance
-> checks (coin beside marigold, P-mark at 16–18px).
+> **P-BUCKS IS LIVE (2026-07-26, PR #75).** `dev/rewards-store-wallet` (M4/5a–d +
+> M4/8, ADR 055/056) merged with a merge commit — main was merged into the branch
+> first (two conflicts: the cherry-picked ec2303e, and both sides adding the same
+> `ResizeObserver` stub). Deploy verified on prod: `rewards` in `/api/plugins`, its
+> remote served (remotes live at `/plugins/<name>/assets/remoteEntry.js`), and the
+> deployed chores chunk carries the M4/8 markup (`chore-pays`, "Scores").
 
-### Open the `dev/rewards-store-wallet` PR — the P-Bucks launch
+### Fridge-distance review of the live P-Bucks surfaces
 
-**Type:** release · No kickoff needed. The branch carries M4/5a–d + M4/8 + the prod
-flip; merge = launch (deploy is merge-and-walk-away). Branch predates PR #74
-(`isToday` widget fix) — confirm the merge picks it up via main. Then the
-fridge-distance review of the coin/P-mark/amount-field, which has never happened.
+**Type:** qa · No kickoff needed. The review the flag flip has owed since ADR 054:
+the coin beside a marigold spine, the P-mark at 16–18px (counters close — must read
+as currency), the amount field + presets at fridge distance, and the store/roll on
+the real iPad. Quit the PWA from the app switcher first (`docs/deployment.md` Part D).
+If the coin fails next to marigold, **deepen the gold; do not retire marigold**.
 
 ### M4/6 — Dev: Punch Cards
 
