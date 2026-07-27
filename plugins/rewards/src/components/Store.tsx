@@ -449,22 +449,3 @@ function StoreSkeleton() {
     </div>
   )
 }
-
-/** Coin + balance — kept for the wallet widget's header chip. */
-export function BalanceChip({ balance }: { balance: number }) {
-  return (
-    <span
-      className="inline-flex flex-none items-center gap-1.5 rounded-full py-1 pl-1.5 pr-3"
-      style={{
-        background: 'var(--coin-tint)',
-        border: '1px solid color-mix(in oklch, var(--coin) 55%, var(--border))',
-      }}
-    >
-      <Coin size={17} />
-      <b className="text-base-token font-bold tabular-nums" style={{ color: 'var(--coin-ink)' }}>
-        {balance} P$
-      </b>
-      <span className="sr-only">in your wallet</span>
-    </span>
-  )
-}

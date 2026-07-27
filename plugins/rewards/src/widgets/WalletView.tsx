@@ -4,7 +4,6 @@ import { Star, Wallet } from 'lucide-react'
 import { Coin, WidgetHeader, WIDGET_CQ } from '@family-os/ui'
 import type { Redemption, Reward } from '../types'
 import { walletReach } from '../lib/affordability'
-import { BalanceChip } from '../components/Store'
 import { Track } from '../components/RedeemDialog'
 
 /* `rewards.wallet` — the kid's home widget (M4/5, frame "1" + XP footnote). It leads
@@ -131,16 +130,19 @@ function CompactBody({ balance, rewards, tickets, lifetimeXp }: WalletViewProps)
   )
 }
 
+/* The standard body leads with the same coin + metric numeral the compact one does —
+   "how much do I have?" is the widget's headline on every size; the shelves answer
+   what it's good for. (It used to demote the balance to a corner chip, invisible
+   once the widget became the kid home's lead tile.) */
 function StandardBody({ balance, rewards, tickets = [], lifetimeXp }: WalletViewProps) {
   const { affordable, nextUp } = walletReach(rewards, balance)
   return (
     <div className="flex size-full flex-col p-5">
-      <WidgetHeader icon={Wallet} label="Wallet" trailing={<BalanceChip balance={balance} />} />
-      {tickets.length > 0 && (
-        <div className="mt-4">
-          <TicketLine tickets={tickets} />
-        </div>
-      )}
+      <WidgetHeader icon={Wallet} label="Wallet" />
+      <div className="my-3">
+        <Balance balance={balance} size={26} />
+      </div>
+      {tickets.length > 0 && <TicketLine tickets={tickets} />}
       {affordable.length > 0 && (
         <>
           <div className="mb-2 mt-4 text-xs-token text-muted-foreground">You can get</div>
