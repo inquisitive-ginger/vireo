@@ -54,17 +54,29 @@ function XpFootnote({ xp }: { xp: number }) {
   )
 }
 
-/** An owned ticket waiting in the pocket — the longest-held one leads. */
+/* An owned ticket waiting in the pocket — the longest-held one leads. It wears the
+   pocket's ticket clothing (coin-tint fill, brass border) so it outranks the
+   striving line below it: owned and saving-for are different tenses, and dimming
+   the goal is off the table ("distance, not denial"), so the ticket dresses up
+   instead. The pill is legal here — a chip is a collectible, and this is one. */
 function TicketLine({ tickets }: { tickets: Redemption[] }) {
   const lead = [...tickets].sort((a, b) => a.purchasedAt.localeCompare(b.purchasedAt))[0]
   return (
-    <div className="text-sm-token font-semibold">
-      <span className="text-lg" aria-hidden>
+    <div
+      className="text-sm-token flex w-fit items-center gap-2 rounded-full border py-1.5 pl-2.5 pr-3 font-semibold"
+      style={{
+        background: 'var(--coin-tint)',
+        borderColor: 'color-mix(in oklch, var(--coin) 55%, var(--border))',
+      }}
+    >
+      <span className="text-lg leading-none" aria-hidden>
         {lead?.reward?.emoji ?? '🎟️'}
-      </span>{' '}
-      {tickets.length === 1
-        ? 'A ticket’s waiting in your pocket ›'
-        : `${tickets.length} tickets are waiting in your pocket ›`}
+      </span>
+      <span style={{ color: 'var(--coin-ink)' }}>
+        {tickets.length === 1
+          ? 'A ticket’s waiting in your pocket ›'
+          : `${tickets.length} tickets are waiting in your pocket ›`}
+      </span>
     </div>
   )
 }
