@@ -138,3 +138,8 @@ chores 56 · calendar 105; typecheck + lint clean workspace-wide.
   the keyframes animate y only: **an element whose enter animation owns
   `transform` must not also be positioned by one.** Verified by sampling the
   sheet's x through the animation — constant.
+- **The Sheet's grab bar became a real handle** (user catch: it looked swipeable
+  and wasn't). Drag past ~110px or flick down to dismiss, via the `useDrag`
+  pattern `NotificationItem` already carries; the gesture binds to the **handle
+  strip only** so it never fights the content's own scroll. Short-drag snap-back,
+  dismiss, and clean reopen all driven live.
