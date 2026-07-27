@@ -3,8 +3,8 @@ import { FAMILY_PROFILE_ID } from './types'
 import { DEFAULT_LAYOUTS, defaultLayoutKey, prominenceFor } from './home-layout'
 
 describe('default layouts + widget prominence (ADR 039)', () => {
-  it('maps the family pseudo-profile to its own layout, and tiers to their buckets', () => {
-    expect(defaultLayoutKey(FAMILY_PROFILE_ID, 1)).toBe('default_layout_family')
+  it('maps the family pseudo-profile onto the tier-4 layout, and tiers to their buckets', () => {
+    expect(defaultLayoutKey(FAMILY_PROFILE_ID, 1)).toBe('default_layout_tier_3_4')
     expect(defaultLayoutKey('p', 1)).toBe('default_layout_tier_1_2')
     expect(defaultLayoutKey('p', 2)).toBe('default_layout_tier_1_2')
     expect(defaultLayoutKey('p', 3)).toBe('default_layout_tier_3')
@@ -40,8 +40,8 @@ describe('default layouts + widget prominence (ADR 039)', () => {
     const feature = (key: string) =>
       DEFAULT_LAYOUTS[key].find((i) => i.prominence === 'feature')?.widgetId
     expect(feature('default_layout_tier_1_2')).toBe('rewards.wallet')
-    expect(feature('default_layout_family')).toBe('family-feed.feed')
-    // Parents triage — no single widget is "the one they came for", so no feature.
+    // Parents (and the family profile) triage — no single widget is "the one they
+    // came for", so no feature.
     expect(feature('default_layout_tier_3_4')).toBeUndefined()
   })
 
