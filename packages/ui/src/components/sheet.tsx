@@ -1,5 +1,5 @@
 import * as Dialog from '@radix-ui/react-dialog'
-import { useRef, useState, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type ReactNode } from 'react'
 import { useDrag } from '@use-gesture/react'
 import { cn } from '../lib/utils'
 
@@ -59,7 +59,17 @@ export function Sheet({ open, onClose, title, children, className }: SheetProps)
     else setAnim({ y: 0, easing: 'none' })
   }
 
-  // Radix unmounts the content on close, so the drag state resets by construction.
+  // The drag state lives on THIS component, which outlives the dialog (only
+  // Radix's content unmounts on close) — without the reset, a reopen after a
+  // drag-dismiss lands at translateY(110%) the moment the enter keyframe
+  // releases: an open dialog with its sheet offscreen.
+  useEffect(() => {
+    if (open) {
+      dismissingRef.current = false
+      setAnim({ y: 0, easing: 'none' })
+    }
+  }, [open])
+
   return (
     <Dialog.Root open={open} onOpenChange={(o) => !o && onClose()}>
       <Dialog.Portal>
