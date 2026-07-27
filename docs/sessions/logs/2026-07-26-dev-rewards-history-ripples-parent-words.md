@@ -142,4 +142,9 @@ chores 56 · calendar 105; typecheck + lint clean workspace-wide.
   and wasn't). Drag past ~110px or flick down to dismiss, via the `useDrag`
   pattern `NotificationItem` already carries; the gesture binds to the **handle
   strip only** so it never fights the content's own scroll. Short-drag snap-back,
-  dismiss, and clean reopen all driven live.
+  dismiss, and clean reopen all driven live. **Follow-up bug, user-caught:** the
+  drag state lives on `Sheet`, which outlives the dialog (only Radix's _content_
+  unmounts on close) — so a reopen after a drag-dismiss landed at
+  `translateY(110%)` the moment the enter keyframe released: an open dialog with
+  its sheet offscreen and an orphaned overlay. Fixed with an explicit state reset
+  on `open`; three open→drag-dismiss cycles driven clean.
