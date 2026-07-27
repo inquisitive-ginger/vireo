@@ -126,3 +126,8 @@ chores 56 · calendar 105; typecheck + lint clean workspace-wide.
   rework made the widget the kid home's lead tile. The chip's only consumer was
   that corner, so `BalanceChip` is deleted; shelves and the ticket line stay
   (a bare number is a scoreboard, not a wallet).
+- **The ticket line dresses as a ticket** (user catch: it weighed the same as the
+  saving-up line — two tenses in the same clothes). The goal stays full-colour
+  ("distance, not denial"), so the owned ticket elevates instead: the pocket's
+  coin-tint + brass border as a pill, which the chip rule permits — a chip is a
+  collectible, and an owned ticket is one.
