@@ -26,7 +26,10 @@ export function Sheet({ open, onClose, title, children, className }: SheetProps)
           data-ui-sheet
           onCloseAutoFocus={(e) => e.preventDefault()}
           className={cn(
-            'fixed bottom-0 left-1/2 z-[60] flex w-full max-w-[560px] -translate-x-1/2 flex-col',
+            // Centered by inset-x + margin, never by transform — the enter animation
+            // owns `transform`, and a -translate-x-1/2 utility would stack with it
+            // (the sheet would open left of center, then snap right).
+            'fixed inset-x-0 bottom-0 z-[60] mx-auto flex w-full max-w-[560px] flex-col',
             'max-h-[85dvh] rounded-t-hero border border-b-0 border-border bg-card',
             'focus:outline-none',
             className
@@ -35,8 +38,8 @@ export function Sheet({ open, onClose, title, children, className }: SheetProps)
         >
           <style href="ui-sheet" precedence="default">{`
             @keyframes sheetUp {
-              from { opacity: 0; transform: translate(-50%, 16px); }
-              to   { opacity: 1; transform: translate(-50%, 0); }
+              from { opacity: 0; transform: translateY(16px); }
+              to   { opacity: 1; transform: translateY(0); }
             }
             [data-ui-sheet] { animation: sheetUp var(--duration-normal) var(--ease-out); }
             @media (prefers-reduced-motion: reduce) {
