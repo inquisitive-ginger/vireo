@@ -1,7 +1,8 @@
 import { useEffect, useState } from 'react'
 import {
   Button,
-  Chip,
+  CoinAmountField,
+  CURRENCY,
   Drawer,
   EmojiPicker,
   FieldLabel,
@@ -153,36 +154,13 @@ export function RewardDrawer({
             </div>
 
             <div>
-              <FieldLabel htmlFor="reward-cost">Cost (P$)</FieldLabel>
-              <div className="flex items-center gap-2">
-                <Input
-                  id="reward-cost"
-                  className="w-14 px-2 text-center"
-                  inputMode="numeric"
-                  value={cost}
-                  onChange={(e) => setCost(e.target.value.replace(/[^0-9]/g, ''))}
-                />
-                <span className="text-muted-foreground">·</span>
-                <div className="flex flex-wrap gap-1.5">
-                  {COST_PRESETS.map((v) => (
-                    <Chip
-                      key={v}
-                      selected={cost === String(v)}
-                      onClick={() => setCost(String(v))}
-                      selectedStyle={{
-                        borderColor: 'var(--coin)',
-                        background: 'var(--coin-tint)',
-                        color: 'var(--coin-ink)',
-                      }}
-                      selectedClassName="font-bold"
-                      idleClassName="text-muted-foreground"
-                      className="min-w-touch justify-center px-3"
-                    >
-                      {v}
-                    </Chip>
-                  ))}
-                </div>
-              </div>
+              <FieldLabel htmlFor="reward-cost">Cost ({CURRENCY.code})</FieldLabel>
+              <CoinAmountField
+                id="reward-cost"
+                value={cost}
+                onChange={setCost}
+                presets={COST_PRESETS}
+              />
             </div>
 
             {/* ADR 055: the gate moved from the register to the tear — approval

@@ -4,9 +4,9 @@ import { prisma } from '@family-os/platform/server'
 import type { EventBus } from '@family-os/platform/server'
 import { FAMILY_PROFILE_ID } from '@family-os/platform/types'
 import { chorePrisma } from '@family-os/plugin-chores/db'
+import { xpForCoins } from '@family-os/plugin-chores/economy'
 import { notify } from '../lib/notify'
 
-const DEFAULT_XP_REWARD = 10
 const DEFAULT_COIN_REWARD = 0
 
 // ─── XP subscriber ───────────────────────────────────────────────────────────
@@ -98,7 +98,6 @@ type CreateTaskBody = {
   assigneeId?: unknown
   description?: unknown
   dueDate?: unknown
-  xpReward?: unknown
   coinReward?: unknown
   requiresApproval?: unknown
 }
@@ -140,8 +139,9 @@ const choresPlugin: FastifyPluginAsync = async (fastify) => {
       return reply.status(400).send({ error: 'Invalid dueDate' })
     }
 
-    const xpReward = coinRewardOr(body.xpReward, DEFAULT_XP_REWARD)
     const coinReward = coinRewardOr(body.coinReward, DEFAULT_COIN_REWARD)
+    // XP is derived from the tier, never client-set (ADR 056).
+    const xpReward = xpForCoins(coinReward)
     // Only holds when the chore actually pays — a free chore has nothing to hold.
     const requiresApproval = body.requiresApproval === true && coinReward > 0
 
@@ -208,8 +208,9 @@ const choresPlugin: FastifyPluginAsync = async (fastify) => {
       return reply.status(400).send({ error: 'Invalid dueDate' })
     }
 
-    const xpReward = coinRewardOr(body.xpReward, existing.xpReward)
     const coinReward = coinRewardOr(body.coinReward, existing.coinReward)
+    // Re-derive on every edit — a legacy hand-picked value drains here (ADR 056).
+    const xpReward = xpForCoins(coinReward)
     const requiresApproval =
       (typeof body.requiresApproval === 'boolean'
         ? body.requiresApproval
