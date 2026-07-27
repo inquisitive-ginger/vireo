@@ -120,3 +120,9 @@ chores 56 · calendar 105; typecheck + lint clean workspace-wide.
   semantic mapping (the parent's yes → `success`; asks, not-nows, refunds → `info`).
   Verified live: the tray opens as Teddy, old `'rewards'` rows render with the info
   fallback. api 350 · ui 181 green.
+- **The widget's standard body now leads with the coin + metric numeral** (user
+  call): compact always had the balance as its headline, but standard tucked it
+  into a corner `BalanceChip` — fine in a side slot, underselling once the grid
+  rework made the widget the kid home's lead tile. The chip's only consumer was
+  that corner, so `BalanceChip` is deleted; shelves and the ticket line stay
+  (a bare number is a scoreboard, not a wallet).
