@@ -82,11 +82,11 @@ describe('GET /api/home/layout', () => {
     expect(slots.find((s) => s.widgetId === 'family-feed.feed')!.prominence).toBe('quiet')
   })
 
-  it('leads a kid with chores as the one feature', async () => {
+  it('leads a kid with the wallet as the one feature', async () => {
     const slots = await layoutFor('seed-child-1')
     const features = slots.filter((s) => s.prominence === 'feature')
     expect(features).toHaveLength(1)
-    expect(features[0].widgetId).toBe('chores.today-summary')
+    expect(features[0].widgetId).toBe('rewards.wallet')
   })
 
   /* The reported bug: chores (card) rendered BELOW the feed (quiet) in the right-hand

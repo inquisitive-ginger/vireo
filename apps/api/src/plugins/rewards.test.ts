@@ -823,9 +823,9 @@ describe('reward catalog', () => {
   })
 })
 
-// ─── Redemptions (M4/4) ─────────────────────────────────────────────────────────
+// ─── Redemptions — tickets (ADR 055) ────────────────────────────────────────────
 
-describe('redemptions', () => {
+describe('redemptions — tickets (ADR 055)', () => {
   async function reward(overrides: Record<string, unknown> = {}) {
     const parent = await getCookieForProfile(PARENT_ID)
     const res = await app.inject({
@@ -837,13 +837,16 @@ describe('redemptions', () => {
     return res.json().reward as { id: string; cost: number }
   }
 
-  const request = (cookie: string, rewardId: string) =>
+  const buy = (cookie: string, rewardId: string) =>
     app.inject({
       method: 'POST',
       url: '/api/rewards/redemptions',
       headers: { cookie },
       payload: { rewardId },
     })
+
+  const use = (cookie: string, id: string) =>
+    app.inject({ method: 'POST', url: `/api/rewards/redemptions/${id}/use`, headers: { cookie } })
 
   const decide = (cookie: string, id: string, action: string, note?: string) =>
     app.inject({
@@ -853,93 +856,155 @@ describe('redemptions', () => {
       payload: { action, note },
     })
 
-  it('debits on request and grants immediately for a no-approval reward', async () => {
-    const kid = await getCookieForProfile(KID_ID)
-    await credit(KID_ID, 20, 'seed')
-    const r = await reward()
+  const revoke = (cookie: string, id: string) =>
+    app.inject({ method: 'DELETE', url: `/api/rewards/redemptions/${id}`, headers: { cookie } })
 
-    const res = await request(kid, r.id)
-    expect(res.statusCode).toBe(201)
-    expect(res.json().redemption).toMatchObject({ status: 'granted', cost: 15 })
-    expect(res.json().balance).toBe(5)
+  it('buy debits once and lands owned — no approval branch at any price', async () => {
+    const kid = await getCookieForProfile(KID_ID)
+    await credit(KID_ID, 60, 'seed')
+    const plain = await reward()
+    const gated = await reward({ name: 'Yes day', emoji: '👑', cost: 40, requiresApproval: true })
+
+    const first = await buy(kid, plain.id)
+    expect(first.statusCode).toBe(201)
+    expect(first.json().redemption).toMatchObject({ status: 'owned', cost: 15 })
+    expect(first.json().balance).toBe(45)
+
+    // requiresApproval gates USE, not purchase — the gated reward buys identically.
+    const second = await buy(kid, gated.id)
+    expect(second.json().redemption.status).toBe('owned')
     expect(await getBalance(KID_ID)).toBe(5)
   })
 
-  it('holds an approval reward as pending, debited', async () => {
+  it('the debit holds the ledger idempotency claim — a replayed entry is a no-op', async () => {
     const kid = await getCookieForProfile(KID_ID)
-    await credit(KID_ID, 40, 'seed')
-    const r = await reward({ cost: 40, requiresApproval: true })
+    await credit(KID_ID, 20, 'seed')
+    const r = await reward()
+    const ticket = (await buy(kid, r.id)).json().redemption
 
-    const res = await request(kid, r.id)
-    expect(res.json().redemption.status).toBe('pending')
-    // The F$ leaves on request, not on approval — debit now, refund only if declined.
-    expect(await getBalance(KID_ID)).toBe(0)
+    const replay = await postEntry(app.eventBus, {
+      profileId: KID_ID,
+      delta: -15,
+      reason: 'replay',
+      sourceType: 'redemption',
+      sourceId: ticket.id,
+    })
+    expect(replay.replayed).toBe(true)
+    expect(await getBalance(KID_ID)).toBe(5)
   })
 
-  it('refuses a request the kid cannot afford — nothing moves', async () => {
+  it('refuses a purchase the kid cannot afford — nothing moves', async () => {
     const kid = await getCookieForProfile(KID_ID)
     await credit(KID_ID, 5, 'seed')
     const r = await reward({ cost: 15 })
 
-    const res = await request(kid, r.id)
+    const res = await buy(kid, r.id)
     expect(res.statusCode).toBe(400)
     expect(await getBalance(KID_ID)).toBe(5)
     expect(await rewardsPrisma.redemption.count()).toBe(0)
   })
 
-  it('grant moves nothing further; fulfil then records the hand-off', async () => {
+  it('a non-approval ticket tears immediately — no parent interaction exists for it', async () => {
     const kid = await getCookieForProfile(KID_ID)
     const parent = await getCookieForProfile(PARENT_ID)
     await credit(KID_ID, 15, 'seed')
-    const r = await reward({ requiresApproval: true })
-    const redemption = (await request(kid, r.id)).json().redemption
+    const r = await reward()
+    const ticket = (await buy(kid, r.id)).json().redemption
+    expect(ticket.status).toBe('owned')
 
-    const granted = await decide(parent, redemption.id, 'grant')
-    expect(granted.json().redemption.status).toBe('granted')
-    expect(await getBalance(KID_ID)).toBe(0) // still debited, nothing refunded
+    const used = await use(kid, ticket.id)
+    expect(used.statusCode).toBe(200)
+    expect(used.json().redemption.status).toBe('used')
+    expect(used.json().redemption.usedAt).not.toBeNull()
 
-    const fulfilled = await decide(parent, redemption.id, 'fulfil')
-    expect(fulfilled.json().redemption.status).toBe('fulfilled')
+    // There is nothing for a parent to answer — no request ever existed.
+    expect((await decide(parent, ticket.id, 'yes')).statusCode).toBe(409)
   })
 
-  it('decline refunds the snapshot cost and quotes the note back', async () => {
+  it('use → not-now → use → yes lands exactly one debit; the ticket survives with its note', async () => {
     const kid = await getCookieForProfile(KID_ID)
     const parent = await getCookieForProfile(PARENT_ID)
     await credit(KID_ID, 15, 'seed')
     const r = await reward({ requiresApproval: true })
-    const redemption = (await request(kid, r.id)).json().redemption
+    const ticket = (await buy(kid, r.id)).json().redemption
     expect(await getBalance(KID_ID)).toBe(0)
 
-    const res = await decide(parent, redemption.id, 'decline', 'Not before your homework')
-    expect(res.statusCode).toBe(200)
-    expect(res.json().redemption).toMatchObject({
-      status: 'declined',
+    expect((await use(kid, ticket.id)).json().redemption.status).toBe('use_requested')
+
+    const notNow = await decide(parent, ticket.id, 'not_now', 'Not before your homework')
+    expect(notNow.json().redemption).toMatchObject({
+      status: 'owned',
       decidedNote: 'Not before your homework',
     })
-    // Refunded — a distinct ledger entry, not a reversal of the debit row.
-    expect(await getBalance(KID_ID)).toBe(15)
+    // The money stays spent — a not-now is about timing, never a refund (ADR 055).
+    expect(await getBalance(KID_ID)).toBe(0)
+
+    // A fresh ask supersedes the answered one; the old note went with it.
+    const again = (await use(kid, ticket.id)).json().redemption
+    expect(again).toMatchObject({ status: 'use_requested', decidedNote: null })
+
+    const yes = await decide(parent, ticket.id, 'yes')
+    expect(yes.json().redemption.status).toBe('used')
+    expect(await getBalance(KID_ID)).toBe(0) // one debit across the whole cycle
+    expect(await recomputeBalance(KID_ID)).toBe(0)
   })
 
-  it('a second decision is a 409 — the decision is final', async () => {
+  it('using someone else’s ticket 404s; a used ticket 409s; a waiting one 409s', async () => {
+    const kid = await getCookieForProfile(KID_ID)
+    const tween = await getCookieForProfile(TWEEN_ID)
+    await credit(KID_ID, 30, 'seed')
+    const r = await reward()
+    const ticket = (await buy(kid, r.id)).json().redemption
+
+    expect((await use(tween, ticket.id)).statusCode).toBe(404)
+
+    await use(kid, ticket.id)
+    expect((await use(kid, ticket.id)).statusCode).toBe(409)
+
+    const gated = await reward({ name: 'Gated', requiresApproval: true })
+    const waiting = (await buy(kid, gated.id)).json().redemption
+    await use(kid, waiting.id)
+    expect((await use(kid, waiting.id)).statusCode).toBe(409)
+  })
+
+  it('a decision with no request waiting is a 409', async () => {
     const kid = await getCookieForProfile(KID_ID)
     const parent = await getCookieForProfile(PARENT_ID)
     await credit(KID_ID, 15, 'seed')
     const r = await reward({ requiresApproval: true })
-    const redemption = (await request(kid, r.id)).json().redemption
+    const ticket = (await buy(kid, r.id)).json().redemption
 
-    expect((await decide(parent, redemption.id, 'grant')).statusCode).toBe(200)
-    expect((await decide(parent, redemption.id, 'decline')).statusCode).toBe(409)
-    // The refund never ran, so the balance stays where the grant left it.
-    expect(await getBalance(KID_ID)).toBe(0)
+    // Still owned — nothing asked yet.
+    expect((await decide(parent, ticket.id, 'yes')).statusCode).toBe(409)
+
+    await use(kid, ticket.id)
+    expect((await decide(parent, ticket.id, 'yes')).statusCode).toBe(200)
+    // Already answered.
+    expect((await decide(parent, ticket.id, 'not_now')).statusCode).toBe(409)
   })
 
-  it('snapshots the cost — repricing the reward does not move a pending request', async () => {
+  it('a kid cannot decide or revoke (tier < 4 → 403)', async () => {
+    const kid = await getCookieForProfile(KID_ID)
+    await credit(KID_ID, 15, 'seed')
+    const r = await reward({ requiresApproval: true })
+    const ticket = (await buy(kid, r.id)).json().redemption
+    await use(kid, ticket.id)
+
+    expect((await decide(kid, ticket.id, 'yes')).statusCode).toBe(403)
+    expect((await revoke(kid, ticket.id)).statusCode).toBe(403)
+    expect((await rewardsPrisma.redemption.findUnique({ where: { id: ticket.id } }))?.status).toBe(
+      'use_requested'
+    )
+  })
+
+  it('revoke refunds the snapshot cost and removes the ticket', async () => {
     const kid = await getCookieForProfile(KID_ID)
     const parent = await getCookieForProfile(PARENT_ID)
     await credit(KID_ID, 15, 'seed')
-    const r = await reward({ cost: 15, requiresApproval: true })
-    const redemption = (await request(kid, r.id)).json().redemption
+    const r = await reward({ cost: 15 })
+    const ticket = (await buy(kid, r.id)).json().redemption
 
+    // Reprice after purchase — the refund must return the SNAPSHOT (15), not 5.
     await app.inject({
       method: 'PATCH',
       url: `/api/rewards/rewards/${r.id}`,
@@ -947,70 +1012,165 @@ describe('redemptions', () => {
       payload: { cost: 5 },
     })
 
-    // Declining refunds the SNAPSHOT (15), not the new price (5).
-    await decide(parent, redemption.id, 'decline')
-    expect(await getBalance(KID_ID)).toBe(15)
+    const res = await revoke(parent, ticket.id)
+    expect(res.statusCode).toBe(200)
+    expect(res.json().balance).toBe(15)
+    expect(await rewardsPrisma.redemption.count()).toBe(0)
+    // The ledger stays balanced: the cache equals the sum of the entries.
+    expect(await recomputeBalance(KID_ID)).toBe(15)
   })
 
-  it('refuses a request outside the reward’s audience', async () => {
+  it('a used ticket cannot be revoked — it was consumed', async () => {
+    const kid = await getCookieForProfile(KID_ID)
+    const parent = await getCookieForProfile(PARENT_ID)
+    await credit(KID_ID, 15, 'seed')
+    const r = await reward()
+    const ticket = (await buy(kid, r.id)).json().redemption
+    await use(kid, ticket.id)
+
+    expect((await revoke(parent, ticket.id)).statusCode).toBe(409)
+    expect(await getBalance(KID_ID)).toBe(0)
+  })
+
+  it('refuses a purchase once stock is sold out; a revoke frees the unit', async () => {
+    const kid = await getCookieForProfile(KID_ID)
+    const parent = await getCookieForProfile(PARENT_ID)
+    await credit(KID_ID, 30, 'seed')
+    const r = await reward({ cost: 10, stock: 1 })
+
+    const first = await buy(kid, r.id)
+    expect(first.statusCode).toBe(201)
+    expect((await buy(kid, r.id)).statusCode).toBe(400)
+    expect(await getBalance(KID_ID)).toBe(20) // only the first debited
+
+    await revoke(parent, first.json().redemption.id)
+    expect((await buy(kid, r.id)).statusCode).toBe(201)
+  })
+
+  it('refuses a purchase outside the reward’s audience', async () => {
     const kid = await getCookieForProfile(KID_ID)
     await credit(KID_ID, 20, 'seed')
     const r = await reward({ audience: [TWEEN_ID] })
 
-    const res = await request(kid, r.id)
+    const res = await buy(kid, r.id)
     expect(res.statusCode).toBe(400)
     expect(await getBalance(KID_ID)).toBe(20)
   })
 
-  it('refuses a request once stock is exhausted', async () => {
+  it('a retired reward’s ticket still tears — retiring stops purchases, not use', async () => {
     const kid = await getCookieForProfile(KID_ID)
-    await credit(KID_ID, 30, 'seed')
-    const r = await reward({ cost: 10, stock: 1 })
-
-    expect((await request(kid, r.id)).statusCode).toBe(201)
-    const second = await request(kid, r.id)
-    expect(second.statusCode).toBe(400)
-    expect(await getBalance(KID_ID)).toBe(20) // only the first debited
-  })
-
-  it('a kid cannot decide a redemption (tier < 4 → 403)', async () => {
-    const kid = await getCookieForProfile(KID_ID)
+    const parent = await getCookieForProfile(PARENT_ID)
     await credit(KID_ID, 15, 'seed')
-    const r = await reward({ requiresApproval: true })
-    const redemption = (await request(kid, r.id)).json().redemption
+    const r = await reward()
+    const ticket = (await buy(kid, r.id)).json().redemption
 
-    const res = await decide(kid, redemption.id, 'grant')
-    expect(res.statusCode).toBe(403)
-    expect(
-      (await rewardsPrisma.redemption.findUnique({ where: { id: redemption.id } }))?.status
-    ).toBe('pending')
+    // DELETE retires (the ticket references it), and the store stops selling it.
+    const retired = await app.inject({
+      method: 'DELETE',
+      url: `/api/rewards/rewards/${r.id}`,
+      headers: { cookie: parent },
+    })
+    expect(retired.json().retired).toBe(true)
+
+    expect((await use(kid, ticket.id)).json().redemption.status).toBe('used')
   })
 
-  it('the queue shows a parent every pending request; a kid only its own history', async () => {
+  it('the queue defaults to use_requested for a parent; a kid reads only their own', async () => {
     const kid = await getCookieForProfile(KID_ID)
     const tween = await getCookieForProfile(TWEEN_ID)
     const parent = await getCookieForProfile(PARENT_ID)
-    await credit(KID_ID, 15, 'seed-kid')
+    await credit(KID_ID, 30, 'seed-kid')
     await credit(TWEEN_ID, 15, 'seed-tween')
     const r = await reward({ requiresApproval: true })
-    await request(kid, r.id)
-    await request(tween, r.id)
+    const owned = (await buy(kid, r.id)).json().redemption // stays in the pocket
+    const asked = (await buy(kid, r.id)).json().redemption
+    await use(kid, asked.id)
+    const tweens = (await buy(tween, r.id)).json().redemption
+    await use(tween, tweens.id)
 
     const queue = await app.inject({
       method: 'GET',
-      url: '/api/rewards/redemptions?status=pending',
+      url: '/api/rewards/redemptions',
       headers: { cookie: parent },
     })
+    // Only the two asks — the owned ticket is not the parent's business.
     expect(queue.json().redemptions).toHaveLength(2)
+    expect(queue.json().redemptions.map((x: { id: string }) => x.id)).not.toContain(owned.id)
     // The queue carries the reward for rendering without a second fetch.
     expect(queue.json().redemptions[0].reward).toMatchObject({ emoji: '🍿' })
 
     const own = await app.inject({
       method: 'GET',
-      url: '/api/rewards/redemptions?status=pending',
+      url: '/api/rewards/redemptions?status=owned,use_requested',
       headers: { cookie: kid },
     })
-    expect(own.json().redemptions).toHaveLength(1)
-    expect(own.json().redemptions[0].profileId).toBe(KID_ID)
+    expect(own.json().redemptions).toHaveLength(2)
+    for (const row of own.json().redemptions) expect(row.profileId).toBe(KID_ID)
+  })
+})
+
+// ─── Store (M4/5) ───────────────────────────────────────────────────────────────
+
+describe('GET /rewards/store', () => {
+  function seedReward(overrides: Record<string, unknown> = {}) {
+    return rewardsPrisma.reward.create({
+      data: {
+        name: 'Movie night',
+        emoji: '🍿',
+        cost: 15,
+        audience: [],
+        createdBy: PARENT_ID,
+        ...overrides,
+      },
+    })
+  }
+
+  it('returns the balance and the whole active catalog — affordable and not', async () => {
+    const kid = await getCookieForProfile(KID_ID)
+    await credit(KID_ID, 12, 'seed')
+    await seedReward({ name: 'Cheap', cost: 5 })
+    await seedReward({ name: 'Dear', cost: 40 })
+
+    const res = await app.inject({
+      method: 'GET',
+      url: '/api/rewards/store',
+      headers: { cookie: kid },
+    })
+    expect(res.statusCode).toBe(200)
+    const body = res.json()
+    expect(body.balance).toBe(12)
+    // Both are returned — the unaffordable one is NOT filtered out (distance, not denial).
+    expect(body.rewards.map((r: { name: string }) => r.name).sort()).toEqual(['Cheap', 'Dear'])
+    // Sorted by cost ascending.
+    expect(body.rewards[0].cost).toBeLessThan(body.rewards[1].cost)
+  })
+
+  it('excludes retired rewards and ones scoped to another kid', async () => {
+    const kid = await getCookieForProfile(KID_ID)
+    await seedReward({ name: 'Everyone', audience: [] })
+    await seedReward({ name: 'Retired', active: false })
+    await seedReward({ name: 'For me', audience: [KID_ID] })
+    await seedReward({ name: 'For someone else', audience: [TWEEN_ID] })
+
+    const res = await app.inject({
+      method: 'GET',
+      url: '/api/rewards/store',
+      headers: { cookie: kid },
+    })
+    const names = res
+      .json()
+      .rewards.map((r: { name: string }) => r.name)
+      .sort()
+    expect(names).toEqual(['Everyone', 'For me'])
+  })
+
+  it('403s for the family pseudo-profile — a household holds no balance', async () => {
+    const family = await getCookieForProfile('family')
+    const res = await app.inject({
+      method: 'GET',
+      url: '/api/rewards/store',
+      headers: { cookie: family },
+    })
+    expect(res.statusCode).toBe(403)
   })
 })

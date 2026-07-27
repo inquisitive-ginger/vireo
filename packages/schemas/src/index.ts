@@ -202,12 +202,12 @@ export type BugReportContext = z.infer<typeof BugReportContextSchema>
 export type BugReportCreateInput = z.infer<typeof BugReportCreateSchema>
 export type BugReportUpdateInput = z.infer<typeof BugReportUpdateSchema>
 
-// ─── Rewards: catalog + redemptions (M4/4) ────────────────────────────────────
+// ─── Rewards: catalog + redemptions (M4/4, reworked by ADR 055) ───────────────
 
-/** The redemption lifecycle (spec). A no-approval reward skips `pending`
-    (request → `granted`); an approval reward waits (`pending` → `granted`/`declined`);
-    `granted` → `fulfilled` when the reward is handed over. */
-export const REDEMPTION_STATUSES = ['pending', 'granted', 'declined', 'fulfilled'] as const
+/** The ticket lifecycle (ADR 055). Buying lands `owned`; `requiresApproval` gates
+    USE, not purchase — an approval ticket waits as `use_requested`, and a parent's
+    yes (or a non-approval tear) lands `used`. "Not now" returns it to `owned`. */
+export const REDEMPTION_STATUSES = ['owned', 'use_requested', 'used'] as const
 export type RedemptionStatus = (typeof REDEMPTION_STATUSES)[number]
 
 // Cost stays in tens (ADR 052) — a kid does the subtraction in their head while
@@ -246,11 +246,11 @@ export const RedemptionCreateSchema = z.object({
   rewardId: UuidSchema,
 })
 
-/** A parent's decision, or a fulfilment. `grant`/`decline` act on a `pending`
-    request; `fulfil` acts on a `granted` one. `note` is the optional decline reason,
-    quoted back to the kid verbatim (M4/1 gate). */
+/** A parent's answer to a use request (ADR 055). `yes` tears the ticket — used IS
+    fulfilment, there is no hand-off step; `not_now` returns it to `owned` with no
+    refund, `note` the optional reason quoted back to the kid verbatim (M4/1 gate). */
 export const RedemptionDecideSchema = z.object({
-  action: z.enum(['grant', 'decline', 'fulfil']),
+  action: z.enum(['yes', 'not_now']),
   note: OptionalText,
 })
 

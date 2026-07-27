@@ -29,7 +29,9 @@ nothing about it changes. **P-Bucks goes up and down.** A chore completion mints
 - P-Bucks ledger + derived balance (ADR 047)
 - Chores earn: `coinReward` on the task, credited off `chores.task.completed` (ADR 048)
 - Reward catalog — tier-4 CRUD, per-reward `requiresApproval` flag
-- Redemption: kid requests → debit → parent decides → fulfilled; **refund on decline**
+- Redemption is a **ticket** (ADR 055): buy debits at once (no parent gate) → owned →
+  explicit use; `requiresApproval` gates **use**, a not-now keeps the ticket, used IS
+  fulfilment. Tier-4 revoke-and-refund is the administrative exception.
 - Reward store surface + `rewards.wallet` home widget
 - Punch cards (ADR 049) — template, per-profile card, punch, auto-payout + reset
 - Parent bonus grant — tier-4 "give N P-Bucks, reason: …"
@@ -90,15 +92,17 @@ P-Bucks against cash later and nothing in M4 assumes it will.
 
 `rewards.*`
 
-| Event                          | Published by          | Payload                                                         |
-| ------------------------------ | --------------------- | --------------------------------------------------------------- |
-| `rewards.balance.credited`     | ledger on credit      | `{ profileId, delta, balance, reason, sourceType, sourceId }`   |
-| `rewards.balance.debited`      | ledger on debit       | `{ profileId, delta, balance, reason, sourceType, sourceId }`   |
-| `rewards.redemption.requested` | POST redemption       | `{ redemptionId, profileId, rewardId, cost, requiresApproval }` |
-| `rewards.redemption.decided`   | PATCH approve/decline | `{ redemptionId, profileId, status, decidedBy }`                |
-| `rewards.redemption.fulfilled` | PATCH fulfil          | `{ redemptionId, profileId, rewardId }`                         |
-| `rewards.card.punched`         | punch handler         | `{ cardId, profileId, templateId, count, goal }`                |
-| `rewards.card.completed`       | punch handler at goal | `{ cardId, profileId, templateId, payout }`                     |
+| Event                              | Published by              | Payload                                                       |
+| ---------------------------------- | ------------------------- | ------------------------------------------------------------- |
+| `rewards.balance.credited`         | ledger on credit          | `{ profileId, delta, balance, reason, sourceType, sourceId }` |
+| `rewards.balance.debited`          | ledger on debit           | `{ profileId, delta, balance, reason, sourceType, sourceId }` |
+| `rewards.redemption.purchased`     | POST redemption (buy)     | `{ redemptionId, profileId, rewardId, cost }`                 |
+| `rewards.redemption.use-requested` | POST :id/use (gated)      | `{ redemptionId, profileId, rewardId }`                       |
+| `rewards.redemption.used`          | tear (immediate or a yes) | `{ redemptionId, profileId, rewardId, decidedBy? }`           |
+| `rewards.redemption.deferred`      | PATCH not-now             | `{ redemptionId, profileId, rewardId, decidedBy }`            |
+| `rewards.redemption.revoked`       | DELETE (tier-4 exception) | `{ redemptionId, profileId, rewardId, cost, revokedBy }`      |
+| `rewards.card.punched`             | punch handler             | `{ cardId, profileId, templateId, count, goal }`              |
+| `rewards.card.completed`           | punch handler at goal     | `{ cardId, profileId, templateId, payout }`                   |
 
 **Subscribes** (the earn contract, ADR 048 — each is one manifest line + one handler):
 
@@ -122,13 +126,13 @@ P-Bucks against cash later and nothing in M4 assumes it will.
 Tier-4 management actions are CASL baseline rules, not registry keys (the chores
 precedent):
 
-| CASL action                           | Route                            | Baseline |
-| ------------------------------------- | -------------------------------- | -------- |
-| `can('manage', 'rewards.Reward')`     | catalog CRUD                     | Tier 4   |
-| `can('decide', 'rewards.Redemption')` | `PATCH /rewards/redemptions/:id` | Tier 4   |
-| `can('create', 'rewards.Grant')`      | `POST /rewards/grants`           | Tier 4   |
-| `can('manage', 'rewards.PunchCard')`  | template CRUD + undo a punch     | Tier 4   |
-| `can('view', 'rewards.Wallet')` (all) | any profile's wallet + history   | Tier 4   |
+| CASL action                           | Route                                                           | Baseline |
+| ------------------------------------- | --------------------------------------------------------------- | -------- |
+| `can('manage', 'rewards.Reward')`     | catalog CRUD                                                    | Tier 4   |
+| `can('decide', 'rewards.Redemption')` | `PATCH` (answer) + `DELETE` (revoke) `/rewards/redemptions/:id` | Tier 4   |
+| `can('create', 'rewards.Grant')`      | `POST /rewards/grants`                                          | Tier 4   |
+| `can('manage', 'rewards.PunchCard')`  | template CRUD + undo a punch                                    | Tier 4   |
+| `can('view', 'rewards.Wallet')` (all) | any profile's wallet + history                                  | Tier 4   |
 
 > **Tier 1 must reach its own balance and the store.** That is the entire point of the
 > module — a capability with no surface is not a capability (ADR 044's lesson).
@@ -194,16 +198,18 @@ rewards
   created_by        uuid
   created_at        timestamptz
 
-redemptions
-  id            uuid  PK
-  reward_id     uuid
-  profile_id    uuid
-  cost          integer               -- SNAPSHOT: repricing must not move a pending request
-  status        text                  -- 'pending' | 'granted' | 'declined' | 'fulfilled'
-  requested_at  timestamptz
-  decided_by    uuid  nullable
-  decided_at    timestamptz nullable
-  decided_note  text  nullable          -- OPTIONAL reason, quoted back to the kid verbatim
+redemptions                           -- a TICKET (ADR 055)
+  id               uuid  PK
+  reward_id        uuid
+  profile_id       uuid
+  cost             integer            -- SNAPSHOT: repricing must not move an owned ticket
+  status           text               -- 'owned' | 'use_requested' | 'used'
+  purchased_at     timestamptz
+  use_requested_at timestamptz nullable
+  used_at          timestamptz nullable
+  decided_by       uuid  nullable
+  decided_at       timestamptz nullable
+  decided_note     text  nullable       -- OPTIONAL not-now reason, quoted back verbatim
 
 punch_card_templates
   id                uuid  PK
@@ -234,7 +240,10 @@ punches
   UNIQUE (source_type, source_id) WHERE source_id IS NOT NULL
 ```
 
-**Debit on request, refund on decline** — not escrow. Same effect, half the state.
+**Money moves once** (ADR 055): buy debits, and the only refund is the tier-4 revoke,
+which deletes the ticket. A parent's not-now moves nothing — the ask was about timing,
+not permission to spend. A revoked ticket frees its stock unit (the row is gone); a
+used one keeps it.
 
 **`profile_id` is never the `family` pseudo-profile** (ADR 053) — enforced in the route,
 not left to convention. Only a person holds a balance.

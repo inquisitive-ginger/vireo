@@ -7,8 +7,24 @@ describe('default layouts + widget prominence (ADR 039)', () => {
     expect(defaultLayoutKey(FAMILY_PROFILE_ID, 1)).toBe('default_layout_family')
     expect(defaultLayoutKey('p', 1)).toBe('default_layout_tier_1_2')
     expect(defaultLayoutKey('p', 2)).toBe('default_layout_tier_1_2')
-    expect(defaultLayoutKey('p', 3)).toBe('default_layout_tier_3_4')
+    expect(defaultLayoutKey('p', 3)).toBe('default_layout_tier_3')
     expect(defaultLayoutKey('p', 4)).toBe('default_layout_tier_3_4')
+  })
+
+  /* The kid surfaces rank wallet > chores > feed = calendar. A teen gets the same
+     order without a feature (their surface declines to shout, like the parent's);
+     the parent layout stays wallet-free. */
+  it('leads both kid surfaces with the wallet, and gives a parent none', () => {
+    const teen = DEFAULT_LAYOUTS['default_layout_tier_3']
+    expect(teen.find((i) => i.widgetId === 'rewards.wallet')).toMatchObject({
+      x: 0,
+      y: 0,
+      prominence: 'card',
+    })
+    expect(teen.filter((i) => i.prominence === 'feature')).toHaveLength(0)
+    expect(
+      DEFAULT_LAYOUTS['default_layout_tier_3_4'].some((i) => i.widgetId === 'rewards.wallet')
+    ).toBe(false)
   })
 
   /* AT MOST one — never two. The rung means "this is what you came for", and two of
@@ -23,7 +39,7 @@ describe('default layouts + widget prominence (ADR 039)', () => {
   it('features the profile-appropriate widget, where a surface has one at all', () => {
     const feature = (key: string) =>
       DEFAULT_LAYOUTS[key].find((i) => i.prominence === 'feature')?.widgetId
-    expect(feature('default_layout_tier_1_2')).toBe('chores.today-summary')
+    expect(feature('default_layout_tier_1_2')).toBe('rewards.wallet')
     expect(feature('default_layout_family')).toBe('family-feed.feed')
     // Parents triage — no single widget is "the one they came for", so no feature.
     expect(feature('default_layout_tier_3_4')).toBeUndefined()
@@ -52,7 +68,7 @@ describe('default layouts + widget prominence (ADR 039)', () => {
   })
 
   it('resolves prominence by (key, widgetId), defaulting to card', () => {
-    expect(prominenceFor('default_layout_tier_1_2', 'chores.today-summary')).toBe('feature')
+    expect(prominenceFor('default_layout_tier_1_2', 'rewards.wallet')).toBe('feature')
     expect(prominenceFor('default_layout_tier_3_4', 'calendar.up-next')).toBe('card')
     expect(prominenceFor('default_layout_tier_3_4', 'family-feed.feed')).toBe('quiet')
     expect(prominenceFor('default_layout_tier_3_4', 'chores.today-summary')).toBe('card')

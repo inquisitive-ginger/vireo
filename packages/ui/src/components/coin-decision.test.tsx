@@ -56,8 +56,25 @@ describe('CoinDecisionTray', () => {
     fireEvent.change(screen.getByRole('textbox'), {
       target: { value: 'After your homework' },
     })
-    fireEvent.click(screen.getByRole('button', { name: /refund 15 P\$/ }))
+    // No refund copy anywhere — a decline never moves money (ADR 055: a "not now"
+    // keeps the ticket AND the spend).
+    expect(screen.queryByText(/refund/i)).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Not this time' }))
     await waitFor(() => expect(onDecline).toHaveBeenCalledWith('After your homework'))
+  })
+
+  it('hides the coin and every money word when no amount is at stake', () => {
+    render(
+      <CoinDecisionTray
+        prompt="Is now a good moment?"
+        approveLabel="Yes — enjoy!"
+        declineLabel="Not now…"
+        onApprove={vi.fn()}
+        onDecline={vi.fn()}
+      />
+    )
+    expect(screen.getByText('Is now a good moment?')).toBeInTheDocument()
+    expect(screen.queryByText(/P\$/)).not.toBeInTheDocument()
   })
 
   it('reverts to the buttons if the mutation rejects', async () => {

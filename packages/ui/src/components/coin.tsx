@@ -7,9 +7,15 @@ import { CURRENCY } from '../lib/currency'
    can never have (ADR 044's second channel):
 
    ONE struck disc, never a disc nested in a ring (the pale step reads as a washer).
-   The rim is the outer sliver of the same circle, masked; a specular sweep crosses
-   the face; a raised inner ring gives relief. Milling was rejected on sight — hard
-   radial notches read as a gear, which is machinery, not money.
+   The rim is the outer sliver of the same circle, masked. Milling was rejected on sight
+   — hard radial notches read as a gear, which is machinery, not money.
+
+   SOFTENED 2026-07-26 (refines ADR 051/054): the earlier face carried a bright specular
+   sweep and a raised inner-highlight ring, which together read as glossy plastic — "fake
+   pirate coin" — at store scale, where a whole grid of them appears at once. Both are
+   gone; the rim conic sits at 0.85 opacity and the top highlight at 0.45. What's left is
+   a matte struck disc: a radial body, a masked rim, the mark. Nothing announces metal —
+   the metal is just there.
 
    The metal is theme-invariant (struck metal looks the same on light and dark);
    only --coin-tint / --coin-ink take dark overrides. */
@@ -52,7 +58,7 @@ export interface CoinProps {
 }
 
 export function Coin({ size = 18 }: CoinProps) {
-  const rimWidth = Math.max(1.5, size * 0.09)
+  const rimWidth = Math.max(1.4, size * 0.085)
   const ringMask = `radial-gradient(closest-side, transparent calc(100% - ${rimWidth}px), #000 calc(100% - ${rimWidth}px))`
   return (
     <span
@@ -60,42 +66,24 @@ export function Coin({ size = 18 }: CoinProps) {
       style={{
         width: size,
         height: size,
-        background: `radial-gradient(circle at 34% 28%, var(--coin-hi), var(--coin) 58%, var(--coin-deep) 104%)`,
+        background: `radial-gradient(circle at 34% 28%, var(--coin-hi), var(--coin) 60%, var(--coin-deep) 106%)`,
         color: 'var(--coin-deep)',
-        boxShadow: [
-          `inset 0 ${Math.max(1, size / 20)}px 0 rgba(255,255,255,0.55)`,
-          `inset 0 -${Math.max(1, size / 16)}px ${size / 8}px rgba(0,0,0,0.2)`,
-          `0 1px 2px rgba(0,0,0,0.2)`,
-        ].join(', '),
+        boxShadow: `inset 0 ${Math.max(1, size / 22)}px 0 rgba(255,255,255,0.45), 0 1px 1.5px rgba(0,0,0,0.18)`,
       }}
     >
       <span
         aria-hidden
         className="pointer-events-none absolute inset-0 rounded-full"
         style={{
-          background: `conic-gradient(from 200deg, var(--coin-deep), var(--coin-hi) 22%, var(--coin) 46%, var(--coin-deep) 66%, var(--coin-hi) 88%, var(--coin-deep))`,
+          opacity: 0.85,
+          background: `conic-gradient(from 210deg, var(--coin-deep), var(--coin-hi) 26%, var(--coin) 50%, var(--coin-deep) 74%, var(--coin-hi) 92%, var(--coin-deep))`,
           maskImage: ringMask,
           WebkitMaskImage: ringMask,
-        }}
-      />
-      <span
-        aria-hidden
-        className="pointer-events-none absolute rounded-full"
-        style={{
-          inset: rimWidth,
-          boxShadow: `inset 0 0 0 ${Math.max(1, size / 26)}px rgba(255,255,255,0.3), inset 0 ${Math.max(1, size / 30)}px ${size / 12}px rgba(255,255,255,0.25)`,
         }}
       />
       {/* Rounded to an EVEN size: an odd glyph box inside an even disc centres on a half
           pixel, which the browser resolves by smearing the mark half a pixel off-centre. */}
       <Mark size={Math.round((size * 0.66) / 2) * 2} />
-      <span
-        aria-hidden
-        className="pointer-events-none absolute inset-0 rounded-full"
-        style={{
-          background: `linear-gradient(122deg, rgba(255,255,255,0.75) 0 14%, rgba(255,255,255,0.1) 32%, rgba(255,255,255,0) 50%)`,
-        }}
-      />
     </span>
   )
 }

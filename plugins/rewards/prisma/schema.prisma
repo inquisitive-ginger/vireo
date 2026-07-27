@@ -95,28 +95,34 @@ model Reward {
   @@schema("rewards")
 }
 
-// A kid's request to spend P-Bucks on a reward (M4/4). The P-Bucks is DEBITED on request and
-// REFUNDED on decline — not escrow, same effect with half the state (spec). `cost`
-// is a SNAPSHOT: repricing the reward must never move a request already in flight.
+// A ticket (ADR 055): buying and using are two moments. Buy DEBITS the wallet once,
+// with no parent gate at any price (it's the kid's money, ADR 053); `cost` is a
+// SNAPSHOT so repricing the reward never moves a ticket already owned.
+// `requiresApproval` gates USE, not purchase: a use request waits for a parent, and
+// "not now" returns the ticket to owned — the money stays spent, `decided_note` is
+// the optional reason quoted back verbatim. Used IS fulfilment; there is no
+// hand-off step. The tier-4 revoke exception refunds and DELETES the row, so every
+// surviving row holds a stock unit.
 //
-// status: pending → granted → fulfilled (approval path) | granted → fulfilled
-// (no-approval reward skips pending) | pending → declined (P-Bucks refunded). The debit's
-// ledger entry is keyed `(redemption, id)`; the refund is `(refund, id)`.
+// status: owned → use_requested → used | use_requested → owned (not now). The
+// debit's ledger entry is keyed `(redemption, id)`; the revoke refund `(refund, id)`.
 model Redemption {
-  id          String    @id @default(uuid()) @db.Uuid
-  rewardId    String    @map("reward_id") @db.Uuid
-  profileId   String    @map("profile_id") @db.Uuid
-  cost        Int
-  status      String    @default("pending")
-  requestedAt DateTime  @default(now()) @map("requested_at")
-  decidedBy   String?   @map("decided_by") @db.Uuid
-  decidedAt   DateTime? @map("decided_at")
-  decidedNote String?   @map("decided_note")
+  id             String    @id @default(uuid()) @db.Uuid
+  rewardId       String    @map("reward_id") @db.Uuid
+  profileId      String    @map("profile_id") @db.Uuid
+  cost           Int
+  status         String    @default("owned")
+  purchasedAt    DateTime  @default(now()) @map("purchased_at")
+  useRequestedAt DateTime? @map("use_requested_at")
+  usedAt         DateTime? @map("used_at")
+  decidedBy      String?   @map("decided_by") @db.Uuid
+  decidedAt      DateTime? @map("decided_at")
+  decidedNote    String?   @map("decided_note")
 
   reward Reward @relation(fields: [rewardId], references: [id])
 
-  @@index([status, requestedAt])
-  @@index([profileId, requestedAt])
+  @@index([status, purchasedAt])
+  @@index([profileId, purchasedAt])
   @@map("redemptions")
   @@schema("rewards")
 }

@@ -43,3 +43,9 @@ declare module 'rewards/Plugin' {
   const Plugin: ComponentType
   export default Plugin
 }
+
+declare module 'rewards/widgets/Wallet' {
+  import type { ComponentType } from 'react'
+  const Wallet: ComponentType
+  export default Wallet
+}

@@ -2,21 +2,35 @@
   "name": "rewards",
   "version": "0.0.1",
   "remoteEntry": "http://localhost:3014/assets/remoteEntry.js",
-  "exposes": ["./Plugin"],
+  "exposes": ["./Plugin", "./widgets/Wallet"],
   "routes": ["/rewards"],
   "schema": "rewards",
   "events": {
     "publishes": [
-      "rewards.redemption.requested",
-      "rewards.redemption.decided",
-      "rewards.redemption.fulfilled"
+      "rewards.redemption.purchased",
+      "rewards.redemption.use-requested",
+      "rewards.redemption.used",
+      "rewards.redemption.deferred",
+      "rewards.redemption.revoked"
     ],
     "subscribes": ["chores.task.completed", "chores.task.reopened", "chores.task.deleted"]
   },
+  "widgets": [
+    {
+      "id": "rewards.wallet",
+      "displayName": "Wallet",
+      "component": "./widgets/Wallet",
+      "defaultSize": "compact",
+      "supportedSizes": ["compact", "standard"],
+      "minTier": 1,
+      "requiredPermission": "rewards.wallet.view",
+      "description": "Your P-Bucks balance and what you can afford right now."
+    }
+  ],
   "navItem": {
     "label": "Rewards",
     "route": "/rewards",
     "icon": "gift",
-    "minTier": 4
+    "minTier": 1
   }
 }

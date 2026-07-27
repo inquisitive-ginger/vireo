@@ -171,7 +171,9 @@ exports.Prisma.RedemptionScalarFieldEnum = {
   profileId: 'profileId',
   cost: 'cost',
   status: 'status',
-  requestedAt: 'requestedAt',
+  purchasedAt: 'purchasedAt',
+  useRequestedAt: 'useRequestedAt',
+  usedAt: 'usedAt',
   decidedBy: 'decidedBy',
   decidedAt: 'decidedAt',
   decidedNote: 'decidedNote'

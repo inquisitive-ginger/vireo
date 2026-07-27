@@ -5666,7 +5666,9 @@ export namespace Prisma {
     profileId: string | null
     cost: number | null
     status: string | null
-    requestedAt: Date | null
+    purchasedAt: Date | null
+    useRequestedAt: Date | null
+    usedAt: Date | null
     decidedBy: string | null
     decidedAt: Date | null
     decidedNote: string | null
@@ -5678,7 +5680,9 @@ export namespace Prisma {
     profileId: string | null
     cost: number | null
     status: string | null
-    requestedAt: Date | null
+    purchasedAt: Date | null
+    useRequestedAt: Date | null
+    usedAt: Date | null
     decidedBy: string | null
     decidedAt: Date | null
     decidedNote: string | null
@@ -5690,7 +5694,9 @@ export namespace Prisma {
     profileId: number
     cost: number
     status: number
-    requestedAt: number
+    purchasedAt: number
+    useRequestedAt: number
+    usedAt: number
     decidedBy: number
     decidedAt: number
     decidedNote: number
@@ -5712,7 +5718,9 @@ export namespace Prisma {
     profileId?: true
     cost?: true
     status?: true
-    requestedAt?: true
+    purchasedAt?: true
+    useRequestedAt?: true
+    usedAt?: true
     decidedBy?: true
     decidedAt?: true
     decidedNote?: true
@@ -5724,7 +5732,9 @@ export namespace Prisma {
     profileId?: true
     cost?: true
     status?: true
-    requestedAt?: true
+    purchasedAt?: true
+    useRequestedAt?: true
+    usedAt?: true
     decidedBy?: true
     decidedAt?: true
     decidedNote?: true
@@ -5736,7 +5746,9 @@ export namespace Prisma {
     profileId?: true
     cost?: true
     status?: true
-    requestedAt?: true
+    purchasedAt?: true
+    useRequestedAt?: true
+    usedAt?: true
     decidedBy?: true
     decidedAt?: true
     decidedNote?: true
@@ -5835,7 +5847,9 @@ export namespace Prisma {
     profileId: string
     cost: number
     status: string
-    requestedAt: Date
+    purchasedAt: Date
+    useRequestedAt: Date | null
+    usedAt: Date | null
     decidedBy: string | null
     decidedAt: Date | null
     decidedNote: string | null
@@ -5866,7 +5880,9 @@ export namespace Prisma {
     profileId?: boolean
     cost?: boolean
     status?: boolean
-    requestedAt?: boolean
+    purchasedAt?: boolean
+    useRequestedAt?: boolean
+    usedAt?: boolean
     decidedBy?: boolean
     decidedAt?: boolean
     decidedNote?: boolean
@@ -5879,7 +5895,9 @@ export namespace Prisma {
     profileId?: boolean
     cost?: boolean
     status?: boolean
-    requestedAt?: boolean
+    purchasedAt?: boolean
+    useRequestedAt?: boolean
+    usedAt?: boolean
     decidedBy?: boolean
     decidedAt?: boolean
     decidedNote?: boolean
@@ -5892,7 +5910,9 @@ export namespace Prisma {
     profileId?: boolean
     cost?: boolean
     status?: boolean
-    requestedAt?: boolean
+    purchasedAt?: boolean
+    useRequestedAt?: boolean
+    usedAt?: boolean
     decidedBy?: boolean
     decidedAt?: boolean
     decidedNote?: boolean
@@ -5905,13 +5925,15 @@ export namespace Prisma {
     profileId?: boolean
     cost?: boolean
     status?: boolean
-    requestedAt?: boolean
+    purchasedAt?: boolean
+    useRequestedAt?: boolean
+    usedAt?: boolean
     decidedBy?: boolean
     decidedAt?: boolean
     decidedNote?: boolean
   }
 
-  export type RedemptionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "rewardId" | "profileId" | "cost" | "status" | "requestedAt" | "decidedBy" | "decidedAt" | "decidedNote", ExtArgs["result"]["redemption"]>
+  export type RedemptionOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "rewardId" | "profileId" | "cost" | "status" | "purchasedAt" | "useRequestedAt" | "usedAt" | "decidedBy" | "decidedAt" | "decidedNote", ExtArgs["result"]["redemption"]>
   export type RedemptionInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     reward?: boolean | RewardDefaultArgs<ExtArgs>
   }
@@ -5933,7 +5955,9 @@ export namespace Prisma {
       profileId: string
       cost: number
       status: string
-      requestedAt: Date
+      purchasedAt: Date
+      useRequestedAt: Date | null
+      usedAt: Date | null
       decidedBy: string | null
       decidedAt: Date | null
       decidedNote: string | null
@@ -6366,7 +6390,9 @@ export namespace Prisma {
     readonly profileId: FieldRef<"Redemption", 'String'>
     readonly cost: FieldRef<"Redemption", 'Int'>
     readonly status: FieldRef<"Redemption", 'String'>
-    readonly requestedAt: FieldRef<"Redemption", 'DateTime'>
+    readonly purchasedAt: FieldRef<"Redemption", 'DateTime'>
+    readonly useRequestedAt: FieldRef<"Redemption", 'DateTime'>
+    readonly usedAt: FieldRef<"Redemption", 'DateTime'>
     readonly decidedBy: FieldRef<"Redemption", 'String'>
     readonly decidedAt: FieldRef<"Redemption", 'DateTime'>
     readonly decidedNote: FieldRef<"Redemption", 'String'>
@@ -6866,7 +6892,9 @@ export namespace Prisma {
     profileId: 'profileId',
     cost: 'cost',
     status: 'status',
-    requestedAt: 'requestedAt',
+    purchasedAt: 'purchasedAt',
+    useRequestedAt: 'useRequestedAt',
+    usedAt: 'usedAt',
     decidedBy: 'decidedBy',
     decidedAt: 'decidedAt',
     decidedNote: 'decidedNote'
@@ -7265,7 +7293,9 @@ export namespace Prisma {
     profileId?: UuidFilter<"Redemption"> | string
     cost?: IntFilter<"Redemption"> | number
     status?: StringFilter<"Redemption"> | string
-    requestedAt?: DateTimeFilter<"Redemption"> | Date | string
+    purchasedAt?: DateTimeFilter<"Redemption"> | Date | string
+    useRequestedAt?: DateTimeNullableFilter<"Redemption"> | Date | string | null
+    usedAt?: DateTimeNullableFilter<"Redemption"> | Date | string | null
     decidedBy?: UuidNullableFilter<"Redemption"> | string | null
     decidedAt?: DateTimeNullableFilter<"Redemption"> | Date | string | null
     decidedNote?: StringNullableFilter<"Redemption"> | string | null
@@ -7278,7 +7308,9 @@ export namespace Prisma {
     profileId?: SortOrder
     cost?: SortOrder
     status?: SortOrder
-    requestedAt?: SortOrder
+    purchasedAt?: SortOrder
+    useRequestedAt?: SortOrderInput | SortOrder
+    usedAt?: SortOrderInput | SortOrder
     decidedBy?: SortOrderInput | SortOrder
     decidedAt?: SortOrderInput | SortOrder
     decidedNote?: SortOrderInput | SortOrder
@@ -7294,7 +7326,9 @@ export namespace Prisma {
     profileId?: UuidFilter<"Redemption"> | string
     cost?: IntFilter<"Redemption"> | number
     status?: StringFilter<"Redemption"> | string
-    requestedAt?: DateTimeFilter<"Redemption"> | Date | string
+    purchasedAt?: DateTimeFilter<"Redemption"> | Date | string
+    useRequestedAt?: DateTimeNullableFilter<"Redemption"> | Date | string | null
+    usedAt?: DateTimeNullableFilter<"Redemption"> | Date | string | null
     decidedBy?: UuidNullableFilter<"Redemption"> | string | null
     decidedAt?: DateTimeNullableFilter<"Redemption"> | Date | string | null
     decidedNote?: StringNullableFilter<"Redemption"> | string | null
@@ -7307,7 +7341,9 @@ export namespace Prisma {
     profileId?: SortOrder
     cost?: SortOrder
     status?: SortOrder
-    requestedAt?: SortOrder
+    purchasedAt?: SortOrder
+    useRequestedAt?: SortOrderInput | SortOrder
+    usedAt?: SortOrderInput | SortOrder
     decidedBy?: SortOrderInput | SortOrder
     decidedAt?: SortOrderInput | SortOrder
     decidedNote?: SortOrderInput | SortOrder
@@ -7327,7 +7363,9 @@ export namespace Prisma {
     profileId?: UuidWithAggregatesFilter<"Redemption"> | string
     cost?: IntWithAggregatesFilter<"Redemption"> | number
     status?: StringWithAggregatesFilter<"Redemption"> | string
-    requestedAt?: DateTimeWithAggregatesFilter<"Redemption"> | Date | string
+    purchasedAt?: DateTimeWithAggregatesFilter<"Redemption"> | Date | string
+    useRequestedAt?: DateTimeNullableWithAggregatesFilter<"Redemption"> | Date | string | null
+    usedAt?: DateTimeNullableWithAggregatesFilter<"Redemption"> | Date | string | null
     decidedBy?: UuidNullableWithAggregatesFilter<"Redemption"> | string | null
     decidedAt?: DateTimeNullableWithAggregatesFilter<"Redemption"> | Date | string | null
     decidedNote?: StringNullableWithAggregatesFilter<"Redemption"> | string | null
@@ -7657,7 +7695,9 @@ export namespace Prisma {
     profileId: string
     cost: number
     status?: string
-    requestedAt?: Date | string
+    purchasedAt?: Date | string
+    useRequestedAt?: Date | string | null
+    usedAt?: Date | string | null
     decidedBy?: string | null
     decidedAt?: Date | string | null
     decidedNote?: string | null
@@ -7670,7 +7710,9 @@ export namespace Prisma {
     profileId: string
     cost: number
     status?: string
-    requestedAt?: Date | string
+    purchasedAt?: Date | string
+    useRequestedAt?: Date | string | null
+    usedAt?: Date | string | null
     decidedBy?: string | null
     decidedAt?: Date | string | null
     decidedNote?: string | null
@@ -7681,7 +7723,9 @@ export namespace Prisma {
     profileId?: StringFieldUpdateOperationsInput | string
     cost?: IntFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
-    requestedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    purchasedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    useRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    usedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     decidedBy?: NullableStringFieldUpdateOperationsInput | string | null
     decidedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     decidedNote?: NullableStringFieldUpdateOperationsInput | string | null
@@ -7694,7 +7738,9 @@ export namespace Prisma {
     profileId?: StringFieldUpdateOperationsInput | string
     cost?: IntFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
-    requestedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    purchasedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    useRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    usedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     decidedBy?: NullableStringFieldUpdateOperationsInput | string | null
     decidedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     decidedNote?: NullableStringFieldUpdateOperationsInput | string | null
@@ -7706,7 +7752,9 @@ export namespace Prisma {
     profileId: string
     cost: number
     status?: string
-    requestedAt?: Date | string
+    purchasedAt?: Date | string
+    useRequestedAt?: Date | string | null
+    usedAt?: Date | string | null
     decidedBy?: string | null
     decidedAt?: Date | string | null
     decidedNote?: string | null
@@ -7717,7 +7765,9 @@ export namespace Prisma {
     profileId?: StringFieldUpdateOperationsInput | string
     cost?: IntFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
-    requestedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    purchasedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    useRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    usedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     decidedBy?: NullableStringFieldUpdateOperationsInput | string | null
     decidedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     decidedNote?: NullableStringFieldUpdateOperationsInput | string | null
@@ -7729,7 +7779,9 @@ export namespace Prisma {
     profileId?: StringFieldUpdateOperationsInput | string
     cost?: IntFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
-    requestedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    purchasedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    useRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    usedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     decidedBy?: NullableStringFieldUpdateOperationsInput | string | null
     decidedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     decidedNote?: NullableStringFieldUpdateOperationsInput | string | null
@@ -8183,7 +8235,9 @@ export namespace Prisma {
     profileId?: SortOrder
     cost?: SortOrder
     status?: SortOrder
-    requestedAt?: SortOrder
+    purchasedAt?: SortOrder
+    useRequestedAt?: SortOrder
+    usedAt?: SortOrder
     decidedBy?: SortOrder
     decidedAt?: SortOrder
     decidedNote?: SortOrder
@@ -8199,7 +8253,9 @@ export namespace Prisma {
     profileId?: SortOrder
     cost?: SortOrder
     status?: SortOrder
-    requestedAt?: SortOrder
+    purchasedAt?: SortOrder
+    useRequestedAt?: SortOrder
+    usedAt?: SortOrder
     decidedBy?: SortOrder
     decidedAt?: SortOrder
     decidedNote?: SortOrder
@@ -8211,7 +8267,9 @@ export namespace Prisma {
     profileId?: SortOrder
     cost?: SortOrder
     status?: SortOrder
-    requestedAt?: SortOrder
+    purchasedAt?: SortOrder
+    useRequestedAt?: SortOrder
+    usedAt?: SortOrder
     decidedBy?: SortOrder
     decidedAt?: SortOrder
     decidedNote?: SortOrder
@@ -8578,7 +8636,9 @@ export namespace Prisma {
     profileId: string
     cost: number
     status?: string
-    requestedAt?: Date | string
+    purchasedAt?: Date | string
+    useRequestedAt?: Date | string | null
+    usedAt?: Date | string | null
     decidedBy?: string | null
     decidedAt?: Date | string | null
     decidedNote?: string | null
@@ -8589,7 +8649,9 @@ export namespace Prisma {
     profileId: string
     cost: number
     status?: string
-    requestedAt?: Date | string
+    purchasedAt?: Date | string
+    useRequestedAt?: Date | string | null
+    usedAt?: Date | string | null
     decidedBy?: string | null
     decidedAt?: Date | string | null
     decidedNote?: string | null
@@ -8630,7 +8692,9 @@ export namespace Prisma {
     profileId?: UuidFilter<"Redemption"> | string
     cost?: IntFilter<"Redemption"> | number
     status?: StringFilter<"Redemption"> | string
-    requestedAt?: DateTimeFilter<"Redemption"> | Date | string
+    purchasedAt?: DateTimeFilter<"Redemption"> | Date | string
+    useRequestedAt?: DateTimeNullableFilter<"Redemption"> | Date | string | null
+    usedAt?: DateTimeNullableFilter<"Redemption"> | Date | string | null
     decidedBy?: UuidNullableFilter<"Redemption"> | string | null
     decidedAt?: DateTimeNullableFilter<"Redemption"> | Date | string | null
     decidedNote?: StringNullableFilter<"Redemption"> | string | null
@@ -8713,7 +8777,9 @@ export namespace Prisma {
     profileId: string
     cost: number
     status?: string
-    requestedAt?: Date | string
+    purchasedAt?: Date | string
+    useRequestedAt?: Date | string | null
+    usedAt?: Date | string | null
     decidedBy?: string | null
     decidedAt?: Date | string | null
     decidedNote?: string | null
@@ -8724,7 +8790,9 @@ export namespace Prisma {
     profileId?: StringFieldUpdateOperationsInput | string
     cost?: IntFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
-    requestedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    purchasedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    useRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    usedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     decidedBy?: NullableStringFieldUpdateOperationsInput | string | null
     decidedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     decidedNote?: NullableStringFieldUpdateOperationsInput | string | null
@@ -8735,7 +8803,9 @@ export namespace Prisma {
     profileId?: StringFieldUpdateOperationsInput | string
     cost?: IntFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
-    requestedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    purchasedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    useRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    usedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     decidedBy?: NullableStringFieldUpdateOperationsInput | string | null
     decidedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     decidedNote?: NullableStringFieldUpdateOperationsInput | string | null
@@ -8746,7 +8816,9 @@ export namespace Prisma {
     profileId?: StringFieldUpdateOperationsInput | string
     cost?: IntFieldUpdateOperationsInput | number
     status?: StringFieldUpdateOperationsInput | string
-    requestedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    purchasedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    useRequestedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    usedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     decidedBy?: NullableStringFieldUpdateOperationsInput | string | null
     decidedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     decidedNote?: NullableStringFieldUpdateOperationsInput | string | null

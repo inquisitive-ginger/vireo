@@ -1,6 +1,5 @@
 import { CheckCheck, Loader2 } from 'lucide-react'
 import {
-  Button,
   CoinDecisionTray,
   EmptyState,
   ItemCard,
@@ -16,6 +15,7 @@ import {
   useQueuePayouts,
   useQueueRedemptions,
 } from '../lib/hooks'
+import { askedLabel, boughtLabel } from '../lib/when'
 import type { PendingPayout, Redemption } from '../types'
 
 type Item =
@@ -45,7 +45,7 @@ export function ApprovalsQueue() {
     ...(redemptions.data ?? []).map(
       (redemption): Item => ({
         kind: 'redemption',
-        at: Date.parse(redemption.requestedAt),
+        at: Date.parse(redemption.useRequestedAt ?? redemption.purchasedAt),
         redemption,
       })
     ),
@@ -153,6 +153,9 @@ function PayoutCard({
   )
 }
 
+/* A use request (ADR 055). The ticket is already bought and paid for — no cost, no
+   coin, no money words: the parent's question is timing, and a "not now" keeps the
+   ticket in the kid's pocket. */
 function RedemptionCard({
   redemption,
   kidName,
@@ -162,57 +165,41 @@ function RedemptionCard({
   redemption: Redemption
   kidName: string
   spine: string
-  onDecide: (action: 'grant' | 'decline' | 'fulfil', note: string | null) => Promise<unknown>
+  onDecide: (action: 'yes' | 'not_now', note: string | null) => Promise<unknown>
 }) {
   const label = redemption.reward
     ? `${redemption.reward.emoji} ${redemption.reward.name}`
     : 'a reward'
-
-  // A granted request is no longer a coin decision — the P-Bucks already moved. It
-  // waits to be handed over.
-  if (redemption.status === 'granted') {
-    return (
-      <ItemCard
-        spine={spine}
-        align="center"
-        trailing={
-          <Button size="sm" variant="outline" onClick={() => onDecide('fulfil', null)}>
-            Mark as given
-          </Button>
-        }
-      >
-        <div className="min-w-0 flex-1">
-          <span className="text-card-title block truncate">{label}</span>
-          <span className="text-xs-body text-muted-foreground">approved · hand it over</span>
-        </div>
-      </ItemCard>
-    )
-  }
+  const asked = redemption.useRequestedAt
+    ? askedLabel(redemption.useRequestedAt).replace(/^Asked/, 'asked')
+    : null
 
   return (
     <ItemCard spine={spine} align="stretch">
       <div className="flex min-w-0 flex-1 flex-col gap-3">
         <div>
           <span className="text-card-title block truncate">{label}</span>
-          <span className="text-xs-body text-muted-foreground">wants to spend</span>
+          <span className="text-xs-body text-muted-foreground">
+            wants to use · {boughtLabel(redemption.purchasedAt).toLowerCase()}
+            {asked ? ` · ${asked}` : ''}
+          </span>
         </div>
         <CoinDecisionTray
-          amount={redemption.cost}
-          prompt={`${bucks(redemption.cost)} to spend`}
-          approveLabel="Approve"
-          declineLabel="Not this time"
-          approvedLabel="Approved"
-          declinedLabel="Not this time"
+          prompt="Is now a good moment?"
+          approveLabel="Yes — enjoy!"
+          declineLabel="Not now…"
+          approvedLabel="Yes — ticket torn"
+          declinedLabel="Not now — the ticket stays in their pocket"
           withDeclineNote
           declineNoteLabel={
             <>
-              Add a reason — <b className="font-semibold text-foreground">{kidName} sees this</b>{' '}
-              (optional)
+              Add a note — <b className="font-semibold text-foreground">{kidName} sees this</b>{' '}
+              (optional). The ticket stays theirs either way.
             </>
           }
           declineNotePlaceholder="Maybe after homework…"
-          onApprove={() => onDecide('grant', null)}
-          onDecline={(note) => onDecide('decline', note)}
+          onApprove={() => onDecide('yes', null)}
+          onDecline={(note) => onDecide('not_now', note)}
         />
       </div>
     </ItemCard>

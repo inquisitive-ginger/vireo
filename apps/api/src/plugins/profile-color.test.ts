@@ -287,7 +287,7 @@ describe('the hue travels with the person', () => {
       method: 'POST',
       url: '/api/chores/tasks',
       headers: { cookie },
-      payload: { title: 'Bins', assigneeId: kid.id, xpReward: 10 },
+      payload: { title: 'Bins', assigneeId: kid.id },
     })
     expect(created.statusCode).toBe(201)
     expect(created.json().assigneeHue).toBe('plum')

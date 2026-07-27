@@ -106,6 +106,7 @@ export function ChoresPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['rewards/payouts'] })
       queryClient.invalidateQueries({ queryKey: ['rewards/wallet'] })
+      queryClient.invalidateQueries({ queryKey: ['rewards/store'] })
     },
   })
 
@@ -176,9 +177,13 @@ export function ChoresPage() {
       }),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['chores/tasks'] })
-      // A paying completion may have created a held payout — refetch so the card's
-      // the payout state reconciles (the held badge already shows from the task itself).
+      // A paying completion may have created a held payout, or auto-credited the ledger.
+      // Refetch payouts AND the wallet/store balance so the widget and store reflect the
+      // new P-Bucks (the credit lands async on the event bus; the refetch round-trip
+      // outlasts it in practice — a stale read reconciles on the next refocus).
       queryClient.invalidateQueries({ queryKey: ['rewards/payouts'] })
+      queryClient.invalidateQueries({ queryKey: ['rewards/wallet'] })
+      queryClient.invalidateQueries({ queryKey: ['rewards/store'] })
     },
   })
 
@@ -191,6 +196,8 @@ export function ChoresPage() {
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['chores/tasks'] })
       queryClient.invalidateQueries({ queryKey: ['rewards/payouts'] })
+      queryClient.invalidateQueries({ queryKey: ['rewards/wallet'] })
+      queryClient.invalidateQueries({ queryKey: ['rewards/store'] })
     },
   })
 

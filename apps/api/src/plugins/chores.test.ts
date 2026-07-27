@@ -97,7 +97,8 @@ describe('POST /api/chores/tasks', () => {
     expect(body.assigneeId).toBe(KID_ID)
     expect(body.assigneeName).toBe('Kid')
     expect(body.status).toBe('pending')
-    expect(body.xpReward).toBe(10)
+    // A free chore scores base XP — derived, not defaulted (ADR 056).
+    expect(body.xpReward).toBe(5)
     expect(body.createdBy).toBe(PARENT_ID)
     expect(body.id).toBeDefined()
     expect(body.createdAt).toBeDefined()
@@ -156,13 +157,25 @@ describe('POST /api/chores/tasks', () => {
     expect(res.statusCode).toBe(404)
   })
 
-  it('honors a custom xpReward', async () => {
+  it('derives xpReward from the coin tier (ADR 056)', async () => {
     const cookie = await getCookieForProfile(PARENT_ID)
     const res = await app.inject({
       method: 'POST',
       url: '/api/chores/tasks',
       headers: { cookie },
-      payload: { title: 'Big chore', assigneeId: KID_ID, xpReward: 25 },
+      payload: { title: 'Big chore', assigneeId: KID_ID, coinReward: 5 },
+    })
+    expect(res.statusCode).toBe(201)
+    expect(res.json().xpReward).toBe(55)
+  })
+
+  it('ignores a client-sent xpReward', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/chores/tasks',
+      headers: { cookie },
+      payload: { title: 'Sneaky chore', assigneeId: KID_ID, coinReward: 2, xpReward: 999 },
     })
     expect(res.statusCode).toBe(201)
     expect(res.json().xpReward).toBe(25)
@@ -492,13 +505,14 @@ describe('PATCH /api/chores/tasks/:id', () => {
       method: 'PATCH',
       url: `/api/chores/tasks/${task.id}`,
       headers: { cookie },
-      payload: { title: 'Edited', assigneeId: TWEEN_ID, xpReward: 25, dueDate: '2026-07-01' },
+      payload: { title: 'Edited', assigneeId: TWEEN_ID, coinReward: 2, dueDate: '2026-07-01' },
     })
     expect(res.statusCode).toBe(200)
     const body = res.json()
     expect(body.title).toBe('Edited')
     expect(body.assigneeId).toBe(TWEEN_ID)
     expect(body.assigneeName).toBe('Tween')
+    // An edit re-derives — the legacy hand-picked 10 drains to the formula (ADR 056).
     expect(body.xpReward).toBe(25)
     expect(body.dueDate).toBe('2026-07-01')
   })
