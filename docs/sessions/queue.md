@@ -23,16 +23,18 @@
 > household's data), but the feature work is what the family is waiting on.
 
 > **M4/5 was reworked mid-flight** by the 2026-07-26 design review (ADR 055 — a
-> redemption is a ticket): it lives on `dev/rewards-store-wallet`. **M4/5a–d are all
-> ✅ done on the branch**; it carries the **prod flip** (`rewards` registered, flag
-> defaults on), so **merging the branch IS the launch — M4/8 is the one remaining
-> gate and must land on the branch before the PR.**
+> redemption is a ticket): it lives on `dev/rewards-store-wallet`. **M4/5a–d AND
+> M4/8 (ADR 056) are all ✅ done on the branch**; it carries the **prod flip**
+> (`rewards` registered, flag defaults on). **The PR is unblocked — opening and
+> merging it IS the P-Bucks launch.** At the flip, run the standing fridge-distance
+> checks (coin beside marigold, P-mark at 16–18px).
 
-### M4/8 — Design: XP Derived from P-Bucks (gates the M4/5 branch PR)
+### Open the `dev/rewards-store-wallet` PR — the P-Bucks launch
 
-**Type:** design+dev · see full entry below. **Must land on
-`dev/rewards-store-wallet` before it merges** — the branch flips `REWARDS_UI` on,
-and shipping the flag without M4/8 launches the XP-vs-P$ double-picker mismatch.
+**Type:** release · No kickoff needed. The branch carries M4/5a–d + M4/8 + the prod
+flip; merge = launch (deploy is merge-and-walk-away). Branch predates PR #74
+(`isToday` widget fix) — confirm the merge picks it up via main. Then the
+fridge-distance review of the coin/P-mark/amount-field, which has never happened.
 
 ### M4/6 — Dev: Punch Cards
 
@@ -47,22 +49,16 @@ can undo. Consumed by M5 try bites. _Depends on: M4/4._
 Tier-4 "give N P-Bucks, reason: …". Small, and it is what makes the ledger's `reason` field
 earn its keep. _Depends on: M4/2._
 
-### M4/8 — Design: XP Derived from P-Bucks + XP Progression
+### M4/9 — Design: XP Sink (the deferred half of M4/8)
 
 **Type:** design · **Kickoff:** _to be written_
-**Amends ADR 052.** A parent sets **one** value at assignment (P-Bucks); XP is **derived**
-(`xp = 5 + coinReward × 10` → routine 5 · weekly 15–25 · effort 55 · big 105 — a tuning
-knob). This kills the "worth 100 XP but 1 P-Bucks" mismatch: more P-Bucks always means more XP, no
-inversions. **Not conversion** (ADR 002 holds — balances stay independent and
-non-exchangeable; deriving the _award_ ≠ exchanging the _balance_); **XP stays up-only**
-(the balance is still a monotonic accumulator; reopen debits P-Bucks, never XP). Removes the
-XP picker from `CreateTaskDrawer`. Coupled to the P-Bucks launch (M4/5): with P-Bucks flagged
-off, `coinReward` is always 0, so dropping the XP picker would flatten every chore to
-base-5 XP in prod — so this lands with the flag flip, not before. Second half: give XP a
-sink — an avatar / gear cosmetic ladder unlocked at XP thresholds (unlock, never
-deduct, so up-only holds). Never microtransactions — XP unlocks cosmetics; neither P-Bucks
-nor real money buys gear. _Reads: ADR 002, 051, 052; `CreateTaskDrawer`, `chores.xp_balances`._
-_Depends on: M4/3; lands with M4/5._
+Give XP a sink — a cosmetic ladder unlocked at XP thresholds (unlock, never deduct,
+so up-only holds; never microtransactions — neither P-Bucks nor real money buys gear).
+Deliberately split out of M4/8 (ADR 056): gear on an avatar collides with **ADR 042**
+(a photo is a face, not a token), and XP lives in `chores` while cosmetics would live
+on the profile — the ownership/validation boundary needs an answer before any render.
+_Reads: ADR 042, 051, 056; `ScorePlate`, `chores.xp_balances`._ _Depends on: nothing —
+the launch does not need it._
 
 ---
 
@@ -260,6 +256,12 @@ suite mirroring chores/calendar. _Depends on: none._
 ## Recently Completed
 
 > Two-line index; full detail in the linked log.
+
+- **2026-07-26 — Design+Dev: XP Derived from P-Bucks (M4/8, ADR 056).** One value at
+  assignment: xp = 5 + coinReward × 10, XP picker gone, server derives and ignores the
+  client; Pays/Cost align on a shared `CoinAmountField` (typed amount · taught presets).
+  **The `dev/rewards-store-wallet` PR is unblocked.** The XP sink split out to M4/9.
+  See `logs/2026-07-26-design-dev-xp-derived-from-pbucks.md`.
 
 - **2026-07-26 — Dev: History Sheet + Ripples ∥ Parent Drawer Words (M4/5c+d).** The
   purse's "Where'd it go?" sheet (no new endpoint — `/rewards/wallet` already was the

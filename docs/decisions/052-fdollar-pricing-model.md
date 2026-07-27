@@ -1,8 +1,10 @@
 # 052 — The Economy Is Priced From a Weekly Earn Rate
 
-**Status:** Decided · **Naming amended by ADR 054**
+**Status:** Decided · **Naming amended by ADR 054 · Amended by ADR 056**
 
 > **Naming amendment (ADR 054, 2026-07-24).** Every "F$" / "Family Dollars" below is now "Pritchett Bucks" — written "P$" in compact text beside a number, "P-Bucks" in any sentence a person reads or hears, and struck as the P-mark on the coin face. Strings come from one module, packages/ui/src/lib/currency.ts, so a register is chosen by naming an export rather than by typing two characters. The decision recorded here is unchanged — only the name is. See [ADR 054](054-pritchett-bucks.md).
+
+> **Amendment (ADR 056, 2026-07-26).** "XP is unchanged and still lands on every chore" is now derived, not chosen: xp = 5 + coinReward × 10, one value set at assignment. The chore ladder below ships as presets 1/2/5/10 on a free-typed amount field — 0 is an empty input, not a tier — and the drawer's XP picker is gone. The weekly earn rate, opt-in paying, and the no-silent-repricing rule all stand. See [ADR 056](056-xp-derived-from-pbucks.md).
 
 ## Decision
 
