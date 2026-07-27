@@ -22,19 +22,19 @@
 > first in wall-clock terms where they are cheap (Part F is a real risk to the
 > household's data), but the feature work is what the family is waiting on.
 
-### M4/5 — Dev: Store + Wallet Widget
+> **M4/5 was reworked mid-flight** by the 2026-07-26 design review (ADR 055 — a
+> redemption is a ticket): it lives on `dev/rewards-store-wallet`. **M4/5a–d AND
+> M4/8 (ADR 056) are all ✅ done on the branch**; it carries the **prod flip**
+> (`rewards` registered, flag defaults on). **The PR is unblocked — opening and
+> merging it IS the P-Bucks launch.** At the flip, run the standing fridge-distance
+> checks (coin beside marigold, P-mark at 16–18px).
 
-**Type:** development · **Kickoff:** _to be written_
-`/rewards` store page + the `rewards.wallet` home widget; reserve slots in the ADR 028
-default layouts. **Tier 1 must reach its own balance and the store** — that is the whole
-module, and a capability with no surface is not a capability. **This is the prod flip for
-the whole rewards frontend:** register `rewards` in `plugins.json` (order: after chores)
-and in `apps/shell/src/lib/load-plugin.ts`, and turn `REWARDS_UI` on — M4/4 left both
-files dev-only so the tier-4 surfaces stayed dormant in prod. Build the kid-facing
-**request** UI (the store) — M4/4's redemption backend + queue only saw seeded data.
-**Code-seed the grounded starter catalog** (spec §Seed catalog, updated 2026-07-25).
-**Self-host the emojibase data** before the full `EmojiPicker` mode is used (rewards'
-scoped mode is local — no concern; family-feed's future full picker is). _Depends on: M4/4._
+### Open the `dev/rewards-store-wallet` PR — the P-Bucks launch
+
+**Type:** release · No kickoff needed. The branch carries M4/5a–d + M4/8 + the prod
+flip; merge = launch (deploy is merge-and-walk-away). Branch predates PR #74
+(`isToday` widget fix) — confirm the merge picks it up via main. Then the
+fridge-distance review of the coin/P-mark/amount-field, which has never happened.
 
 ### M4/6 — Dev: Punch Cards
 
@@ -49,22 +49,16 @@ can undo. Consumed by M5 try bites. _Depends on: M4/4._
 Tier-4 "give N P-Bucks, reason: …". Small, and it is what makes the ledger's `reason` field
 earn its keep. _Depends on: M4/2._
 
-### M4/8 — Design: XP Derived from P-Bucks + XP Progression
+### M4/9 — Design: XP Sink (the deferred half of M4/8)
 
 **Type:** design · **Kickoff:** _to be written_
-**Amends ADR 052.** A parent sets **one** value at assignment (P-Bucks); XP is **derived**
-(`xp = 5 + coinReward × 10` → routine 5 · weekly 15–25 · effort 55 · big 105 — a tuning
-knob). This kills the "worth 100 XP but 1 P-Bucks" mismatch: more P-Bucks always means more XP, no
-inversions. **Not conversion** (ADR 002 holds — balances stay independent and
-non-exchangeable; deriving the _award_ ≠ exchanging the _balance_); **XP stays up-only**
-(the balance is still a monotonic accumulator; reopen debits P-Bucks, never XP). Removes the
-XP picker from `CreateTaskDrawer`. Coupled to the P-Bucks launch (M4/5): with P-Bucks flagged
-off, `coinReward` is always 0, so dropping the XP picker would flatten every chore to
-base-5 XP in prod — so this lands with the flag flip, not before. Second half: give XP a
-sink — an avatar / gear cosmetic ladder unlocked at XP thresholds (unlock, never
-deduct, so up-only holds). Never microtransactions — XP unlocks cosmetics; neither P-Bucks
-nor real money buys gear. _Reads: ADR 002, 051, 052; `CreateTaskDrawer`, `chores.xp_balances`._
-_Depends on: M4/3; lands with M4/5._
+Give XP a sink — a cosmetic ladder unlocked at XP thresholds (unlock, never deduct,
+so up-only holds; never microtransactions — neither P-Bucks nor real money buys gear).
+Deliberately split out of M4/8 (ADR 056): gear on an avatar collides with **ADR 042**
+(a photo is a face, not a token), and XP lives in `chores` while cosmetics would live
+on the profile — the ownership/validation boundary needs an answer before any render.
+_Reads: ADR 042, 051, 056; `ScorePlate`, `chores.xp_balances`._ _Depends on: nothing —
+the launch does not need it._
 
 ---
 
@@ -262,6 +256,51 @@ suite mirroring chores/calendar. _Depends on: none._
 ## Recently Completed
 
 > Two-line index; full detail in the linked log.
+
+- **2026-07-26 — Design+Dev: XP Derived from P-Bucks (M4/8, ADR 056).** One value at
+  assignment: xp = 5 + coinReward × 10, XP picker gone, server derives and ignores the
+  client; Pays/Cost align on a shared `CoinAmountField` (typed amount · taught presets).
+  **The `dev/rewards-store-wallet` PR is unblocked.** The XP sink split out to M4/9.
+  See `logs/2026-07-26-design-dev-xp-derived-from-pbucks.md`.
+
+- **2026-07-26 — Dev: History Sheet + Ripples ∥ Parent Drawer Words (M4/5c+d).** The
+  purse's "Where'd it go?" sheet (no new endpoint — `/rewards/wallet` already was the
+  ledger), widget ticket-ready line, family-profile chooser, tier-3 wallet layout,
+  drawer description field + tear-grammar hint. See
+  `logs/2026-07-26-dev-rewards-history-ripples-parent-words.md`.
+- **2026-07-26 — Dev: Ticket Store + Pocket UI (M4/5b).** The kid surface built to
+  ADR 055: TabBar tabs, die-cut tickets, the roll at fridge width, the tear, the stub
+  shelf — plus the queue's use-tense pulled forward from M4/5d (a decline button still
+  promised the deleted refund). **Carries the prod flip: merging the branch is the
+  launch, M4/8 gates the PR.** See `logs/2026-07-26-dev-rewards-ticket-store-ui.md`.
+
+- **2026-07-26 — Dev: chores widget's "today" never checked the date (auto-bug
+  #73, PR #74).** `todayCompleted`/daily-XP filtered on `status === 'completed'`
+  alone, no `completedAt` check — with no archive, completions from any day ever
+  kept accumulating as "today," forever. Scoped to `isToday()` across all six
+  size×framing variants (fixing the numerator alone would have broken the family
+  framings' `total - done` pending math). Deployed and confirmed live; **report
+  #73 still needs a tier-4 parent to move it to `deployed`** on the triage board
+  (no CLI path exists). See `logs/2026-07-26-dev-auto-bug-73-chores-widget-today.md`.
+
+- **2026-07-26 — Dev: Ticket Lifecycle (M4/5a).** ADR 055 in the API: buy always
+  debits and lands `owned`, use is explicit (`POST :id/use`), not-now keeps the ticket,
+  tier-4 `DELETE` revoke refunds-and-deletes. Migration **stacked, not edited** — the
+  M4/4 one is merged and applied in prod, contrary to the kickoff. See
+  `logs/2026-07-26-dev-rewards-ticket-lifecycle.md`.
+
+- **2026-07-26 — Design: Rewards Store Rework (mid-M4/5 review, ADR 055).** Live-drove
+  the in-flight store and reworked it around one idea: a redemption is a **ticket** —
+  buy debits once, owning is a state, the ask moves to use-time, "not now" keeps the
+  ticket. M4/5 re-cut as M4/5a–d. See `logs/2026-07-26-design-rewards-store-rework.md`.
+
+- **2026-07-25 — Dev: chores widget clipped its family list (auto-bug #70, PR #72).** The
+  family framing had 185px of list room in a 363px slot and sliced the fourth member. The
+  aggregate above it drops to one line (~46px back, a whole tile), and every chores list
+  now measures its slot via a new shared **`useFitRows`** — whole rows plus `+N more`,
+  never a mid-tile crop. Extracted from calendar's `DayList`, which had solved it first.
+  **Deployed and confirmed live; report moved to `deployed`, closing ADR 046's loop.**
+  See `logs/2026-07-25-dev-chores-widget-family-overflow.md`.
 
 - **2026-07-25 — Dev: Catalog + Redemption (M4/4, PR #71).** Reward catalog (tier-4 CRUD,
   retire-not-delete) + redemption flow (debit on request, refund on decline, cost

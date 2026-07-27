@@ -1,6 +1,7 @@
 import { Loader2 } from 'lucide-react'
 import { FAMILY_PROFILE_ID, useAuth, useQuery } from '@family-os/platform'
 import type { PendingPayout, TasksResponse } from '../types'
+import { isToday } from '../lib/dates'
 import { REWARDS_UI_ENABLED } from '../lib/flags'
 import { indexPayouts } from '../lib/payouts'
 import { TodaySummaryView, type WidgetSize } from './TodaySummaryView'
@@ -87,14 +88,19 @@ export default function TodaySummary({ size }: TodaySummaryProps) {
 
   const tasks = data?.tasks ?? []
 
-  // Daily XP — sum of today's completed-task rewards (the widget's working set is
-  // "today"). Read-only: the score never grows here; the page ScorePlate is the
-  // flight target. Falls back to the completed-task sum for lifetime until the XP
-  // query resolves so the coin is never blank.
+  // Daily XP — sum of TODAY's completed-task rewards only (auto-bug #73: this used
+  // to sum every completed task ever, so XP and "done today" kept accumulating
+  // across days once completions piled up with no daily reset). Read-only: the
+  // score never grows here; the page ScorePlate is the flight target.
   const dailyXp = tasks
-    .filter((t) => t.status === 'completed')
+    .filter((t) => t.status === 'completed' && isToday(t.completedAt))
     .reduce((sum, t) => sum + t.xpReward, 0)
-  const lifetimeXp = xp?.totalXp ?? dailyXp
+  // Falls back to the all-time completed-task sum until the XP query resolves so
+  // the lifetime coin is never blank — unlike `dailyXp`, this one is deliberately
+  // not date-scoped.
+  const lifetimeXp =
+    xp?.totalXp ??
+    tasks.filter((t) => t.status === 'completed').reduce((sum, t) => sum + t.xpReward, 0)
 
   return (
     <TodaySummaryView

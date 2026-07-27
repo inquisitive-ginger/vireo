@@ -1,4 +1,4 @@
-import type { ReactNode } from 'react'
+import { useMemo, type ReactNode } from 'react'
 import { CheckSquare, Star, TrendingUp } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import {
@@ -10,9 +10,10 @@ import {
   WIDGET_CQ,
   identityToken,
   resolveHue,
+  useFitRows,
 } from '@family-os/ui'
 import type { ChoreTask } from '../types'
-import { isOverdue } from '../lib/dates'
+import { isOverdue, isToday } from '../lib/dates'
 import { showCoinReward } from '../lib/flags'
 import { kidPayoutView, payoutForTask, type PayoutsByInstance } from '../lib/payouts'
 import { KidPayoutBadge } from '../components/KidPayoutBadge'
@@ -35,7 +36,7 @@ function todayPending(tasks: ChoreTask[]): ChoreTask[] {
 }
 
 function todayCompleted(tasks: ChoreTask[]): ChoreTask[] {
-  return tasks.filter((t) => t.status === 'completed')
+  return tasks.filter((t) => t.status === 'completed' && isToday(t.completedAt))
 }
 
 function overdueCount(tasks: ChoreTask[]): number {
@@ -73,8 +74,28 @@ function WidgetHeader({ trailing }: { trailing?: ReactNode }) {
   return <UiWidgetHeader icon={CheckSquare} label="Chores" trailing={trailing} />
 }
 
-/* The hero count — text-metric (the sanctioned widget-count token). */
-function HeroCount({ value, label }: { value: number; label: string }) {
+/* The hero count — text-metric (the sanctioned widget-count token). `inline` sets
+   the label on the numeral's own baseline instead of under it. On a tile whose
+   subject is the list beneath (the family framings), the stacked hero spends a
+   whole row restating an aggregate the tiles already carry, and the row it spends
+   is the one a fourth member needed (auto-bug #70). */
+function HeroCount({
+  value,
+  label,
+  inline = false,
+}: {
+  value: number
+  label: string
+  inline?: boolean
+}) {
+  if (inline) {
+    return (
+      <span className="flex min-w-0 items-baseline gap-1.5">
+        <span className="text-metric shrink-0 text-foreground">{value}</span>
+        <span className="text-sm-token truncate text-muted-foreground">{label}</span>
+      </span>
+    )
+  }
   return (
     <div className="flex flex-col gap-0.5">
       <span className="text-metric text-foreground">{value}</span>
@@ -83,7 +104,15 @@ function HeroCount({ value, label }: { value: number; label: string }) {
   )
 }
 
-function ProgressBar({ done, total }: { done: number; total: number }) {
+function ProgressBar({
+  done,
+  total,
+  caption = true,
+}: {
+  done: number
+  total: number
+  caption?: boolean
+}) {
   const pct = total > 0 ? Math.round((done / total) * 100) : 0
   return (
     <div className="flex flex-col gap-1.5">
@@ -98,9 +127,11 @@ function ProgressBar({ done, total }: { done: number; total: number }) {
           aria-label={`${done} of ${total} tasks done`}
         />
       </div>
-      <span className="text-xs-token text-muted-foreground">
-        {done} of {total} done today
-      </span>
+      {caption && (
+        <span className="text-xs-token text-muted-foreground">
+          {done} of {total} done today
+        </span>
+      )}
     </div>
   )
 }
@@ -308,6 +339,40 @@ function groupByAssignee(tasks: ChoreTask[]): MemberGroup[] {
   return [...map.values()]
 }
 
+/* Reserve for the "+N more" line when the list is clamped. */
+const MORE_RESERVE = 24
+
+/* Every list on this tile renders into a slot whose height comes from the
+   viewport, not from the author — `WidgetGrid` derives its row height from its
+   container. So a list that trusts `overflow: hidden` cuts its last row through
+   the middle, which reads as a broken tile rather than as "there is more": on the
+   fridge iPad the family framing had exactly enough room for three members and
+   sliced the fourth (auto-bug #70). This shows only whole rows and states the
+   remainder, the same way the calendar's day list does. */
+function FitList<T>({
+  items,
+  keyOf,
+  moreLabel,
+  children,
+}: {
+  items: T[]
+  keyOf: (item: T) => string
+  moreLabel?: string
+  children: (item: T) => ReactNode
+}) {
+  const { boxRef, listRef, shown, hiddenCount } = useFitRows(items, MORE_RESERVE)
+  return (
+    <div ref={boxRef} className="min-h-0 flex-1 overflow-hidden">
+      <div ref={listRef} className="flex flex-col gap-1.5">
+        {shown.map((item) => (
+          <div key={keyOf(item)}>{children(item)}</div>
+        ))}
+        {hiddenCount > 0 && <MoreLine n={hiddenCount} label={moreLabel} />}
+      </div>
+    </div>
+  )
+}
+
 /* Shared empty frame: header (keeps the coin) + centered signal. */
 function CenteredState({
   heading,
@@ -377,7 +442,7 @@ function TaskeeCompact({
 }) {
   const pending = todayPending(tasks).length
   const done = todayCompleted(tasks).length
-  const total = tasks.length
+  const total = pending + done
 
   if (total === 0) {
     return <CenteredState heading={tier === 1 ? 'All done!' : 'No tasks'} />
@@ -410,8 +475,11 @@ function TaskeeStandard({
   tier: number
   payoutIndex?: PayoutsByInstance
 }) {
-  const pending = todayPending(tasks)
-  const total = tasks.length
+  /* Memoised because `FitList` measures its rows and re-measures whenever the
+     array identity changes — a fresh sort every render would never settle. */
+  const pending = useMemo(() => todayPending(tasks).sort(byUrgency), [tasks])
+  const done = todayCompleted(tasks).length
+  const total = pending.length + done
 
   if (total === 0) {
     return (
@@ -436,10 +504,10 @@ function TaskeeStandard({
           />
           {dailyXp > 0 && <DailyXp earned={dailyXp} />}
         </div>
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-1.5 overflow-hidden">
-          {[...pending].sort(byUrgency).map((t) => (
-            <TaskRow key={t.id} task={t} payoutIndex={payoutIndex} />
-          ))}
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+          <FitList items={pending} keyOf={(t) => t.id}>
+            {(t) => <TaskRow task={t} payoutIndex={payoutIndex} />}
+          </FitList>
         </div>
       </div>
     </div>
@@ -459,9 +527,15 @@ function TaskeeLarge({
   tier: number
   payoutIndex?: PayoutsByInstance
 }) {
-  const pending = todayPending(tasks)
+  const pendingCount = todayPending(tasks).length
   const done = todayCompleted(tasks).length
-  const total = tasks.length
+  const total = pendingCount + done
+  // The list is today's working set — the outstanding backlog plus what was
+  // finished today — not every task the profile has ever completed.
+  const rows = useMemo(
+    () => [...todayPending(tasks), ...todayCompleted(tasks)].sort(byUrgency),
+    [tasks]
+  )
 
   if (total === 0) {
     return (
@@ -472,7 +546,7 @@ function TaskeeLarge({
     )
   }
 
-  const allDone = pending.length === 0
+  const allDone = pendingCount === 0
 
   return (
     <div className="flex size-full flex-col p-6" style={{ containerType: 'size' }}>
@@ -486,15 +560,15 @@ function TaskeeLarge({
             <span className="text-card-title text-foreground">All done today</span>
           </span>
         ) : (
-          <HeroCount value={pending.length} label="tasks left today" />
+          <HeroCount value={pendingCount} label="tasks left today" />
         )}
         <CoinScore value={lifetimeXp} />
       </div>
       <ProgressBar done={done} total={total} />
-      <div className="mt-3 flex min-h-0 flex-1 flex-col gap-1.5 overflow-hidden">
-        {[...tasks].sort(byUrgency).map((t) => (
-          <TaskRow key={t.id} task={t} payoutIndex={payoutIndex} />
-        ))}
+      <div className="mt-3 flex min-h-0 flex-1 flex-col">
+        <FitList items={rows} keyOf={(t) => t.id}>
+          {(t) => <TaskRow task={t} payoutIndex={payoutIndex} />}
+        </FitList>
       </div>
     </div>
   )
@@ -542,10 +616,15 @@ function NextUpRow({ task, large = false }: { task: ChoreTask; large?: boolean }
   )
 }
 
-/* "+N more today" — the collapsed remainder (Focus never lists the full set). */
-function MoreLine({ n }: { n: number }) {
+/* "+N more today" — the collapsed remainder (Focus never lists the full set, and
+   a height-clamped list states what it dropped). */
+function MoreLine({ n, label = 'more today' }: { n: number; label?: string }) {
   if (n <= 0) return null
-  return <span className="text-sm-token text-muted-foreground">+{n} more today</span>
+  return (
+    <span className="text-sm-token text-muted-foreground">
+      +{n} {label}
+    </span>
+  )
 }
 
 function NextUpLabel() {
@@ -555,7 +634,7 @@ function NextUpLabel() {
 function FocusCompact({ tasks, tier }: { tasks: ChoreTask[]; lifetimeXp: number; tier: number }) {
   const pending = todayPending(tasks).sort(focusSort)
   const done = todayCompleted(tasks).length
-  const total = tasks.length
+  const total = pending.length + done
 
   if (total === 0) return <CenteredState heading={tier === 1 ? 'All done!' : 'No tasks'} />
   if (pending.length === 0) return <TaskeeAllDone compact />
@@ -591,7 +670,7 @@ function FocusStandard({
 }) {
   const pending = todayPending(tasks).sort(focusSort)
   const done = todayCompleted(tasks).length
-  const total = tasks.length
+  const total = pending.length + done
 
   if (total === 0)
     return (
@@ -632,7 +711,7 @@ function FocusLarge({
 }) {
   const pending = todayPending(tasks).sort(focusSort)
   const done = todayCompleted(tasks).length
-  const total = tasks.length
+  const total = pending.length + done
 
   if (total === 0)
     return (
@@ -669,8 +748,8 @@ function FocusLarge({
    the mobile stack) where the stacked list would clip mid-tile. */
 function FamilyCompact({ tasks }: { tasks: ChoreTask[] }) {
   const done = todayCompleted(tasks).length
-  const total = tasks.length
-  const pending = total - done
+  const pending = todayPending(tasks).length
+  const total = pending + done
   const overdue = overdueCount(tasks)
 
   if (total === 0) {
@@ -690,17 +769,17 @@ function FamilyCompact({ tasks }: { tasks: ChoreTask[] }) {
 
 function FamilyStandard({ tasks }: { tasks: ChoreTask[] }) {
   const done = todayCompleted(tasks).length
-  const total = tasks.length
-  const pending = total - done
+  const pending = todayPending(tasks).length
+  const total = pending + done
   const overdue = overdueCount(tasks)
-  const groups = groupByAssignee(tasks)
+  const groups = useMemo(() => groupByAssignee(tasks).sort(byMemberUrgency), [tasks])
 
   if (total === 0) {
     return <CenteredState heading="No tasks today" />
   }
 
-  /* Every member shows, urgent-first; the list fills height and only clips if it
-     genuinely overflows the slot (overdue members survive the clip). */
+  /* Urgent members first, so when the household outgrows the slot the ones the
+     list drops are the ones with the least outstanding. */
   return (
     <div className="flex size-full flex-col p-5" style={{ containerType: 'size' }}>
       <WidgetHeader trailing={overdue > 0 ? <OverduePill n={overdue} /> : undefined} />
@@ -711,28 +790,28 @@ function FamilyStandard({ tasks }: { tasks: ChoreTask[] }) {
             {done} of {total} done
           </span>
         </div>
-        <div className="flex min-h-0 min-w-0 flex-1 flex-col gap-1.5 overflow-hidden">
-          {[...groups].sort(byMemberUrgency).map((g) => (
-            <PersonTile
-              key={g.name}
-              name={g.name}
-              hue={g.hue}
-              avatarUrl={g.avatarUrl}
-              tasks={g.tasks}
-            />
-          ))}
+        <div className="flex min-h-0 min-w-0 flex-1 flex-col">
+          <FitList items={groups} keyOf={(g) => g.name} moreLabel="more">
+            {(g) => (
+              <PersonTile name={g.name} hue={g.hue} avatarUrl={g.avatarUrl} tasks={g.tasks} />
+            )}
+          </FitList>
         </div>
       </div>
     </div>
   )
 }
 
+/* The member list is this tile's subject, so the aggregate above it is held to one
+   line: an inline hero on the left, the done-count on the right, and the meter bare
+   underneath (its caption said the same thing a third time). That is ~46px back —
+   a whole member tile — which is what the fourth face needed on the fridge iPad. */
 function FamilyLarge({ tasks }: { tasks: ChoreTask[] }) {
   const done = todayCompleted(tasks).length
-  const total = tasks.length
-  const pending = total - done
+  const pending = todayPending(tasks).length
+  const total = pending + done
   const overdue = overdueCount(tasks)
-  const groups = groupByAssignee(tasks)
+  const groups = useMemo(() => groupByAssignee(tasks).sort(byMemberUrgency), [tasks])
 
   if (total === 0) {
     return <CenteredState heading="No tasks today" />
@@ -741,20 +820,30 @@ function FamilyLarge({ tasks }: { tasks: ChoreTask[] }) {
   return (
     <div className="flex size-full flex-col p-6" style={{ containerType: 'size' }}>
       <WidgetHeader trailing={overdue > 0 ? <OverduePill n={overdue} /> : undefined} />
-      <div className="mt-2 mb-3 flex items-end gap-4">
-        <HeroCount value={pending} label={pending === 0 ? '🎉 all done today' : 'pending today'} />
+      <div className="mt-2 flex items-baseline justify-between gap-3">
+        {pending === 0 ? (
+          <span className="flex items-center gap-2">
+            <span style={{ fontSize: 22, lineHeight: 1 }} aria-hidden>
+              🎉
+            </span>
+            <span className="text-card-title text-foreground">All done today</span>
+          </span>
+        ) : (
+          <>
+            <HeroCount value={pending} label="pending today" inline />
+            <span className="text-xs-token shrink-0 text-muted-foreground">
+              {done} of {total} done
+            </span>
+          </>
+        )}
       </div>
-      <ProgressBar done={done} total={total} />
-      <div className="mt-3 flex min-h-0 flex-1 flex-col gap-1.5 overflow-hidden">
-        {[...groups].sort(byMemberUrgency).map((g) => (
-          <PersonTile
-            key={g.name}
-            name={g.name}
-            hue={g.hue}
-            avatarUrl={g.avatarUrl}
-            tasks={g.tasks}
-          />
-        ))}
+      <div className="mt-2">
+        <ProgressBar done={done} total={total} caption={false} />
+      </div>
+      <div className="mt-3 flex min-h-0 flex-1 flex-col">
+        <FitList items={groups} keyOf={(g) => g.name} moreLabel="more">
+          {(g) => <PersonTile name={g.name} hue={g.hue} avatarUrl={g.avatarUrl} tasks={g.tasks} />}
+        </FitList>
       </div>
     </div>
   )

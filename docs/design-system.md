@@ -866,6 +866,27 @@ React Grid Layout `{ w, h }` values internally.
 | `banner`   | 4   | 1   | 1060×180px  |
 | `full`     | 4   | 4   | 1060×760px  |
 
+### A widget list fits its slot — it does not crop (settled — 2026-07-25)
+
+The dimensions above are nominal. A slot's real height comes from the viewport
+(`WidgetGrid` divides its container by the row count), so **no widget can know at
+author time how many rows it has room for** — and a list that leaves it to
+`overflow: hidden` cuts its last row through the middle. **A half-rendered row
+and a broken widget look identical**, so the reader cannot tell "there is more"
+from "this is wrong."
+
+Any list rendering into a widget slot uses **`useFitRows`** (`@family-os/ui`):
+show only the **whole** rows that fit, then state the remainder (`+N more`).
+Two things fall out of it:
+
+- **Order the list by urgency**, because the sort decides who survives the clamp.
+- **Memoise the array you hand it** — the hook re-measures on array identity, so
+  a sort in the render body never settles.
+
+Found the hard way: the chores today-summary sliced the fourth family member on
+the fridge iPad (auto-bug #70), while calendar's up-next widget had already
+solved the same problem inline.
+
 ### Widget registration
 
 Plugins declare widgets in `manifest.json`. See ADR 022 for the full field spec.
