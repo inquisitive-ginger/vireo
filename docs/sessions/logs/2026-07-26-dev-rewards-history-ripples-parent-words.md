@@ -131,3 +131,10 @@ chores 56 · calendar 105; typecheck + lint clean workspace-wide.
   ("distance, not denial"), so the owned ticket elevates instead: the pocket's
   coin-tint + brass border as a pill, which the chip rule permits — a chip is a
   collectible, and an owned ticket is one.
+- **Sheet open-shift fixed** (user catch: it opened, then jumped right). The
+  `-translate-x-1/2` centering utility stacked with the enter keyframe's own
+  `transform: translate(-50%, …)` — double-shifted during the animation, snapping
+  to center when it released. The Sheet now centers with `inset-x-0 mx-auto` and
+  the keyframes animate y only: **an element whose enter animation owns
+  `transform` must not also be positioned by one.** Verified by sampling the
+  sheet's x through the animation — constant.
