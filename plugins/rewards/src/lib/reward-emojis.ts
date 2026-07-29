@@ -11,9 +11,10 @@ export const REWARD_EMOJI_GROUPS: EmojiGroup[] = [
     emojis: ['🎮', '📺', '🍿', '🎧'],
   },
   {
-    // 🍦 ice cream run · 🍗 pick Friday's dinner · 🍪 bake / dessert of choice
+    // 🍦 ice cream run · 🍗 pick Friday's dinner · 🍪 bake / dessert of choice ·
+    // 🎁 a toy (small/medium/big — the price tier says the size)
     label: 'Treats',
-    emojis: ['🍦', '🍗', '🍪'],
+    emojis: ['🍦', '🍗', '🍪', '🎁'],
   },
   {
     // 🌙 stay up late · 😴 sleep in · 🎟️ skip-a-chore pass · 🎲 pick the family game ·
@@ -22,14 +23,16 @@ export const REWARD_EMOJI_GROUPS: EmojiGroup[] = [
     emojis: ['🌙', '😴', '🎟️', '🎲', '💺', '🔄'],
   },
   {
-    // 🎡 day out / adventure · 🧸 trip to the shop · ❤️ one-on-one time · 👫 friend over
+    // 🎡 day out / adventure · 🛹 skate park trip · 🧸 trip to the shop ·
+    // ❤️ one-on-one time · 👫 friend over · 🕹️ game time with a parent
     label: 'Together',
-    emojis: ['🎡', '🧸', '❤️', '👫'],
+    emojis: ['🎡', '🛹', '🧸', '❤️', '👫', '🕹️'],
   },
   {
-    // 🎨 art / craft session · 📚 new book / extra story · ⚽ park or sport outing · 🏕️ sleepover
+    // 🎨 art / craft session · 📚 new book / extra story · ⚽ park or sport outing ·
+    // 🏕️ sleepover · 🤼 wrestling match · 🔍 scavenger hunt
     label: 'Make & do',
-    emojis: ['🎨', '📚', '⚽', '🏕️'],
+    emojis: ['🎨', '📚', '⚽', '🏕️', '🤼', '🔍'],
   },
   {
     // 👑 yes day (you're in charge) · 💰 cash out (trade P-Bucks for real money)
