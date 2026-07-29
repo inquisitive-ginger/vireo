@@ -29,6 +29,15 @@
 > remote served (remotes live at `/plugins/<name>/assets/remoteEntry.js`), and the
 > deployed chores chunk carries the M4/8 markup (`chore-pays`, "Scores").
 
+### Beacon — Product+Design: paired friend lamps (HARD DEADLINE: the move, weeks away)
+
+**Type:** product + design · **Kickoff:** `kickoffs/product-design-beacon.md`
+Both kids' best friends move cross-country in weeks; 4 paired Pi Zero 2 W beacon
+lamps (tap → glow now, voice drops via OTA post-move), relayed through the Pi as a
+`beacon` plugin. **The hardware order is the long pole — place it before anything
+else runs.** Devices must be built, dogfooded, and gifted before the move.
+_Log: `logs/2026-07-29-product-beacon-concept.md`._
+
 ### Fridge-distance review of the live P-Bucks surfaces
 
 **Type:** qa · No kickoff needed. The review the flag flip has owed since ADR 054:
