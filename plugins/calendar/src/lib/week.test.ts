@@ -45,11 +45,15 @@ const TOMORROW = mk({ id: 'tt', title: 'T&T', startsAt: '2026-07-12T11:00:00' })
 const TODAY_LATER = mk({ id: 'date', title: 'Date night', startsAt: '2026-07-11T19:00:00' })
 
 describe('buildWeek', () => {
-  it('states a multi-day span once, not on every day it touches', () => {
-    // TODAY_LATER takes the hero slot, so TOMORROW is left to prove the point:
-    // the camp covers Mon–Fri and still claims no row on any of them.
+  it('states a multi-day span once — upcoming ones on their start day, not in the band', () => {
+    // The camp starts Monday (in the future at NOW, a Saturday): it is Monday's
+    // news, stated once in Monday's `starting` list — never the band ("All week"
+    // must not cover next week, gate 4), never a day-event row.
     const { spans, days } = buildWeek([CAMP, TODAY_LATER, TOMORROW], NOW)
-    expect(spans.map((s) => s.id)).toEqual(['camp'])
+    expect(spans).toEqual([])
+    const withCamp = days.filter((d) => d.starting.some((e) => e.id === 'camp'))
+    expect(withCamp).toHaveLength(1)
+    expect(withCamp[0].date.getDate()).toBe(13)
     const listed = days.flatMap((d) => d.events.map((e) => e.id))
     expect(listed).not.toContain('camp')
     expect(listed).toEqual(['tt'])
@@ -224,11 +228,20 @@ function campOcc(day: Date): CalendarEvent {
 const CAMP_WEEK = [13, 14, 15, 16, 17].map((d) => campOcc(new Date(2026, 6, d)))
 
 describe('daily time-window series in buildWeek', () => {
-  it('states the series once in the spans band and never in the day rows', () => {
+  it('states an upcoming series once on its start day, a running one in the band', () => {
+    // Saturday: the first occurrence is Monday → Monday's `starting`, not the band.
     const week = buildWeek([...CAMP_WEEK, TOMORROW], NOW)
-    expect(week.spans.map((s) => s.id)).toEqual(['camp:2026-07-13'])
+    expect(week.spans).toEqual([])
+    const withCamp = week.days.filter((d) => d.starting.some((e) => e.seriesId === 'camp'))
+    expect(withCamp).toHaveLength(1)
+    expect(withCamp[0].date.getDate()).toBe(13)
     expect(week.days.flatMap((d) => d.events.map((e) => e.seriesId))).not.toContain('camp')
     expect(week.beyond).toBe(0)
+
+    // Mid-run Tuesday: today's occurrence exists → the band carries it, once.
+    const tue = buildWeek(CAMP_WEEK.slice(1), new Date(2026, 6, 14, 7, 0))
+    expect(tue.spans.map((s) => s.id)).toEqual(['camp:2026-07-14'])
+    expect(tue.days.flatMap((d) => d.starting)).toHaveLength(0)
   })
 
   it("makes only TODAY's occurrence hero-eligible", () => {
@@ -266,7 +279,40 @@ describe('daily time-window series in buildAgenda', () => {
 })
 
 describe('spanWhenLabel — daily window grammar', () => {
-  it('reads day-set · window · bound', () => {
-    expect(spanWhenLabel(CAMP_WEEK[0], NOW)).toBe('Weekdays 9:30 – 3:30 · through Fri 24')
+  it('reads day-set · window · bound, with the month once the bound leaves this week', () => {
+    // Jul 24 is 13 days out from NOW — weekday grammar would make the reader do
+    // month arithmetic, so the label takes the month (gate 4).
+    expect(spanWhenLabel(CAMP_WEEK[0], NOW)).toBe('Weekdays 9:30 – 3:30 · through Jul 24')
+    // Viewed mid-run, the bound lands within the week → weekday form.
+    expect(spanWhenLabel(CAMP_WEEK[0], new Date(2026, 6, 20, 8, 0))).toBe(
+      'Weekdays 9:30 – 3:30 · through Fri 24'
+    )
+  })
+})
+
+describe('gate-4 month grammar on spans', () => {
+  it('keeps weekday form within the week, takes the month past it — never both', () => {
+    // Starts within the week, ends past it → whole label goes month-form.
+    const crossing = mk({
+      id: 'x',
+      title: 'Cousins visiting',
+      startsAt: '2026-07-15T00:00:00',
+      endsAt: '2026-08-08T00:00:00',
+      allDay: true,
+    })
+    expect(spanWhenLabel(crossing, NOW)).toBe('Jul 15 – Aug 7')
+
+    // Fully within the coming week → weekday form holds.
+    expect(spanWhenLabel(CAMP, NOW)).toBe('Mon 13 – Fri 17')
+
+    // Running with a far end → month form on the bound.
+    const long = mk({
+      id: 'l',
+      title: 'Renovation',
+      startsAt: '2026-07-01T00:00:00',
+      endsAt: '2026-08-22T00:00:00',
+      allDay: true,
+    })
+    expect(spanWhenLabel(long, NOW)).toBe('Through Aug 21')
   })
 })

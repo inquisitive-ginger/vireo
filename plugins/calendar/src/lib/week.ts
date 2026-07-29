@@ -20,13 +20,19 @@ export interface WeekDay {
   date: Date
   /** Single-day events starting on this date. Spans never appear here. */
   events: CalendarEvent[]
+  /** Spans / daily series that BEGIN here — stated once, on their start day
+   *  (design gate 4, 2026-07-28: a camp starting Monday is Monday's news). */
+  starting: CalendarEvent[]
 }
 
 export interface WeekModel {
   /** The next single-day event still live — the hero. Spans are never the hero:
    *  "FISW Camp, day 3 of 5" is not what's happening next. */
   hero: CalendarEvent | null
-  /** Multi-day events overlapping the window — the "all week" band's feed. */
+  /** Multi-day events / daily series already RUNNING — the "all week" band's
+   *  feed. One that starts later in the window is not "all week": it states
+   *  itself once in its start day's `starting` list instead (gate 4 — the same
+   *  rule the agenda has always followed). */
   spans: CalendarEvent[]
   /** Every day in the window, including the empty ones: an empty weekday is
    *  news ("nothing else scheduled"), not nothing. */
@@ -59,15 +65,17 @@ export function buildWeek(
   const first = startOfDay(now)
   const lastExclusive = addDays(first, windowDays)
 
-  // A span counts if it overlaps the window at all — including one that started
-  // before today and is still running (the camp you're already halfway through).
-  // A daily series joins as its one representative occurrence.
-  const spans = [
+  // Spans overlapping the window (including one that started before today and is
+  // still running) + one representative occurrence per daily series — then split
+  // by whether they are already under way. Only the running ones wear the band.
+  const standing = [
     ...events
       .filter(isMultiDay)
       .filter((e) => spanEndDate(e) >= first && new Date(e.startsAt) < lastExclusive),
     ...dailySeriesReps(events),
   ].sort((a, b) => a.startsAt.localeCompare(b.startsAt))
+  const spans = standing.filter((e) => startOfDay(new Date(e.startsAt)) <= first)
+  const upcoming = standing.filter((e) => startOfDay(new Date(e.startsAt)) > first)
 
   const live = events
     .filter((e) => !isMultiDay(e))
@@ -83,6 +91,7 @@ export function buildWeek(
     return {
       date,
       events: listable.filter((e) => e.id !== hero?.id && isSameDay(new Date(e.startsAt), date)),
+      starting: upcoming.filter((e) => isSameDay(new Date(e.startsAt), date)),
     }
   })
 
@@ -95,6 +104,29 @@ export function buildWeek(
    for the range to scan. */
 const shortDay = (d: Date) =>
   `${d.toLocaleDateString(undefined, { weekday: 'short' })} ${d.getDate()}`
+
+const monthDay = (d: Date) =>
+  `${d.toLocaleDateString(undefined, { month: 'short' })} ${d.getDate()}`
+
+/** A date within the next seven days of `now` (today included) keeps the weekday
+ *  form ("Fri 31"); anything past that takes the month ("Aug 21") — bare
+ *  day-of-month across a month boundary made the reader do month arithmetic
+ *  (gate 4). Never both grammars in one label: `rangeLabel` decides once for
+ *  both ends. */
+const withinWeek = (d: Date, now: Date) => {
+  const diff = dayDiff(startOfDay(now), startOfDay(d))
+  return diff >= 0 && diff < 7
+}
+
+const dayLabel = (d: Date, now: Date) => (withinWeek(d, now) ? shortDay(d) : monthDay(d))
+
+function rangeLabel(start: Date, end: Date, now: Date): string {
+  if (withinWeek(start, now) && withinWeek(end, now)) return `${shortDay(start)} – ${shortDay(end)}`
+  if (start.getMonth() === end.getMonth() && start.getFullYear() === end.getFullYear()) {
+    return `${monthDay(start)} – ${end.getDate()}`
+  }
+  return `${monthDay(start)} – ${monthDay(end)}`
+}
 
 // ── the mobile agenda ───────────────────────────────────────────────────────
 
@@ -168,12 +200,12 @@ export function buildAgenda(events: CalendarEvent[], now: Date, horizon: number 
  *  A daily time-window series takes its own grammar instead (design gate 3):
  *  day-set · window · bound — "Weekdays 9:30 – 3:30 · through Fri 21". */
 export function spanWhenLabel(event: CalendarEvent, now: Date): string {
-  if (isDailyWindow(event)) return windowWhenLabel(event)
+  if (isDailyWindow(event)) return windowWhenLabel(event, now)
   const start = new Date(event.startsAt)
   const end = spanEndDate(event)
   return dayDiff(startOfDay(now), start) < 0
-    ? `Through ${shortDay(end)}`
-    : `${shortDay(start)} – ${shortDay(end)}`
+    ? `Through ${dayLabel(end, now)}`
+    : rangeLabel(start, end, now)
 }
 
 /** `YYYY-MM-DD` → a local Date (how `recurrenceUntil` is serialized). */
@@ -182,13 +214,25 @@ const parseDateKey = (key: string) => {
   return new Date(y, m - 1, d)
 }
 
-function windowWhenLabel(event: CalendarEvent): string {
+/** The time-slot label for a `starting` day-list row (gate 4): the thing's date
+ *  range — "Aug 3 – 7" for a span, "Aug 3 – 21" for a daily series. The full
+ *  window grammar waits for the band, where it has room, once the series runs. */
+export function startingWhenLabel(event: CalendarEvent, now: Date): string {
+  if (isDailyWindow(event)) {
+    const start = new Date(event.startsAt)
+    const end = event.recurrenceUntil ? parseDateKey(event.recurrenceUntil) : start
+    return rangeLabel(start, end, now)
+  }
+  return spanWhenLabel(event, now)
+}
+
+function windowWhenLabel(event: CalendarEvent, now: Date): string {
   const days = daySetLabel(windowWeekdays(event))
   const clock = event.endsAt
     ? `${formatChipTime(event.startsAt)} – ${formatChipTime(event.endsAt)}`
     : formatChipTime(event.startsAt)
   const bound = event.recurrenceUntil
-    ? ` · through ${shortDay(parseDateKey(event.recurrenceUntil))}`
+    ? ` · through ${dayLabel(parseDateKey(event.recurrenceUntil), now)}`
     : ''
   return `${days} ${clock}${bound}`
 }

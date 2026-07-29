@@ -70,10 +70,14 @@ normalization: `k = 0` simply isn't a member, and the first occurrence is Monday
   it covers — contiguous occurrence runs, so a skipped day is a visible hole and
   weekends are bare. Cells keep their chip slots for one-offs. The clock lives one
   tap down, where a span's dates already do.
-- **Widget / agenda:** the series is **stated once** in the All-week band /
-  Ongoing panel with the grammar _day-set · window · bound_ ("Weekdays
-  9:30 – 3:30 · through Fri 21"); day rows never repeat it; **only today's
-  occurrence is hero-eligible**, so the 8:45 fridge glance reads "in 45 min".
+- **Widget / agenda:** the series is **stated once** with the grammar _day-set ·
+  window · bound_ ("Weekdays 9:30 – 3:30 · through Fri 21"); day rows never
+  repeat it; **only today's occurrence is hero-eligible**, so the 8:45 fridge
+  glance reads "in 45 min". Live review added a fourth gate (2026-07-28): the
+  band holds only what is **running** — an upcoming span/series states itself
+  once on its **start day** (the widget adopts the agenda's rule; the two
+  surfaces now share one) — and date labels take the **month** once a date
+  leaves the coming week ("Aug 3 – 7", "through Aug 21"), weekday form inside it.
 - **Day drill-in / week view:** an occurrence is a normal timed row. No treatment
   needed.
 

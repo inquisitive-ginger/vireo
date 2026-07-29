@@ -256,10 +256,17 @@ The `panel` exists **because** of the rule above: a recess is illegal on
 one. Same primitive, same anatomy — a different claim about depth, because the
 ground is different. Don't "fix" the panel by sinking it; that inverts the ladder.
 
-The window decides where a span is stated. A one-week view can pin them all
-("All week"). A scrolling agenda cannot — a camp three weeks out is not "all
-week" — so it pins only what is **already running** ("Ongoing") and states the
-rest **inline, once, on the day they begin**.
+**Both surfaces pin only what is already RUNNING** and state the rest **inline,
+once, on the day it begins** (revised 2026-07-28, gate 4 — the widget used to pin
+everything overlapping its week, and a real summer week put five rows in the band
+with camps that were next week's wearing the "All week" label). In the widget, an
+upcoming span/series takes a day-list row whose time slot carries its range
+("Aug 3 – 7"); in the agenda it joins its start day's section, as it always has.
+
+**Date grammar is decided by distance, never mixed in one label:** a date within
+the next seven days keeps the weekday form ("through Fri 31"); anything past that
+takes the month ("Aug 3 – 7", "through Aug 21"). Bare day-of-month across a month
+boundary made the reader do month arithmetic.
 
 #### Daily time-window series — a condition with a clock (settled — 2026-07-28)
 

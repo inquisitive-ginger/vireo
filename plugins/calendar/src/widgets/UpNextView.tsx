@@ -14,7 +14,13 @@ import {
 } from '@family-os/ui'
 import type { CalendarEvent, CalendarMember } from '../types'
 import { agendaWhenLabel } from '../lib/grid'
-import { buildWeek, spanWhenLabel, type WeekDay, type WeekModel } from '../lib/week'
+import {
+  buildWeek,
+  spanWhenLabel,
+  startingWhenLabel,
+  type WeekDay,
+  type WeekModel,
+} from '../lib/week'
 import { huesForEvent, spineColorsForEvent } from '../lib/hues'
 import { EventOwners } from '../components/EventOwners'
 import { NextEventHero } from '../components/NextEventHero'
@@ -112,22 +118,25 @@ const ROW_BAND = 'flex min-h-12 items-center py-2.5'
 const GUTTER_INSET = 'pt-2.5'
 const GUTTER_LEAD = 'flex h-7 items-center'
 
-/** An appointment row: time · title · owners. */
+/** An appointment row: time · title · owners. A `starting` row (a span / daily
+ *  series stated once on its start day, gate 4) swaps the clock for its range. */
 function EventRow({
   event,
   membersById,
   framing,
   showOwners = true,
+  whenLabel,
 }: {
   event: CalendarEvent
   membersById: Map<string, CalendarMember>
   framing: UpNextFraming
   showOwners?: boolean
+  whenLabel?: string
 }) {
   return (
     <div className={cn(ROW_BAND, 'gap-3')}>
       <span className="text-sm-token w-16 shrink-0 tabular-nums text-muted-foreground">
-        {agendaWhenLabel(event).toLowerCase()}
+        {(whenLabel ?? agendaWhenLabel(event)).toLowerCase()}
       </span>
       {/* The spine, not the avatar, carries the hue (ADR 042). An avatar can hold a
           PHOTO now, so it is no longer a strict superset of the spine — the premise
@@ -198,25 +207,30 @@ interface Row {
   lead?: string
   sub?: string
   event?: CalendarEvent
+  /** A span / daily series stated once on its start day — the time slot carries
+   *  its range instead of a clock (gate 4). */
+  starting?: boolean
 }
 
 function buildRows(days: WeekDay[], now: Date): Row[] {
   const rows: Row[] = []
-  for (const { date, events } of days) {
+  for (const { date, events, starting } of days) {
     const today = isSameDay(date, now)
+    const dayRows: Row[] = [
+      ...starting.map((event) => ({ key: event.id, event, starting: true })),
+      ...events.map((event) => ({ key: event.id, event })),
+    ]
     // An empty weekday is news ("nothing else scheduled"); an empty *today* is
     // just noise, so it doesn't get a band at all.
-    if (today && events.length === 0) continue
+    if (today && dayRows.length === 0) continue
     const { lead, sub } = today
       ? { lead: 'Later today', sub: undefined }
       : relativeDayLabel(date, now, { distant: 'weekday', sub: true })
-    if (events.length === 0) {
+    if (dayRows.length === 0) {
       rows.push({ key: `empty-${date.toISOString()}`, lead, sub })
       continue
     }
-    events.forEach((event, i) => {
-      rows.push(i === 0 ? { key: event.id, lead, sub, event } : { key: event.id, event })
-    })
+    dayRows.forEach((row, i) => rows.push(i === 0 ? { ...row, lead, sub } : row))
   }
   return rows
 }
@@ -265,6 +279,7 @@ function DayList({
                   membersById={membersById}
                   framing={framing}
                   showOwners={showOwners}
+                  whenLabel={row.starting ? startingWhenLabel(row.event, now) : undefined}
                 />
               ) : (
                 <div className={cn(ROW_BAND, 'text-sm-token text-muted-foreground/70')}>
@@ -306,7 +321,10 @@ function AllClear({ withBody = false }: { withBody?: boolean }) {
    this size hasn't got, so spans collapse into the same trailing line. */
 function Compact({ week, membersById, now, framing }: ZoneProps) {
   const { hero, spans, days } = week
-  const rest = days.flatMap((d) => d.events)
+  const rest = days.flatMap((d) => [
+    ...d.starting.map((e) => ({ e, when: startingWhenLabel(e, now) })),
+    ...d.events.map((e) => ({ e, when: agendaWhenLabel(e) })),
+  ])
   return (
     <div className={cn('flex size-full flex-col', INSET.compact)}>
       <WidgetHeader />
@@ -330,7 +348,7 @@ function Compact({ week, membersById, now, framing }: ZoneProps) {
               Then{' '}
               {rest
                 .slice(0, 2)
-                .map((e) => `${agendaWhenLabel(e)} ${e.title}`)
+                .map(({ e, when }) => `${when} ${e.title}`)
                 .join(' · ')}
             </span>
           )
@@ -419,8 +437,9 @@ export function UpNextView({ events, membersById, now, framing, size }: UpNextVi
   const week = useMemo(() => buildWeek(events, now), [events, now])
   const zones: ZoneProps = { week, membersById, now, framing }
 
-  // Nothing at all this week — not even a running span.
-  const empty = !week.hero && week.spans.length === 0
+  // Nothing at all this week — not even a running span or one about to start.
+  const empty =
+    !week.hero && week.spans.length === 0 && week.days.every((d) => d.starting.length === 0)
 
   let inner: ReactNode
   if (empty) {
