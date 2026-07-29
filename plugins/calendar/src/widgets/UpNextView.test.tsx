@@ -148,7 +148,7 @@ describe('UpNextView', () => {
     // the range in its time slot (gate 4 — "All week" must not cover next week).
     expect(screen.queryByTestId('span-band')).not.toBeInTheDocument()
     expect(screen.getAllByText('FISW Camp')).toHaveLength(1)
-    expect(screen.getByText('mon 13 – fri 17')).toBeInTheDocument()
+    expect(screen.getByText('Mon 13 – Fri 17')).toBeInTheDocument()
   })
 
   it('carries a running span in the all-week band, stated once', () => {

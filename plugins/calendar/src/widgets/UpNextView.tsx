@@ -135,8 +135,10 @@ function EventRow({
 }) {
   return (
     <div className={cn(ROW_BAND, 'gap-3')}>
+      {/* Clock labels ride lowercase ("all day", "4:45 pm"); a range label keeps
+          its capitals — "aug 3 – 7" reads as a typo, not a register. */}
       <span className="text-sm-token w-16 shrink-0 tabular-nums text-muted-foreground">
-        {(whenLabel ?? agendaWhenLabel(event)).toLowerCase()}
+        {whenLabel ?? agendaWhenLabel(event).toLowerCase()}
       </span>
       {/* The spine, not the avatar, carries the hue (ADR 042). An avatar can hold a
           PHOTO now, so it is no longer a strict superset of the spine — the premise
