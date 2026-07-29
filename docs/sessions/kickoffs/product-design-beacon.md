@@ -3,8 +3,11 @@
 **Type:** Product + Design (combined — the deadline doesn't allow separate sessions)
 **Module (working name):** `beacon`
 **Origin:** 2026-07-29 brainstorm. Both kids' best friends — siblings in one
-family — are moving cross-country **in weeks**. The deadline is the move date:
-devices are gifted and paired **in person before they leave**.
+family — are moving cross-country in about a week. **A commercial stopgap covers
+the goodbye** (4× LuvLink Infinity, light-only, two Group-ID pairs, set up at our
+house before the move; the kids picking signature colors together is the ritual).
+**The custom build's deadline is the friends' December visit** — gifted and paired
+in person then, replacing the LuvLinks with voice as the headline upgrade.
 
 ---
 
@@ -12,17 +15,20 @@ devices are gifted and paired **in person before they leave**.
 
 A paired ambient beacon per kid — friendship-lamp pattern plus async
 walkie-talkie, self-hosted through the Pi. Tap yours → your friend's glows your
-color and fades over ~an hour. Later (OTA, post-move): hold → short voice drop,
-friend taps to play, only the last message or two kept.
+color and fades over ~an hour. Hold → short voice drop, friend taps to play,
+only the last message or two kept.
 
 **Decisions already made — do not re-litigate:**
 
-- **Hardware:** Pi Zero 2 W + mic/speaker/LED/touch per unit. Full sensory
-  ceiling ships day one even though v1 software is glow-only — software OTAs
-  across the country forever; hardware can't.
+- **Hardware:** Pi Zero 2 W + mic/speaker/LED/touch per unit. The full sensory
+  ceiling ships day one — software OTAs across the country forever; hardware
+  can't.
 - **Count:** 4 identical units — one per kid, per-kid pairing (2 local, 2 remote).
-- **Software sequence:** glow-only at gifting; voice drops arrive later as an
-  OTA update ("the lamp learned to talk" is a feature, not a compromise).
+- **Software sequence:** with the December runway, **voice ships at gifting** —
+  it's the upgrade over the LuvLink and the reason the swap is worth making.
+  OTA remains the channel for everything after.
+- **Color continuity:** each kid's LuvLink signature color (chosen at the
+  goodbye) becomes their beacon color — the totem inherits the meaning.
 - **Design principles:** sending costs one second, receiving requires nothing;
   no obligation mechanics (no streaks, read receipts, unread counts — a missed
   glow just fades); kid-sovereign (always on, no login, no parent unlock);
@@ -53,15 +59,15 @@ friend taps to play, only the last message or two kept.
 3. **Pairing + provisioning.** Device tokens minted where and shown how; WiFi
    onboarding for a non-technical remote household (captive portal — comitup —
    vs config file on the SD's FAT partition as fallback). The in-person pairing
-   before the move is the one chance to make this zero-support.
+   at the December visit is the one chance to make this zero-support.
 4. **Glow grammar.** Signature color per kid (reuse identityHue), fade curve,
    the simultaneous-tap moment (both tap within a window → both pulse
    together — reward coincidence, never punish absence), night behavior
    (light-sensor auto-dim; it lives in a bedroom).
 5. **Parent surface.** Widget scope: link health + a light activity trace.
    Decide how much trace is visible without turning it into surveillance.
-6. **Voice-drop spec** (design now, build post-move): max length, ephemerality
-   rules, chirp-and-glow announce pattern, hold-to-talk on the same button as tap.
+6. **Voice-drop spec:** max length, ephemerality rules, chirp-and-glow announce
+   pattern, hold-to-talk on the same button as tap.
 7. **Enclosure.** 3D print vs modded opal-glass globe lamp; must survive a kid's
    bedroom and read as a lamp, not a gadget.
 
@@ -74,8 +80,8 @@ friend taps to play, only the last message or two kept.
 - Plugin follows all standing conventions (TanStack Query, event names
   `beacon.tap.sent` / `beacon.voice.dropped` / `beacon.link.lost`, widget via
   manifest, mirror family-feed structure).
-- This track is out-of-milestone — a deadline-driven side track. M4 resumes
-  after gifting; don't let scope creep past what the move date needs.
+- This track is out-of-milestone — a deadline-driven side track alongside M4;
+  don't let scope creep past what the December gifting needs.
 
 ## Stories to cut (expected shape)
 
@@ -86,24 +92,28 @@ friend taps to play, only the last message or two kept.
 3. **beacon/3 — Widget: link health + trace**
 4. **beacon/4 — Assembly + in-house dogfood** (run a pair between the kids'
    rooms for a few days before gifting)
-5. **beacon/5 — Voice drops** (post-move OTA; hardware already carries it)
+5. **beacon/5 — Voice drops** (in scope for gifting — the December headline)
 
-## Hardware BOM — **order before this session runs; shipping is the long pole**
+## Hardware BOM — order within a few weeks; December is the deadline, not the move
 
-Per unit ×4 (+1 spare kit recommended):
+Per unit ×4 (+1 spare HAT and SD cards; sourced 2026-07-29):
 
-| Part                                                                                                | ~Cost |
-| --------------------------------------------------------------------------------------------------- | ----- |
-| Raspberry Pi Zero 2 W (with header)                                                                 | $18   |
-| ReSpeaker 2-Mics Pi HAT (mics, button, speaker out, 3 onboard APA102)                               | $13   |
-| 8Ω ~2W speaker w/ JST                                                                               | $4    |
-| APA102/DotStar LED ring — **SPI-driven; NeoPixels need GPIO18, which the HAT's I2S audio occupies** | $10   |
-| Big soft-top button (tap = glow, hold = talk)                                                       | $4    |
-| 32GB A1 microSD + 5V 2.5A PSU                                                                       | $16   |
-| Enclosure (globe lamp or print)                                                                     | $10   |
+| Part                                                                                                                                                              | ~Each |
+| ----------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----- |
+| [Pi Zero 2 W w/ headers](https://www.pishop.us/product/raspberry-pi-zero-2w-with-headers/) (also Adafruit 6008 / SparkFun if quantity-capped)                     | $18   |
+| [ReSpeaker 2-Mics Pi HAT v2.0](https://www.seeedstudio.com/ReSpeaker-2-Mics-Pi-HAT.html) — check ship-from; Amazon B0BG29HMCN is the equivalent v1 (WM8960), fine | $14   |
+| [Mono speaker 8Ω JST-PH 2.0 — Adafruit 5986](https://www.adafruit.com/product/5986)                                                                               | $4    |
+| LEDs: one [BTF SK9822 strip 1m/30](https://www.amazon.com/BTF-LIGHTING-Individually-Addressable-Non-Waterproof-Separately/dp/B07C979QJD) cut into 4 segments —    |       |
+| **SPI-driven; NeoPixels need GPIO18, which the HAT's I2S audio occupies**                                                                                         | $3.50 |
+| [60mm dome arcade button](https://www.adafruit.com/product/1192) — one per kid's signature color (Adafruit 1190–1194)                                             | $10   |
+| [Official Pi 12.5W micro-USB PSU](https://www.raspberrypi.com/products/micro-usb-power-supply/)                                                                   | $9    |
+| 32GB A1 microSD (SanDisk, Amazon)                                                                                                                                 | $8    |
+| [IKEA FADO 10" opal globe lamp](https://www.ikea.com/us/en/p/fado-table-lamp-white-70096377/) — the classic friendship-lamp shell                                 | $32   |
 
-≈ $65–75/unit, ≈ $300–350 all-in. If the ReSpeaker HAT is unobtainable:
-Adafruit I2S MEMS mic (SPH0645) + MAX98357A amp breakout is the fallback pair.
+≈ $100/unit, ≈ $400 all-in (the FADO is most of the delta over a bare build; a
+generic opal globe shade + printed base saves ~$20/unit). If the ReSpeaker HAT is
+unobtainable: Adafruit I2S MEMS mic (SPH0645) + MAX98357A amp breakout is the
+fallback pair.
 
 ## Outputs (required before closing)
 

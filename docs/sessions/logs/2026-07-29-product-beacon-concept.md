@@ -34,3 +34,15 @@ scope, voice-drop spec, enclosure.
 The hardware order is the long pole — the BOM is in the kickoff and should be
 placed before the session runs. This track is out-of-milestone and
 deadline-driven; M4 resumes after gifting.
+
+## Addendum (same day) — the move is ~a week away; stopgap + December re-plan
+
+A week isn't buildable, and the friends visit in December. Revised: **4× LuvLink
+Infinity (light-only, no subscription, two Group-ID pairs)** are gifted at the
+goodbye — set up at our house pre-move, kids pick signature colors together as
+the ritual; the other family only rejoins WiFi after the move. The custom build's
+deadline moves to the **December visit**, gifted and paired in person there, and
+now **ships with voice at gifting** (its headline over the LuvLink). Each kid's
+LuvLink color becomes their beacon color — the totem inherits the meaning.
+Deliberately skipped the LuvLink "Infinity Voice" variant so voice stays the
+custom build's gift. BOM in the kickoff is now link-sourced; ~$100/unit, ~$400.

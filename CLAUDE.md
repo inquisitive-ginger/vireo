@@ -17,8 +17,8 @@ before it reads anything else, and it is size-capped — see
 
 - **Milestone:** M4 — Rewards & Wallet, in flight; P-Bucks live in prod since
   2026-07-26 (PR #75). `docs/roadmap.md` is authoritative.
-- **Active stories:** none in flight; **beacon track queued with a hard deadline**
-  (friends' move, weeks) — kickoff `product-design-beacon.md`, hardware order first.
+- **Active stories:** none in flight; **beacon track queued** — LuvLinks cover the
+  goodbye, custom build due at the friends' December visit. `product-design-beacon.md`.
 - **Deployment:** 🟢 live at `https://vireohome.app` on the Pi; merge to `main`
   auto-deploys; off-LAN via Tailscale. Runbook: `docs/deployment.md`.
 - **Last session:** 2026-07-29 — product, beacon concept (paired friend lamps);
