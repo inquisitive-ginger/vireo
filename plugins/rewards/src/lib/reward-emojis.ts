@@ -24,9 +24,10 @@ export const REWARD_EMOJI_GROUPS: EmojiGroup[] = [
   },
   {
     // 🎡 day out / adventure · 🛹 skate park trip · 🧸 trip to the shop ·
-    // ❤️ one-on-one time · 👫 friend over · 🕹️ game time with a parent
+    // ❤️ one-on-one time · 👫 friend over · 🤸 rough-and-tumble play with a parent
+    // (bed jumping, chase games — physical, not a screen)
     label: 'Together',
-    emojis: ['🎡', '🛹', '🧸', '❤️', '👫', '🕹️'],
+    emojis: ['🎡', '🛹', '🧸', '❤️', '👫', '🤸'],
   },
   {
     // 🎨 art / craft session · 📚 new book / extra story · ⚽ park or sport outing ·
