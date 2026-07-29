@@ -107,9 +107,10 @@ describe('POST /api/auth/switch', () => {
     expect(res.json<{ tier: number }>().tier).toBe(1)
   })
 
-  it('switches to the family profile when no family row exists (prod parity)', async () => {
-    // Prod has no seeded `family` row; the pseudo-profile is synthetic (preHandler
-    // fabricates it). Deleting the row reproduces prod and guards the regression.
+  it('switches to the family profile when no family row exists', async () => {
+    // The row is an invariant since the 20260729140000 backfill, but a database that
+    // predates it must not lose the ability to switch home — the preHandler fabricates
+    // the pseudo-profile on read. Deleting the row guards that fallback.
     await prisma.profile.deleteMany({ where: { id: 'family' } })
     try {
       const res = await app.inject({

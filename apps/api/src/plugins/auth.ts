@@ -59,6 +59,33 @@ export function resetPinRateLimit(): void {
   pinFailures.clear()
 }
 
+let householdWarned = false
+
+/**
+ * Last resort for a database whose `platform.profiles` has no household row.
+ * ADR 021 makes that row a seeded system record and 20260729140000 backfills it, so
+ * this should now be unreachable — but returning 500 on every unauthenticated request
+ * would take the whole app down, and the row is what the recovery cannot supply: the
+ * synthetic household carries no `avatarUrl`, which is how a household photo set on
+ * one install silently fails to exist on another (auto-bug #86). Say so once.
+ */
+function synthesizeHousehold(request: FastifyRequest): Profile {
+  if (!householdWarned) {
+    householdWarned = true
+    request.log.error(
+      'No platform.profiles row for the household — synthesizing it. Its photo cannot be set until the row exists (ADR 021).'
+    )
+  }
+  return {
+    id: FAMILY_PROFILE_ID,
+    name: 'Family',
+    tier: 1,
+    darkMode: null,
+    focusMode: null,
+    pushEnabled: false,
+  }
+}
+
 const authPlugin: FastifyPluginAsync = async (fastify) => {
   await fastify.register(fastifyCookie)
 
@@ -123,14 +150,7 @@ const authPlugin: FastifyPluginAsync = async (fastify) => {
           focusMode: row.focusMode ?? null,
           pushEnabled: row.pushEnabled,
         }
-      : {
-          id: FAMILY_PROFILE_ID,
-          name: 'Family',
-          tier: 1,
-          darkMode: null,
-          focusMode: null,
-          pushEnabled: false,
-        }
+      : synthesizeHousehold(request)
 
     const overrides =
       row?.permissionOverrides.map((o) => ({
@@ -166,7 +186,8 @@ const authPlugin: FastifyPluginAsync = async (fastify) => {
   fastify.post<{ Body: { targetProfileId: string } }>('/auth/switch', async (request, reply) => {
     const { targetProfileId } = request.body
 
-    // The Family profile is synthetic (no DB row); the preHandler fabricates it on read.
+    // Switching down to the household never needs a lookup — it is tier 1 by definition,
+    // and this path has to keep working on a database that predates the backfill.
     if (targetProfileId === FAMILY_PROFILE_ID) {
       request.session.activeProfileId = FAMILY_PROFILE_ID
       return { id: FAMILY_PROFILE_ID, name: 'Family', tier: 1 }
