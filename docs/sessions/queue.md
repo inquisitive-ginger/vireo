@@ -258,6 +258,12 @@ suite mirroring chores/calendar. _Depends on: none._
 
 > Two-line index; full detail in the linked log.
 
+- **2026-07-28 — Infra: Remote access off-LAN (PR #84).** Tailscale subnet route
+  advertising `192.168.0.31/32`; origin, cert and PWA install unchanged, fridge iPad
+  runs no client. The app has no boundary auth to enforce "family" with (ADR 021), so
+  the network does — plus a PIN lockout, `trustProxy: 1`, and Secure cookies.
+  See `logs/2026-07-28-infra-remote-access.md`.
+
 - **2026-07-26 — Design+Dev: XP Derived from P-Bucks (M4/8, ADR 056).** One value at
   assignment: xp = 5 + coinReward × 10, XP picker gone, server derives and ignores the
   client; Pays/Cost align on a shared `CoinAmountField` (typed amount · taught presets).
