@@ -34,13 +34,6 @@ export type LayoutDefault = {
    because elevation and position are both saying "how much does this matter" and
    they must not disagree. */
 export const DEFAULT_LAYOUTS: Record<string, LayoutDefault[]> = {
-  // Unattended family wall — the feed leads as a full-width banner (read across a
-  // room); chores + calendar rest as equal peers beneath.
-  default_layout_family: [
-    { widgetId: 'family-feed.feed', x: 0, y: 0, w: 4, h: 1, prominence: 'feature' },
-    { widgetId: 'chores.today-summary', x: 0, y: 1, w: 2, h: 1, prominence: 'card' },
-    { widgetId: 'calendar.up-next', x: 2, y: 1, w: 2, h: 1, prominence: 'card' },
-  ],
   /* Kids (and teens below) rank by what a kid actually opens the app for:
      wallet > chores > feed = calendar. Four equal 2×1 tiles — kids see this on
      tablets, where a 2×2 slot is mostly air — so the wallet leads by position and
@@ -62,10 +55,11 @@ export const DEFAULT_LAYOUTS: Record<string, LayoutDefault[]> = {
     { widgetId: 'calendar.up-next', x: 0, y: 1, w: 2, h: 1, prominence: 'quiet' },
     { widgetId: 'family-feed.feed', x: 2, y: 1, w: 2, h: 1, prominence: 'quiet' },
   ],
-  /* Parents — NO feature (ADR 039, amended). A parent opens this surface to
-     triage, and the calendar, the chores and the feed are all live answers to "what
-     needs me" — there is no one thing they came for. The calendar still leads by size
-     and position (the 2×2, the first column); elevation just declines to overstate a
+  /* Parents / the family pseudo-profile — NO feature (ADR 039, amended). A parent
+     (or the unattended fridge tablet, sitting on the family profile) triages, and
+     the calendar, the chores and the feed are all live answers to "what needs me" —
+     there is no one thing they came for. The calendar still leads by size and
+     position (the 2×2, the first column); elevation just declines to overstate a
      dominance this surface doesn't have. (The key name predates the tier-3 split —
      it stays because deployed `system_config` overrides are looked up by it.) */
   default_layout_tier_3_4: [
@@ -76,7 +70,7 @@ export const DEFAULT_LAYOUTS: Record<string, LayoutDefault[]> = {
 }
 
 export function defaultLayoutKey(profileId: string, tier: number): string {
-  if (profileId === FAMILY_PROFILE_ID) return 'default_layout_family'
+  if (profileId === FAMILY_PROFILE_ID) return 'default_layout_tier_3_4'
   if (tier <= 2) return 'default_layout_tier_1_2'
   if (tier === 3) return 'default_layout_tier_3'
   return 'default_layout_tier_3_4'

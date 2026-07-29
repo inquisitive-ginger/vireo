@@ -82,6 +82,17 @@ describe('GET /api/home/layout', () => {
     expect(slots.find((s) => s.widgetId === 'family-feed.feed')!.prominence).toBe('quiet')
   })
 
+  // The fridge tablet sits on the family pseudo-profile; it now triages exactly
+  // like a parent rather than leading with a full-width feed banner.
+  it('gives the family pseudo-profile the same tier-4 layout as a parent', async () => {
+    const slots = await layoutFor('family')
+    expect(slots.filter((s) => s.prominence === 'feature')).toHaveLength(0)
+
+    const calendar = slots.find((s) => s.widgetId === 'calendar.up-next')!
+    expect(calendar).toMatchObject({ x: 0, y: 0, w: 2, h: 2, prominence: 'card' })
+    expect(slots.find((s) => s.widgetId === 'family-feed.feed')!.prominence).toBe('quiet')
+  })
+
   it('leads a kid with the wallet as the one feature', async () => {
     const slots = await layoutFor('seed-child-1')
     const features = slots.filter((s) => s.prominence === 'feature')
