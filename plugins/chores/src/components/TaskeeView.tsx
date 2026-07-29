@@ -2,7 +2,10 @@ import { useMemo, useRef } from 'react'
 import { PageContainer, PageHeader } from '@family-os/ui'
 import type { ChoreTask } from '../types'
 import { payoutForTask, type PayoutsByInstance } from '../lib/payouts'
+import { taskeeProgress } from '../lib/progress'
+import { AllDone } from './AllDone'
 import { TaskCard } from './TaskCard'
+import { CollapsibleSection } from './CollapsibleSection'
 import { ScorePlate } from './ScorePlate'
 import { FlightChip } from './FlightChip'
 import { useXpFlight } from '../lib/use-xp-flight'
@@ -35,45 +38,88 @@ export function TaskeeView({ tasks, onCompleteTask, initialXp, payoutIndex }: Ta
   // Lock card order on first sight so a just-completed task morphs in place
   // (design §2 "the card does not reorder during the flight") even if a refetch
   // re-sorts completed-last underneath us.
+  //
+  // Only tasks still pending when first seen join that list, which is what keeps
+  // the flight intact: a chore finished just now stays where it was and morphs to
+  // done, while everything already completed on arrival is history and belongs in
+  // the collapsed section instead of padding the list forever (auto-bug #82).
   const orderRef = useRef<string[]>([])
-  const ordered = useMemo(() => {
-    for (const t of tasks) if (!orderRef.current.includes(t.id)) orderRef.current.push(t.id)
+  const seenRef = useRef<Set<string>>(new Set())
+  const { active, history } = useMemo(() => {
+    for (const t of tasks) {
+      if (seenRef.current.has(t.id)) continue
+      seenRef.current.add(t.id)
+      if (t.status !== 'completed') orderRef.current.push(t.id)
+    }
     const byId = new Map(tasks.map((t) => [t.id, t]))
-    return orderRef.current.map((id) => byId.get(id)).filter((t): t is ChoreTask => !!t)
+    const active = orderRef.current.map((id) => byId.get(id)).filter((t): t is ChoreTask => !!t)
+    const activeIds = new Set(active.map((t) => t.id))
+    const history = tasks
+      .filter((t) => !activeIds.has(t.id))
+      .sort((a, b) => (b.completedAt ?? '').localeCompare(a.completedAt ?? ''))
+    return { active, history }
   }, [tasks])
 
-  const done = ordered.filter((t) => effectiveStatus(t) === 'completed').length
-  const total = ordered.length
-  const pct = total > 0 ? (done / total) * 100 : 0
+  const { done, total, pct } = taskeeProgress(tasks, (t) => effectiveStatus(t) === 'completed')
 
   return (
     <PageContainer width="list">
       <PageHeader title="Chores" action={<ScorePlate ref={plateRef} value={lifetime} />} />
 
-      {/* Progress line + bar (design §1 taskee header). */}
-      <div className="mb-4">
-        <p className="text-sm-token mb-2 text-muted-foreground">
-          {done === total ? '🎉 All done today' : `${total - done} left · ${done} of ${total} done`}
-        </p>
-        <div className="h-meter overflow-hidden rounded-full bg-muted">
-          <div
-            className="h-full rounded-full bg-success transition-[width] duration-[var(--duration-slow)]"
-            style={{ width: `${pct}%` }}
-          />
-        </div>
-      </div>
+      {active.length > 0 ? (
+        <>
+          {/* Progress line + bar (design §1 taskee header). */}
+          <div className="mb-4">
+            <p className="text-sm-token mb-2 text-muted-foreground">
+              {done === total
+                ? '🎉 All done today'
+                : `${total - done} left · ${done} of ${total} done`}
+            </p>
+            <div className="h-meter overflow-hidden rounded-full bg-muted">
+              <div
+                className="h-full rounded-full bg-success transition-[width] duration-[var(--duration-slow)]"
+                style={{ width: `${pct}%` }}
+              />
+            </div>
+          </div>
 
-      <div className="flex flex-col gap-2.5 border-t border-border pt-4">
-        {ordered.map((t) => (
+          <div className="flex flex-col gap-2.5 border-t border-border pt-4">
+            {active.map((t) => (
+              <TaskCard
+                key={t.id}
+                task={t}
+                displayStatus={effectiveStatus(t)}
+                onComplete={handleComplete}
+                payout={payoutIndex && payoutForTask(t, payoutIndex)}
+              />
+            ))}
+          </div>
+        </>
+      ) : (
+        /* Nothing to do — a meter at 100% and a one-line "all done" is a thin
+           payoff for having cleared the list, and it left the page empty. */
+        <AllDone
+          note={
+            history.length > 0
+              ? `${history.length} ${history.length === 1 ? 'chore' : 'chores'} finished so far`
+              : undefined
+          }
+        />
+      )}
+
+      <CollapsibleSection
+        label="Done"
+        items={history}
+        listClassName="flex flex-col gap-2.5 pt-1"
+        renderItem={(t) => (
           <TaskCard
             key={t.id}
             task={t}
-            displayStatus={effectiveStatus(t)}
-            onComplete={handleComplete}
+            displayStatus="completed"
             payout={payoutIndex && payoutForTask(t, payoutIndex)}
           />
-        ))}
-      </div>
+        )}
+      />
 
       {flights.map((flight) => (
         <FlightChip

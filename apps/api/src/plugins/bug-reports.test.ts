@@ -140,7 +140,9 @@ describe('POST /api/bug-reports', () => {
     expect(res.statusCode).toBe(200)
     const orphan = res
       .json()
-      .find((r: { description: string }) => r.description === 'filed before the profile went away')
+      .reports.find(
+        (r: { description: string }) => r.description === 'filed before the profile went away'
+      )
     expect(orphan).toBeTruthy()
     expect(orphan.reporter.name).toBe('Someone')
   })
@@ -203,8 +205,9 @@ describe('GET /api/bug-reports', () => {
 
     expect(res.statusCode).toBe(200)
     const body = res.json()
-    expect(body).toHaveLength(1)
-    expect(body[0].description).toBe('child report')
+    expect(body.reports).toHaveLength(1)
+    expect(body.reports[0].description).toBe('child report')
+    expect(body.total).toBe(1)
   })
 
   it('returns the whole household to tier 4, with the reporter hue for the spine', async () => {
@@ -220,11 +223,112 @@ describe('GET /api/bug-reports', () => {
     })
 
     const body = res.json()
-    expect(body).toHaveLength(2)
+    expect(body.reports).toHaveLength(2)
     // ADR 044 — a payload carrying a person carries their hue, or the board cannot
     // paint the spine.
-    expect(body[0].reporter).toHaveProperty('identityHue')
-    expect(body[0].reporter.name).toBeTruthy()
+    expect(body.reports[0].reporter).toHaveProperty('identityHue')
+    expect(body.reports[0].reporter.name).toBeTruthy()
+  })
+
+  // auto-bug #81 — the list only grows, and the old hard `take: 100` dropped the
+  // oldest reports with nothing on screen to say so.
+  it('pages with a cursor instead of silently truncating', async () => {
+    const cookie = await getTier4Cookie()
+    for (let i = 0; i < 5; i++) await fileReport(cookie, `report ${i}`)
+
+    const first = await app.inject({
+      method: 'GET',
+      url: '/api/bug-reports?limit=2',
+      headers: { cookie },
+    })
+    const page1 = first.json()
+    expect(page1.reports).toHaveLength(2)
+    expect(page1.total).toBe(5)
+    expect(page1.nextCursor).toBeTruthy()
+
+    const second = await app.inject({
+      method: 'GET',
+      url: `/api/bug-reports?limit=2&cursor=${page1.nextCursor}`,
+      headers: { cookie },
+    })
+    const page2 = second.json()
+    expect(page2.reports).toHaveLength(2)
+    // No overlap — the cursor row itself is skipped.
+    const ids = new Set([...page1.reports, ...page2.reports].map((r: { id: string }) => r.id))
+    expect(ids.size).toBe(4)
+
+    const last = await app.inject({
+      method: 'GET',
+      url: `/api/bug-reports?limit=2&cursor=${page2.nextCursor}`,
+      headers: { cookie },
+    })
+    expect(last.json().reports).toHaveLength(1)
+    expect(last.json().nextCursor).toBeNull()
+  })
+
+  it('filters to a status set so the board can lead with live work', async () => {
+    const cookie = await getTier4Cookie()
+    const settled = (await fileReport(cookie, 'already shipped')).json()
+    await fileReport(cookie, 'still open')
+    await app.inject({
+      method: 'PATCH',
+      url: `/api/bug-reports/${settled.id}`,
+      headers: { cookie },
+      payload: { status: 'deployed' },
+    })
+
+    const active = await app.inject({
+      method: 'GET',
+      url: '/api/bug-reports?status=new,triaged,fixing',
+      headers: { cookie },
+    })
+    expect(active.json().reports.map((r: { description: string }) => r.description)).toEqual([
+      'still open',
+    ])
+
+    const resolved = await app.inject({
+      method: 'GET',
+      url: '/api/bug-reports?status=deployed,wont_fix',
+      headers: { cookie },
+    })
+    expect(resolved.json().reports.map((r: { description: string }) => r.description)).toEqual([
+      'already shipped',
+    ])
+    expect(resolved.json().total).toBe(1)
+  })
+
+  it('rejects an unknown status and a nonsense limit', async () => {
+    const cookie = await getTier4Cookie()
+
+    const badStatus = await app.inject({
+      method: 'GET',
+      url: '/api/bug-reports?status=exploded',
+      headers: { cookie },
+    })
+    expect(badStatus.statusCode).toBe(400)
+
+    const badLimit = await app.inject({
+      method: 'GET',
+      url: '/api/bug-reports?limit=0',
+      headers: { cookie },
+    })
+    expect(badLimit.statusCode).toBe(400)
+  })
+
+  it('scopes the total to your own reports below tier 4', async () => {
+    const parentCookie = await getTier4Cookie()
+    await fileReport(parentCookie, 'parent report')
+    const childCookie = await getTier1Cookie()
+    await fileReport(childCookie, 'child report')
+
+    const res = await app.inject({
+      method: 'GET',
+      url: '/api/bug-reports?limit=1',
+      headers: { cookie: childCookie },
+    })
+
+    expect(res.json().total).toBe(1)
+    expect(res.json().nextCursor).toBeNull()
   })
 })
 
