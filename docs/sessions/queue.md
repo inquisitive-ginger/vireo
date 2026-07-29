@@ -258,6 +258,13 @@ suite mirroring chores/calendar. _Depends on: none._
 
 > Two-line index; full detail in the linked log.
 
+- **2026-07-28 — Dev: the two lists that grow forever (auto-bug #81, #82, PR #85).**
+  Agency `TaskeeView` (tier 3) was the one chores framing with no completed-chore
+  treatment — now a shared collapsed `Done · N` with a count clamp, and the progress
+  meter counts today (the #73 defect on the page, not the widget). `GET /bug-reports`
+  gained `status`/`limit`/`cursor`, retiring a `take: 100` that dropped the oldest
+  silently. See `logs/2026-07-28-dev-auto-bug-81-82-unbounded-lists.md`.
+
 - **2026-07-28 — Design+Dev: Recurring daily time-window events (ADR 057, PR #83).**
   "M–F 9:30–3:30, Aug 3–21" is a third event shape — `recurrence: 'daily'` + a
   weekday-offset set, compute-on-read from one shared expansion module; month bars,
