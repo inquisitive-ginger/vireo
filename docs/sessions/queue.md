@@ -160,12 +160,12 @@ pretty-printed, so ~19k lines of churn must be stripped by hand on every
 regenerate — reconcile the two before it gets committed by accident. _Reads:
 `logs/2026-07-21-design-dev-bug-reporting.md`, ADR 046._ _Depends on: none._
 
-> **Only #81 and #82 are waiting on this visit** — verified against the prod DB
-> 2026-07-28; every earlier report (#51…#78) is already `deployed` and ADR 046's
-> loop has closed ten times. Moving one needs an authenticated tier-4 session in
-> the app; there is no CLI or API path. The old "six deep and growing" version of
-> this note was carried forward across five sessions without anyone querying the
-> board — check it before restating it.
+> **#81, #82 and #86 are waiting on this visit** — #81/#82 verified against the
+> prod DB 2026-07-28, #86 fixed 2026-07-29; every earlier report (#51…#78) is
+> already `deployed` and ADR 046's loop has closed ten times. Moving one needs an
+> authenticated tier-4 session in the app; there is no CLI or API path. The old
+> "six deep and growing" version of this note was carried forward across five
+> sessions without anyone querying the board — check it before restating it.
 
 > The "`sw.js` has no cache name" worry raised at closeout was a **false alarm** —
 > the grep searched for a literal `family-os-<hash>` but the worker builds it as a
@@ -210,12 +210,6 @@ suite mirroring chores/calendar. _Depends on: none._
   Needs an `ANTHROPIC_API_KEY` repo secret. Do **not** run it on the Pi — the runner
   there is for `docker pull`, not a build and test suite. _Reads:
   `docs/fix-it-playbook.md` §"Making it automatic"._
-- **The household pseudo-profile has no `profiles` row in prod** — it works because
-  auth synthesizes one, but it means any FK or join to the _default_ profile fails in
-  production and passes in dev. Bug reporting hit this (#49). Decide whether the
-  household should be a real row everywhere or stay synthetic everywhere; today it is
-  environment-dependent, which is the worst of both. _Reads:
-  `logs/2026-07-21-design-dev-bug-reporting.md`._
 - **Push subscription reconciliation** — the orphaned-subscription case left over
   from the SW cache story (2026-07-19). `reset.ts` deletes `push_subscriptions` on any
   `db:reset` while the phone keeps its browser-local subscription, so the toggle reads
@@ -264,6 +258,14 @@ suite mirroring chores/calendar. _Depends on: none._
 ## Recently Completed
 
 > Two-line index; full detail in the linked log.
+
+- **2026-07-29 — Dev: the household had no photo, and no row to hold one (auto-bug #86,
+  PR #87).** Two defects: `AvatarField` had been household-aware and unreachable since
+  ADR 042, and prod had no `family` profiles row at all because only the seed scripts
+  ever wrote the one ADR 021 calls permanently seeded — so the upload 404'd before the
+  tier guard ran. Migration backfills it; the affordance sits in the tier-4 Family
+  section. **Retires the "household has no row in prod" backlog item — ADR 021 had
+  already decided it.** See `logs/2026-07-29-dev-auto-bug-86-household-avatar.md`.
 
 - **2026-07-28 — Dev: the two lists that grow forever (auto-bug #81, #82, PR #85).**
   Agency `TaskeeView` (tier 3) was the one chores framing with no completed-chore

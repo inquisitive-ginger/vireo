@@ -20,11 +20,12 @@ before it reads anything else, and it is size-capped — see
 - **Active stories:** none in flight.
 - **Deployment:** 🟢 live at `https://vireohome.app` on the Pi; merge to `main`
   auto-deploys; off-LAN via Tailscale. Runbook: `docs/deployment.md`.
-- **Last session:** 2026-07-28 — dev, the two lists that grow forever (auto-bug
-  #81/#82, PR #85). `logs/2026-07-28-dev-auto-bug-81-82-unbounded-lists.md`.
+- **Last session:** 2026-07-29 — dev, the household's photo (auto-bug #86, PR #87);
+  the `family` profiles row now exists everywhere.
+  `logs/2026-07-29-dev-auto-bug-86-household-avatar.md`.
 - **What's next and everything outstanding:** `docs/sessions/queue.md` — the one
   index. Cheapest high-value item: Deployment Part F, offsite backups.
-- **Owed in-app:** reports #81/#82 sit at `triaged` pending a tier-4 move to
+- **Owed in-app:** reports #81/#82/#86 sit unresolved pending a tier-4 move to
   `deployed`. Query the prod board before restating this — it was wrong for months.
 
 ---
