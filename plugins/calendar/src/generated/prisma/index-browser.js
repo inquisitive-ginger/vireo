@@ -126,6 +126,7 @@ exports.Prisma.EventScalarFieldEnum = {
   allDay: 'allDay',
   location: 'location',
   recurrence: 'recurrence',
+  recurrenceDayOffsets: 'recurrenceDayOffsets',
   recurrenceUntil: 'recurrenceUntil',
   isActivity: 'isActivity',
   status: 'status',

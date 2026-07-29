@@ -1,5 +1,6 @@
 import { addDays, dayDiff, isSameDay, relativeDayLabel, startOfDay } from '@family-os/ui'
 import type { CalendarEvent } from '../types'
+import { isDailyWindow } from './series'
 
 /* Month-grid layout math, ported from the locked `calendar-month.stories.tsx`
    exploration and adapted from fixed day-of-month integers to real `Date`s + the
@@ -106,21 +107,56 @@ export interface LaidOutWeek {
 
 const byStart = (a: CalendarEvent, b: CalendarEvent) => a.startsAt.localeCompare(b.startsAt)
 
-/** Single-day events whose local start day falls on `date`, time-sorted. */
+/** Single-day events whose local start day falls on `date`, time-sorted. A daily
+ *  series' occurrences render as span-lane bars, never as chips (design gate 2). */
 export function eventsOnDay(events: CalendarEvent[], date: Date): CalendarEvent[] {
   const key = localDateKey(date)
   return events
-    .filter((e) => !isMultiDay(e) && localDateKey(new Date(e.startsAt)) === key)
+    .filter(
+      (e) => !isMultiDay(e) && !isDailyWindow(e) && localDateKey(new Date(e.startsAt)) === key
+    )
     .sort(byStart)
 }
 
-/** Place the multi-day spans intersecting one week into lanes (greedy first-fit),
- *  clipped to the week's columns. Mirrors the exploration's `spansForWeek`. */
+/** A daily series' occurrences, folded into runs of CONSECUTIVE days — the month
+ *  grid's bar unit (ADR 057). Weekend gaps and cancelled days end a run, so a
+ *  skipped Wednesday is a visible hole in the bar, not painted over. */
+function dailyRuns(events: CalendarEvent[]): { event: CalendarEvent; start: Date; end: Date }[] {
+  const bySeries = new Map<string, CalendarEvent[]>()
+  for (const e of events) {
+    if (!isDailyWindow(e)) continue
+    const list = bySeries.get(e.seriesId)
+    if (list) list.push(e)
+    else bySeries.set(e.seriesId, [e])
+  }
+  const runs: { event: CalendarEvent; start: Date; end: Date }[] = []
+  for (const occurrences of bySeries.values()) {
+    occurrences.sort(byStart)
+    let run: { event: CalendarEvent; start: Date; end: Date } | null = null
+    for (const occ of occurrences) {
+      const day = startOfDay(new Date(occ.startsAt))
+      if (run && dayDiff(run.end, day) === 1) {
+        run.end = day
+      } else {
+        run = { event: occ, start: day, end: day }
+        runs.push(run)
+      }
+    }
+  }
+  return runs
+}
+
+/** Place the multi-day spans and daily-series runs intersecting one week into
+ *  lanes (greedy first-fit), clipped to the week's columns. Mirrors the
+ *  exploration's `spansForWeek`. */
 export function spansForWeek(events: CalendarEvent[], week: Date[]): PlacedSpan[] {
   const weekStart = week[0]
-  const spans = events
-    .filter(isMultiDay)
-    .map((event) => ({ event, start: new Date(event.startsAt), end: spanEndDate(event) }))
+  const spans = [
+    ...events
+      .filter(isMultiDay)
+      .map((event) => ({ event, start: new Date(event.startsAt), end: spanEndDate(event) })),
+    ...dailyRuns(events),
+  ]
     .filter((s) => dayDiff(s.end, weekStart) <= 0 && dayDiff(weekStart, s.start) <= 6)
     .sort((a, b) => a.start.getTime() - b.start.getTime() || b.end.getTime() - a.end.getTime())
 

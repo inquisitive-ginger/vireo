@@ -14,9 +14,15 @@ export interface CalendarEvent {
   createdBy: string
   startsAt: string
   endsAt: string | null
+  /** The canonical row's own start — an occurrence overrides `startsAt`, and the
+   *  edit drawer needs the series anchor to round-trip a date/range. */
+  seriesStartsAt: string
   allDay: boolean
   location: string | null
   recurrence: string | null
+  /** A 'daily' series' weekday set, as day offsets from the series start's
+   *  weekday mod 7 (ADR 057). Empty for anything else. */
+  recurrenceDayOffsets: number[]
   recurrenceUntil: string | null
   isActivity: boolean
   status: string

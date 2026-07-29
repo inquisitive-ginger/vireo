@@ -4,10 +4,7 @@ import { prisma } from '@family-os/platform/server'
 import { EventInputSchema, type EventInput } from '@family-os/schemas'
 import { calendarPrisma } from '@family-os/plugin-calendar/db'
 import { startReminderScheduler } from '../lib/reminder-scheduler'
-
-const DAY_MS = 24 * 60 * 60 * 1000
-const WEEK_MS = 7 * DAY_MS
-const MAX_OCCURRENCES = 520 // ~10 years of weeks — a hard guard against runaway expansion
+import { isRecurring, occurrenceDateKey, occurrenceStarts } from '../lib/recurrence'
 
 // ─── Row shapes (the generated Prisma types stay inside the plugin package) ──────
 
@@ -23,6 +20,7 @@ type EventRow = {
   allDay: boolean
   location: string | null
   recurrence: string | null
+  recurrenceDayOffsets: number[]
   recurrenceUntil: Date | null
   isActivity: boolean
   status: string
@@ -44,7 +42,8 @@ type ParsedEvent = {
   endsAt: Date | null
   allDay: boolean
   location: string | null
-  recurrence: 'weekly' | null
+  recurrence: 'weekly' | 'daily' | null
+  recurrenceDayOffsets: number[]
   recurrenceUntil: Date | null
   reminderMinutes: number | null
   isActivity: boolean
@@ -75,7 +74,8 @@ async function parseEventBody(body: unknown): Promise<ParseResult> {
 
   const recurrence = input.recurrence ?? null
   // Derived, never user-chosen (ADR 038): a weekly event owned by exactly one
-  // person is that person's standing Activity.
+  // person is that person's standing Activity. A bounded daily window (ADR 057)
+  // is not a standing commitment and never one.
   const isActivity = recurrence === 'weekly' && attendeeIds.length === 1
 
   return {
@@ -89,6 +89,10 @@ async function parseEventBody(body: unknown): Promise<ParseResult> {
       allDay: input.allDay,
       location: input.location,
       recurrence,
+      recurrenceDayOffsets:
+        recurrence === 'daily'
+          ? [...new Set(input.recurrenceDayOffsets ?? [])].sort((a, b) => a - b)
+          : [],
       // recurrence_until is only meaningful for a recurring series.
       recurrenceUntil: recurrence && input.recurrenceUntil ? new Date(input.recurrenceUntil) : null,
       reminderMinutes: input.reminderMinutes ?? null,
@@ -99,7 +103,7 @@ async function parseEventBody(body: unknown): Promise<ParseResult> {
 
 // ─── Serialization & recurrence expansion ────────────────────────────────────────
 
-const dateKey = (d: Date) => d.toISOString().slice(0, 10)
+const dateKey = occurrenceDateKey
 
 /** `ownerId` is derived from the attendee set: the single id when solo, else null
  *  (Family, or shared). Preserves the published-event payload contract. */
@@ -127,9 +131,13 @@ function serializeEvent(
     createdBy: event.createdBy,
     startsAt: startsAt.toISOString(),
     endsAt: endsAt ? endsAt.toISOString() : null,
+    // The canonical row's start — an occurrence overrides `startsAt` above, and
+    // the edit drawer needs the series' own anchor to round-trip a range.
+    seriesStartsAt: event.startsAt.toISOString(),
     allDay: event.allDay,
     location: event.location,
     recurrence: event.recurrence,
+    recurrenceDayOffsets: event.recurrenceDayOffsets ?? [],
     recurrenceUntil: event.recurrenceUntil ? dateKey(event.recurrenceUntil) : null,
     isActivity: event.isActivity,
     status: event.status,
@@ -143,43 +151,20 @@ function serializeEvent(
 const overlaps = (startMs: number, endMs: number, from: Date, to: Date) =>
   startMs <= to.getTime() && endMs >= from.getTime()
 
-/** Expands a weekly series into the occurrences overlapping `[from, to]`, skipping
- *  any date with a `cancelled` exception and stopping at `recurrenceUntil` (ADR 038). */
-function expandWeekly(event: EventRow, from: Date, to: Date) {
-  const base = event.startsAt.getTime()
-  const duration = (event.endsAt ? event.endsAt.getTime() : base) - base
-  // recurrence_until is an inclusive date — allow any occurrence starting before
-  // the day after it.
-  const untilMs = event.recurrenceUntil ? event.recurrenceUntil.getTime() + DAY_MS : Infinity
-  const cancelled = new Set(
-    (event.exceptions ?? [])
-      .filter((e) => e.kind === 'cancelled')
-      .map((e) => dateKey(e.occurrenceDate))
+/** Expands a weekly or daily series into the occurrences overlapping `[from, to]`
+ *  (ADR 038, ADR 057). The stepping, weekday-offset membership, `cancelled`
+ *  exceptions, and `recurrenceUntil` all live in the shared `occurrenceStarts` —
+ *  the reminder scheduler expands from the same module. */
+function expandRecurring(event: EventRow, from: Date, to: Date) {
+  const duration =
+    (event.endsAt ? event.endsAt.getTime() : event.startsAt.getTime()) - event.startsAt.getTime()
+  return occurrenceStarts(event, from.getTime(), to.getTime(), duration).map((startMs) =>
+    serializeEvent(event, {
+      startsAt: new Date(startMs),
+      endsAt: event.endsAt ? new Date(startMs + duration) : null,
+      date: dateKey(new Date(startMs)),
+    })
   )
-
-  // Skip ahead to the first occurrence that could still overlap `from`.
-  let k = 0
-  if (from.getTime() - duration > base) {
-    k = Math.max(0, Math.floor((from.getTime() - duration - base) / WEEK_MS))
-  }
-
-  const out: ReturnType<typeof serializeEvent>[] = []
-  for (let i = 0; i < MAX_OCCURRENCES; i++, k++) {
-    const startMs = base + k * WEEK_MS
-    if (startMs > to.getTime() || startMs >= untilMs) break
-    const endMs = startMs + duration
-    if (!overlaps(startMs, endMs, from, to)) continue
-    const date = dateKey(new Date(startMs))
-    if (cancelled.has(date)) continue
-    out.push(
-      serializeEvent(event, {
-        startsAt: new Date(startMs),
-        endsAt: event.endsAt ? new Date(endMs) : null,
-        date,
-      })
-    )
-  }
-  return out
 }
 
 // ─── Routes ───────────────────────────────────────────────────────────────────
@@ -215,8 +200,8 @@ const calendarPlugin: FastifyPluginAsync = async (fastify) => {
 
     const result: ReturnType<typeof serializeEvent>[] = []
     for (const event of events) {
-      if (event.recurrence === 'weekly') {
-        result.push(...expandWeekly(event, from, to))
+      if (isRecurring(event)) {
+        result.push(...expandRecurring(event, from, to))
       } else {
         const endMs = (event.endsAt ?? event.startsAt).getTime()
         if (overlaps(event.startsAt.getTime(), endMs, from, to)) {
@@ -270,6 +255,7 @@ const calendarPlugin: FastifyPluginAsync = async (fastify) => {
         allDay: d.allDay,
         location: d.location,
         recurrence: d.recurrence,
+        recurrenceDayOffsets: d.recurrenceDayOffsets,
         recurrenceUntil: d.recurrenceUntil,
         isActivity: d.isActivity,
         reminderMinutes: d.reminderMinutes,
@@ -329,6 +315,7 @@ const calendarPlugin: FastifyPluginAsync = async (fastify) => {
         allDay: d.allDay,
         location: d.location,
         recurrence: d.recurrence,
+        recurrenceDayOffsets: d.recurrenceDayOffsets,
         recurrenceUntil: d.recurrenceUntil,
         isActivity: d.isActivity,
         reminderMinutes: d.reminderMinutes,
@@ -372,7 +359,7 @@ const calendarPlugin: FastifyPluginAsync = async (fastify) => {
 
     // Skip one occurrence — write a cancellation exception, leave the series intact.
     if (occurrence) {
-      if (existing.recurrence !== 'weekly') {
+      if (!isRecurring(existing)) {
         return reply.status(400).send({ error: 'Event is not recurring' })
       }
       const date = new Date(`${occurrence}T00:00:00.000Z`)

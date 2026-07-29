@@ -29,6 +29,7 @@ type EventOverrides = {
   reminderMinutes?: number | null
   attendeeIds?: string[]
   recurrence?: string | null
+  recurrenceDayOffsets?: number[]
   recurrenceUntil?: Date | null
 }
 
@@ -41,6 +42,7 @@ async function makeEvent(o: EventOverrides = {}) {
       startsAt: o.startsAt ?? inMinutes(30),
       reminderMinutes: o.reminderMinutes === undefined ? 30 : o.reminderMinutes,
       recurrence: o.recurrence ?? null,
+      recurrenceDayOffsets: o.recurrenceDayOffsets ?? [],
       recurrenceUntil: o.recurrenceUntil ?? null,
       attendees: { create: attendeeIds.map((profileId) => ({ profileId })) },
     },
@@ -174,6 +176,36 @@ describe('reminder scheduler', () => {
       startsAt: base,
       recurrence: 'weekly',
       recurrenceUntil: new Date('2026-07-25'),
+      attendeeIds: [TWEEN_ID],
+    })
+    await runReminderTick(bus, NOW)
+
+    expect(await notifCount(TWEEN_ID)).toBe(0)
+  })
+
+  it('reminds a daily series each morning its day set includes (ADR 057)', async () => {
+    // Every-day series started 3 days ago; today's occurrence lands at NOW + 30 min.
+    const base = new Date(inMinutes(30).getTime() - 3 * 24 * 60 * 60 * 1000)
+    await makeEvent({
+      startsAt: base,
+      recurrence: 'daily',
+      recurrenceDayOffsets: [0, 1, 2, 3, 4, 5, 6],
+      attendeeIds: [TWEEN_ID],
+    })
+    await runReminderTick(bus, NOW)
+
+    expect(await notifCount(TWEEN_ID)).toBe(1)
+    const log = await calendarPrisma.reminderLog.findFirst()
+    expect(log?.occurrenceDate.toISOString().slice(0, 10)).toBe('2026-08-01')
+  })
+
+  it('stays silent on a day outside the daily series’ day set (ADR 057)', async () => {
+    // Today is day k=3 from the base; only offset 1 is in the set.
+    const base = new Date(inMinutes(30).getTime() - 3 * 24 * 60 * 60 * 1000)
+    await makeEvent({
+      startsAt: base,
+      recurrence: 'daily',
+      recurrenceDayOffsets: [1],
       attendeeIds: [TWEEN_ID],
     })
     await runReminderTick(bus, NOW)

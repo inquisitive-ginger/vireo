@@ -26,10 +26,12 @@ function evt(partial: { id: string; start: Date; end?: Date; allDay?: boolean })
     ownerId: null,
     createdBy: 'x',
     startsAt: partial.start.toISOString(),
+    seriesStartsAt: partial.start.toISOString(),
     endsAt: partial.end ? partial.end.toISOString() : null,
     allDay: partial.allDay ?? false,
     location: null,
     recurrence: null,
+    recurrenceDayOffsets: [],
     recurrenceUntil: null,
     isActivity: false,
     status: 'confirmed',
@@ -194,5 +196,69 @@ describe('heroWhen', () => {
   it('gives an all-day event a clock label and still names its day', () => {
     const w = heroWhen(evt({ id: 'e', start: new Date(2026, 6, 14), allDay: true }), now)
     expect(w).toEqual({ when: 'Tomorrow', clock: 'All day', future: true })
+  })
+})
+
+// ─── Daily time-window series in the month grid (ADR 057, design gate 2) ─────
+
+function dailyOcc(seriesId: string, day: Date): CalendarEvent {
+  const base = evt({ id: `${seriesId}:${localDateKey(day)}`, start: day })
+  return {
+    ...base,
+    seriesId,
+    isOccurrence: true,
+    occurrenceDate: localDateKey(day),
+    title: seriesId,
+    startsAt: new Date(day.getFullYear(), day.getMonth(), day.getDate(), 9, 30).toISOString(),
+    endsAt: new Date(day.getFullYear(), day.getMonth(), day.getDate(), 15, 30).toISOString(),
+    recurrence: 'daily',
+    recurrenceDayOffsets: [0, 1, 2, 3, 4],
+  }
+}
+
+describe('daily series rendering (bars, not chips)', () => {
+  // Mon Jul 6 – Fri Jul 10 2026, Wednesday skipped (a cancelled exception never
+  // arrives from the server, so it is simply absent).
+  const CAMP = [6, 7, 9, 10].map((d) => dailyOcc('camp', new Date(2026, 6, d)))
+  const WEEK = buildWeek(new Date(2026, 6, 8)) // Sun Jul 5 – Sat Jul 11
+
+  it('keeps daily occurrences out of the day cells', () => {
+    expect(eventsOnDay(CAMP, new Date(2026, 6, 6))).toEqual([])
+  })
+
+  it('still lists an occurrence in the day drill-in, timed', () => {
+    const day = eventsForDay(CAMP, new Date(2026, 6, 6))
+    expect(day.map((e) => e.id)).toEqual(['camp:2026-07-06'])
+  })
+
+  it('folds occurrences into consecutive-day runs — a skipped day splits the bar', () => {
+    const placed = spansForWeek(CAMP, WEEK)
+    expect(placed).toHaveLength(2)
+    expect(placed.map((p) => [p.startCol, p.endCol])).toEqual([
+      [1, 2], // Mon–Tue
+      [4, 5], // Thu–Fri
+    ])
+    expect(placed.every((p) => !p.openStart && !p.openEnd)).toBe(true)
+  })
+
+  it('lane-packs a run alongside a true span', () => {
+    const span = evt({
+      id: 'grandma',
+      start: new Date(2026, 6, 6),
+      end: new Date(2026, 6, 11),
+      allDay: true,
+    })
+    const placed = spansForWeek([...CAMP, span], WEEK)
+    const lanes = new Set(placed.map((p) => p.lane))
+    expect(lanes.size).toBe(2) // the runs share a lane; the span takes its own
+  })
+
+  it('clips an every-day run at the week edge with open flags', () => {
+    const daily = [9, 10, 11, 12, 13].map((d) => dailyOcc('all', new Date(2026, 6, d)))
+    const placed = spansForWeek(daily, WEEK) // week ends Sat Jul 11
+    expect(placed).toHaveLength(1)
+    expect(placed[0].startCol).toBe(4) // Thu 9
+    expect(placed[0].endCol).toBe(6) // clipped at Sat 11
+    expect(placed[0].openEnd).toBe(true)
   })
 })

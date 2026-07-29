@@ -21,7 +21,11 @@ model Event {
   endsAt          DateTime? @map("ends_at") @db.Timestamptz(6)
   allDay          Boolean   @default(false) @map("all_day")
   location        String?
-  recurrence      String? // 'weekly' | null — MVP weekly only
+  recurrence      String? // 'weekly' | 'daily' | null (ADR 038, ADR 057)
+  // Weekday set for a 'daily' series, as day OFFSETS from starts_at's weekday
+  // mod 7 (ADR 057) — candidate day k occurs iff k % 7 is a member. Offsets, not
+  // absolute weekdays: the server has no timezone to resolve a weekday in.
+  recurrenceDayOffsets Int[] @default([]) @map("recurrence_day_offsets")
   recurrenceUntil DateTime? @map("recurrence_until") @db.Date
   isActivity      Boolean   @default(false) @map("is_activity")
   status          String    @default("confirmed") // 'confirmed' | 'suggested' (reserved)
