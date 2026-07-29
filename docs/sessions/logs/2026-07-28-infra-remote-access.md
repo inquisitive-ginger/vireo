@@ -127,6 +127,24 @@ lie the user will act on by trying again, which is exactly wrong.
 - **AC5–AC7** ✅ 355 API tests (+3 lockout), typecheck + lint clean, and the
   prod-mode cookie behaviour measured directly (table above).
 
+**Confirmed on the deployed stack, not inferred from a green pipeline.** The two
+changes that could only fail in production were observed there:
+
+```
+POST https://vireohome.app/api/auth/switch
+  → 200  set-cookie: sessionId=…; Path=/; HttpOnly; Secure; SameSite=Lax
+```
+
+so Caddy's `X-Forwarded-Proto` does reach Fastify and the Secure cookie survives
+the plain-HTTP hop. And the lockout keys **per client**, tested from two hosts at
+once — the Pi at `192.168.0.31` locked (403 ×5 → **429**) while the Mac at
+`192.168.0.6` still got **403** in the same window. Had `trustProxy` been wrong,
+both would have shared a bucket and **one kid fumbling the PIN would lock out
+both parents**; that is the specific thing this proves did not happen.
+
+Note the deploy 502s for ~70s here (migrate + `tsx` boot), longer than the ~40s
+in Part C. Not a regression — retry rather than diagnose.
+
 ## Environment notes
 
 - `sysctl` is not on the login `PATH` on the Pi; use `/usr/sbin/sysctl`.
