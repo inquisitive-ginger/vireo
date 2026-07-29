@@ -25,8 +25,8 @@ before it reads anything else, and it is size-capped — see
   `logs/2026-07-29-dev-auto-bug-86-household-avatar.md`.
 - **What's next and everything outstanding:** `docs/sessions/queue.md` — the one
   index. Cheapest high-value item: Deployment Part F, offsite backups.
-- **Owed in-app:** reports #81/#82/#86 sit unresolved pending a tier-4 move to
-  `deployed`. Query the prod board before restating this — it was wrong for months.
+- **Owed in-app:** nothing — the triage board is empty as of 2026-07-29. Query it
+  before restating this either way; the old backlog claim was wrong for months.
 
 ---
 

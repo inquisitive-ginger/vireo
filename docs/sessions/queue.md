@@ -160,12 +160,13 @@ pretty-printed, so ~19k lines of churn must be stripped by hand on every
 regenerate — reconcile the two before it gets committed by accident. _Reads:
 `logs/2026-07-21-design-dev-bug-reporting.md`, ADR 046._ _Depends on: none._
 
-> **#81, #82 and #86 are waiting on this visit** — #81/#82 verified against the
-> prod DB 2026-07-28, #86 fixed 2026-07-29; every earlier report (#51…#78) is
-> already `deployed` and ADR 046's loop has closed ten times. Moving one needs an
-> authenticated tier-4 session in the app; there is no CLI or API path. The old
-> "six deep and growing" version of this note was carried forward across five
-> sessions without anyone querying the board — check it before restating it.
+> **Nothing is waiting on this visit** — #81, #82 and #86 were all moved to
+> `deployed` on 2026-07-29, so every report ever filed has closed ADR 046's loop.
+> This entry is now the UI review and the two loose threads below, nothing more.
+> Moving a report needs an authenticated tier-4 session in the app; there is no CLI
+> or API path, and an unauthenticated `GET /bug-reports` only sees the household's
+> own. The old "six deep and growing" version of this note was carried forward
+> across five sessions without anyone querying the board — check it, don't restate it.
 
 > The "`sw.js` has no cache name" worry raised at closeout was a **false alarm** —
 > the grep searched for a literal `family-os-<hash>` but the worker builds it as a

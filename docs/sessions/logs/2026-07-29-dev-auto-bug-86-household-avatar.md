@@ -72,8 +72,10 @@ ADR 021 decided it in 2026-05-29 and the write was simply never implemented.
 
 `GET https://vireohome.app/api/profiles` now returns the `family` row — the first
 time production has ever had one — and the deployed shell chunk carries the
-household caption. The report itself still needs a tier-4 parent to move it to
-`deployed`; there is no CLI path.
+household caption. Zach set the household photo the same day and moved the report
+to `deployed` — `reporter.avatarUrl` on the prod board now points at
+`/api/profiles/family/avatar`, which is the whole fix proving itself: that URL
+could not have existed before the backfill.
 
 ## Notes for next time
 
