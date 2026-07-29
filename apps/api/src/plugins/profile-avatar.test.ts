@@ -260,6 +260,19 @@ describe('avatarUrl reaches the read paths', () => {
     expect(rows.find((p) => p.id === 'seed-parent-1')?.avatarUrl).toBeNull()
   })
 
+  it('carries the household photo, which is what prod had nowhere to hang (#86)', async () => {
+    const cookie = await tier4Cookie()
+    const { avatarUrl } = (await upload('family', cookie, WEBP)).json<{ avatarUrl: string }>()
+
+    const res = await app.inject({ method: 'GET', url: '/api/profiles', headers: { cookie } })
+    const rows = res.json<{ id: string; avatarUrl: string | null }[]>()
+
+    // The household is a seeded system record (ADR 021). Without the row it is absent
+    // from this list entirely, and the profile switcher's family tile can never show a
+    // photo no matter what tier 4 uploads.
+    expect(rows.find((p) => p.id === 'family')?.avatarUrl).toBe(avatarUrl)
+  })
+
   it('appears in GET /api/auth/me for the active profile', async () => {
     const cookie = await tier4Cookie()
     const { avatarUrl } = (await upload('seed-parent-1', cookie, WEBP)).json<{

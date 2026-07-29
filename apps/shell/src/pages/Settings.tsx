@@ -524,7 +524,11 @@ function AvatarField({ profile }: { profile: ProfileRow }) {
             )}
           </div>
           <p className="text-xs-body text-muted-foreground">
-            {hasPhoto ? 'A photo is a face — the colour still says who.' : 'Initials for now.'}
+            {!hasPhoto
+              ? 'Initials for now.'
+              : isFamily
+                ? 'The household’s photo — Hearth still says it’s everyone.'
+                : 'A photo is a face — the colour still says who.'}
           </p>
         </div>
       </div>
@@ -542,7 +546,8 @@ function AvatarField({ profile }: { profile: ProfileRow }) {
         >
           <div className="max-h-full overflow-y-auto rounded-hero border border-border bg-card p-8 shadow-[var(--shadow-raised)]">
             <h3 className="text-card-title mb-6">
-              {hasPhoto ? 'Change photo' : 'Add photo'} — {profile.name.split(' ')[0]}
+              {hasPhoto ? 'Change photo' : 'Add photo'} —{' '}
+              {isFamily ? profile.name : profile.name.split(' ')[0]}
             </h3>
             <AvatarEditor
               name={profile.name}
@@ -784,6 +789,39 @@ function ProfilesSection() {
 }
 
 // ─── Family name section ──────────────────────────────────────────────────────
+
+/**
+ * The household's photo (ADR 042). It sits here rather than in "Your photo" because a
+ * family session is tier 1 and choosing the household's face is a tier-4 decision — so
+ * the one surface that could offer it self-serve is the one that must not.
+ */
+function FamilyPhotoRow() {
+  const { familyName } = useAuth()
+
+  const { data: profiles = [] } = useQuery<ProfileRow[]>({
+    queryKey: ['api/profiles'],
+    queryFn: () => fetch('/api/profiles').then((r) => r.json()) as Promise<ProfileRow[]>,
+    staleTime: 30_000,
+  })
+
+  const household = profiles.find((p) => p.id === FAMILY_PROFILE_ID)
+  if (!household) {
+    // Only reachable on a database that predates the household backfill, where the
+    // upload would 404 anyway. Hiding the button is the honest response; hiding the
+    // reason is how this went unnoticed for a month.
+    console.error('No household profile in GET /api/profiles — its photo cannot be set.')
+    return null
+  }
+
+  // The household answers to the family's name everywhere else it is drawn
+  // (ProfileGrid, Sidebar), so the initials behind the photo have to match.
+  return (
+    <>
+      <AvatarField profile={{ ...household, name: familyName ?? household.name }} />
+      <div className="border-t border-border" />
+    </>
+  )
+}
 
 function FamilySection() {
   const { familyName } = useAuth()
@@ -1213,6 +1251,7 @@ export function Settings() {
     <SettingsLayout>
       <TierGate min={4}>
         <SettingsSection title="Family">
+          <FamilyPhotoRow />
           <FamilySection />
         </SettingsSection>
 
