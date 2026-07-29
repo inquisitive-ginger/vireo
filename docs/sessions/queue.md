@@ -37,16 +37,6 @@ as currency), the amount field + presets at fridge distance, and the store/roll 
 the real iPad. Quit the PWA from the app switcher first (`docs/deployment.md` Part D).
 If the coin fails next to marigold, **deepen the gold; do not retire marigold**.
 
-### Design + Dev: Recurring Daily Time-Window Events (auto-bug #77)
-
-**Type:** design + dev · **Kickoff:** `docs/sessions/kickoffs/design-dev-recurring-daily-time-window.md`
-Queued from a live report, not the milestone plan: "Girls Rock Math is M-F from
-9:30am to 3:30pm" can't be modeled today. A span is one continuous all-day block;
-recurrence is uniform-weekly only; the two are mutually exclusive in the form. Fixing
-it for real reopens **ADR 038** ("recurrence grows beyond uniform weekly... reopens
-the materialization question") — not a UI-only fix. _Depends on: none; unscheduled
-relative to M4/M5, pick up whenever._
-
 ### M4/6 — Dev: Punch Cards
 
 **Type:** development · **Kickoff:** _to be written_
