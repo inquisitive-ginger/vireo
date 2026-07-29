@@ -68,6 +68,13 @@ ADR 021 decided it in 2026-05-29 and the write was simply never implemented.
   `avatarUrl`. The existing "no family row (prod parity)" switch test is kept —
   its comment was rewritten, since prod parity is no longer the thing it proves.
 
+## Verified live
+
+`GET https://vireohome.app/api/profiles` now returns the `family` row — the first
+time production has ever had one — and the deployed shell chunk carries the
+household caption. The report itself still needs a tier-4 parent to move it to
+`deployed`; there is no CLI path.
+
 ## Notes for next time
 
 - **`AvatarField` being family-aware was a trap, not a hint.** The `isFamily`
