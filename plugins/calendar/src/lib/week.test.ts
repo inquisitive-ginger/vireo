@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { CalendarEvent } from '../types'
 import { buildAgenda, buildWeek, spanWhenLabel } from './week'
+import { localDateKey } from './grid'
 
 const NOW = new Date('2026-07-11T13:20:00') // Saturday afternoon
 
@@ -15,10 +16,12 @@ function mk(
     attendeeIds: [],
     ownerId: null,
     createdBy: 'seed',
+    seriesStartsAt: p.startsAt,
     endsAt: null,
     allDay: false,
     location: null,
     recurrence: null,
+    recurrenceDayOffsets: [],
     recurrenceUntil: null,
     isActivity: false,
     status: 'confirmed',
@@ -42,11 +45,15 @@ const TOMORROW = mk({ id: 'tt', title: 'T&T', startsAt: '2026-07-12T11:00:00' })
 const TODAY_LATER = mk({ id: 'date', title: 'Date night', startsAt: '2026-07-11T19:00:00' })
 
 describe('buildWeek', () => {
-  it('states a multi-day span once, not on every day it touches', () => {
-    // TODAY_LATER takes the hero slot, so TOMORROW is left to prove the point:
-    // the camp covers Mon–Fri and still claims no row on any of them.
+  it('states a multi-day span once — upcoming ones on their start day, not in the band', () => {
+    // The camp starts Monday (in the future at NOW, a Saturday): it is Monday's
+    // news, stated once in Monday's `starting` list — never the band ("All week"
+    // must not cover next week, gate 4), never a day-event row.
     const { spans, days } = buildWeek([CAMP, TODAY_LATER, TOMORROW], NOW)
-    expect(spans.map((s) => s.id)).toEqual(['camp'])
+    expect(spans).toEqual([])
+    const withCamp = days.filter((d) => d.starting.some((e) => e.id === 'camp'))
+    expect(withCamp).toHaveLength(1)
+    expect(withCamp[0].date.getDate()).toBe(13)
     const listed = days.flatMap((d) => d.events.map((e) => e.id))
     expect(listed).not.toContain('camp')
     expect(listed).toEqual(['tt'])
@@ -191,5 +198,121 @@ describe('spanWhenLabel', () => {
       allDay: true,
     })
     expect(spanWhenLabel(running, NOW)).toBe('Through Mon 13')
+  })
+})
+
+// ─── Daily time-window series (ADR 057, design gate 3) ───────────────────────
+
+/* Server-shaped occurrences of one M–F 9:30–15:30 series: seriesStartsAt is the
+   canonical Monday anchor, each occurrence carries the window on its own day. */
+const SERIES_START = new Date(2026, 6, 6, 9, 30) // Mon Jul 6 — a Monday
+function campOcc(day: Date): CalendarEvent {
+  const date = localDateKey(day)
+  const start = new Date(day.getFullYear(), day.getMonth(), day.getDate(), 9, 30)
+  const end = new Date(day.getFullYear(), day.getMonth(), day.getDate(), 15, 30)
+  return mk({
+    id: `camp:${date}`,
+    seriesId: 'camp',
+    occurrenceDate: date,
+    isOccurrence: true,
+    title: 'Girls Rock Math',
+    startsAt: start.toISOString(),
+    endsAt: end.toISOString(),
+    seriesStartsAt: SERIES_START.toISOString(),
+    recurrence: 'daily',
+    recurrenceDayOffsets: [0, 1, 2, 3, 4],
+    recurrenceUntil: '2026-07-24',
+  })
+}
+// The week around NOW (Sat Jul 11): occurrences land Mon 13 – Fri 17.
+const CAMP_WEEK = [13, 14, 15, 16, 17].map((d) => campOcc(new Date(2026, 6, d)))
+
+describe('daily time-window series in buildWeek', () => {
+  it('states an upcoming series once on its start day, a running one in the band', () => {
+    // Saturday: the first occurrence is Monday → Monday's `starting`, not the band.
+    const week = buildWeek([...CAMP_WEEK, TOMORROW], NOW)
+    expect(week.spans).toEqual([])
+    const withCamp = week.days.filter((d) => d.starting.some((e) => e.seriesId === 'camp'))
+    expect(withCamp).toHaveLength(1)
+    expect(withCamp[0].date.getDate()).toBe(13)
+    expect(week.days.flatMap((d) => d.events.map((e) => e.seriesId))).not.toContain('camp')
+    expect(week.beyond).toBe(0)
+
+    // Mid-run Tuesday: today's occurrence exists → the band carries it, once.
+    const tue = buildWeek(CAMP_WEEK.slice(1), new Date(2026, 6, 14, 7, 0))
+    expect(tue.spans.map((s) => s.id)).toEqual(['camp:2026-07-14'])
+    expect(tue.days.flatMap((d) => d.starting)).toHaveLength(0)
+  })
+
+  it("makes only TODAY's occurrence hero-eligible", () => {
+    // Saturday: no occurrence today → the hero is the ordinary next event.
+    const sat = buildWeek([...CAMP_WEEK, TOMORROW], NOW)
+    expect(sat.hero?.id).toBe('tt')
+
+    // Monday 8:45 — camp starts at 9:30 → today's occurrence leads.
+    const monday = new Date(2026, 6, 13, 8, 45)
+    const mon = buildWeek(CAMP_WEEK, monday)
+    expect(mon.hero?.id).toBe('camp:2026-07-13')
+    // Still stated in the band — the hero is "now", the band is the condition.
+    expect(mon.spans.map((s) => s.id)).toEqual(['camp:2026-07-13'])
+  })
+})
+
+describe('daily time-window series in buildAgenda', () => {
+  it('pins a running series in Ongoing; states an upcoming one on its start day', () => {
+    // Saturday: first visible occurrence is Monday → inline on Monday, not pinned.
+    const sat = buildAgenda([...CAMP_WEEK, TOMORROW], NOW)
+    expect(sat.running).toHaveLength(0)
+    const monday = sat.days.find((d) => d.date.getDate() === 13)
+    expect(monday?.startingSpans.map((e) => e.seriesId)).toEqual(['camp'])
+
+    // Mid-run Tuesday: today's occurrence exists → pinned in Ongoing.
+    const tue = buildAgenda(CAMP_WEEK.slice(1), new Date(2026, 6, 14, 7, 0))
+    expect(tue.running.map((e) => e.seriesId)).toEqual(['camp'])
+    expect(tue.days.flatMap((d) => d.startingSpans)).toHaveLength(0)
+  })
+
+  it('never repeats the series in the day rows', () => {
+    const model = buildAgenda(CAMP_WEEK, new Date(2026, 6, 14, 7, 0))
+    expect(model.days.flatMap((d) => d.timed.map((e) => e.seriesId))).not.toContain('camp')
+  })
+})
+
+describe('spanWhenLabel — daily window grammar', () => {
+  it('reads day-set · window · bound, with the month once the bound leaves this week', () => {
+    // Jul 24 is 13 days out from NOW — weekday grammar would make the reader do
+    // month arithmetic, so the label takes the month (gate 4).
+    expect(spanWhenLabel(CAMP_WEEK[0], NOW)).toBe('Weekdays 9:30 – 3:30 · through Jul 24')
+    // Viewed mid-run, the bound lands within the week → weekday form.
+    expect(spanWhenLabel(CAMP_WEEK[0], new Date(2026, 6, 20, 8, 0))).toBe(
+      'Weekdays 9:30 – 3:30 · through Fri 24'
+    )
+  })
+})
+
+describe('gate-4 month grammar on spans', () => {
+  it('keeps weekday form within the week, takes the month past it — never both', () => {
+    // Starts within the week, ends past it → whole label goes month-form.
+    const crossing = mk({
+      id: 'x',
+      title: 'Cousins visiting',
+      startsAt: '2026-07-15T00:00:00',
+      endsAt: '2026-08-08T00:00:00',
+      allDay: true,
+    })
+    expect(spanWhenLabel(crossing, NOW)).toBe('Jul 15 – Aug 7')
+
+    // Fully within the coming week → weekday form holds.
+    expect(spanWhenLabel(CAMP, NOW)).toBe('Mon 13 – Fri 17')
+
+    // Running with a far end → month form on the bound.
+    const long = mk({
+      id: 'l',
+      title: 'Renovation',
+      startsAt: '2026-07-01T00:00:00',
+      endsAt: '2026-08-22T00:00:00',
+      allDay: true,
+    })
+    expect(spanWhenLabel(long, NOW)).toBe('Through Aug 21')
   })
 })

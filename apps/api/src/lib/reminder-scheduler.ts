@@ -2,12 +2,11 @@ import { prisma } from '@family-os/platform/server'
 import type { EventBus } from '@family-os/platform/server'
 import { calendarPrisma } from '@family-os/plugin-calendar/db'
 import { notify } from './notify'
+import { occurrenceDateKey, occurrenceStarts } from './recurrence'
 
 const MINUTE_MS = 60 * 1000
 const DAY_MS = 24 * 60 * MINUTE_MS
-const WEEK_MS = 7 * DAY_MS
 const TICK_MS = 60 * 1000
-const MAX_OCCURRENCES = 520 // mirror calendar.ts — a hard guard against runaway expansion
 const LEDGER_RETENTION_MS = 30 * DAY_MS // fired rows older than this are prunable
 
 // ─── Row shapes (generated Prisma types stay inside the plugin package) ──────────
@@ -20,52 +19,28 @@ type EventRow = {
   location: string | null
   startsAt: Date
   recurrence: string | null
+  recurrenceDayOffsets: number[]
   recurrenceUntil: Date | null
   reminderMinutes: number | null
   attendees: AttendeeRow[]
   exceptions: ExceptionRow[]
 }
 
-const dateKey = (d: Date) => d.toISOString().slice(0, 10)
-
-/** Occurrence starts (epoch ms) in the half-open window `(afterMs, throughMs]`,
- *  respecting weekly recurrence, `recurrenceUntil`, and `cancelled` exceptions.
- *  Mirrors the compute-on-read expansion in calendar.ts (ADR 038) — no occurrence
- *  rows are materialized. */
-function occurrenceStarts(event: EventRow, afterMs: number, throughMs: number): number[] {
-  const base = event.startsAt.getTime()
-  if (event.recurrence !== 'weekly') {
-    return base > afterMs && base <= throughMs ? [base] : []
-  }
-  const untilMs = event.recurrenceUntil ? event.recurrenceUntil.getTime() + DAY_MS : Infinity
-  const cancelled = new Set(
-    event.exceptions.filter((e) => e.kind === 'cancelled').map((e) => dateKey(e.occurrenceDate))
-  )
-
-  let k = afterMs > base ? Math.floor((afterMs - base) / WEEK_MS) : 0
-  const out: number[] = []
-  for (let i = 0; i < MAX_OCCURRENCES; i++, k++) {
-    const start = base + k * WEEK_MS
-    if (start > throughMs || start >= untilMs) break
-    if (start <= afterMs) continue
-    if (cancelled.has(dateKey(new Date(start)))) continue
-    out.push(start)
-  }
-  return out
-}
+const dateKey = occurrenceDateKey
 
 /** The occurrences of `event` whose reminder has just come due at `now`: those
  *  starting in `(now, now + reminderMinutes]`, i.e. `startsAt - reminderMinutes <= now`
  *  while the occurrence is still in the future (a reminder after the event started is
- *  stale, so it is never fired). */
+ *  stale, so it is never fired). Expansion — weekly and daily alike — comes from the
+ *  shared `occurrenceStarts` (ADR 038, ADR 057); the `>` filter turns its inclusive
+ *  window into this path's half-open one. */
 function dueOccurrences(event: EventRow, now: Date): { start: Date; date: string }[] {
   if (event.reminderMinutes == null) return []
   const nowMs = now.getTime()
   const throughMs = nowMs + event.reminderMinutes * MINUTE_MS
-  return occurrenceStarts(event, nowMs, throughMs).map((s) => ({
-    start: new Date(s),
-    date: dateKey(new Date(s)),
-  }))
+  return occurrenceStarts(event, nowMs, throughMs)
+    .filter((s) => s > nowMs)
+    .map((s) => ({ start: new Date(s), date: dateKey(new Date(s)) }))
 }
 
 function formatLead(minutes: number): string {

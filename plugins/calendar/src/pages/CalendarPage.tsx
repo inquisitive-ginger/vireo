@@ -471,25 +471,31 @@ export function CalendarPage() {
       {canManage &&
         removeTarget &&
         (() => {
-          // Offer "just this week" vs "the whole series" only when there's a
-          // concrete occurrence to skip — a weekly event/activity opened from the
-          // grid carries `occurrenceDate`. A bare series (e.g. an activity edited
-          // from the Activities lens) has none, so "just this week" would silently
-          // fall back to a series delete — collapse to a plain series confirm.
+          // Offer "just this week/day" vs "the whole series" only when there's a
+          // concrete occurrence to skip — a recurring event/activity opened from
+          // the grid carries `occurrenceDate`. A bare series (e.g. an activity
+          // edited from the Activities lens) has none, so the scoped option would
+          // silently fall back to a series delete — collapse to a plain confirm.
           const noun = removeTarget.isActivity ? 'activity' : 'event'
-          const offersChoice = removeTarget.recurrence === 'weekly' && !!removeTarget.occurrenceDate
+          const daily = removeTarget.recurrence === 'daily'
+          const offersChoice =
+            (removeTarget.recurrence === 'weekly' || daily) && !!removeTarget.occurrenceDate
           return (
             <ConfirmDialog
               open
               title={`Remove “${removeTarget.title}”?`}
               description={
                 offersChoice
-                  ? `This ${noun} repeats weekly. Remove just this week, or the whole series?`
+                  ? daily
+                    ? `This ${noun} repeats. Remove just this day, or the whole series?`
+                    : `This ${noun} repeats weekly. Remove just this week, or the whole series?`
                   : `This ${noun} will be permanently deleted. This can’t be undone.`
               }
               confirmLabel={offersChoice ? 'All events' : 'Remove'}
               onConfirm={() => deleteEvent.mutate({ event: removeTarget, scope: 'series' })}
-              secondaryLabel={offersChoice ? 'Just this week' : undefined}
+              secondaryLabel={
+                offersChoice ? (daily ? 'Just this day' : 'Just this week') : undefined
+              }
               onSecondary={
                 offersChoice
                   ? () => deleteEvent.mutate({ event: removeTarget, scope: 'occurrence' })

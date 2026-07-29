@@ -23,10 +23,12 @@ function evt(
     attendeeIds: [],
     ownerId: null,
     createdBy: 'p1',
+    seriesStartsAt: o.startsAt,
     endsAt: null,
     allDay: false,
     location: null,
     recurrence: null,
+    recurrenceDayOffsets: [],
     recurrenceUntil: null,
     isActivity: false,
     status: 'confirmed',
@@ -151,6 +153,96 @@ describe('CreateEventDrawer — create', () => {
     expect(screen.getByRole('button', { name: 'Add event' })).toBeDisabled()
   })
 })
+
+describe('CreateEventDrawer — daily time window (ADR 057)', () => {
+  it('multi-day keeps the Time field: All day defaults on, off reveals the day chips', () => {
+    renderDrawer()
+    fireEvent.click(screen.getByRole('switch', { name: 'Multiple days' }))
+
+    // The span default: All day on, no time inputs, no day chips.
+    expect(screen.getByRole('switch', { name: 'All day' })).toBeChecked()
+    expect(screen.queryByLabelText('Start time')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Monday' })).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('switch', { name: 'All day' }))
+    expect(screen.getByLabelText('Start time')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Monday' })).toBeInTheDocument()
+    // All seven days start selected; Reminder appears for a timed window.
+    expect(screen.getByRole('button', { name: 'Sunday' })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('button', { name: '30 min' })).toBeInTheDocument()
+  })
+
+  it('blocks submit when every day is deselected', () => {
+    renderDrawer()
+    fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Camp' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Zoe' }))
+    fireEvent.click(screen.getByRole('switch', { name: 'Multiple days' }))
+    fireEvent.click(screen.getByRole('switch', { name: 'All day' }))
+    for (const day of DAY_NAMES_TEST) fireEvent.click(screen.getByRole('button', { name: day }))
+    expect(screen.getByText('Pick at least one day.')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Add event' })).toBeDisabled()
+  })
+
+  // A server-shaped occurrence of a M–F 9:30–15:30 series: the drawer was opened
+  // from WEDNESDAY's bar, but must edit the whole series off its Monday anchor.
+  const dailyOccurrence = evt({
+    id: 'd1:2026-06-24',
+    seriesId: 'd1',
+    occurrenceDate: '2026-06-24',
+    isOccurrence: true,
+    title: 'Girls Rock Math',
+    attendeeIds: ['p1'],
+    startsAt: new Date(2026, 5, 24, 9, 30).toISOString(), // the Wednesday occurrence
+    endsAt: new Date(2026, 5, 24, 15, 30).toISOString(),
+    seriesStartsAt: new Date(2026, 5, 22, 9, 30).toISOString(), // Mon Jun 22
+    recurrence: 'daily',
+    recurrenceDayOffsets: [0, 1, 2, 3, 4], // Monday anchor → Mon–Fri
+    recurrenceUntil: '2026-07-03',
+  })
+
+  it('edit prefills the window off the SERIES anchor and round-trips the wire body', async () => {
+    const { onSubmit } = renderDrawer({ editingEvent: dailyOccurrence, prefillDate: null })
+
+    expect(screen.getByRole('switch', { name: 'Multiple days' })).toBeChecked()
+    expect(screen.getByRole('switch', { name: 'All day' })).not.toBeChecked()
+    expect((screen.getByLabelText('Start time') as HTMLInputElement).value).toBe('09:30')
+    expect((screen.getByLabelText('End time') as HTMLInputElement).value).toBe('15:30')
+    // Mon–Fri selected, the weekend not; the summary states the semantics.
+    expect(screen.getByRole('button', { name: 'Friday' })).toHaveAttribute('aria-pressed', 'true')
+    expect(screen.getByRole('button', { name: 'Sunday' })).toHaveAttribute('aria-pressed', 'false')
+    expect(screen.getByText('Weekdays · Jun 22 – Jul 3 · 10 days')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Save changes' }))
+    await waitFor(() => expect(onSubmit).toHaveBeenCalled())
+    const input = lastInput(onSubmit)
+    expect(input.recurrence).toBe('daily')
+    // Anchored on the series' Monday, NOT the tapped Wednesday — editing week two
+    // must not rebase the range and delete week one.
+    expect(input.startsAt).toBe(new Date(2026, 5, 22, 9, 30).toISOString())
+    expect(input.endsAt).toBe(new Date(2026, 5, 22, 15, 30).toISOString())
+    expect(input.recurrenceDayOffsets).toEqual([0, 1, 2, 3, 4])
+    expect(input.recurrenceUntil).toBe('2026-07-03')
+    expect(input.allDay).toBe(false)
+  })
+
+  it('a day-set edit lands in the offsets', async () => {
+    const { onSubmit } = renderDrawer({ editingEvent: dailyOccurrence, prefillDate: null })
+    fireEvent.click(screen.getByRole('button', { name: 'Saturday' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Save changes' }))
+    await waitFor(() => expect(onSubmit).toHaveBeenCalled())
+    expect(lastInput(onSubmit).recurrenceDayOffsets).toEqual([0, 1, 2, 3, 4, 5])
+  })
+})
+
+const DAY_NAMES_TEST = [
+  'Sunday',
+  'Monday',
+  'Tuesday',
+  'Wednesday',
+  'Thursday',
+  'Friday',
+  'Saturday',
+]
 
 describe('CreateEventDrawer — edit', () => {
   const editing = evt({

@@ -335,6 +335,125 @@ describe('GET /calendar/events — list & weekly expansion', () => {
   })
 })
 
+// ─── Daily time-window series (ADR 057) ──────────────────────────────────────
+
+describe('daily time-window recurrence', () => {
+  // Girls-Rock-Math-shaped: M–F 9:30–15:30, Aug 3 (a Monday) through Aug 21.
+  // The start is a Monday, so offsets [0..4] are Mon–Fri.
+  const DAILY = {
+    title: 'Girls Rock Math',
+    startsAt: '2026-08-03T09:30:00.000Z',
+    endsAt: '2026-08-03T15:30:00.000Z',
+    attendeeIds: [KID_ID],
+    recurrence: 'daily',
+    recurrenceDayOffsets: [0, 1, 2, 3, 4],
+    recurrenceUntil: '2026-08-21',
+  }
+  const AUG = ['2026-08-01T00:00:00.000Z', '2026-08-31T23:59:59.000Z'] as const
+
+  it('expands one occurrence per matching day, weekends excluded, bounded by until', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const created = await createEvent(cookie, DAILY)
+    expect(created.statusCode).toBe(201)
+    // A bounded daily window is NOT a standing weekly activity.
+    expect(created.json().isActivity).toBe(false)
+
+    const res = await listEvents(cookie, ...AUG)
+    const occ = res.json().events.filter((e: { title: string }) => e.title === DAILY.title)
+    expect(occ).toHaveLength(15) // 3 weeks × Mon–Fri
+    const dates = occ.map((e: { occurrenceDate: string }) => e.occurrenceDate)
+    expect(dates[0]).toBe('2026-08-03')
+    expect(dates.at(-1)).toBe('2026-08-21')
+    expect(dates).not.toContain('2026-08-08') // Saturday
+    expect(dates).not.toContain('2026-08-22') // past until
+
+    // Each occurrence keeps the clock window on its own day, plus the series facts.
+    const second = occ[1]
+    expect(second.id).toBe(`${second.seriesId}:2026-08-04`)
+    expect(second.startsAt).toBe('2026-08-04T09:30:00.000Z')
+    expect(second.endsAt).toBe('2026-08-04T15:30:00.000Z')
+    expect(second.allDay).toBe(false)
+    expect(second.seriesStartsAt).toBe(DAILY.startsAt)
+    expect(second.recurrenceDayOffsets).toEqual([0, 1, 2, 3, 4])
+  })
+
+  it('starts on the first matching day when the range starts on an excluded one', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    // Range anchored on Sunday Aug 2; Sunday (offset 0) is not in the set.
+    await createEvent(cookie, {
+      ...DAILY,
+      startsAt: '2026-08-02T09:30:00.000Z',
+      endsAt: '2026-08-02T15:30:00.000Z',
+      recurrenceDayOffsets: [1, 2, 3, 4, 5], // Mon–Fri relative to a Sunday start
+    })
+    const res = await listEvents(cookie, ...AUG)
+    const dates = res
+      .json()
+      .events.filter((e: { title: string }) => e.title === DAILY.title)
+      .map((e: { occurrenceDate: string }) => e.occurrenceDate)
+    expect(dates[0]).toBe('2026-08-03')
+    expect(dates).toHaveLength(15)
+  })
+
+  it('clips daily expansion to the queried window', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    await createEvent(cookie, DAILY)
+    const res = await listEvents(cookie, '2026-08-10T00:00:00.000Z', '2026-08-14T23:59:59.000Z')
+    const dates = res
+      .json()
+      .events.filter((e: { title: string }) => e.title === DAILY.title)
+      .map((e: { occurrenceDate: string }) => e.occurrenceDate)
+    expect(dates).toEqual(['2026-08-10', '2026-08-11', '2026-08-12', '2026-08-13', '2026-08-14'])
+  })
+
+  it('skips one day via ?occurrence= (the exceptions overlay, unchanged)', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const created = await createEvent(cookie, DAILY)
+    const id = created.json().id
+
+    const del = await app.inject({
+      method: 'DELETE',
+      url: `/api/calendar/events/${id}?occurrence=2026-08-12`,
+      headers: { cookie },
+    })
+    expect(del.statusCode).toBe(204)
+
+    const res = await listEvents(cookie, ...AUG)
+    const dates = res
+      .json()
+      .events.filter((e: { title: string }) => e.title === DAILY.title)
+      .map((e: { occurrenceDate: string }) => e.occurrenceDate)
+    expect(dates).toHaveLength(14)
+    expect(dates).not.toContain('2026-08-12')
+  })
+
+  it('re-derives the window on edit (until shrinks the series)', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const created = await createEvent(cookie, DAILY)
+    const id = created.json().id
+
+    const patched = await app.inject({
+      method: 'PATCH',
+      url: `/api/calendar/events/${id}`,
+      headers: { cookie },
+      payload: { ...DAILY, recurrenceUntil: '2026-08-14' },
+    })
+    expect(patched.statusCode).toBe(200)
+
+    const res = await listEvents(cookie, ...AUG)
+    const occ = res.json().events.filter((e: { title: string }) => e.title === DAILY.title)
+    expect(occ).toHaveLength(10)
+  })
+
+  it('rejects a daily series without a day set or without an end time (400)', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const noDays = await createEvent(cookie, { ...DAILY, recurrenceDayOffsets: [] })
+    expect(noDays.statusCode).toBe(400)
+    const noEnd = await createEvent(cookie, { ...DAILY, endsAt: null })
+    expect(noEnd.statusCode).toBe(400)
+  })
+})
+
 // ─── Activities lens ─────────────────────────────────────────────────────────
 
 async function listActivities(cookie: string) {

@@ -27,10 +27,12 @@ function mk(
     description: null,
     ownerId: p.attendeeIds[0] ?? null,
     createdBy: 'seed',
+    seriesStartsAt: p.startsAt,
     endsAt: null,
     allDay: false,
     location: null,
     recurrence: null,
+    recurrenceDayOffsets: [],
     recurrenceUntil: null,
     isActivity: false,
     status: 'confirmed',
@@ -73,13 +75,14 @@ function renderWidget(props: {
   events?: CalendarEvent[]
   framing?: UpNextFraming
   size?: WidgetSize
+  now?: Date
 }) {
   return render(
     <MemoryRouter>
       <UpNextView
         events={props.events ?? EVENTS}
         membersById={MEMBERS}
-        now={NOW}
+        now={props.now ?? NOW}
         framing={props.framing ?? 'family'}
         size={props.size ?? 'large'}
       />
@@ -139,13 +142,22 @@ describe('UpNextView', () => {
     expect(screen.queryByText('12:00 am')).not.toBeInTheDocument()
   })
 
-  it('states a multi-day span once in the all-week band, not on every day it touches', () => {
+  it('states an upcoming span once, on its start day — the band is for running things', () => {
     renderWidget({})
+    // The camp starts Monday (future at NOW): no band, one Monday row carrying
+    // the range in its time slot (gate 4 — "All week" must not cover next week).
+    expect(screen.queryByTestId('span-band')).not.toBeInTheDocument()
+    expect(screen.getAllByText('FISW Camp')).toHaveLength(1)
+    expect(screen.getByText('Mon 13 – Fri 17')).toBeInTheDocument()
+  })
+
+  it('carries a running span in the all-week band, stated once', () => {
+    // Same camp, viewed mid-run (Wednesday morning).
+    renderWidget({ events: [EVENTS[4]], now: new Date('2026-07-15T08:00:00') })
     const band = screen.getByTestId('span-band')
     expect(within(band).getByText('All week')).toBeInTheDocument()
     expect(within(band).getByText('FISW Camp')).toBeInTheDocument()
-    expect(within(band).getByText('Mon 13 – Fri 17')).toBeInTheDocument()
-    // Once in the whole tile — the camp covers Mon–Fri and claims no day row.
+    expect(within(band).getByText('Through Fri 17')).toBeInTheDocument()
     expect(screen.getAllByText('FISW Camp')).toHaveLength(1)
   })
 
@@ -183,9 +195,16 @@ describe('UpNextView', () => {
   it.each(['compact', 'standard', 'large'] as WidgetSize[])('renders the %s size', (size) => {
     renderWidget({ size })
     expect(screen.getByText('Karate')).toBeInTheDocument()
-    // Every size states the span somewhere — the narrow ones compress it to a line.
-    expect(screen.getAllByText(/FISW Camp/).length).toBeGreaterThan(0)
   })
+
+  it.each(['compact', 'standard', 'large'] as WidgetSize[])(
+    'every size states a RUNNING span somewhere (%s)',
+    (size) => {
+      // Mid-run Wednesday: the camp is a live condition on every density.
+      renderWidget({ size, now: new Date('2026-07-15T08:00:00') })
+      expect(screen.getAllByText(/FISW Camp/).length).toBeGreaterThan(0)
+    }
+  )
 
   it('shows the all-clear empty state with no events', () => {
     renderWidget({ events: [] })
@@ -194,9 +213,15 @@ describe('UpNextView', () => {
   })
 
   it('is not all-clear when only a running span remains', () => {
-    renderWidget({ events: [EVENTS[4]] })
+    renderWidget({ events: [EVENTS[4]], now: new Date('2026-07-15T08:00:00') })
     expect(screen.queryByText('Nothing scheduled')).not.toBeInTheDocument()
     expect(screen.getByTestId('span-band')).toBeInTheDocument()
+  })
+
+  it('is not all-clear when the only thing this week is a span about to start', () => {
+    renderWidget({ events: [EVENTS[4]] })
+    expect(screen.queryByText('Nothing scheduled')).not.toBeInTheDocument()
+    expect(screen.getByText('FISW Camp')).toBeInTheDocument()
   })
 
   it('deep-links the whole tile to /calendar', () => {

@@ -1,6 +1,11 @@
 # Design System
 
-> Last updated: 2026-07-24 — **ADR 054: the currency is named Pritchett Bucks.** The coin now bears a struck **P-mark** (0.66 of the face, stroke 2.5) in place of ADR 051's placeholder `Coins` glyph, and the name has **four registers** — the mark · `P$` · `P-Bucks` · `Pritchett Bucks` — one per medium, chosen by naming an export in `packages/ui/src/lib/currency.ts`. See [Currency marks](#currency-marks). Prior: 2026-07-22 — **ADR 051: the coin belongs to the currency that buys things.** P-Bucks takes gold, the disc and the coin glyph; **XP demotes to a quiet star**. The coin's gold moves off `--identity-marigold`, and what separates it from a member's hue is **form** — one struck disc, never a disc inside a ring (a washer) and never notched (a gear). See [Currency marks](#currency-marks). Prior: 2026-07-12 — **ADR 044: a colour is assigned, not derived; and it is not the only channel.** The member palette grows to **eight** (`moss`, `indigo`); a member's hue is **persisted and unique** (`resolveHue`, never `identityColor(name)`), so palette size is now a **cap on household size**. The **tint layer is rebuilt** — it flattened every hue to off-white on the one surface (the month grid) where colour does all the work. Eight nameable hues cannot survive red-green colour-blindness, so **any surface where a hue is the sole discriminator owes a second channel** — the calendar chip carries its owner's initial.
+> Last updated: 2026-07-28 — **ADR 057: daily time-window recurrence.** A repeating
+> time window ("M–F 9:30–3:30, Aug 3–21") is a third event shape with its own
+> statement rules: stated **once** in the span band with the grammar
+> **day-set · window · bound**, never repeated in day rows, **today's occurrence
+> hero-eligible**, and rendered in the month grid as **consecutive-day run bars**
+> in the span lanes. See [Daily time-window series](#daily-time-window-series--a-condition-with-a-clock-settled--2026-07-28). Prior: 2026-07-24 — **ADR 054: the currency is named Pritchett Bucks.** The coin now bears a struck **P-mark** (0.66 of the face, stroke 2.5) in place of ADR 051's placeholder `Coins` glyph, and the name has **four registers** — the mark · `P$` · `P-Bucks` · `Pritchett Bucks` — one per medium, chosen by naming an export in `packages/ui/src/lib/currency.ts`. See [Currency marks](#currency-marks). Prior: 2026-07-22 — **ADR 051: the coin belongs to the currency that buys things.** P-Bucks takes gold, the disc and the coin glyph; **XP demotes to a quiet star**. The coin's gold moves off `--identity-marigold`, and what separates it from a member's hue is **form** — one struck disc, never a disc inside a ring (a washer) and never notched (a gear). See [Currency marks](#currency-marks). Prior: 2026-07-12 — **ADR 044: a colour is assigned, not derived; and it is not the only channel.** The member palette grows to **eight** (`moss`, `indigo`); a member's hue is **persisted and unique** (`resolveHue`, never `identityColor(name)`), so palette size is now a **cap on household size**. The **tint layer is rebuilt** — it flattened every hue to off-white on the one surface (the month grid) where colour does all the work. Eight nameable hues cannot survive red-green colour-blindness, so **any surface where a hue is the sole discriminator owes a second channel** — the calendar chip carries its owner's initial.
 
 This document records settled design decisions. Deferred items are
 explicitly marked — do not treat absence of a spec as a free choice.
@@ -251,10 +256,38 @@ The `panel` exists **because** of the rule above: a recess is illegal on
 one. Same primitive, same anatomy — a different claim about depth, because the
 ground is different. Don't "fix" the panel by sinking it; that inverts the ladder.
 
-The window decides where a span is stated. A one-week view can pin them all
-("All week"). A scrolling agenda cannot — a camp three weeks out is not "all
-week" — so it pins only what is **already running** ("Ongoing") and states the
-rest **inline, once, on the day they begin**.
+**Both surfaces pin only what is already RUNNING** and state the rest **inline,
+once, on the day it begins** (revised 2026-07-28, gate 4 — the widget used to pin
+everything overlapping its week, and a real summer week put five rows in the band
+with camps that were next week's wearing the "All week" label). In the widget, an
+upcoming span/series takes a day-list row whose time slot carries its range
+("Aug 3 – 7"); in the agenda it joins its start day's section, as it always has.
+
+**Date grammar is decided by distance, never mixed in one label:** a date within
+the next seven days keeps the weekday form ("through Fri 31"); anything past that
+takes the month ("Aug 3 – 7", "through Aug 21"). Bare day-of-month across a month
+boundary made the reader do month arithmetic.
+
+#### Daily time-window series — a condition with a clock (settled — 2026-07-28)
+
+A **daily time-window series** (ADR 057 — "M–F 9:30–3:30, Aug 3–21") is a
+condition **and** an appointment, so it takes the span rule with one carve-out:
+
+- **Stated once**, in the `SpanBand` / Ongoing panel, with its own "when" grammar:
+  **day-set · window · bound** — `Weekdays 9:30 – 3:30 · through Fri 21`. Day-set
+  names: _Every day_ / _Weekdays_ / _Weekends_ / `Mon · Wed · Fri`
+  (`daySetLabel`, `plugins/calendar/src/lib/series.ts`).
+- **Day rows never repeat it** — the exact swamping the band exists to end.
+- **Only today's occurrence is hero-eligible.** The hero exists to answer
+  "what's next?", and at 8:45 the answer is camp in 45 minutes; an occurrence on
+  a later day is the band's business. The series may therefore appear twice —
+  hero and band — which is deliberate: they say different things (_now_ vs.
+  _standing_).
+- **Month grid: bars, not chips.** Occurrences fold into consecutive-day runs in
+  the span lanes — weekends bare, a skipped day a visible hole — so the cells
+  keep their chip slots for one-offs. The clock lives one tap down, where a
+  span's dates already do.
+- **Day drill-in / week view:** an occurrence is a normal timed row.
 
 ### Member identity palette
 

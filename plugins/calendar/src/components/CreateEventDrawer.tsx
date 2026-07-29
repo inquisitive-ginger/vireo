@@ -19,14 +19,21 @@ import {
 import type { Profile } from '@family-os/platform/types'
 import type { CalendarEvent } from '../types'
 import { addDays, isMultiDay, localDateKey, spanEndDate, startOfDay } from '../lib/grid'
+import { daySetLabel, offsetsFromWeekdays, weekdaysFromOffsets } from '../lib/series'
 
 /* The single create / edit surface for calendar events (design §2) — one reused
    right Drawer (chores `CreateTaskDrawer` pattern). Each modifier lives on the
-   field it changes: "Multiple days" turns the date field into a range (and drops
-   times + repeat); "All day" hides the time inputs; "Repeat weekly" reveals an
-   optional "until". Owner is a multi-select of members + a mutually-exclusive
-   Family chip, and a pick is REQUIRED (an event always carries identity). Edit
-   mode prefills from the event, swaps the header + CTA copy, and adds Remove.
+   field it changes: "Multiple days" turns the date field into a range; "All day"
+   hides the time inputs; "Repeat weekly" reveals an optional "until". Owner is a
+   multi-select of members + a mutually-exclusive Family chip, and a pick is
+   REQUIRED (an event always carries identity). Edit mode prefills from the event,
+   swaps the header + CTA copy, and adds Remove.
+
+   "Multiple days" keeps its Time field (ADR 057, design gate 1): All day stays the
+   default — that's the untouched span flow — and switching it off gives the range
+   a daily clock window, revealing the weekday chips, the reminder, and a summary
+   line stating the semantics. The wire shape is `recurrence: 'daily'` + day
+   offsets; the range's last day becomes `recurrenceUntil`.
 
    Form state is React Hook Form + a zodResolver (the shell's form standard —
    Onboarding/Settings) over the UI-shaped `EventFormSchema`; on submit the valid
@@ -51,9 +58,30 @@ export interface CreateEventInput {
   allDay: boolean
   location: string | null
   description: string | null
-  recurrence: 'weekly' | null
+  recurrence: 'weekly' | 'daily' | null
+  recurrenceDayOffsets: number[] | null
   recurrenceUntil: string | null
   reminderMinutes: number | null
+}
+
+// One letter per weekday, Sunday-first — indices are local `getDay()` weekdays.
+const DAY_CHIP_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
+const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
+
+/** The quiet semantics line under the day chips — "Weekdays · Aug 3 – 21 ·
+ *  15 days" — the same reassurance "(Every Tuesday)" gives Repeat weekly. */
+function windowSummary(from: Date, to: Date, days: number[]): string {
+  const set = new Set(days)
+  let count = 0
+  for (let d = startOfDay(from); d <= to; d = addDays(d, 1)) {
+    if (set.has(d.getDay())) count++
+  }
+  const sameMonth = from.getMonth() === to.getMonth() && from.getFullYear() === to.getFullYear()
+  const m = (d: Date) => d.toLocaleDateString(undefined, { month: 'short' })
+  const span = sameMonth
+    ? `${m(from)} ${from.getDate()} – ${to.getDate()}`
+    : `${m(from)} ${from.getDate()} – ${m(to)} ${to.getDate()}`
+  return `${daySetLabel(days)} · ${span} · ${count} ${count === 1 ? 'day' : 'days'}`
 }
 
 const pad = (n: number) => String(n).padStart(2, '0')
@@ -87,6 +115,7 @@ const EventFormSchema = z
     allDay: z.boolean(),
     startTime: z.string(),
     endTime: z.string(),
+    days: z.array(z.number()),
     repeatWeekly: z.boolean(),
     until: z.date().optional(),
     location: z.string(),
@@ -100,6 +129,21 @@ const EventFormSchema = z
     if (v.multiDay) {
       if (!v.range?.from || !v.range?.to) {
         ctx.addIssue({ code: 'custom', path: ['range'], message: 'Pick a start and end date' })
+      }
+      if (!v.allDay) {
+        if (
+          v.range?.from &&
+          combine(v.range.from, v.endTime) <= combine(v.range.from, v.startTime)
+        ) {
+          ctx.addIssue({
+            code: 'custom',
+            path: ['endTime'],
+            message: 'End must be after the start',
+          })
+        }
+        if (v.days.length === 0) {
+          ctx.addIssue({ code: 'custom', path: ['days'], message: 'Pick at least one day' })
+        }
       }
     } else {
       if (!v.date) {
@@ -128,6 +172,7 @@ function blankDefaults(opts?: {
     allDay: false,
     startTime: '09:00',
     endTime: '10:00',
+    days: [0, 1, 2, 3, 4, 5, 6],
     // An activity is a weekly commitment — repeat-weekly is implied (design.md §4).
     repeatWeekly: Boolean(opts?.asActivity),
     until: undefined,
@@ -138,18 +183,32 @@ function blankDefaults(opts?: {
 }
 
 function editDefaults(event: CalendarEvent): EventForm {
-  const start = new Date(event.startsAt)
+  // The SERIES anchor, not the tapped occurrence's date — editing week three of a
+  // camp must not rebase the range (and so delete weeks one and two).
+  const start = new Date(event.seriesStartsAt)
+  const daily = event.recurrence === 'daily'
   const span = isMultiDay(event)
   return {
     title: event.title,
     ownerIds: event.attendeeIds.length === 0 ? [] : event.attendeeIds,
     family: event.attendeeIds.length === 0,
-    multiDay: span,
+    multiDay: span || daily,
     date: startOfDay(start),
-    range: span ? { from: startOfDay(start), to: spanEndDate(event) } : undefined,
+    range:
+      span || daily
+        ? {
+            from: startOfDay(start),
+            to: daily
+              ? event.recurrenceUntil
+                ? parseDateKey(event.recurrenceUntil)
+                : startOfDay(start)
+              : spanEndDate(event),
+          }
+        : undefined,
     allDay: event.allDay,
     startTime: toHM(start),
     endTime: event.endsAt ? toHM(new Date(event.endsAt)) : addMinutesHM(toHM(start), 60),
+    days: daily ? weekdaysFromOffsets(event.recurrenceDayOffsets, start) : [0, 1, 2, 3, 4, 5, 6],
     repeatWeekly: event.recurrence === 'weekly',
     until: event.recurrenceUntil ? parseDateKey(event.recurrenceUntil) : undefined,
     location: event.location ?? '',
@@ -168,17 +227,34 @@ function toInput(v: EventForm): CreateEventInput {
     description: v.description.trim() || null,
   }
   if (v.multiDay) {
-    // A span is all-day and carries no times/repeat. The exclusive end bound
-    // (start of the day after the last day) is what `lib/grid` reads back as an
-    // inclusive last day.
+    if (v.allDay) {
+      // A span is all-day and carries no times/repeat. The exclusive end bound
+      // (start of the day after the last day) is what `lib/grid` reads back as an
+      // inclusive last day.
+      return {
+        ...base,
+        startsAt: startOfDay(v.range!.from!).toISOString(),
+        endsAt: startOfDay(addDays(v.range!.to!, 1)).toISOString(),
+        allDay: true,
+        recurrence: null,
+        recurrenceDayOffsets: null,
+        recurrenceUntil: null,
+        reminderMinutes: null,
+      }
+    }
+    // A range with a clock window is a daily series (ADR 057): the window rides
+    // `startsAt`/`endsAt` on the range's FIRST day, the last day is the inclusive
+    // `recurrenceUntil`, and the picked weekdays go over the wire as offsets.
+    const from = startOfDay(v.range!.from!)
     return {
       ...base,
-      startsAt: startOfDay(v.range!.from!).toISOString(),
-      endsAt: startOfDay(addDays(v.range!.to!, 1)).toISOString(),
-      allDay: true,
-      recurrence: null,
-      recurrenceUntil: null,
-      reminderMinutes: null,
+      startsAt: combine(from, v.startTime).toISOString(),
+      endsAt: combine(from, v.endTime).toISOString(),
+      allDay: false,
+      recurrence: 'daily',
+      recurrenceDayOffsets: offsetsFromWeekdays(v.days, from),
+      recurrenceUntil: localDateKey(startOfDay(v.range!.to!)),
+      reminderMinutes: v.reminderMinutes,
     }
   }
   const recurrence = v.repeatWeekly ? ('weekly' as const) : null
@@ -190,6 +266,7 @@ function toInput(v: EventForm): CreateEventInput {
       endsAt: null,
       allDay: true,
       recurrence,
+      recurrenceDayOffsets: null,
       recurrenceUntil,
       reminderMinutes: null,
     }
@@ -200,6 +277,7 @@ function toInput(v: EventForm): CreateEventInput {
     endsAt: combine(v.date!, v.endTime).toISOString(),
     allDay: false,
     recurrence,
+    recurrenceDayOffsets: null,
     recurrenceUntil,
     reminderMinutes: v.reminderMinutes,
   }
@@ -286,17 +364,23 @@ export function CreateEventDrawer({
   const range = watch('range')
   const startTime = watch('startTime')
   const endTime = watch('endTime')
-  const timed = !multiDay && !allDay
+  const days = watch('days')
+  // Timed = carries a clock window — single-day or a daily series (ADR 057). The
+  // reminder rides this too: a daily window reminds each morning; a span doesn't.
+  const timed = !allDay
 
   // The submit gate mirrors the schema's cross-field rules, derived synchronously
   // from the current values so the button toggles immediately (zodResolver is the
   // async re-check at submit time, but `isValid` lands a tick late for a click).
   const ownerChosen = family || ownerIds.length > 0
   const datesValid = multiDay ? Boolean(range?.from && range?.to) : Boolean(date)
+  const timeAnchor = multiDay ? range?.from : date
   const endBeforeStart = Boolean(
-    timed && date && combine(date, endTime) <= combine(date, startTime)
+    timed && timeAnchor && combine(timeAnchor, endTime) <= combine(timeAnchor, startTime)
   )
-  const canSubmit = title.trim().length > 0 && ownerChosen && datesValid && !endBeforeStart
+  const daysChosen = !multiDay || allDay || days.length > 0
+  const canSubmit =
+    title.trim().length > 0 && ownerChosen && datesValid && !endBeforeStart && daysChosen
 
   function toggleOwner(id: string) {
     setValue('family', false, { shouldValidate: true })
@@ -357,6 +441,9 @@ export function CreateEventDrawer({
                   onChange: (v) => {
                     setValue('multiDay', v, { shouldValidate: true })
                     if (v && date) setValue('range', { from: date, to: undefined })
+                    // A range defaults to the all-day span; toggling back restores
+                    // the timed single-day default.
+                    setValue('allDay', v, { shouldValidate: true })
                   },
                 }}
               />
@@ -382,8 +469,10 @@ export function CreateEventDrawer({
               )}
             </div>
 
-            {/* Time — single-day only; inline "All day" toggle hides the fields */}
-            {!multiDay && (
+            {/* Time — inline "All day" toggle hides the fields. In multi-day mode
+                All day means a continuous span; switching it off gives the range a
+                daily clock window + the weekday chips (ADR 057, gate 1). */}
+            {
               <div>
                 <FieldHeader
                   label="Time"
@@ -439,8 +528,41 @@ export function CreateEventDrawer({
                     End time must be after the start.
                   </p>
                 )}
+                {multiDay && !allDay && (
+                  <div className="mt-4">
+                    <FieldLabel>On days</FieldLabel>
+                    <div className="flex flex-wrap gap-2">
+                      {DAY_CHIP_LABELS.map((label, d) => (
+                        <DayChip
+                          key={d}
+                          label={label}
+                          day={d}
+                          selected={days.includes(d)}
+                          onClick={() => {
+                            const next = days.includes(d)
+                              ? days.filter((x) => x !== d)
+                              : [...days, d]
+                            setValue('days', next, { shouldValidate: true })
+                          }}
+                        />
+                      ))}
+                    </div>
+                    {days.length === 0 ? (
+                      <p className="mt-1.5 text-sm-token text-destructive">
+                        Pick at least one day.
+                      </p>
+                    ) : (
+                      range?.from &&
+                      range?.to && (
+                        <p className="mt-1.5 text-sm-token text-muted-foreground">
+                          {windowSummary(range.from, range.to, days)}
+                        </p>
+                      )
+                    )}
+                  </div>
+                )}
               </div>
-            )}
+            }
 
             {/* Repeat weekly — single-day only; "(Every Tuesday)" inline + Until */}
             {!multiDay && (
@@ -593,6 +715,33 @@ function FamilyChip({ selected, onClick }: { selected: boolean; onClick: () => v
       idleClassName="text-foreground"
     >
       Family
+    </Chip>
+  )
+}
+
+// A weekday chip for the daily-window day set — primary-toned like the reminder
+// presets (a selection, not a collectible). The visible letter is one character,
+// so the accessible name carries the full day.
+function DayChip({
+  label,
+  day,
+  selected,
+  onClick,
+}: {
+  label: string
+  day: number
+  selected: boolean
+  onClick: () => void
+}) {
+  return (
+    <Chip
+      selected={selected}
+      onClick={onClick}
+      selectedClassName="border-primary bg-primary/10 text-primary"
+      idleClassName="text-muted-foreground"
+    >
+      <span aria-hidden>{label}</span>
+      <span className="sr-only">{DAY_NAMES[day]}</span>
     </Chip>
   )
 }

@@ -1241,10 +1241,12 @@ export namespace Prisma {
   }
 
   export type EventAvgAggregateOutputType = {
+    recurrenceDayOffsets: number | null
     reminderMinutes: number | null
   }
 
   export type EventSumAggregateOutputType = {
+    recurrenceDayOffsets: number[]
     reminderMinutes: number | null
   }
 
@@ -1296,6 +1298,7 @@ export namespace Prisma {
     allDay: number
     location: number
     recurrence: number
+    recurrenceDayOffsets: number
     recurrenceUntil: number
     isActivity: number
     status: number
@@ -1307,10 +1310,12 @@ export namespace Prisma {
   }
 
   export type EventAvgAggregateInputType = {
+    recurrenceDayOffsets?: true
     reminderMinutes?: true
   }
 
   export type EventSumAggregateInputType = {
+    recurrenceDayOffsets?: true
     reminderMinutes?: true
   }
 
@@ -1362,6 +1367,7 @@ export namespace Prisma {
     allDay?: true
     location?: true
     recurrence?: true
+    recurrenceDayOffsets?: true
     recurrenceUntil?: true
     isActivity?: true
     status?: true
@@ -1468,6 +1474,7 @@ export namespace Prisma {
     allDay: boolean
     location: string | null
     recurrence: string | null
+    recurrenceDayOffsets: number[]
     recurrenceUntil: Date | null
     isActivity: boolean
     status: string
@@ -1506,6 +1513,7 @@ export namespace Prisma {
         allDay?: boolean
         location?: boolean
         recurrence?: boolean
+        recurrenceDayOffsets?: boolean
         recurrenceUntil?: boolean
         isActivity?: boolean
         status?: boolean
@@ -1534,6 +1542,7 @@ export namespace Prisma {
       allDay?: boolean
       location?: boolean
       recurrence?: boolean
+      recurrenceDayOffsets?: boolean
       recurrenceUntil?: boolean
       isActivity?: boolean
       status?: boolean
@@ -1558,6 +1567,7 @@ export namespace Prisma {
       allDay?: boolean
       location?: boolean
       recurrence?: boolean
+      recurrenceDayOffsets?: boolean
       recurrenceUntil?: boolean
       isActivity?: boolean
       status?: boolean
@@ -1579,6 +1589,7 @@ export namespace Prisma {
     allDay?: boolean
     location?: boolean
     recurrence?: boolean
+    recurrenceDayOffsets?: boolean
     recurrenceUntil?: boolean
     isActivity?: boolean
     status?: boolean
@@ -1599,6 +1610,7 @@ export namespace Prisma {
       | 'allDay'
       | 'location'
       | 'recurrence'
+      | 'recurrenceDayOffsets'
       | 'recurrenceUntil'
       | 'isActivity'
       | 'status'
@@ -1639,6 +1651,7 @@ export namespace Prisma {
         allDay: boolean
         location: string | null
         recurrence: string | null
+        recurrenceDayOffsets: number[]
         recurrenceUntil: Date | null
         isActivity: boolean
         status: string
@@ -2182,6 +2195,7 @@ export namespace Prisma {
     readonly allDay: FieldRef<'Event', 'Boolean'>
     readonly location: FieldRef<'Event', 'String'>
     readonly recurrence: FieldRef<'Event', 'String'>
+    readonly recurrenceDayOffsets: FieldRef<'Event', 'Int[]'>
     readonly recurrenceUntil: FieldRef<'Event', 'DateTime'>
     readonly isActivity: FieldRef<'Event', 'Boolean'>
     readonly status: FieldRef<'Event', 'String'>
@@ -6369,6 +6383,7 @@ export namespace Prisma {
     allDay: 'allDay'
     location: 'location'
     recurrence: 'recurrence'
+    recurrenceDayOffsets: 'recurrenceDayOffsets'
     recurrenceUntil: 'recurrenceUntil'
     isActivity: 'isActivity'
     status: 'status'
@@ -6462,14 +6477,14 @@ export namespace Prisma {
   export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
 
   /**
-   * Reference to a field of type 'Int'
-   */
-  export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
-
-  /**
    * Reference to a field of type 'Int[]'
    */
   export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
+
+  /**
+   * Reference to a field of type 'Int'
+   */
+  export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
 
   /**
    * Reference to a field of type 'Float'
@@ -6498,6 +6513,7 @@ export namespace Prisma {
     allDay?: BoolFilter<'Event'> | boolean
     location?: StringNullableFilter<'Event'> | string | null
     recurrence?: StringNullableFilter<'Event'> | string | null
+    recurrenceDayOffsets?: IntNullableListFilter<'Event'>
     recurrenceUntil?: DateTimeNullableFilter<'Event'> | Date | string | null
     isActivity?: BoolFilter<'Event'> | boolean
     status?: StringFilter<'Event'> | string
@@ -6520,6 +6536,7 @@ export namespace Prisma {
     allDay?: SortOrder
     location?: SortOrderInput | SortOrder
     recurrence?: SortOrderInput | SortOrder
+    recurrenceDayOffsets?: SortOrder
     recurrenceUntil?: SortOrderInput | SortOrder
     isActivity?: SortOrder
     status?: SortOrder
@@ -6546,6 +6563,7 @@ export namespace Prisma {
       allDay?: BoolFilter<'Event'> | boolean
       location?: StringNullableFilter<'Event'> | string | null
       recurrence?: StringNullableFilter<'Event'> | string | null
+      recurrenceDayOffsets?: IntNullableListFilter<'Event'>
       recurrenceUntil?: DateTimeNullableFilter<'Event'> | Date | string | null
       isActivity?: BoolFilter<'Event'> | boolean
       status?: StringFilter<'Event'> | string
@@ -6570,6 +6588,7 @@ export namespace Prisma {
     allDay?: SortOrder
     location?: SortOrderInput | SortOrder
     recurrence?: SortOrderInput | SortOrder
+    recurrenceDayOffsets?: SortOrder
     recurrenceUntil?: SortOrderInput | SortOrder
     isActivity?: SortOrder
     status?: SortOrder
@@ -6597,6 +6616,7 @@ export namespace Prisma {
     allDay?: BoolWithAggregatesFilter<'Event'> | boolean
     location?: StringNullableWithAggregatesFilter<'Event'> | string | null
     recurrence?: StringNullableWithAggregatesFilter<'Event'> | string | null
+    recurrenceDayOffsets?: IntNullableListFilter<'Event'>
     recurrenceUntil?: DateTimeNullableWithAggregatesFilter<'Event'> | Date | string | null
     isActivity?: BoolWithAggregatesFilter<'Event'> | boolean
     status?: StringWithAggregatesFilter<'Event'> | string
@@ -6771,6 +6791,7 @@ export namespace Prisma {
     allDay?: boolean
     location?: string | null
     recurrence?: string | null
+    recurrenceDayOffsets?: EventCreaterecurrenceDayOffsetsInput | number[]
     recurrenceUntil?: Date | string | null
     isActivity?: boolean
     status?: string
@@ -6793,6 +6814,7 @@ export namespace Prisma {
     allDay?: boolean
     location?: string | null
     recurrence?: string | null
+    recurrenceDayOffsets?: EventCreaterecurrenceDayOffsetsInput | number[]
     recurrenceUntil?: Date | string | null
     isActivity?: boolean
     status?: string
@@ -6815,6 +6837,7 @@ export namespace Prisma {
     allDay?: BoolFieldUpdateOperationsInput | boolean
     location?: NullableStringFieldUpdateOperationsInput | string | null
     recurrence?: NullableStringFieldUpdateOperationsInput | string | null
+    recurrenceDayOffsets?: EventUpdaterecurrenceDayOffsetsInput | number[]
     recurrenceUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isActivity?: BoolFieldUpdateOperationsInput | boolean
     status?: StringFieldUpdateOperationsInput | string
@@ -6837,6 +6860,7 @@ export namespace Prisma {
     allDay?: BoolFieldUpdateOperationsInput | boolean
     location?: NullableStringFieldUpdateOperationsInput | string | null
     recurrence?: NullableStringFieldUpdateOperationsInput | string | null
+    recurrenceDayOffsets?: EventUpdaterecurrenceDayOffsetsInput | number[]
     recurrenceUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isActivity?: BoolFieldUpdateOperationsInput | boolean
     status?: StringFieldUpdateOperationsInput | string
@@ -6859,6 +6883,7 @@ export namespace Prisma {
     allDay?: boolean
     location?: string | null
     recurrence?: string | null
+    recurrenceDayOffsets?: EventCreaterecurrenceDayOffsetsInput | number[]
     recurrenceUntil?: Date | string | null
     isActivity?: boolean
     status?: string
@@ -6878,6 +6903,7 @@ export namespace Prisma {
     allDay?: BoolFieldUpdateOperationsInput | boolean
     location?: NullableStringFieldUpdateOperationsInput | string | null
     recurrence?: NullableStringFieldUpdateOperationsInput | string | null
+    recurrenceDayOffsets?: EventUpdaterecurrenceDayOffsetsInput | number[]
     recurrenceUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isActivity?: BoolFieldUpdateOperationsInput | boolean
     status?: StringFieldUpdateOperationsInput | string
@@ -6897,6 +6923,7 @@ export namespace Prisma {
     allDay?: BoolFieldUpdateOperationsInput | boolean
     location?: NullableStringFieldUpdateOperationsInput | string | null
     recurrence?: NullableStringFieldUpdateOperationsInput | string | null
+    recurrenceDayOffsets?: EventUpdaterecurrenceDayOffsetsInput | number[]
     recurrenceUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isActivity?: BoolFieldUpdateOperationsInput | boolean
     status?: StringFieldUpdateOperationsInput | string
@@ -7098,6 +7125,14 @@ export namespace Prisma {
     not?: NestedBoolFilter<$PrismaModel> | boolean
   }
 
+  export type IntNullableListFilter<$PrismaModel = never> = {
+    equals?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    has?: number | IntFieldRefInput<$PrismaModel> | null
+    hasEvery?: number[] | ListIntFieldRefInput<$PrismaModel>
+    hasSome?: number[] | ListIntFieldRefInput<$PrismaModel>
+    isEmpty?: boolean
+  }
+
   export type IntNullableFilter<$PrismaModel = never> = {
     equals?: number | IntFieldRefInput<$PrismaModel> | null
     in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
@@ -7154,6 +7189,7 @@ export namespace Prisma {
     allDay?: SortOrder
     location?: SortOrder
     recurrence?: SortOrder
+    recurrenceDayOffsets?: SortOrder
     recurrenceUntil?: SortOrder
     isActivity?: SortOrder
     status?: SortOrder
@@ -7164,6 +7200,7 @@ export namespace Prisma {
   }
 
   export type EventAvgOrderByAggregateInput = {
+    recurrenceDayOffsets?: SortOrder
     reminderMinutes?: SortOrder
   }
 
@@ -7206,6 +7243,7 @@ export namespace Prisma {
   }
 
   export type EventSumOrderByAggregateInput = {
+    recurrenceDayOffsets?: SortOrder
     reminderMinutes?: SortOrder
   }
 
@@ -7386,6 +7424,10 @@ export namespace Prisma {
     firedAt?: SortOrder
   }
 
+  export type EventCreaterecurrenceDayOffsetsInput = {
+    set: number[]
+  }
+
   export type EventAttendeeCreateNestedManyWithoutEventInput = {
     create?:
       | XOR<EventAttendeeCreateWithoutEventInput, EventAttendeeUncheckedCreateWithoutEventInput>
@@ -7476,6 +7518,11 @@ export namespace Prisma {
 
   export type BoolFieldUpdateOperationsInput = {
     set?: boolean
+  }
+
+  export type EventUpdaterecurrenceDayOffsetsInput = {
+    set?: number[]
+    push?: number | number[]
   }
 
   export type NullableIntFieldUpdateOperationsInput = {
@@ -8046,6 +8093,7 @@ export namespace Prisma {
     allDay?: boolean
     location?: string | null
     recurrence?: string | null
+    recurrenceDayOffsets?: EventCreaterecurrenceDayOffsetsInput | number[]
     recurrenceUntil?: Date | string | null
     isActivity?: boolean
     status?: string
@@ -8067,6 +8115,7 @@ export namespace Prisma {
     allDay?: boolean
     location?: string | null
     recurrence?: string | null
+    recurrenceDayOffsets?: EventCreaterecurrenceDayOffsetsInput | number[]
     recurrenceUntil?: Date | string | null
     isActivity?: boolean
     status?: string
@@ -8104,6 +8153,7 @@ export namespace Prisma {
     allDay?: BoolFieldUpdateOperationsInput | boolean
     location?: NullableStringFieldUpdateOperationsInput | string | null
     recurrence?: NullableStringFieldUpdateOperationsInput | string | null
+    recurrenceDayOffsets?: EventUpdaterecurrenceDayOffsetsInput | number[]
     recurrenceUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isActivity?: BoolFieldUpdateOperationsInput | boolean
     status?: StringFieldUpdateOperationsInput | string
@@ -8125,6 +8175,7 @@ export namespace Prisma {
     allDay?: BoolFieldUpdateOperationsInput | boolean
     location?: NullableStringFieldUpdateOperationsInput | string | null
     recurrence?: NullableStringFieldUpdateOperationsInput | string | null
+    recurrenceDayOffsets?: EventUpdaterecurrenceDayOffsetsInput | number[]
     recurrenceUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isActivity?: BoolFieldUpdateOperationsInput | boolean
     status?: StringFieldUpdateOperationsInput | string
@@ -8146,6 +8197,7 @@ export namespace Prisma {
     allDay?: boolean
     location?: string | null
     recurrence?: string | null
+    recurrenceDayOffsets?: EventCreaterecurrenceDayOffsetsInput | number[]
     recurrenceUntil?: Date | string | null
     isActivity?: boolean
     status?: string
@@ -8167,6 +8219,7 @@ export namespace Prisma {
     allDay?: boolean
     location?: string | null
     recurrence?: string | null
+    recurrenceDayOffsets?: EventCreaterecurrenceDayOffsetsInput | number[]
     recurrenceUntil?: Date | string | null
     isActivity?: boolean
     status?: string
@@ -8204,6 +8257,7 @@ export namespace Prisma {
     allDay?: BoolFieldUpdateOperationsInput | boolean
     location?: NullableStringFieldUpdateOperationsInput | string | null
     recurrence?: NullableStringFieldUpdateOperationsInput | string | null
+    recurrenceDayOffsets?: EventUpdaterecurrenceDayOffsetsInput | number[]
     recurrenceUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isActivity?: BoolFieldUpdateOperationsInput | boolean
     status?: StringFieldUpdateOperationsInput | string
@@ -8225,6 +8279,7 @@ export namespace Prisma {
     allDay?: BoolFieldUpdateOperationsInput | boolean
     location?: NullableStringFieldUpdateOperationsInput | string | null
     recurrence?: NullableStringFieldUpdateOperationsInput | string | null
+    recurrenceDayOffsets?: EventUpdaterecurrenceDayOffsetsInput | number[]
     recurrenceUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isActivity?: BoolFieldUpdateOperationsInput | boolean
     status?: StringFieldUpdateOperationsInput | string
@@ -8246,6 +8301,7 @@ export namespace Prisma {
     allDay?: boolean
     location?: string | null
     recurrence?: string | null
+    recurrenceDayOffsets?: EventCreaterecurrenceDayOffsetsInput | number[]
     recurrenceUntil?: Date | string | null
     isActivity?: boolean
     status?: string
@@ -8267,6 +8323,7 @@ export namespace Prisma {
     allDay?: boolean
     location?: string | null
     recurrence?: string | null
+    recurrenceDayOffsets?: EventCreaterecurrenceDayOffsetsInput | number[]
     recurrenceUntil?: Date | string | null
     isActivity?: boolean
     status?: string
@@ -8304,6 +8361,7 @@ export namespace Prisma {
     allDay?: BoolFieldUpdateOperationsInput | boolean
     location?: NullableStringFieldUpdateOperationsInput | string | null
     recurrence?: NullableStringFieldUpdateOperationsInput | string | null
+    recurrenceDayOffsets?: EventUpdaterecurrenceDayOffsetsInput | number[]
     recurrenceUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isActivity?: BoolFieldUpdateOperationsInput | boolean
     status?: StringFieldUpdateOperationsInput | string
@@ -8325,6 +8383,7 @@ export namespace Prisma {
     allDay?: BoolFieldUpdateOperationsInput | boolean
     location?: NullableStringFieldUpdateOperationsInput | string | null
     recurrence?: NullableStringFieldUpdateOperationsInput | string | null
+    recurrenceDayOffsets?: EventUpdaterecurrenceDayOffsetsInput | number[]
     recurrenceUntil?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     isActivity?: BoolFieldUpdateOperationsInput | boolean
     status?: StringFieldUpdateOperationsInput | string
