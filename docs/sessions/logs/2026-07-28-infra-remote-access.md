@@ -166,11 +166,13 @@ that exists; there is no per-device sign-out in the app.
 
 ## Open / handed back
 
-- **Disable key expiry on `vireo-pi`** (currently `2027-01-25`). On expiry the Pi
-  drops off the tailnet and remote access dies silently, six months from the
-  session that built it, with re-auth needing physical access to the box. This is
-  the single most likely way this setup fails.
-- Enrol the family devices; run the two-part phone test.
+- ~~Disable key expiry on `vireo-pi`~~ ✅ **done in-session** — confirmed
+  `KeyExpiry: DISABLED`, node online, route still advertised. Left recorded
+  because it was the single most likely way this setup fails: on expiry the Pi
+  drops off the tailnet **silently**, six months after the session that built it,
+  and re-auth needs `tailscale up` **on the box**. Anyone rebuilding this node
+  must set it again — there is no CLI path, only the admin-console toggle.
+- Enrol the remaining family devices. The phone test passed on one handset.
 - Unchanged from before: Part F offsite backups is still the most important infra
   follow-up — the household still lives in one un-backed-up Postgres volume, and
   it is now reachable from more places.
