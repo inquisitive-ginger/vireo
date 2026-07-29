@@ -19,7 +19,7 @@ type ProfileRow = {
   identityHue?: string | null
   avatarUrl?: string | null
 }
-type PinPhase = 'list' | 'pin-entry' | 'pin-error'
+type PinPhase = 'list' | 'pin-entry' | 'pin-error' | 'pin-locked'
 
 interface ProfileGridProps {
   open: boolean
@@ -35,6 +35,7 @@ export function ProfileGrid({ open, onClose, className, onNavigate }: ProfileGri
   const [pinPhase, setPinPhase] = useState<PinPhase>('list')
   const [pinTarget, setPinTarget] = useState<ProfileRow | null>(null)
   const [pinValue, setPinValue] = useState('')
+  const [lockoutMinutes, setLockoutMinutes] = useState(0)
 
   const { data: profiles = [] } = useQuery<ProfileRow[]>({
     queryKey: ['api/profiles'],
@@ -78,6 +79,13 @@ export function ProfileGrid({ open, onClose, className, onNavigate }: ProfileGri
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({ pin, targetProfileId: pinTarget.id }),
     })
+    if (res.status === 429) {
+      const { retryAfter } = (await res.json()) as { retryAfter?: number }
+      setLockoutMinutes(Math.max(1, Math.ceil((retryAfter ?? 0) / 60)))
+      setPinPhase('pin-locked')
+      setPinValue('')
+      return
+    }
     if (!res.ok) {
       setPinPhase('pin-error')
       setPinValue('')
@@ -200,16 +208,27 @@ export function ProfileGrid({ open, onClose, className, onNavigate }: ProfileGri
           </div>
         ) : (
           <div className="flex flex-col items-center gap-3 py-5 px-3">
-            <p className="text-xs font-medium text-muted-foreground">
-              {pinPhase === 'pin-error' ? 'Incorrect PIN' : 'Enter family PIN'}
+            <p
+              className={cn(
+                'text-xs font-medium',
+                pinPhase === 'pin-locked' ? 'text-destructive' : 'text-muted-foreground'
+              )}
+            >
+              {pinPhase === 'pin-locked'
+                ? `Too many tries — wait ${lockoutMinutes} min`
+                : pinPhase === 'pin-error'
+                  ? 'Incorrect PIN'
+                  : 'Enter family PIN'}
             </p>
-            <PinInput
-              value={pinValue}
-              onChange={handlePinChange}
-              error={pinPhase === 'pin-error'}
-              size="sm"
-              autoFocus
-            />
+            {pinPhase !== 'pin-locked' && (
+              <PinInput
+                value={pinValue}
+                onChange={handlePinChange}
+                error={pinPhase === 'pin-error'}
+                size="sm"
+                autoFocus
+              />
+            )}
             <button
               onClick={() => {
                 setPinPhase('list')

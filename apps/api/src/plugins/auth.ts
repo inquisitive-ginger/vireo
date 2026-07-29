@@ -24,16 +24,61 @@ declare module 'fastify' {
 // Same shape at runtime — this bridges the structural mismatch at the type level.
 type FastifySessionStore = Exclude<Parameters<typeof fastifySession>[1]['store'], undefined>
 
+const isProduction = process.env.NODE_ENV === 'production'
+
+// The family PIN is four digits (ProfileGrid submits at length 4) — 10,000
+// combinations, and the only credential guarding a tier-4 profile. The attacker
+// this is actually built for is a kid with the household's own device, so a VPN
+// does not remove the need for it.
+const PIN_MAX_ATTEMPTS = 5
+const PIN_WINDOW_MS = 15 * 60 * 1000
+
+const pinFailures = new Map<string, { count: number; resetAt: number }>()
+
+/** Seconds remaining on a lockout, or 0 if the caller may attempt a PIN. */
+function pinLockoutSeconds(key: string): number {
+  const record = pinFailures.get(key)
+  if (!record) return 0
+  if (Date.now() >= record.resetAt) {
+    pinFailures.delete(key)
+    return 0
+  }
+  if (record.count < PIN_MAX_ATTEMPTS) return 0
+  return Math.ceil((record.resetAt - Date.now()) / 1000)
+}
+
+function recordPinFailure(key: string): void {
+  const now = Date.now()
+  const record = pinFailures.get(key)
+  const count = record && now < record.resetAt ? record.count + 1 : 1
+  pinFailures.set(key, { count, resetAt: now + PIN_WINDOW_MS })
+}
+
+/** Test seam — the limiter is process-wide and app.inject shares one client IP. */
+export function resetPinRateLimit(): void {
+  pinFailures.clear()
+}
+
 const authPlugin: FastifyPluginAsync = async (fastify) => {
   await fastify.register(fastifyCookie)
+
+  const sessionSecret = process.env.SESSION_SECRET
+  if (isProduction && !sessionSecret) {
+    throw new Error('SESSION_SECRET must be set in production')
+  }
 
   const PgStore = ConnectPgSimple(
     fastifySession as unknown as Parameters<typeof ConnectPgSimple>[0]
   )
 
   await fastify.register(fastifySession, {
-    secret: process.env.SESSION_SECRET ?? 'dev-secret-change-in-production-32chars',
-    cookie: { secure: false, httpOnly: true, maxAge: 7 * 24 * 60 * 60 * 1000 },
+    secret: sessionSecret ?? 'dev-secret-change-in-production-32chars',
+    cookie: {
+      secure: isProduction,
+      httpOnly: true,
+      sameSite: 'lax',
+      maxAge: 7 * 24 * 60 * 60 * 1000,
+    },
     store: new PgStore({
       conString:
         process.env.DATABASE_URL ?? 'postgresql://familyos:familyos@localhost:5432/familyos',
@@ -42,6 +87,21 @@ const authPlugin: FastifyPluginAsync = async (fastify) => {
       tableName: 'sessions',
     }) as unknown as FastifySessionStore,
   })
+
+  // @fastify/session drops a Secure cookie when request.protocol !== 'https' and
+  // still answers 200, so a missing X-Forwarded-Proto breaks every login in the
+  // house with no error raised anywhere. Say it once rather than never.
+  if (isProduction) {
+    let warned = false
+    fastify.addHook('onRequest', async (request) => {
+      if (!warned && request.protocol !== 'https') {
+        warned = true
+        request.log.error(
+          'X-Forwarded-Proto is not https — Secure session cookies are being dropped'
+        )
+      }
+    })
+  }
 
   // Auth middleware — resolves activeProfileId → Profile + AppAbility on every request
   fastify.addHook('preHandler', async (request: FastifyRequest) => {
@@ -142,12 +202,24 @@ const authPlugin: FastifyPluginAsync = async (fastify) => {
     async (request, reply) => {
       const { pin, targetProfileId } = request.body
 
+      const lockedFor = pinLockoutSeconds(request.ip)
+      if (lockedFor > 0) {
+        return reply
+          .status(429)
+          .header('Retry-After', String(lockedFor))
+          .send({ error: 'Too many attempts', retryAfter: lockedFor })
+      }
+
       const config = await prisma.systemConfig.findUnique({ where: { key: 'family_pin_hash' } })
       if (!config) return reply.status(423).send({ error: 'No family PIN has been set' })
 
       const pinHash = config.value as string
       const valid = await bcrypt.compare(pin, pinHash)
-      if (!valid) return reply.status(403).send({ error: 'Invalid PIN' })
+      if (!valid) {
+        recordPinFailure(request.ip)
+        return reply.status(403).send({ error: 'Invalid PIN' })
+      }
+      pinFailures.delete(request.ip)
 
       const target = await prisma.profile.findUnique({ where: { id: targetProfileId } })
       if (!target) return reply.status(404).send({ error: 'Profile not found' })

@@ -18,7 +18,11 @@ import devPlugin from './plugins/dev'
 export async function buildServer() {
   await initVapidKeys()
 
-  const app = Fastify({ logger: true })
+  // One trusted hop: Caddy is the only ingress and appends the peer to
+  // X-Forwarded-For, so the rightmost entry is the real client and a
+  // client-supplied header cannot displace it. Without this every request
+  // reports Caddy's container IP and the PIN limiter shares one bucket.
+  const app = Fastify({ logger: true, trustProxy: 1 })
 
   // WebSocket event stream lives at root — no /api prefix (proxied separately by Vite)
   await app.register(eventBusPlugin)

@@ -16,6 +16,8 @@
 > `logs/2026-07-21-infra-deploy-hardening.md`.
 > **Storage roots moved to the SSD (2026-07-20)** — both `data-root` and
 > containerd's `root`; see Part C9.
+> **Remote access is LIVE (2026-07-28)** — Tailscale subnet route, family devices
+> reach the app from anywhere, no public listener. See Part G.
 > **Remaining (non-blocking):** Part F offsite backups (most important) and
 > shrinking the api image.
 
@@ -537,6 +539,110 @@ jobs:
 - **Logs:** `docker compose logs -f api web`.
 - **Health:** `docker compose ps`; add an uptime check hitting
   `https://family.example.com` if you want to be paged.
+
+---
+
+## Part G — Access from outside the house (Tailscale)
+
+**Live 2026-07-28.** Family devices reach `https://vireohome.app` from anywhere.
+The Pi gained no publicly reachable listener in the process.
+
+### Why not just publish it
+
+The app has no network-boundary authentication and is not built to have any.
+`auth.ts` resolves an unauthenticated request to the `family` pseudo-profile, and
+`POST /auth/switch` hands out any tier 1–3 profile **with no credential at all** —
+both correct under ADR 021 for an appliance on a trusted LAN, and both fatal on
+the open internet. Only tier 4 is gated, by a **four-digit** family PIN.
+
+So the family boundary is enforced at the **network** layer. The app's own auth is
+defence in depth behind it, not the front door.
+
+### The shape
+
+```
+public DNS (unchanged):  vireohome.app  A  192.168.0.31   ← RFC 1918, unroutable
+router (unchanged):      no port forwarding
+
+at home:   device ──LAN──────────────────────────────▶ Pi:443
+away:      device ──WireGuard──▶ tailnet ──/32 route──▶ Pi:443
+fridge:    no Tailscale client at all, pure LAN
+```
+
+**Nothing about the origin changes** — same hostname, same Let's Encrypt cert,
+same PWA install, same session, same push subscription. A second `away.` hostname
+would have split all four. The cert keeps renewing because DNS-01 needs no
+inbound reachability.
+
+The Pi advertises **only `192.168.0.31/32`**, not the whole `/24`. A tailnet
+device gets a route to the app and to nothing else on the home network.
+
+**The fridge iPad deliberately runs no client.** It is the always-on household
+surface, so it must not acquire a dependency on the tailnet, on Tailscale's
+coordination server, or on the house having internet at all.
+
+### Setup on the Pi
+
+```bash
+curl -fsSL https://tailscale.com/install.sh | sudo sh
+
+printf 'net.ipv4.ip_forward = 1\nnet.ipv6.conf.all.forwarding = 1\n' \
+  | sudo tee /etc/sysctl.d/99-tailscale.conf
+sudo sysctl -p /etc/sysctl.d/99-tailscale.conf
+
+sudo tailscale up --advertise-routes=192.168.0.31/32 --accept-dns=false \
+  --hostname=vireo-pi
+```
+
+`--accept-dns=false` leaves the Pi's own resolver alone; MagicDNS buys a server
+nothing and Caddy's DNS-01 renewals depend on that resolver.
+
+Then, in the [admin console](https://login.tailscale.com/admin/machines), on
+`vireo-pi` — **both are required and neither has a CLI equivalent**:
+
+1. **Edit route settings → approve `192.168.0.31/32`.** Advertising is a request;
+   until it is approved, `tailscale status --json` reports `PrimaryRoutes: null`
+   and remote access silently does not work.
+2. **Disable key expiry.** Node keys default to a 180-day life. On expiry the Pi
+   drops off the tailnet and remote access dies with no warning and no failure
+   anyone will connect to a calendar entry made six months earlier. Re-auth has
+   to happen **on the box**, so this is the one setting whose absence turns into
+   an outage you debug from scratch.
+
+### Setup per family device
+
+Install the Tailscale client, sign in, accept the invite. That is the whole
+enrolment — no per-device config, no profile, no URL change.
+
+`--accept-routes` is on by default on iOS, iPadOS and macOS. On a Linux client it
+is **not**; that client needs `sudo tailscale up --accept-routes` or it will
+resolve `vireohome.app` to `192.168.0.31` and route it out its own default gateway.
+
+### Verifying it
+
+The two halves are one test, run on a phone with **cellular data, wifi off**:
+
+- **Tailscale OFF** → `https://vireohome.app` must **fail to load**. This is the
+  real check that nothing is publicly exposed. (Probing your public IP from a
+  machine on your own LAN does not prove it — most routers don't hairpin, so a
+  forwarded port can still read as closed.)
+- **Tailscale ON** → the app loads with a valid padlock and works normally.
+
+On the Pi, `PrimaryRoutes` populating is the signal the route went live:
+
+```bash
+tailscale status --json | grep -A2 PrimaryRoutes
+```
+
+### What this does and does not buy you
+
+It reduces "who can reach the app" from _everyone_ to _devices enrolled in your
+tailnet_. It does **not** change what someone can do once they are there — a
+tailnet device can still become any kid with no credential, by design.
+
+**A lost phone that is signed into the tailnet is a full-access device**, and
+removing it in the admin console is the only revocation that exists. There is no
+per-device sign-out inside the app.
 
 ---
 

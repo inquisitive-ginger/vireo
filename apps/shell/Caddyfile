@@ -6,6 +6,12 @@
 
 	@backend path /api/* /events*
 	handle @backend {
+		# Caddy's default X-Forwarded-Proto and -For are load-bearing here, not
+		# hygiene: the API runs trustProxy:1, so without the former @fastify/session
+		# sees a plain-HTTP hop and drops the Secure cookie while still answering
+		# 200 (profile switching breaks house-wide, no error anywhere), and the PIN
+		# lockout keys on the latter's rightmost entry. Do not disable them; setting
+		# them explicitly is redundant and Caddy warns about it.
 		reverse_proxy api:3000
 	}
 
