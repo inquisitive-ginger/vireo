@@ -19,7 +19,7 @@ export function XpPill({ value, earned = false }: XpPillProps) {
   const Icon = earned ? Check : Star
   return (
     <span
-      className={`text-sm-token inline-flex items-center gap-1 font-semibold ${earned ? 'text-success' : 'text-muted-foreground'}`}
+      className={`text-sm-token inline-flex items-center gap-1 font-semibold leading-none ${earned ? 'text-success' : 'text-muted-foreground'}`}
     >
       <Icon size={12} strokeWidth={earned ? 3 : 2.5} />
       {value} XP

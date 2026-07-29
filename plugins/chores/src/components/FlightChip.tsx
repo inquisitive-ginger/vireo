@@ -69,7 +69,7 @@ export function FlightChip({ from, to, value, onDone }: FlightChipProps) {
     >
       {/* Plain quiet star — matches the resting XpPill, which no longer wears a pill
           (ADR 051), so the chip that lifts off looks like the badge it left. */}
-      <span className="text-sm-token inline-flex items-center gap-1 font-semibold whitespace-nowrap text-muted-foreground">
+      <span className="text-sm-token inline-flex items-center gap-1 font-semibold leading-none whitespace-nowrap text-muted-foreground">
         <Star size={12} strokeWidth={2.5} />
         {value} XP
       </span>
