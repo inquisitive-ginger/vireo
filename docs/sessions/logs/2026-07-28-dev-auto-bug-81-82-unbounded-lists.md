@@ -137,11 +137,41 @@ reports were left alone.
 ## What the next session needs to know
 
 - **Reports #81 and #82 need a tier-4 parent to move them to `deployed`** on the
-  triage board — the user is doing this once they verify the deploy. They join
-  **#73, #76, #77, #78**, which are still sitting in the same state. That queue of
-  un-flipped reports is now six deep, and each one is a notification the reporter
-  never got. Worth a thought: the loop ADR 046 closed end-to-end once has not been
-  closed since.
+  triage board — the user is doing this once they verify the deploy.
+
+  **Correction, made at the end of this session.** This entry originally said they
+  joined a six-deep queue of un-flipped reports, and that ADR 046's loop had closed
+  end-to-end exactly once. The user said that did not match what they had been
+  doing. The prod DB agreed with them:
+
+  > `#51 #53 #61 #66 #67 #70 #73 #76 #77 #78 → deployed` · `#81 #82 → triaged`
+
+  Every prior report was already flipped; the loop has closed **ten** times. The
+  "needs a tier-4 status flip" line was a **standing note carried forward and
+  appended to across five sessions without anyone querying the board** — it grew
+  #73 → #76/#77/#78 → #81/#82 while the opposite was quietly true, and this session
+  inherited it and added to it rather than checking it.
+
+  Worth generalising: **a standing note that only ever gets appended to is a note
+  nobody is verifying**, and the appending is what makes it look maintained. The
+  prod DB is one command away (see below) — cheaper than the five sessions that
+  repeated the claim.
+
+- **The prod DB is queryable from the sandbox**, which several notes assume it is
+  not:
+
+  ```
+  ssh 192.168.0.31 "cd /opt/family-os && docker compose -f docker-compose.prod.yml \
+    exec -T postgres psql -U familyos -d familyos -c '<sql>'"
+  ```
+
+  `ssh vireo-pi` fails host-key verification — the **IP** is in `known_hosts`, the
+  hostname is not. The compose file is `docker-compose.prod.yml` and is not the
+  default name, so `docker compose exec` without `-f` reports "no configuration
+  file provided". `https://vireohome.app` also answers **200** from the sandbox now
+  (the Tailscale route), so a deploy can be verified by grepping the served chunks
+  rather than trusting CI — that is how both fixes here were confirmed live.
+
 - `CollapsibleSection` (chores, client clamp) and the Settled disclosure (shell,
   server paging) are **deliberately not shared**. The header + open state look
   alike, but the bodies page by different mechanisms and the plugin/shell boundary
