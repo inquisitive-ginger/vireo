@@ -258,6 +258,12 @@ suite mirroring chores/calendar. _Depends on: none._
 
 > Two-line index; full detail in the linked log.
 
+- **2026-07-28 — Design+Dev: Recurring daily time-window events (ADR 057, PR #83).**
+  "M–F 9:30–3:30, Aug 3–21" is a third event shape — `recurrence: 'daily'` + a
+  weekday-offset set, compute-on-read from one shared expansion module; month bars,
+  stated-once band + today-hero, gate-4 band/grammar rework. Closes auto-bug #77.
+  See `logs/2026-07-28-design-dev-recurring-daily-time-window.md`.
+
 - **2026-07-28 — Infra: Remote access off-LAN (PR #84).** Tailscale subnet route
   advertising `192.168.0.31/32`; origin, cert and PWA install unchanged, fridge iPad
   runs no client. The app has no boundary auth to enforce "family" with (ADR 021), so
