@@ -2,10 +2,17 @@ import fp from 'fastify-plugin'
 import type { FastifyPluginAsync } from 'fastify'
 import { prisma } from '@family-os/platform/server'
 import { FAMILY_PROFILE_ID } from '@family-os/platform/types'
-import { BugReportCreateSchema, BugReportUpdateSchema } from '@family-os/schemas'
+import {
+  BUG_REPORT_STATUSES,
+  BugReportCreateSchema,
+  BugReportUpdateSchema,
+} from '@family-os/schemas'
 import type { BugReportContext, BugReportStatus } from '@family-os/schemas'
 import { createBugIssue } from '../lib/github-issue'
 import { notify, type NotifyInput } from '../lib/notify'
+
+const DEFAULT_LIMIT = 20
+const MAX_LIMIT = 50
 
 type ReportRow = {
   id: string
@@ -122,16 +129,46 @@ const bugReportsPlugin: FastifyPluginAsync = async (fastify) => {
     )
   })
 
-  // GET /bug-reports — your own reports. Tier 4 sees the whole household's (the
-  // triage board), which is what `manage` on the subject buys.
-  fastify.get('/bug-reports', async (request) => {
+  // GET /bug-reports?status=&cursor=&limit= — your own reports. Tier 4 sees the whole
+  // household's (the triage board), which is what `manage` on the subject buys.
+  //
+  // Paged rather than capped: this list only grows, and the previous hard `take: 100`
+  // dropped the oldest reports silently — including from a reporter's own list, where
+  // the status round-trip is the whole promise (ADR 046). `total` is returned so a
+  // collapsed section can state a true count without loading its rows.
+  fastify.get('/bug-reports', async (request, reply) => {
+    const query = request.query as { status?: string; cursor?: string; limit?: string }
     const isTriager = request.ability.can('manage', 'platform.BugReport')
 
-    const reports = await prisma.bugReport.findMany({
-      where: isTriager ? {} : { reporterId: request.profile.id },
-      orderBy: { createdAt: 'desc' },
-      take: 100,
-    })
+    const limit = Math.min(parseInt(query.limit ?? String(DEFAULT_LIMIT), 10), MAX_LIMIT)
+    if (isNaN(limit) || limit < 1) {
+      return reply.status(400).send({ error: 'Invalid limit' })
+    }
+
+    // Comma-separated, mirroring `GET /rewards/payouts?status=`.
+    const statuses = query.status?.split(',').filter(Boolean) ?? []
+    const unknown = statuses.filter((s) => !BUG_REPORT_STATUSES.includes(s as BugReportStatus))
+    if (unknown.length > 0) {
+      return reply.status(400).send({ error: `Unknown status: ${unknown.join(', ')}` })
+    }
+
+    const where = {
+      ...(isTriager ? {} : { reporterId: request.profile.id }),
+      ...(statuses.length > 0 ? { status: { in: statuses } } : {}),
+    }
+
+    const [rows, total] = await Promise.all([
+      prisma.bugReport.findMany({
+        where,
+        orderBy: { createdAt: 'desc' },
+        take: limit + 1,
+        ...(query.cursor ? { cursor: { id: query.cursor }, skip: 1 } : {}),
+      }),
+      prisma.bugReport.count({ where }),
+    ])
+
+    const reports = rows.slice(0, limit)
+    const nextCursor = rows.length > limit ? reports[reports.length - 1].id : null
 
     // Resolved in one query rather than a relation, because a reporter may legitimately
     // have no profile row (see the model comment). Missing ones fall back by id.
@@ -141,9 +178,13 @@ const bugReportsPlugin: FastifyPluginAsync = async (fastify) => {
     })
     const byId = new Map(profiles.map((p) => [p.id, p]))
 
-    return reports.map((r) =>
-      serializeReport(r, resolveReporter(r.reporterId, byId.get(r.reporterId)))
-    )
+    return {
+      reports: reports.map((r) =>
+        serializeReport(r, resolveReporter(r.reporterId, byId.get(r.reporterId)))
+      ),
+      nextCursor,
+      total,
+    }
   })
 
   // PATCH /bug-reports/:id — move a report along. Triage is tier-4 only.

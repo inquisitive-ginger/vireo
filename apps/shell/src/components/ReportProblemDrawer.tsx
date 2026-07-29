@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useLocation } from 'react-router-dom'
-import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query'
 import { Drawer, Textarea, Button, FieldLabel } from '@family-os/ui'
 import type { BugReportStatus } from '@family-os/schemas'
 import { captureContext, getBuildHash } from '@/lib/report-context'
@@ -20,11 +20,19 @@ export function ReportProblemDrawer({ open, onClose }: { open: boolean; onClose:
   const [description, setDescription] = useState('')
   const [failed, setFailed] = useState(false)
 
-  const { data: reports = [] } = useQuery<BugReport[]>({
-    queryKey: ['bug-reports'],
-    queryFn: () => fetch('/api/bug-reports').then((r) => r.json()) as Promise<BugReport[]>,
+  // Paged so a long-standing reporter's oldest reports are revealed rather than
+  // dropped — the status round-trip is the promise this list keeps (ADR 046).
+  const history = useInfiniteQuery({
+    queryKey: ['bug-reports', 'mine'],
+    queryFn: ({ pageParam }: { pageParam: string | null }) =>
+      fetch(`/api/bug-reports?limit=10${pageParam ? `&cursor=${pageParam}` : ''}`).then((r) =>
+        r.json()
+      ) as Promise<{ reports: BugReport[]; nextCursor: string | null }>,
+    initialPageParam: null as string | null,
+    getNextPageParam: (last) => last.nextCursor,
     enabled: open,
   })
+  const reports = history.data?.pages.flatMap((p) => p.reports) ?? []
 
   const submit = useMutation({
     mutationFn: async () => {
@@ -110,6 +118,16 @@ export function ReportProblemDrawer({ open, onClose }: { open: boolean; onClose:
                 </li>
               ))}
             </ul>
+            {history.hasNextPage && (
+              <button
+                type="button"
+                disabled={history.isFetchingNextPage}
+                onClick={() => history.fetchNextPage()}
+                className="text-sm-token mt-2.5 py-2 text-muted-foreground underline underline-offset-4 disabled:opacity-50"
+              >
+                {history.isFetchingNextPage ? 'Loading…' : 'Further back ›'}
+              </button>
+            )}
           </div>
         )}
       </div>

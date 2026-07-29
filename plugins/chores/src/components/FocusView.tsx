@@ -1,10 +1,13 @@
-import { useRef, useState } from 'react'
-import { Check, ChevronDown, ChevronRight } from 'lucide-react'
+import { useRef } from 'react'
+import { Check } from 'lucide-react'
 import { Button, CoinValue, PageContainer, PageHeader, Spine } from '@family-os/ui'
 import { isReopened, type ChoreTask, type PendingPayout } from '../types'
 import { isOverdue, dueLabel } from '../lib/dates'
 import { REWARDS_UI_ENABLED, showCoinReward } from '../lib/flags'
 import { kidPayoutView, payoutForTask, type PayoutsByInstance } from '../lib/payouts'
+import { taskeeProgress } from '../lib/progress'
+import { AllDone } from './AllDone'
+import { CollapsibleSection } from './CollapsibleSection'
 import { KidPayoutBadge } from './KidPayoutBadge'
 import { ReopenedBadge } from './ReopenedBadge'
 import { TaskReward, TaskStatusLine } from './TaskMeta'
@@ -49,12 +52,12 @@ export function FocusView({ tasks, onCompleteTask, initialXp, payoutIndex }: Foc
   // holds the hero slot through the flight (design §2 "the card does not change
   // during the flight") and only yields once it banks.
   const pending = tasks.filter((t) => effectiveStatus(t) !== 'completed').sort(byUrgency)
-  const completed = tasks.filter((t) => effectiveStatus(t) === 'completed')
+  const completed = tasks
+    .filter((t) => effectiveStatus(t) === 'completed')
+    .sort((a, b) => (b.completedAt ?? '').localeCompare(a.completedAt ?? ''))
   const [hero, ...rest] = pending
 
-  const done = completed.length
-  const total = tasks.length
-  const pct = total > 0 ? (done / total) * 100 : 0
+  const { done, total, pct } = taskeeProgress(tasks, (t) => effectiveStatus(t) === 'completed')
 
   return (
     <PageContainer width="list">
@@ -84,8 +87,18 @@ export function FocusView({ tasks, onCompleteTask, initialXp, payoutIndex }: Foc
         <AllDone />
       )}
 
-      <CollapsibleSection label="Coming up" tasks={rest} />
-      <CollapsibleSection label="Done" tasks={completed} payoutIndex={payoutIndex} />
+      <CollapsibleSection
+        label="Coming up"
+        items={rest}
+        renderItem={(t) => <MiniRow key={t.id} task={t} />}
+      />
+      <CollapsibleSection
+        label="Done"
+        items={completed}
+        renderItem={(t) => (
+          <MiniRow key={t.id} task={t} payout={payoutIndex && payoutForTask(t, payoutIndex)} />
+        )}
+      />
 
       {flights.map((flight) => (
         <FlightChip
@@ -159,41 +172,6 @@ function HeroCard({
   )
 }
 
-/* Quiet, collapsed secondary section (Coming up / Done). Collapsed by default so
-   the hero stays the single focus; tap to reveal the mini-rows. */
-function CollapsibleSection({
-  label,
-  tasks,
-  payoutIndex,
-}: {
-  label: string
-  tasks: ChoreTask[]
-  payoutIndex?: PayoutsByInstance
-}) {
-  const [open, setOpen] = useState(false)
-  if (tasks.length === 0) return null
-  return (
-    <div className="mt-2">
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        className="text-section-label flex w-full items-center gap-1.5 py-2 text-muted-foreground"
-        aria-expanded={open}
-      >
-        {open ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-        {label} · {tasks.length}
-      </button>
-      {open && (
-        <div className="flex flex-col gap-1.5 pt-1">
-          {tasks.map((t) => (
-            <MiniRow key={t.id} task={t} payout={payoutIndex && payoutForTask(t, payoutIndex)} />
-          ))}
-        </div>
-      )}
-    </div>
-  )
-}
-
 function MiniRow({ task, payout }: { task: ChoreTask; payout?: PendingPayout }) {
   const done = task.status === 'completed'
   const overdue = isOverdue(task.dueDate, task.status)
@@ -230,18 +208,6 @@ function MiniRow({ task, payout }: { task: ChoreTask; payout?: PendingPayout }) 
       >
         {done ? `✓ ${task.xpReward}` : task.xpReward} XP
       </span>
-    </div>
-  )
-}
-
-/* Empty payoff — the hero is replaced by the celebration (design §1). */
-function AllDone() {
-  return (
-    <div className="flex flex-col items-center justify-center gap-2 rounded-hero border border-border bg-card py-14 text-center shadow-[var(--shadow-card)]">
-      <span style={{ fontSize: 40 }} aria-hidden>
-        🎉
-      </span>
-      <span className="text-card-title text-foreground">All done today</span>
     </div>
   )
 }
