@@ -3,6 +3,7 @@ import type { FastifyInstance } from 'fastify'
 import { buildServer } from '../server'
 import { prisma } from '@family-os/platform/server'
 import bcrypt from 'bcryptjs'
+import { resetPinRateLimit } from './auth'
 
 let app: FastifyInstance
 
@@ -18,6 +19,7 @@ afterAll(async () => {
 beforeEach(async () => {
   // Truncate test-relevant tables; leave seeded profiles intact
   await prisma.systemConfig.deleteMany({})
+  resetPinRateLimit()
 })
 
 import type { LightMyRequestResponse } from 'fastify'
@@ -222,5 +224,50 @@ describe('POST /api/auth/verify-pin', () => {
     })
     expect(res.statusCode).toBe(200)
     expect(res.json<{ tier: number }>().tier).toBe(4)
+  })
+})
+
+describe('POST /api/auth/verify-pin — brute-force lockout', () => {
+  async function setPin(pin: string) {
+    await prisma.systemConfig.create({
+      data: { key: 'family_pin_hash', value: await bcrypt.hash(pin, 10), updatedBy: null },
+    })
+  }
+
+  function attempt(pin: string) {
+    return app.inject({
+      method: 'POST',
+      url: '/api/auth/verify-pin',
+      payload: { pin, targetProfileId: 'seed-parent-1' },
+    })
+  }
+
+  it('locks out after five wrong PINs and reports how long', async () => {
+    await setPin('1234')
+
+    for (let i = 0; i < 5; i++) expect((await attempt('0000')).statusCode).toBe(403)
+
+    const res = await attempt('0000')
+    expect(res.statusCode).toBe(429)
+    expect(res.headers['retry-after']).toBeDefined()
+    expect(res.json<{ retryAfter: number }>().retryAfter).toBeGreaterThan(0)
+  })
+
+  it('refuses the correct PIN while locked out', async () => {
+    await setPin('1234')
+
+    for (let i = 0; i < 5; i++) await attempt('0000')
+
+    expect((await attempt('1234')).statusCode).toBe(429)
+  })
+
+  it('clears the failure count on a correct PIN', async () => {
+    await setPin('1234')
+
+    for (let i = 0; i < 4; i++) expect((await attempt('0000')).statusCode).toBe(403)
+    expect((await attempt('1234')).statusCode).toBe(200)
+
+    for (let i = 0; i < 5; i++) expect((await attempt('0000')).statusCode).toBe(403)
+    expect((await attempt('0000')).statusCode).toBe(429)
   })
 })
