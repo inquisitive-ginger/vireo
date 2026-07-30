@@ -270,6 +270,11 @@ suite mirroring chores/calendar. _Depends on: none._
 
 > Two-line index; full detail in the linked log.
 
+- **2026-07-29 — Dev: new calendar event notifies the other parent (ad-hoc, PR #88).**
+  `calendar.event.created` subscriber → `notify()` at `alert` (Web Push, ADR 029) to
+  every tier-4 profile except the creator; recurring series notify once at creation.
+  See `logs/2026-07-29-dev-calendar-event-created-notification.md`.
+
 - **2026-07-29 — Dev: the household had no photo, and no row to hold one (auto-bug #86,
   PR #87).** Two defects: `AvatarField` had been household-aware and unreachable since
   ADR 042, and prod had no `family` profiles row at all because only the seed scripts
