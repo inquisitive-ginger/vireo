@@ -113,6 +113,11 @@ flow, not in M3 MVP.
 > subscriber — school events will surface into this calendar via this namespace.
 > Reminders fire through `platform.notify()` and do **not** add a calendar event
 > (the firing mechanism is an owed ADR — see below).
+>
+> The calendar API plugin self-subscribes to `calendar.event.created`: every
+> tier-4 profile except the creator gets a `platform.notify()` at priority
+> `alert` (Web Push per ADR 029) when a new event is added. A recurring series
+> notifies once, at creation.
 
 ---
 

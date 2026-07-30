@@ -7,7 +7,7 @@
   "schema": "calendar",
   "events": {
     "publishes": ["calendar.event.created", "calendar.event.updated", "calendar.event.deleted"],
-    "subscribes": []
+    "subscribes": ["calendar.event.created"]
   },
   "widgets": [
     {

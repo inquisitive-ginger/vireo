@@ -12,7 +12,8 @@ const PARENT_ID = '00000000-ca1e-0001-0000-000000000001' // tier 4
 const TEEN_ID = '00000000-ca1e-0001-0000-000000000002' // tier 3
 const TWEEN_ID = '00000000-ca1e-0001-0000-000000000003' // tier 2
 const KID_ID = '00000000-ca1e-0001-0000-000000000004' // tier 1
-const ALL_IDS = [PARENT_ID, TEEN_ID, TWEEN_ID, KID_ID]
+const PARENT2_ID = '00000000-ca1e-0001-0000-000000000005' // tier 4
+const ALL_IDS = [PARENT_ID, TEEN_ID, TWEEN_ID, KID_ID, PARENT2_ID]
 
 function getCookie(res: LightMyRequestResponse): string {
   const raw = res.headers['set-cookie']
@@ -84,10 +85,16 @@ beforeAll(async () => {
     update: { name: 'Kid', tier: 1 },
     create: { id: KID_ID, name: 'Kid', tier: 1 },
   })
+  await prisma.profile.upsert({
+    where: { id: PARENT2_ID },
+    update: { name: 'Mom', tier: 4 },
+    create: { id: PARENT2_ID, name: 'Mom', tier: 4 },
+  })
 })
 
 afterAll(async () => {
   await clearEvents()
+  await prisma.notification.deleteMany({ where: { profileId: { in: ALL_IDS } } })
   await prisma.profile.deleteMany({ where: { id: { in: ALL_IDS } } })
   await prisma.systemConfig.deleteMany({ where: { key: 'family_pin_hash' } })
   await app.close()
@@ -715,5 +722,66 @@ describe('DELETE /calendar/events/:id', () => {
       headers: { cookie },
     })
     expect(res.statusCode).toBe(400)
+  })
+})
+
+// ─── New-event notification subscriber (integration) ─────────────────────────
+
+describe('new-event notification subscriber', () => {
+  beforeEach(async () => {
+    await prisma.notification.deleteMany({ where: { profileId: { in: ALL_IDS } } })
+  })
+
+  it('notifies the other tier-4 parent — not the creator, not lower tiers', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    await createEvent(cookie, { title: 'Dentist', startsAt: '2026-08-01T15:00:00.000Z' })
+
+    await new Promise((resolve) => setTimeout(resolve, 50))
+
+    const forMom = await prisma.notification.findMany({ where: { profileId: PARENT2_ID } })
+    expect(forMom).toHaveLength(1)
+    expect(forMom[0].title).toBe('Dad added Dentist')
+    // Body is server-local time, so assert shape rather than an exact clock time.
+    expect(forMom[0].body).toMatch(/^\w{3}, \w{3} \d{1,2} · \d{1,2}:\d{2}/)
+    expect(forMom[0].variant).toBe('info')
+    expect(forMom[0].priority).toBe('alert')
+
+    const forOthers = await prisma.notification.findMany({
+      where: { profileId: { in: [PARENT_ID, TEEN_ID, TWEEN_ID, KID_ID] } },
+    })
+    expect(forOthers).toHaveLength(0)
+  })
+
+  it('describes an all-day event as All day', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    await createEvent(cookie, {
+      title: 'Holiday',
+      startsAt: '2026-08-10T00:00:00.000Z',
+      allDay: true,
+    })
+
+    await new Promise((resolve) => setTimeout(resolve, 50))
+
+    const forMom = await prisma.notification.findMany({ where: { profileId: PARENT2_ID } })
+    expect(forMom).toHaveLength(1)
+    expect(forMom[0].body).toContain('All day')
+  })
+
+  it('notifies once for a recurring series, noting the recurrence', async () => {
+    const cookie = await getCookieForProfile(PARENT2_ID)
+    await createEvent(cookie, {
+      title: 'Gymnastics',
+      startsAt: '2026-08-04T16:00:00.000Z',
+      attendeeIds: [KID_ID],
+      recurrence: 'weekly',
+    })
+
+    await new Promise((resolve) => setTimeout(resolve, 50))
+
+    const forDad = await prisma.notification.findMany({ where: { profileId: PARENT_ID } })
+    expect(forDad).toHaveLength(1)
+    expect(forDad[0].title).toBe('Mom added Gymnastics')
+    expect(forDad[0].body).toContain('Repeats weekly')
+    expect(await prisma.notification.count({ where: { profileId: PARENT2_ID } })).toBe(0)
   })
 })

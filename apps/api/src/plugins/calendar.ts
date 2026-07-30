@@ -1,8 +1,10 @@
 import fp from 'fastify-plugin'
 import type { FastifyPluginAsync } from 'fastify'
 import { prisma } from '@family-os/platform/server'
+import type { EventBus } from '@family-os/platform/server'
 import { EventInputSchema, type EventInput } from '@family-os/schemas'
 import { calendarPrisma } from '@family-os/plugin-calendar/db'
+import { notify } from '../lib/notify'
 import { startReminderScheduler } from '../lib/reminder-scheduler'
 import { isRecurring, occurrenceDateKey, occurrenceStarts } from '../lib/recurrence'
 
@@ -164,6 +166,64 @@ function expandRecurring(event: EventRow, from: Date, to: Date) {
       endsAt: event.endsAt ? new Date(startMs + duration) : null,
       date: dateKey(new Date(startMs)),
     })
+  )
+}
+
+// ─── New-event notification (subscriber) ─────────────────────────────────────
+
+type EventCreatedPayload = {
+  eventId?: string
+  createdBy?: string
+  title?: string
+  startsAt?: string
+  allDay?: boolean
+  recurrence?: string | null
+}
+
+// Server-local time — the household's timezone on the Pi.
+function formatEventStart(start: Date, allDay: boolean, recurrence: string | null): string {
+  const day = start.toLocaleDateString('en-US', {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+  })
+  const when = allDay
+    ? `${day} · All day`
+    : `${day} · ${start.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' })}`
+  return recurrence ? `${when} · Repeats ${recurrence}` : when
+}
+
+/** Notifies every tier-4 parent except the creator when a new event lands on the
+ *  calendar. A recurring series notifies once, at creation — the series is one row
+ *  and `calendar.event.created` fires once (ADR 038). Routed through the shared
+ *  notify() path; priority `alert` carries Web Push to tier 4 (ADR 029). */
+async function handleEventCreatedNotification(payload: unknown, eventBus: EventBus): Promise<void> {
+  const { eventId, createdBy, title, startsAt, allDay, recurrence } = payload as EventCreatedPayload
+
+  if (!createdBy || !startsAt) {
+    console.warn('[calendar] event.created missing createdBy/startsAt — skipping notification', {
+      eventId,
+    })
+    return
+  }
+
+  const parents = await prisma.profile.findMany({ where: { tier: 4 }, select: { id: true } })
+  const audience = parents.filter((p) => p.id !== createdBy)
+  if (audience.length === 0) return
+
+  const creator = await prisma.profile.findUnique({ where: { id: createdBy } })
+  const creatorName = creator?.name ?? 'Someone'
+
+  const body = formatEventStart(new Date(startsAt), allDay ?? false, recurrence ?? null)
+  await Promise.all(
+    audience.map(({ id }) =>
+      notify(eventBus, id, {
+        title: `${creatorName} added ${title ?? 'an event'}`,
+        body,
+        variant: 'info',
+        priority: 'alert',
+      })
+    )
   )
 }
 
@@ -383,6 +443,16 @@ const calendarPlugin: FastifyPluginAsync = async (fastify) => {
     })
 
     return reply.status(204).send()
+  })
+
+  // ─── Event subscribers ─────────────────────────────────────────────────────
+
+  // Errors are logged and swallowed so a failed notification never breaks
+  // event creation (chores.ts convention).
+  fastify.eventBus.on('calendar.event.created', (payload) => {
+    void handleEventCreatedNotification(payload, fastify.eventBus).catch((err) =>
+      fastify.log.error({ err }, '[calendar] event-created notification subscriber failed')
+    )
   })
 }
 
