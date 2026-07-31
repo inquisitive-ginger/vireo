@@ -260,6 +260,12 @@ suite mirroring chores/calendar. _Depends on: none._
 
 > Two-line index; full detail in the linked log.
 
+- **2026-07-31 — Fix: the widget counted the offer board as your work (auto-bug
+  #94, PR #97).** Gate D6's own-work-only rule reached the page and not the
+  `chores.today-summary` widget; unclaimed work also grouped as a **member row**
+  in the family framing and is a header chip now. See
+  `logs/2026-07-31-fix-auto-bug-94.md`.
+
 - **2026-07-30 — Design+Dev: recurring chores + up for grabs (ad-hoc, PRs #90 +
   #91, ADR 058/059).** Routines stamp out real `Task` rows lazily on read
   (client-local `?today=`; ongoing = back tomorrow; missed days roll); unowned
