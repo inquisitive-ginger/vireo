@@ -237,10 +237,12 @@ export function ChoresPage() {
   // assignee's own list reconcile (a reopened task resurfaces on their list).
   const completeTask = useMutation({
     mutationFn: (taskId: string) =>
-      fetch(`/api/chores/tasks/${taskId}/complete`, { method: 'PATCH' }).then((r) => {
-        if (!r.ok) throw new Error(String(r.status))
-        return r.json() as Promise<ChoreTask>
-      }),
+      fetch(`/api/chores/tasks/${taskId}/complete?today=${todayKey()}`, { method: 'PATCH' }).then(
+        (r) => {
+          if (!r.ok) throw new Error(String(r.status))
+          return r.json() as Promise<ChoreTask>
+        }
+      ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['chores/tasks'] })
       // A paying completion may have created a held payout, or auto-credited the ledger.
