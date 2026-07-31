@@ -25,8 +25,9 @@ before it reads anything else, and it is size-capped — see
   offer board as your work; PR #97). `logs/2026-07-31-fix-auto-bug-94.md`.
 - **What's next and everything outstanding:** `docs/sessions/queue.md` — the one
   index. Cheapest high-value item: Deployment Part F, offsite backups.
-- **Owed in-app:** reports `e7374f56` (#92) and `a59e6e5c` (#94) sit at `new` —
-  flip both to `deployed` + resolution in Settings → Reported problems once live.
+- **Owed in-app:** nothing — every bug report through #94 is `deployed`. A fix
+  session is not closed until its report is flipped; that PATCH is the only
+  notification.
 
 ---
 
