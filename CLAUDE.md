@@ -21,8 +21,8 @@ before it reads anything else, and it is size-capped — see
   goodbye, custom build due at the friends' December visit. `product-design-beacon.md`.
 - **Deployment:** 🟢 live at `https://vireohome.app` on the Pi; merge to `main`
   auto-deploys; off-LAN via Tailscale. Runbook: `docs/deployment.md`.
-- **Last session:** 2026-07-30 — fix, auto-bug #92 (stale ongoing completion
-  respawned same day; PR #93). `logs/2026-07-30-fix-auto-bug-92.md`.
+- **Last session:** 2026-07-30/31 — fix, auto-bug #92 (PR #93) + follow-up prod
+  outage: reconcile roll vs taken key (PR #95). `logs/2026-07-30-fix-auto-bug-92.md`.
 - **What's next and everything outstanding:** `docs/sessions/queue.md` — the one
   index. Cheapest high-value item: Deployment Part F, offsite backups.
 - **Owed in-app:** report `e7374f56` (issue #92) sits at `new` — flip to
