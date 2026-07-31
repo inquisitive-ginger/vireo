@@ -21,13 +21,12 @@ before it reads anything else, and it is size-capped — see
   goodbye, custom build due at the friends' December visit. `product-design-beacon.md`.
 - **Deployment:** 🟢 live at `https://vireohome.app` on the Pi; merge to `main`
   auto-deploys; off-LAN via Tailscale. Runbook: `docs/deployment.md`.
-- **Last session:** 2026-07-30 — design+dev, recurring chores + up-for-grabs
-  (routines, claim-then-do, kid offer board; ADR 058/059, PRs #90/#91,
-  live-reviewed). `logs/2026-07-30-design-dev-recurring-chores.md`.
+- **Last session:** 2026-07-30 — fix, auto-bug #92 (stale ongoing completion
+  respawned same day; PR #93). `logs/2026-07-30-fix-auto-bug-92.md`.
 - **What's next and everything outstanding:** `docs/sessions/queue.md` — the one
   index. Cheapest high-value item: Deployment Part F, offsite backups.
-- **Owed in-app:** nothing — the triage board is empty as of 2026-07-29. Query it
-  before restating this either way; the old backlog claim was wrong for months.
+- **Owed in-app:** report `e7374f56` (issue #92) sits at `new` — flip to
+  `deployed` + resolution in Settings → Reported problems once the fix is live.
 
 ---
 
