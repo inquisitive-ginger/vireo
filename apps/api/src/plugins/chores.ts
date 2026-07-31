@@ -155,6 +155,17 @@ async function reconcileRoutines(todayKey: string): Promise<void> {
       routine.kind === 'ongoing' ? todayKey : nextScheduledOnOrAfter(todayKey, routine.repeatDays)
     if (!due) continue
 
+    // Clients disagree about the date across midnight (and a rolled-ahead row can
+    // carry tomorrow's key already) — a row dated today or later means this
+    // routine's day is covered, and spawning for an earlier `todayKey` would
+    // retroactively duplicate it. The unique index only blocks the exact key.
+    if (routine.kind === 'ongoing') {
+      const covered = await chorePrisma.task.findFirst({
+        where: { routineId: routine.id, dueDate: { gte: new Date(due) } },
+      })
+      if (covered) continue
+    }
+
     try {
       await chorePrisma.task.create({
         data: {
@@ -294,15 +305,15 @@ const choresPlugin: FastifyPluginAsync = async (fastify) => {
   // GET /chores/tasks — tiers 1–3 see their own assigned tasks plus anything up
   // for grabs; tier 4 (admin) and the family pseudo-profile see the whole family's.
   // `?today=YYYY-MM-DD` is the client's local date; routine occurrences materialize
-  // here, on read (see reconcileRoutines) — the fallback to the server's UTC date
-  // only serves clients that predate the param.
+  // here, on read (see reconcileRoutines). A request without the param serves what
+  // exists but must not materialize: the server's UTC date runs hours ahead of the
+  // household evening, and one paramless read rolling rows onto tomorrow's key is
+  // what planted the #92 duplicate and the follow-up 500.
   fastify.get('/chores/tasks', async (request) => {
     const { today } = request.query as { today?: string }
-    const todayKey =
-      typeof today === 'string' && DATE_KEY_RE.test(today)
-        ? today
-        : new Date().toISOString().slice(0, 10)
-    await reconcileRoutines(todayKey)
+    if (typeof today === 'string' && DATE_KEY_RE.test(today)) {
+      await reconcileRoutines(today)
+    }
 
     const isFamilyDashboard = request.profile.id === FAMILY_PROFILE_ID
     const seesAll = request.profile.tier >= 4 || isFamilyDashboard
@@ -414,15 +425,17 @@ const choresPlugin: FastifyPluginAsync = async (fastify) => {
       return reply.status(409).send({ error: 'Task is up for grabs — claim it first' })
     }
 
-    // An ongoing occurrence completed late is the completion for the day it was
-    // completed on, not the day it was stamped — re-date it to the client's local
-    // today so the (routineId, dueDate) unique blocks a same-day respawn on the
-    // next read (auto-bug #92). Roll forward only; without `?today=` (older
-    // clients) the old dating stands.
+    // An ongoing occurrence is the completion for the day the completer completed
+    // it — its dueDate carries no schedule, only "which day's completion is this" —
+    // so re-date it to the client's local today in either direction: a stale row
+    // completed after midnight rolls forward, and a row a UTC-dated read rolled
+    // ahead rolls back (both halves of auto-bug #92). The (routineId, dueDate)
+    // unique then blocks a same-day respawn on the next read. Without `?today=`
+    // (older clients) the old dating stands.
     let rollTo: Date | undefined
     if (task.routineId && typeof today === 'string' && DATE_KEY_RE.test(today)) {
       const openKey = dateKeyOf(task.dueDate)
-      if (openKey && openKey < today) {
+      if (openKey && openKey !== today) {
         const routine = await chorePrisma.routine.findUnique({ where: { id: task.routineId } })
         if (routine?.kind === 'ongoing') rollTo = new Date(today)
       }
