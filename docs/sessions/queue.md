@@ -224,9 +224,10 @@ suite mirroring chores/calendar. _Depends on: none._
 
 - **Validation audit — align routes to shared Zod schemas** — every API route that
   hand-rolls body validation moves onto a `@family-os/schemas` schema
-  (`safeParse` → 400 flatten). **Known offender: `chores`** (`POST`/`PATCH
-/chores/tasks`). _Reads: `packages/schemas/src/index.ts`, `apps/api/src/plugins/calendar.ts`
-  as the aligned example._
+  (`safeParse` → 400 flatten). The known offender (`chores` tasks) was migrated in
+  the 2026-07-30 recurring-chores session; what remains is the sweep for any other
+  hand-rolled bodies. _Reads: `packages/schemas/src/index.ts`,
+  `apps/api/src/plugins/chores.ts` as an aligned example._
 - **Harden the plugin generator (`turbo gen plugin`)** — scaffolds a frontend-only
   remote today; each data-backed plugin hand-patches around it. Gaps: no data layer
   (schema/prisma config/db.ts/`./db` export), federation `shared` uses the array not
@@ -248,6 +249,12 @@ suite mirroring chores/calendar. _Depends on: none._
 ## Recently Completed
 
 > Two-line index; full detail in the linked log.
+
+- **2026-07-30 — Design+Dev: recurring chores + up for grabs (ad-hoc, PR #90, ADR
+  058/059).** Routines stamp out real `Task` rows lazily on read (client-local
+  `?today=`; ongoing = back tomorrow; missed days roll); unowned chores are
+  Hearth-spined and claimed ("I'll do it") before completion, so the economy never
+  learns a second earner. See `logs/2026-07-30-design-dev-recurring-chores.md`.
 
 - **2026-07-30 — Design+Dev: parent ticket corrections (ad-hoc, PR #89).** A tier-4
   **Tickets** tab — the module's first parent-facing ticket surface — carrying
