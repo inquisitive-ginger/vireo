@@ -18,6 +18,10 @@ export function boughtLabel(iso: string, now = new Date()): string {
   return `Bought ${dayLabel(new Date(iso), now)}`
 }
 
+export function usedLabel(iso: string, now = new Date()): string {
+  return `Used ${dayLabel(new Date(iso), now)}`
+}
+
 export function askedLabel(iso: string, now = new Date()): string {
   const then = new Date(iso)
   const mins = Math.round((now.getTime() - then.getTime()) / 60_000)
