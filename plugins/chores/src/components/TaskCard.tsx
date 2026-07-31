@@ -1,5 +1,5 @@
 import { useRef } from 'react'
-import { CompletionToggle, ItemCard } from '@family-os/ui'
+import { Button, CompletionToggle, FAMILY_HUE, ItemCard, identityToken } from '@family-os/ui'
 import type { ChoreTask, PendingPayout } from '../types'
 import { isOverdue } from '../lib/dates'
 import { REWARDS_UI_ENABLED } from '../lib/flags'
@@ -21,6 +21,10 @@ export interface TaskCardProps {
   /** This completion instance's held/decided P-Bucks payout (M4/3b), if any — drives the
       "when Mom or Dad checks" / "No P-Bucks this time" state on a done card. */
   payout?: PendingPayout
+  /** Claim an up-for-grabs task (assignee null) for the viewer. When the task is
+      unowned and this is provided, the completion circle gives way to "I'll do it" —
+      claiming is the first half of doing; the check appears once it's yours. */
+  onClaim?: (taskId: string) => void
 }
 
 /* Taskee card — STATUS-encoded (design-system "Status vs identity colour").
@@ -37,7 +41,7 @@ export interface TaskCardProps {
 
    Styled utility-first like the shell (ADR 035); only genuinely dynamic values
    (status-driven spine color, optimistic opacity) stay inline. */
-export function TaskCard({ task, displayStatus, onComplete, payout }: TaskCardProps) {
+export function TaskCard({ task, displayStatus, onComplete, payout, onClaim }: TaskCardProps) {
   const status = displayStatus ?? (task.status as TaskDisplayStatus)
   const done = status === 'completed'
   // Held / earned / declined P-Bucks for a done paying chore (M4/3b). Derived from the
@@ -45,9 +49,18 @@ export function TaskCard({ task, displayStatus, onComplete, payout }: TaskCardPr
   const payoutView = done && REWARDS_UI_ENABLED ? kidPayoutView(task, payout) : null
   const inFlight = status === 'inFlight'
   const overdue = !done && !inFlight && isOverdue(task.dueDate, task.status)
-  const spine = done ? 'var(--success)' : overdue ? 'var(--error)' : 'var(--border)'
+  // Up for grabs: not the viewer's, so this is the one taskee card whose spine is
+  // not a status — it belongs to the household until claimed (Hearth, ADR 041).
+  const upForGrabs = !done && task.assigneeId === null
+  const spine = done
+    ? 'var(--success)'
+    : upForGrabs
+      ? identityToken(FAMILY_HUE)
+      : overdue
+        ? 'var(--error)'
+        : 'var(--border)'
   const badgeRef = useRef<HTMLSpanElement>(null)
-  const completable = status === 'pending' && !!onComplete
+  const completable = status === 'pending' && !upForGrabs && !!onComplete
 
   function handleComplete() {
     const rect = badgeRef.current?.getBoundingClientRect()
@@ -69,13 +82,19 @@ export function TaskCard({ task, displayStatus, onComplete, payout }: TaskCardPr
             inFlight={inFlight}
             payoutView={payoutView}
           />
-          <CompletionToggle
-            checked={done}
-            size={40}
-            muted={inFlight}
-            onToggle={completable ? handleComplete : undefined}
-            label={`Mark “${task.title}” done`}
-          />
+          {upForGrabs && onClaim ? (
+            <Button size="sm" variant="outline" onClick={() => onClaim(task.id)}>
+              I&rsquo;ll do it
+            </Button>
+          ) : (
+            <CompletionToggle
+              checked={done}
+              size={40}
+              muted={inFlight}
+              onToggle={completable ? handleComplete : undefined}
+              label={`Mark “${task.title}” done`}
+            />
+          )}
         </div>
       }
     >

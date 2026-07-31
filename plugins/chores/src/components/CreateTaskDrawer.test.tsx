@@ -50,3 +50,61 @@ describe('CreateTaskDrawer — XP derived from P-Bucks', () => {
     expect('xpReward' in input).toBe(false)
   })
 })
+
+// Recurring-chores session (gate D1): the three-way Repeats control. On days swaps
+// the due date for the weekday chips; Ongoing drops dates entirely; the summary
+// line states the rule and the weekly price.
+describe('CreateTaskDrawer — Repeats', () => {
+  it('On days reveals the weekday chips and hides the due date', () => {
+    renderDrawer()
+    expect(screen.getByLabelText('Due date (optional)')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('radio', { name: 'On days' }))
+    expect(screen.queryByLabelText('Due date (optional)')).not.toBeInTheDocument()
+    expect(screen.getByText('Pick the days it repeats')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Monday' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Thursday' }))
+    expect(screen.getByText('Every Mon & Thu')).toBeInTheDocument()
+  })
+
+  it('prices the routine per week once it pays', () => {
+    renderDrawer()
+    fireEvent.click(screen.getByRole('radio', { name: 'On days' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Monday' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Thursday' }))
+    fireEvent.click(screen.getByRole('button', { name: '2' }))
+    expect(
+      screen.getByText(/Every Mon & Thu · pays 2 P\$ each time ≈ 4 P\$ a week/)
+    ).toBeInTheDocument()
+  })
+
+  it('submits the rule, and Anyone submits a null assignee', async () => {
+    const onSubmit = renderDrawer()
+    fireEvent.change(screen.getByLabelText('Task title'), { target: { value: 'Trash' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Anyone' }))
+    fireEvent.click(screen.getByRole('radio', { name: 'On days' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Monday' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Start routine' }))
+
+    await waitFor(() => expect(onSubmit).toHaveBeenCalled())
+    const input = onSubmit.mock.calls[0][0]
+    expect(input.repeats).toBe('days')
+    expect(input.repeatDays).toEqual([1])
+    expect(input.assigneeId).toBeNull()
+    expect(input.dueDate).toBeNull()
+  })
+
+  it('Ongoing states its return and disables the day requirement', async () => {
+    const onSubmit = renderDrawer()
+    fireEvent.click(screen.getByRole('radio', { name: 'Ongoing' }))
+    expect(screen.getByText(/Comes back after it's done/)).toBeInTheDocument()
+
+    fireEvent.change(screen.getByLabelText('Task title'), { target: { value: 'Dishwasher' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Maya' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Start routine' }))
+
+    await waitFor(() => expect(onSubmit).toHaveBeenCalled())
+    expect(onSubmit.mock.calls[0][0].repeats).toBe('ongoing')
+  })
+})

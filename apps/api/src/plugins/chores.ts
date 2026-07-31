@@ -5,9 +5,13 @@ import type { EventBus } from '@family-os/platform/server'
 import { FAMILY_PROFILE_ID } from '@family-os/platform/types'
 import { chorePrisma } from '@family-os/plugin-chores/db'
 import { xpForCoins } from '@family-os/plugin-chores/economy'
+import { ChoreRoutineInputSchema, ChoreTaskInputSchema } from '@family-os/schemas'
 import { notify } from '../lib/notify'
-
-const DEFAULT_COIN_REWARD = 0
+import {
+  DATE_KEY_RE,
+  latestScheduledOnOrBefore,
+  nextScheduledOnOrAfter,
+} from '../lib/chore-routines'
 
 // ─── XP subscriber ───────────────────────────────────────────────────────────
 
@@ -93,17 +97,77 @@ async function handleParentNotification(payload: unknown, eventBus: EventBus): P
 // tier 1) — a non-UUID id. It sees the whole family's chores (family framing),
 // and the non-UUID id must never reach the uuid assignee_id filter (P2007).
 
-type CreateTaskBody = {
-  title?: unknown
-  assigneeId?: unknown
-  description?: unknown
-  dueDate?: unknown
-  coinReward?: unknown
-  requiresApproval?: unknown
-}
+// ─── Routine reconciliation ──────────────────────────────────────────────────
 
-const coinRewardOr = (value: unknown, fallback: number): number =>
-  typeof value === 'number' && Number.isInteger(value) && value >= 0 ? value : fallback
+const dateKeyOf = (d: Date | null): string | null => (d ? d.toISOString().slice(0, 10) : null)
+
+const isUniqueViolation = (err: unknown): boolean =>
+  typeof err === 'object' && err !== null && (err as { code?: string }).code === 'P2002'
+
+/** Materializes routine occurrences lazily, on read — never from a clock, because
+ * the server does not know when the household's day rolls over; `todayKey` is the
+ * client's local date. Invariant: at most one open (pending) row per routine.
+ *
+ * - No open row → spawn the next occurrence: an ongoing routine spawns today's
+ *   (unless today's already exists completed — done for today, back tomorrow, and
+ *   the (routineId, dueDate) unique is that guard); a days routine spawns the next
+ *   scheduled day, which may be in the future ("Due Mon" is visible ahead).
+ * - An open row that fell behind rolls forward: a missed scheduled day stays
+ *   overdue only until the next occurrence arrives, then re-dates to it — this
+ *   week's trash, not last week's debt. An ongoing row just tracks today.
+ *
+ * Concurrent reads race benignly: rolls are idempotent updates, and the loser of a
+ * spawn race hits the unique index and is a no-op. */
+async function reconcileRoutines(todayKey: string): Promise<void> {
+  const routines = await chorePrisma.routine.findMany({ where: { endedAt: null } })
+  if (routines.length === 0) return
+
+  const openTasks = await chorePrisma.task.findMany({
+    where: { routineId: { in: routines.map((r) => r.id) }, status: 'pending' },
+  })
+  const openByRoutine = new Map(openTasks.map((t) => [t.routineId, t]))
+
+  for (const routine of routines) {
+    const open = openByRoutine.get(routine.id)
+
+    if (open) {
+      const openKey = dateKeyOf(open.dueDate)
+      const target =
+        routine.kind === 'ongoing'
+          ? todayKey
+          : latestScheduledOnOrBefore(todayKey, routine.repeatDays)
+      if (target && openKey && openKey < target) {
+        await chorePrisma.task.update({
+          where: { id: open.id },
+          data: { dueDate: new Date(target) },
+        })
+      }
+      continue
+    }
+
+    const due =
+      routine.kind === 'ongoing' ? todayKey : nextScheduledOnOrAfter(todayKey, routine.repeatDays)
+    if (!due) continue
+
+    try {
+      await chorePrisma.task.create({
+        data: {
+          title: routine.title,
+          description: routine.description,
+          assigneeId: routine.assigneeId,
+          createdBy: routine.createdBy,
+          dueDate: new Date(due),
+          xpReward: xpForCoins(routine.coinReward),
+          coinReward: routine.coinReward,
+          requiresApproval: routine.requiresApproval && routine.coinReward > 0,
+          routineId: routine.id,
+        },
+      })
+    } catch (err) {
+      if (!isUniqueViolation(err)) throw err
+    }
+  }
+}
 
 const choresPlugin: FastifyPluginAsync = async (fastify) => {
   // POST /chores/tasks — create and assign a task (tier 4 only)
@@ -112,49 +176,32 @@ const choresPlugin: FastifyPluginAsync = async (fastify) => {
       return reply.status(403).send({ error: 'Permission denied' })
     }
 
-    const body = (request.body ?? {}) as CreateTaskBody
-
-    const title = typeof body.title === 'string' ? body.title.trim() : ''
-    if (title.length === 0) {
-      return reply.status(400).send({ error: 'title is required' })
+    const parsed = ChoreTaskInputSchema.safeParse(request.body ?? {})
+    if (!parsed.success) {
+      return reply.status(400).send({ error: parsed.error.flatten() })
     }
+    const input = parsed.data
 
-    if (typeof body.assigneeId !== 'string' || body.assigneeId.length === 0) {
-      return reply.status(400).send({ error: 'assigneeId is required' })
-    }
-
-    const assignee = await prisma.profile.findUnique({ where: { id: body.assigneeId } })
-    if (!assignee) {
+    // Null = up for grabs — the task belongs to the household until claimed.
+    const assignee = input.assigneeId
+      ? await prisma.profile.findUnique({ where: { id: input.assigneeId } })
+      : null
+    if (input.assigneeId && !assignee) {
       return reply.status(404).send({ error: 'Assignee not found' })
     }
 
-    const description =
-      typeof body.description === 'string' && body.description.trim().length > 0
-        ? body.description.trim()
-        : null
-
-    const dueDate =
-      typeof body.dueDate === 'string' && body.dueDate.length > 0 ? new Date(body.dueDate) : null
-    if (dueDate && isNaN(dueDate.getTime())) {
-      return reply.status(400).send({ error: 'Invalid dueDate' })
-    }
-
-    const coinReward = coinRewardOr(body.coinReward, DEFAULT_COIN_REWARD)
-    // XP is derived from the tier, never client-set (ADR 056).
-    const xpReward = xpForCoins(coinReward)
-    // Only holds when the chore actually pays — a free chore has nothing to hold.
-    const requiresApproval = body.requiresApproval === true && coinReward > 0
-
+    // XP is derived from the tier, never client-set (ADR 056). A free chore has
+    // nothing to hold.
     const task = await chorePrisma.task.create({
       data: {
-        title,
-        description,
-        assigneeId: assignee.id,
+        title: input.title,
+        description: input.description,
+        assigneeId: assignee?.id ?? null,
         createdBy: request.profile.id,
-        dueDate,
-        xpReward,
-        coinReward,
-        requiresApproval,
+        dueDate: input.dueDate ? new Date(input.dueDate) : null,
+        xpReward: xpForCoins(input.coinReward),
+        coinReward: input.coinReward,
+        requiresApproval: input.requiresApproval && input.coinReward > 0,
       },
     })
 
@@ -181,51 +228,30 @@ const choresPlugin: FastifyPluginAsync = async (fastify) => {
       return reply.status(404).send({ error: 'Task not found' })
     }
 
-    const body = (request.body ?? {}) as CreateTaskBody
-
-    const title = typeof body.title === 'string' ? body.title.trim() : ''
-    if (title.length === 0) {
-      return reply.status(400).send({ error: 'title is required' })
+    const parsed = ChoreTaskInputSchema.safeParse(request.body ?? {})
+    if (!parsed.success) {
+      return reply.status(400).send({ error: parsed.error.flatten() })
     }
+    const input = parsed.data
 
-    if (typeof body.assigneeId !== 'string' || body.assigneeId.length === 0) {
-      return reply.status(400).send({ error: 'assigneeId is required' })
-    }
-
-    const assignee = await prisma.profile.findUnique({ where: { id: body.assigneeId } })
-    if (!assignee) {
+    const assignee = input.assigneeId
+      ? await prisma.profile.findUnique({ where: { id: input.assigneeId } })
+      : null
+    if (input.assigneeId && !assignee) {
       return reply.status(404).send({ error: 'Assignee not found' })
     }
 
-    const description =
-      typeof body.description === 'string' && body.description.trim().length > 0
-        ? body.description.trim()
-        : null
-
-    const dueDate =
-      typeof body.dueDate === 'string' && body.dueDate.length > 0 ? new Date(body.dueDate) : null
-    if (dueDate && isNaN(dueDate.getTime())) {
-      return reply.status(400).send({ error: 'Invalid dueDate' })
-    }
-
-    const coinReward = coinRewardOr(body.coinReward, existing.coinReward)
-    // Re-derive on every edit — a legacy hand-picked value drains here (ADR 056).
-    const xpReward = xpForCoins(coinReward)
-    const requiresApproval =
-      (typeof body.requiresApproval === 'boolean'
-        ? body.requiresApproval
-        : existing.requiresApproval) && coinReward > 0
-
+    // Re-derive XP on every edit — a legacy hand-picked value drains here (ADR 056).
     const task = await chorePrisma.task.update({
       where: { id },
       data: {
-        title,
-        description,
-        assigneeId: assignee.id,
-        dueDate,
-        xpReward,
-        coinReward,
-        requiresApproval,
+        title: input.title,
+        description: input.description,
+        assigneeId: assignee?.id ?? null,
+        dueDate: input.dueDate ? new Date(input.dueDate) : null,
+        xpReward: xpForCoins(input.coinReward),
+        coinReward: input.coinReward,
+        requiresApproval: input.requiresApproval && input.coinReward > 0,
       },
     })
 
@@ -259,12 +285,22 @@ const choresPlugin: FastifyPluginAsync = async (fastify) => {
     return reply.status(204).send()
   })
 
-  // GET /chores/tasks — tiers 1–3 see their own assigned tasks; tier 4 (admin)
-  // and the family pseudo-profile see the whole family's tasks.
+  // GET /chores/tasks — tiers 1–3 see their own assigned tasks plus anything up
+  // for grabs; tier 4 (admin) and the family pseudo-profile see the whole family's.
+  // `?today=YYYY-MM-DD` is the client's local date; routine occurrences materialize
+  // here, on read (see reconcileRoutines) — the fallback to the server's UTC date
+  // only serves clients that predate the param.
   fastify.get('/chores/tasks', async (request) => {
+    const { today } = request.query as { today?: string }
+    const todayKey =
+      typeof today === 'string' && DATE_KEY_RE.test(today)
+        ? today
+        : new Date().toISOString().slice(0, 10)
+    await reconcileRoutines(todayKey)
+
     const isFamilyDashboard = request.profile.id === FAMILY_PROFILE_ID
     const seesAll = request.profile.tier >= 4 || isFamilyDashboard
-    const where = seesAll ? {} : { assigneeId: request.profile.id }
+    const where = seesAll ? {} : { OR: [{ assigneeId: request.profile.id }, { assigneeId: null }] }
 
     const tasks = await chorePrisma.task.findMany({
       where,
@@ -275,15 +311,67 @@ const choresPlugin: FastifyPluginAsync = async (fastify) => {
       ],
     })
 
-    const assigneeIds = [...new Set(tasks.map((t) => t.assigneeId))]
+    const assigneeIds = [...new Set(tasks.map((t) => t.assigneeId).filter((id) => id !== null))]
     const profiles = assigneeIds.length
       ? await prisma.profile.findMany({ where: { id: { in: assigneeIds } } })
       : []
     const profileById = new Map(profiles.map((p) => [p.id, p]))
 
+    const routineIds = [...new Set(tasks.map((t) => t.routineId).filter((id) => id !== null))]
+    const routines = routineIds.length
+      ? await chorePrisma.routine.findMany({ where: { id: { in: routineIds } } })
+      : []
+    const routineById = new Map(routines.map((r) => [r.id, r]))
+
     return {
-      tasks: tasks.map((t) => serializeTask(t, profileById.get(t.assigneeId))),
+      tasks: tasks.map((t) =>
+        serializeTask(
+          t,
+          t.assigneeId ? profileById.get(t.assigneeId) : null,
+          t.routineId ? routineById.get(t.routineId) : null
+        )
+      ),
     }
+  })
+
+  // PATCH /chores/tasks/:id/claim — take an up-for-grabs task for yourself. From
+  // that instant it is an ordinary assigned task, so payouts, XP, and approval
+  // holds work untouched. Any member may claim; the family pseudo-profile is a
+  // viewer, not a person, and cannot.
+  fastify.patch('/chores/tasks/:id/claim', async (request, reply) => {
+    if (request.profile.id === FAMILY_PROFILE_ID) {
+      return reply.status(403).send({ error: 'Permission denied' })
+    }
+    // Claiming is the first half of doing — the same capability that gates complete.
+    if (!request.ability.can('complete', 'chores.Task')) {
+      return reply.status(403).send({ error: 'Permission denied' })
+    }
+
+    const { id } = request.params as { id: string }
+    const task = await chorePrisma.task.findUnique({ where: { id } })
+    if (!task) {
+      return reply.status(404).send({ error: 'Task not found' })
+    }
+    if (task.status === 'completed' || task.assigneeId) {
+      return reply.status(409).send({ error: 'Task is not up for grabs' })
+    }
+
+    // The null guard in the filter settles a two-kids race: the second tap matches
+    // zero rows and is told someone beat them to it.
+    const claimed = await chorePrisma.task.updateMany({
+      where: { id, status: 'pending', assigneeId: null },
+      data: { assigneeId: request.profile.id },
+    })
+    if (claimed.count === 0) {
+      return reply.status(409).send({ error: 'Task is not up for grabs' })
+    }
+
+    const updated = await chorePrisma.task.findUniqueOrThrow({ where: { id } })
+    const routine = updated.routineId
+      ? await chorePrisma.routine.findUnique({ where: { id: updated.routineId } })
+      : null
+    const assignee = await prisma.profile.findUnique({ where: { id: request.profile.id } })
+    return serializeTask(updated, assignee, routine)
   })
 
   // PATCH /chores/tasks/:id/complete — mark a task done. The assignee can complete
@@ -313,6 +401,12 @@ const choresPlugin: FastifyPluginAsync = async (fastify) => {
       return reply.status(409).send({ error: 'Task already completed' })
     }
 
+    // The economy credits the assignee, so an unclaimed task has nobody to pay —
+    // claim (or assign) first.
+    if (!task.assigneeId) {
+      return reply.status(409).send({ error: 'Task is up for grabs — claim it first' })
+    }
+
     const updated = await chorePrisma.task.update({
       where: { id },
       data: { status: 'completed', completedAt: new Date() },
@@ -332,7 +426,9 @@ const choresPlugin: FastifyPluginAsync = async (fastify) => {
       completedBy: request.profile.id,
     })
 
-    const assignee = await prisma.profile.findUnique({ where: { id: updated.assigneeId } })
+    const assignee = updated.assigneeId
+      ? await prisma.profile.findUnique({ where: { id: updated.assigneeId } })
+      : null
     return serializeTask(updated, assignee)
   })
 
@@ -373,8 +469,114 @@ const choresPlugin: FastifyPluginAsync = async (fastify) => {
       title: updated.title,
     })
 
-    const assignee = await prisma.profile.findUnique({ where: { id: updated.assigneeId } })
+    const assignee = updated.assigneeId
+      ? await prisma.profile.findUnique({ where: { id: updated.assigneeId } })
+      : null
     return serializeTask(updated, assignee)
+  })
+
+  // POST /chores/routines — start a routine (tier 4). No row is spawned here: the
+  // first occurrence materializes on the next list read, which is the one spawn
+  // path (the drawer's invalidation refetches immediately, so it appears at once).
+  fastify.post('/chores/routines', async (request, reply) => {
+    if (!request.ability.can('create', 'chores.Task')) {
+      return reply.status(403).send({ error: 'Permission denied' })
+    }
+
+    const parsed = ChoreRoutineInputSchema.safeParse(request.body ?? {})
+    if (!parsed.success) {
+      return reply.status(400).send({ error: parsed.error.flatten() })
+    }
+    const input = parsed.data
+
+    if (input.assigneeId) {
+      const assignee = await prisma.profile.findUnique({ where: { id: input.assigneeId } })
+      if (!assignee) {
+        return reply.status(404).send({ error: 'Assignee not found' })
+      }
+    }
+
+    const routine = await chorePrisma.routine.create({
+      data: {
+        title: input.title,
+        description: input.description,
+        assigneeId: input.assigneeId,
+        createdBy: request.profile.id,
+        kind: input.kind,
+        repeatDays: [...new Set(input.repeatDays)].sort(),
+        coinReward: input.coinReward,
+        requiresApproval: input.requiresApproval && input.coinReward > 0,
+      },
+    })
+
+    return reply.status(201).send(serializeRoutine(routine))
+  })
+
+  // PATCH /chores/routines/:id — edit the rule + fields for all future occurrences
+  // (ADR 038's series-level contract). The open row is deleted and respawned from
+  // the new rule on the next read rather than re-stamped in place — one spawn path,
+  // and a rule change (Mon/Thu → Sat) can invalidate the open row's date anyway.
+  fastify.patch('/chores/routines/:id', async (request, reply) => {
+    if (!request.ability.can('update', 'chores.Task')) {
+      return reply.status(403).send({ error: 'Permission denied' })
+    }
+
+    const { id } = request.params as { id: string }
+    const existing = await chorePrisma.routine.findUnique({ where: { id } })
+    if (!existing) {
+      return reply.status(404).send({ error: 'Routine not found' })
+    }
+
+    const parsed = ChoreRoutineInputSchema.safeParse(request.body ?? {})
+    if (!parsed.success) {
+      return reply.status(400).send({ error: parsed.error.flatten() })
+    }
+    const input = parsed.data
+
+    if (input.assigneeId) {
+      const assignee = await prisma.profile.findUnique({ where: { id: input.assigneeId } })
+      if (!assignee) {
+        return reply.status(404).send({ error: 'Assignee not found' })
+      }
+    }
+
+    const routine = await chorePrisma.routine.update({
+      where: { id },
+      data: {
+        title: input.title,
+        description: input.description,
+        assigneeId: input.assigneeId,
+        kind: input.kind,
+        repeatDays: [...new Set(input.repeatDays)].sort(),
+        coinReward: input.coinReward,
+        requiresApproval: input.requiresApproval && input.coinReward > 0,
+      },
+    })
+    // Pending rows carry no payouts or XP, so deleting them is side-effect-free;
+    // completed history is untouched.
+    await chorePrisma.task.deleteMany({ where: { routineId: id, status: 'pending' } })
+
+    return serializeRoutine(routine)
+  })
+
+  // DELETE /chores/routines/:id — end the routine: stop spawning and remove the
+  // open row. The routine row stays (completed history points at it), as does
+  // everything already done and paid.
+  fastify.delete('/chores/routines/:id', async (request, reply) => {
+    if (!request.ability.can('delete', 'chores.Task')) {
+      return reply.status(403).send({ error: 'Permission denied' })
+    }
+
+    const { id } = request.params as { id: string }
+    const existing = await chorePrisma.routine.findUnique({ where: { id } })
+    if (!existing) {
+      return reply.status(404).send({ error: 'Routine not found' })
+    }
+
+    await chorePrisma.routine.update({ where: { id }, data: { endedAt: new Date() } })
+    await chorePrisma.task.deleteMany({ where: { routineId: id, status: 'pending' } })
+
+    return reply.status(204).send()
   })
 
   // GET /chores/xp — returns the active profile's lifetime XP total (all tiers).
@@ -403,16 +605,46 @@ type TaskRow = {
   id: string
   title: string
   description: string | null
-  assigneeId: string
+  assigneeId: string | null
   createdBy: string
   status: string
   dueDate: Date | null
+  routineId: string | null
   xpReward: number
   coinReward: number
   requiresApproval: boolean
   xpAwarded: boolean
   createdAt: Date
   completedAt: Date | null
+}
+
+type RoutineRow = {
+  id: string
+  title: string
+  description: string | null
+  assigneeId: string | null
+  createdBy: string
+  kind: string
+  repeatDays: number[]
+  coinReward: number
+  requiresApproval: boolean
+  createdAt: Date
+  endedAt: Date | null
+}
+
+function serializeRoutine(routine: RoutineRow) {
+  return {
+    id: routine.id,
+    title: routine.title,
+    description: routine.description,
+    assigneeId: routine.assigneeId,
+    kind: routine.kind,
+    repeatDays: routine.repeatDays,
+    coinReward: routine.coinReward,
+    requiresApproval: routine.requiresApproval,
+    createdAt: routine.createdAt.toISOString(),
+    endedAt: routine.endedAt ? routine.endedAt.toISOString() : null,
+  }
 }
 
 /* The assignee's identity, as the client needs it to draw a row: a name for the
@@ -425,13 +657,15 @@ type AssigneeRef =
   | null
   | undefined
 
-function serializeTask(task: TaskRow, assignee: AssigneeRef) {
+function serializeTask(task: TaskRow, assignee: AssigneeRef, routine?: RoutineRow | null) {
   return {
     id: task.id,
     title: task.title,
     description: task.description,
     assigneeId: task.assigneeId,
-    assigneeName: assignee?.name ?? 'Unknown',
+    // Null assignee = up for grabs; the client renders the household (Hearth)
+    // treatment, so there is no name to fall back to.
+    assigneeName: task.assigneeId ? (assignee?.name ?? 'Unknown') : null,
     assigneeAvatarUrl: assignee?.avatarUrl ?? null,
     // The row spine is the assignee's hue in every state (ADR 043), so it must travel
     // with the task rather than be re-derived from `assigneeName` — a hash collides,
@@ -439,6 +673,10 @@ function serializeTask(task: TaskRow, assignee: AssigneeRef) {
     assigneeHue: assignee?.identityHue ?? null,
     status: task.status,
     dueDate: task.dueDate ? task.dueDate.toISOString().slice(0, 10) : null,
+    routineId: task.routineId,
+    // What the row needs to say "↻ Mon & Thu" / "back tomorrow" — rule truth stays
+    // on the routine; the task mirrors the rest of the fields at spawn.
+    routine: routine ? { kind: routine.kind, repeatDays: routine.repeatDays } : null,
     xpReward: task.xpReward,
     coinReward: task.coinReward,
     requiresApproval: task.requiresApproval,

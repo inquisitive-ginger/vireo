@@ -21,3 +21,11 @@ export function dueLabel(dueDate: string | null): string | null {
   if (!dueDate) return null
   return relativeDayLabel(new Date(`${dueDate}T00:00:00`)).lead
 }
+
+/** Today as a local date key (`YYYY-MM-DD`) — sent as `?today=` so routine
+    occurrences materialize against the household's day, not the server's UTC one. */
+export function todayKey(): string {
+  const now = new Date()
+  const pad = (n: number) => String(n).padStart(2, '0')
+  return `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())}`
+}

@@ -13,6 +13,8 @@ function isoDay(offset: number): string {
 function task(over: Partial<ChoreTask> & Pick<ChoreTask, 'id' | 'title'>): ChoreTask {
   return {
     description: null,
+    routineId: null,
+    routine: null,
     assigneeId: 'm-maya',
     assigneeName: 'Maya',
     assigneeAvatarUrl: null,

@@ -5,6 +5,7 @@ import {
   CoinValue,
   CoinDecisionTray,
   CompletionToggle,
+  FAMILY_HUE,
   ItemCard,
   MemberGroupHeader,
   RowActions,
@@ -16,14 +17,16 @@ import {
 import { isReopened, type ChoreTask, type PendingPayout } from '../types'
 import type { DecidePayoutInput } from '../pages/ChoresPage'
 import { isOverdue, dueLabel } from '../lib/dates'
+import { routineStatusLabel } from '../lib/routines'
 import { showCoinReward } from '../lib/flags'
 import { payoutForTask, reopenClawback, type PayoutsByInstance } from '../lib/payouts'
 import { XpPill } from './XpPill'
 import { ReopenedBadge } from './ReopenedBadge'
 
 export interface AdminLane {
-  assigneeId: string
-  assigneeName: string
+  /** Null = the up-for-grabs lane: unowned tasks, grouped under the household. */
+  assigneeId: string | null
+  assigneeName: string | null
   assigneeAvatarUrl: string | null
   /** The member's assigned hue (ADR 044) — null falls back to the name hash. */
   assigneeHue: string | null
@@ -32,8 +35,8 @@ export interface AdminLane {
 
 export interface AdminBoardProps {
   lanes: AdminLane[]
-  /** Open the create drawer prefilled to this assignee. */
-  onAddForAssignee: (assigneeId: string) => void
+  /** Open the create drawer prefilled to this assignee (null = Anyone). */
+  onAddForAssignee: (assigneeId: string | null) => void
   /** Show the per-lane "+ add" affordance. False for read-only viewers (e.g. the
       family dashboard, which sees all tasks but cannot create). */
   showAdd?: boolean
@@ -107,17 +110,18 @@ export function AdminBoard({
   const orderedLanes = useMemo(() => {
     const o = orderRef.current
     for (const lane of lanes) {
-      if (!o.lanes.includes(lane.assigneeId)) o.lanes.push(lane.assigneeId)
-      const seen = (o.tasksByLane[lane.assigneeId] ??= [])
+      const key = laneKey(lane)
+      if (!o.lanes.includes(key)) o.lanes.push(key)
+      const seen = (o.tasksByLane[key] ??= [])
       for (const t of sortTasks(lane.tasks)) if (!seen.includes(t.id)) seen.push(t.id)
     }
-    const laneById = new Map(lanes.map((l) => [l.assigneeId, l]))
+    const laneById = new Map(lanes.map((l) => [laneKey(l), l]))
     return o.lanes
       .map((id) => laneById.get(id))
       .filter((l): l is AdminLane => !!l)
       .map((lane) => ({
         lane,
-        tasks: (o.tasksByLane[lane.assigneeId] ?? [])
+        tasks: (o.tasksByLane[laneKey(lane)] ?? [])
           .map((tid) => lane.tasks.find((t) => t.id === tid))
           .filter((t): t is ChoreTask => !!t),
       }))
@@ -132,10 +136,10 @@ export function AdminBoard({
         if (visible.length === 0) return null
 
         return (
-          <section key={lane.assigneeId} className="flex flex-col gap-3">
+          <section key={laneKey(lane)} className="flex flex-col gap-3">
             <MemberGroupHeader
-              name={lane.assigneeName}
-              hue={resolveHue(lane.assigneeName, lane.assigneeHue)}
+              name={lane.assigneeName ?? 'Up for grabs'}
+              hue={laneHue(lane)}
               avatarUrl={lane.assigneeAvatarUrl}
               status={<LaneStatus lane={lane} />}
               count={pendingCount(lane) > 0 ? `${pendingCount(lane)} left` : undefined}
@@ -146,7 +150,7 @@ export function AdminBoard({
                     variant="ghost"
                     size="sm"
                     className="text-muted-foreground"
-                    onClick={() => onAddForAssignee(lane.assigneeId)}
+                    onClick={() => onAddForAssignee(lane.assigneeId ?? null)}
                   >
                     <Plus className="mr-1 size-4" /> Add
                   </Button>
@@ -175,6 +179,12 @@ export function AdminBoard({
   )
 }
 
+// The up-for-grabs lane keys and paints as the household — unowned work belongs to
+// everyone (Hearth, ADR 041), never to a hashed pseudo-member.
+const laneKey = (lane: AdminLane): string => lane.assigneeId ?? '__up-for-grabs__'
+const laneHue = (lane: AdminLane) =>
+  lane.assigneeName === null ? FAMILY_HUE : resolveHue(lane.assigneeName, lane.assigneeHue)
+
 function laneLoad(lane: AdminLane): number {
   return lane.tasks.filter((t) => t.status !== 'completed').reduce((sum, t) => sum + t.xpReward, 0)
 }
@@ -201,6 +211,21 @@ function LaneStatus({ lane }: { lane: AdminLane }) {
   if (overdue > 0) return <Badge variant="destructive">{overdue} overdue</Badge>
   if (pendingCount(lane) === 0) return <Badge variant="success">✓ all done</Badge>
   return null
+}
+
+// The spine is the assignee's hue in every state (ADR 043); an unowned row wears
+// the household's (ADR 041) until someone claims it.
+const taskSpine = (task: ChoreTask): string =>
+  task.assigneeName === null
+    ? identityToken(FAMILY_HUE)
+    : identityToken(resolveHue(task.assigneeName, task.assigneeHue))
+
+/* An ongoing row has no schedule, so its ↻ promise replaces the date slot; a done
+   ongoing row states its return. Days routines keep the date and add the ↻ tail. */
+function rowTimingText(task: ChoreTask, done: boolean, label: string | null): string {
+  if (done) return task.routine?.kind === 'ongoing' ? 'Done · back tomorrow' : 'Done'
+  if (task.routine?.kind === 'ongoing') return `↻ ${routineStatusLabel(task.routine)}`
+  return label ?? 'No due date'
 }
 
 function sortTasks(tasks: ChoreTask[]): ChoreTask[] {
@@ -237,7 +262,7 @@ function LoadMeter({ lane, maxLoad }: { lane: AdminLane; maxLoad: number }) {
           className="h-full rounded-full"
           style={{
             width: `${pct}%`,
-            background: identityToken(resolveHue(lane.assigneeName, lane.assigneeHue)),
+            background: identityToken(laneHue(lane)),
           }}
         />
       </div>
@@ -321,7 +346,7 @@ function AdminRow({
 
   return (
     <ItemCard
-      spine={identityToken(resolveHue(task.assigneeName, task.assigneeHue))}
+      spine={taskSpine(task)}
       align="center"
       dimmed={done}
       className="transition-opacity duration-200"
@@ -371,8 +396,14 @@ function AdminRow({
           <span
             className={`text-sm-token ${overdue ? 'font-semibold text-error' : 'text-muted-foreground'}`}
           >
-            {done ? 'Done' : (label ?? 'No due date')}
+            {rowTimingText(task, done, label)}
           </span>
+          {!done && task.routine && task.routine.kind === 'days' && (
+            <span className="text-sm-token text-muted-foreground">
+              <span aria-hidden>↻ </span>
+              {routineStatusLabel(task.routine)}
+            </span>
+          )}
         </div>
       </div>
       {!done && showCoinReward(task.coinReward) && <CoinValue value={task.coinReward} size={16} />}
@@ -405,10 +436,7 @@ function HeldRow({
   onRemove?: (task: ChoreTask) => void
 }) {
   return (
-    <ItemCard
-      spine={identityToken(resolveHue(task.assigneeName, task.assigneeHue))}
-      align="stretch"
-    >
+    <ItemCard spine={taskSpine(task)} align="stretch">
       <div className="flex min-w-0 flex-1 flex-col gap-3">
         <div className="flex items-center gap-3">
           <div className="min-w-0 flex-1">

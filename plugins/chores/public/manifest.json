@@ -6,7 +6,12 @@
   "routes": ["/chores"],
   "schema": "chores",
   "events": {
-    "publishes": ["chores.task.created", "chores.task.completed", "chores.task.reopened"],
+    "publishes": [
+      "chores.task.created",
+      "chores.task.completed",
+      "chores.task.reopened",
+      "chores.task.deleted"
+    ],
     "subscribes": ["chores.task.completed"]
   },
   "widgets": [

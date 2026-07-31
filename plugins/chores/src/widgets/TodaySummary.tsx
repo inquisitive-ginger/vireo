@@ -1,7 +1,7 @@
 import { Loader2 } from 'lucide-react'
 import { FAMILY_PROFILE_ID, useAuth, useQuery } from '@family-os/platform'
 import type { PendingPayout, TasksResponse } from '../types'
-import { isToday } from '../lib/dates'
+import { isToday, todayKey } from '../lib/dates'
 import { REWARDS_UI_ENABLED } from '../lib/flags'
 import { indexPayouts } from '../lib/payouts'
 import { TodaySummaryView, type WidgetSize } from './TodaySummaryView'
@@ -37,8 +37,10 @@ export default function TodaySummary({ size }: TodaySummaryProps) {
   // Prefix shared with ChoresPage: ['chores/tasks'] invalidation refreshes both.
   const { data, isLoading } = useQuery<TasksResponse>({
     queryKey: ['chores/tasks', 'widget', id],
+    // The widget is often the household's first read of the day (the fridge iPad),
+    // so it carries the local date too — routine occurrences materialize on read.
     queryFn: () =>
-      fetch('/api/chores/tasks').then((r) => {
+      fetch(`/api/chores/tasks?today=${todayKey()}`).then((r) => {
         if (!r.ok) throw new Error(String(r.status))
         return r.json() as Promise<TasksResponse>
       }),

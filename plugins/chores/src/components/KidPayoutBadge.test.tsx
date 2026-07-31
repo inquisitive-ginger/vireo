@@ -9,6 +9,8 @@ function task(over: Partial<ChoreTask> = {}): ChoreTask {
     id: 'th',
     title: 'Mow the lawn',
     description: null,
+    routineId: null,
+    routine: null,
     assigneeId: 'm-kid',
     assigneeName: 'Kid',
     assigneeAvatarUrl: null,

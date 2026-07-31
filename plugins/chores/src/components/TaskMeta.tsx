@@ -2,6 +2,7 @@ import { forwardRef, type ReactNode } from 'react'
 import { CoinValue } from '@family-os/ui'
 import { isReopened, type ChoreTask } from '../types'
 import { isOverdue, dueLabel } from '../lib/dates'
+import { routineStatusLabel } from '../lib/routines'
 import { showCoinReward } from '../lib/flags'
 import type { KidPayoutView } from '../lib/payouts'
 import { XpPill } from './XpPill'
@@ -23,14 +24,30 @@ import { ReopenedBadge } from './ReopenedBadge'
    point on the taskee surfaces. */
 
 export function TaskStatusLine({ task, className }: { task: ChoreTask; className?: string }) {
-  if (task.status === 'completed') return null
+  const routine = task.routine
+
+  if (task.status === 'completed') {
+    // The one completed state with something to say: an ongoing chore's return
+    // (done for today, back tomorrow) is information the check can't carry.
+    if (routine?.kind !== 'ongoing') return null
+    return (
+      <div className={`flex flex-wrap items-center gap-x-3 gap-y-1 ${className ?? ''}`}>
+        <span className="text-sm-token text-muted-foreground">Back tomorrow</span>
+      </div>
+    )
+  }
 
   const reopened = isReopened(task)
   const overdue = isOverdue(task.dueDate, task.status)
   const label = dueLabel(task.dueDate)
+  const upForGrabs = task.assigneeId === null
 
   let timing: ReactNode = null
-  if (overdue) {
+  // An ongoing row tracks today's date under the hood, but it has no schedule —
+  // "Due Today" would be noise; the ↻ line is its whole timing story.
+  if (routine?.kind === 'ongoing') {
+    timing = null
+  } else if (overdue) {
     timing = (
       <span className="text-sm-token font-semibold text-error">
         Overdue{label ? ` · ${label}` : ''}
@@ -40,12 +57,21 @@ export function TaskStatusLine({ task, className }: { task: ChoreTask; className
     timing = <span className="text-sm-token text-muted-foreground">Due {label}</span>
   }
 
-  if (!reopened && !timing) return null
+  const repeat = routine ? (
+    <span className="text-sm-token text-muted-foreground">
+      <span aria-hidden>↻ </span>
+      {routineStatusLabel(routine)}
+    </span>
+  ) : null
+
+  if (!reopened && !timing && !repeat && !upForGrabs) return null
 
   return (
     <div className={`flex flex-wrap items-center gap-x-3 gap-y-1 ${className ?? ''}`}>
       {reopened && <ReopenedBadge />}
+      {upForGrabs && <span className="text-sm-token text-muted-foreground">Up for grabs</span>}
       {timing}
+      {repeat}
     </div>
   )
 }

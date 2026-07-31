@@ -23,8 +23,11 @@ export interface ChoresPageViewProps {
   newTaskButton?: ReactNode
   /** Empty-state CTA — already permission-gated by the container (omitted if can() = false). */
   emptyAction?: ReactNode
-  /** Open the create drawer prefilled to an assignee (admin per-lane "+ add"). */
-  onAddForAssignee?: (assigneeId: string) => void
+  /** Open the create drawer prefilled to an assignee (admin per-lane "+ add");
+      null prefills Anyone (the up-for-grabs lane). */
+  onAddForAssignee?: (assigneeId: string | null) => void
+  /** Claim an up-for-grabs task for the viewer (taskee surfaces). */
+  onClaimTask?: (taskId: string) => Promise<unknown>
   /** Persist a completion (taskee flight + admin check-off). Rejects to revert. */
   onCompleteTask?: (taskId: string) => Promise<unknown>
   /** Un-complete a task (tier-4 only, admin board). Rejects to revert. */
@@ -58,6 +61,7 @@ export function ChoresPageView({
   newTaskButton,
   emptyAction,
   onAddForAssignee,
+  onClaimTask,
   onCompleteTask,
   onReopenTask,
   onReopenPaidTask,
@@ -83,6 +87,7 @@ export function ChoresPageView({
       <TaskeeSurface
         tasks={tasks}
         onCompleteTask={onCompleteTask}
+        onClaimTask={onClaimTask}
         initialXp={initialXp}
         payoutIndex={payoutIndex}
       />
@@ -170,7 +175,9 @@ function summaryLine({
 }
 
 function toLanes(tasks: ChoreTask[]): AdminLane[] {
-  const map = new Map<string, AdminLane>()
+  // Null assignee groups into the up-for-grabs lane (the board paints it as the
+  // household).
+  const map = new Map<string | null, AdminLane>()
   for (const t of tasks) {
     let lane = map.get(t.assigneeId)
     if (!lane) {
