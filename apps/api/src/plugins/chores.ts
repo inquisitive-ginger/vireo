@@ -116,8 +116,10 @@ const isUniqueViolation = (err: unknown): boolean =>
  *   overdue only until the next occurrence arrives, then re-dates to it — this
  *   week's trash, not last week's debt. An ongoing row just tracks today.
  *
- * Concurrent reads race benignly: rolls are idempotent updates, and the loser of a
- * spawn race hits the unique index and is a no-op. */
+ * Concurrent reads race benignly: the loser of a spawn race hits the unique index
+ * and is a no-op. A roll can hit it too — a reopened previous-day row behind a
+ * completed today-row (the target key is taken) — so it skips instead of throwing;
+ * the row stays put and rolls once the key frees up. */
 async function reconcileRoutines(todayKey: string): Promise<void> {
   const routines = await chorePrisma.routine.findMany({ where: { endedAt: null } })
   if (routines.length === 0) return
@@ -137,10 +139,14 @@ async function reconcileRoutines(todayKey: string): Promise<void> {
           ? todayKey
           : latestScheduledOnOrBefore(todayKey, routine.repeatDays)
       if (target && openKey && openKey < target) {
-        await chorePrisma.task.update({
-          where: { id: open.id },
-          data: { dueDate: new Date(target) },
-        })
+        try {
+          await chorePrisma.task.update({
+            where: { id: open.id },
+            data: { dueDate: new Date(target) },
+          })
+        } catch (err) {
+          if (!isUniqueViolation(err)) throw err
+        }
       }
       continue
     }
