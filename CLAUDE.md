@@ -22,8 +22,8 @@ before it reads anything else, and it is size-capped — see
 - **Deployment:** 🟢 live at `https://vireohome.app` on the Pi; merge to `main`
   auto-deploys; off-LAN via Tailscale. Runbook: `docs/deployment.md`.
 - **Last session:** 2026-07-30 — design+dev, recurring chores + up-for-grabs
-  (routines, claim-then-do; ADR 058/059, PR #90, live-reviewed).
-  `logs/2026-07-30-design-dev-recurring-chores.md`.
+  (routines, claim-then-do, kid offer board; ADR 058/059, PRs #90/#91,
+  live-reviewed). `logs/2026-07-30-design-dev-recurring-chores.md`.
 - **What's next and everything outstanding:** `docs/sessions/queue.md` — the one
   index. Cheapest high-value item: Deployment Part F, offsite backups.
 - **Owed in-app:** nothing — the triage board is empty as of 2026-07-29. Query it

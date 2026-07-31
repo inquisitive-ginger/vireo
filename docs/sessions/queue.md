@@ -250,11 +250,12 @@ suite mirroring chores/calendar. _Depends on: none._
 
 > Two-line index; full detail in the linked log.
 
-- **2026-07-30 — Design+Dev: recurring chores + up for grabs (ad-hoc, PR #90, ADR
-  058/059).** Routines stamp out real `Task` rows lazily on read (client-local
-  `?today=`; ongoing = back tomorrow; missed days roll); unowned chores are
-  Hearth-spined and claimed ("I'll do it") before completion, so the economy never
-  learns a second earner. See `logs/2026-07-30-design-dev-recurring-chores.md`.
+- **2026-07-30 — Design+Dev: recurring chores + up for grabs (ad-hoc, PRs #90 +
+  #91, ADR 058/059).** Routines stamp out real `Task` rows lazily on read
+  (client-local `?today=`; ongoing = back tomorrow; missed days roll); unowned
+  chores are claimed before completion and live on the kid's surface as a sunken
+  offer board, own-work-only meter. See
+  `logs/2026-07-30-design-dev-recurring-chores.md`.
 
 - **2026-07-30 — Design+Dev: parent ticket corrections (ad-hoc, PR #89).** A tier-4
   **Tickets** tab — the module's first parent-facing ticket surface — carrying

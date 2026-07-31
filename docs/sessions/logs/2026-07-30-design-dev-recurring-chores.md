@@ -1,7 +1,7 @@
 # 2026-07-30 — Design+Dev: Recurring Chores + Up for Grabs (ad-hoc)
 
-**PR #90 · ADR 058, ADR 059 · UX exploration artifact (5 gated decisions, all
-approved as recommended)**
+**PRs #90, #91 · ADR 058, ADR 059 · UX exploration artifact (7 gated decisions,
+all approved as recommended)**
 
 ## What was decided
 
@@ -56,6 +56,31 @@ approved as recommended)**
 - Manifest `publishes` gains the undeclared `chores.task.deleted`. Widget fetch
   also sends `?today=` (the fridge iPad is often the day's first read).
 - Tests: +13 API (61 in chores suite; 391 total green), +12 plugin (87 green).
+
+## Post-ship rethink — the kid's offer board (2026-07-31, PR #91, gate D6)
+
+Live use exposed the Agency-list failure the mockups missed: five identical
+up-for-grabs cards buried the kid's one real task, the meter counted household
+offers as their obligations ("6 left" when one was theirs), the same meta line
+repeated five times, and the hearth spine was the only distinguishing channel
+(ADR 044's exact warning). Gated as Decision 6, sunken-tray option chosen:
+
+- **Own tasks lead; the meter counts own work only** — the rule the Focus gate
+  had already set, now uniform across both taskee surfaces.
+- **"Up for grabs" is an offer board** (`GrabsTray`): a stated-once header with a
+  hearth count chip over a recessed tray on the sunken plane (ADR 040 — a
+  non-identity surface is what unowned means, and it is the second channel).
+  Rows are compact and coin-first; the ↻ tail renders only on days routines,
+  where it varies. Claiming morphs the chore into an ordinary card above. A kid
+  with nothing assigned sees the board without a false "All done" celebration.
+- `TaskCard`/`TaskStatusLine` shed the dead grabs branch; Focus mode's collapsed
+  section is unchanged. The divider under the progress bar came out — the tray's
+  recess does the sectioning the hairline used to.
+
+Two review corrections worth remembering: the Repeats control was first
+hand-rolled before the user pointed at the existing `SegmentedControl`, and the
+grabs-row treatment itself is the second time a screenshot of real data beat the
+mockups — render explorations against real quantities, not one row of each kind.
 
 ## Sent back / corrected in review
 
