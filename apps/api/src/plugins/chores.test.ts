@@ -802,6 +802,83 @@ describe('chore routines', () => {
     })
   })
 
+  it('a read without ?today= serves what exists but materializes nothing', async () => {
+    const parent = await getCookieForProfile(PARENT_ID)
+    await createRoutine(parent, {
+      title: 'Empty the dishwasher',
+      assigneeId: KID_ID,
+      kind: 'ongoing',
+    })
+
+    const res = await app.inject({
+      method: 'GET',
+      url: '/api/chores/tasks',
+      headers: { cookie: parent },
+    })
+    expect(res.statusCode).toBe(200)
+    expect(res.json().tasks).toHaveLength(0)
+
+    const tasks = await getTasks(parent, THU)
+    expect(tasks).toHaveLength(1)
+  })
+
+  it('a row rolled ahead of the completer re-dates back to their day — no duplicate (auto-bug #92)', async () => {
+    const parent = await getCookieForProfile(PARENT_ID)
+    const kid = await getCookieForProfile(KID_ID)
+    await createRoutine(parent, {
+      title: 'Bedtime routine',
+      assigneeId: KID_ID,
+      kind: 'ongoing',
+    })
+
+    // Thursday evening: the household is still on THU, but a reader carrying
+    // Friday's date (the server-UTC evening) has already rolled the row ahead.
+    let tasks = await getTasks(kid, THU)
+    await getTasks(kid, FRI)
+
+    const complete = await app.inject({
+      method: 'PATCH',
+      url: `/api/chores/tasks/${tasks[0].id}/complete?today=${THU}`,
+      headers: { cookie: kid },
+    })
+    expect(complete.statusCode).toBe(200)
+    expect(complete.json().dueDate).toBe(THU)
+
+    // The completer's refetch: done for the day, nothing respawns.
+    tasks = await getTasks(kid, THU)
+    expect(tasks).toHaveLength(1)
+    expect(tasks[0].status).toBe('completed')
+
+    // Friday proper: back, fresh.
+    tasks = await getTasks(kid, FRI)
+    expect(tasks.find((t) => t.status === 'pending')!.dueDate).toBe(FRI)
+  })
+
+  it('a completed row dated ahead blocks an earlier-day respawn', async () => {
+    const parent = await getCookieForProfile(PARENT_ID)
+    const kid = await getCookieForProfile(KID_ID)
+    await createRoutine(parent, {
+      title: 'Bedtime routine',
+      assigneeId: KID_ID,
+      kind: 'ongoing',
+    })
+
+    // Completed on a device already on Friday; a device still on Thursday reads.
+    let tasks = await getTasks(kid, FRI)
+    await app.inject({
+      method: 'PATCH',
+      url: `/api/chores/tasks/${tasks[0].id}/complete?today=${FRI}`,
+      headers: { cookie: kid },
+    })
+
+    tasks = await getTasks(kid, THU)
+    expect(tasks).toHaveLength(1)
+    expect(tasks[0].status).toBe('completed')
+
+    tasks = await getTasks(kid, SAT)
+    expect(tasks.find((t) => t.status === 'pending')!.dueDate).toBe(SAT)
+  })
+
   it('a reopened previous-day row behind a completed today-row does not 500 the list', async () => {
     const parent = await getCookieForProfile(PARENT_ID)
     const kid = await getCookieForProfile(KID_ID)
