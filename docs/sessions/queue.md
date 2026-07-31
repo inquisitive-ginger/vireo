@@ -39,6 +39,16 @@ signature colors as the ritual. The custom build — 4 paired Pi Zero 2 W beacon
 gifted and paired in person at the **December visit**, voice as the headline
 upgrade. _Log: `logs/2026-07-29-product-beacon-concept.md`._
 
+### Chores: decide whether the family pseudo-profile belongs on the public internet
+
+**Type:** architecture / security · No kickoff yet. Found during the #92 triage:
+a cookie-less request gets the family pseudo-profile (`activeProfileId ??
+FAMILY_PROFILE_ID`), and `GET /chores/tasks` `seesAll`s for it — the whole
+family's tasks, names, and avatars answer to anyone who can reach
+`vireohome.app`. Fine for the fridge; decide the exposure (tailnet-only? require
+a session for non-LAN? scope the anonymous ability?). _Log:
+`logs/2026-07-30-fix-auto-bug-92.md`._
+
 ### Rewards: look at the Tickets tab, and cap the last unbounded list
 
 **Type:** qa / dev · No kickoff needed. Two loose ends from PR #89. **(1)** The
