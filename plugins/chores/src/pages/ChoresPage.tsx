@@ -14,6 +14,8 @@ import type { ChoreTask, PendingPayout, TasksResponse } from '../types'
 import { ChoresPageView } from './ChoresPageView'
 import { CreateTaskDrawer, type CreateTaskInput } from '../components/CreateTaskDrawer'
 import { REWARDS_UI_ENABLED } from '../lib/flags'
+import { todayKey } from '../lib/dates'
+import { daySetLabel } from '../lib/routines'
 
 export interface DecidePayoutInput {
   id: string
@@ -29,7 +31,9 @@ export function ChoresPage() {
   const queryClient = useQueryClient()
 
   const [drawerOpen, setDrawerOpen] = useState(false)
-  const [prefillAssigneeId, setPrefillAssigneeId] = useState<string | null>(null)
+  // A member id prefills that member; null prefills Anyone (the up-for-grabs lane's
+  // "+ add"); undefined prefills nothing (the header button).
+  const [prefillAssigneeId, setPrefillAssigneeId] = useState<string | null | undefined>(undefined)
   // Set → the drawer opens in edit mode; null → create mode.
   const [editingTask, setEditingTask] = useState<ChoreTask | null>(null)
   // Set → the remove-confirm dialog is open for this task.
@@ -37,10 +41,12 @@ export function ChoresPage() {
 
   // Keyed by the active profile — a profile switch changes the key and refetches
   // automatically (ADR 013), so no manual re-fetch on switch is needed.
+  // `today` is the client's local date — routine occurrences materialize on this
+  // read, against the household's day rather than the server's UTC one.
   const tasksQuery = useQuery({
     queryKey: ['chores/tasks', id],
     queryFn: () =>
-      fetch('/api/chores/tasks').then((r) => {
+      fetch(`/api/chores/tasks?today=${todayKey()}`).then((r) => {
         if (!r.ok) throw new Error(String(r.status))
         return r.json() as Promise<TasksResponse>
       }),
@@ -124,7 +130,7 @@ export function ChoresPage() {
       fetch('/api/chores/tasks', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(input),
+        body: JSON.stringify(taskPayload(input)),
       }).then((r) => {
         if (!r.ok) throw new Error(String(r.status))
         return r.json() as Promise<ChoreTask>
@@ -136,13 +142,73 @@ export function ChoresPage() {
     },
   })
 
+  // Routines (recurring chores). Creation spawns nothing itself — the first
+  // occurrence materializes on the refetch these invalidations trigger.
+  const createRoutine = useMutation({
+    mutationFn: (input: CreateTaskInput) =>
+      fetch('/api/chores/routines', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(routinePayload(input)),
+      }).then((r) => {
+        if (!r.ok) throw new Error(String(r.status))
+        return r.json()
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['chores/tasks'] })
+      setDrawerOpen(false)
+    },
+  })
+
+  const updateRoutine = useMutation({
+    mutationFn: ({ routineId, input }: { routineId: string; input: CreateTaskInput }) =>
+      fetch(`/api/chores/routines/${routineId}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(routinePayload(input)),
+      }).then((r) => {
+        if (!r.ok) throw new Error(String(r.status))
+        return r.json()
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['chores/tasks'] })
+      setDrawerOpen(false)
+      setEditingTask(null)
+    },
+  })
+
+  // End a routine (the routine rows' remove action) — stops spawning, removes the
+  // open row, keeps history.
+  const endRoutine = useMutation({
+    mutationFn: (routineId: string) =>
+      fetch(`/api/chores/routines/${routineId}`, { method: 'DELETE' }).then((r) => {
+        if (!r.ok && r.status !== 204) throw new Error(String(r.status))
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['chores/tasks'] })
+      setRemoveTarget(null)
+    },
+  })
+
+  // Claim an up-for-grabs task — from then on it is an ordinary assigned task.
+  const claimTask = useMutation({
+    mutationFn: (taskId: string) =>
+      fetch(`/api/chores/tasks/${taskId}/claim`, { method: 'PATCH' }).then((r) => {
+        if (!r.ok) throw new Error(String(r.status))
+        return r.json() as Promise<ChoreTask>
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['chores/tasks'] })
+    },
+  })
+
   // Edit a task (tier 4) — same field set as create; assignee may change.
   const updateTask = useMutation({
     mutationFn: ({ taskId, input }: { taskId: string; input: CreateTaskInput }) =>
       fetch(`/api/chores/tasks/${taskId}`, {
         method: 'PATCH',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(input),
+        body: JSON.stringify(taskPayload(input)),
       }).then((r) => {
         if (!r.ok) throw new Error(String(r.status))
         return r.json() as Promise<ChoreTask>
@@ -201,7 +267,7 @@ export function ChoresPage() {
     },
   })
 
-  function openCreate(assigneeId: string | null) {
+  function openCreate(assigneeId?: string | null) {
     setEditingTask(null)
     setPrefillAssigneeId(assigneeId)
     setDrawerOpen(true)
@@ -247,6 +313,7 @@ export function ChoresPage() {
         payouts={payoutsQuery.data?.payouts ?? []}
         onDecidePayout={(input) => decidePayout.mutateAsync(input)}
         onAddForAssignee={(assigneeId) => openCreate(assigneeId)}
+        onClaimTask={(taskId) => claimTask.mutateAsync(taskId)}
         onCompleteTask={(taskId) => completeTask.mutateAsync(taskId)}
         onReopenTask={(taskId) => reopenTask.mutateAsync(taskId)}
         onReopenPaidTask={(task, clawback) => setReopenTarget({ task, clawback })}
@@ -254,7 +321,7 @@ export function ChoresPage() {
         onRemoveTask={(task) => setRemoveTarget(task)}
         newTaskButton={
           <PermissionGate action="create" subject="chores.Task">
-            <Button onClick={() => openCreate(null)}>
+            <Button onClick={() => openCreate()}>
               <Plus size={16} />
               New Task
             </Button>
@@ -264,7 +331,7 @@ export function ChoresPage() {
           // sm matches the empty-state CTA convention (EmptyState stories + family-feed);
           // the header "New Task" keeps the default size when the board has tasks.
           <PermissionGate action="create" subject="chores.Task">
-            <Button size="sm" onClick={() => openCreate(null)}>
+            <Button size="sm" onClick={() => openCreate()}>
               <Plus size={16} />
               New Task
             </Button>
@@ -283,11 +350,35 @@ export function ChoresPage() {
           editingTask={editingTask}
           onSubmit={async (input) => {
             // Swallow the rejection: the drawer stays open on failure;
-            // onSuccess closes it.
-            if (editingTask) {
-              await updateTask.mutateAsync({ taskId: editingTask.id, input }).catch(() => {})
-            } else {
+            // onSuccess closes it. Changing the Repeats mode in edit converts the
+            // thing itself — a one-shot becomes a routine (and vice versa), so the
+            // original is retired once its replacement exists.
+            if (editingTask?.routineId) {
+              if (input.repeats === 'once') {
+                await createTask
+                  .mutateAsync(input)
+                  .then(() => endRoutine.mutateAsync(editingTask.routineId as string))
+                  .then(() => setEditingTask(null))
+                  .catch(() => {})
+              } else {
+                await updateRoutine
+                  .mutateAsync({ routineId: editingTask.routineId, input })
+                  .catch(() => {})
+              }
+            } else if (editingTask) {
+              if (input.repeats === 'once') {
+                await updateTask.mutateAsync({ taskId: editingTask.id, input }).catch(() => {})
+              } else {
+                await createRoutine
+                  .mutateAsync(input)
+                  .then(() => deleteTask.mutateAsync(editingTask.id))
+                  .then(() => setEditingTask(null))
+                  .catch(() => {})
+              }
+            } else if (input.repeats === 'once') {
               await createTask.mutateAsync(input).catch(() => {})
+            } else {
+              await createRoutine.mutateAsync(input).catch(() => {})
             }
           }}
         />
@@ -295,12 +386,23 @@ export function ChoresPage() {
       {canManage && (
         <ConfirmDialog
           open={!!removeTarget}
-          title={`Remove “${removeTarget?.title ?? ''}”?`}
-          description="This task will be permanently deleted. This can't be undone."
-          confirmLabel="Remove"
-          onConfirm={() => removeTarget && deleteTask.mutate(removeTarget.id)}
+          title={
+            removeTarget?.routineId ? 'End this routine?' : `Remove “${removeTarget?.title ?? ''}”?`
+          }
+          description={
+            removeTarget?.routineId
+              ? routineEndWarning(removeTarget)
+              : "This task will be permanently deleted. This can't be undone."
+          }
+          confirmLabel={removeTarget?.routineId ? 'End routine' : 'Remove'}
+          onConfirm={() =>
+            removeTarget &&
+            (removeTarget.routineId
+              ? endRoutine.mutate(removeTarget.routineId)
+              : deleteTask.mutate(removeTarget.id))
+          }
           onCancel={() => setRemoveTarget(null)}
-          isPending={deleteTask.isPending}
+          isPending={deleteTask.isPending || endRoutine.isPending}
         />
       )}
       {canManage && reopenTarget && (
@@ -308,7 +410,7 @@ export function ChoresPage() {
           open
           title={`Reopen “${reopenTarget.task.title}”?`}
           description={reopenWarning(
-            reopenTarget.task.assigneeName,
+            reopenTarget.task.assigneeName ?? 'them',
             reopenTarget.clawback,
             reopenBalanceQuery.data?.balance
           )}
@@ -323,6 +425,32 @@ export function ChoresPage() {
       )}
     </>
   )
+}
+
+// The drawer's input, mapped to the two wire shapes. A one-shot never sends the
+// repeat fields; a routine never sends a due date.
+function taskPayload(input: CreateTaskInput) {
+  const { repeats: _repeats, repeatDays: _repeatDays, ...task } = input
+  return task
+}
+
+function routinePayload(input: CreateTaskInput) {
+  return {
+    title: input.title,
+    assigneeId: input.assigneeId,
+    coinReward: input.coinReward,
+    requiresApproval: input.requiresApproval,
+    kind: input.repeats,
+    repeatDays: input.repeatDays,
+  }
+}
+
+function routineEndWarning(task: ChoreTask): string {
+  const rule =
+    task.routine?.kind === 'ongoing'
+      ? "comes back whenever it's done"
+      : `repeats ${task.routine ? daySetLabel(task.routine.repeatDays) : ''}`
+  return `“${task.title}” ${rule}. Ending it removes the current task; everything already done stays done and stays paid.`
 }
 
 /* The clawback warning shown before reopening a paid chore. The amounts are

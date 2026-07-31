@@ -58,7 +58,7 @@ export const SAMPLE_FAMILY_TASKS: ChoreTask[] = [
    the spine says who, the face is just a face (ADR 042/043). */
 export const SAMPLE_FAMILY_TASKS_WITH_PHOTOS: ChoreTask[] = SAMPLE_FAMILY_TASKS.map((t) => ({
   ...t,
-  assigneeAvatarUrl: SAMPLE_AVATARS[t.assigneeName] ?? null,
+  assigneeAvatarUrl: t.assigneeName ? (SAMPLE_AVATARS[t.assigneeName] ?? null) : null,
 }))
 
 function task(
@@ -77,6 +77,8 @@ function task(
     id,
     title,
     description: null,
+    routineId: null,
+    routine: null,
     assigneeId,
     assigneeName,
     // Stories exercise the no-photo fallback by default — the tinted-initials

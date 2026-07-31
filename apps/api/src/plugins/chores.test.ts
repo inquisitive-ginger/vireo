@@ -42,6 +42,7 @@ async function clearTasks() {
   // Clear chores tables so count assertions stay deterministic across suites.
   await chorePrisma.xpBalance.deleteMany({})
   await chorePrisma.task.deleteMany({})
+  await chorePrisma.routine.deleteMany({})
 }
 
 beforeAll(async () => {
@@ -669,6 +670,294 @@ describe('GET /api/chores/xp', () => {
 })
 
 // ─── XP subscriber (unit) ─────────────────────────────────────────────────────
+
+// ─── Routines + up-for-grabs ──────────────────────────────────────────────────
+
+// Fixed local date keys — 2026-07-30 is a Thursday.
+const WED = '2026-07-29'
+const THU = '2026-07-30'
+const FRI = '2026-07-31'
+const NEXT_THU = '2026-08-06'
+
+async function getTasks(cookie: string, today: string) {
+  const res = await app.inject({
+    method: 'GET',
+    url: `/api/chores/tasks?today=${today}`,
+    headers: { cookie },
+  })
+  expect(res.statusCode).toBe(200)
+  return res.json().tasks as Array<{
+    id: string
+    title: string
+    status: string
+    dueDate: string | null
+    assigneeId: string | null
+    assigneeName: string | null
+    routineId: string | null
+    routine: { kind: string; repeatDays: number[] } | null
+  }>
+}
+
+describe('chore routines', () => {
+  async function createRoutine(
+    cookie: string,
+    payload: Record<string, unknown>
+  ): Promise<LightMyRequestResponse> {
+    return app.inject({ method: 'POST', url: '/api/chores/routines', headers: { cookie }, payload })
+  }
+
+  it('creates a routine for tier 4 and rejects tier 3', async () => {
+    const parent = await getCookieForProfile(PARENT_ID)
+    const created = await createRoutine(parent, {
+      title: 'Take out the trash',
+      assigneeId: KID_ID,
+      kind: 'days',
+      repeatDays: [1, 4],
+      coinReward: 2,
+    })
+    expect(created.statusCode).toBe(201)
+    expect(created.json().kind).toBe('days')
+    expect(created.json().repeatDays).toEqual([1, 4])
+
+    const teen = await getCookieForProfile(TEEN_ID)
+    const denied = await createRoutine(teen, {
+      title: 'Nope',
+      assigneeId: KID_ID,
+      kind: 'ongoing',
+    })
+    expect(denied.statusCode).toBe(403)
+  })
+
+  it('rejects a days routine with no days', async () => {
+    const parent = await getCookieForProfile(PARENT_ID)
+    const res = await createRoutine(parent, {
+      title: 'Trash',
+      assigneeId: KID_ID,
+      kind: 'days',
+      repeatDays: [],
+    })
+    expect(res.statusCode).toBe(400)
+  })
+
+  it('materializes the next scheduled occurrence on read, exactly once', async () => {
+    const parent = await getCookieForProfile(PARENT_ID)
+    await createRoutine(parent, {
+      title: 'Take out the trash',
+      assigneeId: KID_ID,
+      kind: 'days',
+      repeatDays: [4], // Thursdays
+    })
+
+    // Wednesday read → Thursday's row is visible ahead, once, wearing the rule.
+    let tasks = await getTasks(parent, WED)
+    expect(tasks).toHaveLength(1)
+    expect(tasks[0].dueDate).toBe(THU)
+    expect(tasks[0].routine).toEqual({ kind: 'days', repeatDays: [4] })
+
+    tasks = await getTasks(parent, WED)
+    expect(tasks).toHaveLength(1)
+  })
+
+  it('ongoing: done for today, back tomorrow — and XP per occurrence', async () => {
+    const parent = await getCookieForProfile(PARENT_ID)
+    const kid = await getCookieForProfile(KID_ID)
+    await createRoutine(parent, {
+      title: 'Empty the dishwasher',
+      assigneeId: KID_ID,
+      kind: 'ongoing',
+    })
+
+    let tasks = await getTasks(kid, THU)
+    expect(tasks).toHaveLength(1)
+    expect(tasks[0].dueDate).toBe(THU)
+
+    const complete = await app.inject({
+      method: 'PATCH',
+      url: `/api/chores/tasks/${tasks[0].id}/complete`,
+      headers: { cookie: kid },
+    })
+    expect(complete.statusCode).toBe(200)
+
+    // Same-day read: stays done, no respawn (the (routineId, dueDate) unique).
+    tasks = await getTasks(kid, THU)
+    expect(tasks).toHaveLength(1)
+    expect(tasks[0].status).toBe('completed')
+
+    // Next-day read: a fresh pending row.
+    tasks = await getTasks(kid, FRI)
+    expect(tasks).toHaveLength(2)
+    const fresh = tasks.find((t) => t.status === 'pending')!
+    expect(fresh.dueDate).toBe(FRI)
+
+    await app.inject({
+      method: 'PATCH',
+      url: `/api/chores/tasks/${fresh.id}/complete`,
+      headers: { cookie: kid },
+    })
+    // Each occurrence is its own row, so each pays XP once (5 base × 2).
+    await vi.waitFor(async () => {
+      const balance = await chorePrisma.xpBalance.findUnique({ where: { profileId: KID_ID } })
+      expect(balance?.totalXp).toBe(10)
+    })
+  })
+
+  it('a missed day stays overdue, then rolls forward at the next occurrence', async () => {
+    const parent = await getCookieForProfile(PARENT_ID)
+    await createRoutine(parent, {
+      title: 'Take out the trash',
+      assigneeId: KID_ID,
+      kind: 'days',
+      repeatDays: [4],
+    })
+
+    let tasks = await getTasks(parent, THU)
+    expect(tasks[0].dueDate).toBe(THU)
+    const openId = tasks[0].id
+
+    // Friday: missed, still the same row (overdue on the client), no new spawn.
+    tasks = await getTasks(parent, FRI)
+    expect(tasks).toHaveLength(1)
+    expect(tasks[0].id).toBe(openId)
+    expect(tasks[0].dueDate).toBe(THU)
+
+    // Next Thursday: the open row re-dates — this week's trash, not last week's debt.
+    tasks = await getTasks(parent, NEXT_THU)
+    expect(tasks).toHaveLength(1)
+    expect(tasks[0].id).toBe(openId)
+    expect(tasks[0].dueDate).toBe(NEXT_THU)
+  })
+
+  it('PATCH re-stamps: the open row respawns from the new rule', async () => {
+    const parent = await getCookieForProfile(PARENT_ID)
+    const created = await createRoutine(parent, {
+      title: 'Empty the dishwasher',
+      assigneeId: KID_ID,
+      kind: 'ongoing',
+    })
+    const routineId = created.json().id as string
+
+    let tasks = await getTasks(parent, THU)
+    expect(tasks).toHaveLength(1)
+
+    const patched = await app.inject({
+      method: 'PATCH',
+      url: `/api/chores/routines/${routineId}`,
+      headers: { cookie: parent },
+      payload: { title: 'Load the dishwasher', assigneeId: null, kind: 'ongoing' },
+    })
+    expect(patched.statusCode).toBe(200)
+
+    tasks = await getTasks(parent, THU)
+    expect(tasks).toHaveLength(1)
+    expect(tasks[0].title).toBe('Load the dishwasher')
+    expect(tasks[0].assigneeId).toBeNull()
+  })
+
+  it('DELETE ends the routine: open row gone, history kept, no more spawns', async () => {
+    const parent = await getCookieForProfile(PARENT_ID)
+    const kid = await getCookieForProfile(KID_ID)
+    const created = await createRoutine(parent, {
+      title: 'Empty the dishwasher',
+      assigneeId: KID_ID,
+      kind: 'ongoing',
+    })
+    const routineId = created.json().id as string
+
+    let tasks = await getTasks(kid, THU)
+    await app.inject({
+      method: 'PATCH',
+      url: `/api/chores/tasks/${tasks[0].id}/complete`,
+      headers: { cookie: kid },
+    })
+    // Friday's fresh row exists, then the routine ends.
+    await getTasks(kid, FRI)
+    const ended = await app.inject({
+      method: 'DELETE',
+      url: `/api/chores/routines/${routineId}`,
+      headers: { cookie: parent },
+    })
+    expect(ended.statusCode).toBe(204)
+
+    tasks = await getTasks(kid, FRI)
+    expect(tasks).toHaveLength(1)
+    expect(tasks[0].status).toBe('completed')
+  })
+})
+
+describe('up for grabs', () => {
+  async function createUnassigned(cookie: string): Promise<string> {
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/chores/tasks',
+      headers: { cookie },
+      payload: { title: 'Water the plants', assigneeId: null },
+    })
+    expect(res.statusCode).toBe(201)
+    expect(res.json().assigneeName).toBeNull()
+    return res.json().id as string
+  }
+
+  it('is visible to every member alongside their own tasks', async () => {
+    const parent = await getCookieForProfile(PARENT_ID)
+    await createUnassigned(parent)
+    await app.inject({
+      method: 'POST',
+      url: '/api/chores/tasks',
+      headers: { cookie: parent },
+      payload: { title: 'Teen-only task', assigneeId: TEEN_ID },
+    })
+
+    const kid = await getCookieForProfile(KID_ID)
+    const tasks = await getTasks(kid, THU)
+    expect(tasks.map((t) => t.title)).toEqual(['Water the plants'])
+  })
+
+  it('claim takes it; a second claim and completing unclaimed are refused', async () => {
+    const parent = await getCookieForProfile(PARENT_ID)
+    const taskId = await createUnassigned(parent)
+
+    // Completing before anyone claims has nobody to pay.
+    const early = await app.inject({
+      method: 'PATCH',
+      url: `/api/chores/tasks/${taskId}/complete`,
+      headers: { cookie: parent },
+    })
+    expect(early.statusCode).toBe(409)
+
+    const kid = await getCookieForProfile(KID_ID)
+    const claim = await app.inject({
+      method: 'PATCH',
+      url: `/api/chores/tasks/${taskId}/claim`,
+      headers: { cookie: kid },
+    })
+    expect(claim.statusCode).toBe(200)
+    expect(claim.json().assigneeId).toBe(KID_ID)
+    expect(claim.json().assigneeName).toBe('Kid')
+
+    const tween = await getCookieForProfile(TWEEN_ID)
+    const second = await app.inject({
+      method: 'PATCH',
+      url: `/api/chores/tasks/${taskId}/claim`,
+      headers: { cookie: tween },
+    })
+    expect(second.statusCode).toBe(409)
+
+    // The claimer completes it like any assigned task.
+    const complete = await app.inject({
+      method: 'PATCH',
+      url: `/api/chores/tasks/${taskId}/complete`,
+      headers: { cookie: kid },
+    })
+    expect(complete.statusCode).toBe(200)
+  })
+
+  it('the family pseudo-profile cannot claim', async () => {
+    const parent = await getCookieForProfile(PARENT_ID)
+    const taskId = await createUnassigned(parent)
+    const res = await app.inject({ method: 'PATCH', url: `/api/chores/tasks/${taskId}/claim` })
+    expect(res.statusCode).toBe(403)
+  })
+})
 
 describe('XP event subscriber', () => {
   it('credits xpReward to the assignee on chores.task.completed', async () => {

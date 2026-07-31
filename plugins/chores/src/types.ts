@@ -1,11 +1,23 @@
 export type TaskStatus = 'pending' | 'completed'
 
+export type RoutineKind = 'days' | 'ongoing'
+
+/** The rule a routine-spawned task carries for its row language ("↻ Mon & Thu",
+    "back tomorrow"). Rule truth lives on the routine; the task mirrors the other
+    fields at spawn. */
+export interface TaskRoutineRef {
+  kind: RoutineKind
+  repeatDays: number[]
+}
+
 export interface ChoreTask {
   id: string
   title: string
   description: string | null
-  assigneeId: string
-  assigneeName: string
+  /** Null = up for grabs: the task belongs to the household (Hearth treatment)
+      until a member claims it. */
+  assigneeId: string | null
+  assigneeName: string | null
   /** The assignee's photo, or null for the tinted-initials fallback (ADR 042).
       The avatar carries the face; the row's spine carries the identity hue. */
   assigneeAvatarUrl: string | null
@@ -16,6 +28,8 @@ export interface ChoreTask {
   assigneeHue: string | null
   status: TaskStatus
   dueDate: string | null
+  routineId: string | null
+  routine: TaskRoutineRef | null
   xpReward: number
   /** P-Bucks this chore pays on completion (ADR 052). Defaults to 0 — most chores earn a
       score only; a parent opts a chore in to paying. Credited off `chores.task.completed`

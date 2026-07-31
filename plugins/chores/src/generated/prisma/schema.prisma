@@ -12,10 +12,17 @@ model Task {
   id               String    @id @default(uuid()) @db.Uuid
   title            String
   description      String?
-  assigneeId       String    @map("assignee_id") @db.Uuid
+  // Null = up for grabs: the task belongs to the household until a member claims it
+  // (PATCH :id/claim sets the claimer). Completion requires an assignee — the economy
+  // credits the assignee, so an unclaimed task cannot be completed.
+  assigneeId       String?   @map("assignee_id") @db.Uuid
   createdBy        String    @map("created_by") @db.Uuid
   status           String    @default("pending")
   dueDate          DateTime? @map("due_date") @db.Date
+  // Set when this row was stamped out by a routine. The (routineId, dueDate) unique
+  // makes materialization idempotent: two concurrent reads race to spawn the same
+  // occurrence and the loser is a no-op.
+  routineId        String?   @map("routine_id") @db.Uuid
   xpReward         Int       @default(10) @map("xp_reward")
   coinReward       Int       @default(0) @map("coin_reward")
   // Hold the P-Bucks payout for a parent's OK instead of auto-crediting on completion
@@ -31,7 +38,37 @@ model Task {
   createdAt        DateTime  @default(now()) @map("created_at")
   completedAt      DateTime? @map("completed_at")
 
+  @@unique([routineId, dueDate])
   @@map("tasks")
+  @@schema("chores")
+}
+
+// A recurring chore: the rule plus the task fields it stamps onto each occurrence.
+// Occurrences are ordinary Task rows materialized lazily on read (never a scheduler —
+// the server does not know the household's timezone, so "today" always arrives from
+// the client as a local date key). At most one open row per routine; see
+// reconcileRoutines in the API plugin.
+model Routine {
+  id               String    @id @default(uuid()) @db.Uuid
+  title            String
+  description      String?
+  // Null = each occurrence spawns up for grabs.
+  assigneeId       String?   @map("assignee_id") @db.Uuid
+  createdBy        String    @map("created_by") @db.Uuid
+  // 'days' repeats on the weekdays in repeatDays; 'ongoing' respawns the day after
+  // a completion (done for today, back tomorrow).
+  kind             String
+  // Local weekdays 0–6 (Sunday 0), required non-empty for 'days'. Absolute weekdays
+  // are safe here — unlike ADR 057's timestamps, a date key has an unambiguous
+  // weekday, so no offset encoding is needed.
+  repeatDays       Int[]     @default([]) @map("repeat_days")
+  coinReward       Int       @default(0) @map("coin_reward")
+  requiresApproval Boolean   @default(false) @map("requires_approval")
+  createdAt        DateTime  @default(now()) @map("created_at")
+  // Ending a routine keeps the row (completed history points at it) and stops spawning.
+  endedAt          DateTime? @map("ended_at")
+
+  @@map("routines")
   @@schema("chores")
 }
 

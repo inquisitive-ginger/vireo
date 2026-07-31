@@ -8,6 +8,7 @@ import {
   Spine,
   WidgetHeader as UiWidgetHeader,
   WIDGET_CQ,
+  FAMILY_HUE,
   identityToken,
   resolveHue,
   useFitRows,
@@ -271,16 +272,21 @@ function PersonTile({
   name,
   hue,
   avatarUrl,
+  upForGrabs,
   tasks,
 }: {
   name: string
   hue: string | null
   avatarUrl: string | null
+  upForGrabs?: boolean
   tasks: ChoreTask[]
 }) {
   const pending = tasks.filter((t) => t.status === 'pending').length
   const overdue = overdueCount(tasks)
   const allDone = pending === 0 && tasks.length > 0
+  // Unowned work belongs to the household (Hearth, ADR 041) — never hash the
+  // "Up for grabs" label into a member-looking hue.
+  const owner = upForGrabs ? FAMILY_HUE : resolveHue(name, hue)
 
   return (
     <div
@@ -291,10 +297,10 @@ function PersonTile({
         opacity: allDone ? 0.78 : 1,
       }}
     >
-      <Spine color={identityToken(resolveHue(name, hue))} inset />
+      <Spine color={identityToken(owner)} inset />
       <ProfileAvatar
         name={name}
-        identity={resolveHue(name, hue)}
+        identity={owner}
         avatarUrl={avatarUrl ?? undefined}
         size="sm"
         className="size-7"
@@ -318,18 +324,21 @@ type MemberGroup = {
   name: string
   hue: string | null
   avatarUrl: string | null
+  /** The unowned group — painted as the household (Hearth), never a member hue. */
+  upForGrabs?: boolean
   tasks: ChoreTask[]
 }
 
 function groupByAssignee(tasks: ChoreTask[]): MemberGroup[] {
-  const map = new Map<string, MemberGroup>()
+  const map = new Map<string | null, MemberGroup>()
   for (const t of tasks) {
     let group = map.get(t.assigneeName)
     if (!group) {
       group = {
-        name: t.assigneeName,
+        name: t.assigneeName ?? 'Up for grabs',
         hue: t.assigneeHue,
         avatarUrl: t.assigneeAvatarUrl,
+        upForGrabs: t.assigneeName === null,
         tasks: [],
       }
       map.set(t.assigneeName, group)
@@ -793,7 +802,13 @@ function FamilyStandard({ tasks }: { tasks: ChoreTask[] }) {
         <div className="flex min-h-0 min-w-0 flex-1 flex-col">
           <FitList items={groups} keyOf={(g) => g.name} moreLabel="more">
             {(g) => (
-              <PersonTile name={g.name} hue={g.hue} avatarUrl={g.avatarUrl} tasks={g.tasks} />
+              <PersonTile
+                name={g.name}
+                hue={g.hue}
+                avatarUrl={g.avatarUrl}
+                upForGrabs={g.upForGrabs}
+                tasks={g.tasks}
+              />
             )}
           </FitList>
         </div>
@@ -842,7 +857,15 @@ function FamilyLarge({ tasks }: { tasks: ChoreTask[] }) {
       </div>
       <div className="mt-3 flex min-h-0 flex-1 flex-col">
         <FitList items={groups} keyOf={(g) => g.name} moreLabel="more">
-          {(g) => <PersonTile name={g.name} hue={g.hue} avatarUrl={g.avatarUrl} tasks={g.tasks} />}
+          {(g) => (
+            <PersonTile
+              name={g.name}
+              hue={g.hue}
+              avatarUrl={g.avatarUrl}
+              upForGrabs={g.upForGrabs}
+              tasks={g.tasks}
+            />
+          )}
         </FitList>
       </div>
     </div>

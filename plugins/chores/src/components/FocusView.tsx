@@ -1,6 +1,14 @@
 import { useRef } from 'react'
 import { Check } from 'lucide-react'
-import { Button, CoinValue, PageContainer, PageHeader, Spine } from '@family-os/ui'
+import {
+  Button,
+  CoinValue,
+  FAMILY_HUE,
+  PageContainer,
+  PageHeader,
+  Spine,
+  identityToken,
+} from '@family-os/ui'
 import { isReopened, type ChoreTask, type PendingPayout } from '../types'
 import { isOverdue, dueLabel } from '../lib/dates'
 import { REWARDS_UI_ENABLED, showCoinReward } from '../lib/flags'
@@ -16,10 +24,13 @@ import { FlightChip } from './FlightChip'
 import { useXpFlight } from '../lib/use-xp-flight'
 
 export interface FocusViewProps {
+  /** The active profile's own tasks, plus anything up for grabs. */
   tasks: ChoreTask[]
   /** Persist the completion. Rejects to revert the optimistic flight. Omitted in
       Storybook → the flight runs locally with no network. */
   onCompleteTask?: (taskId: string) => Promise<unknown>
+  /** Claim an up-for-grabs task — its collapsed section's "I'll do it". */
+  onClaimTask?: (taskId: string) => Promise<unknown>
   /** Persisted lifetime XP seed (GET /api/chores/xp). */
   initialXp?: number
   /** Held/decided payouts keyed by completion instance (M4/3b). */
@@ -44,20 +55,32 @@ function byUrgency(a: ChoreTask, b: ChoreTask): number {
    executive-function load (younger / ADHD). Shares the XP flight engine with the
    Agency `TaskeeView` (`useXpFlight`): the hero's XP chip is the flight's launch
    point; on landing the plate banks and the next task promotes to hero. */
-export function FocusView({ tasks, onCompleteTask, initialXp, payoutIndex }: FocusViewProps) {
+export function FocusView({
+  tasks,
+  onCompleteTask,
+  onClaimTask,
+  initialXp,
+  payoutIndex,
+}: FocusViewProps) {
+  // The hero and the progress meter speak about YOUR work only — an unclaimed
+  // chore isn't yours yet, so up-for-grabs waits in its own collapsed section
+  // (claiming moves it into the pending list, where it can promote to hero).
+  const own = tasks.filter((t) => t.assigneeId !== null)
+  const grabs = tasks.filter((t) => t.assigneeId === null && t.status === 'pending')
+
   const { plateRef, lifetime, flights, handleComplete, onFlightDone, effectiveStatus } =
-    useXpFlight({ tasks, onCompleteTask, initialXp })
+    useXpFlight({ tasks: own, onCompleteTask, initialXp })
 
   // Hero promotes on landing: an in-flight task is still "not completed", so it
   // holds the hero slot through the flight (design §2 "the card does not change
   // during the flight") and only yields once it banks.
-  const pending = tasks.filter((t) => effectiveStatus(t) !== 'completed').sort(byUrgency)
-  const completed = tasks
+  const pending = own.filter((t) => effectiveStatus(t) !== 'completed').sort(byUrgency)
+  const completed = own
     .filter((t) => effectiveStatus(t) === 'completed')
     .sort((a, b) => (b.completedAt ?? '').localeCompare(a.completedAt ?? ''))
   const [hero, ...rest] = pending
 
-  const { done, total, pct } = taskeeProgress(tasks, (t) => effectiveStatus(t) === 'completed')
+  const { done, total, pct } = taskeeProgress(own, (t) => effectiveStatus(t) === 'completed')
 
   return (
     <PageContainer width="list">
@@ -91,6 +114,17 @@ export function FocusView({ tasks, onCompleteTask, initialXp, payoutIndex }: Foc
         label="Coming up"
         items={rest}
         renderItem={(t) => <MiniRow key={t.id} task={t} />}
+      />
+      <CollapsibleSection
+        label="Up for grabs"
+        items={grabs}
+        renderItem={(t) => (
+          <MiniRow
+            key={t.id}
+            task={t}
+            onClaim={onClaimTask ? (taskId) => void onClaimTask(taskId) : undefined}
+          />
+        )}
       />
       <CollapsibleSection
         label="Done"
@@ -172,10 +206,25 @@ function HeroCard({
   )
 }
 
-function MiniRow({ task, payout }: { task: ChoreTask; payout?: PendingPayout }) {
+function MiniRow({
+  task,
+  payout,
+  onClaim,
+}: {
+  task: ChoreTask
+  payout?: PendingPayout
+  onClaim?: (taskId: string) => void
+}) {
   const done = task.status === 'completed'
   const overdue = isOverdue(task.dueDate, task.status)
-  const spine = done ? 'var(--success)' : overdue ? 'var(--error)' : 'var(--border)'
+  const upForGrabs = !done && task.assigneeId === null
+  const spine = done
+    ? 'var(--success)'
+    : upForGrabs
+      ? identityToken(FAMILY_HUE)
+      : overdue
+        ? 'var(--error)'
+        : 'var(--border)'
   const label = dueLabel(task.dueDate)
   const payoutView = done && REWARDS_UI_ENABLED ? kidPayoutView(task, payout) : null
   return (
@@ -208,6 +257,11 @@ function MiniRow({ task, payout }: { task: ChoreTask; payout?: PendingPayout }) 
       >
         {done ? `✓ ${task.xpReward}` : task.xpReward} XP
       </span>
+      {upForGrabs && onClaim && (
+        <Button size="sm" variant="outline" onClick={() => onClaim(task.id)}>
+          I&rsquo;ll do it
+        </Button>
+      )}
     </div>
   )
 }

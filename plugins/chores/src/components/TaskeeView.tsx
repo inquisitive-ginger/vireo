@@ -11,11 +11,13 @@ import { FlightChip } from './FlightChip'
 import { useXpFlight } from '../lib/use-xp-flight'
 
 export interface TaskeeViewProps {
-  /** The active profile's own tasks. */
+  /** The active profile's own tasks, plus anything up for grabs. */
   tasks: ChoreTask[]
   /** Persist the completion. Resolves on success, rejects to revert the optimistic
       UI. Omitted in Storybook → the flight runs locally with no network. */
   onCompleteTask?: (taskId: string) => Promise<unknown>
+  /** Claim an up-for-grabs task — the row's "I'll do it". */
+  onClaimTask?: (taskId: string) => Promise<unknown>
   /** Persisted lifetime XP total from GET /api/chores/xp. When provided this
       replaces the locally-derived seed (completed tasks sum). Seeded once on
       first render — not reactive to subsequent fetches, which would double-count
@@ -31,7 +33,13 @@ export interface TaskeeViewProps {
    Header carries the lifetime score plate (the flight's landing target). On tap:
    the badge lifts off, a portal chip arcs to the plate, and on landing the card
    morphs to done while the plate banks + counts up. */
-export function TaskeeView({ tasks, onCompleteTask, initialXp, payoutIndex }: TaskeeViewProps) {
+export function TaskeeView({
+  tasks,
+  onCompleteTask,
+  onClaimTask,
+  initialXp,
+  payoutIndex,
+}: TaskeeViewProps) {
   const { plateRef, lifetime, flights, handleComplete, onFlightDone, effectiveStatus } =
     useXpFlight({ tasks, onCompleteTask, initialXp })
 
@@ -90,6 +98,7 @@ export function TaskeeView({ tasks, onCompleteTask, initialXp, payoutIndex }: Ta
                 task={t}
                 displayStatus={effectiveStatus(t)}
                 onComplete={handleComplete}
+                onClaim={onClaimTask ? (taskId) => void onClaimTask(taskId) : undefined}
                 payout={payoutIndex && payoutForTask(t, payoutIndex)}
               />
             ))}

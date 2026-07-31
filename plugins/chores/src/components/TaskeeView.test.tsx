@@ -6,6 +6,8 @@ import type { ChoreTask } from '../types'
 function task(over: Partial<ChoreTask> & Pick<ChoreTask, 'id' | 'title'>): ChoreTask {
   return {
     description: null,
+    routineId: null,
+    routine: null,
     assigneeId: 'm-zoe',
     assigneeName: 'Zoë',
     assigneeAvatarUrl: null,
@@ -149,5 +151,80 @@ describe('TaskeeView — nothing left to do', () => {
 
     expect(screen.getByText('1 left · 0 of 1 done')).toBeInTheDocument()
     expect(screen.queryByText('All done today')).not.toBeInTheDocument()
+  })
+})
+
+// Recurring-chores session (gate D4): an unowned chore belongs to the household
+// until claimed — the row says so, offers "I'll do it", and never offers the check.
+describe('TaskeeView — up for grabs', () => {
+  it('offers the claim instead of the completion circle', () => {
+    const claims: string[] = []
+    render(
+      <TaskeeView
+        tasks={[
+          task({ id: 'g1', title: 'Water the plants', assigneeId: null, assigneeName: null }),
+        ]}
+        onClaimTask={(id) => {
+          claims.push(id)
+          return Promise.resolve()
+        }}
+      />
+    )
+
+    expect(screen.getByText('Up for grabs')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Mark .* done/ })).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: 'I’ll do it' }))
+    expect(claims).toEqual(['g1'])
+  })
+})
+
+// The routine row language: a days routine wears its schedule, an ongoing one its
+// standing promise — and a completed ongoing row states its return.
+describe('TaskeeView — routine rows', () => {
+  it('states the schedule and the ongoing promise', () => {
+    render(
+      <TaskeeView
+        tasks={[
+          task({
+            id: 'r1',
+            title: 'Take out the trash',
+            routineId: 'ro-1',
+            routine: { kind: 'days', repeatDays: [1, 4] },
+          }),
+          task({
+            id: 'r2',
+            title: 'Empty the dishwasher',
+            routineId: 'ro-2',
+            routine: { kind: 'ongoing', repeatDays: [] },
+          }),
+        ]}
+      />
+    )
+
+    expect(screen.getByText('Mon & Thu')).toBeInTheDocument()
+    expect(screen.getByText("Whenever it's needed")).toBeInTheDocument()
+  })
+
+  it('a done ongoing chore says it will be back', () => {
+    render(
+      <TaskeeView
+        tasks={[
+          task({
+            id: 'r2',
+            title: 'Empty the dishwasher',
+            routineId: 'ro-2',
+            routine: { kind: 'ongoing', repeatDays: [] },
+            status: 'completed',
+            xpAwarded: true,
+            completedAt: new Date().toISOString(),
+          }),
+        ]}
+      />
+    )
+
+    // Completed on arrival → the collapsed Done section (auto-bug #82's rule).
+    fireEvent.click(doneSection())
+    expect(screen.getByText('Back tomorrow')).toBeInTheDocument()
   })
 })

@@ -163,6 +163,45 @@ export const EventInputSchema = z
 
 export type EventInput = z.infer<typeof EventInputSchema>
 
+// ─── Chores: tasks + routines ─────────────────────────────────────────────────
+
+export const CHORE_ROUTINE_KINDS = ['days', 'ongoing'] as const
+export type ChoreRoutineKind = (typeof CHORE_ROUTINE_KINDS)[number]
+
+// The create + edit drawer submits the full field set, so one schema covers both.
+// assigneeId null = up for grabs: the task belongs to the household until a member
+// claims it. xpReward is never client-set — the server derives it (ADR 056).
+const ChoreFieldsSchema = z.object({
+  title: z.string().trim().min(1, 'title is required'),
+  description: OptionalText,
+  assigneeId: UuidSchema.nullable(),
+  coinReward: z.number().int().min(0).optional().default(0),
+  requiresApproval: z.boolean().optional().default(false),
+})
+
+// A blank due date clears it — the pre-Zod route accepted '' as "no due date" and
+// the contract keeps it.
+export const ChoreTaskInputSchema = ChoreFieldsSchema.extend({
+  dueDate: z
+    .union([IsoDateSchema, z.literal('')])
+    .nullish()
+    .transform((v) => (v ? v : null)),
+})
+
+// A routine stamps these fields onto each occurrence it materializes. repeatDays are
+// absolute local weekdays (Sunday 0) — a date key has an unambiguous weekday, so
+// chores needs none of ADR 057's offset encoding.
+export const ChoreRoutineInputSchema = ChoreFieldsSchema.extend({
+  kind: z.enum(CHORE_ROUTINE_KINDS),
+  repeatDays: z.array(z.number().int().min(0).max(6)).max(7).optional().default([]),
+}).refine((d) => d.kind !== 'days' || d.repeatDays.length > 0, {
+  message: 'a days routine needs at least one day',
+  path: ['repeatDays'],
+})
+
+export type ChoreTaskInput = z.infer<typeof ChoreTaskInputSchema>
+export type ChoreRoutineInput = z.infer<typeof ChoreRoutineInputSchema>
+
 // ─── Bug reports ──────────────────────────────────────────────────────────────
 
 /** The lifecycle a report moves through (ADR 046). `deployed` is the only status the
