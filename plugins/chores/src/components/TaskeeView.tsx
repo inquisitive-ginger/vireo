@@ -5,6 +5,7 @@ import { payoutForTask, type PayoutsByInstance } from '../lib/payouts'
 import { taskeeProgress } from '../lib/progress'
 import { AllDone } from './AllDone'
 import { TaskCard } from './TaskCard'
+import { GrabsTray } from './GrabsTray'
 import { CollapsibleSection } from './CollapsibleSection'
 import { ScorePlate } from './ScorePlate'
 import { FlightChip } from './FlightChip'
@@ -16,7 +17,7 @@ export interface TaskeeViewProps {
   /** Persist the completion. Resolves on success, rejects to revert the optimistic
       UI. Omitted in Storybook → the flight runs locally with no network. */
   onCompleteTask?: (taskId: string) => Promise<unknown>
-  /** Claim an up-for-grabs task — the row's "I'll do it". */
+  /** Claim an up-for-grabs task — the offer board's "I'll do it". */
   onClaimTask?: (taskId: string) => Promise<unknown>
   /** Persisted lifetime XP total from GET /api/chores/xp. When provided this
       replaces the locally-derived seed (completed tasks sum). Seeded once on
@@ -40,8 +41,19 @@ export function TaskeeView({
   initialXp,
   payoutIndex,
 }: TaskeeViewProps) {
+  // Your list and the household's offer board are different kinds of thing (gate
+  // D6): the meter, the flight, and the card list speak about YOUR work only;
+  // unclaimed chores sit in the sunken tray below, and claiming moves one up here.
+  const { own, grabs } = useMemo(
+    () => ({
+      own: tasks.filter((t) => t.assigneeId !== null),
+      grabs: tasks.filter((t) => t.assigneeId === null && t.status === 'pending'),
+    }),
+    [tasks]
+  )
+
   const { plateRef, lifetime, flights, handleComplete, onFlightDone, effectiveStatus } =
-    useXpFlight({ tasks, onCompleteTask, initialXp })
+    useXpFlight({ tasks: own, onCompleteTask, initialXp })
 
   // Lock card order on first sight so a just-completed task morphs in place
   // (design §2 "the card does not reorder during the flight") even if a refetch
@@ -54,21 +66,21 @@ export function TaskeeView({
   const orderRef = useRef<string[]>([])
   const seenRef = useRef<Set<string>>(new Set())
   const { active, history } = useMemo(() => {
-    for (const t of tasks) {
+    for (const t of own) {
       if (seenRef.current.has(t.id)) continue
       seenRef.current.add(t.id)
       if (t.status !== 'completed') orderRef.current.push(t.id)
     }
-    const byId = new Map(tasks.map((t) => [t.id, t]))
+    const byId = new Map(own.map((t) => [t.id, t]))
     const active = orderRef.current.map((id) => byId.get(id)).filter((t): t is ChoreTask => !!t)
     const activeIds = new Set(active.map((t) => t.id))
-    const history = tasks
+    const history = own
       .filter((t) => !activeIds.has(t.id))
       .sort((a, b) => (b.completedAt ?? '').localeCompare(a.completedAt ?? ''))
     return { active, history }
-  }, [tasks])
+  }, [own])
 
-  const { done, total, pct } = taskeeProgress(tasks, (t) => effectiveStatus(t) === 'completed')
+  const { done, total, pct } = taskeeProgress(own, (t) => effectiveStatus(t) === 'completed')
 
   return (
     <PageContainer width="list">
@@ -91,22 +103,23 @@ export function TaskeeView({
             </div>
           </div>
 
-          <div className="flex flex-col gap-2.5 border-t border-border pt-4">
+          <div className="flex flex-col gap-2.5">
             {active.map((t) => (
               <TaskCard
                 key={t.id}
                 task={t}
                 displayStatus={effectiveStatus(t)}
                 onComplete={handleComplete}
-                onClaim={onClaimTask ? (taskId) => void onClaimTask(taskId) : undefined}
                 payout={payoutIndex && payoutForTask(t, payoutIndex)}
               />
             ))}
           </div>
         </>
-      ) : (
+      ) : own.length > 0 || grabs.length === 0 ? (
         /* Nothing to do — a meter at 100% and a one-line "all done" is a thin
-           payoff for having cleared the list, and it left the page empty. */
+           payoff for having cleared the list, and it left the page empty. A kid
+           with nothing assigned and offers waiting gets the board, not a
+           celebration for work that never existed. */
         <AllDone
           note={
             history.length > 0
@@ -114,7 +127,12 @@ export function TaskeeView({
               : undefined
           }
         />
-      )}
+      ) : null}
+
+      <GrabsTray
+        tasks={grabs}
+        onClaim={onClaimTask ? (taskId) => void onClaimTask(taskId) : undefined}
+      />
 
       <CollapsibleSection
         label="Done"

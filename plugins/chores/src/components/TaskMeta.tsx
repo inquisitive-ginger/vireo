@@ -40,7 +40,6 @@ export function TaskStatusLine({ task, className }: { task: ChoreTask; className
   const reopened = isReopened(task)
   const overdue = isOverdue(task.dueDate, task.status)
   const label = dueLabel(task.dueDate)
-  const upForGrabs = task.assigneeId === null
 
   let timing: ReactNode = null
   // An ongoing row tracks today's date under the hood, but it has no schedule —
@@ -64,12 +63,11 @@ export function TaskStatusLine({ task, className }: { task: ChoreTask; className
     </span>
   ) : null
 
-  if (!reopened && !timing && !repeat && !upForGrabs) return null
+  if (!reopened && !timing && !repeat) return null
 
   return (
     <div className={`flex flex-wrap items-center gap-x-3 gap-y-1 ${className ?? ''}`}>
       {reopened && <ReopenedBadge />}
-      {upForGrabs && <span className="text-sm-token text-muted-foreground">Up for grabs</span>}
       {timing}
       {repeat}
     </div>

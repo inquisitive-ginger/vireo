@@ -177,6 +177,20 @@ describe('TaskeeView — up for grabs', () => {
     fireEvent.click(screen.getByRole('button', { name: 'I’ll do it' }))
     expect(claims).toEqual(['g1'])
   })
+
+  it('the meter counts your work only, not the offer board', () => {
+    render(
+      <TaskeeView
+        tasks={[
+          task({ id: 't1', title: 'Make your bed' }),
+          task({ id: 'g1', title: 'Water the plants', assigneeId: null, assigneeName: null }),
+          task({ id: 'g2', title: 'Take out compost', assigneeId: null, assigneeName: null }),
+        ]}
+      />
+    )
+
+    expect(screen.getByText('1 left · 0 of 1 done')).toBeInTheDocument()
+  })
 })
 
 // The routine row language: a days routine wears its schedule, an ongoing one its
