@@ -197,6 +197,25 @@ function CountChip({ label, count }: { label: string; count: number }) {
   )
 }
 
+/* The household's unclaimed offers, in the hearth tint the page's tray header
+   uses. A count, never a row: rows on this tile are people, and an offer nobody
+   has taken has no person to be. It is also the only thing that keeps the family
+   hero honest, since it accounts for the gap between that count and what the
+   member chips add up to. */
+function GrabsChip({ n }: { n: number }) {
+  return (
+    <span
+      className="text-xs-token inline-flex items-center rounded-full px-2 py-0.5 font-semibold"
+      style={{
+        background: identityToken(FAMILY_HUE, 'tint'),
+        color: identityToken(FAMILY_HUE, 'ink'),
+      }}
+    >
+      {n} up for grabs
+    </span>
+  )
+}
+
 function AllDoneChip() {
   return (
     <span
@@ -272,21 +291,17 @@ function PersonTile({
   name,
   hue,
   avatarUrl,
-  upForGrabs,
   tasks,
 }: {
   name: string
   hue: string | null
   avatarUrl: string | null
-  upForGrabs?: boolean
   tasks: ChoreTask[]
 }) {
   const pending = tasks.filter((t) => t.status === 'pending').length
   const overdue = overdueCount(tasks)
   const allDone = pending === 0 && tasks.length > 0
-  // Unowned work belongs to the household (Hearth, ADR 041) — never hash the
-  // "Up for grabs" label into a member-looking hue.
-  const owner = upForGrabs ? FAMILY_HUE : resolveHue(name, hue)
+  const owner = resolveHue(name, hue)
 
   return (
     <div
@@ -324,21 +339,22 @@ type MemberGroup = {
   name: string
   hue: string | null
   avatarUrl: string | null
-  /** The unowned group — painted as the household (Hearth), never a member hue. */
-  upForGrabs?: boolean
   tasks: ChoreTask[]
 }
 
+/* People only. Unclaimed work used to group here too, which gave it a spine, an
+   avatar and a name — a member row for something that is not a member — and it
+   spent the row the fourth face needed (auto-bug #70). It is a header count now. */
 function groupByAssignee(tasks: ChoreTask[]): MemberGroup[] {
-  const map = new Map<string | null, MemberGroup>()
+  const map = new Map<string, MemberGroup>()
   for (const t of tasks) {
+    if (t.assigneeName === null) continue
     let group = map.get(t.assigneeName)
     if (!group) {
       group = {
-        name: t.assigneeName ?? 'Up for grabs',
+        name: t.assigneeName,
         hue: t.assigneeHue,
         avatarUrl: t.assigneeAvatarUrl,
-        upForGrabs: t.assigneeName === null,
         tasks: [],
       }
       map.set(t.assigneeName, group)
@@ -387,16 +403,19 @@ function CenteredState({
   heading,
   body,
   trailing,
+  grabs = 0,
 }: {
   heading: string
   body?: string
   trailing?: ReactNode
+  grabs?: number
 }) {
   return (
     <div className="flex size-full flex-col p-4" style={{ containerType: 'size' }}>
       <WidgetHeader trailing={trailing} />
-      <div className="flex flex-1 items-center justify-center">
+      <div className="flex flex-1 flex-col items-center justify-center gap-2">
         <EmptyState heading={heading} body={body} compact />
+        {grabs > 0 && <GrabsChip n={grabs} />}
       </div>
     </div>
   )
@@ -409,10 +428,12 @@ function TaskeeAllDone({
   lifetimeXp = 0,
   dailyXp = 0,
   compact = false,
+  grabs = 0,
 }: {
   lifetimeXp?: number
   dailyXp?: number
   compact?: boolean
+  grabs?: number
 }) {
   return (
     <div className="flex size-full flex-col p-4" style={{ containerType: 'size' }}>
@@ -422,6 +443,7 @@ function TaskeeAllDone({
           🎉
         </span>
         <span className="text-card-title text-foreground">All done today</span>
+        {grabs > 0 && <GrabsChip n={grabs} />}
         {!compact && dailyXp > 0 && (
           <span
             className="inline-flex items-center gap-1.5 rounded-full bg-secondary"
@@ -443,21 +465,23 @@ function TaskeeAllDone({
 function TaskeeCompact({
   tasks,
   tier,
+  grabs,
 }: {
   tasks: ChoreTask[]
   lifetimeXp: number
   dailyXp: number
   tier: number
+  grabs: number
 }) {
   const pending = todayPending(tasks).length
   const done = todayCompleted(tasks).length
   const total = pending + done
 
   if (total === 0) {
-    return <CenteredState heading={tier === 1 ? 'All done!' : 'No tasks'} />
+    return <CenteredState heading={tier === 1 ? 'All done!' : 'No tasks'} grabs={grabs} />
   }
   if (pending === 0) {
-    return <TaskeeAllDone compact />
+    return <TaskeeAllDone compact grabs={grabs} />
   }
 
   return (
@@ -476,12 +500,14 @@ function TaskeeStandard({
   lifetimeXp,
   dailyXp,
   tier,
+  grabs,
   payoutIndex,
 }: {
   tasks: ChoreTask[]
   lifetimeXp: number
   dailyXp: number
   tier: number
+  grabs: number
   payoutIndex?: PayoutsByInstance
 }) {
   /* Memoised because `FitList` measures its rows and re-measures whenever the
@@ -495,11 +521,12 @@ function TaskeeStandard({
       <CenteredState
         heading={tier === 1 ? 'All done!' : 'No tasks today'}
         trailing={<CoinScore value={lifetimeXp} />}
+        grabs={grabs}
       />
     )
   }
   if (pending.length === 0) {
-    return <TaskeeAllDone lifetimeXp={lifetimeXp} dailyXp={dailyXp} />
+    return <TaskeeAllDone lifetimeXp={lifetimeXp} dailyXp={dailyXp} grabs={grabs} />
   }
 
   return (
@@ -528,12 +555,14 @@ function TaskeeLarge({
   lifetimeXp,
   dailyXp,
   tier,
+  grabs,
   payoutIndex,
 }: {
   tasks: ChoreTask[]
   lifetimeXp: number
   dailyXp: number
   tier: number
+  grabs: number
   payoutIndex?: PayoutsByInstance
 }) {
   const pendingCount = todayPending(tasks).length
@@ -551,6 +580,7 @@ function TaskeeLarge({
       <CenteredState
         heading={tier === 1 ? 'All done!' : 'No tasks scheduled today'}
         trailing={<CoinScore value={lifetimeXp} />}
+        grabs={grabs}
       />
     )
   }
@@ -567,6 +597,7 @@ function TaskeeLarge({
               🎉
             </span>
             <span className="text-card-title text-foreground">All done today</span>
+            {grabs > 0 && <GrabsChip n={grabs} />}
           </span>
         ) : (
           <HeroCount value={pendingCount} label="tasks left today" />
@@ -640,13 +671,23 @@ function NextUpLabel() {
   return <span className="text-section-label text-muted-foreground">Next up</span>
 }
 
-function FocusCompact({ tasks, tier }: { tasks: ChoreTask[]; lifetimeXp: number; tier: number }) {
+function FocusCompact({
+  tasks,
+  tier,
+  grabs,
+}: {
+  tasks: ChoreTask[]
+  lifetimeXp: number
+  tier: number
+  grabs: number
+}) {
   const pending = todayPending(tasks).sort(focusSort)
   const done = todayCompleted(tasks).length
   const total = pending.length + done
 
-  if (total === 0) return <CenteredState heading={tier === 1 ? 'All done!' : 'No tasks'} />
-  if (pending.length === 0) return <TaskeeAllDone compact />
+  if (total === 0)
+    return <CenteredState heading={tier === 1 ? 'All done!' : 'No tasks'} grabs={grabs} />
+  if (pending.length === 0) return <TaskeeAllDone compact grabs={grabs} />
 
   const [hero, ...rest] = pending
   return (
@@ -671,11 +712,13 @@ function FocusStandard({
   lifetimeXp,
   dailyXp,
   tier,
+  grabs,
 }: {
   tasks: ChoreTask[]
   lifetimeXp: number
   dailyXp: number
   tier: number
+  grabs: number
 }) {
   const pending = todayPending(tasks).sort(focusSort)
   const done = todayCompleted(tasks).length
@@ -686,9 +729,11 @@ function FocusStandard({
       <CenteredState
         heading={tier === 1 ? 'All done!' : 'No tasks today'}
         trailing={<CoinScore value={lifetimeXp} />}
+        grabs={grabs}
       />
     )
-  if (pending.length === 0) return <TaskeeAllDone lifetimeXp={lifetimeXp} dailyXp={dailyXp} />
+  if (pending.length === 0)
+    return <TaskeeAllDone lifetimeXp={lifetimeXp} dailyXp={dailyXp} grabs={grabs} />
 
   const [hero, ...rest] = pending
   return (
@@ -712,11 +757,13 @@ function FocusLarge({
   lifetimeXp,
   dailyXp,
   tier,
+  grabs,
 }: {
   tasks: ChoreTask[]
   lifetimeXp: number
   dailyXp: number
   tier: number
+  grabs: number
 }) {
   const pending = todayPending(tasks).sort(focusSort)
   const done = todayCompleted(tasks).length
@@ -727,9 +774,11 @@ function FocusLarge({
       <CenteredState
         heading={tier === 1 ? 'All done!' : 'No tasks scheduled today'}
         trailing={<CoinScore value={lifetimeXp} />}
+        grabs={grabs}
       />
     )
-  if (pending.length === 0) return <TaskeeAllDone lifetimeXp={lifetimeXp} dailyXp={dailyXp} />
+  if (pending.length === 0)
+    return <TaskeeAllDone lifetimeXp={lifetimeXp} dailyXp={dailyXp} grabs={grabs} />
 
   const [hero, ...rest] = pending
   return (
@@ -751,6 +800,23 @@ function FocusLarge({
 
 /* Family framing (tier 4 / family pseudo-profile) — Hero split */
 
+/* The household's two aggregates live on the header's trailing edge, which is
+   where this tile keeps anything that belongs to nobody in particular. Overdue
+   sits outermost: it is the one a parent has to act on. */
+function FamilyTrailing({ grabs, overdue }: { grabs: number; overdue: number }) {
+  if (grabs === 0 && overdue === 0) return null
+  return (
+    <span className="flex items-center gap-1.5">
+      {grabs > 0 && <GrabsChip n={grabs} />}
+      {overdue > 0 && <OverduePill n={overdue} />}
+    </span>
+  )
+}
+
+function grabsCount(tasks: ChoreTask[]): number {
+  return tasks.filter((t) => t.assigneeId === null && t.status === 'pending').length
+}
+
 /* Short / narrow family slot — a summary glance (count + progress + overdue), no
    per-person rows (they need height). Per-person detail is one tap away. Added for
    the responsive reflow: a family slot can be short (e.g. an h=1 slot is 180px on
@@ -767,7 +833,7 @@ function FamilyCompact({ tasks }: { tasks: ChoreTask[] }) {
 
   return (
     <div className="flex size-full flex-col p-4" style={{ containerType: 'size' }}>
-      <WidgetHeader trailing={overdue > 0 ? <OverduePill n={overdue} /> : undefined} />
+      <WidgetHeader trailing={<FamilyTrailing grabs={grabsCount(tasks)} overdue={overdue} />} />
       <div className="mt-2 flex flex-1 flex-col justify-between">
         <HeroCount value={pending} label={pending === 0 ? '🎉 all done today' : 'pending today'} />
         <ProgressBar done={done} total={total} />
@@ -791,7 +857,7 @@ function FamilyStandard({ tasks }: { tasks: ChoreTask[] }) {
      list drops are the ones with the least outstanding. */
   return (
     <div className="flex size-full flex-col p-5" style={{ containerType: 'size' }}>
-      <WidgetHeader trailing={overdue > 0 ? <OverduePill n={overdue} /> : undefined} />
+      <WidgetHeader trailing={<FamilyTrailing grabs={grabsCount(tasks)} overdue={overdue} />} />
       <div className="mt-3 flex min-h-0 flex-1 gap-4">
         <div className="flex w-35 shrink-0 flex-col gap-1">
           <HeroCount value={pending} label="pending today" />
@@ -802,13 +868,7 @@ function FamilyStandard({ tasks }: { tasks: ChoreTask[] }) {
         <div className="flex min-h-0 min-w-0 flex-1 flex-col">
           <FitList items={groups} keyOf={(g) => g.name} moreLabel="more">
             {(g) => (
-              <PersonTile
-                name={g.name}
-                hue={g.hue}
-                avatarUrl={g.avatarUrl}
-                upForGrabs={g.upForGrabs}
-                tasks={g.tasks}
-              />
+              <PersonTile name={g.name} hue={g.hue} avatarUrl={g.avatarUrl} tasks={g.tasks} />
             )}
           </FitList>
         </div>
@@ -834,7 +894,7 @@ function FamilyLarge({ tasks }: { tasks: ChoreTask[] }) {
 
   return (
     <div className="flex size-full flex-col p-6" style={{ containerType: 'size' }}>
-      <WidgetHeader trailing={overdue > 0 ? <OverduePill n={overdue} /> : undefined} />
+      <WidgetHeader trailing={<FamilyTrailing grabs={grabsCount(tasks)} overdue={overdue} />} />
       <div className="mt-2 flex items-baseline justify-between gap-3">
         {pending === 0 ? (
           <span className="flex items-center gap-2">
@@ -857,15 +917,7 @@ function FamilyLarge({ tasks }: { tasks: ChoreTask[] }) {
       </div>
       <div className="mt-3 flex min-h-0 flex-1 flex-col">
         <FitList items={groups} keyOf={(g) => g.name} moreLabel="more">
-          {(g) => (
-            <PersonTile
-              name={g.name}
-              hue={g.hue}
-              avatarUrl={g.avatarUrl}
-              upForGrabs={g.upForGrabs}
-              tasks={g.tasks}
-            />
-          )}
+          {(g) => <PersonTile name={g.name} hue={g.hue} avatarUrl={g.avatarUrl} tasks={g.tasks} />}
         </FitList>
       </div>
     </div>
@@ -954,34 +1006,58 @@ export function TodaySummaryView({
 }: TodaySummaryViewProps) {
   const usesFamilyFraming = isFamily || tier >= 4
 
+  /* `GET /chores/tasks` hands a taskee their own work AND the household's
+     unclaimed offers in one list, so every taskee framing must split it: an offer
+     nobody has taken is not this person's obligation and never counts toward
+     their meter (gate D6 — the rule the page's list already follows and this
+     widget did not, so "6 left" meant one theirs and five on the board). The
+     family framing keeps the whole list: unowned work is still the household's,
+     and `groupByAssignee` already gives it its own hearth tile. */
+  const own = useMemo(() => tasks.filter((t) => t.assigneeId !== null), [tasks])
+  const grabs = tasks.filter((t) => t.assigneeId === null && t.status === 'pending').length
+
   // Taskee framing → Focus ("Next up") or Agency (Hero split) per the setting.
   // Both reuse the same cw-* container-query slots; only the content differs.
   const taskeeStandard = focusMode ? (
-    <FocusStandard tasks={tasks} lifetimeXp={lifetimeXp} dailyXp={dailyXp} tier={tier} />
-  ) : (
-    <TaskeeStandard
-      tasks={tasks}
+    <FocusStandard
+      tasks={own}
       lifetimeXp={lifetimeXp}
       dailyXp={dailyXp}
       tier={tier}
+      grabs={grabs}
+    />
+  ) : (
+    <TaskeeStandard
+      tasks={own}
+      lifetimeXp={lifetimeXp}
+      dailyXp={dailyXp}
+      tier={tier}
+      grabs={grabs}
       payoutIndex={payoutIndex}
     />
   )
   const taskeeLarge = focusMode ? (
-    <FocusLarge tasks={tasks} lifetimeXp={lifetimeXp} dailyXp={dailyXp} tier={tier} />
+    <FocusLarge tasks={own} lifetimeXp={lifetimeXp} dailyXp={dailyXp} tier={tier} grabs={grabs} />
   ) : (
     <TaskeeLarge
-      tasks={tasks}
+      tasks={own}
       lifetimeXp={lifetimeXp}
       dailyXp={dailyXp}
       tier={tier}
+      grabs={grabs}
       payoutIndex={payoutIndex}
     />
   )
   const taskeeCompact = focusMode ? (
-    <FocusCompact tasks={tasks} lifetimeXp={lifetimeXp} tier={tier} />
+    <FocusCompact tasks={own} lifetimeXp={lifetimeXp} tier={tier} grabs={grabs} />
   ) : (
-    <TaskeeCompact tasks={tasks} lifetimeXp={lifetimeXp} dailyXp={dailyXp} tier={tier} />
+    <TaskeeCompact
+      tasks={own}
+      lifetimeXp={lifetimeXp}
+      dailyXp={dailyXp}
+      tier={tier}
+      grabs={grabs}
+    />
   )
   const familyCompact = <FamilyCompact tasks={tasks} />
   const familyStandard = <FamilyStandard tasks={tasks} />
