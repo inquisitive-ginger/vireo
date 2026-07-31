@@ -802,6 +802,49 @@ describe('chore routines', () => {
     })
   })
 
+  it('a reopened previous-day row behind a completed today-row does not 500 the list', async () => {
+    const parent = await getCookieForProfile(PARENT_ID)
+    const kid = await getCookieForProfile(KID_ID)
+    await createRoutine(parent, {
+      title: 'Bedtime routine',
+      assigneeId: KID_ID,
+      kind: 'ongoing',
+    })
+
+    // Thursday's and Friday's occurrences both completed, then Thursday's is
+    // reopened (the clawback move) — a pending row now sits behind a completed
+    // row that owns Friday's key, so the roll's target is taken.
+    let tasks = await getTasks(kid, THU)
+    const thuId = tasks[0].id
+    await app.inject({
+      method: 'PATCH',
+      url: `/api/chores/tasks/${thuId}/complete?today=${THU}`,
+      headers: { cookie: kid },
+    })
+    tasks = await getTasks(kid, FRI)
+    const friId = tasks.find((t) => t.status === 'pending')!.id
+    await app.inject({
+      method: 'PATCH',
+      url: `/api/chores/tasks/${friId}/complete?today=${FRI}`,
+      headers: { cookie: kid },
+    })
+    const reopen = await app.inject({
+      method: 'PATCH',
+      url: `/api/chores/tasks/${thuId}/reopen`,
+      headers: { cookie: await getCookieForProfile(PARENT_ID) },
+    })
+    expect(reopen.statusCode).toBe(200)
+
+    // The read must survive: the roll skips the taken key and the row stays put.
+    tasks = await getTasks(kid, FRI)
+    expect(tasks).toHaveLength(2)
+    expect(tasks.find((t) => t.status === 'pending')!.dueDate).toBe(THU)
+
+    // Saturday frees the key: the reopened row rolls forward normally.
+    tasks = await getTasks(kid, SAT)
+    expect(tasks.find((t) => t.status === 'pending')!.dueDate).toBe(SAT)
+  })
+
   it('completing a stale ongoing row is that day’s completion — no immediate respawn (auto-bug #92)', async () => {
     const parent = await getCookieForProfile(PARENT_ID)
     const kid = await getCookieForProfile(KID_ID)
