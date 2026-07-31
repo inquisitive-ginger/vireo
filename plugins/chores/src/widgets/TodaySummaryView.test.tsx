@@ -119,6 +119,50 @@ describe('TodaySummaryView — "done today" is scoped to today (auto-bug #73)', 
   })
 })
 
+const grab = (over: Partial<ChoreTask> = {}): ChoreTask =>
+  task({
+    assigneeId: null,
+    assigneeName: null,
+    assigneeHue: null,
+    status: 'pending',
+    completedAt: null,
+    ...over,
+  })
+
+/* auto-bug #94 — gate D6 gave the page's list the own/grabs split and the widget
+   never got it, so the household's offer board was counted as the kid's own
+   obligations on the dashboard. */
+describe("TodaySummaryView — a taskee's count is their own work only (auto-bug #94)", () => {
+  it('does not count an up-for-grabs chore as a task left today', () => {
+    view([
+      task({ id: 'mine', status: 'pending', completedAt: null }),
+      grab({ id: 'g1', title: 'Take the bins out' }),
+      grab({ id: 'g2', title: 'Sweep the porch' }),
+    ])
+    expect(screen.getAllByText('0 of 1 done today').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('task left today').length).toBeGreaterThan(0)
+  })
+
+  it("does not render an unclaimed chore in the taskee's list", () => {
+    view([
+      task({ id: 'mine', status: 'pending', completedAt: null }),
+      grab({ id: 'g1', title: 'Take the bins out' }),
+    ])
+    expect(screen.queryByText('Take the bins out')).not.toBeInTheDocument()
+  })
+
+  it('states the offer board instead of celebrating over it', () => {
+    view([task({ id: 'mine', completedAt: COMPLETED_AT }), grab({ id: 'g1' }), grab({ id: 'g2' })])
+    expect(screen.getAllByText('All done today').length).toBeGreaterThan(0)
+    expect(screen.getAllByText('2 up for grabs').length).toBeGreaterThan(0)
+  })
+
+  it('shows the board to a kid with nothing assigned at all', () => {
+    view([grab({ id: 'g1' })])
+    expect(screen.getAllByText('1 up for grabs').length).toBeGreaterThan(0)
+  })
+})
+
 const familyView = (tasks: ChoreTask[], size?: 'compact' | 'standard' | 'large') =>
   render(
     <MemoryRouter>
@@ -151,5 +195,31 @@ describe('TodaySummaryView — the family list', () => {
   it('keeps the stacked hero on the compact slot, which has nothing to make room for', () => {
     familyView(HOUSEHOLD, 'compact')
     expect(screen.getByText('0 of 4 done today')).toBeInTheDocument()
+  })
+
+  /* Unowned work is still the household's, so the family hero keeps counting it —
+     but as a header count, not a member row. It used to group like a person,
+     which gave it a spine, an avatar and a name, and spent a row on it. */
+  it('still counts unclaimed work as the household’s', () => {
+    familyView([...HOUSEHOLD, grab({ id: 'g1' })], 'large')
+    expect(screen.getByText('0 of 5 done')).toBeInTheDocument()
+    expect(screen.getByText('1 up for grabs')).toBeInTheDocument()
+  })
+
+  it('keeps the member list to real people', () => {
+    familyView([...HOUSEHOLD, grab({ id: 'g1' }), grab({ id: 'g2' })], 'large')
+    expect(screen.queryByText('Up for grabs')).not.toBeInTheDocument()
+    for (const name of ['Zach', 'Emma', 'Teddy', 'Nora']) {
+      expect(screen.getByText(name)).toBeInTheDocument()
+    }
+  })
+
+  it('shows both household aggregates when the board and the backlog are live', () => {
+    familyView(
+      [...HOUSEHOLD, grab({ id: 'g1', dueDate: '2020-01-01' }), grab({ id: 'g2' })],
+      'large'
+    )
+    expect(screen.getByText('2 up for grabs')).toBeInTheDocument()
+    expect(screen.getByText('1 overdue')).toBeInTheDocument()
   })
 })
