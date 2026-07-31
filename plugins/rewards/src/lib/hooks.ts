@@ -70,6 +70,19 @@ export function useQueueRedemptions() {
   })
 }
 
+/** Every kid's tickets, for the tier-4 Tickets tab — the pocket and the recently
+    torn in one read (the GET drops the profile scope for tier 4). Shares the
+    `['rewards/redemptions']` prefix, so a correction here refreshes the queue too. */
+export function useAllRedemptions() {
+  return useQuery({
+    queryKey: ['rewards/redemptions', 'all'],
+    queryFn: () =>
+      jsonFetch<{ redemptions: Redemption[] }>(
+        '/api/rewards/redemptions?status=owned,use_requested,used&limit=100'
+      ).then((r) => r.redemptions),
+  })
+}
+
 export function useProfiles() {
   return useQuery({
     queryKey: ['profiles'],
@@ -244,6 +257,36 @@ export function useDecidePayout() {
         body: JSON.stringify({ decision, note }),
       }),
     onSuccess: () => qc.invalidateQueries({ queryKey: ['rewards/payouts'] }),
+  })
+}
+
+/** The tier-4 "put it back": a mistakenly torn ticket returns to the kid's pocket.
+    No money moves — only the redemptions prefix refreshes. */
+export function useRestoreRedemption() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) =>
+      jsonFetch<{ redemption: Redemption }>(`/api/rewards/redemptions/${id}/restore`, {
+        method: 'POST',
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['rewards/redemptions'] }),
+  })
+}
+
+/** The tier-4 revoke exception (ADR 055): refund the snapshot cost and remove the
+    ticket. The balance moves, so the store and wallet refresh with it. */
+export function useRevokeRedemption() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (id: string) =>
+      jsonFetch<{ revoked: boolean; balance: number }>(`/api/rewards/redemptions/${id}`, {
+        method: 'DELETE',
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['rewards/redemptions'] })
+      qc.invalidateQueries({ queryKey: ['rewards/store'] })
+      qc.invalidateQueries({ queryKey: ['rewards/wallet'] })
+    },
   })
 }
 

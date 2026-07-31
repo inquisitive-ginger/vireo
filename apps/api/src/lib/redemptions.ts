@@ -244,6 +244,50 @@ export async function decideUse(
   return { redemption: updated }
 }
 
+/** The other tier-4 correction: a ticket was torn by mistake, so put it back. Undoes
+ *  a tear and nothing else — `used` → `owned`, every decision field cleared, so the
+ *  ticket is indistinguishable from one never used and asks again if it must.
+ *
+ *  No ledger movement: the money left at purchase (ADR 055) and a use never touched
+ *  it, so there is nothing to give back. That is what separates this from the revoke
+ *  below — this one hands back the ticket, that one hands back the P-Bucks.
+ *
+ *  `used` is still terminal in the kid flow; this is an administrative correction,
+ *  reachable only from tier 4. */
+export async function restoreRedemption(
+  bus: EventBus,
+  id: string,
+  restoredBy: string
+): Promise<{ redemption: RedemptionWithReward }> {
+  const redemption = await getRedemption(id)
+  if (!redemption) throw new RedemptionError('Ticket not found', 404)
+  if (redemption.status !== 'used') {
+    throw new RedemptionError('That ticket is already in their pocket', 409)
+  }
+
+  const updated = await rewardsPrisma.redemption.update({
+    where: { id },
+    data: {
+      status: 'owned',
+      usedAt: null,
+      useRequestedAt: null,
+      decidedBy: null,
+      decidedAt: null,
+      decidedNote: null,
+    },
+    include: { reward: rewardSelect },
+  })
+
+  bus.emit('rewards.redemption.restored', {
+    redemptionId: id,
+    profileId: redemption.profileId,
+    rewardId: redemption.rewardId,
+    restoredBy,
+  })
+
+  return { redemption: updated }
+}
+
 /** The tier-4 exception (ADR 055): refund the snapshot cost and remove the ticket.
  *  An administrative correction (mis-buys, retired rewards), never a flow state —
  *  and never reachable from kid UI. A used ticket was consumed, so there is nothing

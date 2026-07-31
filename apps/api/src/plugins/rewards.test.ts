@@ -859,6 +859,13 @@ describe('redemptions — tickets (ADR 055)', () => {
   const revoke = (cookie: string, id: string) =>
     app.inject({ method: 'DELETE', url: `/api/rewards/redemptions/${id}`, headers: { cookie } })
 
+  const restore = (cookie: string, id: string) =>
+    app.inject({
+      method: 'POST',
+      url: `/api/rewards/redemptions/${id}/restore`,
+      headers: { cookie },
+    })
+
   it('buy debits once and lands owned — no approval branch at any price', async () => {
     const kid = await getCookieForProfile(KID_ID)
     await credit(KID_ID, 60, 'seed')
@@ -983,7 +990,7 @@ describe('redemptions — tickets (ADR 055)', () => {
     expect((await decide(parent, ticket.id, 'not_now')).statusCode).toBe(409)
   })
 
-  it('a kid cannot decide or revoke (tier < 4 → 403)', async () => {
+  it('a kid cannot decide, revoke or restore (tier < 4 → 403)', async () => {
     const kid = await getCookieForProfile(KID_ID)
     await credit(KID_ID, 15, 'seed')
     const r = await reward({ requiresApproval: true })
@@ -992,6 +999,7 @@ describe('redemptions — tickets (ADR 055)', () => {
 
     expect((await decide(kid, ticket.id, 'yes')).statusCode).toBe(403)
     expect((await revoke(kid, ticket.id)).statusCode).toBe(403)
+    expect((await restore(kid, ticket.id)).statusCode).toBe(403)
     expect((await rewardsPrisma.redemption.findUnique({ where: { id: ticket.id } }))?.status).toBe(
       'use_requested'
     )
@@ -1030,6 +1038,48 @@ describe('redemptions — tickets (ADR 055)', () => {
 
     expect((await revoke(parent, ticket.id)).statusCode).toBe(409)
     expect(await getBalance(KID_ID)).toBe(0)
+  })
+
+  it('restore puts a used ticket back in the pocket and moves no money', async () => {
+    const kid = await getCookieForProfile(KID_ID)
+    const parent = await getCookieForProfile(PARENT_ID)
+    await credit(KID_ID, 15, 'seed')
+    const r = await reward({ requiresApproval: true })
+    const ticket = (await buy(kid, r.id)).json().redemption
+    await use(kid, ticket.id)
+    await decide(parent, ticket.id, 'yes')
+
+    const res = await restore(parent, ticket.id)
+    expect(res.statusCode).toBe(200)
+    expect(res.json().redemption).toMatchObject({
+      status: 'owned',
+      usedAt: null,
+      useRequestedAt: null,
+      decidedAt: null,
+      decidedNote: null,
+    })
+    // A tear never touched the balance, so undoing one must not either.
+    expect(await getBalance(KID_ID)).toBe(0)
+    expect(await recomputeBalance(KID_ID)).toBe(0)
+
+    // Back in the pocket means usable again — the ask starts over.
+    expect((await use(kid, ticket.id)).statusCode).toBe(200)
+    expect((await rewardsPrisma.redemption.findUnique({ where: { id: ticket.id } }))?.status).toBe(
+      'use_requested'
+    )
+  })
+
+  it('a ticket that is not used has nothing to restore (409)', async () => {
+    const kid = await getCookieForProfile(KID_ID)
+    const parent = await getCookieForProfile(PARENT_ID)
+    await credit(KID_ID, 15, 'seed')
+    const r = await reward()
+    const ticket = (await buy(kid, r.id)).json().redemption
+
+    expect((await restore(parent, ticket.id)).statusCode).toBe(409)
+    expect((await rewardsPrisma.redemption.findUnique({ where: { id: ticket.id } }))?.status).toBe(
+      'owned'
+    )
   })
 
   it('refuses a purchase once stock is sold out; a revoke frees the unit', async () => {

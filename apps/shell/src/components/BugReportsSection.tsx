@@ -1,8 +1,15 @@
-import { useState } from 'react'
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { ChevronDown, ChevronRight, ExternalLink, Bug } from 'lucide-react'
+import { ExternalLink, Bug } from 'lucide-react'
 import { FAMILY_PROFILE_ID } from '@family-os/platform'
-import { ItemCard, EmptyState, FAMILY_HUE, identityToken, resolveHue } from '@family-os/ui'
+import {
+  Disclosure,
+  ItemCard,
+  EmptyState,
+  FAMILY_HUE,
+  RevealMore,
+  identityToken,
+  resolveHue,
+} from '@family-os/ui'
 import { BUG_REPORT_STATUSES } from '@family-os/schemas'
 import type { BugReportStatus, BugReportContext } from '@family-os/schemas'
 import { BugStatusPill, STATUS_LABELS } from './BugStatusPill'
@@ -58,7 +65,6 @@ export function BugReportsSection() {
   const queryClient = useQueryClient()
   const active = useReports('active', ACTIVE)
   const resolved = useReports('resolved', RESOLVED)
-  const [resolvedOpen, setResolvedOpen] = useState(false)
 
   const setStatus = useMutation({
     mutationFn: async ({ id, status }: { id: string; status: BugReportStatus }) => {
@@ -108,66 +114,40 @@ export function BugReportsSection() {
       )}
 
       {active.hasNextPage && (
-        <MoreButton
+        <RevealMore
           label="Further back"
+          fetches
           busy={active.isFetchingNextPage}
           onClick={() => active.fetchNextPage()}
+          className="mt-2.5"
         />
       )}
 
       {resolvedTotal > 0 && (
-        <div className="mt-4 border-t border-border pt-2">
-          <button
-            type="button"
-            onClick={() => setResolvedOpen((o) => !o)}
-            className="text-section-label flex w-full items-center gap-1.5 py-2 text-muted-foreground"
-            aria-expanded={resolvedOpen}
-          >
-            {resolvedOpen ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-            Settled · {resolvedTotal}
-          </button>
-          {resolvedOpen && (
-            <>
-              <ul className="flex flex-col gap-2.5 pt-1">
-                {resolvedReports.map((report) => (
-                  <li key={report.id}>
-                    <ReportRow report={report} pending={setStatus.isPending} onStatus={onStatus} />
-                  </li>
-                ))}
-              </ul>
-              {resolved.hasNextPage && (
-                <MoreButton
-                  label="Further back"
-                  busy={resolved.isFetchingNextPage}
-                  onClick={() => resolved.fetchNextPage()}
-                />
-              )}
-            </>
+        <Disclosure
+          label="Settled"
+          count={resolvedTotal}
+          className="mt-4 border-t border-border pt-2"
+        >
+          <ul className="flex flex-col gap-2.5 pt-1">
+            {resolvedReports.map((report) => (
+              <li key={report.id}>
+                <ReportRow report={report} pending={setStatus.isPending} onStatus={onStatus} />
+              </li>
+            ))}
+          </ul>
+          {resolved.hasNextPage && (
+            <RevealMore
+              label="Further back"
+              fetches
+              busy={resolved.isFetchingNextPage}
+              onClick={() => resolved.fetchNextPage()}
+              className="mt-2.5"
+            />
           )}
-        </div>
+        </Disclosure>
       )}
     </div>
-  )
-}
-
-function MoreButton({
-  label,
-  busy,
-  onClick,
-}: {
-  label: string
-  busy: boolean
-  onClick: () => void
-}) {
-  return (
-    <button
-      type="button"
-      disabled={busy}
-      onClick={onClick}
-      className="text-sm-token mt-2.5 py-2 text-muted-foreground underline underline-offset-4 disabled:opacity-50"
-    >
-      {busy ? 'Loading…' : `${label} ›`}
-    </button>
   )
 }
 

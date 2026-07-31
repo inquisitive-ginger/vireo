@@ -29,6 +29,7 @@ import {
   listRedemptions,
   purchaseRedemption,
   requestUse,
+  restoreRedemption,
   revokeRedemption,
   RedemptionError,
   type RedemptionRecord,
@@ -547,6 +548,31 @@ const rewardsPlugin: FastifyPluginAsync = async (fastify) => {
               priority: 'alert',
             }
       )
+      return { redemption: serializeRedemption(redemption) }
+    } catch (err) {
+      if (err instanceof RedemptionError)
+        return reply.status(err.status).send({ error: err.message })
+      throw err
+    }
+  })
+
+  // POST /rewards/redemptions/:id/restore — the tier-4 "put it back": a ticket torn
+  // by mistake returns to the pocket. Tier 4 only, and no balance moves — undoing a
+  // tear is not a refund. A ticket that isn't `used` has nothing to undo (409).
+  fastify.post('/rewards/redemptions/:id/restore', async (request, reply) => {
+    if (!request.ability.can('decide', 'rewards.Redemption')) {
+      return reply.status(403).send({ error: 'Permission denied' })
+    }
+    const { id } = request.params as { id: string }
+
+    try {
+      const { redemption } = await restoreRedemption(fastify.eventBus, id, request.profile.id)
+      await notify(fastify.eventBus, redemption.profileId, {
+        title: `${redemption.reward.emoji} ${redemption.reward.name} is back in your pocket`,
+        body: 'Use it again whenever you like',
+        variant: 'info',
+        priority: 'alert',
+      })
       return { redemption: serializeRedemption(redemption) }
     } catch (err) {
       if (err instanceof RedemptionError)

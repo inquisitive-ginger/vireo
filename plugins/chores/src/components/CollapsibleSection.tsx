@@ -1,5 +1,5 @@
 import { useState, type ReactNode } from 'react'
-import { ChevronDown, ChevronRight } from 'lucide-react'
+import { Disclosure, RevealMore } from '@family-os/ui'
 
 const REVEAL_STEP = 10
 
@@ -22,7 +22,6 @@ export function CollapsibleSection<T extends { id: string }>({
   renderItem: (item: T) => ReactNode
   listClassName?: string
 }) {
-  const [open, setOpen] = useState(false)
   const [shown, setShown] = useState(REVEAL_STEP)
   if (items.length === 0) return null
 
@@ -30,30 +29,16 @@ export function CollapsibleSection<T extends { id: string }>({
   const more = items.length - visible.length
 
   return (
-    <div className="mt-2">
-      <button
-        type="button"
-        onClick={() => setOpen((o) => !o)}
-        className="text-section-label flex w-full items-center gap-1.5 py-2 text-muted-foreground"
-        aria-expanded={open}
-      >
-        {open ? <ChevronDown size={14} /> : <ChevronRight size={14} />}
-        {label} · {items.length}
-      </button>
-      {open && (
-        <div className={listClassName}>
-          {visible.map(renderItem)}
-          {more > 0 && (
-            <button
-              type="button"
-              onClick={() => setShown((n) => n + REVEAL_STEP)}
-              className="text-sm-token self-start py-2 text-muted-foreground underline underline-offset-4"
-            >
-              Show {more} more
-            </button>
-          )}
-        </div>
-      )}
-    </div>
+    <Disclosure label={label} count={items.length} className="mt-2">
+      <div className={listClassName}>
+        {visible.map(renderItem)}
+        {more > 0 && (
+          <RevealMore
+            label={`Show ${more} more`}
+            onClick={() => setShown((n) => n + REVEAL_STEP)}
+          />
+        )}
+      </div>
+    </Disclosure>
   )
 }
