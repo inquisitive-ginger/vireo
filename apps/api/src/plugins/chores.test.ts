@@ -677,6 +677,7 @@ describe('GET /api/chores/xp', () => {
 const WED = '2026-07-29'
 const THU = '2026-07-30'
 const FRI = '2026-07-31'
+const SAT = '2026-08-01'
 const NEXT_THU = '2026-08-06'
 
 async function getTasks(cookie: string, today: string) {
@@ -799,6 +800,39 @@ describe('chore routines', () => {
       const balance = await chorePrisma.xpBalance.findUnique({ where: { profileId: KID_ID } })
       expect(balance?.totalXp).toBe(10)
     })
+  })
+
+  it('completing a stale ongoing row is that day’s completion — no immediate respawn (auto-bug #92)', async () => {
+    const parent = await getCookieForProfile(PARENT_ID)
+    const kid = await getCookieForProfile(KID_ID)
+    await createRoutine(parent, {
+      title: 'Empty the dishwasher',
+      assigneeId: KID_ID,
+      kind: 'ongoing',
+    })
+
+    // Spawned Thursday; nobody reads the list again before completing, so the row
+    // is still dated Thursday when it is completed on Friday (the always-on iPad).
+    let tasks = await getTasks(kid, THU)
+    const staleId = tasks[0].id
+
+    const complete = await app.inject({
+      method: 'PATCH',
+      url: `/api/chores/tasks/${staleId}/complete?today=${FRI}`,
+      headers: { cookie: kid },
+    })
+    expect(complete.statusCode).toBe(200)
+    expect(complete.json().dueDate).toBe(FRI)
+
+    // Friday read: the completion owns Friday's slot — no fresh pending row.
+    tasks = await getTasks(kid, FRI)
+    expect(tasks).toHaveLength(1)
+    expect(tasks[0].status).toBe('completed')
+
+    // Saturday: back as normal.
+    tasks = await getTasks(kid, SAT)
+    expect(tasks).toHaveLength(2)
+    expect(tasks.find((t) => t.status === 'pending')!.dueDate).toBe(SAT)
   })
 
   it('a missed day stays overdue, then rolls forward at the next occurrence', async () => {

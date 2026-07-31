@@ -379,6 +379,7 @@ const choresPlugin: FastifyPluginAsync = async (fastify) => {
   // anyone's (manage all). Auto-accepted — no approval step.
   fastify.patch('/chores/tasks/:id/complete', async (request, reply) => {
     const { id } = request.params as { id: string }
+    const { today } = request.query as { today?: string }
 
     const task = await chorePrisma.task.findUnique({ where: { id } })
     if (!task) {
@@ -407,10 +408,33 @@ const choresPlugin: FastifyPluginAsync = async (fastify) => {
       return reply.status(409).send({ error: 'Task is up for grabs — claim it first' })
     }
 
-    const updated = await chorePrisma.task.update({
-      where: { id },
-      data: { status: 'completed', completedAt: new Date() },
-    })
+    // An ongoing occurrence completed late is the completion for the day it was
+    // completed on, not the day it was stamped — re-date it to the client's local
+    // today so the (routineId, dueDate) unique blocks a same-day respawn on the
+    // next read (auto-bug #92). Roll forward only; without `?today=` (older
+    // clients) the old dating stands.
+    let rollTo: Date | undefined
+    if (task.routineId && typeof today === 'string' && DATE_KEY_RE.test(today)) {
+      const openKey = dateKeyOf(task.dueDate)
+      if (openKey && openKey < today) {
+        const routine = await chorePrisma.routine.findUnique({ where: { id: task.routineId } })
+        if (routine?.kind === 'ongoing') rollTo = new Date(today)
+      }
+    }
+
+    let updated
+    try {
+      updated = await chorePrisma.task.update({
+        where: { id },
+        data: { status: 'completed', completedAt: new Date(), ...(rollTo && { dueDate: rollTo }) },
+      })
+    } catch (err) {
+      if (!rollTo || !isUniqueViolation(err)) throw err
+      updated = await chorePrisma.task.update({
+        where: { id },
+        data: { status: 'completed', completedAt: new Date() },
+      })
+    }
 
     fastify.eventBus.emit('chores.task.completed', {
       taskId: updated.id,
