@@ -21,8 +21,9 @@ before it reads anything else, and it is size-capped — see
   goodbye, custom build due at the friends' December visit. `product-design-beacon.md`.
 - **Deployment:** 🟢 live at `https://vireohome.app` on the Pi; merge to `main`
   auto-deploys; off-LAN via Tailscale. Runbook: `docs/deployment.md`.
-- **Last session:** 2026-07-29 — dev, calendar new-event notification to tier-4
-  parents (PR #88, live). `logs/2026-07-29-dev-calendar-event-created-notification.md`.
+- **Last session:** 2026-07-30 — design+dev, tier-4 Tickets tab: put a torn ticket
+  back, revoke gets a button. **Merged unreviewed (PR #89).**
+  `logs/2026-07-30-design-dev-parent-ticket-corrections.md`.
 - **What's next and everything outstanding:** `docs/sessions/queue.md` — the one
   index. Cheapest high-value item: Deployment Part F, offsite backups.
 - **Owed in-app:** nothing — the triage board is empty as of 2026-07-29. Query it

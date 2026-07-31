@@ -39,13 +39,19 @@ signature colors as the ritual. The custom build — 4 paired Pi Zero 2 W beacon
 gifted and paired in person at the **December visit**, voice as the headline
 upgrade. _Log: `logs/2026-07-29-product-beacon-concept.md`._
 
-### Fridge-distance review of the live P-Bucks surfaces
+### Rewards: look at the Tickets tab, and cap the last unbounded list
 
-**Type:** qa · No kickoff needed. The review the flag flip has owed since ADR 054:
-the coin beside a marigold spine, the P-mark at 16–18px (counters close — must read
-as currency), the amount field + presets at fridge distance, and the store/roll on
-the real iPad. Quit the PWA from the app switcher first (`docs/deployment.md` Part D).
-If the coin fails next to marigold, **deepen the gold; do not retire marigold**.
+**Type:** qa / dev · No kickoff needed. Two loose ends from PR #89. **(1)** The
+tier-4 Tickets tab shipped **without a live review** — the tier-4 PIN is not
+recoverable from the sandbox and the session went straight to merge, so nobody has
+seen it in a browser. First parent on prod is the review. **(2)** `GET
+/rewards/redemptions` still hardcodes `limit=100` and returns a bare array, so the
+used shelf's `Show N more` stops dead at 100 with the oldest silently absent — the
+shape #81 called "worse than unbounded", and the **last one of that family left in
+the app**. The fix is the `{redemptions, nextCursor, total}` envelope the ledger and
+bug reports already use; four consumers read it. Two kids puts the cap years out,
+which is why it waits. _Log:
+`logs/2026-07-30-design-dev-parent-ticket-corrections.md`._
 
 ### M4/6 — Dev: Punch Cards
 
@@ -157,33 +163,6 @@ do not reach for `pnpm fetch` + `--offline`. _Reads: `docs/deployment.md` E2/E3,
 `logs/2026-07-21-infra-deploy-hardening.md`, memory `project-poc-hardware`._
 _Depends on: none (live)._
 
-### Bug reporting: live UI review + the follow-ups it left
-
-**Type:** qa / dev · **Kickoff:** _to be written_
-ADR 046 shipped and is verified end-to-end **on the API**, but the **UI has never
-been seen by a human** — the drawer, the tier-4 triage board, and the "Fixed —
-live" notification are integration-tested only. File one from the fridge iPad and
-review it. Two loose threads to close while there: **(1)** the bridge PAT was
-pasted into a chat transcript and should be **rotated**; **(2)** `prisma generate`
-locally emits a **minified** `runtime/*` where the committed client is
-pretty-printed, so ~19k lines of churn must be stripped by hand on every
-regenerate — reconcile the two before it gets committed by accident. _Reads:
-`logs/2026-07-21-design-dev-bug-reporting.md`, ADR 046._ _Depends on: none._
-
-> **Nothing is waiting on this visit** — #81, #82 and #86 were all moved to
-> `deployed` on 2026-07-29, so every report ever filed has closed ADR 046's loop.
-> This entry is now the UI review and the two loose threads below, nothing more.
-> Moving a report needs an authenticated tier-4 session in the app; there is no CLI
-> or API path, and an unauthenticated `GET /bug-reports` only sees the household's
-> own. The old "six deep and growing" version of this note was carried forward
-> across five sessions without anyone querying the board — check it, don't restate it.
-
-> The "`sw.js` has no cache name" worry raised at closeout was a **false alarm** —
-> the grep searched for a literal `family-os-<hash>` but the worker builds it as a
-> template literal. Verified live: `VERSION = 'DtOQCrRD'` matches the deployed
-> bundle, and the worker calls `skipWaiting()` + `clients.claim()`, so an installed
-> PWA picks up a deploy on one fresh navigation.
-
 ### Platform: family-feed test addendum
 
 **Type:** development (test addendum) · **Kickoff:** _to be written_
@@ -269,6 +248,13 @@ suite mirroring chores/calendar. _Depends on: none._
 ## Recently Completed
 
 > Two-line index; full detail in the linked log.
+
+- **2026-07-30 — Design+Dev: parent ticket corrections (ad-hoc, PR #89).** A tier-4
+  **Tickets** tab — the module's first parent-facing ticket surface — carrying
+  `restore` ("put it back", no ledger movement) and M4/5a's revoke, which had shipped
+  buttonless. `Disclosure`/`RevealMore` extracted to `@family-os/ui` at the third
+  caller. **Never live-reviewed.** See
+  `logs/2026-07-30-design-dev-parent-ticket-corrections.md`.
 
 - **2026-07-29 — Dev: new calendar event notifies the other parent (ad-hoc, PR #88).**
   `calendar.event.created` subscriber → `notify()` at `alert` (Web Push, ADR 029) to
