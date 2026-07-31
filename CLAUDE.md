@@ -21,8 +21,8 @@ before it reads anything else, and it is size-capped — see
   goodbye, custom build due at the friends' December visit. `product-design-beacon.md`.
 - **Deployment:** 🟢 live at `https://vireohome.app` on the Pi; merge to `main`
   auto-deploys; off-LAN via Tailscale. Runbook: `docs/deployment.md`.
-- **Last session:** 2026-07-31 — fix, auto-bug #94 (the chores widget counted the
-  offer board as your work; PR #97). `logs/2026-07-31-fix-auto-bug-94.md`.
+- **Last session:** 2026-07-31 — arch, family-profile exposure (ADR 060: network
+  is the boundary, docs only). `logs/2026-07-31-arch-family-profile-exposure.md`.
 - **What's next and everything outstanding:** `docs/sessions/queue.md` — the one
   index. Cheapest high-value item: Deployment Part F, offsite backups.
 - **Owed in-app:** nothing — every bug report through #94 is `deployed`. A fix

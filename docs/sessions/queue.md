@@ -39,16 +39,6 @@ signature colors as the ritual. The custom build — 4 paired Pi Zero 2 W beacon
 gifted and paired in person at the **December visit**, voice as the headline
 upgrade. _Log: `logs/2026-07-29-product-beacon-concept.md`._
 
-### Chores: decide whether the family pseudo-profile belongs on the public internet
-
-**Type:** architecture / security · No kickoff yet. Found during the #92 triage:
-a cookie-less request gets the family pseudo-profile (`activeProfileId ??
-FAMILY_PROFILE_ID`), and `GET /chores/tasks` `seesAll`s for it — the whole
-family's tasks, names, and avatars answer to anyone who can reach
-`vireohome.app`. Fine for the fridge; decide the exposure (tailnet-only? require
-a session for non-LAN? scope the anonymous ability?). _Log:
-`logs/2026-07-30-fix-auto-bug-92.md`._
-
 ### Rewards: look at the Tickets tab, and cap the last unbounded list
 
 **Type:** qa / dev · No kickoff needed. Two loose ends from PR #89. **(1)** The
@@ -259,6 +249,12 @@ suite mirroring chores/calendar. _Depends on: none._
 ## Recently Completed
 
 > Two-line index; full detail in the linked log.
+
+- **2026-07-31 — Arch: family pseudo-profile exposure (docs only, ADR 060).** The
+  app is not on the public internet (`vireohome.app` → `192.168.0.31`, no public
+  listener); the network is the boundary, the anonymous dashboard stays as ADR 021
+  designed it. Closes the #92 triage flag. See
+  `logs/2026-07-31-arch-family-profile-exposure.md`.
 
 - **2026-07-31 — Fix: the widget counted the offer board as your work (auto-bug
   #94, PR #97).** Gate D6's own-work-only rule reached the page and not the
