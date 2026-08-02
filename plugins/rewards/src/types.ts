@@ -93,3 +93,65 @@ export interface StoreData {
   balance: number
   rewards: Reward[]
 }
+
+// ─── Punch cards (M4/6, ADR 049 · choice rework 2026-07-31) ──────────────────
+
+/** A prize option resolved to its face — the sheet, the finish line, the parent row. */
+export interface PrizeOption {
+  id: string
+  name: string
+  emoji: string
+  description: string | null
+  cost: number
+  requiresApproval: boolean
+  active: boolean
+}
+
+export interface PunchTemplate {
+  id: string
+  name: string
+  glyph: string
+  goal: number
+  payoutKind: 'coins' | 'reward'
+  payoutCoins: number | null
+  payoutOptionIds: string[]
+  /** The option faces, resolved server-side. */
+  payoutOptions: PrizeOption[] | null
+  /** null = everyone (tiers 1–3). */
+  audience: string[] | null
+  active: boolean
+}
+
+export interface PunchCardData {
+  id: string
+  templateId: string
+  profileId: string
+  count: number
+  chosenRewardId: string | null
+  chosenReward: PrizeOption | null
+  completedAt: string | null
+  prizeClaimedAt: string | null
+  createdAt: string
+  template: PunchTemplate
+}
+
+/** Completed cards rolled up per (template, profile) — the finished-cards shelf. */
+export interface FinishedCards {
+  templateId: string
+  profileId: string
+  name: string
+  glyph: string
+  count: number
+  lastFinishedAt: string | null
+}
+
+export interface PunchTemplateInput {
+  name: string
+  glyph: string
+  goal: number
+  payoutKind: 'coins' | 'reward'
+  payoutCoins?: number | null
+  payoutOptionIds?: string[] | null
+  audience?: string[] | null
+  active?: boolean
+}

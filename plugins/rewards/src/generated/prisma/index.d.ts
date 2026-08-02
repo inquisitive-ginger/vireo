@@ -34,6 +34,21 @@ export type PendingPayout = $Result.DefaultSelection<Prisma.$PendingPayoutPayloa
  */
 export type Reward = $Result.DefaultSelection<Prisma.$RewardPayload>
 /**
+ * Model PunchCardTemplate
+ * 
+ */
+export type PunchCardTemplate = $Result.DefaultSelection<Prisma.$PunchCardTemplatePayload>
+/**
+ * Model PunchCard
+ * 
+ */
+export type PunchCard = $Result.DefaultSelection<Prisma.$PunchCardPayload>
+/**
+ * Model Punch
+ * 
+ */
+export type Punch = $Result.DefaultSelection<Prisma.$PunchPayload>
+/**
  * Model Redemption
  * 
  */
@@ -199,6 +214,36 @@ export class PrismaClient<
     * ```
     */
   get reward(): Prisma.RewardDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.punchCardTemplate`: Exposes CRUD operations for the **PunchCardTemplate** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more PunchCardTemplates
+    * const punchCardTemplates = await prisma.punchCardTemplate.findMany()
+    * ```
+    */
+  get punchCardTemplate(): Prisma.PunchCardTemplateDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.punchCard`: Exposes CRUD operations for the **PunchCard** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more PunchCards
+    * const punchCards = await prisma.punchCard.findMany()
+    * ```
+    */
+  get punchCard(): Prisma.PunchCardDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.punch`: Exposes CRUD operations for the **Punch** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Punches
+    * const punches = await prisma.punch.findMany()
+    * ```
+    */
+  get punch(): Prisma.PunchDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.redemption`: Exposes CRUD operations for the **Redemption** model.
@@ -647,6 +692,9 @@ export namespace Prisma {
     Balance: 'Balance',
     PendingPayout: 'PendingPayout',
     Reward: 'Reward',
+    PunchCardTemplate: 'PunchCardTemplate',
+    PunchCard: 'PunchCard',
+    Punch: 'Punch',
     Redemption: 'Redemption'
   };
 
@@ -663,7 +711,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "ledgerEntry" | "balance" | "pendingPayout" | "reward" | "redemption"
+      modelProps: "ledgerEntry" | "balance" | "pendingPayout" | "reward" | "punchCardTemplate" | "punchCard" | "punch" | "redemption"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -963,6 +1011,228 @@ export namespace Prisma {
           }
         }
       }
+      PunchCardTemplate: {
+        payload: Prisma.$PunchCardTemplatePayload<ExtArgs>
+        fields: Prisma.PunchCardTemplateFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.PunchCardTemplateFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PunchCardTemplatePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.PunchCardTemplateFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PunchCardTemplatePayload>
+          }
+          findFirst: {
+            args: Prisma.PunchCardTemplateFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PunchCardTemplatePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.PunchCardTemplateFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PunchCardTemplatePayload>
+          }
+          findMany: {
+            args: Prisma.PunchCardTemplateFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PunchCardTemplatePayload>[]
+          }
+          create: {
+            args: Prisma.PunchCardTemplateCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PunchCardTemplatePayload>
+          }
+          createMany: {
+            args: Prisma.PunchCardTemplateCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.PunchCardTemplateCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PunchCardTemplatePayload>[]
+          }
+          delete: {
+            args: Prisma.PunchCardTemplateDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PunchCardTemplatePayload>
+          }
+          update: {
+            args: Prisma.PunchCardTemplateUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PunchCardTemplatePayload>
+          }
+          deleteMany: {
+            args: Prisma.PunchCardTemplateDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.PunchCardTemplateUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.PunchCardTemplateUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PunchCardTemplatePayload>[]
+          }
+          upsert: {
+            args: Prisma.PunchCardTemplateUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PunchCardTemplatePayload>
+          }
+          aggregate: {
+            args: Prisma.PunchCardTemplateAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregatePunchCardTemplate>
+          }
+          groupBy: {
+            args: Prisma.PunchCardTemplateGroupByArgs<ExtArgs>
+            result: $Utils.Optional<PunchCardTemplateGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.PunchCardTemplateCountArgs<ExtArgs>
+            result: $Utils.Optional<PunchCardTemplateCountAggregateOutputType> | number
+          }
+        }
+      }
+      PunchCard: {
+        payload: Prisma.$PunchCardPayload<ExtArgs>
+        fields: Prisma.PunchCardFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.PunchCardFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PunchCardPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.PunchCardFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PunchCardPayload>
+          }
+          findFirst: {
+            args: Prisma.PunchCardFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PunchCardPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.PunchCardFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PunchCardPayload>
+          }
+          findMany: {
+            args: Prisma.PunchCardFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PunchCardPayload>[]
+          }
+          create: {
+            args: Prisma.PunchCardCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PunchCardPayload>
+          }
+          createMany: {
+            args: Prisma.PunchCardCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.PunchCardCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PunchCardPayload>[]
+          }
+          delete: {
+            args: Prisma.PunchCardDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PunchCardPayload>
+          }
+          update: {
+            args: Prisma.PunchCardUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PunchCardPayload>
+          }
+          deleteMany: {
+            args: Prisma.PunchCardDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.PunchCardUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.PunchCardUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PunchCardPayload>[]
+          }
+          upsert: {
+            args: Prisma.PunchCardUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PunchCardPayload>
+          }
+          aggregate: {
+            args: Prisma.PunchCardAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregatePunchCard>
+          }
+          groupBy: {
+            args: Prisma.PunchCardGroupByArgs<ExtArgs>
+            result: $Utils.Optional<PunchCardGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.PunchCardCountArgs<ExtArgs>
+            result: $Utils.Optional<PunchCardCountAggregateOutputType> | number
+          }
+        }
+      }
+      Punch: {
+        payload: Prisma.$PunchPayload<ExtArgs>
+        fields: Prisma.PunchFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.PunchFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PunchPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.PunchFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PunchPayload>
+          }
+          findFirst: {
+            args: Prisma.PunchFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PunchPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.PunchFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PunchPayload>
+          }
+          findMany: {
+            args: Prisma.PunchFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PunchPayload>[]
+          }
+          create: {
+            args: Prisma.PunchCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PunchPayload>
+          }
+          createMany: {
+            args: Prisma.PunchCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.PunchCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PunchPayload>[]
+          }
+          delete: {
+            args: Prisma.PunchDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PunchPayload>
+          }
+          update: {
+            args: Prisma.PunchUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PunchPayload>
+          }
+          deleteMany: {
+            args: Prisma.PunchDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.PunchUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.PunchUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PunchPayload>[]
+          }
+          upsert: {
+            args: Prisma.PunchUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$PunchPayload>
+          }
+          aggregate: {
+            args: Prisma.PunchAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregatePunch>
+          }
+          groupBy: {
+            args: Prisma.PunchGroupByArgs<ExtArgs>
+            result: $Utils.Optional<PunchGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.PunchCountArgs<ExtArgs>
+            result: $Utils.Optional<PunchCountAggregateOutputType> | number
+          }
+        }
+      }
       Redemption: {
         payload: Prisma.$RedemptionPayload<ExtArgs>
         fields: Prisma.RedemptionFieldRefs
@@ -1149,6 +1419,9 @@ export namespace Prisma {
     balance?: BalanceOmit
     pendingPayout?: PendingPayoutOmit
     reward?: RewardOmit
+    punchCardTemplate?: PunchCardTemplateOmit
+    punchCard?: PunchCardOmit
+    punch?: PunchOmit
     redemption?: RedemptionOmit
   }
 
@@ -1253,6 +1526,68 @@ export namespace Prisma {
    */
   export type RewardCountOutputTypeCountRedemptionsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: RedemptionWhereInput
+  }
+
+
+  /**
+   * Count Type PunchCardTemplateCountOutputType
+   */
+
+  export type PunchCardTemplateCountOutputType = {
+    cards: number
+  }
+
+  export type PunchCardTemplateCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    cards?: boolean | PunchCardTemplateCountOutputTypeCountCardsArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * PunchCardTemplateCountOutputType without action
+   */
+  export type PunchCardTemplateCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PunchCardTemplateCountOutputType
+     */
+    select?: PunchCardTemplateCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * PunchCardTemplateCountOutputType without action
+   */
+  export type PunchCardTemplateCountOutputTypeCountCardsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PunchCardWhereInput
+  }
+
+
+  /**
+   * Count Type PunchCardCountOutputType
+   */
+
+  export type PunchCardCountOutputType = {
+    punches: number
+  }
+
+  export type PunchCardCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    punches?: boolean | PunchCardCountOutputTypeCountPunchesArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * PunchCardCountOutputType without action
+   */
+  export type PunchCardCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PunchCardCountOutputType
+     */
+    select?: PunchCardCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * PunchCardCountOutputType without action
+   */
+  export type PunchCardCountOutputTypeCountPunchesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PunchWhereInput
   }
 
 
@@ -5641,6 +5976,3405 @@ export namespace Prisma {
 
 
   /**
+   * Model PunchCardTemplate
+   */
+
+  export type AggregatePunchCardTemplate = {
+    _count: PunchCardTemplateCountAggregateOutputType | null
+    _avg: PunchCardTemplateAvgAggregateOutputType | null
+    _sum: PunchCardTemplateSumAggregateOutputType | null
+    _min: PunchCardTemplateMinAggregateOutputType | null
+    _max: PunchCardTemplateMaxAggregateOutputType | null
+  }
+
+  export type PunchCardTemplateAvgAggregateOutputType = {
+    goal: number | null
+    payoutCoins: number | null
+  }
+
+  export type PunchCardTemplateSumAggregateOutputType = {
+    goal: number | null
+    payoutCoins: number | null
+  }
+
+  export type PunchCardTemplateMinAggregateOutputType = {
+    id: string | null
+    name: string | null
+    glyph: string | null
+    goal: number | null
+    payoutKind: string | null
+    payoutCoins: number | null
+    active: boolean | null
+  }
+
+  export type PunchCardTemplateMaxAggregateOutputType = {
+    id: string | null
+    name: string | null
+    glyph: string | null
+    goal: number | null
+    payoutKind: string | null
+    payoutCoins: number | null
+    active: boolean | null
+  }
+
+  export type PunchCardTemplateCountAggregateOutputType = {
+    id: number
+    name: number
+    glyph: number
+    goal: number
+    payoutKind: number
+    payoutCoins: number
+    payoutOptionIds: number
+    audience: number
+    active: number
+    _all: number
+  }
+
+
+  export type PunchCardTemplateAvgAggregateInputType = {
+    goal?: true
+    payoutCoins?: true
+  }
+
+  export type PunchCardTemplateSumAggregateInputType = {
+    goal?: true
+    payoutCoins?: true
+  }
+
+  export type PunchCardTemplateMinAggregateInputType = {
+    id?: true
+    name?: true
+    glyph?: true
+    goal?: true
+    payoutKind?: true
+    payoutCoins?: true
+    active?: true
+  }
+
+  export type PunchCardTemplateMaxAggregateInputType = {
+    id?: true
+    name?: true
+    glyph?: true
+    goal?: true
+    payoutKind?: true
+    payoutCoins?: true
+    active?: true
+  }
+
+  export type PunchCardTemplateCountAggregateInputType = {
+    id?: true
+    name?: true
+    glyph?: true
+    goal?: true
+    payoutKind?: true
+    payoutCoins?: true
+    payoutOptionIds?: true
+    audience?: true
+    active?: true
+    _all?: true
+  }
+
+  export type PunchCardTemplateAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PunchCardTemplate to aggregate.
+     */
+    where?: PunchCardTemplateWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PunchCardTemplates to fetch.
+     */
+    orderBy?: PunchCardTemplateOrderByWithRelationInput | PunchCardTemplateOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: PunchCardTemplateWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PunchCardTemplates from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PunchCardTemplates.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned PunchCardTemplates
+    **/
+    _count?: true | PunchCardTemplateCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: PunchCardTemplateAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: PunchCardTemplateSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: PunchCardTemplateMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: PunchCardTemplateMaxAggregateInputType
+  }
+
+  export type GetPunchCardTemplateAggregateType<T extends PunchCardTemplateAggregateArgs> = {
+        [P in keyof T & keyof AggregatePunchCardTemplate]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregatePunchCardTemplate[P]>
+      : GetScalarType<T[P], AggregatePunchCardTemplate[P]>
+  }
+
+
+
+
+  export type PunchCardTemplateGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PunchCardTemplateWhereInput
+    orderBy?: PunchCardTemplateOrderByWithAggregationInput | PunchCardTemplateOrderByWithAggregationInput[]
+    by: PunchCardTemplateScalarFieldEnum[] | PunchCardTemplateScalarFieldEnum
+    having?: PunchCardTemplateScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: PunchCardTemplateCountAggregateInputType | true
+    _avg?: PunchCardTemplateAvgAggregateInputType
+    _sum?: PunchCardTemplateSumAggregateInputType
+    _min?: PunchCardTemplateMinAggregateInputType
+    _max?: PunchCardTemplateMaxAggregateInputType
+  }
+
+  export type PunchCardTemplateGroupByOutputType = {
+    id: string
+    name: string
+    glyph: string
+    goal: number
+    payoutKind: string
+    payoutCoins: number | null
+    payoutOptionIds: string[]
+    audience: string[]
+    active: boolean
+    _count: PunchCardTemplateCountAggregateOutputType | null
+    _avg: PunchCardTemplateAvgAggregateOutputType | null
+    _sum: PunchCardTemplateSumAggregateOutputType | null
+    _min: PunchCardTemplateMinAggregateOutputType | null
+    _max: PunchCardTemplateMaxAggregateOutputType | null
+  }
+
+  type GetPunchCardTemplateGroupByPayload<T extends PunchCardTemplateGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<PunchCardTemplateGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof PunchCardTemplateGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], PunchCardTemplateGroupByOutputType[P]>
+            : GetScalarType<T[P], PunchCardTemplateGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type PunchCardTemplateSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    name?: boolean
+    glyph?: boolean
+    goal?: boolean
+    payoutKind?: boolean
+    payoutCoins?: boolean
+    payoutOptionIds?: boolean
+    audience?: boolean
+    active?: boolean
+    cards?: boolean | PunchCardTemplate$cardsArgs<ExtArgs>
+    _count?: boolean | PunchCardTemplateCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["punchCardTemplate"]>
+
+  export type PunchCardTemplateSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    name?: boolean
+    glyph?: boolean
+    goal?: boolean
+    payoutKind?: boolean
+    payoutCoins?: boolean
+    payoutOptionIds?: boolean
+    audience?: boolean
+    active?: boolean
+  }, ExtArgs["result"]["punchCardTemplate"]>
+
+  export type PunchCardTemplateSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    name?: boolean
+    glyph?: boolean
+    goal?: boolean
+    payoutKind?: boolean
+    payoutCoins?: boolean
+    payoutOptionIds?: boolean
+    audience?: boolean
+    active?: boolean
+  }, ExtArgs["result"]["punchCardTemplate"]>
+
+  export type PunchCardTemplateSelectScalar = {
+    id?: boolean
+    name?: boolean
+    glyph?: boolean
+    goal?: boolean
+    payoutKind?: boolean
+    payoutCoins?: boolean
+    payoutOptionIds?: boolean
+    audience?: boolean
+    active?: boolean
+  }
+
+  export type PunchCardTemplateOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "glyph" | "goal" | "payoutKind" | "payoutCoins" | "payoutOptionIds" | "audience" | "active", ExtArgs["result"]["punchCardTemplate"]>
+  export type PunchCardTemplateInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    cards?: boolean | PunchCardTemplate$cardsArgs<ExtArgs>
+    _count?: boolean | PunchCardTemplateCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type PunchCardTemplateIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+  export type PunchCardTemplateIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+
+  export type $PunchCardTemplatePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "PunchCardTemplate"
+    objects: {
+      cards: Prisma.$PunchCardPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      name: string
+      glyph: string
+      goal: number
+      payoutKind: string
+      payoutCoins: number | null
+      payoutOptionIds: string[]
+      audience: string[]
+      active: boolean
+    }, ExtArgs["result"]["punchCardTemplate"]>
+    composites: {}
+  }
+
+  type PunchCardTemplateGetPayload<S extends boolean | null | undefined | PunchCardTemplateDefaultArgs> = $Result.GetResult<Prisma.$PunchCardTemplatePayload, S>
+
+  type PunchCardTemplateCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<PunchCardTemplateFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: PunchCardTemplateCountAggregateInputType | true
+    }
+
+  export interface PunchCardTemplateDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['PunchCardTemplate'], meta: { name: 'PunchCardTemplate' } }
+    /**
+     * Find zero or one PunchCardTemplate that matches the filter.
+     * @param {PunchCardTemplateFindUniqueArgs} args - Arguments to find a PunchCardTemplate
+     * @example
+     * // Get one PunchCardTemplate
+     * const punchCardTemplate = await prisma.punchCardTemplate.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends PunchCardTemplateFindUniqueArgs>(args: SelectSubset<T, PunchCardTemplateFindUniqueArgs<ExtArgs>>): Prisma__PunchCardTemplateClient<$Result.GetResult<Prisma.$PunchCardTemplatePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one PunchCardTemplate that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {PunchCardTemplateFindUniqueOrThrowArgs} args - Arguments to find a PunchCardTemplate
+     * @example
+     * // Get one PunchCardTemplate
+     * const punchCardTemplate = await prisma.punchCardTemplate.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends PunchCardTemplateFindUniqueOrThrowArgs>(args: SelectSubset<T, PunchCardTemplateFindUniqueOrThrowArgs<ExtArgs>>): Prisma__PunchCardTemplateClient<$Result.GetResult<Prisma.$PunchCardTemplatePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PunchCardTemplate that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PunchCardTemplateFindFirstArgs} args - Arguments to find a PunchCardTemplate
+     * @example
+     * // Get one PunchCardTemplate
+     * const punchCardTemplate = await prisma.punchCardTemplate.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends PunchCardTemplateFindFirstArgs>(args?: SelectSubset<T, PunchCardTemplateFindFirstArgs<ExtArgs>>): Prisma__PunchCardTemplateClient<$Result.GetResult<Prisma.$PunchCardTemplatePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PunchCardTemplate that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PunchCardTemplateFindFirstOrThrowArgs} args - Arguments to find a PunchCardTemplate
+     * @example
+     * // Get one PunchCardTemplate
+     * const punchCardTemplate = await prisma.punchCardTemplate.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends PunchCardTemplateFindFirstOrThrowArgs>(args?: SelectSubset<T, PunchCardTemplateFindFirstOrThrowArgs<ExtArgs>>): Prisma__PunchCardTemplateClient<$Result.GetResult<Prisma.$PunchCardTemplatePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more PunchCardTemplates that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PunchCardTemplateFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all PunchCardTemplates
+     * const punchCardTemplates = await prisma.punchCardTemplate.findMany()
+     * 
+     * // Get first 10 PunchCardTemplates
+     * const punchCardTemplates = await prisma.punchCardTemplate.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const punchCardTemplateWithIdOnly = await prisma.punchCardTemplate.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends PunchCardTemplateFindManyArgs>(args?: SelectSubset<T, PunchCardTemplateFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PunchCardTemplatePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a PunchCardTemplate.
+     * @param {PunchCardTemplateCreateArgs} args - Arguments to create a PunchCardTemplate.
+     * @example
+     * // Create one PunchCardTemplate
+     * const PunchCardTemplate = await prisma.punchCardTemplate.create({
+     *   data: {
+     *     // ... data to create a PunchCardTemplate
+     *   }
+     * })
+     * 
+     */
+    create<T extends PunchCardTemplateCreateArgs>(args: SelectSubset<T, PunchCardTemplateCreateArgs<ExtArgs>>): Prisma__PunchCardTemplateClient<$Result.GetResult<Prisma.$PunchCardTemplatePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many PunchCardTemplates.
+     * @param {PunchCardTemplateCreateManyArgs} args - Arguments to create many PunchCardTemplates.
+     * @example
+     * // Create many PunchCardTemplates
+     * const punchCardTemplate = await prisma.punchCardTemplate.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends PunchCardTemplateCreateManyArgs>(args?: SelectSubset<T, PunchCardTemplateCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many PunchCardTemplates and returns the data saved in the database.
+     * @param {PunchCardTemplateCreateManyAndReturnArgs} args - Arguments to create many PunchCardTemplates.
+     * @example
+     * // Create many PunchCardTemplates
+     * const punchCardTemplate = await prisma.punchCardTemplate.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many PunchCardTemplates and only return the `id`
+     * const punchCardTemplateWithIdOnly = await prisma.punchCardTemplate.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends PunchCardTemplateCreateManyAndReturnArgs>(args?: SelectSubset<T, PunchCardTemplateCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PunchCardTemplatePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a PunchCardTemplate.
+     * @param {PunchCardTemplateDeleteArgs} args - Arguments to delete one PunchCardTemplate.
+     * @example
+     * // Delete one PunchCardTemplate
+     * const PunchCardTemplate = await prisma.punchCardTemplate.delete({
+     *   where: {
+     *     // ... filter to delete one PunchCardTemplate
+     *   }
+     * })
+     * 
+     */
+    delete<T extends PunchCardTemplateDeleteArgs>(args: SelectSubset<T, PunchCardTemplateDeleteArgs<ExtArgs>>): Prisma__PunchCardTemplateClient<$Result.GetResult<Prisma.$PunchCardTemplatePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one PunchCardTemplate.
+     * @param {PunchCardTemplateUpdateArgs} args - Arguments to update one PunchCardTemplate.
+     * @example
+     * // Update one PunchCardTemplate
+     * const punchCardTemplate = await prisma.punchCardTemplate.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends PunchCardTemplateUpdateArgs>(args: SelectSubset<T, PunchCardTemplateUpdateArgs<ExtArgs>>): Prisma__PunchCardTemplateClient<$Result.GetResult<Prisma.$PunchCardTemplatePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more PunchCardTemplates.
+     * @param {PunchCardTemplateDeleteManyArgs} args - Arguments to filter PunchCardTemplates to delete.
+     * @example
+     * // Delete a few PunchCardTemplates
+     * const { count } = await prisma.punchCardTemplate.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends PunchCardTemplateDeleteManyArgs>(args?: SelectSubset<T, PunchCardTemplateDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PunchCardTemplates.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PunchCardTemplateUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many PunchCardTemplates
+     * const punchCardTemplate = await prisma.punchCardTemplate.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends PunchCardTemplateUpdateManyArgs>(args: SelectSubset<T, PunchCardTemplateUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PunchCardTemplates and returns the data updated in the database.
+     * @param {PunchCardTemplateUpdateManyAndReturnArgs} args - Arguments to update many PunchCardTemplates.
+     * @example
+     * // Update many PunchCardTemplates
+     * const punchCardTemplate = await prisma.punchCardTemplate.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more PunchCardTemplates and only return the `id`
+     * const punchCardTemplateWithIdOnly = await prisma.punchCardTemplate.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends PunchCardTemplateUpdateManyAndReturnArgs>(args: SelectSubset<T, PunchCardTemplateUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PunchCardTemplatePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one PunchCardTemplate.
+     * @param {PunchCardTemplateUpsertArgs} args - Arguments to update or create a PunchCardTemplate.
+     * @example
+     * // Update or create a PunchCardTemplate
+     * const punchCardTemplate = await prisma.punchCardTemplate.upsert({
+     *   create: {
+     *     // ... data to create a PunchCardTemplate
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the PunchCardTemplate we want to update
+     *   }
+     * })
+     */
+    upsert<T extends PunchCardTemplateUpsertArgs>(args: SelectSubset<T, PunchCardTemplateUpsertArgs<ExtArgs>>): Prisma__PunchCardTemplateClient<$Result.GetResult<Prisma.$PunchCardTemplatePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of PunchCardTemplates.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PunchCardTemplateCountArgs} args - Arguments to filter PunchCardTemplates to count.
+     * @example
+     * // Count the number of PunchCardTemplates
+     * const count = await prisma.punchCardTemplate.count({
+     *   where: {
+     *     // ... the filter for the PunchCardTemplates we want to count
+     *   }
+     * })
+    **/
+    count<T extends PunchCardTemplateCountArgs>(
+      args?: Subset<T, PunchCardTemplateCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], PunchCardTemplateCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a PunchCardTemplate.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PunchCardTemplateAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends PunchCardTemplateAggregateArgs>(args: Subset<T, PunchCardTemplateAggregateArgs>): Prisma.PrismaPromise<GetPunchCardTemplateAggregateType<T>>
+
+    /**
+     * Group by PunchCardTemplate.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PunchCardTemplateGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends PunchCardTemplateGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: PunchCardTemplateGroupByArgs['orderBy'] }
+        : { orderBy?: PunchCardTemplateGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, PunchCardTemplateGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetPunchCardTemplateGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the PunchCardTemplate model
+   */
+  readonly fields: PunchCardTemplateFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for PunchCardTemplate.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__PunchCardTemplateClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    cards<T extends PunchCardTemplate$cardsArgs<ExtArgs> = {}>(args?: Subset<T, PunchCardTemplate$cardsArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PunchCardPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the PunchCardTemplate model
+   */
+  interface PunchCardTemplateFieldRefs {
+    readonly id: FieldRef<"PunchCardTemplate", 'String'>
+    readonly name: FieldRef<"PunchCardTemplate", 'String'>
+    readonly glyph: FieldRef<"PunchCardTemplate", 'String'>
+    readonly goal: FieldRef<"PunchCardTemplate", 'Int'>
+    readonly payoutKind: FieldRef<"PunchCardTemplate", 'String'>
+    readonly payoutCoins: FieldRef<"PunchCardTemplate", 'Int'>
+    readonly payoutOptionIds: FieldRef<"PunchCardTemplate", 'String[]'>
+    readonly audience: FieldRef<"PunchCardTemplate", 'String[]'>
+    readonly active: FieldRef<"PunchCardTemplate", 'Boolean'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * PunchCardTemplate findUnique
+   */
+  export type PunchCardTemplateFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PunchCardTemplate
+     */
+    select?: PunchCardTemplateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PunchCardTemplate
+     */
+    omit?: PunchCardTemplateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PunchCardTemplateInclude<ExtArgs> | null
+    /**
+     * Filter, which PunchCardTemplate to fetch.
+     */
+    where: PunchCardTemplateWhereUniqueInput
+  }
+
+  /**
+   * PunchCardTemplate findUniqueOrThrow
+   */
+  export type PunchCardTemplateFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PunchCardTemplate
+     */
+    select?: PunchCardTemplateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PunchCardTemplate
+     */
+    omit?: PunchCardTemplateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PunchCardTemplateInclude<ExtArgs> | null
+    /**
+     * Filter, which PunchCardTemplate to fetch.
+     */
+    where: PunchCardTemplateWhereUniqueInput
+  }
+
+  /**
+   * PunchCardTemplate findFirst
+   */
+  export type PunchCardTemplateFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PunchCardTemplate
+     */
+    select?: PunchCardTemplateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PunchCardTemplate
+     */
+    omit?: PunchCardTemplateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PunchCardTemplateInclude<ExtArgs> | null
+    /**
+     * Filter, which PunchCardTemplate to fetch.
+     */
+    where?: PunchCardTemplateWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PunchCardTemplates to fetch.
+     */
+    orderBy?: PunchCardTemplateOrderByWithRelationInput | PunchCardTemplateOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PunchCardTemplates.
+     */
+    cursor?: PunchCardTemplateWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PunchCardTemplates from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PunchCardTemplates.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PunchCardTemplates.
+     */
+    distinct?: PunchCardTemplateScalarFieldEnum | PunchCardTemplateScalarFieldEnum[]
+  }
+
+  /**
+   * PunchCardTemplate findFirstOrThrow
+   */
+  export type PunchCardTemplateFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PunchCardTemplate
+     */
+    select?: PunchCardTemplateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PunchCardTemplate
+     */
+    omit?: PunchCardTemplateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PunchCardTemplateInclude<ExtArgs> | null
+    /**
+     * Filter, which PunchCardTemplate to fetch.
+     */
+    where?: PunchCardTemplateWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PunchCardTemplates to fetch.
+     */
+    orderBy?: PunchCardTemplateOrderByWithRelationInput | PunchCardTemplateOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PunchCardTemplates.
+     */
+    cursor?: PunchCardTemplateWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PunchCardTemplates from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PunchCardTemplates.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PunchCardTemplates.
+     */
+    distinct?: PunchCardTemplateScalarFieldEnum | PunchCardTemplateScalarFieldEnum[]
+  }
+
+  /**
+   * PunchCardTemplate findMany
+   */
+  export type PunchCardTemplateFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PunchCardTemplate
+     */
+    select?: PunchCardTemplateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PunchCardTemplate
+     */
+    omit?: PunchCardTemplateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PunchCardTemplateInclude<ExtArgs> | null
+    /**
+     * Filter, which PunchCardTemplates to fetch.
+     */
+    where?: PunchCardTemplateWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PunchCardTemplates to fetch.
+     */
+    orderBy?: PunchCardTemplateOrderByWithRelationInput | PunchCardTemplateOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing PunchCardTemplates.
+     */
+    cursor?: PunchCardTemplateWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PunchCardTemplates from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PunchCardTemplates.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PunchCardTemplates.
+     */
+    distinct?: PunchCardTemplateScalarFieldEnum | PunchCardTemplateScalarFieldEnum[]
+  }
+
+  /**
+   * PunchCardTemplate create
+   */
+  export type PunchCardTemplateCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PunchCardTemplate
+     */
+    select?: PunchCardTemplateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PunchCardTemplate
+     */
+    omit?: PunchCardTemplateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PunchCardTemplateInclude<ExtArgs> | null
+    /**
+     * The data needed to create a PunchCardTemplate.
+     */
+    data: XOR<PunchCardTemplateCreateInput, PunchCardTemplateUncheckedCreateInput>
+  }
+
+  /**
+   * PunchCardTemplate createMany
+   */
+  export type PunchCardTemplateCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many PunchCardTemplates.
+     */
+    data: PunchCardTemplateCreateManyInput | PunchCardTemplateCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * PunchCardTemplate createManyAndReturn
+   */
+  export type PunchCardTemplateCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PunchCardTemplate
+     */
+    select?: PunchCardTemplateSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the PunchCardTemplate
+     */
+    omit?: PunchCardTemplateOmit<ExtArgs> | null
+    /**
+     * The data used to create many PunchCardTemplates.
+     */
+    data: PunchCardTemplateCreateManyInput | PunchCardTemplateCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * PunchCardTemplate update
+   */
+  export type PunchCardTemplateUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PunchCardTemplate
+     */
+    select?: PunchCardTemplateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PunchCardTemplate
+     */
+    omit?: PunchCardTemplateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PunchCardTemplateInclude<ExtArgs> | null
+    /**
+     * The data needed to update a PunchCardTemplate.
+     */
+    data: XOR<PunchCardTemplateUpdateInput, PunchCardTemplateUncheckedUpdateInput>
+    /**
+     * Choose, which PunchCardTemplate to update.
+     */
+    where: PunchCardTemplateWhereUniqueInput
+  }
+
+  /**
+   * PunchCardTemplate updateMany
+   */
+  export type PunchCardTemplateUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update PunchCardTemplates.
+     */
+    data: XOR<PunchCardTemplateUpdateManyMutationInput, PunchCardTemplateUncheckedUpdateManyInput>
+    /**
+     * Filter which PunchCardTemplates to update
+     */
+    where?: PunchCardTemplateWhereInput
+    /**
+     * Limit how many PunchCardTemplates to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * PunchCardTemplate updateManyAndReturn
+   */
+  export type PunchCardTemplateUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PunchCardTemplate
+     */
+    select?: PunchCardTemplateSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the PunchCardTemplate
+     */
+    omit?: PunchCardTemplateOmit<ExtArgs> | null
+    /**
+     * The data used to update PunchCardTemplates.
+     */
+    data: XOR<PunchCardTemplateUpdateManyMutationInput, PunchCardTemplateUncheckedUpdateManyInput>
+    /**
+     * Filter which PunchCardTemplates to update
+     */
+    where?: PunchCardTemplateWhereInput
+    /**
+     * Limit how many PunchCardTemplates to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * PunchCardTemplate upsert
+   */
+  export type PunchCardTemplateUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PunchCardTemplate
+     */
+    select?: PunchCardTemplateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PunchCardTemplate
+     */
+    omit?: PunchCardTemplateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PunchCardTemplateInclude<ExtArgs> | null
+    /**
+     * The filter to search for the PunchCardTemplate to update in case it exists.
+     */
+    where: PunchCardTemplateWhereUniqueInput
+    /**
+     * In case the PunchCardTemplate found by the `where` argument doesn't exist, create a new PunchCardTemplate with this data.
+     */
+    create: XOR<PunchCardTemplateCreateInput, PunchCardTemplateUncheckedCreateInput>
+    /**
+     * In case the PunchCardTemplate was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<PunchCardTemplateUpdateInput, PunchCardTemplateUncheckedUpdateInput>
+  }
+
+  /**
+   * PunchCardTemplate delete
+   */
+  export type PunchCardTemplateDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PunchCardTemplate
+     */
+    select?: PunchCardTemplateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PunchCardTemplate
+     */
+    omit?: PunchCardTemplateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PunchCardTemplateInclude<ExtArgs> | null
+    /**
+     * Filter which PunchCardTemplate to delete.
+     */
+    where: PunchCardTemplateWhereUniqueInput
+  }
+
+  /**
+   * PunchCardTemplate deleteMany
+   */
+  export type PunchCardTemplateDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PunchCardTemplates to delete
+     */
+    where?: PunchCardTemplateWhereInput
+    /**
+     * Limit how many PunchCardTemplates to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * PunchCardTemplate.cards
+   */
+  export type PunchCardTemplate$cardsArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PunchCard
+     */
+    select?: PunchCardSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PunchCard
+     */
+    omit?: PunchCardOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PunchCardInclude<ExtArgs> | null
+    where?: PunchCardWhereInput
+    orderBy?: PunchCardOrderByWithRelationInput | PunchCardOrderByWithRelationInput[]
+    cursor?: PunchCardWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: PunchCardScalarFieldEnum | PunchCardScalarFieldEnum[]
+  }
+
+  /**
+   * PunchCardTemplate without action
+   */
+  export type PunchCardTemplateDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PunchCardTemplate
+     */
+    select?: PunchCardTemplateSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PunchCardTemplate
+     */
+    omit?: PunchCardTemplateOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PunchCardTemplateInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model PunchCard
+   */
+
+  export type AggregatePunchCard = {
+    _count: PunchCardCountAggregateOutputType | null
+    _avg: PunchCardAvgAggregateOutputType | null
+    _sum: PunchCardSumAggregateOutputType | null
+    _min: PunchCardMinAggregateOutputType | null
+    _max: PunchCardMaxAggregateOutputType | null
+  }
+
+  export type PunchCardAvgAggregateOutputType = {
+    count: number | null
+  }
+
+  export type PunchCardSumAggregateOutputType = {
+    count: number | null
+  }
+
+  export type PunchCardMinAggregateOutputType = {
+    id: string | null
+    templateId: string | null
+    profileId: string | null
+    count: number | null
+    chosenRewardId: string | null
+    completedAt: Date | null
+    prizeClaimedAt: Date | null
+    createdAt: Date | null
+  }
+
+  export type PunchCardMaxAggregateOutputType = {
+    id: string | null
+    templateId: string | null
+    profileId: string | null
+    count: number | null
+    chosenRewardId: string | null
+    completedAt: Date | null
+    prizeClaimedAt: Date | null
+    createdAt: Date | null
+  }
+
+  export type PunchCardCountAggregateOutputType = {
+    id: number
+    templateId: number
+    profileId: number
+    count: number
+    chosenRewardId: number
+    completedAt: number
+    prizeClaimedAt: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type PunchCardAvgAggregateInputType = {
+    count?: true
+  }
+
+  export type PunchCardSumAggregateInputType = {
+    count?: true
+  }
+
+  export type PunchCardMinAggregateInputType = {
+    id?: true
+    templateId?: true
+    profileId?: true
+    count?: true
+    chosenRewardId?: true
+    completedAt?: true
+    prizeClaimedAt?: true
+    createdAt?: true
+  }
+
+  export type PunchCardMaxAggregateInputType = {
+    id?: true
+    templateId?: true
+    profileId?: true
+    count?: true
+    chosenRewardId?: true
+    completedAt?: true
+    prizeClaimedAt?: true
+    createdAt?: true
+  }
+
+  export type PunchCardCountAggregateInputType = {
+    id?: true
+    templateId?: true
+    profileId?: true
+    count?: true
+    chosenRewardId?: true
+    completedAt?: true
+    prizeClaimedAt?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type PunchCardAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PunchCard to aggregate.
+     */
+    where?: PunchCardWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PunchCards to fetch.
+     */
+    orderBy?: PunchCardOrderByWithRelationInput | PunchCardOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: PunchCardWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PunchCards from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PunchCards.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned PunchCards
+    **/
+    _count?: true | PunchCardCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to average
+    **/
+    _avg?: PunchCardAvgAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to sum
+    **/
+    _sum?: PunchCardSumAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: PunchCardMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: PunchCardMaxAggregateInputType
+  }
+
+  export type GetPunchCardAggregateType<T extends PunchCardAggregateArgs> = {
+        [P in keyof T & keyof AggregatePunchCard]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregatePunchCard[P]>
+      : GetScalarType<T[P], AggregatePunchCard[P]>
+  }
+
+
+
+
+  export type PunchCardGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PunchCardWhereInput
+    orderBy?: PunchCardOrderByWithAggregationInput | PunchCardOrderByWithAggregationInput[]
+    by: PunchCardScalarFieldEnum[] | PunchCardScalarFieldEnum
+    having?: PunchCardScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: PunchCardCountAggregateInputType | true
+    _avg?: PunchCardAvgAggregateInputType
+    _sum?: PunchCardSumAggregateInputType
+    _min?: PunchCardMinAggregateInputType
+    _max?: PunchCardMaxAggregateInputType
+  }
+
+  export type PunchCardGroupByOutputType = {
+    id: string
+    templateId: string
+    profileId: string
+    count: number
+    chosenRewardId: string | null
+    completedAt: Date | null
+    prizeClaimedAt: Date | null
+    createdAt: Date
+    _count: PunchCardCountAggregateOutputType | null
+    _avg: PunchCardAvgAggregateOutputType | null
+    _sum: PunchCardSumAggregateOutputType | null
+    _min: PunchCardMinAggregateOutputType | null
+    _max: PunchCardMaxAggregateOutputType | null
+  }
+
+  type GetPunchCardGroupByPayload<T extends PunchCardGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<PunchCardGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof PunchCardGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], PunchCardGroupByOutputType[P]>
+            : GetScalarType<T[P], PunchCardGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type PunchCardSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    templateId?: boolean
+    profileId?: boolean
+    count?: boolean
+    chosenRewardId?: boolean
+    completedAt?: boolean
+    prizeClaimedAt?: boolean
+    createdAt?: boolean
+    template?: boolean | PunchCardTemplateDefaultArgs<ExtArgs>
+    punches?: boolean | PunchCard$punchesArgs<ExtArgs>
+    _count?: boolean | PunchCardCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["punchCard"]>
+
+  export type PunchCardSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    templateId?: boolean
+    profileId?: boolean
+    count?: boolean
+    chosenRewardId?: boolean
+    completedAt?: boolean
+    prizeClaimedAt?: boolean
+    createdAt?: boolean
+    template?: boolean | PunchCardTemplateDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["punchCard"]>
+
+  export type PunchCardSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    templateId?: boolean
+    profileId?: boolean
+    count?: boolean
+    chosenRewardId?: boolean
+    completedAt?: boolean
+    prizeClaimedAt?: boolean
+    createdAt?: boolean
+    template?: boolean | PunchCardTemplateDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["punchCard"]>
+
+  export type PunchCardSelectScalar = {
+    id?: boolean
+    templateId?: boolean
+    profileId?: boolean
+    count?: boolean
+    chosenRewardId?: boolean
+    completedAt?: boolean
+    prizeClaimedAt?: boolean
+    createdAt?: boolean
+  }
+
+  export type PunchCardOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "templateId" | "profileId" | "count" | "chosenRewardId" | "completedAt" | "prizeClaimedAt" | "createdAt", ExtArgs["result"]["punchCard"]>
+  export type PunchCardInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    template?: boolean | PunchCardTemplateDefaultArgs<ExtArgs>
+    punches?: boolean | PunchCard$punchesArgs<ExtArgs>
+    _count?: boolean | PunchCardCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type PunchCardIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    template?: boolean | PunchCardTemplateDefaultArgs<ExtArgs>
+  }
+  export type PunchCardIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    template?: boolean | PunchCardTemplateDefaultArgs<ExtArgs>
+  }
+
+  export type $PunchCardPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "PunchCard"
+    objects: {
+      template: Prisma.$PunchCardTemplatePayload<ExtArgs>
+      punches: Prisma.$PunchPayload<ExtArgs>[]
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      templateId: string
+      profileId: string
+      count: number
+      chosenRewardId: string | null
+      completedAt: Date | null
+      prizeClaimedAt: Date | null
+      createdAt: Date
+    }, ExtArgs["result"]["punchCard"]>
+    composites: {}
+  }
+
+  type PunchCardGetPayload<S extends boolean | null | undefined | PunchCardDefaultArgs> = $Result.GetResult<Prisma.$PunchCardPayload, S>
+
+  type PunchCardCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<PunchCardFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: PunchCardCountAggregateInputType | true
+    }
+
+  export interface PunchCardDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['PunchCard'], meta: { name: 'PunchCard' } }
+    /**
+     * Find zero or one PunchCard that matches the filter.
+     * @param {PunchCardFindUniqueArgs} args - Arguments to find a PunchCard
+     * @example
+     * // Get one PunchCard
+     * const punchCard = await prisma.punchCard.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends PunchCardFindUniqueArgs>(args: SelectSubset<T, PunchCardFindUniqueArgs<ExtArgs>>): Prisma__PunchCardClient<$Result.GetResult<Prisma.$PunchCardPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one PunchCard that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {PunchCardFindUniqueOrThrowArgs} args - Arguments to find a PunchCard
+     * @example
+     * // Get one PunchCard
+     * const punchCard = await prisma.punchCard.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends PunchCardFindUniqueOrThrowArgs>(args: SelectSubset<T, PunchCardFindUniqueOrThrowArgs<ExtArgs>>): Prisma__PunchCardClient<$Result.GetResult<Prisma.$PunchCardPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PunchCard that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PunchCardFindFirstArgs} args - Arguments to find a PunchCard
+     * @example
+     * // Get one PunchCard
+     * const punchCard = await prisma.punchCard.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends PunchCardFindFirstArgs>(args?: SelectSubset<T, PunchCardFindFirstArgs<ExtArgs>>): Prisma__PunchCardClient<$Result.GetResult<Prisma.$PunchCardPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first PunchCard that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PunchCardFindFirstOrThrowArgs} args - Arguments to find a PunchCard
+     * @example
+     * // Get one PunchCard
+     * const punchCard = await prisma.punchCard.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends PunchCardFindFirstOrThrowArgs>(args?: SelectSubset<T, PunchCardFindFirstOrThrowArgs<ExtArgs>>): Prisma__PunchCardClient<$Result.GetResult<Prisma.$PunchCardPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more PunchCards that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PunchCardFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all PunchCards
+     * const punchCards = await prisma.punchCard.findMany()
+     * 
+     * // Get first 10 PunchCards
+     * const punchCards = await prisma.punchCard.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const punchCardWithIdOnly = await prisma.punchCard.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends PunchCardFindManyArgs>(args?: SelectSubset<T, PunchCardFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PunchCardPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a PunchCard.
+     * @param {PunchCardCreateArgs} args - Arguments to create a PunchCard.
+     * @example
+     * // Create one PunchCard
+     * const PunchCard = await prisma.punchCard.create({
+     *   data: {
+     *     // ... data to create a PunchCard
+     *   }
+     * })
+     * 
+     */
+    create<T extends PunchCardCreateArgs>(args: SelectSubset<T, PunchCardCreateArgs<ExtArgs>>): Prisma__PunchCardClient<$Result.GetResult<Prisma.$PunchCardPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many PunchCards.
+     * @param {PunchCardCreateManyArgs} args - Arguments to create many PunchCards.
+     * @example
+     * // Create many PunchCards
+     * const punchCard = await prisma.punchCard.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends PunchCardCreateManyArgs>(args?: SelectSubset<T, PunchCardCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many PunchCards and returns the data saved in the database.
+     * @param {PunchCardCreateManyAndReturnArgs} args - Arguments to create many PunchCards.
+     * @example
+     * // Create many PunchCards
+     * const punchCard = await prisma.punchCard.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many PunchCards and only return the `id`
+     * const punchCardWithIdOnly = await prisma.punchCard.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends PunchCardCreateManyAndReturnArgs>(args?: SelectSubset<T, PunchCardCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PunchCardPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a PunchCard.
+     * @param {PunchCardDeleteArgs} args - Arguments to delete one PunchCard.
+     * @example
+     * // Delete one PunchCard
+     * const PunchCard = await prisma.punchCard.delete({
+     *   where: {
+     *     // ... filter to delete one PunchCard
+     *   }
+     * })
+     * 
+     */
+    delete<T extends PunchCardDeleteArgs>(args: SelectSubset<T, PunchCardDeleteArgs<ExtArgs>>): Prisma__PunchCardClient<$Result.GetResult<Prisma.$PunchCardPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one PunchCard.
+     * @param {PunchCardUpdateArgs} args - Arguments to update one PunchCard.
+     * @example
+     * // Update one PunchCard
+     * const punchCard = await prisma.punchCard.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends PunchCardUpdateArgs>(args: SelectSubset<T, PunchCardUpdateArgs<ExtArgs>>): Prisma__PunchCardClient<$Result.GetResult<Prisma.$PunchCardPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more PunchCards.
+     * @param {PunchCardDeleteManyArgs} args - Arguments to filter PunchCards to delete.
+     * @example
+     * // Delete a few PunchCards
+     * const { count } = await prisma.punchCard.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends PunchCardDeleteManyArgs>(args?: SelectSubset<T, PunchCardDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PunchCards.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PunchCardUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many PunchCards
+     * const punchCard = await prisma.punchCard.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends PunchCardUpdateManyArgs>(args: SelectSubset<T, PunchCardUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more PunchCards and returns the data updated in the database.
+     * @param {PunchCardUpdateManyAndReturnArgs} args - Arguments to update many PunchCards.
+     * @example
+     * // Update many PunchCards
+     * const punchCard = await prisma.punchCard.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more PunchCards and only return the `id`
+     * const punchCardWithIdOnly = await prisma.punchCard.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends PunchCardUpdateManyAndReturnArgs>(args: SelectSubset<T, PunchCardUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PunchCardPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one PunchCard.
+     * @param {PunchCardUpsertArgs} args - Arguments to update or create a PunchCard.
+     * @example
+     * // Update or create a PunchCard
+     * const punchCard = await prisma.punchCard.upsert({
+     *   create: {
+     *     // ... data to create a PunchCard
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the PunchCard we want to update
+     *   }
+     * })
+     */
+    upsert<T extends PunchCardUpsertArgs>(args: SelectSubset<T, PunchCardUpsertArgs<ExtArgs>>): Prisma__PunchCardClient<$Result.GetResult<Prisma.$PunchCardPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of PunchCards.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PunchCardCountArgs} args - Arguments to filter PunchCards to count.
+     * @example
+     * // Count the number of PunchCards
+     * const count = await prisma.punchCard.count({
+     *   where: {
+     *     // ... the filter for the PunchCards we want to count
+     *   }
+     * })
+    **/
+    count<T extends PunchCardCountArgs>(
+      args?: Subset<T, PunchCardCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], PunchCardCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a PunchCard.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PunchCardAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends PunchCardAggregateArgs>(args: Subset<T, PunchCardAggregateArgs>): Prisma.PrismaPromise<GetPunchCardAggregateType<T>>
+
+    /**
+     * Group by PunchCard.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PunchCardGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends PunchCardGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: PunchCardGroupByArgs['orderBy'] }
+        : { orderBy?: PunchCardGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, PunchCardGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetPunchCardGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the PunchCard model
+   */
+  readonly fields: PunchCardFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for PunchCard.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__PunchCardClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    template<T extends PunchCardTemplateDefaultArgs<ExtArgs> = {}>(args?: Subset<T, PunchCardTemplateDefaultArgs<ExtArgs>>): Prisma__PunchCardTemplateClient<$Result.GetResult<Prisma.$PunchCardTemplatePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    punches<T extends PunchCard$punchesArgs<ExtArgs> = {}>(args?: Subset<T, PunchCard$punchesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PunchPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the PunchCard model
+   */
+  interface PunchCardFieldRefs {
+    readonly id: FieldRef<"PunchCard", 'String'>
+    readonly templateId: FieldRef<"PunchCard", 'String'>
+    readonly profileId: FieldRef<"PunchCard", 'String'>
+    readonly count: FieldRef<"PunchCard", 'Int'>
+    readonly chosenRewardId: FieldRef<"PunchCard", 'String'>
+    readonly completedAt: FieldRef<"PunchCard", 'DateTime'>
+    readonly prizeClaimedAt: FieldRef<"PunchCard", 'DateTime'>
+    readonly createdAt: FieldRef<"PunchCard", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * PunchCard findUnique
+   */
+  export type PunchCardFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PunchCard
+     */
+    select?: PunchCardSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PunchCard
+     */
+    omit?: PunchCardOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PunchCardInclude<ExtArgs> | null
+    /**
+     * Filter, which PunchCard to fetch.
+     */
+    where: PunchCardWhereUniqueInput
+  }
+
+  /**
+   * PunchCard findUniqueOrThrow
+   */
+  export type PunchCardFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PunchCard
+     */
+    select?: PunchCardSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PunchCard
+     */
+    omit?: PunchCardOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PunchCardInclude<ExtArgs> | null
+    /**
+     * Filter, which PunchCard to fetch.
+     */
+    where: PunchCardWhereUniqueInput
+  }
+
+  /**
+   * PunchCard findFirst
+   */
+  export type PunchCardFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PunchCard
+     */
+    select?: PunchCardSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PunchCard
+     */
+    omit?: PunchCardOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PunchCardInclude<ExtArgs> | null
+    /**
+     * Filter, which PunchCard to fetch.
+     */
+    where?: PunchCardWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PunchCards to fetch.
+     */
+    orderBy?: PunchCardOrderByWithRelationInput | PunchCardOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PunchCards.
+     */
+    cursor?: PunchCardWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PunchCards from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PunchCards.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PunchCards.
+     */
+    distinct?: PunchCardScalarFieldEnum | PunchCardScalarFieldEnum[]
+  }
+
+  /**
+   * PunchCard findFirstOrThrow
+   */
+  export type PunchCardFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PunchCard
+     */
+    select?: PunchCardSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PunchCard
+     */
+    omit?: PunchCardOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PunchCardInclude<ExtArgs> | null
+    /**
+     * Filter, which PunchCard to fetch.
+     */
+    where?: PunchCardWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PunchCards to fetch.
+     */
+    orderBy?: PunchCardOrderByWithRelationInput | PunchCardOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for PunchCards.
+     */
+    cursor?: PunchCardWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PunchCards from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PunchCards.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PunchCards.
+     */
+    distinct?: PunchCardScalarFieldEnum | PunchCardScalarFieldEnum[]
+  }
+
+  /**
+   * PunchCard findMany
+   */
+  export type PunchCardFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PunchCard
+     */
+    select?: PunchCardSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PunchCard
+     */
+    omit?: PunchCardOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PunchCardInclude<ExtArgs> | null
+    /**
+     * Filter, which PunchCards to fetch.
+     */
+    where?: PunchCardWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of PunchCards to fetch.
+     */
+    orderBy?: PunchCardOrderByWithRelationInput | PunchCardOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing PunchCards.
+     */
+    cursor?: PunchCardWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` PunchCards from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` PunchCards.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of PunchCards.
+     */
+    distinct?: PunchCardScalarFieldEnum | PunchCardScalarFieldEnum[]
+  }
+
+  /**
+   * PunchCard create
+   */
+  export type PunchCardCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PunchCard
+     */
+    select?: PunchCardSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PunchCard
+     */
+    omit?: PunchCardOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PunchCardInclude<ExtArgs> | null
+    /**
+     * The data needed to create a PunchCard.
+     */
+    data: XOR<PunchCardCreateInput, PunchCardUncheckedCreateInput>
+  }
+
+  /**
+   * PunchCard createMany
+   */
+  export type PunchCardCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many PunchCards.
+     */
+    data: PunchCardCreateManyInput | PunchCardCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * PunchCard createManyAndReturn
+   */
+  export type PunchCardCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PunchCard
+     */
+    select?: PunchCardSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the PunchCard
+     */
+    omit?: PunchCardOmit<ExtArgs> | null
+    /**
+     * The data used to create many PunchCards.
+     */
+    data: PunchCardCreateManyInput | PunchCardCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PunchCardIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * PunchCard update
+   */
+  export type PunchCardUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PunchCard
+     */
+    select?: PunchCardSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PunchCard
+     */
+    omit?: PunchCardOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PunchCardInclude<ExtArgs> | null
+    /**
+     * The data needed to update a PunchCard.
+     */
+    data: XOR<PunchCardUpdateInput, PunchCardUncheckedUpdateInput>
+    /**
+     * Choose, which PunchCard to update.
+     */
+    where: PunchCardWhereUniqueInput
+  }
+
+  /**
+   * PunchCard updateMany
+   */
+  export type PunchCardUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update PunchCards.
+     */
+    data: XOR<PunchCardUpdateManyMutationInput, PunchCardUncheckedUpdateManyInput>
+    /**
+     * Filter which PunchCards to update
+     */
+    where?: PunchCardWhereInput
+    /**
+     * Limit how many PunchCards to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * PunchCard updateManyAndReturn
+   */
+  export type PunchCardUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PunchCard
+     */
+    select?: PunchCardSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the PunchCard
+     */
+    omit?: PunchCardOmit<ExtArgs> | null
+    /**
+     * The data used to update PunchCards.
+     */
+    data: XOR<PunchCardUpdateManyMutationInput, PunchCardUncheckedUpdateManyInput>
+    /**
+     * Filter which PunchCards to update
+     */
+    where?: PunchCardWhereInput
+    /**
+     * Limit how many PunchCards to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PunchCardIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * PunchCard upsert
+   */
+  export type PunchCardUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PunchCard
+     */
+    select?: PunchCardSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PunchCard
+     */
+    omit?: PunchCardOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PunchCardInclude<ExtArgs> | null
+    /**
+     * The filter to search for the PunchCard to update in case it exists.
+     */
+    where: PunchCardWhereUniqueInput
+    /**
+     * In case the PunchCard found by the `where` argument doesn't exist, create a new PunchCard with this data.
+     */
+    create: XOR<PunchCardCreateInput, PunchCardUncheckedCreateInput>
+    /**
+     * In case the PunchCard was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<PunchCardUpdateInput, PunchCardUncheckedUpdateInput>
+  }
+
+  /**
+   * PunchCard delete
+   */
+  export type PunchCardDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PunchCard
+     */
+    select?: PunchCardSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PunchCard
+     */
+    omit?: PunchCardOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PunchCardInclude<ExtArgs> | null
+    /**
+     * Filter which PunchCard to delete.
+     */
+    where: PunchCardWhereUniqueInput
+  }
+
+  /**
+   * PunchCard deleteMany
+   */
+  export type PunchCardDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which PunchCards to delete
+     */
+    where?: PunchCardWhereInput
+    /**
+     * Limit how many PunchCards to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * PunchCard.punches
+   */
+  export type PunchCard$punchesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Punch
+     */
+    select?: PunchSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Punch
+     */
+    omit?: PunchOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PunchInclude<ExtArgs> | null
+    where?: PunchWhereInput
+    orderBy?: PunchOrderByWithRelationInput | PunchOrderByWithRelationInput[]
+    cursor?: PunchWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: PunchScalarFieldEnum | PunchScalarFieldEnum[]
+  }
+
+  /**
+   * PunchCard without action
+   */
+  export type PunchCardDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PunchCard
+     */
+    select?: PunchCardSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the PunchCard
+     */
+    omit?: PunchCardOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PunchCardInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model Punch
+   */
+
+  export type AggregatePunch = {
+    _count: PunchCountAggregateOutputType | null
+    _min: PunchMinAggregateOutputType | null
+    _max: PunchMaxAggregateOutputType | null
+  }
+
+  export type PunchMinAggregateOutputType = {
+    id: string | null
+    cardId: string | null
+    sourceType: string | null
+    sourceId: string | null
+    createdBy: string | null
+    createdAt: Date | null
+  }
+
+  export type PunchMaxAggregateOutputType = {
+    id: string | null
+    cardId: string | null
+    sourceType: string | null
+    sourceId: string | null
+    createdBy: string | null
+    createdAt: Date | null
+  }
+
+  export type PunchCountAggregateOutputType = {
+    id: number
+    cardId: number
+    sourceType: number
+    sourceId: number
+    createdBy: number
+    createdAt: number
+    _all: number
+  }
+
+
+  export type PunchMinAggregateInputType = {
+    id?: true
+    cardId?: true
+    sourceType?: true
+    sourceId?: true
+    createdBy?: true
+    createdAt?: true
+  }
+
+  export type PunchMaxAggregateInputType = {
+    id?: true
+    cardId?: true
+    sourceType?: true
+    sourceId?: true
+    createdBy?: true
+    createdAt?: true
+  }
+
+  export type PunchCountAggregateInputType = {
+    id?: true
+    cardId?: true
+    sourceType?: true
+    sourceId?: true
+    createdBy?: true
+    createdAt?: true
+    _all?: true
+  }
+
+  export type PunchAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Punch to aggregate.
+     */
+    where?: PunchWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Punches to fetch.
+     */
+    orderBy?: PunchOrderByWithRelationInput | PunchOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: PunchWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Punches from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Punches.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Punches
+    **/
+    _count?: true | PunchCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: PunchMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: PunchMaxAggregateInputType
+  }
+
+  export type GetPunchAggregateType<T extends PunchAggregateArgs> = {
+        [P in keyof T & keyof AggregatePunch]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregatePunch[P]>
+      : GetScalarType<T[P], AggregatePunch[P]>
+  }
+
+
+
+
+  export type PunchGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: PunchWhereInput
+    orderBy?: PunchOrderByWithAggregationInput | PunchOrderByWithAggregationInput[]
+    by: PunchScalarFieldEnum[] | PunchScalarFieldEnum
+    having?: PunchScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: PunchCountAggregateInputType | true
+    _min?: PunchMinAggregateInputType
+    _max?: PunchMaxAggregateInputType
+  }
+
+  export type PunchGroupByOutputType = {
+    id: string
+    cardId: string
+    sourceType: string
+    sourceId: string | null
+    createdBy: string
+    createdAt: Date
+    _count: PunchCountAggregateOutputType | null
+    _min: PunchMinAggregateOutputType | null
+    _max: PunchMaxAggregateOutputType | null
+  }
+
+  type GetPunchGroupByPayload<T extends PunchGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<PunchGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof PunchGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], PunchGroupByOutputType[P]>
+            : GetScalarType<T[P], PunchGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type PunchSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    cardId?: boolean
+    sourceType?: boolean
+    sourceId?: boolean
+    createdBy?: boolean
+    createdAt?: boolean
+    card?: boolean | PunchCardDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["punch"]>
+
+  export type PunchSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    cardId?: boolean
+    sourceType?: boolean
+    sourceId?: boolean
+    createdBy?: boolean
+    createdAt?: boolean
+    card?: boolean | PunchCardDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["punch"]>
+
+  export type PunchSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    cardId?: boolean
+    sourceType?: boolean
+    sourceId?: boolean
+    createdBy?: boolean
+    createdAt?: boolean
+    card?: boolean | PunchCardDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["punch"]>
+
+  export type PunchSelectScalar = {
+    id?: boolean
+    cardId?: boolean
+    sourceType?: boolean
+    sourceId?: boolean
+    createdBy?: boolean
+    createdAt?: boolean
+  }
+
+  export type PunchOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "cardId" | "sourceType" | "sourceId" | "createdBy" | "createdAt", ExtArgs["result"]["punch"]>
+  export type PunchInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    card?: boolean | PunchCardDefaultArgs<ExtArgs>
+  }
+  export type PunchIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    card?: boolean | PunchCardDefaultArgs<ExtArgs>
+  }
+  export type PunchIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    card?: boolean | PunchCardDefaultArgs<ExtArgs>
+  }
+
+  export type $PunchPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Punch"
+    objects: {
+      card: Prisma.$PunchCardPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      cardId: string
+      sourceType: string
+      sourceId: string | null
+      createdBy: string
+      createdAt: Date
+    }, ExtArgs["result"]["punch"]>
+    composites: {}
+  }
+
+  type PunchGetPayload<S extends boolean | null | undefined | PunchDefaultArgs> = $Result.GetResult<Prisma.$PunchPayload, S>
+
+  type PunchCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<PunchFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: PunchCountAggregateInputType | true
+    }
+
+  export interface PunchDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Punch'], meta: { name: 'Punch' } }
+    /**
+     * Find zero or one Punch that matches the filter.
+     * @param {PunchFindUniqueArgs} args - Arguments to find a Punch
+     * @example
+     * // Get one Punch
+     * const punch = await prisma.punch.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends PunchFindUniqueArgs>(args: SelectSubset<T, PunchFindUniqueArgs<ExtArgs>>): Prisma__PunchClient<$Result.GetResult<Prisma.$PunchPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Punch that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {PunchFindUniqueOrThrowArgs} args - Arguments to find a Punch
+     * @example
+     * // Get one Punch
+     * const punch = await prisma.punch.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends PunchFindUniqueOrThrowArgs>(args: SelectSubset<T, PunchFindUniqueOrThrowArgs<ExtArgs>>): Prisma__PunchClient<$Result.GetResult<Prisma.$PunchPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Punch that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PunchFindFirstArgs} args - Arguments to find a Punch
+     * @example
+     * // Get one Punch
+     * const punch = await prisma.punch.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends PunchFindFirstArgs>(args?: SelectSubset<T, PunchFindFirstArgs<ExtArgs>>): Prisma__PunchClient<$Result.GetResult<Prisma.$PunchPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Punch that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PunchFindFirstOrThrowArgs} args - Arguments to find a Punch
+     * @example
+     * // Get one Punch
+     * const punch = await prisma.punch.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends PunchFindFirstOrThrowArgs>(args?: SelectSubset<T, PunchFindFirstOrThrowArgs<ExtArgs>>): Prisma__PunchClient<$Result.GetResult<Prisma.$PunchPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Punches that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PunchFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Punches
+     * const punches = await prisma.punch.findMany()
+     * 
+     * // Get first 10 Punches
+     * const punches = await prisma.punch.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const punchWithIdOnly = await prisma.punch.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends PunchFindManyArgs>(args?: SelectSubset<T, PunchFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PunchPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Punch.
+     * @param {PunchCreateArgs} args - Arguments to create a Punch.
+     * @example
+     * // Create one Punch
+     * const Punch = await prisma.punch.create({
+     *   data: {
+     *     // ... data to create a Punch
+     *   }
+     * })
+     * 
+     */
+    create<T extends PunchCreateArgs>(args: SelectSubset<T, PunchCreateArgs<ExtArgs>>): Prisma__PunchClient<$Result.GetResult<Prisma.$PunchPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Punches.
+     * @param {PunchCreateManyArgs} args - Arguments to create many Punches.
+     * @example
+     * // Create many Punches
+     * const punch = await prisma.punch.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends PunchCreateManyArgs>(args?: SelectSubset<T, PunchCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Punches and returns the data saved in the database.
+     * @param {PunchCreateManyAndReturnArgs} args - Arguments to create many Punches.
+     * @example
+     * // Create many Punches
+     * const punch = await prisma.punch.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Punches and only return the `id`
+     * const punchWithIdOnly = await prisma.punch.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends PunchCreateManyAndReturnArgs>(args?: SelectSubset<T, PunchCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PunchPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a Punch.
+     * @param {PunchDeleteArgs} args - Arguments to delete one Punch.
+     * @example
+     * // Delete one Punch
+     * const Punch = await prisma.punch.delete({
+     *   where: {
+     *     // ... filter to delete one Punch
+     *   }
+     * })
+     * 
+     */
+    delete<T extends PunchDeleteArgs>(args: SelectSubset<T, PunchDeleteArgs<ExtArgs>>): Prisma__PunchClient<$Result.GetResult<Prisma.$PunchPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Punch.
+     * @param {PunchUpdateArgs} args - Arguments to update one Punch.
+     * @example
+     * // Update one Punch
+     * const punch = await prisma.punch.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends PunchUpdateArgs>(args: SelectSubset<T, PunchUpdateArgs<ExtArgs>>): Prisma__PunchClient<$Result.GetResult<Prisma.$PunchPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Punches.
+     * @param {PunchDeleteManyArgs} args - Arguments to filter Punches to delete.
+     * @example
+     * // Delete a few Punches
+     * const { count } = await prisma.punch.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends PunchDeleteManyArgs>(args?: SelectSubset<T, PunchDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Punches.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PunchUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Punches
+     * const punch = await prisma.punch.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends PunchUpdateManyArgs>(args: SelectSubset<T, PunchUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Punches and returns the data updated in the database.
+     * @param {PunchUpdateManyAndReturnArgs} args - Arguments to update many Punches.
+     * @example
+     * // Update many Punches
+     * const punch = await prisma.punch.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more Punches and only return the `id`
+     * const punchWithIdOnly = await prisma.punch.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends PunchUpdateManyAndReturnArgs>(args: SelectSubset<T, PunchUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$PunchPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one Punch.
+     * @param {PunchUpsertArgs} args - Arguments to update or create a Punch.
+     * @example
+     * // Update or create a Punch
+     * const punch = await prisma.punch.upsert({
+     *   create: {
+     *     // ... data to create a Punch
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Punch we want to update
+     *   }
+     * })
+     */
+    upsert<T extends PunchUpsertArgs>(args: SelectSubset<T, PunchUpsertArgs<ExtArgs>>): Prisma__PunchClient<$Result.GetResult<Prisma.$PunchPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of Punches.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PunchCountArgs} args - Arguments to filter Punches to count.
+     * @example
+     * // Count the number of Punches
+     * const count = await prisma.punch.count({
+     *   where: {
+     *     // ... the filter for the Punches we want to count
+     *   }
+     * })
+    **/
+    count<T extends PunchCountArgs>(
+      args?: Subset<T, PunchCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], PunchCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Punch.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PunchAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends PunchAggregateArgs>(args: Subset<T, PunchAggregateArgs>): Prisma.PrismaPromise<GetPunchAggregateType<T>>
+
+    /**
+     * Group by Punch.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {PunchGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends PunchGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: PunchGroupByArgs['orderBy'] }
+        : { orderBy?: PunchGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, PunchGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetPunchGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Punch model
+   */
+  readonly fields: PunchFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Punch.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__PunchClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    card<T extends PunchCardDefaultArgs<ExtArgs> = {}>(args?: Subset<T, PunchCardDefaultArgs<ExtArgs>>): Prisma__PunchCardClient<$Result.GetResult<Prisma.$PunchCardPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Punch model
+   */
+  interface PunchFieldRefs {
+    readonly id: FieldRef<"Punch", 'String'>
+    readonly cardId: FieldRef<"Punch", 'String'>
+    readonly sourceType: FieldRef<"Punch", 'String'>
+    readonly sourceId: FieldRef<"Punch", 'String'>
+    readonly createdBy: FieldRef<"Punch", 'String'>
+    readonly createdAt: FieldRef<"Punch", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Punch findUnique
+   */
+  export type PunchFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Punch
+     */
+    select?: PunchSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Punch
+     */
+    omit?: PunchOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PunchInclude<ExtArgs> | null
+    /**
+     * Filter, which Punch to fetch.
+     */
+    where: PunchWhereUniqueInput
+  }
+
+  /**
+   * Punch findUniqueOrThrow
+   */
+  export type PunchFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Punch
+     */
+    select?: PunchSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Punch
+     */
+    omit?: PunchOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PunchInclude<ExtArgs> | null
+    /**
+     * Filter, which Punch to fetch.
+     */
+    where: PunchWhereUniqueInput
+  }
+
+  /**
+   * Punch findFirst
+   */
+  export type PunchFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Punch
+     */
+    select?: PunchSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Punch
+     */
+    omit?: PunchOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PunchInclude<ExtArgs> | null
+    /**
+     * Filter, which Punch to fetch.
+     */
+    where?: PunchWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Punches to fetch.
+     */
+    orderBy?: PunchOrderByWithRelationInput | PunchOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Punches.
+     */
+    cursor?: PunchWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Punches from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Punches.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Punches.
+     */
+    distinct?: PunchScalarFieldEnum | PunchScalarFieldEnum[]
+  }
+
+  /**
+   * Punch findFirstOrThrow
+   */
+  export type PunchFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Punch
+     */
+    select?: PunchSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Punch
+     */
+    omit?: PunchOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PunchInclude<ExtArgs> | null
+    /**
+     * Filter, which Punch to fetch.
+     */
+    where?: PunchWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Punches to fetch.
+     */
+    orderBy?: PunchOrderByWithRelationInput | PunchOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Punches.
+     */
+    cursor?: PunchWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Punches from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Punches.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Punches.
+     */
+    distinct?: PunchScalarFieldEnum | PunchScalarFieldEnum[]
+  }
+
+  /**
+   * Punch findMany
+   */
+  export type PunchFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Punch
+     */
+    select?: PunchSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Punch
+     */
+    omit?: PunchOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PunchInclude<ExtArgs> | null
+    /**
+     * Filter, which Punches to fetch.
+     */
+    where?: PunchWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Punches to fetch.
+     */
+    orderBy?: PunchOrderByWithRelationInput | PunchOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Punches.
+     */
+    cursor?: PunchWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Punches from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Punches.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Punches.
+     */
+    distinct?: PunchScalarFieldEnum | PunchScalarFieldEnum[]
+  }
+
+  /**
+   * Punch create
+   */
+  export type PunchCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Punch
+     */
+    select?: PunchSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Punch
+     */
+    omit?: PunchOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PunchInclude<ExtArgs> | null
+    /**
+     * The data needed to create a Punch.
+     */
+    data: XOR<PunchCreateInput, PunchUncheckedCreateInput>
+  }
+
+  /**
+   * Punch createMany
+   */
+  export type PunchCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Punches.
+     */
+    data: PunchCreateManyInput | PunchCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Punch createManyAndReturn
+   */
+  export type PunchCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Punch
+     */
+    select?: PunchSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Punch
+     */
+    omit?: PunchOmit<ExtArgs> | null
+    /**
+     * The data used to create many Punches.
+     */
+    data: PunchCreateManyInput | PunchCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PunchIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Punch update
+   */
+  export type PunchUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Punch
+     */
+    select?: PunchSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Punch
+     */
+    omit?: PunchOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PunchInclude<ExtArgs> | null
+    /**
+     * The data needed to update a Punch.
+     */
+    data: XOR<PunchUpdateInput, PunchUncheckedUpdateInput>
+    /**
+     * Choose, which Punch to update.
+     */
+    where: PunchWhereUniqueInput
+  }
+
+  /**
+   * Punch updateMany
+   */
+  export type PunchUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Punches.
+     */
+    data: XOR<PunchUpdateManyMutationInput, PunchUncheckedUpdateManyInput>
+    /**
+     * Filter which Punches to update
+     */
+    where?: PunchWhereInput
+    /**
+     * Limit how many Punches to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Punch updateManyAndReturn
+   */
+  export type PunchUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Punch
+     */
+    select?: PunchSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Punch
+     */
+    omit?: PunchOmit<ExtArgs> | null
+    /**
+     * The data used to update Punches.
+     */
+    data: XOR<PunchUpdateManyMutationInput, PunchUncheckedUpdateManyInput>
+    /**
+     * Filter which Punches to update
+     */
+    where?: PunchWhereInput
+    /**
+     * Limit how many Punches to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PunchIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * Punch upsert
+   */
+  export type PunchUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Punch
+     */
+    select?: PunchSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Punch
+     */
+    omit?: PunchOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PunchInclude<ExtArgs> | null
+    /**
+     * The filter to search for the Punch to update in case it exists.
+     */
+    where: PunchWhereUniqueInput
+    /**
+     * In case the Punch found by the `where` argument doesn't exist, create a new Punch with this data.
+     */
+    create: XOR<PunchCreateInput, PunchUncheckedCreateInput>
+    /**
+     * In case the Punch was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<PunchUpdateInput, PunchUncheckedUpdateInput>
+  }
+
+  /**
+   * Punch delete
+   */
+  export type PunchDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Punch
+     */
+    select?: PunchSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Punch
+     */
+    omit?: PunchOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PunchInclude<ExtArgs> | null
+    /**
+     * Filter which Punch to delete.
+     */
+    where: PunchWhereUniqueInput
+  }
+
+  /**
+   * Punch deleteMany
+   */
+  export type PunchDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Punches to delete
+     */
+    where?: PunchWhereInput
+    /**
+     * Limit how many Punches to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * Punch without action
+   */
+  export type PunchDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Punch
+     */
+    select?: PunchSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Punch
+     */
+    omit?: PunchOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PunchInclude<ExtArgs> | null
+  }
+
+
+  /**
    * Model Redemption
    */
 
@@ -6886,6 +10620,47 @@ export namespace Prisma {
   export type RewardScalarFieldEnum = (typeof RewardScalarFieldEnum)[keyof typeof RewardScalarFieldEnum]
 
 
+  export const PunchCardTemplateScalarFieldEnum: {
+    id: 'id',
+    name: 'name',
+    glyph: 'glyph',
+    goal: 'goal',
+    payoutKind: 'payoutKind',
+    payoutCoins: 'payoutCoins',
+    payoutOptionIds: 'payoutOptionIds',
+    audience: 'audience',
+    active: 'active'
+  };
+
+  export type PunchCardTemplateScalarFieldEnum = (typeof PunchCardTemplateScalarFieldEnum)[keyof typeof PunchCardTemplateScalarFieldEnum]
+
+
+  export const PunchCardScalarFieldEnum: {
+    id: 'id',
+    templateId: 'templateId',
+    profileId: 'profileId',
+    count: 'count',
+    chosenRewardId: 'chosenRewardId',
+    completedAt: 'completedAt',
+    prizeClaimedAt: 'prizeClaimedAt',
+    createdAt: 'createdAt'
+  };
+
+  export type PunchCardScalarFieldEnum = (typeof PunchCardScalarFieldEnum)[keyof typeof PunchCardScalarFieldEnum]
+
+
+  export const PunchScalarFieldEnum: {
+    id: 'id',
+    cardId: 'cardId',
+    sourceType: 'sourceType',
+    sourceId: 'sourceId',
+    createdBy: 'createdBy',
+    createdAt: 'createdAt'
+  };
+
+  export type PunchScalarFieldEnum = (typeof PunchScalarFieldEnum)[keyof typeof PunchScalarFieldEnum]
+
+
   export const RedemptionScalarFieldEnum: {
     id: 'id',
     rewardId: 'rewardId',
@@ -7282,6 +11057,219 @@ export namespace Prisma {
     active?: BoolWithAggregatesFilter<"Reward"> | boolean
     createdBy?: UuidWithAggregatesFilter<"Reward"> | string
     createdAt?: DateTimeWithAggregatesFilter<"Reward"> | Date | string
+  }
+
+  export type PunchCardTemplateWhereInput = {
+    AND?: PunchCardTemplateWhereInput | PunchCardTemplateWhereInput[]
+    OR?: PunchCardTemplateWhereInput[]
+    NOT?: PunchCardTemplateWhereInput | PunchCardTemplateWhereInput[]
+    id?: UuidFilter<"PunchCardTemplate"> | string
+    name?: StringFilter<"PunchCardTemplate"> | string
+    glyph?: StringFilter<"PunchCardTemplate"> | string
+    goal?: IntFilter<"PunchCardTemplate"> | number
+    payoutKind?: StringFilter<"PunchCardTemplate"> | string
+    payoutCoins?: IntNullableFilter<"PunchCardTemplate"> | number | null
+    payoutOptionIds?: StringNullableListFilter<"PunchCardTemplate">
+    audience?: StringNullableListFilter<"PunchCardTemplate">
+    active?: BoolFilter<"PunchCardTemplate"> | boolean
+    cards?: PunchCardListRelationFilter
+  }
+
+  export type PunchCardTemplateOrderByWithRelationInput = {
+    id?: SortOrder
+    name?: SortOrder
+    glyph?: SortOrder
+    goal?: SortOrder
+    payoutKind?: SortOrder
+    payoutCoins?: SortOrderInput | SortOrder
+    payoutOptionIds?: SortOrder
+    audience?: SortOrder
+    active?: SortOrder
+    cards?: PunchCardOrderByRelationAggregateInput
+  }
+
+  export type PunchCardTemplateWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: PunchCardTemplateWhereInput | PunchCardTemplateWhereInput[]
+    OR?: PunchCardTemplateWhereInput[]
+    NOT?: PunchCardTemplateWhereInput | PunchCardTemplateWhereInput[]
+    name?: StringFilter<"PunchCardTemplate"> | string
+    glyph?: StringFilter<"PunchCardTemplate"> | string
+    goal?: IntFilter<"PunchCardTemplate"> | number
+    payoutKind?: StringFilter<"PunchCardTemplate"> | string
+    payoutCoins?: IntNullableFilter<"PunchCardTemplate"> | number | null
+    payoutOptionIds?: StringNullableListFilter<"PunchCardTemplate">
+    audience?: StringNullableListFilter<"PunchCardTemplate">
+    active?: BoolFilter<"PunchCardTemplate"> | boolean
+    cards?: PunchCardListRelationFilter
+  }, "id">
+
+  export type PunchCardTemplateOrderByWithAggregationInput = {
+    id?: SortOrder
+    name?: SortOrder
+    glyph?: SortOrder
+    goal?: SortOrder
+    payoutKind?: SortOrder
+    payoutCoins?: SortOrderInput | SortOrder
+    payoutOptionIds?: SortOrder
+    audience?: SortOrder
+    active?: SortOrder
+    _count?: PunchCardTemplateCountOrderByAggregateInput
+    _avg?: PunchCardTemplateAvgOrderByAggregateInput
+    _max?: PunchCardTemplateMaxOrderByAggregateInput
+    _min?: PunchCardTemplateMinOrderByAggregateInput
+    _sum?: PunchCardTemplateSumOrderByAggregateInput
+  }
+
+  export type PunchCardTemplateScalarWhereWithAggregatesInput = {
+    AND?: PunchCardTemplateScalarWhereWithAggregatesInput | PunchCardTemplateScalarWhereWithAggregatesInput[]
+    OR?: PunchCardTemplateScalarWhereWithAggregatesInput[]
+    NOT?: PunchCardTemplateScalarWhereWithAggregatesInput | PunchCardTemplateScalarWhereWithAggregatesInput[]
+    id?: UuidWithAggregatesFilter<"PunchCardTemplate"> | string
+    name?: StringWithAggregatesFilter<"PunchCardTemplate"> | string
+    glyph?: StringWithAggregatesFilter<"PunchCardTemplate"> | string
+    goal?: IntWithAggregatesFilter<"PunchCardTemplate"> | number
+    payoutKind?: StringWithAggregatesFilter<"PunchCardTemplate"> | string
+    payoutCoins?: IntNullableWithAggregatesFilter<"PunchCardTemplate"> | number | null
+    payoutOptionIds?: StringNullableListFilter<"PunchCardTemplate">
+    audience?: StringNullableListFilter<"PunchCardTemplate">
+    active?: BoolWithAggregatesFilter<"PunchCardTemplate"> | boolean
+  }
+
+  export type PunchCardWhereInput = {
+    AND?: PunchCardWhereInput | PunchCardWhereInput[]
+    OR?: PunchCardWhereInput[]
+    NOT?: PunchCardWhereInput | PunchCardWhereInput[]
+    id?: UuidFilter<"PunchCard"> | string
+    templateId?: UuidFilter<"PunchCard"> | string
+    profileId?: UuidFilter<"PunchCard"> | string
+    count?: IntFilter<"PunchCard"> | number
+    chosenRewardId?: UuidNullableFilter<"PunchCard"> | string | null
+    completedAt?: DateTimeNullableFilter<"PunchCard"> | Date | string | null
+    prizeClaimedAt?: DateTimeNullableFilter<"PunchCard"> | Date | string | null
+    createdAt?: DateTimeFilter<"PunchCard"> | Date | string
+    template?: XOR<PunchCardTemplateScalarRelationFilter, PunchCardTemplateWhereInput>
+    punches?: PunchListRelationFilter
+  }
+
+  export type PunchCardOrderByWithRelationInput = {
+    id?: SortOrder
+    templateId?: SortOrder
+    profileId?: SortOrder
+    count?: SortOrder
+    chosenRewardId?: SortOrderInput | SortOrder
+    completedAt?: SortOrderInput | SortOrder
+    prizeClaimedAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    template?: PunchCardTemplateOrderByWithRelationInput
+    punches?: PunchOrderByRelationAggregateInput
+  }
+
+  export type PunchCardWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: PunchCardWhereInput | PunchCardWhereInput[]
+    OR?: PunchCardWhereInput[]
+    NOT?: PunchCardWhereInput | PunchCardWhereInput[]
+    templateId?: UuidFilter<"PunchCard"> | string
+    profileId?: UuidFilter<"PunchCard"> | string
+    count?: IntFilter<"PunchCard"> | number
+    chosenRewardId?: UuidNullableFilter<"PunchCard"> | string | null
+    completedAt?: DateTimeNullableFilter<"PunchCard"> | Date | string | null
+    prizeClaimedAt?: DateTimeNullableFilter<"PunchCard"> | Date | string | null
+    createdAt?: DateTimeFilter<"PunchCard"> | Date | string
+    template?: XOR<PunchCardTemplateScalarRelationFilter, PunchCardTemplateWhereInput>
+    punches?: PunchListRelationFilter
+  }, "id">
+
+  export type PunchCardOrderByWithAggregationInput = {
+    id?: SortOrder
+    templateId?: SortOrder
+    profileId?: SortOrder
+    count?: SortOrder
+    chosenRewardId?: SortOrderInput | SortOrder
+    completedAt?: SortOrderInput | SortOrder
+    prizeClaimedAt?: SortOrderInput | SortOrder
+    createdAt?: SortOrder
+    _count?: PunchCardCountOrderByAggregateInput
+    _avg?: PunchCardAvgOrderByAggregateInput
+    _max?: PunchCardMaxOrderByAggregateInput
+    _min?: PunchCardMinOrderByAggregateInput
+    _sum?: PunchCardSumOrderByAggregateInput
+  }
+
+  export type PunchCardScalarWhereWithAggregatesInput = {
+    AND?: PunchCardScalarWhereWithAggregatesInput | PunchCardScalarWhereWithAggregatesInput[]
+    OR?: PunchCardScalarWhereWithAggregatesInput[]
+    NOT?: PunchCardScalarWhereWithAggregatesInput | PunchCardScalarWhereWithAggregatesInput[]
+    id?: UuidWithAggregatesFilter<"PunchCard"> | string
+    templateId?: UuidWithAggregatesFilter<"PunchCard"> | string
+    profileId?: UuidWithAggregatesFilter<"PunchCard"> | string
+    count?: IntWithAggregatesFilter<"PunchCard"> | number
+    chosenRewardId?: UuidNullableWithAggregatesFilter<"PunchCard"> | string | null
+    completedAt?: DateTimeNullableWithAggregatesFilter<"PunchCard"> | Date | string | null
+    prizeClaimedAt?: DateTimeNullableWithAggregatesFilter<"PunchCard"> | Date | string | null
+    createdAt?: DateTimeWithAggregatesFilter<"PunchCard"> | Date | string
+  }
+
+  export type PunchWhereInput = {
+    AND?: PunchWhereInput | PunchWhereInput[]
+    OR?: PunchWhereInput[]
+    NOT?: PunchWhereInput | PunchWhereInput[]
+    id?: UuidFilter<"Punch"> | string
+    cardId?: UuidFilter<"Punch"> | string
+    sourceType?: StringFilter<"Punch"> | string
+    sourceId?: StringNullableFilter<"Punch"> | string | null
+    createdBy?: UuidFilter<"Punch"> | string
+    createdAt?: DateTimeFilter<"Punch"> | Date | string
+    card?: XOR<PunchCardScalarRelationFilter, PunchCardWhereInput>
+  }
+
+  export type PunchOrderByWithRelationInput = {
+    id?: SortOrder
+    cardId?: SortOrder
+    sourceType?: SortOrder
+    sourceId?: SortOrderInput | SortOrder
+    createdBy?: SortOrder
+    createdAt?: SortOrder
+    card?: PunchCardOrderByWithRelationInput
+  }
+
+  export type PunchWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    sourceType_sourceId?: PunchSourceTypeSourceIdCompoundUniqueInput
+    AND?: PunchWhereInput | PunchWhereInput[]
+    OR?: PunchWhereInput[]
+    NOT?: PunchWhereInput | PunchWhereInput[]
+    cardId?: UuidFilter<"Punch"> | string
+    sourceType?: StringFilter<"Punch"> | string
+    sourceId?: StringNullableFilter<"Punch"> | string | null
+    createdBy?: UuidFilter<"Punch"> | string
+    createdAt?: DateTimeFilter<"Punch"> | Date | string
+    card?: XOR<PunchCardScalarRelationFilter, PunchCardWhereInput>
+  }, "id" | "sourceType_sourceId">
+
+  export type PunchOrderByWithAggregationInput = {
+    id?: SortOrder
+    cardId?: SortOrder
+    sourceType?: SortOrder
+    sourceId?: SortOrderInput | SortOrder
+    createdBy?: SortOrder
+    createdAt?: SortOrder
+    _count?: PunchCountOrderByAggregateInput
+    _max?: PunchMaxOrderByAggregateInput
+    _min?: PunchMinOrderByAggregateInput
+  }
+
+  export type PunchScalarWhereWithAggregatesInput = {
+    AND?: PunchScalarWhereWithAggregatesInput | PunchScalarWhereWithAggregatesInput[]
+    OR?: PunchScalarWhereWithAggregatesInput[]
+    NOT?: PunchScalarWhereWithAggregatesInput | PunchScalarWhereWithAggregatesInput[]
+    id?: UuidWithAggregatesFilter<"Punch"> | string
+    cardId?: UuidWithAggregatesFilter<"Punch"> | string
+    sourceType?: StringWithAggregatesFilter<"Punch"> | string
+    sourceId?: StringNullableWithAggregatesFilter<"Punch"> | string | null
+    createdBy?: UuidWithAggregatesFilter<"Punch"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"Punch"> | Date | string
   }
 
   export type RedemptionWhereInput = {
@@ -7686,6 +11674,236 @@ export namespace Prisma {
     audience?: RewardUpdateaudienceInput | string[]
     stock?: NullableIntFieldUpdateOperationsInput | number | null
     active?: BoolFieldUpdateOperationsInput | boolean
+    createdBy?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PunchCardTemplateCreateInput = {
+    id?: string
+    name: string
+    glyph: string
+    goal: number
+    payoutKind: string
+    payoutCoins?: number | null
+    payoutOptionIds?: PunchCardTemplateCreatepayoutOptionIdsInput | string[]
+    audience?: PunchCardTemplateCreateaudienceInput | string[]
+    active?: boolean
+    cards?: PunchCardCreateNestedManyWithoutTemplateInput
+  }
+
+  export type PunchCardTemplateUncheckedCreateInput = {
+    id?: string
+    name: string
+    glyph: string
+    goal: number
+    payoutKind: string
+    payoutCoins?: number | null
+    payoutOptionIds?: PunchCardTemplateCreatepayoutOptionIdsInput | string[]
+    audience?: PunchCardTemplateCreateaudienceInput | string[]
+    active?: boolean
+    cards?: PunchCardUncheckedCreateNestedManyWithoutTemplateInput
+  }
+
+  export type PunchCardTemplateUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    glyph?: StringFieldUpdateOperationsInput | string
+    goal?: IntFieldUpdateOperationsInput | number
+    payoutKind?: StringFieldUpdateOperationsInput | string
+    payoutCoins?: NullableIntFieldUpdateOperationsInput | number | null
+    payoutOptionIds?: PunchCardTemplateUpdatepayoutOptionIdsInput | string[]
+    audience?: PunchCardTemplateUpdateaudienceInput | string[]
+    active?: BoolFieldUpdateOperationsInput | boolean
+    cards?: PunchCardUpdateManyWithoutTemplateNestedInput
+  }
+
+  export type PunchCardTemplateUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    glyph?: StringFieldUpdateOperationsInput | string
+    goal?: IntFieldUpdateOperationsInput | number
+    payoutKind?: StringFieldUpdateOperationsInput | string
+    payoutCoins?: NullableIntFieldUpdateOperationsInput | number | null
+    payoutOptionIds?: PunchCardTemplateUpdatepayoutOptionIdsInput | string[]
+    audience?: PunchCardTemplateUpdateaudienceInput | string[]
+    active?: BoolFieldUpdateOperationsInput | boolean
+    cards?: PunchCardUncheckedUpdateManyWithoutTemplateNestedInput
+  }
+
+  export type PunchCardTemplateCreateManyInput = {
+    id?: string
+    name: string
+    glyph: string
+    goal: number
+    payoutKind: string
+    payoutCoins?: number | null
+    payoutOptionIds?: PunchCardTemplateCreatepayoutOptionIdsInput | string[]
+    audience?: PunchCardTemplateCreateaudienceInput | string[]
+    active?: boolean
+  }
+
+  export type PunchCardTemplateUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    glyph?: StringFieldUpdateOperationsInput | string
+    goal?: IntFieldUpdateOperationsInput | number
+    payoutKind?: StringFieldUpdateOperationsInput | string
+    payoutCoins?: NullableIntFieldUpdateOperationsInput | number | null
+    payoutOptionIds?: PunchCardTemplateUpdatepayoutOptionIdsInput | string[]
+    audience?: PunchCardTemplateUpdateaudienceInput | string[]
+    active?: BoolFieldUpdateOperationsInput | boolean
+  }
+
+  export type PunchCardTemplateUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    glyph?: StringFieldUpdateOperationsInput | string
+    goal?: IntFieldUpdateOperationsInput | number
+    payoutKind?: StringFieldUpdateOperationsInput | string
+    payoutCoins?: NullableIntFieldUpdateOperationsInput | number | null
+    payoutOptionIds?: PunchCardTemplateUpdatepayoutOptionIdsInput | string[]
+    audience?: PunchCardTemplateUpdateaudienceInput | string[]
+    active?: BoolFieldUpdateOperationsInput | boolean
+  }
+
+  export type PunchCardCreateInput = {
+    id?: string
+    profileId: string
+    count?: number
+    chosenRewardId?: string | null
+    completedAt?: Date | string | null
+    prizeClaimedAt?: Date | string | null
+    createdAt?: Date | string
+    template: PunchCardTemplateCreateNestedOneWithoutCardsInput
+    punches?: PunchCreateNestedManyWithoutCardInput
+  }
+
+  export type PunchCardUncheckedCreateInput = {
+    id?: string
+    templateId: string
+    profileId: string
+    count?: number
+    chosenRewardId?: string | null
+    completedAt?: Date | string | null
+    prizeClaimedAt?: Date | string | null
+    createdAt?: Date | string
+    punches?: PunchUncheckedCreateNestedManyWithoutCardInput
+  }
+
+  export type PunchCardUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    profileId?: StringFieldUpdateOperationsInput | string
+    count?: IntFieldUpdateOperationsInput | number
+    chosenRewardId?: NullableStringFieldUpdateOperationsInput | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    prizeClaimedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    template?: PunchCardTemplateUpdateOneRequiredWithoutCardsNestedInput
+    punches?: PunchUpdateManyWithoutCardNestedInput
+  }
+
+  export type PunchCardUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    templateId?: StringFieldUpdateOperationsInput | string
+    profileId?: StringFieldUpdateOperationsInput | string
+    count?: IntFieldUpdateOperationsInput | number
+    chosenRewardId?: NullableStringFieldUpdateOperationsInput | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    prizeClaimedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    punches?: PunchUncheckedUpdateManyWithoutCardNestedInput
+  }
+
+  export type PunchCardCreateManyInput = {
+    id?: string
+    templateId: string
+    profileId: string
+    count?: number
+    chosenRewardId?: string | null
+    completedAt?: Date | string | null
+    prizeClaimedAt?: Date | string | null
+    createdAt?: Date | string
+  }
+
+  export type PunchCardUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    profileId?: StringFieldUpdateOperationsInput | string
+    count?: IntFieldUpdateOperationsInput | number
+    chosenRewardId?: NullableStringFieldUpdateOperationsInput | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    prizeClaimedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PunchCardUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    templateId?: StringFieldUpdateOperationsInput | string
+    profileId?: StringFieldUpdateOperationsInput | string
+    count?: IntFieldUpdateOperationsInput | number
+    chosenRewardId?: NullableStringFieldUpdateOperationsInput | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    prizeClaimedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PunchCreateInput = {
+    id?: string
+    sourceType: string
+    sourceId?: string | null
+    createdBy: string
+    createdAt?: Date | string
+    card: PunchCardCreateNestedOneWithoutPunchesInput
+  }
+
+  export type PunchUncheckedCreateInput = {
+    id?: string
+    cardId: string
+    sourceType: string
+    sourceId?: string | null
+    createdBy: string
+    createdAt?: Date | string
+  }
+
+  export type PunchUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sourceType?: StringFieldUpdateOperationsInput | string
+    sourceId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdBy?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    card?: PunchCardUpdateOneRequiredWithoutPunchesNestedInput
+  }
+
+  export type PunchUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    cardId?: StringFieldUpdateOperationsInput | string
+    sourceType?: StringFieldUpdateOperationsInput | string
+    sourceId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdBy?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PunchCreateManyInput = {
+    id?: string
+    cardId: string
+    sourceType: string
+    sourceId?: string | null
+    createdBy: string
+    createdAt?: Date | string
+  }
+
+  export type PunchUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sourceType?: StringFieldUpdateOperationsInput | string
+    sourceId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdBy?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PunchUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    cardId?: StringFieldUpdateOperationsInput | string
+    sourceType?: StringFieldUpdateOperationsInput | string
+    sourceId?: NullableStringFieldUpdateOperationsInput | string | null
     createdBy?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
@@ -8224,6 +12442,151 @@ export namespace Prisma {
     _max?: NestedIntNullableFilter<$PrismaModel>
   }
 
+  export type PunchCardListRelationFilter = {
+    every?: PunchCardWhereInput
+    some?: PunchCardWhereInput
+    none?: PunchCardWhereInput
+  }
+
+  export type PunchCardOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type PunchCardTemplateCountOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    glyph?: SortOrder
+    goal?: SortOrder
+    payoutKind?: SortOrder
+    payoutCoins?: SortOrder
+    payoutOptionIds?: SortOrder
+    audience?: SortOrder
+    active?: SortOrder
+  }
+
+  export type PunchCardTemplateAvgOrderByAggregateInput = {
+    goal?: SortOrder
+    payoutCoins?: SortOrder
+  }
+
+  export type PunchCardTemplateMaxOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    glyph?: SortOrder
+    goal?: SortOrder
+    payoutKind?: SortOrder
+    payoutCoins?: SortOrder
+    active?: SortOrder
+  }
+
+  export type PunchCardTemplateMinOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    glyph?: SortOrder
+    goal?: SortOrder
+    payoutKind?: SortOrder
+    payoutCoins?: SortOrder
+    active?: SortOrder
+  }
+
+  export type PunchCardTemplateSumOrderByAggregateInput = {
+    goal?: SortOrder
+    payoutCoins?: SortOrder
+  }
+
+  export type PunchCardTemplateScalarRelationFilter = {
+    is?: PunchCardTemplateWhereInput
+    isNot?: PunchCardTemplateWhereInput
+  }
+
+  export type PunchListRelationFilter = {
+    every?: PunchWhereInput
+    some?: PunchWhereInput
+    none?: PunchWhereInput
+  }
+
+  export type PunchOrderByRelationAggregateInput = {
+    _count?: SortOrder
+  }
+
+  export type PunchCardCountOrderByAggregateInput = {
+    id?: SortOrder
+    templateId?: SortOrder
+    profileId?: SortOrder
+    count?: SortOrder
+    chosenRewardId?: SortOrder
+    completedAt?: SortOrder
+    prizeClaimedAt?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type PunchCardAvgOrderByAggregateInput = {
+    count?: SortOrder
+  }
+
+  export type PunchCardMaxOrderByAggregateInput = {
+    id?: SortOrder
+    templateId?: SortOrder
+    profileId?: SortOrder
+    count?: SortOrder
+    chosenRewardId?: SortOrder
+    completedAt?: SortOrder
+    prizeClaimedAt?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type PunchCardMinOrderByAggregateInput = {
+    id?: SortOrder
+    templateId?: SortOrder
+    profileId?: SortOrder
+    count?: SortOrder
+    chosenRewardId?: SortOrder
+    completedAt?: SortOrder
+    prizeClaimedAt?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type PunchCardSumOrderByAggregateInput = {
+    count?: SortOrder
+  }
+
+  export type PunchCardScalarRelationFilter = {
+    is?: PunchCardWhereInput
+    isNot?: PunchCardWhereInput
+  }
+
+  export type PunchSourceTypeSourceIdCompoundUniqueInput = {
+    sourceType: string
+    sourceId: string
+  }
+
+  export type PunchCountOrderByAggregateInput = {
+    id?: SortOrder
+    cardId?: SortOrder
+    sourceType?: SortOrder
+    sourceId?: SortOrder
+    createdBy?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type PunchMaxOrderByAggregateInput = {
+    id?: SortOrder
+    cardId?: SortOrder
+    sourceType?: SortOrder
+    sourceId?: SortOrder
+    createdBy?: SortOrder
+    createdAt?: SortOrder
+  }
+
+  export type PunchMinOrderByAggregateInput = {
+    id?: SortOrder
+    cardId?: SortOrder
+    sourceType?: SortOrder
+    sourceId?: SortOrder
+    createdBy?: SortOrder
+    createdAt?: SortOrder
+  }
+
   export type RewardScalarRelationFilter = {
     is?: RewardWhereInput
     isNot?: RewardWhereInput
@@ -8364,6 +12727,136 @@ export namespace Prisma {
     update?: RedemptionUpdateWithWhereUniqueWithoutRewardInput | RedemptionUpdateWithWhereUniqueWithoutRewardInput[]
     updateMany?: RedemptionUpdateManyWithWhereWithoutRewardInput | RedemptionUpdateManyWithWhereWithoutRewardInput[]
     deleteMany?: RedemptionScalarWhereInput | RedemptionScalarWhereInput[]
+  }
+
+  export type PunchCardTemplateCreatepayoutOptionIdsInput = {
+    set: string[]
+  }
+
+  export type PunchCardTemplateCreateaudienceInput = {
+    set: string[]
+  }
+
+  export type PunchCardCreateNestedManyWithoutTemplateInput = {
+    create?: XOR<PunchCardCreateWithoutTemplateInput, PunchCardUncheckedCreateWithoutTemplateInput> | PunchCardCreateWithoutTemplateInput[] | PunchCardUncheckedCreateWithoutTemplateInput[]
+    connectOrCreate?: PunchCardCreateOrConnectWithoutTemplateInput | PunchCardCreateOrConnectWithoutTemplateInput[]
+    createMany?: PunchCardCreateManyTemplateInputEnvelope
+    connect?: PunchCardWhereUniqueInput | PunchCardWhereUniqueInput[]
+  }
+
+  export type PunchCardUncheckedCreateNestedManyWithoutTemplateInput = {
+    create?: XOR<PunchCardCreateWithoutTemplateInput, PunchCardUncheckedCreateWithoutTemplateInput> | PunchCardCreateWithoutTemplateInput[] | PunchCardUncheckedCreateWithoutTemplateInput[]
+    connectOrCreate?: PunchCardCreateOrConnectWithoutTemplateInput | PunchCardCreateOrConnectWithoutTemplateInput[]
+    createMany?: PunchCardCreateManyTemplateInputEnvelope
+    connect?: PunchCardWhereUniqueInput | PunchCardWhereUniqueInput[]
+  }
+
+  export type PunchCardTemplateUpdatepayoutOptionIdsInput = {
+    set?: string[]
+    push?: string | string[]
+  }
+
+  export type PunchCardTemplateUpdateaudienceInput = {
+    set?: string[]
+    push?: string | string[]
+  }
+
+  export type PunchCardUpdateManyWithoutTemplateNestedInput = {
+    create?: XOR<PunchCardCreateWithoutTemplateInput, PunchCardUncheckedCreateWithoutTemplateInput> | PunchCardCreateWithoutTemplateInput[] | PunchCardUncheckedCreateWithoutTemplateInput[]
+    connectOrCreate?: PunchCardCreateOrConnectWithoutTemplateInput | PunchCardCreateOrConnectWithoutTemplateInput[]
+    upsert?: PunchCardUpsertWithWhereUniqueWithoutTemplateInput | PunchCardUpsertWithWhereUniqueWithoutTemplateInput[]
+    createMany?: PunchCardCreateManyTemplateInputEnvelope
+    set?: PunchCardWhereUniqueInput | PunchCardWhereUniqueInput[]
+    disconnect?: PunchCardWhereUniqueInput | PunchCardWhereUniqueInput[]
+    delete?: PunchCardWhereUniqueInput | PunchCardWhereUniqueInput[]
+    connect?: PunchCardWhereUniqueInput | PunchCardWhereUniqueInput[]
+    update?: PunchCardUpdateWithWhereUniqueWithoutTemplateInput | PunchCardUpdateWithWhereUniqueWithoutTemplateInput[]
+    updateMany?: PunchCardUpdateManyWithWhereWithoutTemplateInput | PunchCardUpdateManyWithWhereWithoutTemplateInput[]
+    deleteMany?: PunchCardScalarWhereInput | PunchCardScalarWhereInput[]
+  }
+
+  export type PunchCardUncheckedUpdateManyWithoutTemplateNestedInput = {
+    create?: XOR<PunchCardCreateWithoutTemplateInput, PunchCardUncheckedCreateWithoutTemplateInput> | PunchCardCreateWithoutTemplateInput[] | PunchCardUncheckedCreateWithoutTemplateInput[]
+    connectOrCreate?: PunchCardCreateOrConnectWithoutTemplateInput | PunchCardCreateOrConnectWithoutTemplateInput[]
+    upsert?: PunchCardUpsertWithWhereUniqueWithoutTemplateInput | PunchCardUpsertWithWhereUniqueWithoutTemplateInput[]
+    createMany?: PunchCardCreateManyTemplateInputEnvelope
+    set?: PunchCardWhereUniqueInput | PunchCardWhereUniqueInput[]
+    disconnect?: PunchCardWhereUniqueInput | PunchCardWhereUniqueInput[]
+    delete?: PunchCardWhereUniqueInput | PunchCardWhereUniqueInput[]
+    connect?: PunchCardWhereUniqueInput | PunchCardWhereUniqueInput[]
+    update?: PunchCardUpdateWithWhereUniqueWithoutTemplateInput | PunchCardUpdateWithWhereUniqueWithoutTemplateInput[]
+    updateMany?: PunchCardUpdateManyWithWhereWithoutTemplateInput | PunchCardUpdateManyWithWhereWithoutTemplateInput[]
+    deleteMany?: PunchCardScalarWhereInput | PunchCardScalarWhereInput[]
+  }
+
+  export type PunchCardTemplateCreateNestedOneWithoutCardsInput = {
+    create?: XOR<PunchCardTemplateCreateWithoutCardsInput, PunchCardTemplateUncheckedCreateWithoutCardsInput>
+    connectOrCreate?: PunchCardTemplateCreateOrConnectWithoutCardsInput
+    connect?: PunchCardTemplateWhereUniqueInput
+  }
+
+  export type PunchCreateNestedManyWithoutCardInput = {
+    create?: XOR<PunchCreateWithoutCardInput, PunchUncheckedCreateWithoutCardInput> | PunchCreateWithoutCardInput[] | PunchUncheckedCreateWithoutCardInput[]
+    connectOrCreate?: PunchCreateOrConnectWithoutCardInput | PunchCreateOrConnectWithoutCardInput[]
+    createMany?: PunchCreateManyCardInputEnvelope
+    connect?: PunchWhereUniqueInput | PunchWhereUniqueInput[]
+  }
+
+  export type PunchUncheckedCreateNestedManyWithoutCardInput = {
+    create?: XOR<PunchCreateWithoutCardInput, PunchUncheckedCreateWithoutCardInput> | PunchCreateWithoutCardInput[] | PunchUncheckedCreateWithoutCardInput[]
+    connectOrCreate?: PunchCreateOrConnectWithoutCardInput | PunchCreateOrConnectWithoutCardInput[]
+    createMany?: PunchCreateManyCardInputEnvelope
+    connect?: PunchWhereUniqueInput | PunchWhereUniqueInput[]
+  }
+
+  export type PunchCardTemplateUpdateOneRequiredWithoutCardsNestedInput = {
+    create?: XOR<PunchCardTemplateCreateWithoutCardsInput, PunchCardTemplateUncheckedCreateWithoutCardsInput>
+    connectOrCreate?: PunchCardTemplateCreateOrConnectWithoutCardsInput
+    upsert?: PunchCardTemplateUpsertWithoutCardsInput
+    connect?: PunchCardTemplateWhereUniqueInput
+    update?: XOR<XOR<PunchCardTemplateUpdateToOneWithWhereWithoutCardsInput, PunchCardTemplateUpdateWithoutCardsInput>, PunchCardTemplateUncheckedUpdateWithoutCardsInput>
+  }
+
+  export type PunchUpdateManyWithoutCardNestedInput = {
+    create?: XOR<PunchCreateWithoutCardInput, PunchUncheckedCreateWithoutCardInput> | PunchCreateWithoutCardInput[] | PunchUncheckedCreateWithoutCardInput[]
+    connectOrCreate?: PunchCreateOrConnectWithoutCardInput | PunchCreateOrConnectWithoutCardInput[]
+    upsert?: PunchUpsertWithWhereUniqueWithoutCardInput | PunchUpsertWithWhereUniqueWithoutCardInput[]
+    createMany?: PunchCreateManyCardInputEnvelope
+    set?: PunchWhereUniqueInput | PunchWhereUniqueInput[]
+    disconnect?: PunchWhereUniqueInput | PunchWhereUniqueInput[]
+    delete?: PunchWhereUniqueInput | PunchWhereUniqueInput[]
+    connect?: PunchWhereUniqueInput | PunchWhereUniqueInput[]
+    update?: PunchUpdateWithWhereUniqueWithoutCardInput | PunchUpdateWithWhereUniqueWithoutCardInput[]
+    updateMany?: PunchUpdateManyWithWhereWithoutCardInput | PunchUpdateManyWithWhereWithoutCardInput[]
+    deleteMany?: PunchScalarWhereInput | PunchScalarWhereInput[]
+  }
+
+  export type PunchUncheckedUpdateManyWithoutCardNestedInput = {
+    create?: XOR<PunchCreateWithoutCardInput, PunchUncheckedCreateWithoutCardInput> | PunchCreateWithoutCardInput[] | PunchUncheckedCreateWithoutCardInput[]
+    connectOrCreate?: PunchCreateOrConnectWithoutCardInput | PunchCreateOrConnectWithoutCardInput[]
+    upsert?: PunchUpsertWithWhereUniqueWithoutCardInput | PunchUpsertWithWhereUniqueWithoutCardInput[]
+    createMany?: PunchCreateManyCardInputEnvelope
+    set?: PunchWhereUniqueInput | PunchWhereUniqueInput[]
+    disconnect?: PunchWhereUniqueInput | PunchWhereUniqueInput[]
+    delete?: PunchWhereUniqueInput | PunchWhereUniqueInput[]
+    connect?: PunchWhereUniqueInput | PunchWhereUniqueInput[]
+    update?: PunchUpdateWithWhereUniqueWithoutCardInput | PunchUpdateWithWhereUniqueWithoutCardInput[]
+    updateMany?: PunchUpdateManyWithWhereWithoutCardInput | PunchUpdateManyWithWhereWithoutCardInput[]
+    deleteMany?: PunchScalarWhereInput | PunchScalarWhereInput[]
+  }
+
+  export type PunchCardCreateNestedOneWithoutPunchesInput = {
+    create?: XOR<PunchCardCreateWithoutPunchesInput, PunchCardUncheckedCreateWithoutPunchesInput>
+    connectOrCreate?: PunchCardCreateOrConnectWithoutPunchesInput
+    connect?: PunchCardWhereUniqueInput
+  }
+
+  export type PunchCardUpdateOneRequiredWithoutPunchesNestedInput = {
+    create?: XOR<PunchCardCreateWithoutPunchesInput, PunchCardUncheckedCreateWithoutPunchesInput>
+    connectOrCreate?: PunchCardCreateOrConnectWithoutPunchesInput
+    upsert?: PunchCardUpsertWithoutPunchesInput
+    connect?: PunchCardWhereUniqueInput
+    update?: XOR<XOR<PunchCardUpdateToOneWithWhereWithoutPunchesInput, PunchCardUpdateWithoutPunchesInput>, PunchCardUncheckedUpdateWithoutPunchesInput>
   }
 
   export type RewardCreateNestedOneWithoutRedemptionsInput = {
@@ -8700,6 +13193,246 @@ export namespace Prisma {
     decidedNote?: StringNullableFilter<"Redemption"> | string | null
   }
 
+  export type PunchCardCreateWithoutTemplateInput = {
+    id?: string
+    profileId: string
+    count?: number
+    chosenRewardId?: string | null
+    completedAt?: Date | string | null
+    prizeClaimedAt?: Date | string | null
+    createdAt?: Date | string
+    punches?: PunchCreateNestedManyWithoutCardInput
+  }
+
+  export type PunchCardUncheckedCreateWithoutTemplateInput = {
+    id?: string
+    profileId: string
+    count?: number
+    chosenRewardId?: string | null
+    completedAt?: Date | string | null
+    prizeClaimedAt?: Date | string | null
+    createdAt?: Date | string
+    punches?: PunchUncheckedCreateNestedManyWithoutCardInput
+  }
+
+  export type PunchCardCreateOrConnectWithoutTemplateInput = {
+    where: PunchCardWhereUniqueInput
+    create: XOR<PunchCardCreateWithoutTemplateInput, PunchCardUncheckedCreateWithoutTemplateInput>
+  }
+
+  export type PunchCardCreateManyTemplateInputEnvelope = {
+    data: PunchCardCreateManyTemplateInput | PunchCardCreateManyTemplateInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type PunchCardUpsertWithWhereUniqueWithoutTemplateInput = {
+    where: PunchCardWhereUniqueInput
+    update: XOR<PunchCardUpdateWithoutTemplateInput, PunchCardUncheckedUpdateWithoutTemplateInput>
+    create: XOR<PunchCardCreateWithoutTemplateInput, PunchCardUncheckedCreateWithoutTemplateInput>
+  }
+
+  export type PunchCardUpdateWithWhereUniqueWithoutTemplateInput = {
+    where: PunchCardWhereUniqueInput
+    data: XOR<PunchCardUpdateWithoutTemplateInput, PunchCardUncheckedUpdateWithoutTemplateInput>
+  }
+
+  export type PunchCardUpdateManyWithWhereWithoutTemplateInput = {
+    where: PunchCardScalarWhereInput
+    data: XOR<PunchCardUpdateManyMutationInput, PunchCardUncheckedUpdateManyWithoutTemplateInput>
+  }
+
+  export type PunchCardScalarWhereInput = {
+    AND?: PunchCardScalarWhereInput | PunchCardScalarWhereInput[]
+    OR?: PunchCardScalarWhereInput[]
+    NOT?: PunchCardScalarWhereInput | PunchCardScalarWhereInput[]
+    id?: UuidFilter<"PunchCard"> | string
+    templateId?: UuidFilter<"PunchCard"> | string
+    profileId?: UuidFilter<"PunchCard"> | string
+    count?: IntFilter<"PunchCard"> | number
+    chosenRewardId?: UuidNullableFilter<"PunchCard"> | string | null
+    completedAt?: DateTimeNullableFilter<"PunchCard"> | Date | string | null
+    prizeClaimedAt?: DateTimeNullableFilter<"PunchCard"> | Date | string | null
+    createdAt?: DateTimeFilter<"PunchCard"> | Date | string
+  }
+
+  export type PunchCardTemplateCreateWithoutCardsInput = {
+    id?: string
+    name: string
+    glyph: string
+    goal: number
+    payoutKind: string
+    payoutCoins?: number | null
+    payoutOptionIds?: PunchCardTemplateCreatepayoutOptionIdsInput | string[]
+    audience?: PunchCardTemplateCreateaudienceInput | string[]
+    active?: boolean
+  }
+
+  export type PunchCardTemplateUncheckedCreateWithoutCardsInput = {
+    id?: string
+    name: string
+    glyph: string
+    goal: number
+    payoutKind: string
+    payoutCoins?: number | null
+    payoutOptionIds?: PunchCardTemplateCreatepayoutOptionIdsInput | string[]
+    audience?: PunchCardTemplateCreateaudienceInput | string[]
+    active?: boolean
+  }
+
+  export type PunchCardTemplateCreateOrConnectWithoutCardsInput = {
+    where: PunchCardTemplateWhereUniqueInput
+    create: XOR<PunchCardTemplateCreateWithoutCardsInput, PunchCardTemplateUncheckedCreateWithoutCardsInput>
+  }
+
+  export type PunchCreateWithoutCardInput = {
+    id?: string
+    sourceType: string
+    sourceId?: string | null
+    createdBy: string
+    createdAt?: Date | string
+  }
+
+  export type PunchUncheckedCreateWithoutCardInput = {
+    id?: string
+    sourceType: string
+    sourceId?: string | null
+    createdBy: string
+    createdAt?: Date | string
+  }
+
+  export type PunchCreateOrConnectWithoutCardInput = {
+    where: PunchWhereUniqueInput
+    create: XOR<PunchCreateWithoutCardInput, PunchUncheckedCreateWithoutCardInput>
+  }
+
+  export type PunchCreateManyCardInputEnvelope = {
+    data: PunchCreateManyCardInput | PunchCreateManyCardInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type PunchCardTemplateUpsertWithoutCardsInput = {
+    update: XOR<PunchCardTemplateUpdateWithoutCardsInput, PunchCardTemplateUncheckedUpdateWithoutCardsInput>
+    create: XOR<PunchCardTemplateCreateWithoutCardsInput, PunchCardTemplateUncheckedCreateWithoutCardsInput>
+    where?: PunchCardTemplateWhereInput
+  }
+
+  export type PunchCardTemplateUpdateToOneWithWhereWithoutCardsInput = {
+    where?: PunchCardTemplateWhereInput
+    data: XOR<PunchCardTemplateUpdateWithoutCardsInput, PunchCardTemplateUncheckedUpdateWithoutCardsInput>
+  }
+
+  export type PunchCardTemplateUpdateWithoutCardsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    glyph?: StringFieldUpdateOperationsInput | string
+    goal?: IntFieldUpdateOperationsInput | number
+    payoutKind?: StringFieldUpdateOperationsInput | string
+    payoutCoins?: NullableIntFieldUpdateOperationsInput | number | null
+    payoutOptionIds?: PunchCardTemplateUpdatepayoutOptionIdsInput | string[]
+    audience?: PunchCardTemplateUpdateaudienceInput | string[]
+    active?: BoolFieldUpdateOperationsInput | boolean
+  }
+
+  export type PunchCardTemplateUncheckedUpdateWithoutCardsInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    glyph?: StringFieldUpdateOperationsInput | string
+    goal?: IntFieldUpdateOperationsInput | number
+    payoutKind?: StringFieldUpdateOperationsInput | string
+    payoutCoins?: NullableIntFieldUpdateOperationsInput | number | null
+    payoutOptionIds?: PunchCardTemplateUpdatepayoutOptionIdsInput | string[]
+    audience?: PunchCardTemplateUpdateaudienceInput | string[]
+    active?: BoolFieldUpdateOperationsInput | boolean
+  }
+
+  export type PunchUpsertWithWhereUniqueWithoutCardInput = {
+    where: PunchWhereUniqueInput
+    update: XOR<PunchUpdateWithoutCardInput, PunchUncheckedUpdateWithoutCardInput>
+    create: XOR<PunchCreateWithoutCardInput, PunchUncheckedCreateWithoutCardInput>
+  }
+
+  export type PunchUpdateWithWhereUniqueWithoutCardInput = {
+    where: PunchWhereUniqueInput
+    data: XOR<PunchUpdateWithoutCardInput, PunchUncheckedUpdateWithoutCardInput>
+  }
+
+  export type PunchUpdateManyWithWhereWithoutCardInput = {
+    where: PunchScalarWhereInput
+    data: XOR<PunchUpdateManyMutationInput, PunchUncheckedUpdateManyWithoutCardInput>
+  }
+
+  export type PunchScalarWhereInput = {
+    AND?: PunchScalarWhereInput | PunchScalarWhereInput[]
+    OR?: PunchScalarWhereInput[]
+    NOT?: PunchScalarWhereInput | PunchScalarWhereInput[]
+    id?: UuidFilter<"Punch"> | string
+    cardId?: UuidFilter<"Punch"> | string
+    sourceType?: StringFilter<"Punch"> | string
+    sourceId?: StringNullableFilter<"Punch"> | string | null
+    createdBy?: UuidFilter<"Punch"> | string
+    createdAt?: DateTimeFilter<"Punch"> | Date | string
+  }
+
+  export type PunchCardCreateWithoutPunchesInput = {
+    id?: string
+    profileId: string
+    count?: number
+    chosenRewardId?: string | null
+    completedAt?: Date | string | null
+    prizeClaimedAt?: Date | string | null
+    createdAt?: Date | string
+    template: PunchCardTemplateCreateNestedOneWithoutCardsInput
+  }
+
+  export type PunchCardUncheckedCreateWithoutPunchesInput = {
+    id?: string
+    templateId: string
+    profileId: string
+    count?: number
+    chosenRewardId?: string | null
+    completedAt?: Date | string | null
+    prizeClaimedAt?: Date | string | null
+    createdAt?: Date | string
+  }
+
+  export type PunchCardCreateOrConnectWithoutPunchesInput = {
+    where: PunchCardWhereUniqueInput
+    create: XOR<PunchCardCreateWithoutPunchesInput, PunchCardUncheckedCreateWithoutPunchesInput>
+  }
+
+  export type PunchCardUpsertWithoutPunchesInput = {
+    update: XOR<PunchCardUpdateWithoutPunchesInput, PunchCardUncheckedUpdateWithoutPunchesInput>
+    create: XOR<PunchCardCreateWithoutPunchesInput, PunchCardUncheckedCreateWithoutPunchesInput>
+    where?: PunchCardWhereInput
+  }
+
+  export type PunchCardUpdateToOneWithWhereWithoutPunchesInput = {
+    where?: PunchCardWhereInput
+    data: XOR<PunchCardUpdateWithoutPunchesInput, PunchCardUncheckedUpdateWithoutPunchesInput>
+  }
+
+  export type PunchCardUpdateWithoutPunchesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    profileId?: StringFieldUpdateOperationsInput | string
+    count?: IntFieldUpdateOperationsInput | number
+    chosenRewardId?: NullableStringFieldUpdateOperationsInput | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    prizeClaimedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    template?: PunchCardTemplateUpdateOneRequiredWithoutCardsNestedInput
+  }
+
+  export type PunchCardUncheckedUpdateWithoutPunchesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    templateId?: StringFieldUpdateOperationsInput | string
+    profileId?: StringFieldUpdateOperationsInput | string
+    count?: IntFieldUpdateOperationsInput | number
+    chosenRewardId?: NullableStringFieldUpdateOperationsInput | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    prizeClaimedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
   export type RewardCreateWithoutRedemptionsInput = {
     id?: string
     name: string
@@ -8822,6 +13555,80 @@ export namespace Prisma {
     decidedBy?: NullableStringFieldUpdateOperationsInput | string | null
     decidedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     decidedNote?: NullableStringFieldUpdateOperationsInput | string | null
+  }
+
+  export type PunchCardCreateManyTemplateInput = {
+    id?: string
+    profileId: string
+    count?: number
+    chosenRewardId?: string | null
+    completedAt?: Date | string | null
+    prizeClaimedAt?: Date | string | null
+    createdAt?: Date | string
+  }
+
+  export type PunchCardUpdateWithoutTemplateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    profileId?: StringFieldUpdateOperationsInput | string
+    count?: IntFieldUpdateOperationsInput | number
+    chosenRewardId?: NullableStringFieldUpdateOperationsInput | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    prizeClaimedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    punches?: PunchUpdateManyWithoutCardNestedInput
+  }
+
+  export type PunchCardUncheckedUpdateWithoutTemplateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    profileId?: StringFieldUpdateOperationsInput | string
+    count?: IntFieldUpdateOperationsInput | number
+    chosenRewardId?: NullableStringFieldUpdateOperationsInput | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    prizeClaimedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    punches?: PunchUncheckedUpdateManyWithoutCardNestedInput
+  }
+
+  export type PunchCardUncheckedUpdateManyWithoutTemplateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    profileId?: StringFieldUpdateOperationsInput | string
+    count?: IntFieldUpdateOperationsInput | number
+    chosenRewardId?: NullableStringFieldUpdateOperationsInput | string | null
+    completedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    prizeClaimedAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PunchCreateManyCardInput = {
+    id?: string
+    sourceType: string
+    sourceId?: string | null
+    createdBy: string
+    createdAt?: Date | string
+  }
+
+  export type PunchUpdateWithoutCardInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sourceType?: StringFieldUpdateOperationsInput | string
+    sourceId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdBy?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PunchUncheckedUpdateWithoutCardInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sourceType?: StringFieldUpdateOperationsInput | string
+    sourceId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdBy?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PunchUncheckedUpdateManyWithoutCardInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    sourceType?: StringFieldUpdateOperationsInput | string
+    sourceId?: NullableStringFieldUpdateOperationsInput | string | null
+    createdBy?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
 

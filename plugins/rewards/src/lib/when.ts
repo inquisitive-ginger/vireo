@@ -18,6 +18,12 @@ export function boughtLabel(iso: string, now = new Date()): string {
   return `Bought ${dayLabel(new Date(iso), now)}`
 }
 
+/** A zero-cost ticket came off a full punch card (M4/6) — "bought" would be a lie
+    on the one ticket the kid is proudest of. */
+export function earnedLabel(iso: string, now = new Date()): string {
+  return `Earned ${dayLabel(new Date(iso), now)}`
+}
+
 export function usedLabel(iso: string, now = new Date()): string {
   return `Used ${dayLabel(new Date(iso), now)}`
 }

@@ -309,3 +309,71 @@ export type RewardCreateInput = z.infer<typeof RewardCreateSchema>
 export type RewardUpdateInput = z.infer<typeof RewardUpdateSchema>
 export type RedemptionCreateInput = z.infer<typeof RedemptionCreateSchema>
 export type RedemptionDecideInput = z.infer<typeof RedemptionDecideSchema>
+
+// ─── Rewards: punch cards (M4/6, ADR 049 · choice rework 2026-07-31) ──────────
+
+/** The payout is `{coins}` or a curated CHOICE of catalog rewards the kid picks
+    from. One kind carries exactly its own field; the other must be absent, so a
+    template can never promise two prizes. */
+// No small cap on the option count — "pick anything in the store" is a legitimate
+// prize shelf, and the seed catalog alone is nine rewards. The bound is a payload
+// sanity ceiling, not a product rule.
+const PunchPayoutFields = {
+  payoutKind: z.enum(['coins', 'reward']),
+  payoutCoins: z.number().int().min(1).max(1000).nullish(),
+  payoutOptionIds: z.array(UuidSchema).max(100).nullish(),
+}
+
+const payoutIsCoherent = (d: {
+  payoutKind?: 'coins' | 'reward'
+  payoutCoins?: number | null
+  payoutOptionIds?: string[] | null
+}) =>
+  d.payoutKind === undefined ||
+  (d.payoutKind === 'coins'
+    ? d.payoutCoins != null && (d.payoutOptionIds == null || d.payoutOptionIds.length === 0)
+    : d.payoutOptionIds != null && d.payoutOptionIds.length >= 1 && d.payoutCoins == null)
+
+export const PunchTemplateCreateSchema = z
+  .object({
+    name: z.string().trim().min(1, 'Name is required').max(60),
+    glyph: z.string().trim().min(1, 'Pick an emoji').max(16),
+    // The fridge sheet's shape: countable by eye, filled in weeks not years.
+    goal: z.number().int().min(2).max(30),
+    ...PunchPayoutFields,
+    audience: z.array(UuidSchema).nullish(),
+    active: z.boolean().optional().default(true),
+  })
+  .refine(payoutIsCoherent, { message: 'Payout must be coins or a choice of rewards, not both' })
+
+export const PunchTemplateUpdateSchema = z
+  .object({
+    name: z.string().trim().min(1).max(60).optional(),
+    glyph: z.string().trim().min(1).max(16).optional(),
+    goal: z.number().int().min(2).max(30).optional(),
+    ...PunchPayoutFields,
+    audience: z.array(UuidSchema).nullish(),
+    active: z.boolean().optional(),
+  })
+  .partial()
+  .refine((d) => Object.values(d).some((v) => v !== undefined), {
+    message: 'At least one field is required',
+  })
+  // The payout travels as a unit: touching either value field without restating the
+  // kind could leave a template promising a prize of the other kind.
+  .refine(
+    (d) => (d.payoutCoins == null && d.payoutOptionIds == null) || d.payoutKind !== undefined,
+    { message: 'Changing the payout requires payoutKind' }
+  )
+  .refine(payoutIsCoherent, { message: 'Payout must be coins or a choice of rewards, not both' })
+
+/** The kid names (or changes) the prize they're working for — and claims it on a
+    full card. `rewardId: null` is the all-options-retired escape hatch: the claim
+    pays coins instead, at the priciest option's cost. */
+export const PunchPrizeSchema = z.object({
+  rewardId: UuidSchema.nullable(),
+})
+
+export type PunchTemplateCreateInput = z.infer<typeof PunchTemplateCreateSchema>
+export type PunchTemplateUpdateInput = z.infer<typeof PunchTemplateUpdateSchema>
+export type PunchPrizeInput = z.infer<typeof PunchPrizeSchema>

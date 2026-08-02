@@ -1,4 +1,4 @@
-import { useMemo, useRef } from 'react'
+import { useMemo, useRef, type ReactNode } from 'react'
 import { PageContainer, PageHeader } from '@family-os/ui'
 import type { ChoreTask } from '../types'
 import { payoutForTask, type PayoutsByInstance } from '../lib/payouts'
@@ -27,6 +27,8 @@ export interface TaskeeViewProps {
   /** Held/decided payouts keyed by completion instance (M4/3b). Empty when the
       earn UI is flagged off. */
   payoutIndex?: PayoutsByInstance
+  /** The Today · Punch cards TabBar (M4/6) — rendered under the header. */
+  tabBar?: ReactNode
 }
 
 /* The taskee surface (tiers 1–3, Agency variant) — renders the full status-encoded
@@ -40,6 +42,7 @@ export function TaskeeView({
   onClaimTask,
   initialXp,
   payoutIndex,
+  tabBar,
 }: TaskeeViewProps) {
   // Your list and the household's offer board are different kinds of thing (gate
   // D6): the meter, the flight, and the card list speak about YOUR work only;
@@ -85,6 +88,7 @@ export function TaskeeView({
   return (
     <PageContainer width="list">
       <PageHeader title="Chores" action={<ScorePlate ref={plateRef} value={lifetime} />} />
+      {tabBar}
 
       {active.length > 0 ? (
         <>

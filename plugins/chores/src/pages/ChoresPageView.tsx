@@ -1,5 +1,5 @@
-import { useMemo, type ReactNode } from 'react'
-import { Label, PageContainer, PageHeader, Switch } from '@family-os/ui'
+import { useMemo, useState, type ReactNode } from 'react'
+import { Label, PageContainer, PageHeader, Switch, TabBar } from '@family-os/ui'
 import type { ChoreTask, PendingPayout } from '../types'
 import type { DecidePayoutInput } from './ChoresPage'
 import { isOverdue } from '../lib/dates'
@@ -8,7 +8,10 @@ import { TaskeeView } from '../components/TaskeeView'
 import { FocusView } from '../components/FocusView'
 import { AdminBoard, type AdminLane } from '../components/AdminBoard'
 import { ChoresEmptyState, CompletedHiddenEmptyState } from '../components/ChoresEmptyState'
+import { PunchCardsTab } from '../components/PunchCardsTab'
 import { useHideCompleted } from '../lib/device-prefs'
+
+type KidTab = 'today' | 'cards'
 
 export interface ChoresPageViewProps {
   tasks: ChoreTask[]
@@ -73,9 +76,31 @@ export function ChoresPageView({
   onDecidePayout,
   profileId = null,
 }: ChoresPageViewProps) {
-  // Declared before the taskee early-return so the hook order stays unconditional.
+  // Declared before the taskee early-returns so the hook order stays unconditional.
   const [hideCompleted, setHideCompleted] = useHideCompleted(profileId)
+  const [kidTab, setKidTab] = useState<KidTab>('today')
   const payoutIndex = useMemo(() => indexPayouts(payouts ?? []), [payouts])
+
+  // The kid page splits into two peer surfaces (M4/6): Today — the work — and
+  // Punch cards, the tallies. Chores and cards are disparate enough for separate
+  // treatment (the gate's words), and the split keeps ADR 049's task/tally
+  // distinction structural. Parents keep the untabbed admin board.
+  const kidTabBar = !seesAllTasks ? (
+    <TabBar<KidTab>
+      aria-label="Chores"
+      className="mb-5"
+      value={kidTab}
+      onChange={setKidTab}
+      options={[
+        { value: 'today', label: 'Today' },
+        { value: 'cards', label: 'Punch cards' },
+      ]}
+    />
+  ) : null
+
+  if (!seesAllTasks && kidTab === 'cards') {
+    return <PunchCardsTab tabBar={kidTabBar} />
+  }
 
   // Taskee, non-empty → the dedicated taskee surface (owns its header, the
   // lifetime score plate, and the XP-flight completion — design §1/§2). The
@@ -90,6 +115,7 @@ export function ChoresPageView({
         onClaimTask={onClaimTask}
         initialXp={initialXp}
         payoutIndex={payoutIndex}
+        tabBar={kidTabBar}
       />
     )
   }
@@ -108,6 +134,7 @@ export function ChoresPageView({
         subtitle={summaryLine({ total: tasks.length, pending, done, overdue, seesAllTasks })}
         action={tasks.length > 0 ? newTaskButton : undefined}
       />
+      {kidTabBar}
 
       {tasks.length === 0 ? (
         <ChoresEmptyState

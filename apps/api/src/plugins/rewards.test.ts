@@ -72,6 +72,9 @@ afterAll(async () => {
 })
 
 beforeEach(async () => {
+  await rewardsPrisma.punch.deleteMany({})
+  await rewardsPrisma.punchCard.deleteMany({})
+  await rewardsPrisma.punchCardTemplate.deleteMany({})
   await rewardsPrisma.redemption.deleteMany({})
   await rewardsPrisma.reward.deleteMany({})
   await rewardsPrisma.ledgerEntry.deleteMany({})

@@ -13,6 +13,7 @@ type Actions =
   | 'complete'
   | 'reopen'
   | 'decide'
+  | 'punch'
   | 'manage'
 type Subjects =
   | 'platform.Profile'
@@ -27,6 +28,7 @@ type Subjects =
   | 'rewards.Payout'
   | 'rewards.Reward'
   | 'rewards.Redemption'
+  | 'rewards.PunchCard'
   | 'all'
 
 export type AppAbility = PrismaAbility<[Actions, Subjects]>
@@ -67,6 +69,12 @@ export function createAbility(profile: Profile, overrides: PermissionOverride[])
   // manages the catalog via `manage all`; a kid never approves its own request. Row
   // condition enforced in the route.
   can('create', 'rewards.Redemption', { profileId: profile.id })
+
+  // The kid punches their OWN card (ADR 049) — the joy of the paper sheet is drawing
+  // the check, so taking the punch and handing it to an adult would gut the feature.
+  // Tier 4 undoes (and can punch anyone's) via `manage all`. Row condition enforced
+  // in the route.
+  can('punch', 'rewards.PunchCard', { profileId: profile.id })
 
   // Calendar is one shared family surface — every tier reads it (tier-4 creates/
   // edits/deletes via `manage all`). The view grant is duplicated across the

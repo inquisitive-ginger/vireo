@@ -1,4 +1,4 @@
-import { useRef } from 'react'
+import { useRef, type ReactNode } from 'react'
 import { Check } from 'lucide-react'
 import {
   Button,
@@ -35,6 +35,8 @@ export interface FocusViewProps {
   initialXp?: number
   /** Held/decided payouts keyed by completion instance (M4/3b). */
   payoutIndex?: PayoutsByInstance
+  /** The Today · Punch cards TabBar (M4/6) — rendered under the header. */
+  tabBar?: ReactNode
 }
 
 /* Most urgent first — overdue, then earliest due, then undated (design §1, the
@@ -61,6 +63,7 @@ export function FocusView({
   onClaimTask,
   initialXp,
   payoutIndex,
+  tabBar,
 }: FocusViewProps) {
   // The hero and the progress meter speak about YOUR work only — an unclaimed
   // chore isn't yours yet, so up-for-grabs waits in its own collapsed section
@@ -85,6 +88,7 @@ export function FocusView({
   return (
     <PageContainer width="list">
       <PageHeader title="Chores" action={<ScorePlate ref={plateRef} value={lifetime} />} />
+      {tabBar}
 
       {/* Progress line + bar (design §1 taskee header — shared with Agency). */}
       <div className="mb-5">

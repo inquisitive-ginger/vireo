@@ -14,6 +14,10 @@ import type {
   RedemptionAction,
   StoreData,
   WalletPage,
+  PunchCardData,
+  FinishedCards,
+  PunchTemplate,
+  PunchTemplateInput,
 } from '../types'
 
 async function jsonFetch<T>(url: string, init?: RequestInit): Promise<T> {
@@ -203,6 +207,104 @@ export function useUseRedemption() {
       qc.invalidateQueries({ queryKey: ['rewards/redemptions'] })
     },
   })
+}
+
+// ─── Punch cards (M4/6) ──────────────────────────────────────────────────────
+
+type CardsData = { cards: PunchCardData[]; finished: FinishedCards[] }
+
+/** The kid's finished history for the My stuff chip shelf — punching itself lives
+    on the chores surface (M4/6 rework); this key is shared with it verbatim, so a
+    punch over there refreshes the chips here. */
+export function useMyCards() {
+  const { id } = useAuth()
+  return useQuery({
+    queryKey: ['rewards/cards', 'mine', id],
+    queryFn: () => jsonFetch<CardsData>('/api/rewards/punch-cards'),
+    enabled: !!id,
+    staleTime: 60_000,
+  })
+}
+
+/** Every kid's cards, for the tier-4 Tickets tab. Shares the `['rewards/cards']`
+    prefix so a punch or an undo refreshes both sides. */
+export function useAllCards() {
+  return useQuery({
+    queryKey: ['rewards/cards', 'all'],
+    queryFn: () => jsonFetch<CardsData>('/api/rewards/punch-cards'),
+  })
+}
+
+/** The parent's eraser: remove the newest punch from an open card. */
+export function useUndoPunch() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (cardId: string) =>
+      jsonFetch<{ card: PunchCardData }>(`/api/rewards/punch-cards/${cardId}/punch`, {
+        method: 'DELETE',
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['rewards/cards'] }),
+  })
+}
+
+/** The take-down: the parent takes an open card off the fridge, punches and all.
+    Finished cards are history and stay. */
+export function useRemoveCard() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (cardId: string) =>
+      jsonFetch<{ removed: boolean }>(`/api/rewards/punch-cards/${cardId}`, {
+        method: 'DELETE',
+      }),
+    onSuccess: () => qc.invalidateQueries({ queryKey: ['rewards/cards'] }),
+  })
+}
+
+export function usePunchTemplates() {
+  return useQuery({
+    queryKey: ['rewards/punch-templates'],
+    queryFn: () =>
+      jsonFetch<{ templates: PunchTemplate[] }>('/api/rewards/punch-templates').then(
+        (r) => r.templates
+      ),
+  })
+}
+
+export function usePunchTemplateMutations() {
+  const qc = useQueryClient()
+  // Templates shape which cards exist, so both prefixes refresh together.
+  const invalidate = () => {
+    qc.invalidateQueries({ queryKey: ['rewards/punch-templates'] })
+    qc.invalidateQueries({ queryKey: ['rewards/cards'] })
+  }
+
+  const create = useMutation({
+    mutationFn: (input: PunchTemplateInput) =>
+      jsonFetch<{ template: PunchTemplate }>('/api/rewards/punch-templates', {
+        method: 'POST',
+        body: JSON.stringify(input),
+      }),
+    onSuccess: invalidate,
+  })
+
+  const update = useMutation({
+    mutationFn: ({ id, input }: { id: string; input: Partial<PunchTemplateInput> }) =>
+      jsonFetch<{ template: PunchTemplate }>(`/api/rewards/punch-templates/${id}`, {
+        method: 'PATCH',
+        body: JSON.stringify(input),
+      }),
+    onSuccess: invalidate,
+  })
+
+  const remove = useMutation({
+    mutationFn: (id: string) =>
+      jsonFetch<{ deleted?: boolean; retired?: boolean }>(`/api/rewards/punch-templates/${id}`, {
+        method: 'DELETE',
+      }),
+    onSuccess: invalidate,
+  })
+
+  return { create, update, remove }
 }
 
 // ─── Mutations ────────────────────────────────────────────────────────────────

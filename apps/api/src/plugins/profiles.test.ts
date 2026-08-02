@@ -615,7 +615,7 @@ describe('GET /api/profiles/:id/permissions', () => {
         overrideId: string | null
       }>
     }>()
-    expect(permissions).toHaveLength(14)
+    expect(permissions).toHaveLength(15)
     expect(permissions.every((p) => p.override === null && p.overrideId === null)).toBe(true)
     // tier 1 baseline: view platform.Plugin + view chores.Task + complete
     // chores.Task (every tier can complete its own assigned task) + view
@@ -634,8 +634,10 @@ describe('GET /api/profiles/:id/permissions', () => {
     expect(permissions.find((p) => p.key === 'platform.profile.color')?.inBaseline).toBe(true)
     expect(permissions.find((p) => p.key === 'platform.bug-report.create')?.inBaseline).toBe(true)
     expect(permissions.find((p) => p.key === 'rewards.wallet.view')?.inBaseline).toBe(true)
-    // + redeem in the store (every tier spends its OWN P-Bucks — ADR 053)
+    // + redeem in the store (every tier spends its OWN P-Bucks — ADR 053) and
+    // punch its OWN card (ADR 049 — the kid draws the check)
     expect(permissions.find((p) => p.key === 'rewards.redemption.create')?.inBaseline).toBe(true)
+    expect(permissions.find((p) => p.key === 'rewards.card.punch')?.inBaseline).toBe(true)
     expect(permissions.find((p) => p.key === 'platform.profile.view')?.inBaseline).toBe(false)
     expect(permissions.find((p) => p.key === 'platform.profile.switch')?.inBaseline).toBe(false)
     expect(permissions.find((p) => p.key === 'family-feed.post.create')?.inBaseline).toBe(false)

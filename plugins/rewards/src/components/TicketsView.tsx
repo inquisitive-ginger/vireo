@@ -13,13 +13,17 @@ import {
   resolveHue,
 } from '@family-os/ui'
 import {
+  useAllCards,
   useAllRedemptions,
   useProfiles,
+  useRemoveCard,
   useRestoreRedemption,
   useRevokeRedemption,
+  useUndoPunch,
 } from '../lib/hooks'
-import { askedLabel, boughtLabel, usedLabel } from '../lib/when'
-import type { Redemption } from '../types'
+import { askedLabel, boughtLabel, earnedLabel, usedLabel } from '../lib/when'
+import type { PunchCardData, Redemption } from '../types'
+import { ClampedList } from './ClampedList'
 
 const REVEAL_STEP = 10
 
@@ -34,30 +38,43 @@ const REVEAL_STEP = 10
    Only the second is destructive, so only the second confirms. */
 export function TicketsView() {
   const redemptions = useAllRedemptions()
+  const punchCards = useAllCards()
   const profiles = useProfiles()
   const restore = useRestoreRedemption()
   const revoke = useRevokeRedemption()
+  const undoPunch = useUndoPunch()
+  const removeCard = useRemoveCard()
   const [revoking, setRevoking] = useState<Redemption | null>(null)
+  const [removing, setRemoving] = useState<PunchCardData | null>(null)
 
   const byId = useMemo(() => new Map((profiles.data ?? []).map((m) => [m.id, m])), [profiles.data])
 
   // Grouped by kid, then split by whether the ticket is still theirs to use. The
   // pocket keeps the store's order (longest-held first); the used shelf is newest
-  // first — a correction is nearly always to the thing that just happened.
+  // first — a correction is nearly always to the thing that just happened. Punch
+  // cards (M4/6) join their kid's section — a kid with only cards still gets one.
   const groups = useMemo(() => {
-    const out = new Map<string, { pocket: Redemption[]; used: Redemption[] }>()
+    const out = new Map<
+      string,
+      { pocket: Redemption[]; used: Redemption[]; cards: PunchCardData[] }
+    >()
+    const groupFor = (pid: string) => {
+      const g = out.get(pid) ?? { pocket: [], used: [], cards: [] }
+      out.set(pid, g)
+      return g
+    }
     for (const r of redemptions.data ?? []) {
-      const g = out.get(r.profileId) ?? { pocket: [], used: [] }
+      const g = groupFor(r.profileId)
       if (r.status === 'used') g.used.push(r)
       else g.pocket.push(r)
-      out.set(r.profileId, g)
     }
+    for (const c of punchCards.data?.cards ?? []) groupFor(c.profileId).cards.push(c)
     for (const g of out.values()) {
       g.pocket.sort((a, b) => a.purchasedAt.localeCompare(b.purchasedAt))
       g.used.sort((a, b) => (b.usedAt ?? '').localeCompare(a.usedAt ?? ''))
     }
     return out
-  }, [redemptions.data])
+  }, [redemptions.data, punchCards.data])
 
   if (redemptions.isLoading || profiles.isLoading) {
     return (
@@ -80,7 +97,7 @@ export function TicketsView() {
   return (
     <>
       <div className="flex flex-col gap-7">
-        {[...groups.entries()].map(([pid, { pocket, used }]) => {
+        {[...groups.entries()].map(([pid, { pocket, used, cards }]) => {
           const member = byId.get(pid)
           const name = member?.name ?? 'Someone'
           const hue = resolveHue(name, member?.identityHue)
@@ -94,30 +111,39 @@ export function TicketsView() {
                 count={`${pocket.length} in pocket`}
               />
 
+              {/* Ticket lifecycle stays contiguous (pocket → used — "Put it back"
+                  restores into the shelf directly above it); punch cards close the
+                  section as the different-shaped object (M4/6 review gate). */}
               {pocket.length > 0 && (
                 <Shelf label="In pocket">
-                  {pocket.map((t) => (
-                    <TicketRow
-                      key={t.id}
-                      redemption={t}
-                      spine={spine}
-                      meta={
-                        t.status === 'use_requested' && t.useRequestedAt
-                          ? `${askedLabel(t.useRequestedAt)} · waiting on your OK`
-                          : boughtLabel(t.purchasedAt)
-                      }
-                      action={
-                        <Button
-                          variant="ghost-destructive"
-                          size="sm"
-                          onClick={() => setRevoking(t)}
-                          aria-label={`Refund and remove ${labelFor(t)} from ${name}'s pocket`}
-                        >
-                          Refund &amp; remove
-                        </Button>
-                      }
-                    />
-                  ))}
+                  <ClampedList
+                    items={pocket}
+                    label="More in pocket"
+                    render={(t) => (
+                      <TicketRow
+                        key={t.id}
+                        redemption={t}
+                        spine={spine}
+                        meta={
+                          t.status === 'use_requested' && t.useRequestedAt
+                            ? `${askedLabel(t.useRequestedAt)} · waiting on your OK`
+                            : t.cost === 0
+                              ? earnedLabel(t.purchasedAt)
+                              : boughtLabel(t.purchasedAt)
+                        }
+                        action={
+                          <Button
+                            variant="ghost-destructive"
+                            size="sm"
+                            onClick={() => setRevoking(t)}
+                            aria-label={`Refund and remove ${labelFor(t)} from ${name}'s pocket`}
+                          >
+                            Refund &amp; remove
+                          </Button>
+                        }
+                      />
+                    )}
+                  />
                 </Shelf>
               )}
 
@@ -130,10 +156,81 @@ export function TicketsView() {
                   onRestore={(id) => restore.mutate(id)}
                 />
               )}
+
+              {cards.length > 0 && (
+                <Shelf label="Punch cards">
+                  <ClampedList
+                    items={cards}
+                    label="More cards"
+                    render={(c) => (
+                      <ItemCard key={c.id} spine={spine} align="center">
+                        <span
+                          className="grid size-9 flex-none place-items-center rounded-lg bg-secondary text-xl"
+                          aria-hidden
+                        >
+                          {c.template.glyph}
+                        </span>
+                        <div className="min-w-0 flex-1">
+                          <span className="text-card-title block truncate">{c.template.name}</span>
+                          <span className="text-xs-body text-muted-foreground">
+                            {c.completedAt
+                              ? 'Card full — waiting on their prize pick'
+                              : `${c.count} of ${c.template.goal} punched`}
+                          </span>
+                        </div>
+                        {/* A finished card is settled — no eraser, no take-down; the
+                            kid's prize pick is the only move left on it. */}
+                        {!c.completedAt && (
+                          <div className="flex flex-none items-center gap-1">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              disabled={c.count === 0 || undoPunch.isPending}
+                              onClick={() => undoPunch.mutate(c.id)}
+                              aria-label={`Undo the last punch on ${name}'s ${c.template.name} card`}
+                            >
+                              Undo last punch
+                            </Button>
+                            <Button
+                              variant="ghost-destructive"
+                              size="sm"
+                              onClick={() => setRemoving(c)}
+                              aria-label={`Take ${name}'s ${c.template.name} card down`}
+                            >
+                              Take it down
+                            </Button>
+                          </div>
+                        )}
+                      </ItemCard>
+                    )}
+                  />
+                </Shelf>
+              )}
             </section>
           )
         })}
       </div>
+
+      <ConfirmDialog
+        open={removing !== null}
+        title={removing ? `Take ${removing.template.glyph} ${removing.template.name} down?` : ''}
+        description={
+          removing ? (
+            <>
+              {byId.get(removing.profileId)?.name.split(' ')[0] ?? 'Their'}&rsquo;s {removing.count}{' '}
+              punch{removing.count === 1 ? '' : 'es'} go with it, and they won&rsquo;t get a new one
+              — add them back on the card in Catalog anytime. Finished cards keep their history.
+            </>
+          ) : null
+        }
+        confirmLabel="Take it down"
+        isPending={removeCard.isPending}
+        onConfirm={() => {
+          if (!removing) return
+          removeCard.mutate(removing.id, { onSuccess: () => setRemoving(null) })
+        }}
+        onCancel={() => setRemoving(null)}
+      />
 
       <ConfirmDialog
         open={revoking !== null}
@@ -178,9 +275,9 @@ function Shelf({ label, children }: { label: string; children: React.ReactNode }
    torn — the unbounded-wall shape auto-bug #82 named. Count-clamped, not paged: the
    tab already holds every row (the clamp is a reading aid, not a fetch boundary).
 
-   It opens by default, unlike the chores Done section it borrows from: putting a
-   mistakenly torn ticket back is the reason a parent opens this tab, so the common
-   case must not start behind a tap. */
+   Default-CLOSED (M4/6 review gate, superseding the #89 open-by-default): each kid
+   now carries three shelves, so open history dominated the page with two-plus kids.
+   The count stays in the header — a put-it-back is one tap away, not hidden. */
 function UsedShelf({
   used,
   spine,
@@ -199,7 +296,7 @@ function UsedShelf({
   const more = used.length - visible.length
 
   return (
-    <Disclosure label="Recently used" count={used.length} defaultOpen>
+    <Disclosure label="Recently used" count={used.length}>
       <div className="flex flex-col gap-2 pt-1">
         {visible.map((t) => (
           <TicketRow

@@ -2,10 +2,10 @@ import { useMemo, useState } from 'react'
 import { Tag, Ticket as TicketIcon } from 'lucide-react'
 import { CURRENCY, Coin, EmptyState, ErrorCard, TabBar } from '@family-os/ui'
 import { useAuth } from '@family-os/platform'
-import { useEarnedRewards, useMyRedemptions, useStore } from '../lib/hooks'
+import { useEarnedRewards, useMyCards, useMyRedemptions, useStore } from '../lib/hooks'
 import { gapFor, storeShelves } from '../lib/affordability'
-import { askedLabel, boughtLabel, enjoyedSince } from '../lib/when'
-import type { Redemption, Reward } from '../types'
+import { askedLabel, boughtLabel, earnedLabel, enjoyedSince } from '../lib/when'
+import type { FinishedCards, Redemption, Reward } from '../types'
 import { EmojiStub, StoreTicket, StubChip, TicketFrame, TicketSkeleton } from './Ticket'
 import { HistorySheet } from './HistorySheet'
 import { RedeemDialog } from './RedeemDialog'
@@ -27,6 +27,7 @@ export function Store() {
   const store = useStore()
   const mine = useMyRedemptions()
   const earned = useEarnedRewards()
+  const punchCards = useMyCards()
   const [tab, setTab] = useState<KidTab>('store')
   const [picked, setPicked] = useState<Reward | null>(null)
   const [using, setUsing] = useState<Redemption | null>(null)
@@ -64,7 +65,12 @@ export function Store() {
           onOpenHistory={() => setHistoryOpen(true)}
         />
       ) : (
-        <PocketTab pocket={pocket} used={earned.data ?? []} onUse={setUsing} />
+        <PocketTab
+          pocket={pocket}
+          used={earned.data ?? []}
+          finishedCards={punchCards.data?.finished ?? []}
+          onUse={setUsing}
+        />
       )}
 
       {store.data && (
@@ -282,12 +288,16 @@ function NearRow({ reward, gap, onPick }: { reward: Reward; gap: number; onPick:
 export function PocketTab({
   pocket,
   used,
+  finishedCards = [],
   onUse,
 }: {
   /** Owned tickets + any ask in flight. */
   pocket: Redemption[]
   /** Torn tickets, all time — the stub shelf. */
   used: Redemption[]
+  /** Finished punch cards rolled up per template (M4/6) — kept stubs, same grammar
+      as the shelf beside them. Punching lives on the chores surface. */
+  finishedCards?: FinishedCards[]
   onUse: (ticket: Redemption) => void
 }) {
   // The longest-held ticket leads — it's the one you've been looking forward to.
@@ -319,7 +329,7 @@ export function PocketTab({
     [used]
   )
 
-  if (tickets.length === 0 && used.length === 0) {
+  if (tickets.length === 0 && used.length === 0 && finishedCards.length === 0) {
     return (
       <EmptyState
         icon={TicketIcon}
@@ -355,6 +365,16 @@ export function PocketTab({
           )}
         </Shelf>
       )}
+
+      {finishedCards.length > 0 && (
+        <Shelf label="Finished cards">
+          <div className="flex flex-wrap gap-2">
+            {finishedCards.map((f) => (
+              <StubChip key={f.templateId} emoji={f.glyph} name={f.name} count={f.count} />
+            ))}
+          </div>
+        </Shelf>
+      )}
     </div>
   )
 }
@@ -388,7 +408,9 @@ function PocketTicket({ ticket, onUse }: { ticket: Redemption; onUse: () => void
           <div className="text-xs-token mt-1 text-muted-foreground">
             {waiting && ticket.useRequestedAt
               ? askedLabel(ticket.useRequestedAt)
-              : boughtLabel(ticket.purchasedAt)}
+              : ticket.cost === 0
+                ? earnedLabel(ticket.purchasedAt)
+                : boughtLabel(ticket.purchasedAt)}
           </div>
         </div>
         <div className="flex flex-none flex-col items-end gap-1.5">
