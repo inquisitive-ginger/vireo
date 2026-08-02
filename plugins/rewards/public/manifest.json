@@ -11,7 +11,10 @@
       "rewards.redemption.use-requested",
       "rewards.redemption.used",
       "rewards.redemption.deferred",
-      "rewards.redemption.revoked"
+      "rewards.redemption.revoked",
+      "rewards.card.punched",
+      "rewards.card.completed",
+      "rewards.card.prize-claimed"
     ],
     "subscribes": ["chores.task.completed", "chores.task.reopened", "chores.task.deleted"]
   },

@@ -165,6 +165,38 @@ exports.Prisma.RewardScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
+exports.Prisma.PunchCardTemplateScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  glyph: 'glyph',
+  goal: 'goal',
+  payoutKind: 'payoutKind',
+  payoutCoins: 'payoutCoins',
+  payoutOptionIds: 'payoutOptionIds',
+  audience: 'audience',
+  active: 'active'
+};
+
+exports.Prisma.PunchCardScalarFieldEnum = {
+  id: 'id',
+  templateId: 'templateId',
+  profileId: 'profileId',
+  count: 'count',
+  chosenRewardId: 'chosenRewardId',
+  completedAt: 'completedAt',
+  prizeClaimedAt: 'prizeClaimedAt',
+  createdAt: 'createdAt'
+};
+
+exports.Prisma.PunchScalarFieldEnum = {
+  id: 'id',
+  cardId: 'cardId',
+  sourceType: 'sourceType',
+  sourceId: 'sourceId',
+  createdBy: 'createdBy',
+  createdAt: 'createdAt'
+};
+
 exports.Prisma.RedemptionScalarFieldEnum = {
   id: 'id',
   rewardId: 'rewardId',
@@ -200,6 +232,9 @@ exports.Prisma.ModelName = {
   Balance: 'Balance',
   PendingPayout: 'PendingPayout',
   Reward: 'Reward',
+  PunchCardTemplate: 'PunchCardTemplate',
+  PunchCard: 'PunchCard',
+  Punch: 'Punch',
   Redemption: 'Redemption'
 };
 

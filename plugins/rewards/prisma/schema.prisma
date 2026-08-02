@@ -106,6 +106,76 @@ model Reward {
 //
 // status: owned → use_requested → used | use_requested → owned (not now). The
 // debit's ledger entry is keyed `(redemption, id)`; the revoke refund `(refund, id)`.
+// A punch-card template (ADR 049, reworked 2026-07-31): the parent-authored shape a
+// per-profile card is stamped from. The payout is `{coins}` or a curated CHOICE of
+// catalog rewards — the parent picks the options, the kid names the one they're
+// working for. `payoutOptionIds` carries no FK (arrays can't); the reward DELETE
+// route counts membership before hard-deleting, which is the guard the FK gave the
+// single-column shape. `audience` scopes like Reward (empty = everyone). Retiring
+// flips `active`; cards already open keep going.
+model PunchCardTemplate {
+  id              String   @id @default(uuid()) @db.Uuid
+  name            String
+  glyph           String
+  goal            Int
+  payoutKind      String   @map("payout_kind")
+  payoutCoins     Int?     @map("payout_coins")
+  payoutOptionIds String[] @map("payout_option_ids") @db.Uuid
+  audience        String[] @db.Uuid
+  active          Boolean  @default(true)
+
+  cards PunchCard[]
+
+  @@index([active])
+  @@map("punch_card_templates")
+  @@schema("rewards")
+}
+
+// One kid's card in progress. `chosenRewardId` is the changeable pointer — the prize
+// they named, nothing minted until the card fills. `completedAt` set at goal ends it;
+// `prizeClaimedAt` marks the mint (immediate for coins or a live pick; deferred to
+// the prize sheet when the kid never picked). A fresh card opens in its place, and
+// completed cards are retained as history (the finished-cards shelf). At most one
+// OPEN card per (template, profile) — a partial unique index in the migration
+// enforces what this schema cannot declare.
+model PunchCard {
+  id             String    @id @default(uuid()) @db.Uuid
+  templateId     String    @map("template_id") @db.Uuid
+  profileId      String    @map("profile_id") @db.Uuid
+  count          Int       @default(0)
+  chosenRewardId String?   @map("chosen_reward_id") @db.Uuid
+  completedAt    DateTime? @map("completed_at")
+  prizeClaimedAt DateTime? @map("prize_claimed_at")
+  createdAt      DateTime  @default(now()) @map("created_at")
+
+  template PunchCardTemplate @relation(fields: [templateId], references: [id])
+  punches  Punch[]
+
+  @@index([profileId, createdAt])
+  @@index([templateId, profileId])
+  @@map("punch_cards")
+  @@schema("rewards")
+}
+
+// A single stamp. Manual punches (the kid's tap) carry no source id; event-sourced
+// ones (meals.trybite, M5/5) claim (source_type, source_id) so a redelivered event
+// cannot stamp twice — the ledger's idempotency pattern.
+model Punch {
+  id         String   @id @default(uuid()) @db.Uuid
+  cardId     String   @map("card_id") @db.Uuid
+  sourceType String   @map("source_type")
+  sourceId   String?  @map("source_id")
+  createdBy  String   @map("created_by") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  card PunchCard @relation(fields: [cardId], references: [id])
+
+  @@unique([sourceType, sourceId])
+  @@index([cardId, createdAt])
+  @@map("punches")
+  @@schema("rewards")
+}
+
 model Redemption {
   id             String    @id @default(uuid()) @db.Uuid
   rewardId       String    @map("reward_id") @db.Uuid

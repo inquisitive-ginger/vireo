@@ -9,6 +9,9 @@ import {
   RedemptionCreateSchema,
   RedemptionDecideSchema,
   REDEMPTION_STATUSES,
+  PunchTemplateCreateSchema,
+  PunchTemplateUpdateSchema,
+  PunchPrizeSchema,
 } from '@family-os/schemas'
 import { rewardsPrisma } from '@family-os/plugin-rewards/db'
 import { getBalance, listEntries, postEntry } from '../lib/ledger'
@@ -36,6 +39,21 @@ import {
   type RedemptionWithReward,
   type RewardRecord,
 } from '../lib/redemptions'
+import {
+  choosePrize,
+  ensureOpenCards,
+  getCard,
+  listCards,
+  punchCard,
+  removeCard,
+  sweepUntouchedCards,
+  undoPunch,
+  PunchCardError,
+  type CardResolved,
+  type FinishedSummary,
+  type PunchTemplateRecord,
+  type RewardSummary,
+} from '../lib/punch-cards'
 
 const DEFAULT_LIMIT = 20
 const MAX_LIMIT = 50
@@ -154,6 +172,47 @@ function serializeReward(r: RewardRecord & { createdAt?: Date }) {
     audience: r.audience.length > 0 ? r.audience : null,
     stock: r.stock,
     active: r.active,
+  }
+}
+
+function serializeTemplate(t: PunchTemplateRecord & { payoutOptions?: RewardSummary[] }) {
+  return {
+    id: t.id,
+    name: t.name,
+    glyph: t.glyph,
+    goal: t.goal,
+    payoutKind: t.payoutKind,
+    payoutCoins: t.payoutCoins,
+    payoutOptionIds: t.payoutOptionIds,
+    payoutOptions: t.payoutOptions ?? null,
+    audience: t.audience.length > 0 ? t.audience : null,
+    active: t.active,
+  }
+}
+
+function serializeCard(c: CardResolved) {
+  return {
+    id: c.id,
+    templateId: c.templateId,
+    profileId: c.profileId,
+    count: c.count,
+    chosenRewardId: c.chosenRewardId,
+    chosenReward: c.chosenReward,
+    completedAt: c.completedAt ? c.completedAt.toISOString() : null,
+    prizeClaimedAt: c.prizeClaimedAt ? c.prizeClaimedAt.toISOString() : null,
+    createdAt: c.createdAt.toISOString(),
+    template: serializeTemplate({ ...c.template, payoutOptions: c.payoutOptions }),
+  }
+}
+
+function serializeFinished(f: FinishedSummary) {
+  return {
+    templateId: f.templateId,
+    profileId: f.profileId,
+    name: f.name,
+    glyph: f.glyph,
+    count: f.count,
+    lastFinishedAt: f.lastFinishedAt ? f.lastFinishedAt.toISOString() : null,
   }
 }
 
@@ -408,8 +467,8 @@ const rewardsPlugin: FastifyPluginAsync = async (fastify) => {
     return { reward: serializeReward(reward) }
   })
 
-  // DELETE retires a reward that redemptions reference — those keep their cost
-  // snapshot, so the row must survive (the FK is RESTRICT) — and hard-deletes an
+  // DELETE retires a reward that redemptions — or punch-card finish lines (M4/6) —
+  // reference; both need the row to survive (the FKs are RESTRICT). Hard-deletes an
   // unused one. Either way the store stops showing it.
   fastify.delete('/rewards/rewards/:id', async (request, reply) => {
     if (!request.ability.can('manage', 'rewards.Reward')) {
@@ -418,8 +477,11 @@ const rewardsPlugin: FastifyPluginAsync = async (fastify) => {
     const { id } = request.params as { id: string }
     const existing = await rewardsPrisma.reward.findUnique({ where: { id } })
     if (!existing) return reply.status(404).send({ error: 'Reward not found' })
-    const used = await rewardsPrisma.redemption.count({ where: { rewardId: id } })
-    if (used > 0) {
+    const [used, promised] = await Promise.all([
+      rewardsPrisma.redemption.count({ where: { rewardId: id } }),
+      rewardsPrisma.punchCardTemplate.count({ where: { payoutOptionIds: { has: id } } }),
+    ])
+    if (used + promised > 0) {
       const reward = await rewardsPrisma.reward.update({ where: { id }, data: { active: false } })
       return { retired: true, reward: serializeReward(reward) }
     }
@@ -605,6 +667,284 @@ const rewardsPlugin: FastifyPluginAsync = async (fastify) => {
       return { revoked: true, balance }
     } catch (err) {
       if (err instanceof RedemptionError)
+        return reply.status(err.status).send({ error: err.message })
+      throw err
+    }
+  })
+
+  // ─── Punch cards (M4/6, ADR 049) ─────────────────────────────────────────────
+  // Templates are tier-4 stocking, like the catalog. Cards materialize lazily on
+  // read; the kid punches their own (`punch rewards.PunchCard`, row-checked), a
+  // parent undoes via `manage all`.
+
+  /** Every option must exist — an array carries no FK, so the route is the guard. */
+  async function missingOptions(ids: string[]): Promise<boolean> {
+    if (ids.length === 0) return false
+    const found = await rewardsPrisma.reward.count({ where: { id: { in: ids } } })
+    return found !== new Set(ids).size
+  }
+
+  async function optionSummaries(ids: string[]): Promise<Map<string, RewardSummary>> {
+    if (ids.length === 0) return new Map()
+    const rewards = await rewardsPrisma.reward.findMany({ where: { id: { in: ids } } })
+    return new Map(
+      rewards.map((r) => [
+        r.id,
+        {
+          id: r.id,
+          name: r.name,
+          emoji: r.emoji,
+          description: r.description,
+          cost: r.cost,
+          requiresApproval: r.requiresApproval,
+          active: r.active,
+        },
+      ])
+    )
+  }
+
+  function withOptions(
+    t: PunchTemplateRecord,
+    byId: Map<string, RewardSummary>
+  ): PunchTemplateRecord & { payoutOptions: RewardSummary[] } {
+    return {
+      ...t,
+      payoutOptions: t.payoutOptionIds
+        .map((id) => byId.get(id))
+        .filter((r): r is RewardSummary => !!r),
+    }
+  }
+
+  fastify.get('/rewards/punch-templates', async (request, reply) => {
+    if (!request.ability.can('manage', 'rewards.PunchCard')) {
+      return reply.status(403).send({ error: 'Permission denied' })
+    }
+    const query = request.query as { includeRetired?: string }
+    const templates = await rewardsPrisma.punchCardTemplate.findMany({
+      where: query.includeRetired === 'true' ? {} : { active: true },
+      orderBy: [{ active: 'desc' }, { name: 'asc' }],
+    })
+    const byId = await optionSummaries(templates.flatMap((t) => t.payoutOptionIds))
+    return { templates: templates.map((t) => serializeTemplate(withOptions(t, byId))) }
+  })
+
+  fastify.post('/rewards/punch-templates', async (request, reply) => {
+    if (!request.ability.can('manage', 'rewards.PunchCard')) {
+      return reply.status(403).send({ error: 'Permission denied' })
+    }
+    const parsed = PunchTemplateCreateSchema.safeParse(request.body)
+    if (!parsed.success) return reply.status(400).send({ error: parsed.error.flatten() })
+    const d = parsed.data
+    if (await missingOptions(d.payoutOptionIds ?? [])) {
+      return reply.status(400).send({ error: 'A prize option was not found' })
+    }
+    const template = await rewardsPrisma.punchCardTemplate.create({
+      data: {
+        name: d.name,
+        glyph: d.glyph,
+        goal: d.goal,
+        payoutKind: d.payoutKind,
+        payoutCoins: d.payoutCoins ?? null,
+        payoutOptionIds: d.payoutOptionIds ?? [],
+        audience: d.audience ?? [],
+        active: d.active,
+      },
+    })
+    const byId = await optionSummaries(template.payoutOptionIds)
+    return reply.status(201).send({ template: serializeTemplate(withOptions(template, byId)) })
+  })
+
+  fastify.patch('/rewards/punch-templates/:id', async (request, reply) => {
+    if (!request.ability.can('manage', 'rewards.PunchCard')) {
+      return reply.status(403).send({ error: 'Permission denied' })
+    }
+    const { id } = request.params as { id: string }
+    const parsed = PunchTemplateUpdateSchema.safeParse(request.body)
+    if (!parsed.success) return reply.status(400).send({ error: parsed.error.flatten() })
+    const existing = await rewardsPrisma.punchCardTemplate.findUnique({ where: { id } })
+    if (!existing) return reply.status(404).send({ error: 'Template not found' })
+    const d = parsed.data
+    if (await missingOptions(d.payoutOptionIds ?? [])) {
+      return reply.status(400).send({ error: 'A prize option was not found' })
+    }
+    const template = await rewardsPrisma.punchCardTemplate.update({
+      where: { id },
+      data: {
+        ...(d.name !== undefined ? { name: d.name } : {}),
+        ...(d.glyph !== undefined ? { glyph: d.glyph } : {}),
+        ...(d.goal !== undefined ? { goal: d.goal } : {}),
+        // The payout travels as a unit (schema refinement) — the kind swaps both fields.
+        ...(d.payoutKind !== undefined
+          ? {
+              payoutKind: d.payoutKind,
+              payoutCoins: d.payoutCoins ?? null,
+              payoutOptionIds: d.payoutOptionIds ?? [],
+            }
+          : {}),
+        ...(d.audience !== undefined ? { audience: d.audience ?? [] } : {}),
+        ...(d.active !== undefined ? { active: d.active } : {}),
+      },
+    })
+    // Narrowing the audience sweeps away untouched materialized cards; a punched
+    // card survives and needs the explicit take-down below.
+    if (d.audience !== undefined) {
+      const profiles = await prisma.profile.findMany({
+        where: { id: { not: FAMILY_PROFILE_ID } },
+        select: { id: true, tier: true },
+      })
+      await sweepUntouchedCards(template, profiles)
+    }
+    const byId = await optionSummaries(template.payoutOptionIds)
+    return { template: serializeTemplate(withOptions(template, byId)) }
+  })
+
+  // DELETE retires a template that cards reference — completed cards are retained
+  // history, so the row must survive — and hard-deletes an untouched one.
+  fastify.delete('/rewards/punch-templates/:id', async (request, reply) => {
+    if (!request.ability.can('manage', 'rewards.PunchCard')) {
+      return reply.status(403).send({ error: 'Permission denied' })
+    }
+    const { id } = request.params as { id: string }
+    const existing = await rewardsPrisma.punchCardTemplate.findUnique({ where: { id } })
+    if (!existing) return reply.status(404).send({ error: 'Template not found' })
+    const punched = await rewardsPrisma.punchCard.count({
+      where: { templateId: id, OR: [{ count: { gt: 0 } }, { completedAt: { not: null } }] },
+    })
+    if (punched > 0) {
+      const template = await rewardsPrisma.punchCardTemplate.update({
+        where: { id },
+        data: { active: false },
+      })
+      return { retired: true, template: serializeTemplate(template) }
+    }
+    // Untouched empty cards are only ever lazy materializations — safe to drop.
+    await rewardsPrisma.punchCard.deleteMany({ where: { templateId: id } })
+    await rewardsPrisma.punchCardTemplate.delete({ where: { id } })
+    return { deleted: true }
+  })
+
+  // GET /rewards/punch-cards?profileId= — open cards + finished history. Scope
+  // mirrors the wallet: tier 4 sees everyone (the Tickets tab), below that forced
+  // to own. Materializes missing cards on read (ADR 058 precedent).
+  fastify.get('/rewards/punch-cards', async (request, reply) => {
+    if (!request.ability.can('view', 'rewards.Wallet')) {
+      return reply.status(403).send({ error: 'Permission denied' })
+    }
+    const query = request.query as { profileId?: string }
+    const isAdmin = request.profile.tier >= 4
+    const profileId = isAdmin ? query.profileId : request.profile.id
+    if (profileId === FAMILY_PROFILE_ID || request.profile.id === FAMILY_PROFILE_ID) {
+      return reply.status(403).send({ error: 'The family profile holds no cards' })
+    }
+
+    const profiles = await prisma.profile.findMany({
+      where: {
+        id: { not: FAMILY_PROFILE_ID },
+        ...(profileId ? { id: profileId } : {}),
+      },
+      select: { id: true, tier: true },
+    })
+    await ensureOpenCards(profiles)
+
+    const { cards, finished } = await listCards(profileId ? [profileId] : undefined)
+    return { cards: cards.map(serializeCard), finished: finished.map(serializeFinished) }
+  })
+
+  // POST /rewards/punch-cards/:id/punch — the kid stamps their own card. No body:
+  // a manual punch has no provenance beyond who drew it. Someone else's card 404s
+  // rather than 403s, the redemption precedent.
+  fastify.post('/rewards/punch-cards/:id/punch', async (request, reply) => {
+    if (!request.ability.can('punch', 'rewards.PunchCard')) {
+      return reply.status(403).send({ error: 'Permission denied' })
+    }
+    const { id } = request.params as { id: string }
+    const card = await getCard(id)
+    if (!card || (card.profileId !== request.profile.id && request.profile.tier < 4)) {
+      return reply.status(404).send({ error: 'Card not found' })
+    }
+
+    try {
+      const result = await punchCard(fastify.eventBus, {
+        cardId: id,
+        sourceType: 'manual',
+        createdBy: request.profile.id,
+      })
+      return {
+        card: serializeCard(result.card),
+        completed: result.completed,
+        payout: result.payout,
+        prizePending: result.prizePending,
+      }
+    } catch (err) {
+      if (err instanceof PunchCardError)
+        return reply.status(err.status).send({ error: err.message })
+      throw err
+    }
+  })
+
+  // POST /rewards/punch-cards/:id/prize — the kid names the prize they're working
+  // for (open card: just moves the pointer, changeable anytime) or claims it on a
+  // full card (mints on the spot). Same ability and row rule as the punch.
+  fastify.post('/rewards/punch-cards/:id/prize', async (request, reply) => {
+    if (!request.ability.can('punch', 'rewards.PunchCard')) {
+      return reply.status(403).send({ error: 'Permission denied' })
+    }
+    const { id } = request.params as { id: string }
+    const parsed = PunchPrizeSchema.safeParse(request.body)
+    if (!parsed.success) return reply.status(400).send({ error: parsed.error.flatten() })
+    const card = await getCard(id)
+    if (!card || (card.profileId !== request.profile.id && request.profile.tier < 4)) {
+      return reply.status(404).send({ error: 'Card not found' })
+    }
+
+    try {
+      const result = await choosePrize(fastify.eventBus, {
+        cardId: id,
+        rewardId: parsed.data.rewardId,
+      })
+      return { card: serializeCard(result.card), payout: result.payout }
+    } catch (err) {
+      if (err instanceof PunchCardError)
+        return reply.status(err.status).send({ error: err.message })
+      throw err
+    }
+  })
+
+  // DELETE /rewards/punch-cards/:id/punch — the parent's eraser (ADR 049): remove
+  // the newest punch from an open card. Tier 4 only, via `manage all`.
+  fastify.delete('/rewards/punch-cards/:id/punch', async (request, reply) => {
+    if (!request.ability.can('manage', 'rewards.PunchCard')) {
+      return reply.status(403).send({ error: 'Permission denied' })
+    }
+    const { id } = request.params as { id: string }
+    try {
+      const card = await undoPunch(id)
+      return { card: serializeCard(card) }
+    } catch (err) {
+      if (err instanceof PunchCardError)
+        return reply.status(err.status).send({ error: err.message })
+      throw err
+    }
+  })
+
+  // DELETE /rewards/punch-cards/:id — the take-down (M4/6 review gate): the parent
+  // takes the open card off the fridge, punches and all, AND the kid leaves the
+  // template's audience — without that, the next read would just materialize a
+  // fresh card. Tier 4 only; a finished card is history and 409s.
+  fastify.delete('/rewards/punch-cards/:id', async (request, reply) => {
+    if (!request.ability.can('manage', 'rewards.PunchCard')) {
+      return reply.status(403).send({ error: 'Permission denied' })
+    }
+    const { id } = request.params as { id: string }
+    try {
+      const profiles = await prisma.profile.findMany({
+        where: { id: { not: FAMILY_PROFILE_ID } },
+        select: { id: true, tier: true },
+      })
+      await removeCard(id, profiles)
+      return { removed: true }
+    } catch (err) {
+      if (err instanceof PunchCardError)
         return reply.status(err.status).send({ error: err.message })
       throw err
     }

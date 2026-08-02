@@ -148,6 +148,12 @@ export const PERMISSION_REGISTRY = {
     action: 'create',
     subject: 'rewards.Redemption',
   },
+  'rewards.card.punch': {
+    label: 'Punch your own punch cards',
+    module: 'rewards',
+    action: 'punch',
+    subject: 'rewards.PunchCard',
+  },
   'calendar.event.view': {
     label: 'View the calendar',
     module: 'calendar',
