@@ -15,14 +15,14 @@ before it reads anything else, and it is size-capped — see
 > **At most six one-line bullets.** Update at the end of every session. If a
 > session's detail doesn't fit on one line it belongs in the session log.
 
-- **Milestone:** M4 — Rewards & Wallet, in flight; P-Bucks live in prod since
-  2026-07-26 (PR #75). `docs/roadmap.md` is authoritative.
+- **Milestone:** M4 — Rewards & Wallet, in flight; P-Bucks live since 2026-07-26,
+  punch cards live 2026-08-01 (PR #98). M4/7 + M4/9 remain. `docs/roadmap.md` rules.
 - **Active stories:** none in flight; **beacon track queued** — LuvLinks cover the
   goodbye, custom build due at the friends' December visit. `product-design-beacon.md`.
 - **Deployment:** 🟢 live at `https://vireohome.app` on the Pi; merge to `main`
   auto-deploys; off-LAN via Tailscale. Runbook: `docs/deployment.md`.
-- **Last session:** 2026-07-31 — arch, family-profile exposure (ADR 060: network
-  is the boundary, docs only). `logs/2026-07-31-arch-family-profile-exposure.md`.
+- **Last session:** 2026-08-01 — design+dev, punch cards (M4/6: chores-tab
+  punching, kid-chosen prizes). `logs/2026-08-01-design-dev-punch-cards.md`.
 - **What's next and everything outstanding:** `docs/sessions/queue.md` — the one
   index. Cheapest high-value item: Deployment Part F, offsite backups.
 - **Owed in-app:** nothing — every bug report through #94 is `deployed`. A fix

@@ -92,17 +92,18 @@ P-Bucks against cash later and nothing in M4 assumes it will.
 
 `rewards.*`
 
-| Event                              | Published by              | Payload                                                       |
-| ---------------------------------- | ------------------------- | ------------------------------------------------------------- |
-| `rewards.balance.credited`         | ledger on credit          | `{ profileId, delta, balance, reason, sourceType, sourceId }` |
-| `rewards.balance.debited`          | ledger on debit           | `{ profileId, delta, balance, reason, sourceType, sourceId }` |
-| `rewards.redemption.purchased`     | POST redemption (buy)     | `{ redemptionId, profileId, rewardId, cost }`                 |
-| `rewards.redemption.use-requested` | POST :id/use (gated)      | `{ redemptionId, profileId, rewardId }`                       |
-| `rewards.redemption.used`          | tear (immediate or a yes) | `{ redemptionId, profileId, rewardId, decidedBy? }`           |
-| `rewards.redemption.deferred`      | PATCH not-now             | `{ redemptionId, profileId, rewardId, decidedBy }`            |
-| `rewards.redemption.revoked`       | DELETE (tier-4 exception) | `{ redemptionId, profileId, rewardId, cost, revokedBy }`      |
-| `rewards.card.punched`             | punch handler             | `{ cardId, profileId, templateId, count, goal }`              |
-| `rewards.card.completed`           | punch handler at goal     | `{ cardId, profileId, templateId, payout }`                   |
+| Event                              | Published by              | Payload                                                                        |
+| ---------------------------------- | ------------------------- | ------------------------------------------------------------------------------ |
+| `rewards.balance.credited`         | ledger on credit          | `{ profileId, delta, balance, reason, sourceType, sourceId }`                  |
+| `rewards.balance.debited`          | ledger on debit           | `{ profileId, delta, balance, reason, sourceType, sourceId }`                  |
+| `rewards.redemption.purchased`     | POST redemption (buy)     | `{ redemptionId, profileId, rewardId, cost }`                                  |
+| `rewards.redemption.use-requested` | POST :id/use (gated)      | `{ redemptionId, profileId, rewardId }`                                        |
+| `rewards.redemption.used`          | tear (immediate or a yes) | `{ redemptionId, profileId, rewardId, decidedBy? }`                            |
+| `rewards.redemption.deferred`      | PATCH not-now             | `{ redemptionId, profileId, rewardId, decidedBy }`                             |
+| `rewards.redemption.revoked`       | DELETE (tier-4 exception) | `{ redemptionId, profileId, rewardId, cost, revokedBy }`                       |
+| `rewards.card.punched`             | punch handler             | `{ cardId, profileId, templateId, count, goal }`                               |
+| `rewards.card.completed`           | punch handler at goal     | `{ cardId, profileId, templateId, payout }` — payout null while a choice waits |
+| `rewards.card.prize-claimed`       | the mint (pick or claim)  | `{ cardId, profileId, templateId, rewardId, redemptionId }`                    |
 
 **Subscribes** (the earn contract, ADR 048 — each is one manifest line + one handler):
 
@@ -211,24 +212,31 @@ redemptions                           -- a TICKET (ADR 055)
   decided_at       timestamptz nullable
   decided_note     text  nullable       -- OPTIONAL not-now reason, quoted back verbatim
 
-punch_card_templates
-  id                uuid  PK
-  name              text
-  glyph             text
-  goal              integer
-  payout_kind       text              -- 'coins' | 'reward'
-  payout_coins      integer nullable
-  payout_reward_id  uuid    nullable
-  audience          uuid[]  nullable
-  active            boolean default true
+punch_card_templates                  -- shipped shape (M4/6 choice rework)
+  id                 uuid  PK
+  name               text
+  glyph              text
+  goal               integer
+  payout_kind        text             -- 'coins' | 'reward' (a CHOICE of catalog rewards)
+  payout_coins       integer nullable
+  payout_option_ids  uuid[]           -- the parent-curated prize options; no FK —
+                                      -- the reward DELETE route counts membership
+  audience           uuid[]           -- empty = everyone (tiers 1–3)
+  active             boolean default true
 
 punch_cards
-  id            uuid  PK
-  template_id   uuid
-  profile_id    uuid
-  count         integer default 0
-  completed_at  timestamptz nullable  -- set at goal; a fresh card is opened
-  created_at    timestamptz
+  id                uuid  PK
+  template_id       uuid
+  profile_id        uuid
+  count             integer default 0
+  chosen_reward_id  uuid  nullable    -- the kid's pick; changeable until the mint
+  completed_at      timestamptz nullable  -- set at goal
+  prize_claimed_at  timestamptz nullable  -- the mint; the fresh card opens HERE,
+                                          -- not at completion
+  created_at        timestamptz
+  UNIQUE (template_id, profile_id) WHERE completed_at IS NULL  -- one open card
+                                          -- (materialization occupancy also spans
+                                          -- unclaimed finishes: prize_claimed_at NULL)
 
 punches
   id            uuid  PK

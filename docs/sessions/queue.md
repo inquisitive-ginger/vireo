@@ -39,27 +39,6 @@ signature colors as the ritual. The custom build — 4 paired Pi Zero 2 W beacon
 gifted and paired in person at the **December visit**, voice as the headline
 upgrade. _Log: `logs/2026-07-29-product-beacon-concept.md`._
 
-### Rewards: look at the Tickets tab, and cap the last unbounded list
-
-**Type:** qa / dev · No kickoff needed. Two loose ends from PR #89. **(1)** The
-tier-4 Tickets tab shipped **without a live review** — the tier-4 PIN is not
-recoverable from the sandbox and the session went straight to merge, so nobody has
-seen it in a browser. First parent on prod is the review. **(2)** `GET
-/rewards/redemptions` still hardcodes `limit=100` and returns a bare array, so the
-used shelf's `Show N more` stops dead at 100 with the oldest silently absent — the
-shape #81 called "worse than unbounded", and the **last one of that family left in
-the app**. The fix is the `{redemptions, nextCursor, total}` envelope the ledger and
-bug reports already use; four consumers read it. Two kids puts the cap years out,
-which is why it waits. _Log:
-`logs/2026-07-30-design-dev-parent-ticket-corrections.md`._
-
-### M4/6 — Dev: Punch Cards
-
-**Type:** development · **Kickoff:** _to be written_
-Template / card / punch per **ADR 049**; auto-payout (coins _or_ a catalog reward) and
-reset at goal, completed cards retained. **The kid punches their own card**; a parent
-can undo. Consumed by M5 try bites. _Depends on: M4/4._
-
 ### M4/7 — Dev: Parent Bonus Grant
 
 **Type:** development · **Kickoff:** _to be written_
@@ -249,6 +228,12 @@ suite mirroring chores/calendar. _Depends on: none._
 ## Recently Completed
 
 > Two-line index; full detail in the linked log.
+
+- **2026-08-01 — Design+Dev: Punch Cards (M4/6, PR #98, deployed).** Punching lives
+  on a Chores **Today · Punch cards** tab; the parent curates prize options and the
+  kid names their pick (Modal ticket picker, mint waits on the pick); take-down ends
+  audience eligibility. **M5/5 try bites is unblocked.** See
+  `logs/2026-08-01-design-dev-punch-cards.md`.
 
 - **2026-07-31 — Arch: family pseudo-profile exposure (docs only, ADR 060).** The
   app is not on the public internet (`vireohome.app` → `192.168.0.31`, no public
