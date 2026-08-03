@@ -229,6 +229,11 @@ suite mirroring chores/calendar. _Depends on: none._
 
 > Two-line index; full detail in the linked log.
 
+- **2026-08-02 — Dev: punch-card emoji set (PR #99).** The template drawer was
+  picking from the _reward_ set, so a card could only wear its prize — "try bites"
+  had no 🥦. `PUNCH_EMOJI_GROUPS` is habit-shaped and separate. See
+  `logs/2026-08-02-dev-punch-emojis.md`.
+
 - **2026-08-01 — Design+Dev: Punch Cards (M4/6, PR #98, deployed).** Punching lives
   on a Chores **Today · Punch cards** tab; the parent curates prize options and the
   kid names their pick (Modal ticket picker, mint waits on the pick); take-down ends
