@@ -40,6 +40,7 @@ const card = (over: Partial<PunchCardData> = {}): PunchCardData => ({
   completedAt: null,
   prizeClaimedAt: null,
   createdAt: '2026-07-29T14:49:00.000Z',
+  lastPunchedAt: null,
   template: {
     id: 't1',
     name: 'Try bites',

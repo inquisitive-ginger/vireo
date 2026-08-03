@@ -201,6 +201,7 @@ function serializeCard(c: CardResolved) {
     completedAt: c.completedAt ? c.completedAt.toISOString() : null,
     prizeClaimedAt: c.prizeClaimedAt ? c.prizeClaimedAt.toISOString() : null,
     createdAt: c.createdAt.toISOString(),
+    lastPunchedAt: c.lastPunchedAt ? c.lastPunchedAt.toISOString() : null,
     template: serializeTemplate({ ...c.template, payoutOptions: c.payoutOptions }),
   }
 }
@@ -213,6 +214,8 @@ function serializeFinished(f: FinishedSummary) {
     glyph: f.glyph,
     count: f.count,
     lastFinishedAt: f.lastFinishedAt ? f.lastFinishedAt.toISOString() : null,
+    prizeName: f.prizeName,
+    prizeCoins: f.prizeCoins,
   }
 }
 
