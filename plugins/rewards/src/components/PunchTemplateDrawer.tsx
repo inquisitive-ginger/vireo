@@ -15,7 +15,7 @@ import {
 import { ChevronDown } from 'lucide-react'
 import type { Profile } from '@family-os/platform/types'
 import type { PunchTemplate, PunchTemplateInput, Reward } from '../types'
-import { REWARD_EMOJI_GROUPS } from '../lib/reward-emojis'
+import { PUNCH_EMOJI_GROUPS } from '../lib/punch-emojis'
 
 const COIN_PRESETS = [5, 10, 15, 25]
 const GOAL_PRESETS = [5, 10, 15, 20]
@@ -140,7 +140,7 @@ export function PunchTemplateDrawer({
               {pickerOpen && (
                 <div className="mt-2 rounded-lg border border-border p-3">
                   <EmojiPicker
-                    groups={REWARD_EMOJI_GROUPS}
+                    groups={PUNCH_EMOJI_GROUPS}
                     selected={glyph}
                     onSelect={(e) => {
                       setGlyph(e)
