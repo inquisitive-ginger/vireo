@@ -229,6 +229,12 @@ suite mirroring chores/calendar. _Depends on: none._
 
 > Two-line index; full detail in the linked log.
 
+- **2026-08-02 — Dev: punch cards joy rework (PR #100).** The kid's tab rebuilt to
+  the gated artifact — glyph stamp wall with slam, always-visible prize rail, gold
+  full→won arc + confetti, finished shelf; `lastPunchedAt` with no migration. Punch
+  jitter was a stale-cache frame — mutations now write the response card into the
+  cache before the pending flag drops. See `logs/2026-08-02-dev-punch-joy.md`.
+
 - **2026-08-02 — Dev: punch-card emoji set (PR #99).** The template drawer was
   picking from the _reward_ set, so a card could only wear its prize — "try bites"
   had no 🥦. `PUNCH_EMOJI_GROUPS` is habit-shaped and separate. See

@@ -21,8 +21,8 @@ before it reads anything else, and it is size-capped — see
   goodbye, custom build due at the friends' December visit. `product-design-beacon.md`.
 - **Deployment:** 🟢 live at `https://vireohome.app` on the Pi; merge to `main`
   auto-deploys; off-LAN via Tailscale. Runbook: `docs/deployment.md`.
-- **Last session:** 2026-08-02 — dev, punch-card emoji set (PR #99: glyphs name the
-  habit, not the prize). `logs/2026-08-02-dev-punch-emojis.md`.
+- **Last session:** 2026-08-02 — dev, punch cards joy rework (PR #100: stamp wall,
+  prize rail, gold arc; jitter = stale-cache frame). `logs/2026-08-02-dev-punch-joy.md`.
 - **What's next and everything outstanding:** `docs/sessions/queue.md` — the one
   index. Cheapest high-value item: Deployment Part F, offsite backups.
 - **Owed in-app:** nothing — every bug report through #94 is `deployed`. A fix

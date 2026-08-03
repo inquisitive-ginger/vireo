@@ -1954,12 +1954,20 @@ the thing you could buy.)
 `standard` moves the balance into the header's trailing slot and makes **what you can
 have** the body.
 
-### Punch card — the paper sheet
+### Punch card — the stamp wall
 
-A row of squares with the payout as a **finish line** at the end. The next square is the
-tap target (dashed outline); **the kid punches their own card** (ADR 049). A meter with a
-count was rejected: a meter is a progress bar for an adult, and the fridge sheet works
-because each square is a thing you did, countable by eye.
+Reworked 2026-08-02 (PR #100, built to the gated joy artifact): a **fluid 5-wide
+stamp wall** where every punch stamps the habit's own glyph at a fixed per-index
+angle, pressed into the paper (`--shadow-inset`). The next square is the **only
+dashed element** — breathing, carrying a `+`, the one tap target; **the kid punches
+their own card** (ADR 049) and the stamp lands with a 420ms slam (glyph squash,
+square dip, ink ring — reduced-motion silent). The prize lives in an always-visible
+**rail** beside the wall (picked emoji / coin disc / unpicked wash with the tab's
+only primary CTA), the countdown in the header. A full card goes **gold**
+(coin-metal border, pill, gold gift tile) and the celebration wears the same gold —
+full → won is one arc. A meter with a count was rejected: a meter is a progress bar
+for an adult, and the fridge sheet works because each square is a thing you did,
+countable by eye. Rail prize names are UI sans, never the display serif.
 
 ---
 
