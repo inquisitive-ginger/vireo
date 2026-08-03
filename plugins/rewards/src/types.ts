@@ -132,6 +132,7 @@ export interface PunchCardData {
   completedAt: string | null
   prizeClaimedAt: string | null
   createdAt: string
+  lastPunchedAt: string | null
   template: PunchTemplate
 }
 
@@ -143,6 +144,8 @@ export interface FinishedCards {
   glyph: string
   count: number
   lastFinishedAt: string | null
+  prizeName: string | null
+  prizeCoins: number | null
 }
 
 export interface PunchTemplateInput {

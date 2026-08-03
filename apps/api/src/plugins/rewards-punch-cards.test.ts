@@ -375,6 +375,34 @@ describe('GET /rewards/punch-cards', () => {
     expect(res.statusCode).toBe(403)
   })
 
+  it('derives lastPunchedAt from the punch rows — null on a fresh card', async () => {
+    const template = await makeTemplate()
+    const cookie = await getCookieForProfile(KID_ID)
+    const card = await openCardFor(cookie, template.id)
+
+    let res = await app.inject({
+      method: 'GET',
+      url: '/api/rewards/punch-cards',
+      headers: { cookie },
+    })
+    expect(res.json().cards[0].lastPunchedAt).toBeNull()
+
+    const punched = await app.inject({
+      method: 'POST',
+      url: `/api/rewards/punch-cards/${card.id}/punch`,
+      headers: { cookie },
+    })
+    expect(punched.json().card.lastPunchedAt).not.toBeNull()
+
+    res = await app.inject({
+      method: 'GET',
+      url: '/api/rewards/punch-cards',
+      headers: { cookie },
+    })
+    const punch = await rewardsPrisma.punch.findFirst({ where: { cardId: card.id } })
+    expect(res.json().cards[0].lastPunchedAt).toBe(punch!.createdAt.toISOString())
+  })
+
   it('keeps a retired template’s open card going but opens no new ones', async () => {
     const template = await makeTemplate()
     const cookie = await getCookieForProfile(KID_ID)
@@ -888,7 +916,44 @@ describe('finished history', () => {
       name: 'Try bites',
       glyph: '🥦',
       count: 2,
+      prizeName: null,
+      prizeCoins: 10,
     })
     expect(res.json().finished[0].lastFinishedAt).not.toBeNull()
+  })
+
+  it('names the latest finish’s prize on a choice template', async () => {
+    const reward = await makeReward()
+    const template = await makeTemplate({
+      goal: 1,
+      payoutKind: 'reward',
+      payoutCoins: null,
+      payoutOptionIds: [reward.id],
+    })
+    const cookie = await getCookieForProfile(KID_ID)
+    const card = await openCardFor(cookie, template.id)
+    await app.inject({
+      method: 'POST',
+      url: `/api/rewards/punch-cards/${card.id}/prize`,
+      headers: { cookie },
+      payload: { rewardId: reward.id },
+    })
+    await app.inject({
+      method: 'POST',
+      url: `/api/rewards/punch-cards/${card.id}/punch`,
+      headers: { cookie },
+    })
+
+    const res = await app.inject({
+      method: 'GET',
+      url: '/api/rewards/punch-cards',
+      headers: { cookie },
+    })
+
+    expect(res.json().finished[0]).toMatchObject({
+      count: 1,
+      prizeName: 'Ice cream run',
+      prizeCoins: null,
+    })
   })
 })

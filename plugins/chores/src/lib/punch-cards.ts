@@ -41,7 +41,20 @@ export interface PunchCardData {
   completedAt: string | null
   prizeClaimedAt: string | null
   createdAt: string
+  lastPunchedAt: string | null
   template: PunchTemplate
+}
+
+/** Completed cards rolled up per (template, profile) — the finished shelf. */
+export interface FinishedCards {
+  templateId: string
+  profileId: string
+  name: string
+  glyph: string
+  count: number
+  lastFinishedAt: string | null
+  prizeName: string | null
+  prizeCoins: number | null
 }
 
 export type PunchPayout =
@@ -72,13 +85,14 @@ async function jsonFetch<T>(url: string, init?: RequestInit): Promise<T> {
 }
 
 /** The kid's cards — open ones plus any finished card still waiting on its prize
-    pick. The read materializes missing cards server-side. */
+    pick — and the finished rollup for the shelf. The read materializes missing
+    cards server-side. */
 export function usePunchCards() {
   const { id } = useAuth()
   return useQuery({
     queryKey: ['rewards/cards', 'mine', id],
     queryFn: () =>
-      jsonFetch<{ cards: PunchCardData[] }>('/api/rewards/punch-cards').then((r) => r.cards),
+      jsonFetch<{ cards: PunchCardData[]; finished: FinishedCards[] }>('/api/rewards/punch-cards'),
     enabled: !!id,
     staleTime: 60_000,
   })
@@ -88,10 +102,16 @@ export function usePunchCards() {
     ticket, so it refreshes the wallet, store and redemptions prefixes too. */
 export function usePunch() {
   const qc = useQueryClient()
+  const { id } = useAuth()
   return useMutation({
     mutationFn: (cardId: string) =>
       jsonFetch<PunchResponse>(`/api/rewards/punch-cards/${cardId}/punch`, { method: 'POST' }),
     onSuccess: (data) => {
+      // The answered card goes into the cache BEFORE the pending flag drops —
+      // invalidate-only left a frame on stale data where the optimistic +1
+      // reverted and the stamp animation replayed. The refetch below returns the
+      // same rows and structural sharing keeps it render-free.
+      writeCard(qc, id, data.card)
       qc.invalidateQueries({ queryKey: ['rewards/cards'] })
       if (data.completed) {
         qc.invalidateQueries({ queryKey: ['rewards/wallet'] })
@@ -102,10 +122,22 @@ export function usePunch() {
   })
 }
 
+function writeCard(
+  qc: ReturnType<typeof useQueryClient>,
+  profileId: string | null,
+  card: PunchCardData
+) {
+  qc.setQueryData<{ cards: PunchCardData[]; finished: FinishedCards[] }>(
+    ['rewards/cards', 'mine', profileId],
+    (old) => old && { ...old, cards: old.cards.map((c) => (c.id === card.id ? card : c)) }
+  )
+}
+
 /** Names the prize on an open card (just the pointer, changeable) — or claims it
     on a full one, which mints and so refreshes the money surfaces. */
 export function useChoosePrize() {
   const qc = useQueryClient()
+  const { id } = useAuth()
   return useMutation({
     mutationFn: ({ cardId, rewardId }: { cardId: string; rewardId: string | null }) =>
       jsonFetch<{ card: PunchCardData; payout: PunchPayout | null }>(
@@ -113,6 +145,7 @@ export function useChoosePrize() {
         { method: 'POST', body: JSON.stringify({ rewardId }) }
       ),
     onSuccess: (data) => {
+      writeCard(qc, id, data.card)
       qc.invalidateQueries({ queryKey: ['rewards/cards'] })
       if (data.payout) {
         qc.invalidateQueries({ queryKey: ['rewards/wallet'] })

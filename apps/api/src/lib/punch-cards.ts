@@ -60,10 +60,11 @@ export type PunchCardRecord = {
 export type CardWithTemplate = PunchCardRecord & { template: PunchTemplateRecord }
 
 /** A card as the surfaces consume it: the template's option set and the kid's pick
-    resolved to renderable reward summaries. */
+    resolved to renderable reward summaries, plus the newest punch's timestamp. */
 export type CardResolved = CardWithTemplate & {
   payoutOptions: RewardSummary[]
   chosenReward: RewardSummary | null
+  lastPunchedAt: Date | null
 }
 
 export type FinishedSummary = {
@@ -73,6 +74,10 @@ export type FinishedSummary = {
   glyph: string
   count: number
   lastFinishedAt: Date | null
+  /** The latest finish's prize — a reward name, or the coins amount. Both null when
+      a fallback claim paid coins on a retired option set. */
+  prizeName: string | null
+  prizeCoins: number | null
 }
 
 export type PunchPayout =
@@ -152,18 +157,30 @@ const summarize = (r: {
   active: r.active,
 })
 
-/** Attaches option and chosen-reward summaries in ONE reward fetch across the set.
- *  Inactive options travel with their flag — the sheet hides them, but a card whose
- *  pick was retired still needs the face to explain what changed. */
+/** Attaches option and chosen-reward summaries in ONE reward fetch across the set,
+ *  and the newest punch per card in one groupBy. Inactive options travel with their
+ *  flag — the sheet hides them, but a card whose pick was retired still needs the
+ *  face to explain what changed. */
 export async function resolveCards(cards: CardWithTemplate[]): Promise<CardResolved[]> {
   const ids = new Set<string>()
   for (const c of cards) {
     for (const id of c.template.payoutOptionIds) ids.add(id)
     if (c.chosenRewardId) ids.add(c.chosenRewardId)
   }
-  const rewards =
-    ids.size > 0 ? await rewardsPrisma.reward.findMany({ where: { id: { in: [...ids] } } }) : []
+  const [rewards, punchMax] = await Promise.all([
+    ids.size > 0
+      ? rewardsPrisma.reward.findMany({ where: { id: { in: [...ids] } } })
+      : Promise.resolve([]),
+    cards.length > 0
+      ? rewardsPrisma.punch.groupBy({
+          by: ['cardId'],
+          where: { cardId: { in: cards.map((c) => c.id) } },
+          _max: { createdAt: true },
+        })
+      : Promise.resolve([]),
+  ])
   const byId = new Map(rewards.map((r) => [r.id, summarize(r)]))
+  const lastPunch = new Map(punchMax.map((p) => [p.cardId, p._max.createdAt]))
 
   return cards.map((c) => ({
     ...c,
@@ -171,6 +188,7 @@ export async function resolveCards(cards: CardWithTemplate[]): Promise<CardResol
       .map((id) => byId.get(id))
       .filter((r): r is RewardSummary => !!r),
     chosenReward: c.chosenRewardId ? (byId.get(c.chosenRewardId) ?? null) : null,
+    lastPunchedAt: lastPunch.get(c.id) ?? null,
   }))
 }
 
@@ -212,22 +230,48 @@ export async function listCards(profileIds?: string[]): Promise<{
   })
 
   const templateIds = [...new Set(groups.map((g) => g.templateId))]
-  const templates = await rewardsPrisma.punchCardTemplate.findMany({
-    where: { id: { in: templateIds } },
-    select: { id: true, name: true, glyph: true },
-  })
+  const [templates, latestFinished] = await Promise.all([
+    rewardsPrisma.punchCardTemplate.findMany({
+      where: { id: { in: templateIds } },
+      select: { id: true, name: true, glyph: true, payoutKind: true, payoutCoins: true },
+    }),
+    // The latest finish per (template, profile) names the shelf stub's prize.
+    rewardsPrisma.punchCard.findMany({
+      where: { completedAt: { not: null }, ...profileFilter },
+      orderBy: [{ completedAt: 'desc' }, { id: 'desc' }],
+      distinct: ['templateId', 'profileId'],
+      select: { templateId: true, profileId: true, chosenRewardId: true },
+    }),
+  ])
   const byId = new Map(templates.map((t) => [t.id, t]))
+  const chosenIds = latestFinished.map((c) => c.chosenRewardId).filter((id): id is string => !!id)
+  const chosen =
+    chosenIds.length > 0
+      ? await rewardsPrisma.reward.findMany({
+          where: { id: { in: chosenIds } },
+          select: { id: true, name: true },
+        })
+      : []
+  const rewardName = new Map(chosen.map((r) => [r.id, r.name]))
+  const latestBy = new Map(latestFinished.map((c) => [`${c.templateId}:${c.profileId}`, c]))
 
   return {
     cards: await resolveCards([...unclaimed, ...cards]),
-    finished: groups.map((g) => ({
-      templateId: g.templateId,
-      profileId: g.profileId,
-      name: byId.get(g.templateId)?.name ?? 'A card',
-      glyph: byId.get(g.templateId)?.glyph ?? '🎉',
-      count: g._count._all,
-      lastFinishedAt: g._max.completedAt,
-    })),
+    finished: groups.map((g) => {
+      const t = byId.get(g.templateId)
+      const last = latestBy.get(`${g.templateId}:${g.profileId}`)
+      const prizeName = last?.chosenRewardId ? (rewardName.get(last.chosenRewardId) ?? null) : null
+      return {
+        templateId: g.templateId,
+        profileId: g.profileId,
+        name: t?.name ?? 'A card',
+        glyph: t?.glyph ?? '🎉',
+        count: g._count._all,
+        lastFinishedAt: g._max.completedAt,
+        prizeName,
+        prizeCoins: t?.payoutKind === 'coins' ? (t.payoutCoins ?? null) : null,
+      }
+    }),
   }
 }
 
