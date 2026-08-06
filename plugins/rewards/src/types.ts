@@ -66,6 +66,21 @@ export interface RewardInput {
 
 export type RedemptionAction = 'yes' | 'not_now'
 
+/** A parent's bonus (M4/7). `grantId` is minted client-side per attempt, so a
+    retried submit replays instead of paying twice. */
+export interface GrantInput {
+  profileId: string
+  amount: number
+  reason: string
+  grantId: string
+}
+
+/** One row of GET /rewards/balances — the tier-4 Wallets tab's glance. */
+export interface WalletBalance {
+  profileId: string
+  balance: number
+}
+
 /** One ledger move (ADR 047) as GET /rewards/wallet serializes it. `reason` is
     already human text ("Emptied the dishwasher", "Bought 🍦 Ice cream run"). */
 export interface LedgerEntry {

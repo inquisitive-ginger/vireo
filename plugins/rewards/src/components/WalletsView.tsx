@@ -1,7 +1,8 @@
 import { useMemo, useState } from 'react'
-import { Loader2, Ticket as TicketIcon } from 'lucide-react'
+import { Loader2, Wallet as WalletIcon } from 'lucide-react'
 import {
   Button,
+  Coin,
   ConfirmDialog,
   Disclosure,
   EmptyState,
@@ -12,7 +13,10 @@ import {
   identityToken,
   resolveHue,
 } from '@family-os/ui'
+import { FAMILY_PROFILE_ID } from '@family-os/platform'
+import type { Profile } from '@family-os/platform/types'
 import {
+  useAllBalances,
   useAllCards,
   useAllRedemptions,
   useProfiles,
@@ -24,35 +28,40 @@ import {
 import { askedLabel, boughtLabel, earnedLabel, usedLabel } from '../lib/when'
 import type { PunchCardData, Redemption } from '../types'
 import { ClampedList } from './ClampedList'
+import { GrantDialog } from './GrantDialog'
 
 const REVEAL_STEP = 10
 
-/* The tier-4 tickets tab — where a parent corrects a ticket, and the only place the
-   two administrative exceptions live. Approvals answers what's waiting and empties
-   to zero; this one is an inventory, so it gets its own tab rather than a permanent
-   list inside a queue.
+/* The tier-4 Wallets tab (né Tickets, M4/7) — the per-kid money view. Every kid
+   gets a section whether or not they hold anything: balance in the header (brass —
+   the coin's colour, never the member's), "Give a bonus" on the header's action
+   slot, and beneath them the inventory the tab has always carried. Approvals
+   answers what's waiting and empties to zero; this one is where the money lives.
 
    Two corrections, and the difference between them is what comes back:
      · Put it back    — a ticket torn by mistake returns to the pocket. No money moves.
      · Refund & remove — the ADR 055 revoke: the P-Bucks come back, the ticket goes.
    Only the second is destructive, so only the second confirms. */
-export function TicketsView() {
+export function WalletsView() {
   const redemptions = useAllRedemptions()
   const punchCards = useAllCards()
   const profiles = useProfiles()
+  const balances = useAllBalances()
   const restore = useRestoreRedemption()
   const revoke = useRevokeRedemption()
   const undoPunch = useUndoPunch()
   const removeCard = useRemoveCard()
   const [revoking, setRevoking] = useState<Redemption | null>(null)
   const [removing, setRemoving] = useState<PunchCardData | null>(null)
+  const [granting, setGranting] = useState<Profile | null>(null)
 
   const byId = useMemo(() => new Map((profiles.data ?? []).map((m) => [m.id, m])), [profiles.data])
 
-  // Grouped by kid, then split by whether the ticket is still theirs to use. The
-  // pocket keeps the store's order (longest-held first); the used shelf is newest
-  // first — a correction is nearly always to the thing that just happened. Punch
-  // cards (M4/6) join their kid's section — a kid with only cards still gets one.
+  // Seeded from the kid profiles first (M4/7) — a kid with an empty pocket is
+  // exactly who a bonus finds — then anyone else holding data joins. Pocket keeps
+  // the store's order (longest-held first); the used shelf is newest first — a
+  // correction is nearly always to the thing that just happened. Punch cards
+  // (M4/6) join their kid's section.
   const groups = useMemo(() => {
     const out = new Map<
       string,
@@ -62,6 +71,9 @@ export function TicketsView() {
       const g = out.get(pid) ?? { pocket: [], used: [], cards: [] }
       out.set(pid, g)
       return g
+    }
+    for (const m of profiles.data ?? []) {
+      if (m.id !== FAMILY_PROFILE_ID && m.tier < 4) groupFor(m.id)
     }
     for (const r of redemptions.data ?? []) {
       const g = groupFor(r.profileId)
@@ -74,9 +86,14 @@ export function TicketsView() {
       g.used.sort((a, b) => (b.usedAt ?? '').localeCompare(a.usedAt ?? ''))
     }
     return out
-  }, [redemptions.data, punchCards.data])
+  }, [profiles.data, redemptions.data, punchCards.data])
 
-  if (redemptions.isLoading || profiles.isLoading) {
+  const balanceById = useMemo(
+    () => new Map((balances.data ?? []).map((b) => [b.profileId, b.balance])),
+    [balances.data]
+  )
+
+  if (redemptions.isLoading || profiles.isLoading || balances.isLoading) {
     return (
       <div className="flex justify-center py-10 text-muted-foreground">
         <Loader2 className="size-5 animate-spin" />
@@ -87,9 +104,9 @@ export function TicketsView() {
   if (groups.size === 0) {
     return (
       <EmptyState
-        icon={TicketIcon}
-        heading="No tickets yet"
-        body="Once a kid buys a reward, their ticket shows up here — and you can put one back if it gets used by mistake."
+        icon={WalletIcon}
+        heading="No wallets yet"
+        body="Each kid's balance, tickets, and punch cards live here — add a family member to get started."
       />
     )
   }
@@ -102,14 +119,31 @@ export function TicketsView() {
           const name = member?.name ?? 'Someone'
           const hue = resolveHue(name, member?.identityHue)
           const spine = identityToken(hue)
+          const empty = pocket.length === 0 && used.length === 0 && cards.length === 0
           return (
             <section key={pid} className="flex flex-col gap-3">
               <MemberGroupHeader
                 name={name}
                 hue={hue}
                 avatarUrl={member?.avatarUrl}
-                count={`${pocket.length} in pocket`}
+                status={<BalanceChip balance={balanceById.get(pid) ?? 0} />}
+                action={
+                  member && (
+                    <Button
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setGranting(member)}
+                      aria-label={`Give ${name} a bonus`}
+                    >
+                      🎁 Give a bonus
+                    </Button>
+                  )
+                }
               />
+
+              {empty && (
+                <p className="text-xs-body text-muted-foreground">Nothing in their pocket yet.</p>
+              )}
 
               {/* Ticket lifecycle stays contiguous (pocket → used — "Put it back"
                   restores into the shelf directly above it); punch cards close the
@@ -211,6 +245,8 @@ export function TicketsView() {
         })}
       </div>
 
+      <GrantDialog member={granting} open={granting !== null} onClose={() => setGranting(null)} />
+
       <ConfirmDialog
         open={removing !== null}
         title={removing ? `Take ${removing.template.glyph} ${removing.template.name} down?` : ''}
@@ -258,6 +294,21 @@ export function TicketsView() {
 }
 
 const labelFor = (r: Redemption) => (r.reward ? `${r.reward.emoji} ${r.reward.name}` : 'a reward')
+
+/* Brass, not the member's hue — the balance belongs to the currency (ADR 051),
+   and the header's avatar already carries identity. */
+function BalanceChip({ balance }: { balance: number }) {
+  return (
+    <span
+      className="text-xs-token flex items-center gap-1.5 rounded-full px-2.5 py-0.5 tabular-nums"
+      style={{ background: 'var(--coin-tint)', color: 'var(--coin-ink)' }}
+      aria-label={`Balance: ${bucks(balance)}`}
+    >
+      <Coin size={14} />
+      {balance}
+    </span>
+  )
+}
 
 function Shelf({ label, children }: { label: string; children: React.ReactNode }) {
   return (

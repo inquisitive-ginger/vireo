@@ -121,11 +121,15 @@ export function HistorySheet({ open, onClose }: { open: boolean; onClose: () => 
 function HistoryRow({ entry, nameById }: { entry: LedgerEntry; nameById: Map<string, string> }) {
   const earned = entry.delta > 0
   // The payout tray's provenance, retold: a chore credit released by a parent
-  // carries their id in `createdBy`; the auto path carries none.
-  const checkedBy =
-    entry.sourceType === 'chores.task' && entry.createdBy
-      ? nameById.get(entry.createdBy)
-      : undefined
+  // carries their id in `createdBy` ("checked by"); a bonus carries the giver's
+  // ("from") — the auto path carries none.
+  const by = entry.createdBy ? nameById.get(entry.createdBy) : undefined
+  const subline =
+    entry.sourceType === 'chores.task' && by
+      ? `checked by ${by}`
+      : entry.sourceType === 'grant' && by
+        ? `from ${by}`
+        : undefined
 
   return (
     <div className="flex items-center gap-3">
@@ -134,9 +138,7 @@ function HistoryRow({ entry, nameById }: { entry: LedgerEntry; nameById: Map<str
       </span>
       <div className="min-w-0 flex-1">
         <div className="text-sm-token truncate font-semibold">{entry.reason}</div>
-        {checkedBy && (
-          <div className="text-xs-body text-muted-foreground">checked by {checkedBy}</div>
-        )}
+        {subline && <div className="text-xs-body text-muted-foreground">{subline}</div>}
       </div>
       <span
         className="text-sm-token flex-none font-bold tabular-nums"

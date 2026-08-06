@@ -294,6 +294,137 @@ describe('GET /rewards/wallet', () => {
   })
 })
 
+// ─── Parent bonus grant (M4/7) ────────────────────────────────────────────────
+
+describe('POST /rewards/grants', () => {
+  const GRANT_ID = '00000000-4ee5-0007-0000-000000000001'
+
+  function give(cookie: string, payload: Record<string, unknown>) {
+    return app.inject({ method: 'POST', url: '/api/rewards/grants', payload, headers: { cookie } })
+  }
+
+  it('credits the kid, with the parent and reason on the entry', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+
+    const res = await give(cookie, {
+      profileId: KID_ID,
+      amount: 5,
+      reason: 'Helped carry in the groceries',
+      grantId: GRANT_ID,
+    })
+
+    expect(res.statusCode).toBe(201)
+    expect(res.json()).toMatchObject({ balance: 5 })
+    const entry = await rewardsPrisma.ledgerEntry.findFirst({ where: { profileId: KID_ID } })
+    expect(entry).toMatchObject({
+      delta: 5,
+      reason: 'Helped carry in the groceries',
+      sourceType: 'grant',
+      sourceId: GRANT_ID,
+      createdBy: PARENT_ID,
+    })
+  })
+
+  it('replays a double-tapped grantId without paying twice', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const payload = { profileId: KID_ID, amount: 5, reason: 'Nice one', grantId: GRANT_ID }
+
+    await give(cookie, payload)
+    const res = await give(cookie, payload)
+
+    expect(res.statusCode).toBe(200)
+    expect(res.json()).toMatchObject({ balance: 5 })
+    expect(await getBalance(KID_ID)).toBe(5)
+  })
+
+  it('403s below tier 4', async () => {
+    const cookie = await getCookieForProfile(TWEEN_ID)
+
+    const res = await give(cookie, {
+      profileId: KID_ID,
+      amount: 5,
+      reason: 'x',
+      grantId: GRANT_ID,
+    })
+
+    expect(res.statusCode).toBe(403)
+  })
+
+  it('400s without a reason — an unexplained grant defeats the story', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+
+    const res = await give(cookie, {
+      profileId: KID_ID,
+      amount: 5,
+      reason: '   ',
+      grantId: GRANT_ID,
+    })
+
+    expect(res.statusCode).toBe(400)
+  })
+
+  it('refuses the family pseudo-profile at the schema', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+
+    const res = await give(cookie, {
+      profileId: 'family',
+      amount: 5,
+      reason: 'x',
+      grantId: GRANT_ID,
+    })
+
+    expect(res.statusCode).toBe(400)
+  })
+
+  it('404s for a profile that does not exist', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+
+    const res = await give(cookie, {
+      profileId: MISSING_ID,
+      amount: 5,
+      reason: 'x',
+      grantId: GRANT_ID,
+    })
+
+    expect(res.statusCode).toBe(404)
+  })
+})
+
+describe('GET /rewards/balances', () => {
+  it('returns every wallet for tier 4', async () => {
+    await credit(KID_ID, 8, 'a')
+    await credit(TWEEN_ID, 3, 'b')
+    const cookie = await getCookieForProfile(PARENT_ID)
+
+    const res = await app.inject({
+      method: 'GET',
+      url: '/api/rewards/balances',
+      headers: { cookie },
+    })
+
+    expect(res.statusCode).toBe(200)
+    const { balances } = res.json()
+    expect(balances).toEqual(
+      expect.arrayContaining([
+        { profileId: KID_ID, balance: 8 },
+        { profileId: TWEEN_ID, balance: 3 },
+      ])
+    )
+  })
+
+  it('403s below tier 4 — a wallet is not a leaderboard', async () => {
+    const cookie = await getCookieForProfile(TWEEN_ID)
+
+    const res = await app.inject({
+      method: 'GET',
+      url: '/api/rewards/balances',
+      headers: { cookie },
+    })
+
+    expect(res.statusCode).toBe(403)
+  })
+})
+
 // ─── Chores earn (ADR 048) ────────────────────────────────────────────────────
 
 describe('chores earn subscriber', () => {

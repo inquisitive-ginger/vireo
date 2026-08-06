@@ -18,6 +18,8 @@ import type {
   FinishedCards,
   PunchTemplate,
   PunchTemplateInput,
+  GrantInput,
+  WalletBalance,
 } from '../types'
 
 async function jsonFetch<T>(url: string, init?: RequestInit): Promise<T> {
@@ -205,6 +207,33 @@ export function useUseRedemption() {
       }),
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['rewards/redemptions'] })
+    },
+  })
+}
+
+/** Every kid's balance at a glance, for the tier-4 Wallets tab (M4/7). Shares the
+    `['rewards/wallet']` prefix so a grant or revoke refreshes it with the rest. */
+export function useAllBalances() {
+  return useQuery({
+    queryKey: ['rewards/wallet', 'balances'],
+    queryFn: () =>
+      jsonFetch<{ balances: WalletBalance[] }>('/api/rewards/balances').then((r) => r.balances),
+  })
+}
+
+/** The parent's bonus (M4/7): one credit with the reason on it. The balance moves,
+    so wallet and store refresh — the same pair as the revoke. */
+export function useGiveBonus() {
+  const qc = useQueryClient()
+  return useMutation({
+    mutationFn: (input: GrantInput) =>
+      jsonFetch<{ balance: number }>('/api/rewards/grants', {
+        method: 'POST',
+        body: JSON.stringify(input),
+      }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['rewards/wallet'] })
+      qc.invalidateQueries({ queryKey: ['rewards/store'] })
     },
   })
 }

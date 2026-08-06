@@ -2,7 +2,7 @@ import { describe, it, expect, vi, beforeEach } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { MockAuthProvider, QueryClient, QueryClientProvider } from '@family-os/platform'
 import type { Profile } from '@family-os/platform/types'
-import { TicketsView } from './TicketsView'
+import { WalletsView } from './WalletsView'
 import type { PunchCardData, Redemption } from '../types'
 
 const parent: Profile = { id: 'parent-emma', name: 'Emma Pritchett', tier: 4 }
@@ -71,6 +71,14 @@ beforeEach(() => {
     if (u.startsWith('/api/profiles')) {
       return new Response(JSON.stringify(profiles), { status: 200 })
     }
+    if (u.startsWith('/api/rewards/balances')) {
+      return new Response(JSON.stringify({ balances: [{ profileId: 'kid-teddy', balance: 23 }] }), {
+        status: 200,
+      })
+    }
+    if (u.startsWith('/api/rewards/grants')) {
+      return new Response(JSON.stringify({ balance: 28 }), { status: 201 })
+    }
     if (u.startsWith('/api/rewards/redemptions?')) {
       return new Response(JSON.stringify({ redemptions }), { status: 200 })
     }
@@ -97,18 +105,17 @@ function renderView() {
       <QueryClientProvider
         client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
       >
-        <TicketsView />
+        <WalletsView />
       </QueryClientProvider>
     </MockAuthProvider>
   )
 }
 
-describe('TicketsView', () => {
+describe('WalletsView', () => {
   it('splits a kid’s tickets into the pocket and what they’ve used', async () => {
     renderView()
     expect(await screen.findByText('Teddy Pritchett')).toBeInTheDocument()
     expect(screen.getByText('In pocket')).toBeInTheDocument()
-    expect(screen.getByText('1 in pocket')).toBeInTheDocument()
     // The used shelf states its true total but starts CLOSED (M4/6 review gate) —
     // three shelves per kid made open history dominate the page.
     const shelf = screen.getByRole('button', { name: /Recently used · 1/ })
@@ -149,7 +156,7 @@ describe('TicketsView', () => {
   it('clamps a deep pocket behind a disclosure', async () => {
     redemptions = Array.from({ length: 5 }, (_, i) => ticket({ id: `p${i}` }))
     renderView()
-    expect(await screen.findByText('5 in pocket')).toBeInTheDocument()
+    expect(await screen.findByText('Teddy Pritchett')).toBeInTheDocument()
     expect(screen.getAllByRole('button', { name: /Refund and remove/ })).toHaveLength(3)
 
     fireEvent.click(screen.getByRole('button', { name: /More in pocket · 2/ }))
@@ -231,5 +238,56 @@ describe('TicketsView', () => {
     expect(await screen.findByText('Card full — waiting on their prize pick')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /Undo the last punch/ })).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /Take .* card down/ })).not.toBeInTheDocument()
+  })
+
+  /* M4/7: every kid gets a section and a balance, holdings or not — a kid with an
+     empty pocket is exactly who a bonus finds. */
+  it('seeds a section with the balance for a kid holding nothing', async () => {
+    redemptions = []
+    renderView()
+
+    expect(await screen.findByText('Teddy Pritchett')).toBeInTheDocument()
+    expect(screen.getByLabelText('Balance: 23 P$')).toBeInTheDocument()
+    expect(screen.getByText('Nothing in their pocket yet.')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Give Teddy Pritchett a bonus' })).toBeInTheDocument()
+  })
+
+  it('gives a bonus — amount and reason, replay-keyed by a minted grantId', async () => {
+    renderView()
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Give Teddy Pritchett a bonus' }))
+    fireEvent.change(await screen.findByLabelText(/How much/), { target: { value: '5' } })
+    fireEvent.change(screen.getByLabelText('For what?'), {
+      target: { value: 'Helped carry in the groceries' },
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Give 5 P$' }))
+
+    await waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith(
+        '/api/rewards/grants',
+        expect.objectContaining({ method: 'POST' })
+      )
+    )
+    const [, init] = fetchMock.mock.calls.find(([u]) => String(u) === '/api/rewards/grants')!
+    const body = JSON.parse(String((init as RequestInit).body))
+    expect(body).toMatchObject({
+      profileId: 'kid-teddy',
+      amount: 5,
+      reason: 'Helped carry in the groceries',
+    })
+    expect(body.grantId).toMatch(/^[0-9a-f-]{36}$/)
+  })
+
+  it('refuses to give without a reason — the button stays disabled', async () => {
+    renderView()
+
+    fireEvent.click(await screen.findByRole('button', { name: 'Give Teddy Pritchett a bonus' }))
+    fireEvent.change(await screen.findByLabelText(/How much/), { target: { value: '5' } })
+
+    expect(screen.getByRole('button', { name: 'Give 5 P$' })).toBeDisabled()
+    expect(fetchMock).not.toHaveBeenCalledWith(
+      '/api/rewards/grants',
+      expect.objectContaining({ method: 'POST' })
+    )
   })
 })

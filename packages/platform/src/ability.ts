@@ -29,6 +29,7 @@ type Subjects =
   | 'rewards.Reward'
   | 'rewards.Redemption'
   | 'rewards.PunchCard'
+  | 'rewards.Grant'
   | 'all'
 
 export type AppAbility = PrismaAbility<[Actions, Subjects]>
