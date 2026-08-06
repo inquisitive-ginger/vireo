@@ -1,7 +1,7 @@
 import { forwardRef, type ReactNode } from 'react'
 import { CoinValue } from '@family-os/ui'
 import { isReopened, type ChoreTask } from '../types'
-import { isOverdue, dueLabel } from '../lib/dates'
+import { isOverdue, dueLabel, doneLabel } from '../lib/dates'
 import { routineStatusLabel } from '../lib/routines'
 import { showCoinReward } from '../lib/flags'
 import type { KidPayoutView } from '../lib/payouts'
@@ -16,8 +16,8 @@ import { ReopenedBadge } from './ReopenedBadge'
    `TaskStatusLine` — the row's STATE + timing, as colour-coded text, never a pill:
    Overdue folds the date into one red phrase (the spine/border already carries the
    alarm colour on the taskee cards, so no red badge), a future date is muted, and a
-   reopened task leads with the amber Redo tag. Nothing on a completed row (the struck
-   title + check already say it).
+   reopened task leads with the amber Redo tag. A completed row says when ("Done
+   7:42 PM") — the struck title already says that it happened.
 
    `TaskReward` — the REWARD group: P-Bucks (the one chip) then XP (the quiet star, ADR
    051). The XP element takes the forwarded ref because it is the flight's launch
@@ -27,12 +27,16 @@ export function TaskStatusLine({ task, className }: { task: ChoreTask; className
   const routine = task.routine
 
   if (task.status === 'completed') {
-    // The one completed state with something to say: an ongoing chore's return
-    // (done for today, back tomorrow) is information the check can't carry.
-    if (routine?.kind !== 'ongoing') return null
+    const doneAt = doneLabel(task.completedAt)
+    // An ongoing chore's return (done for today, back tomorrow) is information
+    // the check can't carry.
+    const back = routine?.kind === 'ongoing'
+    if (!doneAt && !back) return null
     return (
       <div className={`flex flex-wrap items-center gap-x-3 gap-y-1 ${className ?? ''}`}>
-        <span className="text-sm-token text-muted-foreground">Back tomorrow</span>
+        <span className="text-sm-token text-muted-foreground">
+          {[doneAt && `Done ${doneAt}`, back && 'Back tomorrow'].filter(Boolean).join(' · ')}
+        </span>
       </div>
     )
   }

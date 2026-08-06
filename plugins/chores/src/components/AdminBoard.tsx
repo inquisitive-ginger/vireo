@@ -16,7 +16,7 @@ import {
 } from '@family-os/ui'
 import { isReopened, type ChoreTask, type PendingPayout } from '../types'
 import type { DecidePayoutInput } from '../pages/ChoresPage'
-import { isOverdue, dueLabel } from '../lib/dates'
+import { isOverdue, dueLabel, doneLabel } from '../lib/dates'
 import { routineStatusLabel } from '../lib/routines'
 import { showCoinReward } from '../lib/flags'
 import { payoutForTask, reopenClawback, type PayoutsByInstance } from '../lib/payouts'
@@ -223,7 +223,11 @@ const taskSpine = (task: ChoreTask): string =>
 /* An ongoing row has no schedule, so its ↻ promise replaces the date slot; a done
    ongoing row states its return. Days routines keep the date and add the ↻ tail. */
 function rowTimingText(task: ChoreTask, done: boolean, label: string | null): string {
-  if (done) return task.routine?.kind === 'ongoing' ? 'Done · back tomorrow' : 'Done'
+  if (done) {
+    const at = doneLabel(task.completedAt)
+    const base = at ? `Done ${at}` : 'Done'
+    return task.routine?.kind === 'ongoing' ? `${base} · back tomorrow` : base
+  }
   if (task.routine?.kind === 'ongoing') return `↻ ${routineStatusLabel(task.routine)}`
   return label ?? 'No due date'
 }

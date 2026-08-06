@@ -10,7 +10,7 @@ import {
   identityToken,
 } from '@family-os/ui'
 import { isReopened, type ChoreTask, type PendingPayout } from '../types'
-import { isOverdue, dueLabel } from '../lib/dates'
+import { isOverdue, dueLabel, doneLabel } from '../lib/dates'
 import { REWARDS_UI_ENABLED, showCoinReward } from '../lib/flags'
 import { kidPayoutView, payoutForTask, type PayoutsByInstance } from '../lib/payouts'
 import { taskeeProgress } from '../lib/progress'
@@ -230,6 +230,7 @@ function MiniRow({
         ? 'var(--error)'
         : 'var(--border)'
   const label = dueLabel(task.dueDate)
+  const doneAt = done ? doneLabel(task.completedAt) : null
   const payoutView = done && REWARDS_UI_ENABLED ? kidPayoutView(task, payout) : null
   return (
     <div
@@ -249,6 +250,9 @@ function MiniRow({
         >
           {label}
         </span>
+      )}
+      {done && doneAt && (
+        <span className="text-xs-token text-muted-foreground shrink-0">{doneAt}</span>
       )}
       {/* Held / earned / declined P-Bucks takes the coin's slot on a done row (M4/3b). */}
       {payoutView ? (

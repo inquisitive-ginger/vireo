@@ -239,6 +239,6 @@ describe('TaskeeView — routine rows', () => {
 
     // Completed on arrival → the collapsed Done section (auto-bug #82's rule).
     fireEvent.click(doneSection())
-    expect(screen.getByText('Back tomorrow')).toBeInTheDocument()
+    expect(screen.getByText(/Done .+ · Back tomorrow/)).toBeInTheDocument()
   })
 })
