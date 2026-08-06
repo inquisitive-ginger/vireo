@@ -6,6 +6,7 @@ import { FAMILY_PROFILE_ID } from '@family-os/platform/types'
 import {
   RewardCreateSchema,
   RewardUpdateSchema,
+  GrantCreateSchema,
   RedemptionCreateSchema,
   RedemptionDecideSchema,
   REDEMPTION_STATUSES,
@@ -403,6 +404,55 @@ const rewardsPlugin: FastifyPluginAsync = async (fastify) => {
       }
       throw err
     }
+  })
+
+  // ─── Parent bonus grant (M4/7) ───────────────────────────────────────────────
+  // "Give N P-Bucks, reason: …". The grant IS its ledger entry (sourceType
+  // 'grant', createdBy = the parent) — no table of its own. A replayed grantId
+  // moved nothing, so the kid is only told once.
+
+  fastify.post('/rewards/grants', async (request, reply) => {
+    if (!request.ability.can('create', 'rewards.Grant')) {
+      return reply.status(403).send({ error: 'Permission denied' })
+    }
+    const parsed = GrantCreateSchema.safeParse(request.body)
+    if (!parsed.success) return reply.status(400).send({ error: parsed.error.flatten() })
+    const { profileId, amount, reason, grantId } = parsed.data
+
+    // The family pseudo-profile needs no check here: 'family' is not a UUID, so
+    // the schema already refused it — and postEntry guards it regardless.
+    const profile = await prisma.profile.findUnique({ where: { id: profileId } })
+    if (!profile) return reply.status(404).send({ error: 'Profile not found' })
+
+    const { balance, replayed } = await postEntry(fastify.eventBus, {
+      profileId,
+      delta: amount,
+      reason,
+      sourceType: 'grant',
+      sourceId: grantId,
+      createdBy: request.profile.id,
+    })
+
+    if (!replayed) {
+      await notify(fastify.eventBus, profileId, {
+        title: `+${amount} P$ from ${request.profile.name.split(' ')[0]}`,
+        body: reason,
+        variant: 'success',
+        priority: 'alert',
+      })
+    }
+    return reply.status(replayed ? 200 : 201).send({ balance })
+  })
+
+  // GET /rewards/balances — every wallet at a glance, for the tier-4 Wallets tab
+  // (M4/7). A kid with no ledger history has no row; the client reads a missing
+  // profile as zero.
+  fastify.get('/rewards/balances', async (request, reply) => {
+    if (request.profile.tier < 4 || !request.ability.can('view', 'rewards.Wallet')) {
+      return reply.status(403).send({ error: 'Permission denied' })
+    }
+    const balances = await rewardsPrisma.balance.findMany()
+    return { balances: balances.map((b) => ({ profileId: b.profileId, balance: b.balance })) }
   })
 
   // ─── Catalog (M4/4) ──────────────────────────────────────────────────────────

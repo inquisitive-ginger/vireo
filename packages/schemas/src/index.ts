@@ -305,10 +305,23 @@ export const RedemptionDecideSchema = z.object({
   note: OptionalText,
 })
 
+/** A parent's bonus (M4/7): "give N P-Bucks, reason: …". The reason is the point —
+    it becomes the ledger row and the kid's notification verbatim — so it is
+    required. `grantId` is a client-minted UUID riding the ledger's
+    `(sourceType, sourceId)` claim, so a double-tapped submit replays instead of
+    paying twice. */
+export const GrantCreateSchema = z.object({
+  profileId: UuidSchema,
+  amount: z.number().int().min(1, 'Give at least 1').max(1000),
+  reason: z.string().trim().min(1, 'Say what it was for').max(120),
+  grantId: UuidSchema,
+})
+
 export type RewardCreateInput = z.infer<typeof RewardCreateSchema>
 export type RewardUpdateInput = z.infer<typeof RewardUpdateSchema>
 export type RedemptionCreateInput = z.infer<typeof RedemptionCreateSchema>
 export type RedemptionDecideInput = z.infer<typeof RedemptionDecideSchema>
+export type GrantCreateInput = z.infer<typeof GrantCreateSchema>
 
 // ─── Rewards: punch cards (M4/6, ADR 049 · choice rework 2026-07-31) ──────────
 
