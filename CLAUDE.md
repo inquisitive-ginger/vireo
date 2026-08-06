@@ -16,13 +16,14 @@ before it reads anything else, and it is size-capped — see
 > session's detail doesn't fit on one line it belongs in the session log.
 
 - **Milestone:** M4 — Rewards & Wallet, in flight; P-Bucks live since 2026-07-26,
-  punch cards live 2026-08-01 (PR #98). M4/7 + M4/9 remain. `docs/roadmap.md` rules.
+  punch cards live 2026-08-01 (PR #98). Only M4/9 remains. `docs/roadmap.md` rules.
 - **Active stories:** none in flight; **beacon track queued** — LuvLinks cover the
   goodbye, custom build due at the friends' December visit. `product-design-beacon.md`.
 - **Deployment:** 🟢 live at `https://vireohome.app` on the Pi; merge to `main`
   auto-deploys; off-LAN via Tailscale. Runbook: `docs/deployment.md`.
-- **Last session:** 2026-08-05 — dev, chore done timestamps (ad-hoc, merged direct:
-  `doneLabel` on all three done surfaces). `logs/2026-08-05-dev-chore-done-times.md`.
+- **Last session:** 2026-08-05 — design+dev, parent bonus grant (M4/7, PR #101:
+  Tickets → Wallets tab, per-kid balances, give-a-bonus modal).
+  `logs/2026-08-05-design-dev-parent-bonus-grant.md`.
 - **What's next and everything outstanding:** `docs/sessions/queue.md` — the one
   index. Cheapest high-value item: Deployment Part F, offsite backups.
 - **Owed in-app:** nothing — every bug report through #94 is `deployed`. A fix

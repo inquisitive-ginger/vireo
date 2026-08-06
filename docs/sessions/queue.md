@@ -39,12 +39,6 @@ signature colors as the ritual. The custom build — 4 paired Pi Zero 2 W beacon
 gifted and paired in person at the **December visit**, voice as the headline
 upgrade. _Log: `logs/2026-07-29-product-beacon-concept.md`._
 
-### M4/7 — Dev: Parent Bonus Grant
-
-**Type:** development · **Kickoff:** _to be written_
-Tier-4 "give N P-Bucks, reason: …". Small, and it is what makes the ledger's `reason` field
-earn its keep. _Depends on: M4/2._
-
 ### M4/9 — Design: XP Sink (the deferred half of M4/8)
 
 **Type:** design · **Kickoff:** _to be written_
@@ -228,6 +222,12 @@ suite mirroring chores/calendar. _Depends on: none._
 ## Recently Completed
 
 > Two-line index; full detail in the linked log.
+
+- **2026-08-05 — Design+Dev: Parent Bonus Grant (M4/7, PR #101).** Gated to the
+  wallet-shelf option: Tickets became **Wallets** (leftmost, landing) — every kid
+  seeded with balance + "Give a bonus"; the grant is its ledger entry (`grantId`
+  idempotency), reason verbatim to the kid's alert and history row. **Only M4/9
+  remains in M4.** See `logs/2026-08-05-design-dev-parent-bonus-grant.md`.
 
 - **2026-08-02 — Dev: punch cards joy rework (PR #100).** The kid's tab rebuilt to
   the gated artifact — glyph stamp wall with slam, always-visible prize rail, gold
