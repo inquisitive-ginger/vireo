@@ -1,5 +1,5 @@
 import { useMemo, useState } from 'react'
-import { Loader2, Wallet as WalletIcon } from 'lucide-react'
+import { Loader2, RotateCcw, Trash2, Wallet as WalletIcon } from 'lucide-react'
 import {
   Button,
   Coin,
@@ -197,7 +197,42 @@ export function WalletsView() {
                     items={cards}
                     label="More cards"
                     render={(c) => (
-                      <ItemCard key={c.id} spine={spine} align="center">
+                      <ItemCard
+                        key={c.id}
+                        spine={spine}
+                        align="center"
+                        // A finished card is settled — no eraser, no take-down; the
+                        // kid's prize pick is the only move left on it. Icon-only
+                        // (RowActions' recipe) so the row never has to squeeze its
+                        // title to make room for a button's text (auto-bug #103).
+                        trailing={
+                          !c.completedAt && (
+                            <div className="flex flex-none items-center gap-0.5">
+                              <Button
+                                variant="ghost"
+                                size="icon"
+                                disabled={c.count === 0 || undoPunch.isPending}
+                                onClick={() => undoPunch.mutate(c.id)}
+                                aria-label={`Undo the last punch on ${name}'s ${c.template.name} card`}
+                                title="Undo last punch"
+                                className="h-11 w-11"
+                              >
+                                <RotateCcw className="size-3.5" aria-hidden />
+                              </Button>
+                              <Button
+                                variant="ghost-destructive"
+                                size="icon"
+                                onClick={() => setRemoving(c)}
+                                aria-label={`Take ${name}'s ${c.template.name} card down`}
+                                title="Take it down"
+                                className="h-11 w-11"
+                              >
+                                <Trash2 className="size-3.5" aria-hidden />
+                              </Button>
+                            </div>
+                          )
+                        }
+                      >
                         <span
                           className="grid size-9 flex-none place-items-center rounded-lg bg-secondary text-xl"
                           aria-hidden
@@ -212,29 +247,6 @@ export function WalletsView() {
                               : `${c.count} of ${c.template.goal} punched`}
                           </span>
                         </div>
-                        {/* A finished card is settled — no eraser, no take-down; the
-                            kid's prize pick is the only move left on it. */}
-                        {!c.completedAt && (
-                          <div className="flex flex-none items-center gap-1">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              disabled={c.count === 0 || undoPunch.isPending}
-                              onClick={() => undoPunch.mutate(c.id)}
-                              aria-label={`Undo the last punch on ${name}'s ${c.template.name} card`}
-                            >
-                              Undo last punch
-                            </Button>
-                            <Button
-                              variant="ghost-destructive"
-                              size="sm"
-                              onClick={() => setRemoving(c)}
-                              aria-label={`Take ${name}'s ${c.template.name} card down`}
-                            >
-                              Take it down
-                            </Button>
-                          </div>
-                        )}
                       </ItemCard>
                     )}
                   />
