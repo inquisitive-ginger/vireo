@@ -1036,6 +1036,33 @@ describe('chore routines', () => {
     expect(tasks).toHaveLength(1)
     expect(tasks[0].status).toBe('completed')
   })
+
+  it('an up-for-grabs days routine releases a stale claim when it rolls to the next occurrence (auto-bug #102)', async () => {
+    const parent = await getCookieForProfile(PARENT_ID)
+    const kid = await getCookieForProfile(KID_ID)
+    await createRoutine(parent, {
+      title: 'Take out the trash',
+      assigneeId: null,
+      kind: 'days',
+      repeatDays: [4], // Thursdays
+    })
+
+    let tasks = await getTasks(kid, THU)
+    expect(tasks[0].assigneeId).toBeNull()
+
+    const claim = await app.inject({
+      method: 'PATCH',
+      url: `/api/chores/tasks/${tasks[0].id}/claim`,
+      headers: { cookie: kid },
+    })
+    expect(claim.statusCode).toBe(200)
+
+    // Next Thursday, having never completed last week's: back up for grabs,
+    // not still Kid's.
+    tasks = await getTasks(kid, NEXT_THU)
+    expect(tasks[0].dueDate).toBe(NEXT_THU)
+    expect(tasks[0].assigneeId).toBeNull()
+  })
 })
 
 describe('up for grabs', () => {

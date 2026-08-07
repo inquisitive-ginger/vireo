@@ -114,7 +114,11 @@ const isUniqueViolation = (err: unknown): boolean =>
  *   scheduled day, which may be in the future ("Due Mon" is visible ahead).
  * - An open row that fell behind rolls forward: a missed scheduled day stays
  *   overdue only until the next occurrence arrives, then re-dates to it — this
- *   week's trash, not last week's debt. An ongoing row just tracks today.
+ *   week's trash, not last week's debt. An ongoing row just tracks today. A roll
+ *   re-stamps assigneeId from the routine too: rolling is moving to a new
+ *   occurrence, and a claim belongs to the occurrence it was made on, not to
+ *   every occurrence after it (auto-bug #102) — for a fixed-assignee routine
+ *   this is a no-op, since the row already carries that assignee.
  *
  * Concurrent reads race benignly: the loser of a spawn race hits the unique index
  * and is a no-op. A roll can hit it too — a reopened previous-day row behind a
@@ -142,7 +146,7 @@ async function reconcileRoutines(todayKey: string): Promise<void> {
         try {
           await chorePrisma.task.update({
             where: { id: open.id },
-            data: { dueDate: new Date(target) },
+            data: { dueDate: new Date(target), assigneeId: routine.assigneeId },
           })
         } catch (err) {
           if (!isUniqueViolation(err)) throw err
