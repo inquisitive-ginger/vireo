@@ -15,15 +15,15 @@ before it reads anything else, and it is size-capped — see
 > **At most six one-line bullets.** Update at the end of every session. If a
 > session's detail doesn't fit on one line it belongs in the session log.
 
-- **Milestone:** M4 — Rewards & Wallet, in flight; P-Bucks live since 2026-07-26,
-  punch cards live 2026-08-01 (PR #98). Only M4/9 remains. `docs/roadmap.md` rules.
-- **Active stories:** none in flight; **beacon track queued** — LuvLinks cover the
-  goodbye, custom build due at the friends' December visit. `product-design-beacon.md`.
+- **Milestone:** M4 feature work done; **M4.5 — Companion opened 2026-08-07**
+  (XP sink, ADR 061/062) — five sessions queued. `docs/roadmap.md` rules.
+- **Active stories:** none in flight; M4.5/1 (style bible) is next; **beacon
+  track queued** — custom build due at the December visit. `product-design-beacon.md`.
 - **Deployment:** 🟢 live at `https://vireohome.app` on the Pi; merge to `main`
   auto-deploys; off-LAN via Tailscale. Runbook: `docs/deployment.md`.
-- **Last session:** 2026-08-06 — fix, auto-bug #102 (up-for-grabs claim stuck
-  on roll-forward) + #103 (punch-card row squeezed on mobile), PR #104.
-  `logs/2026-08-06-fix-auto-bug-102-103.md`.
+- **Last session:** 2026-08-07 — design, XP sink direction → M4.5 Companion
+  (critter roster kid-tested, generated-art pipeline).
+  `logs/2026-08-07-design-xp-sink-direction.md`.
 - **What's next and everything outstanding:** `docs/sessions/queue.md` — the one
   index. Cheapest high-value item: Deployment Part F, offsite backups.
 - **Owed in-app:** every report through #94 was `deployed`; reports `35a65002`

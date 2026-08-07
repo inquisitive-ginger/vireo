@@ -26,6 +26,10 @@ the economy is priced at ~10 P-Bucks/week), and **M4/2 Ledger + Balance is next*
 to spend it on since June; M4 closes that loop. M5 depends on M4 only for try bites — its dinner and grocery stories can start
 independently.
 
+**M4/9 became M4.5 — Companion** (2026-08-07): the XP-sink story outgrew a single
+session at its direction gate. M4's remaining feature work is done; the sink ships
+as its own five-session milestone. See `docs/modules/companion/spec.md`.
+
 ## Completed
 
 **M0 — Foundation** · ✅ Done (2026-06-01)
@@ -109,6 +113,27 @@ are M8. The wallet is built so cashout is another **sink**, not a second balance
 on something they chose.
 
 _Spec: `docs/modules/rewards/spec.md`_
+
+---
+
+### M4.5 — Companion
+
+> Grew out of M4/9 (the XP sink ADR 056 deferred) at the 2026-08-07 direction
+> session — milestone-scale, numbered fractionally so M5–M9 keep their numbers.
+
+The XP sink: a per-kid critter hatched once, grown by XP earned since hatch,
+dressed by 1-of-3 picks at milestones. **P$ buys things; XP grows something**
+(**ADR 061**). Art is a build-time generated, human-curated library — duotone-
+mapped to the kid's identity hue at runtime, no generation API in the kid loop
+(**ADR 062**).
+
+Five sessions, sequenced: style bible + duotone proof → gear taxonomy + asset
+library → feature UX → dev foundation → dev surfaces.
+
+**Done when:** A kid hatches a critter, hits a milestone, picks one of three
+items, and a sibling notices it on the family flock strip.
+
+_Overview + session plan: `docs/modules/companion/spec.md`_
 
 ---
 

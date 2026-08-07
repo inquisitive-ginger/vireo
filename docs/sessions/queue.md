@@ -39,16 +39,26 @@ signature colors as the ritual. The custom build — 4 paired Pi Zero 2 W beacon
 gifted and paired in person at the **December visit**, voice as the headline
 upgrade. _Log: `logs/2026-07-29-product-beacon-concept.md`._
 
-### M4/9 — Design: XP Sink (the deferred half of M4/8)
+### M4.5 — Companion: five sessions, strictly sequenced
 
-**Type:** design · **Kickoff:** _to be written_
-Give XP a sink — a cosmetic ladder unlocked at XP thresholds (unlock, never deduct,
-so up-only holds; never microtransactions — neither P-Bucks nor real money buys gear).
-Deliberately split out of M4/8 (ADR 056): gear on an avatar collides with **ADR 042**
-(a photo is a face, not a token), and XP lives in `chores` while cosmetics would live
-on the profile — the ownership/validation boundary needs an answer before any render.
-_Reads: ADR 042, 051, 056; `ScorePlate`, `chores.xp_balances`._ _Depends on: nothing —
-the launch does not need it._
+**Direction settled 2026-08-07** (ADR 061/062, artifact
+`artifacts/2026-08-07-xp-sink-direction.html`, log
+`logs/2026-08-07-design-xp-sink-direction.md`). Session plan + sequencing:
+`docs/modules/companion/spec.md`. Run in order:
+
+1. **M4.5/1 — Design: Style Bible + duotone proof** ·
+   `kickoffs/design-companion-style-bible.md`
+2. **M4.5/2 — Design: Gear taxonomy + asset library** ·
+   `kickoffs/design-companion-gear-assets.md` · _depends on /1_
+3. **M4.5/3 — Design: Feature UX** · `kickoffs/design-companion-ux.md` ·
+   _depends on /2_
+4. **M4.5/4 — Dev: Foundation** · `kickoffs/dev-companion-foundation.md` ·
+   _depends on /3 (or /1 if wall-clock demands — see spec)_
+5. **M4.5/5 — Dev: Surfaces (the launch PR)** ·
+   `kickoffs/dev-companion-surfaces.md` · _depends on /4_
+
+One pre-launch family task: **name the feature at the dinner table** (ADR 061 —
+"critter" is the working register).
 
 ---
 
@@ -222,6 +232,11 @@ suite mirroring chores/calendar. _Depends on: none._
 ## Recently Completed
 
 > Two-line index; full detail in the linked log.
+
+- **2026-08-07 — Design: XP Sink direction (was M4/9 → now M4.5 Companion, ADR
+  061/062).** XP's sink is a per-kid critter (Whisp/Skitter/Sprout, kid-tested),
+  milestone 1-of-3 picks, generated-art pipeline; five sessions queued. See
+  `logs/2026-08-07-design-xp-sink-direction.md`.
 
 - **2026-08-06 — Fix: recurring up-for-grabs chores stuck to the last claimer,
   punch-card row squeezed on mobile (auto-bug #102 + #103, PR #104).** A
