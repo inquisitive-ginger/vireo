@@ -22,7 +22,7 @@ before it reads anything else, and it is size-capped — see
 - **Deployment:** 🟢 live at `https://vireohome.app` on the Pi; merge to `main`
   auto-deploys; off-LAN via Tailscale. Runbook: `docs/deployment.md`.
 - **Last session:** 2026-08-07 — design, M4.5/1 style bible (Wisp respelled;
-  Gemini pipeline scripts in `docs/modules/companion/pipeline/`).
+  Gemini pipeline scripts in `scripts/companion-art/`).
   `logs/2026-08-07-design-companion-style-bible.md`.
 - **What's next and everything outstanding:** `docs/sessions/queue.md` — the one
   index. Cheapest high-value item: Deployment Part F, offsite backups.

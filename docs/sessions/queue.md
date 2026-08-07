@@ -51,8 +51,8 @@ upgrade. _Log: `logs/2026-07-29-product-beacon-concept.md`._
    `logs/2026-08-07-design-companion-style-bible.md`._
 2. **M4.5/2 — Design: Gear taxonomy + asset library** ·
    `kickoffs/design-companion-gear-assets.md` · _depends on /1 — ready._
-   Pipeline scripts + conditioning masters in `docs/modules/companion/`
-   (`pipeline/`, `reference/generated/`); Gemini API billing is enabled.
+   Pipeline scripts in `scripts/companion-art/`, conditioning masters in
+   `docs/modules/companion/reference/generated/`; Gemini API billing is enabled.
 3. **M4.5/3 — Design: Feature UX** · `kickoffs/design-companion-ux.md` ·
    _depends on /2_
 4. **M4.5/4 — Dev: Foundation** · `kickoffs/dev-companion-foundation.md` ·

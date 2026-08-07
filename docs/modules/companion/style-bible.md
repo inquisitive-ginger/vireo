@@ -131,8 +131,8 @@ the matte step chroma-keys the background, snaps grays toward the band
 contract, and **flood-peels any die-cut sticker border** (near-white reachable
 from the transparent outside; interior paper is sealed behind the outline —
 negatives alone did not stop the border in either session round). Scripts:
-`pipeline/gen.py` (Gemini API, `GEMINI_API_KEY`, model `gemini-3-pro-image`) ·
-`pipeline/matte.py`. Every batch conditions on the signed-off raw masters
+`scripts/companion-art/gen.py` (Gemini API, `GEMINI_API_KEY`, model `gemini-3-pro-image`) ·
+`scripts/companion-art/matte.py`. Every batch conditions on the signed-off raw masters
 (image reference + this scaffold); prompt-only generation was for this
 session's candidate rounds only.
 

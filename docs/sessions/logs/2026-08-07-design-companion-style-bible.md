@@ -23,7 +23,7 @@
    @2x under `plugins/companion/public/`.
 5. **Generation:** Gemini API, `gemini-3-pro-image` (user's pick; API billing
    enabled this session — the key is free-tier-zero for image models without
-   it). Scripts committed to `docs/modules/companion/pipeline/`.
+   it). Scripts committed to `scripts/companion-art/` (moved there post-session from `docs/modules/companion/pipeline/`).
 
 ## Iteration findings worth keeping
 
@@ -39,7 +39,7 @@
 ## Outputs
 
 - `docs/modules/companion/style-bible.md` (settled) · `reference/` sheets ·
-  `pipeline/{gen,matte}.py` · proof artifact
+  `scripts/companion-art/{gen,matte}.py` · proof artifact
   `docs/sessions/artifacts/2026-08-07-duotone-proof.html` (drop-zone re-runs
   everything on any future sample; band-stop sliders for recalibration).
 
