@@ -223,6 +223,13 @@ suite mirroring chores/calendar. _Depends on: none._
 
 > Two-line index; full detail in the linked log.
 
+- **2026-08-06 — Fix: recurring up-for-grabs chores stuck to the last claimer,
+  punch-card row squeezed on mobile (auto-bug #102 + #103, PR #104).** A
+  claimed-but-uncompleted up-for-grabs occurrence kept its assignee across
+  every roll-forward instead of releasing; the Wallets punch-card row's two
+  text buttons never yielded space to the title. See
+  `logs/2026-08-06-fix-auto-bug-102-103.md`.
+
 - **2026-08-05 — Design+Dev: Parent Bonus Grant (M4/7, PR #101).** Gated to the
   wallet-shelf option: Tickets became **Wallets** (leftmost, landing) — every kid
   seeded with balance + "Give a bonus"; the grant is its ledger entry (`grantId`

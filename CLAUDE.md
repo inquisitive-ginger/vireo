@@ -21,14 +21,14 @@ before it reads anything else, and it is size-capped — see
   goodbye, custom build due at the friends' December visit. `product-design-beacon.md`.
 - **Deployment:** 🟢 live at `https://vireohome.app` on the Pi; merge to `main`
   auto-deploys; off-LAN via Tailscale. Runbook: `docs/deployment.md`.
-- **Last session:** 2026-08-05 — design+dev, parent bonus grant (M4/7, PR #101:
-  Tickets → Wallets tab, per-kid balances, give-a-bonus modal).
-  `logs/2026-08-05-design-dev-parent-bonus-grant.md`.
+- **Last session:** 2026-08-06 — fix, auto-bug #102 (up-for-grabs claim stuck
+  on roll-forward) + #103 (punch-card row squeezed on mobile), PR #104.
+  `logs/2026-08-06-fix-auto-bug-102-103.md`.
 - **What's next and everything outstanding:** `docs/sessions/queue.md` — the one
   index. Cheapest high-value item: Deployment Part F, offsite backups.
-- **Owed in-app:** nothing — every bug report through #94 is `deployed`. A fix
-  session is not closed until its report is flipped; that PATCH is the only
-  notification.
+- **Owed in-app:** every report through #94 was `deployed`; reports `35a65002`
+  (#102) and `4225b7ce` (#103) are now fixed and deployed but still need a
+  tier-4 session to `PATCH … deployed` — that's the only notification.
 
 ---
 
