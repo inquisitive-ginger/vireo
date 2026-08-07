@@ -22,7 +22,7 @@ dressed by choices made at milestones.** Direction artifact (v3, kid-tested rost
   (the punch-card prize-pick interaction). Unchosen items may return later. Picks
   never expire.
 - **Species is the kid's choice; color is their identity hue.** Roster (kid-tested
-  2026-08-06): **Whisp** (dreamy floater) · **Skitter** (six-legged monster,
+  2026-08-06): **Wisp** (dreamy floater; spelling fixed in M4.5/1) · **Skitter** (six-legged monster,
   spider-like never creepy) · **Sprout** (leafy seedling). Species sets character;
   **gear carries personality** — worn (head/face/neck) and **props** (drum kit,
   skateboard). The kid names the critter at hatch; species and name are permanent.

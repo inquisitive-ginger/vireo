@@ -46,10 +46,13 @@ upgrade. _Log: `logs/2026-07-29-product-beacon-concept.md`._
 `logs/2026-08-07-design-xp-sink-direction.md`). Session plan + sequencing:
 `docs/modules/companion/spec.md`. Run in order:
 
-1. **M4.5/1 — Design: Style Bible + duotone proof** ·
-   `kickoffs/design-companion-style-bible.md`
+1. ~~M4.5/1 — Style Bible + duotone proof~~ ✅ 2026-08-07 — bible settled,
+   references signed off (A2), canvas-LUT duotone proven. _Log:
+   `logs/2026-08-07-design-companion-style-bible.md`._
 2. **M4.5/2 — Design: Gear taxonomy + asset library** ·
-   `kickoffs/design-companion-gear-assets.md` · _depends on /1_
+   `kickoffs/design-companion-gear-assets.md` · _depends on /1 — ready._
+   Pipeline scripts + conditioning masters in `docs/modules/companion/`
+   (`pipeline/`, `reference/generated/`); Gemini API billing is enabled.
 3. **M4.5/3 — Design: Feature UX** · `kickoffs/design-companion-ux.md` ·
    _depends on /2_
 4. **M4.5/4 — Dev: Foundation** · `kickoffs/dev-companion-foundation.md` ·

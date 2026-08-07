@@ -1,0 +1,448 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Duotone proof — M4.5/1 · companion</title>
+<style>
+  /* Terracotta & Teal chrome, copied from packages/ui/src/styles.css so the
+     art is judged on the real grounds. Identity triplets live in JS (PALETTE)
+     because every cell renders BOTH themes side by side regardless of page theme. */
+  :root {
+    --background: oklch(0.985 0.008 75);
+    --foreground: oklch(0.18 0.04 50);
+    --card: oklch(0.999 0.004 80);
+    --border: oklch(0.88 0.022 75);
+    --muted-foreground: oklch(0.52 0.04 58);
+    --bg-dark: oklch(0.15 0.022 45);
+    --card-dark: oklch(0.21 0.022 47);
+    --border-dark: oklch(0.3 0.022 48);
+    --fg-dark: oklch(0.92 0.012 75);
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body {
+    background: var(--background); color: var(--foreground);
+    font: 14px/1.5 'DM Sans', 'Helvetica Neue', Arial, sans-serif;
+    padding: 24px; max-width: 1180px; margin: 0 auto;
+  }
+  h1 { font-size: 22px; letter-spacing: -0.01em; }
+  h2 { font-size: 15px; margin: 28px 0 4px; }
+  p.note { color: var(--muted-foreground); font-size: 12.5px; max-width: 70ch; }
+  .controls {
+    display: flex; flex-wrap: wrap; gap: 10px 18px; align-items: center;
+    background: var(--card); border: 1px solid var(--border); border-radius: 12px;
+    padding: 10px 14px; margin: 14px 0; position: sticky; top: 8px; z-index: 5;
+    box-shadow: 0 1px 2px oklch(0.35 0.06 50 / 0.06), 0 2px 10px oklch(0.35 0.06 50 / 0.07);
+  }
+  .controls label { font-size: 12px; font-weight: 600; display: flex; gap: 6px; align-items: center; }
+  .controls select, .controls input[type=range] { accent-color: oklch(0.57 0.14 35); }
+  .controls .stop { width: 84px; }
+  .controls .stopval { font-variant-numeric: tabular-nums; color: var(--muted-foreground); font-weight: 400; }
+  .grid { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 10px; }
+  .cell {
+    border-radius: 12px; border: 1px solid var(--border); background: var(--card);
+    padding: 10px; display: flex; flex-direction: column; align-items: center; gap: 6px;
+  }
+  .cell.dark { background: var(--card-dark); border-color: var(--border-dark); }
+  .cell .cap { font-size: 10.5px; font-weight: 600; color: var(--muted-foreground); }
+  .cell.dark .cap { color: oklch(0.56 0.022 60); }
+  .cell .art { display: grid; place-items: center; }
+  .swatchrow { display: flex; gap: 4px; }
+  .swatchrow i { width: 14px; height: 14px; border-radius: 4px; display: block; }
+  table.dE { border-collapse: collapse; font-size: 12px; margin-top: 8px; font-variant-numeric: tabular-nums; }
+  table.dE td, table.dE th { border: 1px solid var(--border); padding: 3px 10px; text-align: right; }
+  table.dE th { background: var(--card); font-weight: 600; }
+  .drop {
+    border: 2px dashed var(--border); border-radius: 12px; padding: 18px; text-align: center;
+    color: var(--muted-foreground); margin-top: 10px; font-size: 13px;
+  }
+  .drop.armed { border-color: oklch(0.57 0.14 35); color: oklch(0.57 0.14 35); }
+  .pill { font-size: 11px; background: var(--card); border: 1px solid var(--border);
+    border-radius: 999px; padding: 2px 10px; }
+  .verdict { font-size: 12.5px; margin-top: 6px; }
+</style>
+</head>
+<body>
+<h1>Duotone proof — grayscale → identity triplet</h1>
+<p class="note">
+  M4.5/1 spike for ADR 062. Bodies arrive as neutral-grayscale rasters holding four tonal
+  bands — <b>paper</b> (white accents) · <b>fill</b> · <b>line</b> (outline + markings) ·
+  <b>feature</b> (eyes, mouth) — and the runtime maps them onto the owner's identity
+  <i>tint / base / ink</i> triplet. Three candidate mechanisms race below on the same
+  source. The stand-in sprites reuse the direction artifact's exact geometry, painted in
+  the band grays; drop real generated PNGs at the bottom to re-run everything on them.
+</p>
+
+<div class="controls">
+  <label>Species
+    <select id="species"><option>wisp</option><option selected>skitter</option><option>sprout</option></select>
+  </label>
+  <label>Stage <select id="stage"><option>1</option><option selected>2</option><option>3</option></select></label>
+  <label>Mood <select id="mood"><option selected>perky</option><option>sleepy</option></select></label>
+  <label>Hue (race section)
+    <select id="hue"></select>
+  </label>
+  <label>fill <input type="range" class="stop" id="gFill" min="0.6" max="0.95" step="0.01" value="0.80" /><span class="stopval" id="gFillV"></span></label>
+  <label>line <input type="range" class="stop" id="gLine" min="0.3" max="0.75" step="0.01" value="0.55" /><span class="stopval" id="gLineV"></span></label>
+  <label>feature <input type="range" class="stop" id="gFeat" min="0.02" max="0.3" step="0.01" value="0.12" /><span class="stopval" id="gFeatV"></span></label>
+  <span class="pill" id="srcPill">source: synthetic stand-in</span>
+</div>
+
+<h2>1 · The mechanism race — one hue, three sizes, light and dark</h2>
+<p class="note">
+  Canvas LUT interpolates between band targets in OKLCh (hue held to the owner's).
+  The SVG filter is <code>feColorMatrix(saturate 0)</code> →
+  <code>feComponentTransfer type="table"</code> (33 samples of the same LUT,
+  <code>color-interpolation-filters="sRGB"</code>). CSS is the classic blend/mask duotone —
+  it has no third stop, and in dark theme it can only darken, while the dark triplet needs
+  line and feature to come out <i>lighter</i> than the fill. Expect it to lose there.
+</p>
+<div class="grid" id="race"></div>
+<div class="verdict" id="agree"></div>
+
+<h2>2 · All eight hues — canvas LUT at 104px, both themes</h2>
+<p class="note">The widget/flock size. Every hue must stay tellable-apart and charming on both grounds.</p>
+<div class="grid" id="allhues"></div>
+
+<h2>3 · Real generated samples</h2>
+<div class="drop" id="drop">drop a grayscale PNG/WebP here (or click) — every grid above re-renders on it · <u id="resetSrc" style="cursor:pointer">reset to synthetic</u></div>
+<input type="file" id="file" accept="image/*" hidden />
+
+<h2>Numbers</h2>
+<p class="note">Per-band LUT output vs token target (should be ~0 by construction) and canvas-vs-SVG-filter
+   pixel agreement for the selected hue — the faithfulness cost of the 33-entry table.</p>
+<table class="dE" id="numbers"></table>
+
+<script>
+/* ---------- color math: oklch → sRGB and back (assets are judged in ΔEok) ---------- */
+function oklchParse(s) {
+  const m = s.match(/oklch\(\s*([\d.]+)\s+([\d.]+)\s+([\d.]+)/);
+  return { L: +m[1], C: +m[2], H: +m[3] };
+}
+function oklchToOklab({ L, C, H }) {
+  const h = (H * Math.PI) / 180;
+  return { L, a: C * Math.cos(h), b: C * Math.sin(h) };
+}
+function oklabToSrgb({ L, a, b }) {
+  const l_ = L + 0.3963377774 * a + 0.2158037573 * b;
+  const m_ = L - 0.1055613458 * a - 0.0638541728 * b;
+  const s_ = L - 0.0894841775 * a - 1.291485548 * b;
+  const l = l_ ** 3, m = m_ ** 3, s = s_ ** 3;
+  let r = 4.0767416621 * l - 3.3077115913 * m + 0.2309699292 * s;
+  let g = -1.2684380046 * l + 2.6097574011 * m - 0.3413193965 * s;
+  let bl = -0.0041960863 * l - 0.7034186147 * m + 1.707614701 * s;
+  const gam = (c) => {
+    c = Math.min(1, Math.max(0, c));
+    return c <= 0.0031308 ? 12.92 * c : 1.055 * c ** (1 / 2.4) - 0.055;
+  };
+  return [gam(r), gam(g), gam(bl)];
+}
+function srgbToOklab(r, g, b) {
+  const lin = (c) => (c <= 0.04045 ? c / 12.92 : ((c + 0.055) / 1.055) ** 2.4);
+  r = lin(r); g = lin(g); b = lin(b);
+  const l = Math.cbrt(0.4122214708 * r + 0.5363325363 * g + 0.0514459929 * b);
+  const m = Math.cbrt(0.2119034982 * r + 0.6806995451 * g + 0.1073969566 * b);
+  const s = Math.cbrt(0.0883024619 * r + 0.2817188376 * g + 0.6299787005 * b);
+  return {
+    L: 0.2104542553 * l + 0.793617785 * m - 0.0040720468 * s,
+    a: 1.9779984951 * l - 2.428592205 * m + 0.4505937099 * s,
+    b: 0.0259040371 * l + 0.7827717662 * m - 0.808675766 * s,
+  };
+}
+const dEok = (x, y) => Math.hypot(x.L - y.L, x.a - y.a, x.b - y.b);
+
+/* ---------- the eight triplets, light + dark, verbatim from styles.css ---------- */
+const PALETTE = {
+  terracotta: { light: ['oklch(0.6 0.13 35)', 'oklch(0.806 0.092 35)', 'oklch(0.36 0.09 35)'], dark: ['oklch(0.7 0.13 35)', 'oklch(0.353 0.081 35)', 'oklch(0.9 0.049 35)'] },
+  marigold: { light: ['oklch(0.71 0.12 78)', 'oklch(0.877 0.085 78)', 'oklch(0.36 0.084 78)'], dark: ['oklch(0.78 0.12 78)', 'oklch(0.408 0.079 78)', 'oklch(0.9 0.046 78)'] },
+  moss: { light: ['oklch(0.65 0.12 117)', 'oklch(0.838 0.085 117)', 'oklch(0.36 0.084 117)'], dark: ['oklch(0.73 0.12 117)', 'oklch(0.374 0.079 117)', 'oklch(0.9 0.046 117)'] },
+  sage: { light: ['oklch(0.6 0.1 148)', 'oklch(0.806 0.07 148)', 'oklch(0.36 0.07 148)'], dark: ['oklch(0.7 0.1 148)', 'oklch(0.353 0.066 148)', 'oklch(0.9 0.038 148)'] },
+  teal: { light: ['oklch(0.55 0.09 188)', 'oklch(0.773 0.063 188)', 'oklch(0.36 0.063 188)'], dark: ['oklch(0.66 0.09 188)', 'oklch(0.325 0.059 188)', 'oklch(0.9 0.034 188)'] },
+  sky: { light: ['oklch(0.58 0.09 235)', 'oklch(0.793 0.063 235)', 'oklch(0.36 0.063 235)'], dark: ['oklch(0.68 0.09 235)', 'oklch(0.339 0.059 235)', 'oklch(0.9 0.034 235)'] },
+  indigo: { light: ['oklch(0.6 0.13 268)', 'oklch(0.806 0.092 268)', 'oklch(0.36 0.09 268)'], dark: ['oklch(0.7 0.13 268)', 'oklch(0.353 0.081 268)', 'oklch(0.9 0.049 268)'] },
+  plum: { light: ['oklch(0.56 0.1 330)', 'oklch(0.78 0.07 330)', 'oklch(0.36 0.07 330)'], dark: ['oklch(0.66 0.1 330)', 'oklch(0.325 0.066 330)', 'oklch(0.9 0.038 330)'] },
+};
+/* paper: what the white band maps to. Not pure #fff on dark — sclera glare. */
+const PAPER = { light: { L: 0.99, C: 0.004 }, dark: { L: 0.97, C: 0.012 } };
+
+/* ---------- LUT: piecewise interpolation in OKLCh between the band stops ---------- */
+function grayStops() {
+  return {
+    paper: 1.0,
+    fill: +document.getElementById('gFill').value,
+    line: +document.getElementById('gLine').value,
+    feat: +document.getElementById('gFeat').value,
+  };
+}
+function buildLut(hueName, theme) {
+  const g = grayStops();
+  const [base, tint, ink] = PALETTE[hueName][theme].map(oklchParse);
+  const H = base.H;
+  const stops = [
+    { g: 0, c: { L: Math.max(0, ink.L + (theme === 'light' ? -0.14 : 0.05)), C: ink.C, H } },
+    { g: g.feat, c: ink },
+    { g: g.line, c: base },
+    { g: g.fill, c: tint },
+    { g: g.paper, c: { L: PAPER[theme].L, C: PAPER[theme].C, H } },
+  ];
+  const lut = new Uint8ClampedArray(256 * 3);
+  for (let i = 0; i < 256; i++) {
+    const x = i / 255;
+    let a = stops[0], b = stops[stops.length - 1];
+    for (let k = 0; k < stops.length - 1; k++)
+      if (x >= stops[k].g && x <= stops[k + 1].g) { a = stops[k]; b = stops[k + 1]; break; }
+    const t = a.g === b.g ? 0 : (x - a.g) / (b.g - a.g);
+    const c = { L: a.c.L + (b.c.L - a.c.L) * t, C: a.c.C + (b.c.C - a.c.C) * t, H };
+    const [r, gr, bl] = oklabToSrgb(oklchToOklab(c));
+    lut[i * 3] = r * 255; lut[i * 3 + 1] = gr * 255; lut[i * 3 + 2] = bl * 255;
+  }
+  return lut;
+}
+
+/* ---------- synthetic stand-in: the direction artifact's geometry in band grays ---------- */
+const gv = (x) => { const v = Math.round(x * 255); return `rgb(${v},${v},${v})`; };
+function spriteSvg(species, mood, stage) {
+  const g = grayStops();
+  const FILL = gv(g.fill), LINE = gv(g.line), FEAT = gv(g.feat), PAP = gv(g.paper);
+  /* cheeks/markings: line gray over fill at low alpha lands between the bands and the
+     LUT blends tint→base — the accent behaviour the bible allows. NO ground shadow in
+     the asset: the renderer owns it (it must stay neutral in both themes). */
+  const eyes = (x1, x2, y) => mood === 'sleepy'
+    ? `<path d="M${x1 - 4},${y} q4,3.5 8,0 M${x2 - 4},${y} q4,3.5 8,0" stroke="${FEAT}" stroke-width="2.4" fill="none" stroke-linecap="round"/>`
+    : `<circle cx="${x1}" cy="${y}" r="4.4" fill="${FEAT}"/><circle cx="${x2}" cy="${y}" r="4.4" fill="${FEAT}"/>` +
+      `<circle cx="${x1 + 1.5}" cy="${y - 1.5}" r="1.4" fill="${PAP}"/><circle cx="${x2 + 1.5}" cy="${y - 1.5}" r="1.4" fill="${PAP}"/>`;
+  const mouth = (cy) => (mood === 'sleepy' ? '' : `<path d="M56,${cy} Q60,${cy + 4} 64,${cy}" stroke="${FEAT}" stroke-width="2" fill="none" stroke-linecap="round"/>`);
+  const cheeks = (x1, x2, y) => `<circle cx="${x1}" cy="${y}" r="3.4" fill="${LINE}" opacity="0.35"/><circle cx="${x2}" cy="${y}" r="3.4" fill="${LINE}" opacity="0.35"/>`;
+  let s = '';
+  if (species === 'wisp') {
+    s += `<path d="M60,28 C58,20 64,15 68,19" stroke="${LINE}" stroke-width="3" fill="none" stroke-linecap="round"/>`;
+    s += `<path d="M60,26 C60,26 53,37 47,47 C39,59 37,69 39,81 C42,94 51,98 60,98 C69,98 78,94 81,81 C83,69 81,59 73,47 C67,37 60,26 60,26 Z" fill="${FILL}" stroke="${LINE}" stroke-width="3"/>`;
+    if (stage >= 2) s += `<ellipse cx="60" cy="80" rx="13" ry="11" fill="${LINE}" opacity="0.14"/>`;
+    s += eyes(51, 69, 72) + cheeks(45, 75, 80) + mouth(81);
+  } else if (species === 'skitter') {
+    s += `<path d="M42,86 C34,90 30,96 29,102 M78,86 C86,90 90,96 91,102" stroke="${LINE}" stroke-width="5" fill="none" stroke-linecap="round"/>`;
+    s += `<path d="M48,92 C43,97 41,101 40,105 M72,92 C77,97 79,101 80,105" stroke="${LINE}" stroke-width="5" fill="none" stroke-linecap="round"/>`;
+    if (stage >= 2) s += `<path d="M55,95 C53,99 52,102 52,105 M65,95 C67,99 68,102 68,105" stroke="${LINE}" stroke-width="5" fill="none" stroke-linecap="round"/>`;
+    s += `<path d="M60,42 C79,42 90,56 90,74 C90,92 77,100 60,100 C43,100 30,92 30,74 C30,56 41,42 60,42 Z" fill="${FILL}" stroke="${LINE}" stroke-width="3"/>`;
+    s += `<path d="M46,45 q3,-6 8,-4 M57,41 q4,-5 8,-2 M68,44 q4,-4 7,0" stroke="${LINE}" stroke-width="2.4" fill="none" stroke-linecap="round"/>`;
+    if (stage >= 2) s += `<circle cx="42" cy="59" r="2" fill="${FEAT}"/><circle cx="78" cy="59" r="2" fill="${FEAT}"/>`;
+    s += eyes(50, 70, 68) + cheeks(42, 78, 76);
+    if (mood !== 'sleepy') s += `<path d="M52,78 Q60,85 68,78" stroke="${FEAT}" stroke-width="2" fill="none" stroke-linecap="round"/>`;
+    s += `<rect x="54.5" y="79.5" width="4.5" height="6" rx="1.4" fill="${PAP}" stroke="${FEAT}" stroke-width="1"/>`;
+    s += `<rect x="61" y="79.5" width="4.5" height="6" rx="1.4" fill="${PAP}" stroke="${FEAT}" stroke-width="1"/>`;
+  } else {
+    if (stage >= 2) {
+      s += `<path d="M58,48 C50,32 38,27 31,31 C33,42 44,49 58,49 Z" fill="${LINE}"/>`;
+      s += `<path d="M62,48 C68,36 78,32 84,36 C82,45 73,50 62,49 Z" fill="${LINE}" opacity="0.85"/>`;
+    } else {
+      s += `<path d="M60,47 C56,37 48,34 43,37 C45,44 52,48 60,48 Z" fill="${LINE}"/>`;
+    }
+    s += `<path d="M60,44 C78,44 88,58 88,76 C88,93 76,101 60,101 C44,101 32,93 32,76 C32,58 42,44 60,44 Z" fill="${FILL}" stroke="${LINE}" stroke-width="3"/>`;
+    s += eyes(50, 70, 71) + cheeks(43, 77, 80) + mouth(80);
+  }
+  return `<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 120 120">${s}</svg>`;
+}
+
+/* ---------- source raster: synthetic (rendered @512) or a dropped real sample ---------- */
+let dropped = null; /* {canvas} */
+function rasterize(svg, px) {
+  return new Promise((res) => {
+    const img = new Image();
+    img.onload = () => {
+      const c = document.createElement('canvas');
+      c.width = c.height = px;
+      c.getContext('2d').drawImage(img, 0, 0, px, px);
+      res(c);
+    };
+    img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(svg);
+  });
+}
+async function sourceCanvas() {
+  if (dropped) return dropped;
+  const sp = document.getElementById('species').value;
+  const st = +document.getElementById('stage').value;
+  const mo = document.getElementById('mood').value;
+  return rasterize(spriteSvg(sp, mo, st), 512);
+}
+
+/* ---------- mechanism A: canvas LUT (the snippet the dev session lifts) ---------- */
+function applyLut(src, lut) {
+  const c = document.createElement('canvas');
+  c.width = src.width; c.height = src.height;
+  const ctx = c.getContext('2d');
+  ctx.drawImage(src, 0, 0);
+  const im = ctx.getImageData(0, 0, c.width, c.height);
+  const d = im.data;
+  for (let i = 0; i < d.length; i += 4) {
+    if (d[i + 3] === 0) continue;
+    /* source is neutral gray; any channel is the level */
+    const g = d[i];
+    d[i] = lut[g * 3]; d[i + 1] = lut[g * 3 + 1]; d[i + 2] = lut[g * 3 + 2];
+  }
+  ctx.putImageData(im, 0, 0);
+  return c;
+}
+
+/* ---------- mechanism B: SVG feComponentTransfer (33-entry tables off the same LUT) ---------- */
+function tableValues(lut, ch) {
+  const out = [];
+  for (let k = 0; k < 33; k++) {
+    const i = Math.round((k / 32) * 255);
+    out.push((lut[i * 3 + ch] / 255).toFixed(4));
+  }
+  return out.join(' ');
+}
+let filterSeq = 0;
+function svgFilterCell(dataUri, lut, cssPx) {
+  const id = 'duo' + filterSeq++;
+  return `<svg width="${cssPx}" height="${cssPx}" viewBox="0 0 512 512">
+    <filter id="${id}" color-interpolation-filters="sRGB">
+      <feColorMatrix type="saturate" values="0"/>
+      <feComponentTransfer>
+        <feFuncR type="table" tableValues="${tableValues(lut, 0)}"/>
+        <feFuncG type="table" tableValues="${tableValues(lut, 1)}"/>
+        <feFuncB type="table" tableValues="${tableValues(lut, 2)}"/>
+      </feComponentTransfer>
+    </filter>
+    <image href="${dataUri}" width="512" height="512" filter="url(#${id})"/>
+  </svg>`;
+}
+
+/* ---------- mechanism C: CSS blend + alpha mask (honest best-effort) ---------- */
+function cssBlendCell(dataUri, hueName, theme, cssPx) {
+  const [, tint] = PALETTE[hueName][theme];
+  return `<div style="width:${cssPx}px;height:${cssPx}px;background:${tint};
+    -webkit-mask:url('${dataUri}') center/contain no-repeat;mask:url('${dataUri}') center/contain no-repeat;
+    display:grid;place-items:center;isolation:isolate">
+    <img src="${dataUri}" width="${cssPx}" height="${cssPx}" style="mix-blend-mode:multiply" /></div>`;
+}
+
+/* ---------- the grids ---------- */
+const SIZES = [84, 104, 168];
+const HUES = Object.keys(PALETTE);
+document.getElementById('hue').innerHTML = HUES.map((h) => `<option${h === 'sky' ? ' selected' : ''}>${h}</option>`).join('');
+
+function cell(theme, cap, node, hueName) {
+  const d = document.createElement('div');
+  d.className = 'cell' + (theme === 'dark' ? ' dark' : '');
+  const sw = PALETTE[hueName][theme].map((c) => `<i style="background:${c}"></i>`).join('');
+  d.innerHTML = `<span class="cap">${cap}</span>`;
+  const art = document.createElement('div');
+  art.className = 'art';
+  if (typeof node === 'string') art.innerHTML = node; else art.appendChild(node);
+  d.appendChild(art);
+  d.insertAdjacentHTML('beforeend', `<span class="swatchrow">${sw}</span>`);
+  return d;
+}
+
+async function render() {
+  const g = grayStops();
+  for (const [id, v] of [['gFillV', g.fill], ['gLineV', g.line], ['gFeatV', g.feat]])
+    document.getElementById(id).textContent = v.toFixed(2);
+  document.getElementById('srcPill').textContent = dropped ? 'source: dropped sample' : 'source: synthetic stand-in';
+
+  const src = await sourceCanvas();
+  const dataUri = src.toDataURL('image/png');
+  const hueName = document.getElementById('hue').value;
+
+  const race = document.getElementById('race');
+  race.replaceChildren();
+  for (const theme of ['light', 'dark']) {
+    const lut = buildLut(hueName, theme);
+    const lutted = applyLut(src, lut);
+    for (const px of SIZES) {
+      const cv = document.createElement('canvas');
+      cv.width = cv.height = px * 2;
+      cv.style.width = cv.style.height = px + 'px';
+      cv.getContext('2d').drawImage(lutted, 0, 0, px * 2, px * 2);
+      race.appendChild(cell(theme, `LUT · ${px} · ${theme}`, cv, hueName));
+    }
+    race.appendChild(cell(theme, `feCT · 168 · ${theme}`, svgFilterCell(dataUri, lut, 168), hueName));
+    race.appendChild(cell(theme, `CSS · 168 · ${theme}`, cssBlendCell(dataUri, hueName, theme, 168), hueName));
+  }
+
+  const all = document.getElementById('allhues');
+  all.replaceChildren();
+  for (const theme of ['light', 'dark'])
+    for (const h of HUES) {
+      const lutted = applyLut(src, buildLut(h, theme));
+      const cv = document.createElement('canvas');
+      cv.width = cv.height = 208;
+      cv.style.width = cv.style.height = '104px';
+      cv.getContext('2d').drawImage(lutted, 0, 0, 208, 208);
+      all.appendChild(cell(theme, `${h} · ${theme}`, cv, h));
+    }
+
+  numbers(src, dataUri, hueName);
+}
+
+/* ---------- numeric checks ---------- */
+async function numbers(src, dataUri, hueName) {
+  const tbl = document.getElementById('numbers');
+  const g = grayStops();
+  let rows = `<tr><th></th><th>band</th><th>gray in</th><th>target</th><th>ΔEok (LUT)</th></tr>`;
+  for (const theme of ['light', 'dark']) {
+    const lut = buildLut(hueName, theme);
+    const [base, tint, ink] = PALETTE[hueName][theme];
+    const bands = [
+      ['fill', g.fill, tint], ['line', g.line, base], ['feat', g.feat, ink],
+    ];
+    for (const [name, gray, target] of bands) {
+      const i = Math.round(gray * 255);
+      const got = srgbToOklab(lut[i * 3] / 255, lut[i * 3 + 1] / 255, lut[i * 3 + 2] / 255);
+      const want = oklchToOklab(oklchParse(target));
+      rows += `<tr><td>${theme}</td><td>${name}</td><td>${gray.toFixed(2)}</td><td>${target}</td><td>${dEok(got, want).toFixed(4)}</td></tr>`;
+    }
+  }
+  tbl.innerHTML = rows;
+
+  /* canvas-vs-SVG-filter agreement, rasterized through the same pipeline */
+  try {
+    const lut = buildLut(hueName, 'light');
+    const svg = svgFilterCell(dataUri, lut, 512).replace('<svg ', '<svg xmlns="http://www.w3.org/2000/svg" ');
+    const fc = await rasterize(svg, 512);
+    const a = applyLut(src, lut).getContext('2d').getImageData(0, 0, 512, 512).data;
+    const b = fc.getContext('2d').getImageData(0, 0, 512, 512).data;
+    let maxE = 0, sum = 0, n = 0;
+    for (let i = 0; i < a.length; i += 4) {
+      if (a[i + 3] < 200 || b[i + 3] < 200) continue;
+      const e = dEok(srgbToOklab(a[i] / 255, a[i + 1] / 255, a[i + 2] / 255), srgbToOklab(b[i] / 255, b[i + 1] / 255, b[i + 2] / 255));
+      maxE = Math.max(maxE, e); sum += e; n++;
+    }
+    document.getElementById('agree').textContent =
+      `canvas LUT vs feComponentTransfer (light, ${n.toLocaleString()} opaque px): mean ΔEok ${(sum / n).toFixed(4)}, max ${maxE.toFixed(4)}`;
+  } catch (e) {
+    document.getElementById('agree').textContent = 'canvas vs SVG-filter pixel diff unavailable here: ' + e.message;
+  }
+}
+
+/* ---------- wiring ---------- */
+for (const id of ['species', 'stage', 'mood', 'hue', 'gFill', 'gLine', 'gFeat'])
+  document.getElementById(id).addEventListener('input', render);
+const drop = document.getElementById('drop');
+const file = document.getElementById('file');
+drop.addEventListener('click', (e) => { if (e.target.id !== 'resetSrc') file.click(); });
+drop.addEventListener('dragover', (e) => { e.preventDefault(); drop.classList.add('armed'); });
+drop.addEventListener('dragleave', () => drop.classList.remove('armed'));
+drop.addEventListener('drop', (e) => {
+  e.preventDefault(); drop.classList.remove('armed');
+  if (e.dataTransfer.files[0]) loadFile(e.dataTransfer.files[0]);
+});
+file.addEventListener('change', () => file.files[0] && loadFile(file.files[0]));
+document.getElementById('resetSrc').addEventListener('click', (e) => { e.stopPropagation(); dropped = null; render(); });
+function loadFile(f) {
+  const img = new Image();
+  img.onload = () => {
+    const c = document.createElement('canvas');
+    c.width = c.height = 512;
+    const ctx = c.getContext('2d');
+    const s = Math.min(512 / img.width, 512 / img.height);
+    ctx.drawImage(img, (512 - img.width * s) / 2, (512 - img.height * s) / 2, img.width * s, img.height * s);
+    dropped = c; render();
+  };
+  img.src = URL.createObjectURL(f);
+}
+render();
+</script>
+</body>
+</html>
