@@ -1,0 +1,260 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>M4.5/2 · Gate 1 — bodies lo-fi + gear catalog</title>
+<style>
+  :root {
+    --paper: #faf9f7; --card: #ffffff; --ink: #2a2723; --muted: #8a847b;
+    --edge: #e7e3dc; --accent: #b0543f;
+  }
+  * { box-sizing: border-box; margin: 0; }
+  body { background: var(--paper); color: var(--ink); font: 15px/1.55 ui-sans-serif, system-ui, sans-serif; padding: 40px 24px 80px; }
+  .wrap { max-width: 1080px; margin: 0 auto; }
+  .eyebrow { font-size: 11px; letter-spacing: .14em; text-transform: uppercase; color: var(--accent); font-weight: 700; margin-bottom: 6px; }
+  h1 { font-size: 26px; margin-bottom: 4px; }
+  h2 { font-size: 19px; margin: 48px 0 4px; }
+  .capline { color: var(--muted); font-size: 13.5px; max-width: 72ch; margin-bottom: 18px; }
+  .grid { display: grid; gap: 10px; }
+  .cells { grid-template-columns: repeat(6, 1fr); }
+  .cell { background: var(--card); border: 1px solid var(--edge); border-radius: 10px; padding: 10px 6px 6px; text-align: center; }
+  .cell .cap { font-size: 10.5px; color: var(--muted); margin-top: 4px; }
+  .rowlabel { font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--muted); margin: 18px 0 8px; }
+  .bands { display: flex; gap: 8px; align-items: center; margin: 10px 0 4px; flex-wrap: wrap; }
+  .band { display: flex; align-items: center; gap: 6px; font-size: 12px; color: var(--muted); }
+  .band i { width: 22px; height: 22px; border-radius: 6px; border: 1px solid var(--edge); display: inline-block; }
+  .sil { display: flex; gap: 18px; align-items: end; background: var(--card); border: 1px solid var(--edge); border-radius: 10px; padding: 14px; }
+  .sil .critter { filter: brightness(0); }
+  table { border-collapse: collapse; width: 100%; font-size: 13.5px; background: var(--card); border: 1px solid var(--edge); border-radius: 10px; overflow: hidden; }
+  th, td { text-align: left; padding: 7px 12px; border-bottom: 1px solid var(--edge); vertical-align: top; }
+  th { font-size: 11px; letter-spacing: .1em; text-transform: uppercase; color: var(--muted); background: #f4f2ee; }
+  tr:last-child td { border-bottom: none; }
+  td code { font: 12px ui-monospace, monospace; color: var(--muted); }
+  .bandtag { font-size: 11px; font-weight: 700; padding: 1px 8px; border-radius: 99px; white-space: nowrap; }
+  .b-early { background: #e8efe6; color: #3d6b3a; }
+  .b-mid { background: #e6ecf4; color: #3a5a86; }
+  .b-late { background: #f3e6ee; color: #7d3a68; }
+  .b-spare { background: #f0eee9; color: #8a847b; }
+  .note { font-size: 13px; color: var(--muted); border-left: 3px solid var(--edge); padding-left: 12px; margin: 14px 0; max-width: 78ch; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <div class="eyebrow">M4.5/2 · Gate 1 of the session</div>
+  <h1>Bodies lo-fi grid + v1 gear catalog</h1>
+  <p class="capline">Parametric SVG stand-ins (lifted from the direction artifact, extended to the bible's full stage table) rendered in the tonal band contract. This gates the <b>stage descriptors</b> before any generation call. Gear items get their own per-item lo-fi later, composited on the real generated bodies.</p>
+
+  <div class="bands">
+    <span class="band"><i style="background:#fff"></i>paper 1.00</span>
+    <span class="band"><i style="background:#cccccc"></i>fill 0.80</span>
+    <span class="band"><i style="background:#adadad"></i>accent ≈0.68</span>
+    <span class="band"><i style="background:#8c8c8c"></i>line 0.55</span>
+    <span class="band"><i style="background:#1f1f1f"></i>feature 0.12</span>
+  </div>
+
+  <h2>Bodies — 3 species × 3 stages × 2 moods</h2>
+  <p class="capline">Stages read as <b>ages</b> — hatchling · kid · teen — not appendage count. Age is carried by size (a <code>stageScale</code> of 0.74 / 0.88 / 1.0 the renderer applies; assets still generate frame-filling), carriage (teen taller and leaner), and expression (innocent → bright → poised); the species markers (curls, legs, leaves) are the garnish. At the draft curve + ~175 XP/wk: stage 1 ≈ hatch→wk 2 · stage 2 ≈ wk 2→8 · stage 3 ≈ wk 8 on. Mood changes only eyes / mouth / sparkle decor. No ground shadow in any asset (renderer draws it). Resting is closed-lid calm, not asleep — no z's.</p>
+  <div id="bodies"></div>
+
+  <h2>Silhouette check — black shapes at 84px</h2>
+  <p class="capline">Species must be tellable-apart as pure silhouettes (flock strip, ADR 044's second channel). Stages 1→3 left to right.</p>
+  <div class="sil" id="silhouettes"></div>
+
+  <h2>Egg + celebration bits</h2>
+  <div class="grid cells" style="grid-template-columns: repeat(6, 1fr);" id="extras"></div>
+
+  <h2>V1 gear catalog — proposal</h2>
+  <p class="capline">18 items · worn (head/face/neck) + props (beside/beneath) · banded to the draft 8-level curve (final curve is M4.5/3's). Every temperament findable: rockstar, skater, cozy, sporty, silly, monster-ish. Unchosen offers return, so bands overlap in practice.</p>
+  <table>
+    <thead><tr><th>id</th><th>Name</th><th>Slot</th><th>Band</th><th>Personality</th><th>Anchor-fit notes</th></tr></thead>
+    <tbody>
+      <tr><td><code>gear-knit-scarf</code></td><td>Knit scarf</td><td>neck</td><td><span class="bandtag b-early">early · Lv1–3</span></td><td>cozy</td><td>spans <code>neckW</code>; tassel hangs right</td></tr>
+      <tr><td><code>gear-ball-cap</code></td><td>Ball cap</td><td>head</td><td><span class="bandtag b-early">early</span></td><td>sporty</td><td>sits on <code>headY</code>, brim forward</td></tr>
+      <tr><td><code>gear-round-specs</code></td><td>Round specs</td><td>face</td><td><span class="bandtag b-early">early</span></td><td>silly / smart</td><td>centers on eye pair; frame must not cross the eye-size read</td></tr>
+      <tr><td><code>gear-daisy-clip</code></td><td>Daisy clip</td><td>head</td><td><span class="bandtag b-early">early</span></td><td>cozy / cute</td><td>offset right of crown; on Wisp it rides the flame curl</td></tr>
+      <tr><td><code>gear-beanie</code></td><td>Beanie</td><td>head</td><td><span class="bandtag b-early">early</span></td><td>skater / cozy</td><td>hugs crown; overhang ≤12 units</td></tr>
+      <tr><td><code>gear-bow-tie</code></td><td>Bow tie</td><td>neck</td><td><span class="bandtag b-early">early</span></td><td>silly / fancy</td><td>centered on <code>neckY</code></td></tr>
+      <tr><td><code>gear-soccer-ball</code></td><td>Soccer ball</td><td>beside</td><td><span class="bandtag b-early">early</span></td><td>sporty</td><td>ground line, side zone</td></tr>
+      <tr><td><code>gear-headphones</code></td><td>Headphones</td><td>head</td><td><span class="bandtag b-mid">mid · Lv4–6</span></td><td>rockstar</td><td>band arcs over crown, cups flank at <code>eyeY−6</code></td></tr>
+      <tr><td><code>gear-bandana</code></td><td>Bandana</td><td>neck</td><td><span class="bandtag b-mid">mid</span></td><td>skater</td><td>triangle fold, knot at side</td></tr>
+      <tr><td><code>gear-star-shades</code></td><td>Star shades</td><td>face</td><td><span class="bandtag b-mid">mid</span></td><td>rockstar</td><td>covers eyes entirely — mood must still read from mouth</td></tr>
+      <tr><td><code>gear-monster-horns</code></td><td>Monster horns</td><td>head</td><td><span class="bandtag b-mid">mid</span></td><td>monster-ish</td><td>pair flanking crown; rounded tips (never creepy)</td></tr>
+      <tr><td><code>gear-skateboard</code></td><td>Skateboard</td><td>beneath</td><td><span class="bandtag b-mid">mid</span></td><td>skater</td><td>under footprint; Wisp: under hover point</td></tr>
+      <tr><td><code>gear-boombox</code></td><td>Boombox</td><td>beside</td><td><span class="bandtag b-mid">mid</span></td><td>rockstar / skater</td><td>ground line, side zone</td></tr>
+      <tr><td><code>gear-drum-kit</code></td><td>Drum kit</td><td>beside</td><td><span class="bandtag b-late">late · Lv7–8</span></td><td>rockstar</td><td>widest prop; owns most of the side zone</td></tr>
+      <tr><td><code>gear-tiny-crown</code></td><td>Tiny crown</td><td>head</td><td><span class="bandtag b-late">late</span></td><td>fancy</td><td>centered; on Wisp it floats at the flame tip</td></tr>
+      <tr><td><code>gear-wizard-hat</code></td><td>Wizard hat</td><td>head</td><td><span class="bandtag b-late">late</span></td><td>silly / magic</td><td>⚠ tall — likely exceeds the 12-unit overhang; needs a fit ruling</td></tr>
+      <tr><td><code>gear-cape</code></td><td>Cape</td><td>neck</td><td><span class="bandtag b-late">late</span></td><td>superhero</td><td>⚠ drapes <i>behind</i> the body — needs a behind-body layer the compositing spec doesn't have yet</td></tr>
+      <tr><td><code>gear-propeller-cap</code></td><td>Propeller cap</td><td>head</td><td><span class="bandtag b-spare">spare band</span></td><td>silly</td><td>held back for the spare band (curve slack, M4.5/3)</td></tr>
+    </tbody>
+  </table>
+  <div class="note">Kid input encouraged before locking (they picked the species roster). Swaps within a band are free; the shape that matters is 7 early / 6 mid / 4 late / 1 spare across five slots with every temperament reachable early.</div>
+</div>
+
+<script>
+(function () {
+  var FILL = '#cccccc', ACCENT = '#adadad', LINE = '#8c8c8c', INK = '#1f1f1f', PAPER = '#ffffff';
+
+  function eyes(cx1, cx2, cy, mood, stage) {
+    if (mood === 'resting') {
+      return '<path d="M' + (cx1 - 4) + ',' + cy + ' Q' + cx1 + ',' + (cy + 3.5) + ' ' + (cx1 + 4) + ',' + cy + '" stroke="' + INK + '" stroke-width="2.4" fill="none" stroke-linecap="round"/>' +
+             '<path d="M' + (cx2 - 4) + ',' + cy + ' Q' + cx2 + ',' + (cy + 3.5) + ' ' + (cx2 + 4) + ',' + cy + '" stroke="' + INK + '" stroke-width="2.4" fill="none" stroke-linecap="round"/>';
+    }
+    // hatchlings get relatively bigger eyes (the stageScale shrinks them back under the 9% cap)
+    var rx = stage === 1 ? 4.4 : 3.6, ry = stage === 1 ? 6 : 5;
+    return '<ellipse cx="' + cx1 + '" cy="' + cy + '" rx="' + rx + '" ry="' + ry + '" fill="' + INK + '"/>' +
+           '<ellipse cx="' + cx2 + '" cy="' + cy + '" rx="' + rx + '" ry="' + ry + '" fill="' + INK + '"/>' +
+           '<circle cx="' + (cx1 + 1.3) + '" cy="' + (cy - 1.8) + '" r="1.3" fill="' + PAPER + '"/>' +
+           '<circle cx="' + (cx2 + 1.3) + '" cy="' + (cy - 1.8) + '" r="1.3" fill="' + PAPER + '"/>';
+  }
+  function mouth(cy, mood, stage) {
+    if (mood === 'resting') return '<path d="M57,' + cy + ' h6" stroke="' + INK + '" stroke-width="2" fill="none" stroke-linecap="round"/>';
+    if (stage === 3) return '<path d="M55,' + cy + ' Q60,' + (cy + 4.5) + ' 65,' + (cy - 1) + '" stroke="' + INK + '" stroke-width="2" fill="none" stroke-linecap="round"/>';
+    return '<path d="M56,' + cy + ' Q60,' + (cy + 4) + ' 64,' + cy + '" stroke="' + INK + '" stroke-width="2" fill="none" stroke-linecap="round"/>';
+  }
+  // age is the primary read: squat round hatchling → kid → taller leaner teen, anchored at the ground
+  function grown(s, stage) {
+    var t = { 1: [0.78, 0.72], 2: [0.88, 0.88], 3: [0.97, 1.04] }[stage];
+    return '<g transform="translate(60 103) scale(' + t[0] + ' ' + t[1] + ') translate(-60 -103)">' + s + '</g>';
+  }
+  function cheeks(cx1, cx2, cy) {
+    return '<circle cx="' + cx1 + '" cy="' + cy + '" r="3.4" fill="' + ACCENT + '"/>' +
+           '<circle cx="' + cx2 + '" cy="' + cy + '" r="3.4" fill="' + ACCENT + '"/>';
+  }
+  function sparkles() {
+    return '<path d="M22,30 l2.2,5 5,2.2 -5,2.2 -2.2,5 -2.2,-5 -5,-2.2 5,-2.2 z" fill="' + LINE + '"/>' +
+           '<path d="M98,52 l1.6,3.6 3.6,1.6 -3.6,1.6 -1.6,3.6 -1.6,-3.6 -3.6,-1.6 3.6,-1.6 z" fill="' + LINE + '" opacity="0.7"/>';
+  }
+
+  function wisp(stage, mood) {
+    var s = '';
+    var curls = {
+      1: 'M60,28 C59,23 62,20 64,22',
+      2: 'M60,28 C58,20 64,15 68,19',
+      3: 'M60,27 C55,15 64,7 70,12'
+    };
+    // trailing wisp-tails at the lower sides: 1 → 2 → 3
+    if (stage >= 1) s += '<path d="M41,80 C33,84 30,90 34,96" stroke="' + LINE + '" stroke-width="3" fill="none" stroke-linecap="round"/>';
+    if (stage >= 2) s += '<path d="M79,80 C87,84 90,90 86,96" stroke="' + LINE + '" stroke-width="3" fill="none" stroke-linecap="round"/>';
+    if (stage >= 3) s += '<path d="M46,92 C40,97 39,103 43,107" stroke="' + LINE + '" stroke-width="3" fill="none" stroke-linecap="round"/>';
+    s += '<path d="' + curls[stage] + '" stroke="' + LINE + '" stroke-width="3" fill="none" stroke-linecap="round"/>';
+    s += '<path d="M60,26 C60,26 53,37 47,47 C39,59 37,69 39,81 C42,94 51,98 60,98 C69,98 78,94 81,81 C83,69 81,59 73,47 C67,37 60,26 60,26 Z" fill="' + FILL + '" stroke="' + LINE + '" stroke-width="3"/>';
+    if (stage >= 2) s += '<ellipse cx="60" cy="80" rx="13" ry="11" fill="' + ACCENT + '"/>';
+    s += eyes(51, 69, 72, mood, stage);
+    s += cheeks(45, 75, 80);
+    s += mouth(81, mood, stage);
+    if (mood === 'perky') s += sparkles();
+    return s;
+  }
+
+  function skitter(stage, mood) {
+    var s = '';
+    var domeT = stage >= 3 ? ' transform="translate(60 72) scale(1.07) translate(-60 -72)"' : '';
+    s += '<path d="M42,86 C34,90 30,96 29,102 M78,86 C86,90 90,96 91,102" stroke="' + LINE + '" stroke-width="5" fill="none" stroke-linecap="round"/>';
+    s += '<path d="M48,92 C43,97 41,101 40,105 M72,92 C77,97 79,101 80,105" stroke="' + LINE + '" stroke-width="5" fill="none" stroke-linecap="round"/>';
+    if (stage >= 2) s += '<path d="M55,95 C53,99 52,102 52,105 M65,95 C67,99 68,102 68,105" stroke="' + LINE + '" stroke-width="5" fill="none" stroke-linecap="round"/>';
+    s += '<g' + domeT + '><path d="M60,42 C79,42 90,56 90,74 C90,92 77,100 60,100 C43,100 30,92 30,74 C30,56 41,42 60,42 Z" fill="' + FILL + '" stroke="' + LINE + '" stroke-width="3"/>' +
+         '<path d="M46,45 q3,-6 8,-4 M57,41 q4,-5 8,-2 M68,44 q4,-4 7,0" stroke="' + LINE + '" stroke-width="2.4" fill="none" stroke-linecap="round"/></g>';
+    if (stage >= 3) s += '<circle cx="45" cy="51" r="2.4" fill="' + ACCENT + '"/><circle cx="60" cy="45" r="2.4" fill="' + ACCENT + '"/><circle cx="75" cy="51" r="2.4" fill="' + ACCENT + '"/>';
+    if (stage >= 2) s += '<circle cx="42" cy="59" r="2" fill="' + INK + '"/><circle cx="78" cy="59" r="2" fill="' + INK + '"/>';
+    s += eyes(50, 70, 68, mood, stage);
+    s += cheeks(42, 78, 76);
+    if (mood !== 'resting') s += '<path d="M52,78 Q60,85 68,78" stroke="' + INK + '" stroke-width="2" fill="none" stroke-linecap="round"/>';
+    s += '<rect x="54.5" y="79.5" width="4.5" height="6" rx="1.4" fill="' + PAPER + '" stroke="' + INK + '" stroke-width="1"/>';
+    s += '<rect x="61" y="79.5" width="4.5" height="6" rx="1.4" fill="' + PAPER + '" stroke="' + INK + '" stroke-width="1"/>';
+    if (mood === 'perky') s += sparkles();
+    return s;
+  }
+
+  function sprout(stage, mood) {
+    var s = '';
+    if (stage === 1) {
+      s += '<path d="M60,47 C56,37 48,34 43,37 C45,44 52,48 60,48 Z" fill="' + LINE + '"/>';
+    } else {
+      s += '<path d="M58,48 C50,32 38,27 31,31 C33,42 44,49 58,49 Z" fill="' + LINE + '"/>';
+      s += '<path d="M62,48 C68,36 78,32 84,36 C82,45 73,50 62,49 Z" fill="' + LINE + '" opacity="0.85"/>';
+    }
+    if (stage >= 3) s += '<path d="M60,46 C59,33 64,27 70,29 C69,38 64,44 60,47 Z" fill="' + LINE + '" opacity="0.7"/>';
+    s += '<path d="M60,44 C78,44 88,58 88,76 C88,93 76,101 60,101 C44,101 32,93 32,76 C32,58 42,44 60,44 Z" fill="' + FILL + '" stroke="' + LINE + '" stroke-width="3"/>';
+    if (stage >= 3) s += '<ellipse cx="60" cy="85" rx="14" ry="10" fill="' + ACCENT + '"/>';
+    s += eyes(50, 70, 71, mood, stage);
+    s += cheeks(43, 77, 80);
+    s += mouth(80, mood, stage);
+    if (mood === 'perky') s += sparkles();
+    return s;
+  }
+
+  function egg(ready) {
+    var s = '';
+    s += '<path d="M60,38 C74,38 84,58 84,74 C84,91 74,100 60,100 C46,100 36,91 36,74 C36,58 46,38 60,38 Z" fill="' + FILL + '" stroke="' + LINE + '" stroke-width="3"/>';
+    s += '<circle cx="52" cy="64" r="2.2" fill="' + ACCENT + '"/><circle cx="66" cy="76" r="2.8" fill="' + ACCENT + '"/><circle cx="58" cy="86" r="1.8" fill="' + ACCENT + '"/>';
+    if (ready) {
+      s += '<path d="M50,58 l6,5 -5,6 7,5" stroke="' + LINE + '" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>';
+      s += '<path d="M70,70 l-4,4 4,4" stroke="' + LINE + '" stroke-width="2.4" fill="none" stroke-linecap="round" stroke-linejoin="round"/>';
+      s += '<path d="M28,42 l2,4.5 4.5,2 -4.5,2 -2,4.5 -2,-4.5 -4.5,-2 4.5,-2 z" fill="' + LINE + '"/>';
+      s += '<path d="M92,56 l1.6,3.6 3.6,1.6 -3.6,1.6 -1.6,3.6 -1.6,-3.6 -3.6,-1.6 3.6,-1.6 z" fill="' + LINE + '" opacity="0.7"/>';
+    }
+    return s;
+  }
+
+  function celebration() {
+    var s = '';
+    s += '<path d="M60,30 l3.5,8 8,3.5 -8,3.5 -3.5,8 -3.5,-8 -8,-3.5 8,-3.5 z" fill="' + LINE + '"/>';
+    s += '<path d="M32,52 l2.2,5 5,2.2 -5,2.2 -2.2,5 -2.2,-5 -5,-2.2 5,-2.2 z" fill="' + LINE + '" opacity="0.8"/>';
+    s += '<path d="M88,48 l1.8,4 4,1.8 -4,1.8 -1.8,4 -1.8,-4 -4,-1.8 4,-1.8 z" fill="' + LINE + '" opacity="0.7"/>';
+    s += '<rect x="40" y="74" width="9" height="4" rx="2" fill="' + FILL + '" stroke="' + LINE + '" stroke-width="1.5" transform="rotate(-24 44 76)"/>';
+    s += '<rect x="66" y="80" width="9" height="4" rx="2" fill="' + ACCENT + '" transform="rotate(18 70 82)"/>';
+    s += '<rect x="54" y="92" width="9" height="4" rx="2" fill="' + FILL + '" stroke="' + LINE + '" stroke-width="1.5" transform="rotate(40 58 94)"/>';
+    s += '<circle cx="30" cy="80" r="2.6" fill="' + ACCENT + '"/><circle cx="90" cy="76" r="2.6" fill="' + ACCENT + '"/><circle cx="76" cy="94" r="2" fill="' + LINE + '"/>';
+    return s;
+  }
+
+  var SPECIES = { wisp: wisp, skitter: skitter, sprout: sprout };
+  var AGE = { 1: 'hatchling', 2: 'kid', 3: 'teen' };
+
+  function svgFor(body, size) {
+    return '<svg width="' + size + '" height="' + size + '" viewBox="0 0 120 120">' + body + '</svg>';
+  }
+
+  var bodiesEl = document.getElementById('bodies');
+  ['wisp', 'skitter', 'sprout'].forEach(function (sp) {
+    var label = document.createElement('div');
+    label.className = 'rowlabel';
+    label.textContent = sp;
+    bodiesEl.appendChild(label);
+    var row = document.createElement('div');
+    row.className = 'grid cells';
+    [1, 2, 3].forEach(function (stage) {
+      ['perky', 'resting'].forEach(function (mood) {
+        var cell = document.createElement('div');
+        cell.className = 'cell';
+        cell.innerHTML = svgFor(grown(SPECIES[sp](stage, mood), stage), 120) +
+          '<div class="cap">s' + stage + ' ' + AGE[stage] + ' · ' + mood + '</div>';
+        row.appendChild(cell);
+      });
+    });
+    bodiesEl.appendChild(row);
+  });
+
+  var silEl = document.getElementById('silhouettes');
+  ['wisp', 'skitter', 'sprout'].forEach(function (sp) {
+    [1, 2, 3].forEach(function (stage) {
+      var d = document.createElement('div');
+      d.className = 'critter';
+      d.innerHTML = svgFor(grown(SPECIES[sp](stage, 'resting'), stage), 84);
+      silEl.appendChild(d);
+    });
+  });
+
+  var extras = document.getElementById('extras');
+  [['egg · idle', egg(false)], ['egg · hatch-ready', egg(true)], ['celebration bits', celebration()]].forEach(function (pair) {
+    var cell = document.createElement('div');
+    cell.className = 'cell';
+    cell.innerHTML = svgFor(pair[1], 120) + '<div class="cap">' + pair[0] + '</div>';
+    extras.appendChild(cell);
+  });
+})();
+</script>
+</body>
+</html>

@@ -49,12 +49,12 @@ upgrade. _Log: `logs/2026-07-29-product-beacon-concept.md`._
 1. ~~M4.5/1 — Style Bible + duotone proof~~ ✅ 2026-08-07 — bible settled,
    references signed off (A2), canvas-LUT duotone proven. _Log:
    `logs/2026-08-07-design-companion-style-bible.md`._
-2. **M4.5/2 — Design: Gear taxonomy + asset library** ·
-   `kickoffs/design-companion-gear-assets.md` · _depends on /1 — ready._
-   Pipeline scripts in `scripts/companion-art/`, conditioning masters in
-   `docs/modules/companion/reference/generated/`; Gemini API billing is enabled.
+2. ~~M4.5/2 — Gear taxonomy + asset library~~ ✅ 2026-08-08 — 20 bodies + 15
+   gear items shipped (4 parked pending renderer extensions: two-layer wraps,
+   dual-placement pairs). _Log: `logs/2026-08-08-design-companion-gear-assets.md`._
 3. **M4.5/3 — Design: Feature UX** · `kickoffs/design-companion-ux.md` ·
-   _depends on /2_
+   _depends on /2 — ready._ Real assets + fits:
+   `docs/modules/companion/assets/` (`bodies/`, `gear/`, `anchors.json`).
 4. **M4.5/4 — Dev: Foundation** · `kickoffs/dev-companion-foundation.md` ·
    _depends on /3 (or /1 if wall-clock demands — see spec)_
 5. **M4.5/5 — Dev: Surfaces (the launch PR)** ·
@@ -235,6 +235,11 @@ suite mirroring chores/calendar. _Depends on: none._
 ## Recently Completed
 
 > Two-line index; full detail in the linked log.
+
+- **2026-08-08 — Design: Companion gear + asset library (M4.5/2).** V1 art
+  complete: 20 curated bodies + 15 gear items with per-species × per-stage fit
+  data; 4 body-conforming items parked pending renderer extensions. See
+  `logs/2026-08-08-design-companion-gear-assets.md`.
 
 - **2026-08-07 — Design: XP Sink direction (was M4/9 → now M4.5 Companion, ADR
   061/062).** XP's sink is a per-kid critter (Whisp/Skitter/Sprout, kid-tested),

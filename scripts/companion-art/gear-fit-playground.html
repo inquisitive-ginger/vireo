@@ -1,0 +1,171 @@
+<!doctype html>
+<html>
+<head>
+<meta charset="utf-8">
+<title>Gear fit playground v2 — species × stage</title>
+<style>
+  body { background: #f4f2ee; font: 14px/1.5 ui-sans-serif, system-ui; color: #2a2723; padding: 24px; }
+  h2 { margin-bottom: 2px; }
+  .cap { color: #6b655f; font-size: 13px; margin-bottom: 12px; max-width: 84ch; }
+  .controls { display: flex; gap: 10px; align-items: center; margin-bottom: 14px; flex-wrap: wrap; }
+  select, button { font: inherit; padding: 4px 10px; border-radius: 8px; border: 1px solid #c9c3b9; background: #fff; cursor: pointer; }
+  table.grid { border-collapse: separate; border-spacing: 10px; }
+  .grid th { font-size: 12px; text-transform: uppercase; letter-spacing: .06em; color: #6b655f; font-weight: 700; }
+  .cell { border: 1px solid #d8d3ca; border-radius: 12px; padding: 8px; text-align: center;
+          background: repeating-conic-gradient(#e6e2db 0% 25%, #fff 0% 50%) 0 0/24px 24px; }
+  body.dark { background: #211e1a; color: #cfc9c0; }
+  body.dark .cell { background: repeating-conic-gradient(#3a362f 0% 25%, #2a2723 0% 50%) 0 0/24px 24px; border-color: #4a453d; }
+  body.dark select, body.dark button, body.dark textarea { background: #2f2b25; color: #cfc9c0; border-color: #4a453d; }
+  .stack { position: relative; width: 297px; height: 210px; touch-action: none; }
+  .stack img { position: absolute; left: 0; top: 0; width: 210px; height: 210px; pointer-events: none; }
+  .stack svg { position: absolute; inset: 0; width: 100%; height: 100%; overflow: visible; cursor: grab; }
+  .stack svg:active { cursor: grabbing; }
+  .num { font: 11px ui-monospace, monospace; color: #6b655f; display: block; margin-top: 4px; }
+  body.dark .num { color: #a49d92; }
+  textarea { width: 720px; height: 110px; font: 12px ui-monospace, monospace; margin-top: 12px; }
+</style>
+</head>
+<body>
+<h2>Gear fit playground v2 — species × stage</h2>
+<p class="cap"><b>Drag</b> to place · <b>Alt/Option + wheel</b> to resize · arrows fine-nudge last-touched cell (shift ×5) · <b>R</b> resets a cell · <b>C</b> copies the cell's fit to the other two stages of its species. Fits are per species × stage and persist. <i>Copy fit JSON</i> when the whole grid looks right.</p>
+<div class="controls">
+  <label>Item <select id="item"></select></label>
+  <label>Mood <select id="mood"><option selected>perky</option><option>resting</option></select></label>
+  <button id="theme">toggle dark</button>
+  <button id="copy">Copy fit JSON</button>
+  <button id="resetAll">Reset item</button>
+</div>
+<table class="grid"><thead><tr><th></th><th>wisp</th><th>skitter</th><th>sprout</th></tr></thead><tbody id="rows"></tbody></table>
+<textarea id="out" readonly></textarea>
+<script>
+const ANCHORS = {
+  wisp:    { headX: 60, headY: 34, eyeY: 72, eyeX1: 51, eyeX2: 69, neckY: 88, neckW: 40 },
+  skitter: { headX: 60, headY: 43, eyeY: 68, eyeX1: 50, eyeX2: 70, neckY: 89, neckW: 50 },
+  sprout:  { headX: 60, headY: 46, eyeY: 71, eyeX1: 50, eyeX2: 70, neckY: 88, neckW: 46 },
+};
+const P = { berry: 'oklch(0.5 0.16 15)', berryInk: 'oklch(0.36 0.14 15)', cream: 'oklch(0.92 0.045 85)' };
+// items: svg mocks draw(a); img items give file(species) — per-species variants supported
+const ITEMS = {
+  'monster-horns': { type: 'img', w: 46, center: a => [a.headX, a.headY - 2], file: sp => `matted/gear-monster-horns-${sp}.png` },
+  'earbuds': { type: 'img', w: 56, center: a => [(a.eyeX1 + a.eyeX2) / 2, a.eyeY], file: sp => `matted/gear-earbuds-${sp}.png` },
+  'tiny-crown': { type: 'img', w: 26, center: a => [a.headX, a.headY - 6], file: () => 'matted/gear-tiny-crown.png' },
+  'daisy-clip': { type: 'img', w: 18, center: a => [a.headX + 15, a.headY + 3], file: () => 'matted/gear-daisy-clip.png' },
+  'round-specs': { type: 'img', w: 38, center: a => [(a.eyeX1 + a.eyeX2) / 2, a.eyeY], file: () => 'matted/gear-round-specs.png' },
+  'star-shades': { type: 'img', w: 40, center: a => [(a.eyeX1 + a.eyeX2) / 2, a.eyeY], file: () => 'matted/gear-star-shades.png' },
+  'bow-tie': { type: 'img', w: 26, center: a => [a.headX, a.neckY + 2], file: () => 'matted/gear-bow-tie.png' },
+  'wizard-hat': { type: 'img', w: 50, center: a => [a.headX, a.headY - 8], file: () => 'matted/gear-wizard-hat.png' },
+  'propeller-cap': { type: 'img', w: 44, center: a => [a.headX, a.headY - 4], file: () => 'matted/gear-propeller-cap.png' },
+  'headphones': { type: 'img', w: 56, center: a => [a.headX, a.eyeY - 12], file: () => 'matted/gear-headphones.png' },
+  'soccer-ball': { type: 'img', w: 26, center: () => [138, 91], file: () => 'matted/gear-soccer-ball.png' },
+  'skateboard': { type: 'img', w: 58, center: () => [60, 101], file: () => 'matted/gear-skateboard.png' },
+  'boombox': { type: 'img', w: 34, center: () => [138, 89], file: () => 'matted/gear-boombox.png' },
+  'drum-kit': { type: 'img', w: 55, center: () => [140, 85], file: () => 'matted/gear-drum-kit.png' },
+  'electric-guitar': { type: 'img', w: 42, center: () => [138, 82], file: () => 'matted/gear-electric-guitar.png' },
+  'bmx-bike': { type: 'img', w: 52, center: () => [138, 88], file: () => 'matted/gear-bmx-bike.png' },
+  'ball-cap ✓': { type: 'img', w: 46, center: a => [a.headX, a.headY], file: () => 'matted/gear-ball-cap.png' },
+};
+const DEFAULTS = {
+  'daisy-clip': { wisp: { dx: 0, dy: 0, k: 1 }, skitter: { dx: 0, dy: 0, k: 1 }, sprout: { dx: 0, dy: 0, k: 1 } },
+  'bow-tie': { wisp: { dx: -10.5, dy: -2.4, k: 1 }, skitter: { dx: 0, dy: -6.6, k: 1 }, sprout: { dx: 0, dy: -3.6, k: 1 } },
+  'headphones': { wisp: { dx: -9.7, dy: -15.8, k: 1 }, skitter: { dx: 0.1, dy: -14.7, k: 1 }, sprout: { dx: -0.4, dy: -8.4, k: 1 } },
+  'skateboard': { wisp: { dx: -7.3, dy: 19.3, k: 1 }, skitter: { dx: -0.3, dy: -1.1, k: 1 }, sprout: { dx: -0.7, dy: 10.6, k: 1 } },
+  'drum-kit': { wisp: { dx: -4.2, dy: -2.1, k: 1 }, skitter: { dx: -2.2, dy: -3.8, k: 1 }, sprout: { dx: -6.6, dy: 4.7, k: 1 } },
+  'ball-cap ✓': { wisp: { dx: -6.1, dy: -7.7, k: 1.12 }, skitter: { dx: 0.8, dy: -17.6, k: 1 }, sprout: { dx: -0.1, dy: -7.8, k: 1 } },
+};
+const SPECIES = ['wisp', 'skitter', 'sprout'], STAGES = [1, 2, 3];
+const $ = id => document.getElementById(id);
+const itemSel = $('item');
+Object.keys(ITEMS).forEach(n => itemSel.add(new Option(n)));
+const key = (i, sp, st) => `gearfit2:${i}:${sp}:${st}`;
+let state = {}, lastCell = null, appliers = {};
+function load(i, sp, st) {
+  try { const v = JSON.parse(localStorage.getItem(key(i, sp, st))); if (v) return v; } catch {}
+  const d = DEFAULTS[i] && DEFAULTS[i][sp];
+  return d ? { ...d } : { dx: 0, dy: 0, k: 1 };
+}
+function render() {
+  const item = itemSel.value, mood = $('mood').value, def = ITEMS[item];
+  const rows = $('rows'); rows.innerHTML = ''; state = {}; appliers = {};
+  STAGES.forEach(st => {
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<th>s${st}</th>`;
+    SPECIES.forEach(sp => {
+      state[sp] = state[sp] || {};
+      state[sp][st] = load(item, sp, st);
+      const a = ANCHORS[sp], [cx, cy] = def.center(a);
+      const td = document.createElement('td');
+      td.innerHTML = `<div class="cell"><div class="stack">
+          <img src="matted/body-${sp}-s${st}-${mood}.png">
+          <svg viewBox="0 0 170 120"><g class="gear"></g></svg>
+        </div><span class="num"></span></div>`;
+      tr.appendChild(td);
+      const gEl = td.querySelector('.gear'), num = td.querySelector('.num');
+      const inner = def.type === 'img'
+        ? `<image href="${def.file(sp)}" x="${cx - def.w / 2}" y="${cy - def.w / 2}" width="${def.w}" height="${def.w}"/>`
+        : def.draw(a);
+      const apply = () => {
+        const s = state[sp][st];
+        gEl.setAttribute('transform', `translate(${s.dx} ${s.dy}) translate(${cx} ${cy}) scale(${s.k}) translate(${-cx} ${-cy})`);
+        gEl.innerHTML = inner;
+        num.textContent = `${sp} s${st} · dx ${s.dx.toFixed(1)} dy ${s.dy.toFixed(1)} ×${s.k.toFixed(2)}`;
+        localStorage.setItem(key(item, sp, st), JSON.stringify(s));
+        out();
+      };
+      appliers[sp + st] = apply;
+      apply();
+      const svg = td.querySelector('svg'), stack = td.querySelector('.stack');
+      const upx = 120 / 210;
+      let drag = null;
+      svg.addEventListener('pointerdown', e => { drag = { x: e.clientX, y: e.clientY }; svg.setPointerCapture(e.pointerId); lastCell = [sp, st]; });
+      svg.addEventListener('pointermove', e => {
+        if (!drag) return;
+        state[sp][st].dx += (e.clientX - drag.x) * upx;
+        state[sp][st].dy += (e.clientY - drag.y) * upx;
+        drag = { x: e.clientX, y: e.clientY };
+        apply();
+      });
+      svg.addEventListener('pointerup', () => drag = null);
+      stack.addEventListener('wheel', e => {
+        if (!e.altKey) return;
+        e.preventDefault(); state[sp][st].k *= Math.pow(1.0015, -e.deltaY); apply(); lastCell = [sp, st];
+      }, { passive: false });
+    });
+    rows.appendChild(tr);
+  });
+  out();
+}
+function out() {
+  const item = itemSel.value, o = {};
+  SPECIES.forEach(sp => { o[sp] = {};
+    STAGES.forEach(st => { const s = (state[sp] || {})[st] || { dx: 0, dy: 0, k: 1 };
+      o[sp]['s' + st] = { dx: +s.dx.toFixed(1), dy: +s.dy.toFixed(1), scale: +s.k.toFixed(2) }; }); });
+  $('out').value = JSON.stringify({ [item]: o }, null, 1);
+}
+document.addEventListener('keydown', e => {
+  if (!lastCell) return;
+  const [sp, st] = lastCell, s = state[sp] && state[sp][st];
+  if (!s) return;
+  const step = e.shiftKey ? 5 : 1;
+  const m = { ArrowLeft: [-step, 0], ArrowRight: [step, 0], ArrowUp: [0, -step], ArrowDown: [0, step] }[e.key];
+  if (m) { s.dx += m[0]; s.dy += m[1]; appliers[sp + st](); }
+  else if (e.key.toLowerCase() === 'r') {
+    const d = DEFAULTS[itemSel.value] && DEFAULTS[itemSel.value][sp];
+    state[sp][st] = d ? { ...d } : { dx: 0, dy: 0, k: 1 };
+    appliers[sp + st]();
+  }
+  else if (e.key.toLowerCase() === 'c') {
+    STAGES.forEach(o2 => { if (o2 !== st) { state[sp][o2] = { ...s }; appliers[sp + o2](); } });
+  } else return;
+  e.preventDefault();
+});
+$('copy').onclick = () => navigator.clipboard.writeText($('out').value);
+$('resetAll').onclick = () => {
+  SPECIES.forEach(sp => STAGES.forEach(st => localStorage.removeItem(key(itemSel.value, sp, st))));
+  render();
+};
+$('theme').onclick = () => document.body.classList.toggle('dark');
+itemSel.onchange = render; $('mood').onchange = render;
+render();
+</script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+[
+  {
+    "name": "body-skitter-s1-perky",
+    "refs": [
+      "/private/tmp/claude-501/-Users-zach-Develop-family-os/a139e6a7-2821-46c5-a5ce-f89e25579217/scratchpad/gen/batch/prev/body-skitter-s1-perky.png",
+      "/private/tmp/claude-501/-Users-zach-Develop-family-os/a139e6a7-2821-46c5-a5ce-f89e25579217/scratchpad/gen/batch/body-skitter-s2-perky.png"
+    ],
+    "prompt": "Two reference images. The FIRST is the character to copy: redraw it completely identical \u2014 same silhouette, same round baby body, same FOUR stubby legs (two per side, count them: four), same three hair tufts, same two tiny tooth buds, same cheek blush, same pose, same grayscale bands. The SECOND reference shows the correct EYE STYLE only: copy just its eyes onto the first character \u2014 solid near-black round dot eyes with exactly ONE small round white specular dot in the upper-LEFT corner of each eye, the SAME corner on BOTH eyes, never mirrored, no iris ring. Change nothing else about the first character. Sticker-flat cel style, thick uniform rounded outline, flat tonal regions, NEUTRAL GRAYSCALE only. Whole character centered, facing viewer, 10% margin, on a plain solid magenta (#ff00ff) background, no ground shadow. Negative constraints: no color on the character, no gradients, no texture, no stipple, no halftone, no watercolor, no 3d render, no clay, no cast shadow, no drop shadow, no background scenery, no outline sketchiness, no six legs, no fifth or sixth leg, no extra limbs, no accessories, no eyebrows, no angry expression, no floating sparkles, no stars, no text, no watermark, no sticker border, no die-cut white edge, no big anime eyes, no glossy oversized eyes, no iris rings, no mirrored eye highlights."
+  }
+]

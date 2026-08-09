@@ -15,15 +15,15 @@ before it reads anything else, and it is size-capped — see
 > **At most six one-line bullets.** Update at the end of every session. If a
 > session's detail doesn't fit on one line it belongs in the session log.
 
-- **Milestone:** M4.5 — Companion; **M4.5/1 done 2026-08-07** (style bible
-  settled, references signed off, canvas-LUT duotone proven). `docs/roadmap.md` rules.
-- **Active stories:** none in flight; M4.5/2 (gear + assets) is next; **beacon
+- **Milestone:** M4.5 — Companion; **M4.5/2 done 2026-08-08** (v1 art complete:
+  20 bodies + 15 gear, 4 parked). `docs/roadmap.md` rules.
+- **Active stories:** none in flight; M4.5/3 (feature UX) is next; **beacon
   track queued** — custom build due at the December visit. `product-design-beacon.md`.
 - **Deployment:** 🟢 live at `https://vireohome.app` on the Pi; merge to `main`
   auto-deploys; off-LAN via Tailscale. Runbook: `docs/deployment.md`.
-- **Last session:** 2026-08-07 — design, M4.5/1 style bible (Wisp respelled;
-  Gemini pipeline scripts in `scripts/companion-art/`).
-  `logs/2026-08-07-design-companion-style-bible.md`.
+- **Last session:** 2026-08-08 — design, M4.5/2 gear + assets (fit playground
+  tool; per-species variants; conforming-wearable park list).
+  `logs/2026-08-08-design-companion-gear-assets.md`.
 - **What's next and everything outstanding:** `docs/sessions/queue.md` — the one
   index. Cheapest high-value item: Deployment Part F, offsite backups.
 - **Owed in-app:** every report through #94 was `deployed`; reports `35a65002`

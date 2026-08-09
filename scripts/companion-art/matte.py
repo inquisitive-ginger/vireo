@@ -36,8 +36,11 @@ def main():
             px[x, y] = (gray, gray, gray, alpha)
             if alpha > 200:
                 hist[near] = hist.get(near, 0) + 1
-    # die-cut border peel: near-white reachable from transparent outside goes
-    # transparent; interior paper (teeth, speculars) is sealed behind the outline
+    # die-cut border peel: light pixels reachable from transparent outside go
+    # transparent; interior paper (teeth, speculars) is sealed behind the outline.
+    # Threshold sits above the line band so fill-gray borders peel too — the
+    # character is always sealed by its darker outline (M4.5/2: Gemini emits
+    # gray borders as well as white ones).
     from collections import deque
     q = deque()
     seen = [[False] * w for _ in range(h)]
@@ -50,8 +53,8 @@ def main():
         for nx, ny in ((x+1, y), (x-1, y), (x, y+1), (x, y-1)):
             if 0 <= nx < w and 0 <= ny < h and not seen[ny][nx]:
                 r, g, b, a = px[nx, ny]
-                if a == 0 or r >= 225:
-                    if a and r >= 225:
+                if a == 0 or r >= 190:
+                    if a and r >= 190:
                         px[nx, ny] = (r, g, b, 0)
                     seen[ny][nx] = True
                     q.append((nx, ny))

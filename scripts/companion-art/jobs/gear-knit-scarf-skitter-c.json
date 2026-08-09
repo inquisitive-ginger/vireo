@@ -1,0 +1,7 @@
+[
+  {
+    "name": "gear-knit-scarf-skitter",
+    "refs": ["docs/modules/companion/reference/generated/skitter-1024.png"],
+    "prompt": "The reference image shows a small creature; use it ONLY to judge proportions. Do NOT draw the creature, its body, its outline, or any part of it \u2014 the image must contain nothing but a scarf. Draw a cozy knit scarf: a VERY WIDE, shallow, downward-curving band \u2014 much wider than it is tall \u2014 whose two ends taper and curl slightly backward and downward, plus one short tail hanging from the front-right ending in yarn fringe tassels. Sticker-flat cel style, every region ONE perfectly even solid color like a vector illustration \u2014 no shading variation, no wash, no mottling \u2014 one thick confident uniform rounded outline in a darker wine shade of the scarf's own color, never black. The ENTIRE scarf filled with deep muted berry red (#a34b54) \u2014 a dark, rich, saturated wine red fill, NOT pink, NOT pastel, NOT white \u2014 with soft warm cream (#f2e9d3) for a few flat stitch dashes and the fringe. Scarf centered and large in frame, 10% margin, on a plain solid magenta (#ff00ff) background, no shadow. Negative constraints: no white fill, no pink, no pastel colors, no gray, no gradients, no texture, no stipple, no halftone, no watercolor, no 3d render, no clay, no cast shadow, no drop shadow, no background scenery, no creature, no body, no dome, no face, no eyes, no legs, no outline sketchiness, no black outline, no text, no watermark, no sticker border, no die-cut white edge."
+  }
+]

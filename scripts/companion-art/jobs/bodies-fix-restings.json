@@ -1,0 +1,44 @@
+[
+  {
+    "name": "body-skitter-s1-resting",
+    "refs": [
+      "/private/tmp/claude-501/-Users-zach-Develop-family-os/a139e6a7-2821-46c5-a5ce-f89e25579217/scratchpad/gen/batch/body-skitter-s1-perky.png"
+    ],
+    "prompt": "Redraw the exact character from the reference image, completely identical: same silhouette, same body, same limbs, same markings, same style, same pose, same grayscale bands. Keep all six stubby baby legs and the two tiny tooth buds exactly as in the reference. Change ONLY the eyes: they become gently closed, drawn as two soft downward-curved lid lines in near-black; the mouth area otherwise stays exactly as in the reference; calm and content, peaceful, not sad, not asleep. Everything else must match the reference exactly. Whole character centered, facing viewer, 10% margin, on a plain solid magenta (#ff00ff) background, no ground shadow. Negative constraints: no color on the character, no gradients, no texture, no stipple, no halftone, no watercolor, no 3d render, no clay, no cast shadow, no drop shadow, no background scenery, no outline sketchiness, no extra limbs, no accessories, no eyebrows, no angry expression, no floating sparkles, no stars, no open eyes, no text, no watermark, no sticker border, no die-cut white edge, no big anime eyes, no glossy oversized eyes, no iris rings."
+  },
+  {
+    "name": "body-skitter-s2-resting",
+    "refs": [
+      "/private/tmp/claude-501/-Users-zach-Develop-family-os/a139e6a7-2821-46c5-a5ce-f89e25579217/scratchpad/gen/batch/body-skitter-s2-perky.png"
+    ],
+    "prompt": "Redraw the exact character from the reference image, completely identical: same silhouette, same body, same limbs, same markings, same style, same pose, same grayscale bands. Keep all six legs, the two small white buck teeth, and the freckles exactly as in the reference. Change ONLY the eyes: they become gently closed, drawn as two soft downward-curved lid lines in near-black; the mouth area otherwise stays exactly as in the reference; calm and content, peaceful, not sad, not asleep. Everything else must match the reference exactly. Whole character centered, facing viewer, 10% margin, on a plain solid magenta (#ff00ff) background, no ground shadow. Negative constraints: no color on the character, no gradients, no texture, no stipple, no halftone, no watercolor, no 3d render, no clay, no cast shadow, no drop shadow, no background scenery, no outline sketchiness, no extra limbs, no accessories, no eyebrows, no angry expression, no floating sparkles, no stars, no open eyes, no text, no watermark, no sticker border, no die-cut white edge, no big anime eyes, no glossy oversized eyes, no iris rings."
+  },
+  {
+    "name": "body-skitter-s3-resting",
+    "refs": [
+      "/private/tmp/claude-501/-Users-zach-Develop-family-os/a139e6a7-2821-46c5-a5ce-f89e25579217/scratchpad/gen/batch/body-skitter-s3-perky.png"
+    ],
+    "prompt": "Redraw the exact character from the reference image, completely identical: same silhouette, same body, same limbs, same markings, same style, same pose, same grayscale bands. Keep all six legs, the two small white buck teeth, the freckles, and the dome speckles exactly as in the reference. Change ONLY the eyes: they become gently closed, drawn as two soft downward-curved lid lines in near-black; the mouth area otherwise stays exactly as in the reference; calm and content, peaceful, not sad, not asleep. Everything else must match the reference exactly. Whole character centered, facing viewer, 10% margin, on a plain solid magenta (#ff00ff) background, no ground shadow. Negative constraints: no color on the character, no gradients, no texture, no stipple, no halftone, no watercolor, no 3d render, no clay, no cast shadow, no drop shadow, no background scenery, no outline sketchiness, no extra limbs, no accessories, no eyebrows, no angry expression, no floating sparkles, no stars, no open eyes, no text, no watermark, no sticker border, no die-cut white edge, no big anime eyes, no glossy oversized eyes, no iris rings."
+  },
+  {
+    "name": "body-sprout-s1-resting",
+    "refs": [
+      "/private/tmp/claude-501/-Users-zach-Develop-family-os/a139e6a7-2821-46c5-a5ce-f89e25579217/scratchpad/gen/batch/body-sprout-s1-perky.png"
+    ],
+    "prompt": "Redraw the exact character from the reference image, completely identical: same silhouette, same body, same limbs, same markings, same style, same pose, same grayscale bands. Keep the single leaf and the little feet exactly as in the reference. Change ONLY the eyes: they become gently closed, drawn as two soft downward-curved lid lines in near-black; the mouth area otherwise stays exactly as in the reference; calm and content, peaceful, not sad, not asleep. Everything else must match the reference exactly. Whole character centered, facing viewer, 10% margin, on a plain solid magenta (#ff00ff) background, no ground shadow. Negative constraints: no color on the character, no gradients, no texture, no stipple, no halftone, no watercolor, no 3d render, no clay, no cast shadow, no drop shadow, no background scenery, no outline sketchiness, no extra limbs, no accessories, no eyebrows, no angry expression, no floating sparkles, no stars, no open eyes, no text, no watermark, no sticker border, no die-cut white edge, no big anime eyes, no glossy oversized eyes, no iris rings."
+  },
+  {
+    "name": "body-sprout-s2-resting",
+    "refs": [
+      "/private/tmp/claude-501/-Users-zach-Develop-family-os/a139e6a7-2821-46c5-a5ce-f89e25579217/scratchpad/gen/batch/body-sprout-s2-perky.png"
+    ],
+    "prompt": "Redraw the exact character from the reference image, completely identical: same silhouette, same body, same limbs, same markings, same style, same pose, same grayscale bands. Keep both leaves and the little feet exactly as in the reference. Change ONLY the eyes: they become gently closed, drawn as two soft downward-curved lid lines in near-black; the mouth area otherwise stays exactly as in the reference; calm and content, peaceful, not sad, not asleep. Everything else must match the reference exactly. Whole character centered, facing viewer, 10% margin, on a plain solid magenta (#ff00ff) background, no ground shadow. Negative constraints: no color on the character, no gradients, no texture, no stipple, no halftone, no watercolor, no 3d render, no clay, no cast shadow, no drop shadow, no background scenery, no outline sketchiness, no extra limbs, no accessories, no eyebrows, no angry expression, no floating sparkles, no stars, no open eyes, no text, no watermark, no sticker border, no die-cut white edge, no big anime eyes, no glossy oversized eyes, no iris rings."
+  },
+  {
+    "name": "body-sprout-s3-resting",
+    "refs": [
+      "/private/tmp/claude-501/-Users-zach-Develop-family-os/a139e6a7-2821-46c5-a5ce-f89e25579217/scratchpad/gen/batch/body-sprout-s3-perky.png"
+    ],
+    "prompt": "Redraw the exact character from the reference image, completely identical: same silhouette, same body, same limbs, same markings, same style, same pose, same grayscale bands. Keep the three-leaf spray, the belly patch, and the little feet exactly as in the reference. Change ONLY the eyes: they become gently closed, drawn as two soft downward-curved lid lines in near-black; the mouth area otherwise stays exactly as in the reference; calm and content, peaceful, not sad, not asleep. Everything else must match the reference exactly. Whole character centered, facing viewer, 10% margin, on a plain solid magenta (#ff00ff) background, no ground shadow. Negative constraints: no color on the character, no gradients, no texture, no stipple, no halftone, no watercolor, no 3d render, no clay, no cast shadow, no drop shadow, no background scenery, no outline sketchiness, no extra limbs, no accessories, no eyebrows, no angry expression, no floating sparkles, no stars, no open eyes, no text, no watermark, no sticker border, no die-cut white edge, no big anime eyes, no glossy oversized eyes, no iris rings."
+  }
+]

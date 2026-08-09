@@ -70,11 +70,11 @@ in dark theme a large feature mass maps to a pale slab); cheek accents flanking
 the mouth; mood variants change **only** eyes/mouth/sparkle decor, never
 silhouette.
 
-| Species     | Silhouette invariants                                                                                                                                                                                                                                                                     | Stage progression (1 → 2 → 3)                                                             |
-| ----------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
-| **Wisp**    | Floating ghost-flame, wavy pointed tip curling right at the crown, soft trailing wisp-tails at the lower sides; **no limbs, never touches ground**; **must never read as a water drop** (no smooth round-bottomed droplet silhouette — the tip is flame-wavy, not surface-tension-smooth) | small single curl → belly accent + second tail-wisp → taller flame-curl, three tail-wisps |
-| **Skitter** | Dome bug, wider than tall; **six legs** at stage 2+ (four at stage 1), stubby and rounded — spider-adjacent, never creepy; three short lash-tufts on the crown; **buck teeth** (paper) under the mouth; freckle-dots (feature) on the cheeks at stage 2+                                  | 4 legs → 6 legs + freckles → bigger dome, back speckle accents                            |
-| **Sprout**  | Round-bottomed pot-bellied seedling, grounded; leaf crown in **line** gray sprouting from the crown; body slightly pear                                                                                                                                                                   | one leaf → two asymmetric leaves → three-leaf spray + belly accent                        |
+| Species     | Silhouette invariants                                                                                                                                                                                                                                                                                                                                   | Stage progression (1 → 2 → 3)                                                             |
+| ----------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------- |
+| **Wisp**    | Floating ghost-flame, wavy pointed tip curling right at the crown, soft trailing wisp-tails at the lower sides; **no limbs, never touches ground**; **must never read as a water drop** (no smooth round-bottomed droplet silhouette — the tip is flame-wavy, not surface-tension-smooth)                                                               | small single curl → belly accent + second tail-wisp → taller flame-curl, three tail-wisps |
+| **Skitter** | Dome bug, wider than tall; **six legs at every stage** (amended M4.5/2: four-leg babies are un-promptable against the model prior), stubby and rounded — shorter and chubbier at stage 1 — spider-adjacent, never creepy; three short lash-tufts on the crown; **buck teeth** (paper) under the mouth; freckle-dots (feature) on the cheeks at stage 2+ | stubby baby legs → longer legs + freckles → bigger dome, back speckle accents             |
+| **Sprout**  | Round-bottomed pot-bellied seedling, grounded; leaf crown in **line** gray sprouting from the crown; body slightly pear                                                                                                                                                                                                                                 | one leaf → two asymmetric leaves → three-leaf spray + belly accent                        |
 
 Silhouettes must be tellable-apart **as black shapes at 84px** — species is the
 second identity channel in the flock strip (ADR 044: hue is never the only
@@ -163,6 +163,35 @@ pear-shaped".
 **Gear scaffold:** swap the grayscale clause for "flat colors limited to
 {pigment list}, self-colored darker outline", name the anchor ("a knit scarf
 alone, laid as if around a neck 50 units wide", …), keep the same negatives.
+
+**M4.5/2 addenda (proven on the v1 batches):**
+
+- **Variants of an accepted asset use the enumerated-edits form** — "redraw the
+  exact character from the reference, with ONLY these specific changes: (1) …" —
+  descriptive stage prompts either copy the reference or drift off-style.
+  Resting moods condition on the **accepted perky sibling** with a face-only
+  edit, never on the master (keeps mood pairs silhouette-identical).
+- **Some edits are un-promptable against the model prior** (five attempts could
+  not produce a four-legged Skitter). Options in order: amend the bible,
+  deterministic raster surgery on the accepted raw, drop the delta.
+- **Gear mattes via `scripts/companion-art/matte_gear.py`** (corner-sampled
+  chroma key → edge fade → magenta de-spill → border peel that passes through
+  spill → halo erosion only when a ring was actually peeled → residue and
+  despeckle passes). Gear never band-snaps — pigments pass through untouched.
+- **Pigment drift:** berry drifts pastel-pink unless pinned ("dark, rich,
+  saturated wine red, NOT pink, NOT pastel"); regions phrased as "ONE perfectly
+  even solid color like a vector illustration". Small details must be **chunky
+  and outlined** — thin pale strokes (fringe hairs) cannot survive any chroma
+  key.
+- **Items that reference body proportions** (drape, the gap in paired pieces)
+  generate **per species**, conditioned on that species' master ("use the
+  reference ONLY to judge proportions; do NOT draw the creature"). Fit data is
+  per species × stage, authored in
+  `scripts/companion-art/gear-fit-playground.html` (run beside a `matted/`
+  working dir), and ships in `assets/anchors.json`.
+- **Body-conforming worn items (wraps, fitted hats) fail as single front
+  layers** — a wrap must pass behind the silhouette. Parked pending a
+  two-layer / dual-placement compositing extension (see gear-catalog.md).
 
 **Acceptance per generated image:** bands within contract (±0.04) · silhouette
 reads at 84px · anchors within ±4 units of spec · passes the duotone proof page

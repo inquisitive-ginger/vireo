@@ -3,7 +3,7 @@
 | #      | Session                       | Status         |
 | ------ | ----------------------------- | -------------- |
 | M4.5/1 | Style Bible + duotone proof   | ✅ Done        |
-| M4.5/2 | Gear taxonomy + asset library | ⬜ Not Started |
+| M4.5/2 | Gear taxonomy + asset library | ✅ Done        |
 | M4.5/3 | Feature UX                    | ⬜ Not Started |
 | M4.5/4 | Dev: foundation               | ⬜ Not Started |
 | M4.5/5 | Dev: surfaces                 | ⬜ Not Started |
