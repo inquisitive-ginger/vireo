@@ -65,23 +65,12 @@ One pre-launch family task: **name the feature at the dinner table** (ADR 061 �
 
 ---
 
-### M5/1 — Design: Meals & Groceries
-
-**Type:** design · **Kickoff:** _to be written_
-Two surfaces that barely resemble each other. **Tonight's Dinner** must be readable
-**from the door** at the across-room 18px floor, and its **unclaimed** state is the most
-valuable one it has. **Shop mode is a different app from build mode** — aisle grouping,
-big targets, checked items dim in place rather than vanish. Also the **day-mark
-density** (month cell = avatar + glyph, no words; agenda = label). _Reads:
-`docs/modules/meals/spec.md`, ADR 050, 044, 039._ _Depends on: none._
-
 ### M5/2 — Dev: Week Plan + Tonight's Dinner
 
 **Type:** development · **Kickoff:** _to be written_
-The `meals` plugin, `planned_meals`, the week view, and the `meals.tonight` widget.
-The title/try-bite split is the anti-ambush mechanism — make the input placeholder
-teach the parent to write "Rigatoni", not "creamy sausage rigatoni with veggies".
-_Depends on: M5/1._
+The `meals` plugin, `planned_meals` (**+ `sides`**), the week view (`ItemCard` rows),
+and the `meals.tonight` widget — four states, menu-card grammar, kind-as-verb.
+Build to `docs/modules/meals/design.md` §M5/2. _Depends on: M5/1 ✅._
 
 ### M5/3 — Dev: Who's Got Dinner
 
@@ -106,21 +95,23 @@ _Reads: ADR 050, `plugins/calendar` month grid + mobile agenda._ _Depends on: M5
 `meals.trybite.taken` → punches a `rewards` card. Replaces the paper sheet (15 squares →
 small reward → reset). `meals` knows nothing about cards. _Depends on: M5/2, M4/6._
 
-### M5/6 — Dev: Grocery Build Mode
+### M5/6 — Dev: The Grocery List (capture + filing)
 
 **Type:** development · **Kickoff:** _to be written_
-`grocery_items` + `staples`; three-second manual adds from a phone, **tier 1+ can add**
-(low-stakes participation, and it closes the loop: kid adds a vegetable → it becomes the
-try bite). One tap pushes a meal's free-text `needs` onto the list — **no recipe model**.
-_Depends on: M5/2._
+`grocery_items` + `staples`; **the mode split is retired (M5/1)** — one aisle-grouped
+`ListRow` list, bottom add bar, aisle dictionary + learned per-family corrections,
+tier 1+ adds, `needs` push. **Build `ListRow` in `@family-os/ui` first (ADR 063).**
+Build to `design.md` §M5/6. _Depends on: M5/2._
 
-### M5/7 — Dev: Grocery Shop Mode + Offline
+### M5/7 — Dev: Shop Context, Sync + Offline, the Wall
 
 **Type:** development · **Kickoff:** _to be written_
-Aisle grouping, live sync between two shoppers, and **offline**. The SW is network-first
-for `/api`, so today the list fails in the exact place it is used — this touches the
-service worker, which has bitten twice. Treat the offline half as its own reviewable
-chunk. _Reads: `apps/shell/public/sw.js`, `logs/2026-07-19-dev-sw-cache-strategy.md`._
+Whole-row checks, cleared-aisle collapse, progress track, "Sam got it" sync between
+shoppers, the three-column wall view + presence line — and **offline**. The SW is
+network-first for `/api`, so today the list fails in the exact place it is used; the
+SW has bitten twice — treat the offline half as its own reviewable chunk. **Check wall
+column re-flow on the physical fridge before closing.** _Reads: `design.md` §M5/7,
+`apps/shell/public/sw.js`, `logs/2026-07-19-dev-sw-cache-strategy.md`._
 _Depends on: M5/6._
 
 ---
@@ -235,6 +226,12 @@ suite mirroring chores/calendar. _Depends on: none._
 ## Recently Completed
 
 > Two-line index; full detail in the linked log.
+
+- **2026-08-11 — Design: Meals & Groceries (M5/1, ADR 063/064).** All 16 gates
+  settled over three rounds + an external critique — menu-card grammar, `sides`
+  column, localised escalation, grocery mode split retired onto one `ListRow`
+  list, hue rule narrowed. Spec: `docs/modules/meals/design.md`. See
+  `logs/2026-08-11-design-meals-groceries.md`.
 
 - **2026-08-08 — Design: Companion gear + asset library (M4.5/2).** V1 art
   complete: 20 curated bodies + 15 gear items with per-species × per-stage fit

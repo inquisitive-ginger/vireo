@@ -1,0 +1,1010 @@
+<title>M5 Meals &amp; Groceries — UX exploration</title>
+<style>
+  /* ===== Real app tokens — copied from packages/ui/src/styles.css ===== */
+  :root {
+    --font-display: 'Lora', Georgia, 'Times New Roman', serif;
+    --font-ui: 'DM Sans', 'Helvetica Neue', Arial, sans-serif;
+
+    --background: oklch(0.985 0.008 75);
+    --foreground: oklch(0.18 0.04 50);
+    --primary: oklch(0.57 0.14 35);
+    --primary-foreground: oklch(0.99 0 0);
+    --secondary: oklch(0.93 0.022 72);
+    --secondary-foreground: oklch(0.28 0.05 50);
+    --muted: oklch(0.93 0.016 72);
+    --muted-foreground: oklch(0.52 0.04 58);
+    --accent: oklch(0.47 0.07 185);
+    --accent-foreground: oklch(0.99 0 0);
+    --border: oklch(0.88 0.022 75);
+    --card: oklch(0.999 0.004 80);
+    --shadow-card: 0 1px 2px oklch(0.35 0.06 50 / 0.06), 0 2px 10px oklch(0.35 0.06 50 / 0.07);
+    --shadow-raised: 0 2px 6px oklch(0.35 0.06 50 / 0.07), 0 10px 28px oklch(0.35 0.06 50 / 0.12);
+    --surface-sunken: oklch(0.955 0.006 75);
+    --shadow-inset: inset 0 2px 3px -1px oklch(0.35 0.06 50 / 0.1), inset 0 -1px 0 0 oklch(1 0 0 / 0.55);
+
+    --identity-terracotta: oklch(0.6 0.13 35);
+    --identity-terracotta-tint: oklch(0.806 0.092 35);
+    --identity-terracotta-ink: oklch(0.36 0.09 35);
+    --identity-marigold: oklch(0.71 0.12 78);
+    --identity-marigold-tint: oklch(0.877 0.085 78);
+    --identity-marigold-ink: oklch(0.36 0.084 78);
+    --identity-teal: oklch(0.55 0.09 188);
+    --identity-teal-tint: oklch(0.773 0.063 188);
+    --identity-teal-ink: oklch(0.36 0.063 188);
+    --identity-plum: oklch(0.56 0.1 330);
+    --identity-plum-tint: oklch(0.78 0.07 330);
+    --identity-plum-ink: oklch(0.36 0.07 330);
+    --identity-family: oklch(0.55 0.022 65);
+    --identity-family-tint: oklch(0.9 0.018 70);
+    --identity-family-ink: oklch(0.36 0.02 62);
+
+    --warning: oklch(0.69 0.12 78);
+    --error: oklch(0.5 0.17 12);
+    --success: oklch(0.44 0.1 148);
+
+    --radius-card: 0.5rem;
+    --radius-panel: 0.75rem;
+    --radius-hero: 1rem;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+      --background: oklch(0.15 0.022 45);
+      --foreground: oklch(0.92 0.012 75);
+      --primary: oklch(0.66 0.14 35);
+      --secondary: oklch(0.22 0.02 48);
+      --secondary-foreground: oklch(0.82 0.012 70);
+      --muted: oklch(0.2 0.016 48);
+      --muted-foreground: oklch(0.56 0.022 60);
+      --accent: oklch(0.56 0.08 185);
+      --border: oklch(0.3 0.022 48);
+      --card: oklch(0.21 0.022 47);
+      --shadow-card: 0 1px 2px oklch(0 0 0 / 0.3), 0 2px 10px oklch(0 0 0 / 0.35);
+      --shadow-raised: 0 2px 6px oklch(0 0 0 / 0.35), 0 10px 28px oklch(0 0 0 / 0.45);
+      --surface-sunken: oklch(0.175 0.008 47);
+      --shadow-inset: inset 0 2px 4px -1px oklch(0 0 0 / 0.4), inset 0 -1px 0 0 oklch(1 0 0 / 0.04);
+      --identity-terracotta: oklch(0.7 0.13 35);
+      --identity-terracotta-tint: oklch(0.353 0.081 35);
+      --identity-terracotta-ink: oklch(0.9 0.049 35);
+      --identity-marigold: oklch(0.78 0.12 78);
+      --identity-marigold-tint: oklch(0.408 0.079 78);
+      --identity-marigold-ink: oklch(0.9 0.046 78);
+      --identity-teal: oklch(0.66 0.09 188);
+      --identity-teal-tint: oklch(0.325 0.059 188);
+      --identity-teal-ink: oklch(0.9 0.034 188);
+      --identity-plum: oklch(0.66 0.1 330);
+      --identity-plum-tint: oklch(0.325 0.066 330);
+      --identity-plum-ink: oklch(0.9 0.038 330);
+      --identity-family: oklch(0.72 0.022 68);
+      --identity-family-tint: oklch(0.285 0.014 65);
+      --identity-family-ink: oklch(0.9 0.018 70);
+      --warning: oklch(0.75 0.11 78);
+      --error: oklch(0.62 0.17 12);
+      --success: oklch(0.57 0.1 148);
+    }
+  }
+  [data-theme='dark'] {
+    --background: oklch(0.15 0.022 45);
+    --foreground: oklch(0.92 0.012 75);
+    --primary: oklch(0.66 0.14 35);
+    --secondary: oklch(0.22 0.02 48);
+    --secondary-foreground: oklch(0.82 0.012 70);
+    --muted: oklch(0.2 0.016 48);
+    --muted-foreground: oklch(0.56 0.022 60);
+    --accent: oklch(0.56 0.08 185);
+    --border: oklch(0.3 0.022 48);
+    --card: oklch(0.21 0.022 47);
+    --shadow-card: 0 1px 2px oklch(0 0 0 / 0.3), 0 2px 10px oklch(0 0 0 / 0.35);
+    --shadow-raised: 0 2px 6px oklch(0 0 0 / 0.35), 0 10px 28px oklch(0 0 0 / 0.45);
+    --surface-sunken: oklch(0.175 0.008 47);
+    --shadow-inset: inset 0 2px 4px -1px oklch(0 0 0 / 0.4), inset 0 -1px 0 0 oklch(1 0 0 / 0.04);
+    --identity-terracotta: oklch(0.7 0.13 35);
+    --identity-terracotta-tint: oklch(0.353 0.081 35);
+    --identity-terracotta-ink: oklch(0.9 0.049 35);
+    --identity-marigold: oklch(0.78 0.12 78);
+    --identity-marigold-tint: oklch(0.408 0.079 78);
+    --identity-marigold-ink: oklch(0.9 0.046 78);
+    --identity-teal: oklch(0.66 0.09 188);
+    --identity-teal-tint: oklch(0.325 0.059 188);
+    --identity-teal-ink: oklch(0.9 0.034 188);
+    --identity-plum: oklch(0.66 0.1 330);
+    --identity-plum-tint: oklch(0.325 0.066 330);
+    --identity-plum-ink: oklch(0.9 0.038 330);
+    --identity-family: oklch(0.72 0.022 68);
+    --identity-family-tint: oklch(0.285 0.014 65);
+    --identity-family-ink: oklch(0.9 0.018 70);
+    --warning: oklch(0.75 0.11 78);
+    --error: oklch(0.62 0.17 12);
+    --success: oklch(0.57 0.1 148);
+  }
+
+  /* ===== Artifact chrome (workshop document, quiet) ===== */
+  * { box-sizing: border-box; }
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-ui);
+    font-size: 15px;
+    line-height: 1.55;
+    margin: 0;
+    padding: 0 20px 96px;
+  }
+  .doc { max-width: 980px; margin: 0 auto; }
+  .eyebrow {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--accent); margin: 40px 0 10px;
+  }
+  h1 {
+    font-family: var(--font-display); font-size: 36px; font-weight: 400;
+    line-height: 1.15; letter-spacing: -0.01em; margin: 0 0 14px; text-wrap: balance;
+  }
+  .lede { max-width: 64ch; color: var(--muted-foreground); margin: 0 0 6px; }
+  .lede strong { color: var(--foreground); font-weight: 600; }
+
+  nav.jump {
+    position: sticky; top: 0; z-index: 5; display: flex; gap: 8px; flex-wrap: wrap;
+    padding: 12px 0; margin: 22px 0 8px;
+    background: color-mix(in oklab, var(--background) 92%, transparent);
+    backdrop-filter: blur(6px);
+    border-bottom: 1px solid var(--border);
+  }
+  nav.jump a {
+    font-size: 12px; font-weight: 600; color: var(--secondary-foreground);
+    text-decoration: none; padding: 6px 12px; border-radius: 999px;
+    background: var(--secondary); border: 1px solid transparent;
+  }
+  nav.jump a:hover { border-color: var(--border); }
+  nav.jump a:focus-visible, .opt a:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+  section.surface { margin-top: 56px; scroll-margin-top: 64px; }
+  h2 {
+    font-family: var(--font-display); font-size: 26px; font-weight: 600;
+    letter-spacing: -0.02em; line-height: 1.2; margin: 6px 0 4px; text-wrap: balance;
+  }
+  .surface-no {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted-foreground);
+  }
+  .constraints { font-size: 13px; color: var(--muted-foreground); max-width: 72ch; margin: 6px 0 0; }
+  .constraints b { color: var(--foreground); font-weight: 600; }
+
+  .outcomes {
+    margin: 18px 0 26px; padding: 14px 18px;
+    background: var(--surface-sunken); box-shadow: var(--shadow-inset);
+    border-radius: var(--radius-panel);
+  }
+  .outcomes h3 { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted-foreground); margin: 0 0 8px; }
+  .outcomes ul { margin: 0; padding-left: 18px; }
+  .outcomes li { margin: 4px 0; font-size: 14px; }
+  .outcomes .gate { font-weight: 700; font-variant-numeric: tabular-nums; }
+
+  .gate-head { display: flex; align-items: baseline; gap: 10px; margin: 34px 0 4px; flex-wrap: wrap; }
+  .gate-head h3 { font-size: 20px; font-weight: 600; letter-spacing: -0.01em; margin: 0; }
+  .gate-id {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.08em; color: var(--accent-foreground);
+    background: var(--accent); padding: 3px 8px; border-radius: 6px;
+  }
+  .gate-q { font-size: 14px; color: var(--muted-foreground); max-width: 72ch; margin: 0 0 16px; }
+
+  .options { display: flex; flex-direction: column; gap: 18px; }
+  .options.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(340px, 1fr)); align-items: start; }
+
+  .opt {
+    background: var(--card); border: 1px solid color-mix(in oklab, var(--border) 45%, transparent);
+    border-radius: var(--radius-panel); box-shadow: var(--shadow-card); padding: 16px 18px 18px;
+  }
+  .opt-head { display: flex; align-items: center; gap: 10px; margin-bottom: 4px; flex-wrap: wrap; }
+  .opt-letter {
+    width: 26px; height: 26px; border-radius: 8px; display: grid; place-items: center;
+    background: var(--secondary); color: var(--secondary-foreground);
+    font-weight: 700; font-size: 13px; flex: none;
+  }
+  .opt-name { font-size: 16px; font-weight: 600; }
+  .rec {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+    color: var(--accent); border: 1px solid color-mix(in oklab, var(--accent) 45%, transparent);
+    padding: 2px 8px; border-radius: 999px;
+  }
+  .veto {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.05em; text-transform: uppercase;
+    color: var(--error); border: 1px solid color-mix(in oklab, var(--error) 45%, transparent);
+    padding: 2px 8px; border-radius: 999px;
+  }
+  .opt-claim { font-size: 14px; color: var(--muted-foreground); max-width: 76ch; margin: 0 0 14px; }
+  .opt-claim b { color: var(--foreground); font-weight: 600; }
+
+  .mockwrap {
+    overflow-x: auto; padding: 22px; border-radius: var(--radius-card);
+    background: var(--background); border: 1px dashed var(--border);
+  }
+  .mockwrap .row-of-mocks { display: flex; gap: 22px; align-items: flex-start; width: max-content; }
+  .mock-caption { font-size: 12px; color: var(--muted-foreground); margin-top: 10px; }
+
+  /* ===== App-chrome primitives, reproduced to spec ===== */
+  .widget {
+    width: 522px; height: 180px; flex: none;
+    background: var(--card); border-radius: var(--radius-panel);
+    border: 1px solid color-mix(in oklab, var(--border) 45%, transparent);
+    box-shadow: var(--shadow-card);
+    padding: 14px 16px; display: flex; flex-direction: column;
+  }
+  .widget.compact { width: 253px; }
+  .widget.large { height: 376px; }
+  .whead { display: flex; align-items: center; gap: 6px; color: var(--muted-foreground); }
+  .whead svg { width: 13px; height: 13px; flex: none; }
+  .whead span {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--foreground);
+  }
+  .whead .when { color: var(--muted-foreground); font-weight: 600; letter-spacing: 0.06em; }
+
+  .avatar {
+    border-radius: 999px; display: grid; place-items: center; flex: none;
+    font-weight: 700; font-family: var(--font-ui);
+  }
+  .av-16 { width: 16px; height: 16px; font-size: 9px; }
+  .av-20 { width: 20px; height: 20px; font-size: 10px; }
+  .av-44 { width: 44px; height: 44px; font-size: 18px; }
+  .teal { background: var(--identity-teal-tint); color: var(--identity-teal-ink); }
+  .plum { background: var(--identity-plum-tint); color: var(--identity-plum-ink); }
+  .marigold { background: var(--identity-marigold-tint); color: var(--identity-marigold-ink); }
+  .terracotta { background: var(--identity-terracotta-tint); color: var(--identity-terracotta-ink); }
+
+  .chip {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 999px;
+  }
+  .chip.trybite {
+    background: color-mix(in oklab, var(--accent) 12%, transparent);
+    color: var(--accent);
+  }
+  .chip.kind { background: var(--secondary); color: var(--secondary-foreground); font-weight: 500; }
+
+  .ghost-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 13px; font-weight: 600; color: var(--primary);
+    border: 1px solid color-mix(in oklab, var(--primary) 40%, transparent);
+    background: transparent; border-radius: var(--radius-card); padding: 7px 14px;
+  }
+  .solid-btn {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-size: 13px; font-weight: 600; color: var(--primary-foreground);
+    background: var(--primary); border: none; border-radius: var(--radius-card); padding: 8px 14px;
+  }
+
+  .item-card {
+    display: flex; gap: 12px; align-items: stretch;
+    background: var(--card); border-radius: var(--radius-card);
+    border: 1px solid color-mix(in oklab, var(--border) 45%, transparent);
+    box-shadow: var(--shadow-card); padding: 12px 16px;
+  }
+  .spine { width: 4px; border-radius: 2px; flex: none; align-self: stretch; }
+
+  /* Month grid */
+  .month-week { display: flex; width: max-content; border: 1px solid var(--border); border-radius: var(--radius-card); overflow: hidden; }
+  .mcell {
+    width: 108px; height: 112px; background: var(--card); padding: 6px;
+    border-right: 1px solid var(--border); display: flex; flex-direction: column; gap: 3px;
+  }
+  .mcell:last-child { border-right: none; }
+  .mcell .dnum { font-size: 11px; font-weight: 600; color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
+  .mcell.today .dnum {
+    color: var(--primary-foreground); background: var(--primary);
+    width: 18px; height: 18px; border-radius: 999px; display: grid; place-items: center;
+  }
+  .mpill {
+    font-size: 9px; font-weight: 600; padding: 2px 5px; border-radius: 4px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .marks { margin-top: auto; display: flex; gap: 4px; align-items: center; }
+  .mark { display: inline-flex; align-items: center; gap: 2px; }
+  .mark svg { width: 11px; height: 11px; color: var(--muted-foreground); }
+
+  /* Phone frame */
+  .phone {
+    width: 390px; flex: none; background: var(--background);
+    border: 1px solid var(--border); border-radius: 24px; box-shadow: var(--shadow-raised);
+    padding: 14px 12px 18px; display: flex; flex-direction: column; gap: 10px;
+  }
+  .phone .ptitle { font-family: var(--font-display); font-size: 22px; font-weight: 600; letter-spacing: -0.02em; padding: 0 4px; }
+  .grow { display: flex; align-items: center; gap: 12px; min-height: 64px; background: var(--card); border-radius: var(--radius-card); border: 1px solid color-mix(in oklab, var(--border) 45%, transparent); box-shadow: var(--shadow-card); padding: 8px 14px; }
+  .grow .gname { font-size: 18px; font-weight: 500; }
+  .grow .gqty { font-size: 13px; color: var(--muted-foreground); }
+  .grow.got { opacity: 0.45; }
+  .grow.got .gname { text-decoration: line-through; }
+  .checkring {
+    width: 28px; height: 28px; border-radius: 999px; flex: none;
+    border: 2px solid var(--border); display: grid; place-items: center;
+  }
+  .checkring.done { border-color: var(--success); background: var(--success); color: oklch(0.99 0 0); }
+  .checkring svg { width: 15px; height: 15px; }
+  .aisle-head {
+    display: flex; align-items: baseline; gap: 8px; padding: 10px 4px 2px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted-foreground);
+  }
+  .aisle-head .count { font-weight: 600; letter-spacing: 0; text-transform: none; font-variant-numeric: tabular-nums; }
+  .srcchip { font-size: 10px; font-weight: 600; color: var(--muted-foreground); background: var(--muted); border-radius: 4px; padding: 1px 6px; }
+
+  .seg {
+    display: flex; border: 1px solid var(--border); border-radius: var(--radius-card);
+    overflow: hidden; width: max-content; font-size: 13px; font-weight: 600;
+  }
+  .seg span { padding: 7px 18px; color: var(--secondary-foreground); }
+  .seg .on { background: var(--primary); color: var(--primary-foreground); }
+
+  .drawer {
+    width: 440px; flex: none; background: var(--card); border-radius: var(--radius-panel);
+    border: 1px solid var(--border); box-shadow: var(--shadow-raised); padding: 20px 22px;
+    display: flex; flex-direction: column; gap: 14px;
+  }
+  .field label { display: block; font-size: 12px; font-weight: 600; margin-bottom: 5px; }
+  .field .input {
+    border: 1px solid var(--border); border-radius: var(--radius-card);
+    padding: 9px 12px; font-size: 14px; color: var(--muted-foreground); background: var(--background);
+  }
+  .field .input.filled { color: var(--foreground); }
+  .field .help { font-size: 12px; color: var(--muted-foreground); margin-top: 5px; }
+
+  .offline-pill {
+    display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600;
+    color: var(--secondary-foreground); background: var(--secondary);
+    padding: 4px 10px; border-radius: 999px;
+  }
+  .offline-pill svg { width: 12px; height: 12px; }
+
+  /* Decision sheet */
+  .sheetwrap { overflow-x: auto; margin-top: 18px; }
+  table.sheet { border-collapse: collapse; width: 100%; min-width: 640px; font-size: 14px; }
+  table.sheet th {
+    text-align: left; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+    color: var(--muted-foreground); padding: 8px 12px; border-bottom: 1px solid var(--border);
+  }
+  table.sheet td { padding: 9px 12px; border-bottom: 1px solid color-mix(in oklab, var(--border) 55%, transparent); vertical-align: top; }
+  table.sheet td:first-child { font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .colophon { margin-top: 56px; font-size: 12px; color: var(--muted-foreground); max-width: 72ch; }
+
+  @media (max-width: 640px) {
+    body { padding: 0 12px 72px; }
+    h1 { font-size: 29px; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { scroll-behavior: auto; } }
+</style>
+
+<div class="doc">
+  <p class="eyebrow">M5/1 · Design gate · v2 · 2026-08-10</p>
+  <h1>Meals &amp; Groceries — five surfaces, every decision on the table</h1>
+  <p class="lede">Every mock below renders with the app's real tokens at true slot scale — widget frames are the actual 522×180 / 253×180, rows are <code>ItemCard</code> chrome, phones are 390px. Where a face is marked <strong>Recommended</strong> that's my call with the reasoning attached; nothing is settled until you say so.</p>
+  <p class="lede"><strong>To iterate:</strong> reply with gate IDs — e.g. <strong>“S1.D1 = A, S3.D1 = A, rest as recommended.”</strong></p>
+
+  <nav class="jump" aria-label="Surfaces">
+    <a href="#s1">S1 · Tonight's Dinner widget</a>
+    <a href="#s2">S2 · Week plan</a>
+    <a href="#s3">S3 · Day marks</a>
+    <a href="#s4">S4 · Grocery build</a>
+    <a href="#s5">S5 · Grocery shop</a>
+    <a href="#sheet">Decision sheet</a>
+  </nav>
+
+  <!-- ================= S1 ================= -->
+  <section class="surface" id="s1">
+    <p class="surface-no">Surface 1 · <code>meals.tonight</code> widget</p>
+    <h2>Tonight's Dinner — readable from the door</h2>
+    <p class="constraints"><b>Fixed:</b> 18px across-room floor for the headline (ADR 039 fridge context) · identity header (icon + MEALS) · unclaimed is a first-class state · the widget never shows the full menu prose — the title the parent typed <i>is</i> the content.</p>
+
+    <div class="outcomes">
+      <h3>Outcomes needed</h3>
+      <ul>
+        <li><span class="gate">S1.D1</span> — standard-slot anatomy: what fills the slot, where owner / kind / try bite sit</li>
+        <li><span class="gate">S1.D1b</span> — the headline face: Lora display, or DM Sans</li>
+        <li><span class="gate">S1.D2</span> — the unclaimed state: quiet always, or escalating by time of day</li>
+        <li><span class="gate">S1.D3</span> — what <code>large</code> adds over <code>standard</code></li>
+      </ul>
+    </div>
+
+    <div style="margin: -8px 0 26px; padding: 12px 16px; border-left: 3px solid var(--accent); background: color-mix(in oklab, var(--accent) 6%, transparent); border-radius: 0 var(--radius-card) var(--radius-card) 0; font-size: 14px; max-width: 76ch;">
+      <b>Data-model change (v2):</b> <code>planned_meals</code> gains <code>sides text nullable</code> — “Rigatoni” is the headline, “roasted veggies, garlic bread” ride below it at lower affordance. <code>try_bite</code> is unchanged: <b>sides describe the plate, the try bite is the ask</b> (usually one of the sides). This also does half of S2.D2's teaching structurally — the full menu now has a home that isn't the title. Ripples to the S2 drawer and <code>spec.md</code> schema on approval.
+    </div>
+
+    <div class="gate-head"><span class="gate-id">S1.D1</span><h3>Standard-slot anatomy — take two</h3></div>
+    <p class="gate-q">V1's marquee left the slot half empty. Same data in all three — main + sides, owner, kind, try bite — composed so every band of the 180px carries a fact. The kind now lives in the <b>verb</b> (“is cooking” / “is calling it in” / “is reheating” / “we're going out”), which retires the redundant Cooked chip.</p>
+
+    <div class="options">
+      <div class="opt">
+        <div class="opt-head"><span class="opt-letter">A</span><span class="opt-name">Menu card</span><span class="rec">Recommended</span></div>
+        <p class="opt-claim">Tonight as a supper-menu entry: the main is the headline, sides take the menu's own italic line beneath, one bottom rail carries who + the ask. <b>Every band of the slot holds a fact</b> — what whitespace remains is the menu's margin, not leftover slot.</p>
+        <div class="mockwrap"><div class="row-of-mocks">
+          <div class="widget">
+            <div class="whead">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 2v7c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2V2M7 2v20M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg>
+              <span>Meals</span><span class="when">· Tonight</span>
+              <span class="when" style="margin-left: auto; letter-spacing: 0.06em;">Sun Aug 9</span>
+            </div>
+            <div style="margin-top: 10px; font-family: var(--font-display); font-size: 32px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.1;">Rigatoni</div>
+            <div style="margin-top: 4px; font-family: var(--font-display); font-style: italic; font-size: 16px; color: var(--muted-foreground);">with roasted veggies &amp; garlic bread</div>
+            <div style="margin-top: auto; display: flex; align-items: center; gap: 12px; flex-wrap: wrap;">
+              <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><span class="avatar av-20 teal">Z</span>Zach is cooking</span>
+              <span class="chip trybite">Try bite · the veggies</span>
+            </div>
+          </div>
+        </div></div>
+        <p class="mock-caption">Main 32px, sides italic 16px — the two-tier affordance the model now carries. Takeout reads “Sam is calling it in”; leftovers “Sam is reheating”; out “we're going out”.</p>
+      </div>
+
+      <div class="opt">
+        <div class="opt-head"><span class="opt-letter">B</span><span class="opt-name">Kind placard</span></div>
+        <p class="opt-claim">Menu text left; the right void becomes an 84px sunken badge carrying the <b>kind</b> glyph — pot, takeout bag, leftover bowl, map pin. The one fact that survives any distance: a bag in that circle answers “do I need to set the table” from the hallway. Costs the text column width, and up close it repeats what the verb already says.</p>
+        <div class="mockwrap"><div class="row-of-mocks">
+          <div class="widget">
+            <div class="whead">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 2v7c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2V2M7 2v20M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg>
+              <span>Meals</span><span class="when">· Tonight</span>
+            </div>
+            <div style="margin-top: 8px; display: flex; gap: 16px; flex: 1; min-height: 0;">
+              <div style="min-width: 0; flex: 1; display: flex; flex-direction: column;">
+                <div style="font-family: var(--font-display); font-size: 30px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.1;">Rigatoni</div>
+                <div style="margin-top: 3px; font-family: var(--font-display); font-style: italic; font-size: 15px; color: var(--muted-foreground);">with roasted veggies &amp; garlic bread</div>
+                <div style="margin-top: auto; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+                  <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><span class="avatar av-20 teal">Z</span>Zach is cooking</span>
+                  <span class="chip trybite">Try bite · the veggies</span>
+                </div>
+              </div>
+              <div style="flex: none; align-self: center; text-align: center;">
+                <div style="width: 84px; height: 84px; border-radius: 999px; background: var(--surface-sunken); box-shadow: var(--shadow-inset); display: grid; place-items: center;">
+                  <svg viewBox="0 0 24 24" width="36" height="36" fill="none" stroke="currentColor" stroke-width="1.8" style="color: var(--muted-foreground);"><path d="M4 11h16v5a4 4 0 0 1-4 4H8a4 4 0 0 1-4-4z"/><path d="M2 11h20"/><path d="M9 8c0-1.2.6-1.8.6-3M13.5 8c0-1.2.6-1.8.6-3"/></svg>
+                </div>
+                <div style="font-size: 10px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted-foreground); margin-top: 5px;">Cooked</div>
+              </div>
+            </div>
+          </div>
+        </div></div>
+        <p class="mock-caption">The badge set: steaming pot (cooked) · takeout bag · covered bowl (leftovers) · map pin (out). Sunken plane keeps it quiet — it's a stamp, not a button.</p>
+      </div>
+
+      <div class="opt">
+        <div class="opt-head"><span class="opt-letter">C</span><span class="opt-name">Banner voice</span></div>
+        <p class="opt-claim">The feed banner's grammar: one Lora sentence read across the room, data composed into family prose. Warmest of the three — and the least scannable: owner, kind and sides all live <i>inside</i> the sentence, so nothing is findable by position, and a long title turns the widget into a paragraph. (V1's try-bite stamp square is retired with this rev; its punch-card vocabulary resurfaces at the table surface in M5/5, where the tap actually lives.)</p>
+        <div class="mockwrap"><div class="row-of-mocks">
+          <div class="widget">
+            <div class="whead">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 2v7c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2V2M7 2v20M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg>
+              <span>Meals</span><span class="when">· Tonight</span>
+            </div>
+            <div style="margin-top: 12px; font-family: var(--font-display); font-size: 23px; font-weight: 500; line-height: 1.35; max-width: 34ch;">Rigatoni with roasted veggies tonight — Zach's cooking.</div>
+            <div style="margin-top: auto;"><span class="chip trybite">Try bite · the veggies</span></div>
+          </div>
+        </div></div>
+        <p class="mock-caption">Prose at 23px Lora — the feed-banner register applied to dinner.</p>
+      </div>
+    </div>
+
+    <div class="gate-head"><span class="gate-id">S1.D1b</span><h3>The headline face — why Lora is the convention here</h3></div>
+    <p class="gate-q">The challenge on the table: chores and calendar render user-typed titles in DM Sans, so isn't a Lora meal title a divergence? Those are <b>row-scale</b> titles — 16px <code>text-card-title</code>, and the meal name in a week-plan <i>row</i> (S2) stays exactly that. At display scale the type system has no sans rung: every text token above 20px is Lora (<code>page-title</code> 26 · <code>display-lg</code> 29 · <code>display-xl</code> 36), and DM Sans's only large token is <code>text-metric</code> — numerals only, by the XP/coin rule. The across-room precedent, the feed banner, is Lora prose. Both faces rendered honestly:</p>
+    <div class="options cols">
+      <div class="opt">
+        <div class="opt-head"><span class="opt-letter">A</span><span class="opt-name">Lora display</span><span class="rec">Recommended</span></div>
+        <p class="opt-claim">The scale's own display rung, and the register that says <b>family menu, not app chrome</b> — the same voice as page titles and the fridge-wall banner.</p>
+        <div class="mockwrap">
+          <div style="font-family: var(--font-display); font-size: 32px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.1;">Chicken pot pie</div>
+          <div style="margin-top: 4px; font-family: var(--font-display); font-style: italic; font-size: 16px; color: var(--muted-foreground);">with buttered peas</div>
+        </div>
+      </div>
+      <div class="opt">
+        <div class="opt-head"><span class="opt-letter">B</span><span class="opt-name">DM Sans bold</span></div>
+        <p class="opt-claim">Matches the row-title face — but choosing it means <b>minting a new &gt;20px sans token</b> (a design-system change, not a widget style), and at this size it reads as dashboard chrome announcing dinner.</p>
+        <div class="mockwrap">
+          <div style="font-family: var(--font-ui); font-size: 30px; font-weight: 700; letter-spacing: -0.01em; line-height: 1.1;">Chicken pot pie</div>
+          <div style="margin-top: 4px; font-family: var(--font-ui); font-size: 14px; color: var(--muted-foreground);">with buttered peas</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="gate-head"><span class="gate-id">S1.D2</span><h3>The unclaimed state</h3></div>
+    <p class="gate-q">Two flavours of empty: <b>planned but nobody's on it</b> (title exists, owner null) and <b>nothing planned at all</b>. Both keep the menu-card anatomy — the headline stays the headline, the sides line states the gap, the rail carries the claim. The gate is whether it stays polite all day or gets louder as dinner approaches.</p>
+
+    <div class="options">
+      <div class="opt">
+        <div class="opt-head"><span class="opt-letter">A</span><span class="opt-name">Quiet all day</span></div>
+        <p class="opt-claim">Muted statement + ghost claim button, identical at 9am and 6pm. Honest and calm — but at 4pm on a Thursday it whispers the one fact the house most needs shouted.</p>
+        <div class="mockwrap"><div class="row-of-mocks">
+          <div class="widget">
+            <div class="whead">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 2v7c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2V2M7 2v20M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg>
+              <span>Meals</span><span class="when">· Tonight</span>
+            </div>
+            <div style="margin-top: 10px; font-family: var(--font-display); font-size: 32px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.1;">Rigatoni</div>
+            <div style="margin-top: 4px; font-family: var(--font-display); font-style: italic; font-size: 16px; color: var(--muted-foreground);">planned — nobody's on it yet</div>
+            <div style="margin-top: auto; display: flex; align-items: center; gap: 10px;">
+              <span style="display: inline-block; width: 20px; height: 20px; border: 2px dashed var(--border); border-radius: 999px; flex: none;"></span>
+              <button class="ghost-btn" type="button">I've got it</button>
+            </div>
+          </div>
+        </div></div>
+        <p class="mock-caption">Planned-but-unclaimed: the meal keeps its marquee, the hollow ring is the week-strip's vocabulary. Nothing-planned swaps the headline for “Nothing planned yet” and pairs “Plan it” beside the claim.</p>
+      </div>
+
+      <div class="opt">
+        <div class="opt-head"><span class="opt-letter">B</span><span class="opt-name">Escalates at 4pm</span><span class="rec">Recommended</span></div>
+        <p class="opt-claim">Option A until the afternoon nudge hour (the ADR 045 poll meals already runs), then the field takes a <b>warning wash</b> and the claim goes solid. Status takes the field per ADR 043 — no red, dinner isn't an error. The widget and the tier-4 nudge escalate at the same hour, so the house hears one message.</p>
+        <div class="mockwrap"><div class="row-of-mocks">
+          <div class="widget" style="background: color-mix(in oklab, var(--warning) 14%, var(--card)); border-color: color-mix(in oklab, var(--warning) 40%, transparent);">
+            <div class="whead">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 2v7c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2V2M7 2v20M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg>
+              <span>Meals</span><span class="when">· Tonight</span>
+            </div>
+            <div style="margin-top: 10px; font-family: var(--font-display); font-size: 32px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.1;">Rigatoni</div>
+            <div style="margin-top: 4px; font-family: var(--font-display); font-style: italic; font-size: 16px; color: var(--muted-foreground);">still needs a cook — it's 4:30</div>
+            <div style="margin-top: auto; display: flex; align-items: center; gap: 10px;">
+              <button class="solid-btn" type="button">I've got it</button>
+              <span style="font-size: 12px; color: var(--muted-foreground);">Parents get the nudge at 4:00.</span>
+            </div>
+          </div>
+        </div></div>
+        <p class="mock-caption">Wash is <code>--warning</code> at 14% over <code>--card</code> — the overdue-chore grammar, not a new one.</p>
+      </div>
+    </div>
+
+    <div class="gate-head"><span class="gate-id">S1.D3</span><h3>What <code>large</code> adds — and <code>compact</code> keeps</h3></div>
+    <p class="gate-q">Compact is settled by subtraction (title + owner dot, below). Large has room for one more idea — which one?</p>
+
+    <div class="options">
+      <div class="opt">
+        <div class="opt-head"><span class="opt-letter">A</span><span class="opt-name">The week strip</span><span class="rec">Recommended</span></div>
+        <p class="opt-claim">Tonight's marquee on top, then seven day chips showing <b>claim state at a glance</b> — a face where a day is owned, a hollow ring where it isn't. Sunday night at the fridge, the strip is the “who's ambushed this week” answer, and every hollow ring is a quiet ask.</p>
+        <div class="mockwrap"><div class="row-of-mocks">
+          <div class="widget large">
+            <div class="whead">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 2v7c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2V2M7 2v20M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg>
+              <span>Meals</span><span class="when">· Tonight</span>
+            </div>
+            <div style="margin-top: 12px; font-family: var(--font-display); font-size: 32px; font-weight: 600; letter-spacing: -0.01em;">Rigatoni</div>
+            <div style="margin-top: 3px; font-family: var(--font-display); font-style: italic; font-size: 16px; color: var(--muted-foreground);">with roasted veggies &amp; garlic bread</div>
+            <div style="margin-top: 10px; display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+              <span style="display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600;"><span class="avatar av-20 teal">Z</span>Zach is cooking</span>
+              <span class="chip trybite">Try bite · the veggies</span>
+            </div>
+            <div style="margin-top: auto; background: var(--surface-sunken); box-shadow: var(--shadow-inset); border-radius: var(--radius-card); padding: 12px 14px;">
+              <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted-foreground); margin-bottom: 8px;">This week</div>
+              <div style="display: flex; gap: 12px;">
+                <div style="text-align: center;"><span class="avatar av-20 teal" style="margin: 0 auto;">Z</span><div style="font-size: 10px; font-weight: 600; color: var(--muted-foreground); margin-top: 3px;">Sun</div></div>
+                <div style="text-align: center;"><span class="avatar av-20 plum" style="margin: 0 auto;">S</span><div style="font-size: 10px; font-weight: 600; color: var(--muted-foreground); margin-top: 3px;">Mon</div></div>
+                <div style="text-align: center;"><span style="display: block; width: 20px; height: 20px; border: 2px dashed var(--border); border-radius: 999px; margin: 0 auto;"></span><div style="font-size: 10px; font-weight: 600; color: var(--muted-foreground); margin-top: 3px;">Tue</div></div>
+                <div style="text-align: center;"><span class="avatar av-20 plum" style="margin: 0 auto;">S</span><div style="font-size: 10px; font-weight: 600; color: var(--muted-foreground); margin-top: 3px;">Wed</div></div>
+                <div style="text-align: center;"><span style="display: block; width: 20px; height: 20px; border: 2px dashed var(--border); border-radius: 999px; margin: 0 auto;"></span><div style="font-size: 10px; font-weight: 600; color: var(--muted-foreground); margin-top: 3px;">Thu</div></div>
+                <div style="text-align: center;"><span class="avatar av-20 teal" style="margin: 0 auto;">Z</span><div style="font-size: 10px; font-weight: 600; color: var(--muted-foreground); margin-top: 3px;">Fri</div></div>
+                <div style="text-align: center;"><span class="avatar av-20 marigold" style="margin: 0 auto;">E</span><div style="font-size: 10px; font-weight: 600; color: var(--muted-foreground); margin-top: 3px;">Sat</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="widget compact">
+            <div class="whead">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 2v7c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2V2M7 2v20M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg>
+              <span>Tonight</span>
+            </div>
+            <div style="margin-top: 12px; font-family: var(--font-display); font-size: 24px; font-weight: 600; line-height: 1.15;">Rigatoni</div>
+            <div style="margin-top: auto; display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600;"><span class="avatar av-16 teal">Z</span>Zach</div>
+          </div>
+        </div></div>
+        <p class="mock-caption">Left: <code>large</code> (522×376). Right: <code>compact</code> (253×180) — the settled subtraction, shown once for sign-off, no gate.</p>
+      </div>
+
+      <div class="opt">
+        <div class="opt-head"><span class="opt-letter">B</span><span class="opt-name">Tomorrow + grocery tail</span></div>
+        <p class="opt-claim">Large adds tomorrow's meal and a “6 things on the grocery list” line instead. Cross-sells the module, but tomorrow's dinner is a fact nobody needs at the fridge tonight, and the grocery count belongs to a grocery widget if one ever earns a slot. Not rendered — the week strip beats it on the spec's own goal (unclaimed visibility).</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= S2 ================= -->
+  <section class="surface" id="s2">
+    <p class="surface-no">Surface 2 · <code>/meals</code> page</p>
+    <h2>The week plan — where dinner gets decided</h2>
+    <p class="constraints"><b>Fixed:</b> <code>PageContainer width="list"</code> (rows with spines, badges and controls — not prose) · multi-person surface, so the spine is the owner's identity hue in every state (ADR 043) · one dinner per day · edit via the standard 440px drawer.</p>
+
+    <div class="outcomes">
+      <h3>Outcomes needed</h3>
+      <ul>
+        <li><span class="gate">S2.D1</span> — page anatomy: seven equal day rows, or tonight promoted to a hero</li>
+        <li><span class="gate">S2.D2</span> — how the title input teaches “Rigatoni”, not “creamy sausage rigatoni with veggies”</li>
+        <li><span class="gate">S2.D3</span> — the unclaimed row's treatment and claim affordance</li>
+      </ul>
+    </div>
+
+    <div class="gate-head"><span class="gate-id">S2.D1</span><h3>Page anatomy</h3></div>
+    <p class="gate-q">Who is this page for? A parent planning Sunday night, or anyone checking tonight? The widget already owns the second job.</p>
+
+    <div class="options">
+      <div class="opt">
+        <div class="opt-head"><span class="opt-letter">A</span><span class="opt-name">Seven equal rows</span><span class="rec">Recommended</span></div>
+        <p class="opt-claim">One <code>ItemCard</code> per day, today marked by the calendar's primary-ring day treatment — not a bigger card. <b>The page's job is the week; tonight already has a hero on the home surface.</b> Promoting today here would restate the widget and push Thursday — the row that needs a decision — below the fold.</p>
+        <div class="mockwrap"><div class="row-of-mocks">
+          <div style="width: 640px; display: flex; flex-direction: column; gap: 10px;">
+            <div class="item-card">
+              <span class="spine" style="background: var(--identity-teal);"></span>
+              <div style="width: 52px; flex: none; text-align: center;">
+                <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--primary);">Sun</div>
+                <div style="font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; color: var(--primary);">9</div>
+              </div>
+              <div style="min-width: 0; flex: 1;">
+                <div style="font-size: 16px; font-weight: 600;">Rigatoni <span style="font-weight: 400; color: var(--muted-foreground);">· roasted veggies, garlic bread</span></div>
+                <div style="display: flex; gap: 8px; margin-top: 4px; flex-wrap: wrap; align-items: center;">
+                  <span style="display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600;"><span class="avatar av-16 teal">Z</span>Zach</span>
+                  <span class="chip kind">Cooked</span>
+                  <span class="chip trybite">Try bite · the veggies</span>
+                </div>
+              </div>
+              <button class="ghost-btn" style="align-self: center; font-size: 12px; padding: 5px 10px;" type="button">3 needs → groceries</button>
+            </div>
+            <div class="item-card">
+              <span class="spine" style="background: var(--identity-plum);"></span>
+              <div style="width: 52px; flex: none; text-align: center;">
+                <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted-foreground);">Mon</div>
+                <div style="font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums;">10</div>
+              </div>
+              <div style="min-width: 0; flex: 1;">
+                <div style="font-size: 16px; font-weight: 600;">Leftover night</div>
+                <div style="display: flex; gap: 8px; margin-top: 4px; align-items: center;">
+                  <span style="display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600;"><span class="avatar av-16 plum">S</span>Sam</span>
+                  <span class="chip kind">Leftovers</span>
+                </div>
+              </div>
+            </div>
+            <div class="item-card" style="border-style: dashed; border-color: var(--border); box-shadow: none; background: var(--background);">
+              <span class="spine" style="background: var(--border);"></span>
+              <div style="width: 52px; flex: none; text-align: center;">
+                <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted-foreground);">Tue</div>
+                <div style="font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums;">11</div>
+              </div>
+              <div style="min-width: 0; flex: 1; align-self: center;">
+                <div style="font-size: 15px; font-weight: 500; color: var(--muted-foreground);">Nothing planned</div>
+              </div>
+              <div style="display: flex; gap: 8px; align-self: center;">
+                <button class="ghost-btn" style="font-size: 12px; padding: 5px 12px;" type="button">Plan it</button>
+                <button class="ghost-btn" style="font-size: 12px; padding: 5px 12px;" type="button">I've got it</button>
+              </div>
+            </div>
+            <div class="item-card">
+              <span class="spine" style="background: var(--identity-plum);"></span>
+              <div style="width: 52px; flex: none; text-align: center;">
+                <div style="font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted-foreground);">Wed</div>
+                <div style="font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums;">12</div>
+              </div>
+              <div style="min-width: 0; flex: 1;">
+                <div style="font-size: 16px; font-weight: 600;">Thai takeout</div>
+                <div style="display: flex; gap: 8px; margin-top: 4px; align-items: center;">
+                  <span style="display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600;"><span class="avatar av-16 plum">S</span>Sam</span>
+                  <span class="chip kind">Takeout</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div></div>
+        <p class="mock-caption">Four of seven rows shown. A planned-but-unclaimed day keeps its title and gets the Tue claim affordance; “I've got it” claims without opening the drawer.</p>
+      </div>
+
+      <div class="opt">
+        <div class="opt-head"><span class="opt-letter">B</span><span class="opt-name">Tonight hero + six rows</span></div>
+        <p class="opt-claim">Today as a raised hero card (<code>--radius-hero</code>, <code>--shadow-raised</code>), the rest compact beneath. Reads beautifully Monday morning; on Sunday-planning night the hero is an empty box shouting about a day you're about to fill, and it duplicates the home widget one tap away. Not rendered — anatomy is option A minus rows plus the S1.D1-A marquee in a hero shell.</p>
+      </div>
+    </div>
+
+    <div class="gate-head"><span class="gate-id">S2.D2</span><h3>The title input teaches the phrasing</h3></div>
+    <p class="gate-q">Spec: how the parent phrases the title <i>is</i> the feature. The v2 <b>sides</b> field does half the teaching structurally — the full menu now has a home that isn't the headline — but the title input still sets the register. Drawer is otherwise settled convention (440px, RHF + Zod).</p>
+
+    <div class="options cols">
+      <div class="opt">
+        <div class="opt-head"><span class="opt-letter">A</span><span class="opt-name">Placeholder only</span></div>
+        <p class="opt-claim">One example in the placeholder; zero chrome. Cheapest, but a placeholder dies the moment typing starts — the lesson is gone exactly when it's needed.</p>
+        <div class="mockwrap"><div class="row-of-mocks">
+          <div class="drawer" style="width: 320px; gap: 10px;">
+            <div class="field">
+              <label>What's for dinner?</label>
+              <div class="input">Rigatoni</div>
+            </div>
+            <div class="field">
+              <label>Sides</label>
+              <div class="input">roasted veggies, garlic bread</div>
+            </div>
+          </div>
+        </div></div>
+      </div>
+      <div class="opt">
+        <div class="opt-head"><span class="opt-letter">B</span><span class="opt-name">Placeholder + standing helper</span><span class="rec">Recommended</span></div>
+        <p class="opt-claim">Placeholder shows the shape; a helper line under the field states the rule and survives typing. The try-bite field sits directly beneath, so the split teaches itself: <b>the name goes here, the ask goes there.</b></p>
+        <div class="mockwrap"><div class="row-of-mocks">
+          <div class="drawer" style="width: 320px; gap: 12px;">
+            <div class="field">
+              <label>What's for dinner?</label>
+              <div class="input">Rigatoni</div>
+              <div class="help">The headline — name it like you'd say it to the kids.</div>
+            </div>
+            <div class="field">
+              <label>Sides <span style="font-weight: 400; color: var(--muted-foreground);">(optional)</span></label>
+              <div class="input">roasted veggies, garlic bread</div>
+            </div>
+            <div class="field">
+              <label>Try bite <span style="font-weight: 400; color: var(--muted-foreground);">(optional)</span></label>
+              <div class="input">the veggies</div>
+              <div class="help">One small thing to try — it punches their card.</div>
+            </div>
+          </div>
+        </div></div>
+      </div>
+    </div>
+
+    <div class="gate-head"><span class="gate-id">S2.D3</span><h3>The unclaimed row</h3></div>
+    <p class="gate-q">Rendered above in S2.D1-A: dashed border, neutral spine, paired “Plan it / I've got it”. The alternative is a warning wash on near-term unclaimed days (today + tomorrow) mirroring S1.D2-B. My call: <b>keep the page calm</b> — dashed-neutral everywhere, and let the widget and the 4pm nudge do the shouting; a planning surface that nags all week trains people to stop reading it. Confirm or overrule with S2.D3 = calm | escalate.</p>
+  </section>
+
+  <!-- ================= S3 ================= -->
+  <section class="surface" id="s3">
+    <p class="surface-no">Surface 3 · Calendar day marks (ADR 050)</p>
+    <h2>Day marks — the who, never the what</h2>
+    <p class="constraints"><b>Fixed by ADR 050:</b> month cell renders avatar/initial + glyph, no words, max two marks per cell · agenda day header renders the label · an owner-bearing mark is never hue-only (ADR 044) · meals contributes at most one mark per day.</p>
+
+    <div class="outcomes">
+      <h3>Outcomes needed</h3>
+      <ul>
+        <li><span class="gate">S3.D1</span> — the month-cell mark's form</li>
+        <li><span class="gate">S3.D2</span> — the agenda header label's voice</li>
+        <li><span class="gate">S3.D3</span> — does an unclaimed dinner mark the calendar at all</li>
+      </ul>
+    </div>
+
+    <div class="gate-head"><span class="gate-id">S3.D1</span><h3>Month-cell mark form</h3></div>
+    <p class="gate-q">One week row, real density: event pills above, marks pinned to the cell foot. Wednesday carries a school mark too — the ADR's two-mark cap, live.</p>
+
+    <div class="mockwrap"><div class="row-of-mocks">
+      <div class="month-week" role="img" aria-label="Month week row with dinner day marks">
+        <div class="mcell today"><span class="dnum">9</span>
+          <span class="mpill" style="background: var(--identity-terracotta-tint); color: var(--identity-terracotta-ink);">Soccer 10:00</span>
+          <div class="marks"><span class="mark"><span class="avatar av-16 teal">Z</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M3 2v7c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2V2M7 2v20M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg></span></div>
+        </div>
+        <div class="mcell"><span class="dnum">10</span>
+          <div class="marks"><span class="mark"><span class="avatar av-16 plum">S</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M3 2v7c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2V2M7 2v20M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg></span></div>
+        </div>
+        <div class="mcell"><span class="dnum">11</span>
+          <span class="mpill" style="background: var(--identity-marigold-tint); color: var(--identity-marigold-ink);">Piano 4:00</span>
+        </div>
+        <div class="mcell"><span class="dnum">12</span>
+          <span class="mpill" style="background: var(--identity-family-tint); color: var(--identity-family-ink);">Dentist 2:30</span>
+          <div class="marks">
+            <span class="mark"><span class="avatar av-16 plum">S</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M3 2v7c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2V2M7 2v20M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg></span>
+            <span class="mark"><span class="avatar av-16 marigold">E</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg></span>
+          </div>
+        </div>
+        <div class="mcell"><span class="dnum">13</span></div>
+        <div class="mcell"><span class="dnum">14</span>
+          <div class="marks"><span class="mark"><span class="avatar av-16 teal">Z</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M3 2v7c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2V2M7 2v20M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg></span></div>
+        </div>
+        <div class="mcell"><span class="dnum">15</span>
+          <div class="marks"><span class="mark"><span class="avatar av-16 marigold">E</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M3 2v7c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2V2M7 2v20M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg></span></div>
+        </div>
+      </div>
+    </div></div>
+    <p class="mock-caption">Wednesday shows the two-mark cap: dinner (Sam · utensils) beside a future school mark (Emma · mortarboard). Thursday is bare — see S3.D3.</p>
+
+    <div class="options cols" style="margin-top: 18px;">
+      <div class="opt">
+        <div class="opt-head"><span class="opt-letter">A</span><span class="opt-name">Initial-in-tint + glyph</span><span class="rec">Recommended</span></div>
+        <p class="opt-claim">Rendered above: 16px identity-tint disc carrying the initial, muted glyph beside it. <b>Both channels ADR 044 demands — hue and letter — survive 16px</b>; a photo at that size is mud from across the kitchen.</p>
+      </div>
+      <div class="opt">
+        <div class="opt-head"><span class="opt-letter">B</span><span class="opt-name">Avatar photo + glyph</span></div>
+        <p class="opt-claim">The real face where one exists, initial fallback. Warmer up close, but a 16px photo carries neither hue nor letter at fridge distance — it reads as “someone”. Defensible only if marks also render larger somewhere, which they don't.</p>
+      </div>
+      <div class="opt">
+        <div class="opt-head"><span class="opt-letter">C</span><span class="opt-name">Glyph in tinted square</span><span class="veto">Fails ADR 044</span></div>
+        <p class="opt-claim">One element — utensils inside an identity-tint square. Tidiest, and disqualified: the mark becomes hue-only, exactly the surface the second-channel rule exists for. Listed so it stays rejected on the record.</p>
+      </div>
+    </div>
+
+    <div class="gate-head"><span class="gate-id">S3.D2</span><h3>Agenda header label</h3></div>
+    <p class="gate-q">The mark's one line of words, in the mobile agenda's day header. The what stays on meals' surfaces — this is attribution only.</p>
+    <div class="options cols">
+      <div class="opt">
+        <div class="opt-head"><span class="opt-letter">A</span><span class="opt-name">“Dinner · Zach”</span></div>
+        <p class="opt-claim">Fact-first, scans in a dense agenda, matches how school marks will read (“No school”). Neutral to a fault.</p>
+      </div>
+      <div class="opt">
+        <div class="opt-head"><span class="opt-letter">B</span><span class="opt-name">“Zach's got dinner”</span><span class="rec">Recommended</span></div>
+        <p class="opt-claim">The module's own voice — the queue, the nudge and the widget all say “who's got dinner”, and <b>the label keeping that verb keeps the product's one sentence intact.</b> Two words longer; the agenda header has the room.</p>
+      </div>
+    </div>
+
+    <div class="gate-head"><span class="gate-id">S3.D3</span><h3>Unclaimed on the calendar</h3></div>
+    <p class="gate-q">A planned-but-unclaimed dinner: does the calendar say so?</p>
+    <div class="options cols">
+      <div class="opt">
+        <div class="opt-head"><span class="opt-letter">A</span><span class="opt-name">No mark</span><span class="rec">Recommended</span></div>
+        <p class="opt-claim">The calendar is a record, not a nag — <b>an ownerless mark has no who, and the who is the entire payload</b> (ADR 050). The widget and the 4pm nudge already own the pressure. Thursday above renders this: bare.</p>
+      </div>
+      <div class="opt">
+        <div class="opt-head"><span class="opt-letter">B</span><span class="opt-name">Hollow mark</span></div>
+        <p class="opt-claim">A dashed ring + glyph, mirroring the week-strip's hollow chip. Consistent with S1.D3-A — but it puts a to-do on a surface whose grammar is facts, and it's the first calendar element that means “somebody act”.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= S4 ================= -->
+  <section class="surface" id="s4">
+    <p class="surface-no">Surface 4 · Groceries, at home</p>
+    <h2>Build mode — three-second adds</h2>
+    <p class="constraints"><b>Fixed:</b> tier 1+ can add (a kid adding a vegetable is the point) · a meal's free-text <code>needs</code> pushes onto the list with provenance · no recipe model · build is capture, standing at the fridge, phone in one hand.</p>
+
+    <div class="outcomes">
+      <h3>Outcomes needed</h3>
+      <ul>
+        <li><span class="gate">S4.D1</span> — the add affordance</li>
+        <li><span class="gate">S4.D2</span> — how the build list is ordered</li>
+        <li><span class="gate">S4.D3</span> — when an item gets its aisle</li>
+      </ul>
+    </div>
+
+    <div class="gate-head"><span class="gate-id">S4.D1</span><h3>Add affordance · <span style="font-weight: 400;">and the list, together</span></h3></div>
+    <p class="gate-q">One phone renders the recommended composite (D1-A sticky bar · D2-A newest-first · D3-A chip moment); the option cards argue each gate separately.</p>
+
+    <div class="mockwrap"><div class="row-of-mocks">
+      <div class="phone">
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 0 4px;">
+          <div class="ptitle">Groceries</div>
+          <div class="seg"><span class="on">Build</span><span>Shop</span></div>
+        </div>
+        <div style="background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-card); box-shadow: var(--shadow-card); padding: 10px 12px; display: flex; gap: 8px; align-items: center;">
+          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--muted-foreground); flex: none;"><path d="M12 5v14M5 12h14"/></svg>
+          <span style="font-size: 15px; color: var(--muted-foreground);">Add — “milk”, “taco shells”…</span>
+        </div>
+        <div style="display: flex; gap: 6px; flex-wrap: wrap; padding: 0 2px;">
+          <span class="chip kind">Milk</span><span class="chip kind">Eggs</span><span class="chip kind">Bananas</span><span class="chip kind">Bread</span>
+          <span class="chip" style="background: transparent; border: 1px dashed var(--border); color: var(--muted-foreground);">Staples ▸</span>
+        </div>
+        <div style="display: flex; gap: 6px; align-items: center; padding: 2px 2px 0;">
+          <span style="font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--accent);">Aisle?</span>
+          <span class="chip kind">Produce</span><span class="chip kind">Dairy</span><span class="chip kind">Pantry</span>
+          <span style="font-size: 11px; color: var(--muted-foreground);">or skip</span>
+        </div>
+        <div class="grow">
+          <span class="spine" style="background: var(--identity-marigold);"></span>
+          <div style="min-width: 0; flex: 1;"><div class="gname">Snap peas</div><div class="gqty">Emma · just now</div></div>
+        </div>
+        <div class="grow">
+          <span class="spine" style="background: var(--identity-teal);"></span>
+          <div style="min-width: 0; flex: 1;"><div class="gname">Chicken thighs <span class="srcchip">Sun · Rigatoni</span></div><div class="gqty">2 lbs</div></div>
+        </div>
+        <div class="grow">
+          <span class="spine" style="background: var(--identity-teal);"></span>
+          <div style="min-width: 0; flex: 1;"><div class="gname">Broccoli <span class="srcchip">Sun · Rigatoni</span></div></div>
+        </div>
+        <div class="grow">
+          <span class="spine" style="background: var(--identity-plum);"></span>
+          <div style="min-width: 0; flex: 1;"><div class="gname">Milk <span class="srcchip">staple</span></div><div class="gqty">Sam · yesterday</div></div>
+        </div>
+      </div>
+    </div></div>
+    <p class="mock-caption">Adder-identity spines make the kid's contribution visible — Emma's snap peas wear her hue, which is the loop the spec wants closed. Meal pushes carry the “Sun · Rigatoni” provenance chip.</p>
+
+    <div class="options cols" style="margin-top: 18px;">
+      <div class="opt">
+        <div class="opt-head"><span class="opt-letter">S4.D1</span></div>
+        <p class="opt-claim"><b>A · Sticky bar + staples chips</b> <span class="rec" style="margin-left: 4px;">Recommended</span><br>Always-visible input, staples one tap beneath — the “we're out of milk” path is glance → tap → done. <br><br><b>B · FAB + sheet</b><br>A floating button opening a compose sheet. Two taps before typing starts; the sheet hides the staples row that does half the adds. Rejected for capture speed, not rendered.</p>
+      </div>
+      <div class="opt">
+        <div class="opt-head"><span class="opt-letter">S4.D2</span></div>
+        <p class="opt-claim"><b>A · Newest first, flat</b> <span class="rec" style="margin-left: 4px;">Recommended</span><br>Capture order, most recent on top — confirmation your add landed, and dedupe-by-eye (“milk's already on there”). <br><br><b>B · Aisle groups in build too</b><br>One mental model across both modes, but it scatters each new add into a bucket mid-list, so the fridge-side glance loses “what just went on”. Grouping is shop's job.</p>
+      </div>
+      <div class="opt">
+        <div class="opt-head"><span class="opt-letter">S4.D3</span></div>
+        <p class="opt-claim"><b>A · Optional chip moment at add</b> <span class="rec" style="margin-left: 4px;">Recommended</span><br>After an add, a transient aisle chip row (rendered above). One tap files it; ignoring it files under Other. The person at the fridge knows the aisle; the person in the store shouldn't have to. <br><br><b>B · Default Other, sort later</b><br>Purest three-second add, but it exports the sorting to the aisle — the exact place the spec says never to do work.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= S5 ================= -->
+  <section class="surface" id="s5">
+    <p class="surface-no">Surface 5 · Groceries, in the store</p>
+    <h2>Shop mode — one hand, cart moving, bad signal</h2>
+    <p class="constraints"><b>Fixed by spec:</b> aisle-grouped, never entry order · big targets · checked items dim in place, never vanish · no destructive taps · two shoppers see each other's checks · offline is a requirement. Single-person-focus surface: colour goes to status here, except the partner-presence dot, which is identity doing its real job.</p>
+
+    <div class="outcomes">
+      <h3>Outcomes needed</h3>
+      <ul>
+        <li><span class="gate">S5.D1</span> — the check target</li>
+        <li><span class="gate">S5.D2</span> — aisle order: fixed walk order now, or per-family reorder</li>
+        <li><span class="gate">S5.D3</span> — how the second shopper's checks read</li>
+      </ul>
+    </div>
+
+    <div class="gate-head"><span class="gate-id">S5.D1</span><h3>The composite, then the gates</h3></div>
+    <p class="gate-q">The phone renders the recommended composite: whole-row check, fixed walk order with sticky counts, partner hue-dot, quiet offline pill.</p>
+
+    <div class="mockwrap"><div class="row-of-mocks">
+      <div class="phone">
+        <div style="display: flex; align-items: center; justify-content: space-between; padding: 0 4px;">
+          <div class="ptitle">Groceries</div>
+          <div class="seg"><span>Build</span><span class="on">Shop</span></div>
+        </div>
+        <div style="display: flex; justify-content: space-between; align-items: center; padding: 0 4px;">
+          <span class="offline-pill">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 1l22 22M8.5 16.5a5 5 0 0 1 7 0M5 12.55a11 11 0 0 1 5.17-2.39M10.71 5.05A16 16 0 0 1 22.58 9M1.42 9a15.9 15.9 0 0 1 4.7-2.88M16.85 11.25a10.9 10.9 0 0 1 2.16 1.35"/><circle cx="12" cy="20" r="1"/></svg>
+            Offline — checks will sync
+          </span>
+          <span style="font-size: 12px; font-weight: 600; color: var(--muted-foreground); font-variant-numeric: tabular-nums;">9 of 14 to go</span>
+        </div>
+        <div class="aisle-head">Produce <span class="count">· 1 of 3</span></div>
+        <div class="grow got">
+          <span class="checkring done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span>
+          <div style="min-width: 0; flex: 1;"><div class="gname">Bananas</div></div>
+        </div>
+        <div class="grow">
+          <span class="checkring"></span>
+          <div style="min-width: 0; flex: 1;"><div class="gname">Broccoli</div><div class="gqty">for Sunday's rigatoni</div></div>
+        </div>
+        <div class="grow">
+          <span class="checkring"></span>
+          <div style="min-width: 0; flex: 1;"><div class="gname">Snap peas</div><div class="gqty">Emma asked</div></div>
+        </div>
+        <div class="aisle-head">Dairy <span class="count">· 1 of 2</span></div>
+        <div class="grow got">
+          <span class="checkring done"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"><path d="M20 6 9 17l-5-5"/></svg></span>
+          <div style="min-width: 0; flex: 1;"><div class="gname">Milk</div><div class="gqty">2%</div></div>
+          <span class="avatar av-16 plum" title="Sam got this">S</span>
+        </div>
+        <div class="grow">
+          <span class="checkring"></span>
+          <div style="min-width: 0; flex: 1;"><div class="gname">Yogurt cups</div></div>
+        </div>
+        <div class="aisle-head">Meat <span class="count">· 0 of 1</span></div>
+        <div class="grow">
+          <span class="checkring"></span>
+          <div style="min-width: 0; flex: 1;"><div class="gname">Chicken thighs</div><div class="gqty">2 lbs</div></div>
+        </div>
+      </div>
+    </div></div>
+    <p class="mock-caption">Milk is dimmed in place wearing Sam's dot — “already got it, and it was Sam” in one glance. Names sit at 18px; rows hold the 64px row-touch floor.</p>
+
+    <div class="options cols" style="margin-top: 18px;">
+      <div class="opt">
+        <div class="opt-head"><span class="opt-letter">S5.D1</span></div>
+        <p class="opt-claim"><b>A · Whole row checks</b> <span class="rec" style="margin-left: 4px;">Recommended</span><br>Anywhere on the row toggles; tap again untoggles. The 64px row is the target — one thumb, cart in the other hand. Nothing on the row is destructive, so the fat target is safe. <br><br><b>B · Ring only</b><br>Only the 28px ring toggles. Precision nobody asked for, at exactly the motor moment the spec says to design against.</p>
+      </div>
+      <div class="opt">
+        <div class="opt-head"><span class="opt-letter">S5.D2</span></div>
+        <p class="opt-claim"><b>A · Fixed walk order</b> <span class="rec" style="margin-left: 4px;">Recommended</span><br>Produce → Bakery → Meat → Dairy → Pantry → Frozen → Other: the perimeter-then-middle shape of nearly every US grocery store, shipped as a constant. <br><br><b>B · Per-family reorder</b><br>Drag-to-reorder aisle sections in settings. Real feature, real story — deferred until the fixed order actually annoys someone; noted for the M5/7 kickoff as a non-goal.</p>
+      </div>
+      <div class="opt">
+        <div class="opt-head"><span class="opt-letter">S5.D3</span></div>
+        <p class="opt-claim"><b>A · Hue dot on the checked row</b> <span class="rec" style="margin-left: 4px;">Recommended</span><br>The partner's 16px initial disc appears on rows they checked (rendered above) — identity earning its place on a two-person surface, with the name in the row's accessible text. <br><br><b>B · Banner presence</b><br>“Sam is also shopping” pinned at top. Says they exist, not what they've done — the fact you need mid-aisle is per-item. Could join A later; not instead of it.</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= Decision sheet ================= -->
+  <section class="surface" id="sheet">
+    <p class="surface-no">Close-out</p>
+    <h2>Decision sheet</h2>
+    <p class="gate-q">Reply with overrides only — anything unlisted lands as recommended. On approval these become the implementation specs for M5/2–M5/7.</p>
+    <div class="sheetwrap">
+      <table class="sheet">
+        <thead><tr><th>Gate</th><th>Question</th><th>Options</th><th>Recommended</th></tr></thead>
+        <tbody>
+          <tr><td>S1.D1</td><td>Widget standard anatomy (v2)</td><td>A menu card · B kind placard · C banner voice</td><td>A</td></tr>
+          <tr><td>S1.D1b</td><td>Headline face</td><td>A Lora display · B DM Sans (new token required)</td><td>A</td></tr>
+          <tr><td>S1.D2</td><td>Unclaimed state</td><td>A quiet all day · B escalates at 4pm</td><td>B</td></tr>
+          <tr><td>S1.D3</td><td>Large-size extra</td><td>A week strip · B tomorrow + grocery tail</td><td>A</td></tr>
+          <tr><td>S2.D1</td><td>Week page anatomy</td><td>A seven equal rows · B tonight hero</td><td>A</td></tr>
+          <tr><td>S2.D2</td><td>Title teaching</td><td>A placeholder only · B placeholder + helper</td><td>B</td></tr>
+          <tr><td>S2.D3</td><td>Unclaimed row on the page</td><td>calm · escalate</td><td>calm</td></tr>
+          <tr><td>S3.D1</td><td>Month mark form</td><td>A initial + glyph · B avatar + glyph · C tinted square (fails ADR 044)</td><td>A</td></tr>
+          <tr><td>S3.D2</td><td>Agenda label voice</td><td>A “Dinner · Zach” · B “Zach's got dinner”</td><td>B</td></tr>
+          <tr><td>S3.D3</td><td>Unclaimed on calendar</td><td>A no mark · B hollow mark</td><td>A</td></tr>
+          <tr><td>S4.D1</td><td>Add affordance</td><td>A sticky bar + staples · B FAB + sheet</td><td>A</td></tr>
+          <tr><td>S4.D2</td><td>Build list order</td><td>A newest first · B aisle groups</td><td>A</td></tr>
+          <tr><td>S4.D3</td><td>Aisle assignment</td><td>A chip moment at add · B default Other</td><td>A</td></tr>
+          <tr><td>S5.D1</td><td>Check target</td><td>A whole row · B ring only</td><td>A</td></tr>
+          <tr><td>S5.D2</td><td>Aisle order</td><td>A fixed walk order · B per-family reorder</td><td>A</td></tr>
+          <tr><td>S5.D3</td><td>Partner presence</td><td>A hue dot per row · B banner</td><td>A</td></tr>
+        </tbody>
+      </table>
+    </div>
+    <p class="colophon">Tokens are copied verbatim from <code>packages/ui/src/styles.css</code> (light + dark; the page follows your theme). Lora and DM Sans fall back to Georgia / Helvetica Neue where not installed — type sizes and weights are true regardless. Widget frames are the real slot geometry (522×180 · 253×180 · 522×376); rows reproduce <code>ItemCard</code> chrome (<code>--radius-card</code>, <code>px-4 py-3</code>, 4px spine); people are Zach (teal), Sam (plum), Emma (marigold), Teddy (terracotta) per ADR 044's assignments.</p>
+  </section>
+</div>

@@ -1,0 +1,823 @@
+<title>M5 Meals &amp; Groceries — final design decisions</title>
+<style>
+  /* ===== Real app tokens — copied from packages/ui/src/styles.css ===== */
+  :root {
+    --font-display: 'Lora', Georgia, 'Times New Roman', serif;
+    --font-ui: 'DM Sans', 'Helvetica Neue', Arial, sans-serif;
+    --background: oklch(0.985 0.008 75);
+    --foreground: oklch(0.18 0.04 50);
+    --primary: oklch(0.57 0.14 35);
+    --primary-foreground: oklch(0.99 0 0);
+    --secondary: oklch(0.93 0.022 72);
+    --secondary-foreground: oklch(0.28 0.05 50);
+    --muted: oklch(0.93 0.016 72);
+    --muted-foreground: oklch(0.52 0.04 58);
+    --accent: oklch(0.47 0.07 185);
+    --accent-foreground: oklch(0.99 0 0);
+    --border: oklch(0.88 0.022 75);
+    --card: oklch(0.999 0.004 80);
+    --shadow-card: 0 1px 2px oklch(0.35 0.06 50 / 0.06), 0 2px 10px oklch(0.35 0.06 50 / 0.07);
+    --shadow-raised: 0 2px 6px oklch(0.35 0.06 50 / 0.07), 0 10px 28px oklch(0.35 0.06 50 / 0.12);
+    --surface-sunken: oklch(0.955 0.006 75);
+    --shadow-inset: inset 0 2px 3px -1px oklch(0.35 0.06 50 / 0.1), inset 0 -1px 0 0 oklch(1 0 0 / 0.55);
+    --identity-terracotta: oklch(0.6 0.13 35);
+    --identity-terracotta-tint: oklch(0.806 0.092 35);
+    --identity-terracotta-ink: oklch(0.36 0.09 35);
+    --identity-marigold: oklch(0.71 0.12 78);
+    --identity-marigold-tint: oklch(0.877 0.085 78);
+    --identity-marigold-ink: oklch(0.36 0.084 78);
+    --identity-teal: oklch(0.55 0.09 188);
+    --identity-teal-tint: oklch(0.773 0.063 188);
+    --identity-teal-ink: oklch(0.36 0.063 188);
+    --identity-plum: oklch(0.56 0.1 330);
+    --identity-plum-tint: oklch(0.78 0.07 330);
+    --identity-plum-ink: oklch(0.36 0.07 330);
+    --identity-family: oklch(0.55 0.022 65);
+    --identity-family-tint: oklch(0.9 0.018 70);
+    --identity-family-ink: oklch(0.36 0.02 62);
+    --warning: oklch(0.69 0.12 78);
+    --error: oklch(0.5 0.17 12);
+    --success: oklch(0.44 0.1 148);
+    --radius-card: 0.5rem;
+    --radius-panel: 0.75rem;
+    --radius-hero: 1rem;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+      --background: oklch(0.15 0.022 45);
+      --foreground: oklch(0.92 0.012 75);
+      --primary: oklch(0.66 0.14 35);
+      --secondary: oklch(0.22 0.02 48);
+      --secondary-foreground: oklch(0.82 0.012 70);
+      --muted: oklch(0.2 0.016 48);
+      --muted-foreground: oklch(0.56 0.022 60);
+      --accent: oklch(0.56 0.08 185);
+      --border: oklch(0.3 0.022 48);
+      --card: oklch(0.21 0.022 47);
+      --shadow-card: 0 1px 2px oklch(0 0 0 / 0.3), 0 2px 10px oklch(0 0 0 / 0.35);
+      --shadow-raised: 0 2px 6px oklch(0 0 0 / 0.35), 0 10px 28px oklch(0 0 0 / 0.45);
+      --surface-sunken: oklch(0.175 0.008 47);
+      --shadow-inset: inset 0 2px 4px -1px oklch(0 0 0 / 0.4), inset 0 -1px 0 0 oklch(1 0 0 / 0.04);
+      --identity-terracotta: oklch(0.7 0.13 35);
+      --identity-terracotta-tint: oklch(0.353 0.081 35);
+      --identity-terracotta-ink: oklch(0.9 0.049 35);
+      --identity-marigold: oklch(0.78 0.12 78);
+      --identity-marigold-tint: oklch(0.408 0.079 78);
+      --identity-marigold-ink: oklch(0.9 0.046 78);
+      --identity-teal: oklch(0.66 0.09 188);
+      --identity-teal-tint: oklch(0.325 0.059 188);
+      --identity-teal-ink: oklch(0.9 0.034 188);
+      --identity-plum: oklch(0.66 0.1 330);
+      --identity-plum-tint: oklch(0.325 0.066 330);
+      --identity-plum-ink: oklch(0.9 0.038 330);
+      --identity-family: oklch(0.72 0.022 68);
+      --identity-family-tint: oklch(0.285 0.014 65);
+      --identity-family-ink: oklch(0.9 0.018 70);
+      --warning: oklch(0.75 0.11 78);
+      --error: oklch(0.62 0.17 12);
+      --success: oklch(0.57 0.1 148);
+    }
+  }
+  [data-theme='dark'] {
+    --background: oklch(0.15 0.022 45);
+    --foreground: oklch(0.92 0.012 75);
+    --primary: oklch(0.66 0.14 35);
+    --secondary: oklch(0.22 0.02 48);
+    --secondary-foreground: oklch(0.82 0.012 70);
+    --muted: oklch(0.2 0.016 48);
+    --muted-foreground: oklch(0.56 0.022 60);
+    --accent: oklch(0.56 0.08 185);
+    --border: oklch(0.3 0.022 48);
+    --card: oklch(0.21 0.022 47);
+    --shadow-card: 0 1px 2px oklch(0 0 0 / 0.3), 0 2px 10px oklch(0 0 0 / 0.35);
+    --shadow-raised: 0 2px 6px oklch(0 0 0 / 0.35), 0 10px 28px oklch(0 0 0 / 0.45);
+    --surface-sunken: oklch(0.175 0.008 47);
+    --shadow-inset: inset 0 2px 4px -1px oklch(0 0 0 / 0.4), inset 0 -1px 0 0 oklch(1 0 0 / 0.04);
+    --identity-terracotta: oklch(0.7 0.13 35);
+    --identity-terracotta-tint: oklch(0.353 0.081 35);
+    --identity-terracotta-ink: oklch(0.9 0.049 35);
+    --identity-marigold: oklch(0.78 0.12 78);
+    --identity-marigold-tint: oklch(0.408 0.079 78);
+    --identity-marigold-ink: oklch(0.9 0.046 78);
+    --identity-teal: oklch(0.66 0.09 188);
+    --identity-teal-tint: oklch(0.325 0.059 188);
+    --identity-teal-ink: oklch(0.9 0.034 188);
+    --identity-plum: oklch(0.66 0.1 330);
+    --identity-plum-tint: oklch(0.325 0.066 330);
+    --identity-plum-ink: oklch(0.9 0.038 330);
+    --identity-family: oklch(0.72 0.022 68);
+    --identity-family-tint: oklch(0.285 0.014 65);
+    --identity-family-ink: oklch(0.9 0.018 70);
+    --warning: oklch(0.75 0.11 78);
+    --error: oklch(0.62 0.17 12);
+    --success: oklch(0.57 0.1 148);
+  }
+
+  /* ===== Document chrome ===== */
+  * { box-sizing: border-box; }
+  body {
+    background: var(--background); color: var(--foreground);
+    font-family: var(--font-ui); font-size: 15px; line-height: 1.55;
+    margin: 0; padding: 0 20px 96px;
+  }
+  .doc { max-width: 1020px; margin: 0 auto; }
+  .eyebrow { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); margin: 40px 0 10px; }
+  h1 { font-family: var(--font-display); font-size: 36px; font-weight: 400; line-height: 1.15; letter-spacing: -0.01em; margin: 0 0 14px; text-wrap: balance; }
+  h2 { font-family: var(--font-display); font-size: 26px; font-weight: 600; letter-spacing: -0.02em; line-height: 1.2; margin: 6px 0 4px; text-wrap: balance; }
+  h3.sub { font-size: 18px; font-weight: 600; letter-spacing: -0.01em; margin: 32px 0 4px; }
+  .lede { max-width: 68ch; color: var(--muted-foreground); margin: 0 0 8px; }
+  .lede strong, .note b { color: var(--foreground); font-weight: 600; }
+  code { font-size: 0.92em; background: var(--muted); padding: 1px 5px; border-radius: 4px; }
+  .surface-no { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted-foreground); margin: 0; }
+  .note { font-size: 14px; color: var(--muted-foreground); max-width: 76ch; margin: 8px 0 0; }
+  section.surface { margin-top: 58px; scroll-margin-top: 64px; }
+
+  nav.jump {
+    position: sticky; top: 0; z-index: 20; display: flex; gap: 8px; flex-wrap: wrap;
+    padding: 12px 0; margin: 22px 0 8px;
+    background: color-mix(in oklab, var(--background) 92%, transparent);
+    backdrop-filter: blur(6px); border-bottom: 1px solid var(--border);
+  }
+  nav.jump a {
+    font-size: 12px; font-weight: 600; color: var(--secondary-foreground); text-decoration: none;
+    padding: 6px 12px; border-radius: 999px; background: var(--secondary); border: 1px solid transparent;
+  }
+  nav.jump a:hover { border-color: var(--border); }
+  nav.jump a:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+  .verdicts { display: grid; grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); gap: 16px; margin-top: 20px; }
+  .verdict {
+    background: var(--card); border: 1px solid color-mix(in oklab, var(--border) 45%, transparent);
+    border-radius: var(--radius-panel); box-shadow: var(--shadow-card); padding: 16px 18px;
+  }
+  .verdict h3 { font-size: 12px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; margin: 0 0 10px; }
+  .verdict.acc h3 { color: var(--success); }
+  .verdict.push h3 { color: var(--primary); }
+  .verdict ul { margin: 0; padding-left: 18px; font-size: 14px; }
+  .verdict li { margin: 5px 0; }
+
+  .callout {
+    margin: 18px 0 0; padding: 12px 16px; border-left: 3px solid var(--accent);
+    background: color-mix(in oklab, var(--accent) 6%, transparent);
+    border-radius: 0 var(--radius-card) var(--radius-card) 0; font-size: 14px; max-width: 78ch;
+  }
+  .callout.push { border-left-color: var(--primary); background: color-mix(in oklab, var(--primary) 6%, transparent); }
+  .callout b { font-weight: 600; }
+
+  .mockwrap {
+    overflow-x: auto; padding: 24px; margin-top: 18px; border-radius: var(--radius-card);
+    background: var(--surface-sunken); border: 1px dashed var(--border);
+  }
+  .row-of-mocks { display: flex; gap: 26px; align-items: flex-start; width: max-content; }
+  .stack { display: flex; flex-direction: column; }
+  .tag { display: inline-block; font-size: 10px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase; color: var(--muted-foreground); margin-bottom: 8px; }
+  .mock-caption { font-size: 12px; color: var(--muted-foreground); margin-top: 12px; max-width: 74ch; }
+
+  /* ===== Widget ===== */
+  .widget {
+    width: 522px; height: 180px; flex: none;
+    background: var(--card); border-radius: var(--radius-panel);
+    border: 1px solid color-mix(in oklab, var(--border) 45%, transparent);
+    box-shadow: var(--shadow-card); padding: 14px 16px; display: flex; flex-direction: column;
+  }
+  .widget.compact { width: 253px; }
+  .widget.large { height: 376px; }
+  .whead { display: flex; align-items: center; gap: 6px; color: var(--muted-foreground); }
+  .whead svg { width: 13px; height: 13px; flex: none; }
+  .whead span { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--foreground); }
+  .whead .when { color: var(--muted-foreground); font-weight: 600; letter-spacing: 0.06em; }
+  .dish { margin-top: 10px; font-family: var(--font-display); font-size: 32px; font-weight: 600; letter-spacing: -0.01em; line-height: 1.1; }
+  .sides { margin-top: 4px; font-family: var(--font-display); font-style: italic; font-size: 16px; color: var(--muted-foreground); }
+  .rail { margin-top: auto; display: flex; align-items: center; gap: 12px; flex-wrap: wrap; }
+  .who { display: inline-flex; align-items: center; gap: 6px; font-size: 13px; font-weight: 600; }
+  .gapbadge {
+    margin-top: 5px; display: inline-flex; align-items: center; gap: 7px; align-self: flex-start;
+    background: color-mix(in oklab, var(--warning) 22%, transparent); color: var(--foreground);
+    border-radius: 999px; padding: 4px 12px 4px 9px; font-size: 13px; font-weight: 600;
+  }
+  .gapbadge svg { color: color-mix(in oklab, var(--warning) 70%, var(--foreground)); }
+
+  .avatar { border-radius: 999px; display: grid; place-items: center; flex: none; font-weight: 700; font-family: var(--font-ui); }
+  .av-16 { width: 16px; height: 16px; font-size: 9px; }
+  .av-20 { width: 20px; height: 20px; font-size: 10px; }
+  .teal { background: var(--identity-teal-tint); color: var(--identity-teal-ink); }
+  .plum { background: var(--identity-plum-tint); color: var(--identity-plum-ink); }
+  .marigold { background: var(--identity-marigold-tint); color: var(--identity-marigold-ink); }
+  .hollow { width: 20px; height: 20px; border: 2px dashed var(--border); border-radius: 999px; flex: none; display: block; }
+
+  .chip { display: inline-flex; align-items: center; gap: 5px; font-size: 12px; font-weight: 600; padding: 3px 9px; border-radius: 999px; }
+  .chip.trybite { background: color-mix(in oklab, var(--accent) 12%, transparent); color: var(--accent); }
+  .ghost-btn {
+    display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-ui); font-size: 13px; font-weight: 600;
+    color: var(--primary); border: 1px solid color-mix(in oklab, var(--primary) 40%, transparent);
+    background: transparent; border-radius: var(--radius-card); padding: 7px 14px;
+  }
+  .solid-btn {
+    display: inline-flex; align-items: center; gap: 6px; font-family: var(--font-ui); font-size: 13px; font-weight: 600;
+    color: var(--primary-foreground); background: var(--primary); border: none; border-radius: var(--radius-card); padding: 8px 14px;
+  }
+  .textlink { font-family: var(--font-ui); font-size: 13px; font-weight: 600; color: var(--primary); background: none; border: 0; padding: 4px 2px; }
+
+  .strip { margin-top: auto; background: var(--surface-sunken); box-shadow: var(--shadow-inset); border-radius: var(--radius-card); padding: 12px 14px; }
+  .strip-label { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted-foreground); margin-bottom: 9px; display: flex; gap: 8px; align-items: baseline; }
+  .strip-label .need { color: var(--primary); letter-spacing: 0.06em; }
+  .strip-days { display: flex; gap: 12px; }
+  .sday { text-align: center; width: 40px; }
+  .sday .dl { font-size: 10px; font-weight: 600; color: var(--muted-foreground); margin-top: 4px; }
+  .sday.today .dl { color: var(--primary); }
+  .sday.today .dl::after { content: ''; display: block; width: 12px; height: 2px; border-radius: 2px; background: var(--primary); margin: 3px auto 0; }
+
+  /* ===== Week plan — ItemCard rows ===== */
+  .page { width: 700px; flex: none; }
+  .page-head { display: flex; align-items: flex-end; justify-content: space-between; gap: 20px; padding: 0 2px 14px; }
+  .page-title { font-family: var(--font-display); font-size: 29px; font-weight: 600; letter-spacing: -0.02em; margin: 0; }
+  .page-sub { font-size: 14px; color: var(--muted-foreground); margin-top: 3px; }
+  .page-sub b { color: var(--primary); font-weight: 700; }
+  .item-card {
+    display: flex; gap: 14px; align-items: stretch;
+    background: var(--card); border-radius: var(--radius-card);
+    border: 1px solid color-mix(in oklab, var(--border) 45%, transparent);
+    box-shadow: var(--shadow-card); padding: 12px 16px; margin-bottom: 10px;
+  }
+  .item-card.empty { border-style: dashed; border-color: var(--border); box-shadow: none; background: var(--background); }
+  .spine { width: 4px; border-radius: 2px; flex: none; align-self: stretch; }
+  .spine.none { background: repeating-linear-gradient(var(--border) 0 4px, transparent 4px 8px); }
+  .dwhen { width: 46px; flex: none; text-align: center; align-self: center; }
+  .dwhen .dow { font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted-foreground); }
+  .dwhen .dnum { font-size: 20px; font-weight: 700; font-variant-numeric: tabular-nums; }
+  .item-card.today .dwhen .dow, .item-card.today .dwhen .dnum { color: var(--primary); }
+  .dbody { min-width: 0; flex: 1; align-self: center; }
+  .dmeal { font-size: 16px; font-weight: 600; line-height: 1.25; }
+  .dmeal .with { font-weight: 400; color: var(--muted-foreground); }
+  .dmeta { font-size: 13px; color: var(--muted-foreground); margin-top: 3px; display: flex; align-items: center; gap: 7px; flex-wrap: wrap; }
+  .dmeta .cook { display: inline-flex; align-items: center; gap: 6px; font-weight: 600; color: var(--foreground); }
+  .dact { flex: none; display: flex; gap: 8px; align-items: center; }
+
+  /* ===== Groceries — ListRow grammar ===== */
+  .aisle { display: flex; align-items: baseline; gap: 10px; padding: 15px 14px 7px; font-size: 13px; font-weight: 700; position: relative; }
+  .aisle .n { flex: 1; }
+  .aisle .cnt { font-size: 12px; font-weight: 600; color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
+  .aisle::after { content: ''; position: absolute; left: 14px; right: 14px; bottom: 0; height: 1px; background: var(--border); }
+  .grow { display: flex; align-items: center; gap: 13px; width: 100%; min-height: 56px; padding: 8px 14px; position: relative; }
+  .grow + .grow::before { content: ''; position: absolute; top: 0; left: 52px; right: 14px; height: 1px; background: color-mix(in oklab, var(--border) 62%, transparent); }
+  .gtext { min-width: 0; flex: 1; }
+  .gname { font-size: 17px; font-weight: 500; line-height: 1.25; }
+  .gnote { font-size: 13px; color: var(--muted-foreground); margin-top: 1px; }
+  .grow.got { opacity: 0.46; }
+  .grow.got .gname { text-decoration: line-through; text-decoration-thickness: 1px; }
+  .ring { width: 26px; height: 26px; border-radius: 999px; flex: none; border: 2px solid color-mix(in oklab, var(--border) 90%, var(--foreground)); display: grid; place-items: center; color: transparent; }
+  .ring svg { width: 15px; height: 15px; }
+  .grow.got .ring { border-color: var(--success); background: var(--success); color: oklch(0.99 0 0); }
+  .cleared { display: flex; align-items: center; gap: 12px; width: 100%; margin-top: 12px; padding: 11px 14px; border-top: 1px solid var(--border); color: var(--muted-foreground); }
+  .cleared .tick { width: 22px; height: 22px; border-radius: 999px; flex: none; display: grid; place-items: center; background: color-mix(in oklab, var(--success) 16%, transparent); color: var(--success); }
+  .cleared .tick svg { width: 13px; height: 13px; }
+  .cleared .cl-n { font-size: 14px; font-weight: 600; color: var(--foreground); }
+  .cleared .cl-s { font-size: 13px; margin-left: auto; }
+  .filerow { padding: 0 14px 10px 52px; display: flex; gap: 6px; flex-wrap: wrap; align-items: center; }
+  .filerow .q { font-size: 12px; color: var(--muted-foreground); margin-right: 2px; }
+  .achip { font-size: 12px; font-weight: 600; color: var(--secondary-foreground); background: var(--secondary); border: 1px solid transparent; border-radius: 999px; padding: 5px 11px; }
+
+  .phone { width: 390px; flex: none; background: var(--card); border: 1px solid var(--border); border-radius: 24px; box-shadow: var(--shadow-raised); padding: 14px 0 16px; overflow: hidden; }
+  .phone .inner-pad { padding: 0 14px; }
+  .ptitle { font-family: var(--font-display); font-size: 22px; font-weight: 600; letter-spacing: -0.02em; }
+  .offline-pill { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; font-weight: 600; color: var(--secondary-foreground); background: var(--secondary); padding: 4px 10px; border-radius: 999px; }
+  .offline-pill svg { width: 12px; height: 12px; }
+  .addbar { display: flex; align-items: center; gap: 10px; background: var(--background); border: 1px solid var(--border); border-radius: 999px; padding: 9px 10px 9px 16px; margin: 10px 14px 4px; }
+  .addbar .ph { flex: 1; font-size: 15px; color: var(--muted-foreground); }
+  .addbtn { width: 34px; height: 34px; flex: none; border-radius: 999px; background: var(--primary); color: var(--primary-foreground); display: grid; place-items: center; }
+  .addbtn svg { width: 17px; height: 17px; }
+  .staples-row { display: flex; gap: 7px; flex-wrap: wrap; padding: 6px 14px 4px; }
+  .schip { font-size: 13px; font-weight: 500; color: var(--secondary-foreground); background: var(--secondary); border-radius: 999px; padding: 7px 13px; }
+
+  /* ===== Wall — fridge iPad geometry ===== */
+  .wall {
+    width: 1060px; flex: none; background: var(--background);
+    border: 1px solid var(--border); border-radius: var(--radius-panel);
+    box-shadow: var(--shadow-raised); overflow: hidden;
+  }
+  .wallhead { padding: 22px 26px 18px; border-bottom: 1px solid var(--border); display: flex; align-items: flex-end; justify-content: space-between; gap: 24px; }
+  .wall-title { font-family: var(--font-display); font-size: 29px; font-weight: 600; letter-spacing: -0.02em; margin: 0; }
+  .shopping { display: inline-flex; align-items: center; gap: 8px; margin-top: 12px; font-size: 14px; font-weight: 600; color: var(--secondary-foreground); background: var(--secondary); border-radius: 999px; padding: 7px 15px; }
+  .shopping .pulse { width: 8px; height: 8px; border-radius: 999px; background: var(--success); flex: none; }
+  .wall-stat { font-size: 15px; font-weight: 600; font-variant-numeric: tabular-nums; text-align: right; }
+  .wall-stat .dim { color: var(--muted-foreground); font-weight: 500; }
+  .wall-track { height: 5px; border-radius: 999px; background: var(--secondary); margin-top: 12px; overflow: hidden; min-width: 220px; }
+  .wall-fill { height: 100%; border-radius: 999px; background: var(--primary); }
+  .wall-add { display: flex; gap: 12px; align-items: center; padding: 16px 26px; border-bottom: 1px solid var(--border); }
+  .wall-addbar { flex: 1; display: flex; align-items: center; gap: 12px; background: var(--card); border: 1px solid var(--border); border-radius: 999px; box-shadow: var(--shadow-card); padding: 10px 12px 10px 20px; }
+  .wall-addbar .ph { flex: 1; font-size: 16px; color: var(--muted-foreground); }
+  .wall-cols { padding: 6px 12px 22px; column-count: 3; column-gap: 18px; }
+  .colgroup { break-inside: avoid; page-break-inside: avoid; display: block; margin-bottom: 4px; }
+  .wall .grow { min-height: 50px; padding: 6px 12px; }
+  .wall .grow + .grow::before { left: 48px; right: 12px; }
+  .wall .gname { font-size: 16px; }
+  .wall .aisle { padding: 13px 12px 6px; }
+  .wall .aisle::after { left: 12px; right: 12px; }
+  .wall .cleared { margin-top: 8px; padding: 10px 12px; }
+
+  /* ===== Month grid + agenda ===== */
+  .month-week { display: flex; width: max-content; border: 1px solid var(--border); border-radius: var(--radius-card); overflow: hidden; background: var(--card); }
+  .mcell { width: 112px; height: 112px; padding: 7px; border-right: 1px solid var(--border); display: flex; flex-direction: column; gap: 3px; }
+  .mcell:last-child { border-right: none; }
+  .mcell .dnum { font-size: 11px; font-weight: 600; color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
+  .mcell.today .dnum { color: var(--primary-foreground); background: var(--primary); width: 18px; height: 18px; border-radius: 999px; display: grid; place-items: center; }
+  .mpill { font-size: 9px; font-weight: 600; padding: 2px 5px; border-radius: 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .marks { margin-top: auto; display: flex; gap: 6px; align-items: center; }
+  .mark { display: inline-flex; align-items: center; gap: 3px; }
+  .mark svg { width: 11px; height: 11px; color: color-mix(in oklab, var(--muted-foreground) 75%, transparent); }
+  .agenda { width: 390px; flex: none; background: var(--card); border: 1px solid var(--border); border-radius: var(--radius-panel); overflow: hidden; }
+  .agenda-day { display: flex; align-items: baseline; gap: 10px; padding: 12px 14px 8px; border-bottom: 1px solid var(--border); }
+  .agenda-day + .agenda-ev + .agenda-day { border-top: 1px solid var(--border); }
+  .agenda-day .ad-date { font-size: 15px; font-weight: 700; }
+  .agenda-day .ad-mark { font-size: 13px; color: var(--muted-foreground); display: inline-flex; align-items: center; gap: 6px; margin-left: auto; }
+  .agenda-ev { display: flex; gap: 12px; padding: 11px 14px; align-items: center; }
+  .agenda-ev .t { font-size: 13px; font-weight: 600; color: var(--muted-foreground); font-variant-numeric: tabular-nums; width: 54px; flex: none; }
+
+  /* ===== Tables ===== */
+  .sheetwrap { overflow-x: auto; margin-top: 18px; }
+  table.sheet { border-collapse: collapse; width: 100%; min-width: 720px; font-size: 14px; }
+  table.sheet th { text-align: left; font-size: 11px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted-foreground); padding: 8px 12px; border-bottom: 1px solid var(--border); }
+  table.sheet td { padding: 9px 12px; vertical-align: top; border-bottom: 1px solid color-mix(in oklab, var(--border) 55%, transparent); }
+  table.sheet td:first-child { font-weight: 700; white-space: nowrap; font-variant-numeric: tabular-nums; }
+  .src { font-size: 11px; font-weight: 700; letter-spacing: 0.04em; text-transform: uppercase; white-space: nowrap; }
+  .src.crit { color: var(--accent); }
+  .src.mine { color: var(--muted-foreground); }
+  .src.pb { color: var(--primary); }
+  .colophon { margin-top: 48px; font-size: 12px; color: var(--muted-foreground); max-width: 76ch; }
+
+  @media (max-width: 640px) {
+    body { padding: 0 12px 72px; }
+    h1 { font-size: 29px; }
+    .mockwrap { padding: 14px; }
+  }
+</style>
+
+<div class="doc">
+  <p class="eyebrow">M5/1 · Final · post-critique · 2026-08-11</p>
+  <h1>Meals &amp; Groceries — the settled design</h1>
+  <p class="lede">One document, no more options: v2's gates + the critique's parts 1–2, reconciled. The critique won most of its arguments and this page renders the result. <strong>Three pushbacks are held</strong>, each marked and argued in place. On your approval this becomes the implementation spec input for M5/2–M5/7.</p>
+
+  <nav class="jump" aria-label="Sections">
+    <a href="#verdict">The verdict</a>
+    <a href="#s1">Tonight widget</a>
+    <a href="#s2">Week plan</a>
+    <a href="#s3">Day marks</a>
+    <a href="#groc">Groceries</a>
+    <a href="#sheet">Final decisions</a>
+    <a href="#outputs">Close-out outputs</a>
+  </nav>
+
+  <!-- ================= VERDICT ================= -->
+  <section class="surface" id="verdict" style="margin-top: 36px;">
+    <h2>What the critique changed, what it didn't</h2>
+    <div class="verdicts">
+      <div class="verdict acc">
+        <h3>Accepted — it was right</h3>
+        <ul>
+          <li><b>Localised escalation</b> over the full <code>--warning</code> wash. Four widgets washing amber at 5pm is a dashboard crying wolf; the habituation cost lands on the alert that matters. The badge moves the same distance without taking the field.</li>
+          <li><b>Date out of the widget header</b> — the screen states it already.</li>
+          <li><b>Week strip: today marked, count in words</b> ("2 days need a cook") — the label does the tallying a person shouldn't.</li>
+          <li><b>Groceries as <code>ListRow</code></b> — hairline rows, rings, aisle heads. Forty bordered cards was real chrome debt; the density problem was mine.</li>
+          <li><b>Filing dictionary</b> — auto-classify on add, ask only when unknown. Better than my chip-row-every-add: zero friction for "milk", one tap for "quinoa".</li>
+          <li><b>Cleared-aisle collapse</b> ("Produce · all 4 in the cart") — earned space, satisfying, reversible.</li>
+          <li><b>The wall is its own surface</b> — columns so the whole list fits, staples beside the add field, "Sam is at the store" presence. Designing the surface instead of porting the phone.</li>
+          <li><b>The narrowed hue rule</b> — <i>hue where the person is the answer to the screen's question.</i> Grocery spines were decoration with a rationale; meals spines are the point. Goes to an ADR amendment, below.</li>
+          <li><b>Verb-kind consistency</b> — v2's S2 row wearing a <code>Cooked</code> chip after S1 retired it was an inconsistency, plainly.</li>
+        </ul>
+      </div>
+      <div class="verdict push">
+        <h3>Pushed back — intentional</h3>
+        <ul>
+          <li><b>The wall is 1060px, not 1180.</b> The house's wall is the fridge iPad — <code>design-system.md</code> §Grid: four columns fill ~1060px after the 220px sidebar at 1280. There is no 1920 panel in this deployment. Columns survive; there are <b>three</b> of them. (Also moots half the column-rebalance worry: three columns re-flow less than four.)</li>
+          <li><b>The week plan stays on <code>ItemCard</code></b> — by the critique's <i>own</i> proposed rule: "cards when items are independent objects with several actions; rows when they're a set you scan and act on one way." A day row has edit, claim, and needs-push — three actions on an independent object. That's the card contract, and it's what chores and calendar do. <code>ListRow</code> is for the grocery list, which is exactly the scan-and-act-one-way set the rule describes.</li>
+          <li><b>"Last Thursday you did tacos" is gated, not shipped.</b> Lovely line, but <code>spec.md</code> defers meal history deliberately, and this is history's thin edge. The empty state ships with neutral copy; the history prompt is a marked fast-follow if M5/2 finds the one-row query free.</li>
+        </ul>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= S1 ================= -->
+  <section class="surface" id="s1">
+    <p class="surface-no">Final · <code>meals.tonight</code> widget</p>
+    <h2>Tonight's dinner</h2>
+    <p class="note">Menu-card anatomy (S1.D1-A), Lora display headline (S1.D1b-A — no sans rung exists above 20px), date dropped, kind carried by the verb. Four states, final:</p>
+
+    <div class="mockwrap">
+      <div class="row-of-mocks">
+        <div class="stack">
+          <span class="tag">Claimed</span>
+          <div class="widget">
+            <div class="whead">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 2v7c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2V2M7 2v20M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg>
+              <span>Meals</span><span class="when">· Tonight</span>
+            </div>
+            <div class="dish">Rigatoni</div>
+            <div class="sides">with roasted veggies &amp; garlic bread</div>
+            <div class="rail">
+              <span class="who"><span class="avatar av-20 teal">Z</span>Zach is cooking</span>
+              <span class="chip trybite">Try bite · the veggies</span>
+            </div>
+          </div>
+        </div>
+        <div class="stack">
+          <span class="tag">Unclaimed, escalated (after the 4:00 nudge)</span>
+          <div class="widget">
+            <div class="whead">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 2v7c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2V2M7 2v20M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg>
+              <span>Meals</span><span class="when">· Tonight</span>
+            </div>
+            <div class="dish">Rigatoni</div>
+            <div class="gapbadge">
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" stroke-width="2.2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+              Still needs a cook · 4:30
+            </div>
+            <div class="rail">
+              <button class="solid-btn" type="button">I've got it</button>
+              <span style="font-size: 12px; color: var(--muted-foreground);">Parents were nudged at 4:00.</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="mockwrap" style="margin-top: 14px;">
+      <div class="row-of-mocks">
+        <div class="stack">
+          <span class="tag">Unclaimed, before 4:00 — quiet</span>
+          <div class="widget">
+            <div class="whead">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 2v7c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2V2M7 2v20M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg>
+              <span>Meals</span><span class="when">· Tonight</span>
+            </div>
+            <div class="dish">Rigatoni</div>
+            <div class="sides">planned — nobody's on it yet</div>
+            <div class="rail">
+              <span class="hollow"></span>
+              <button class="ghost-btn" type="button">I've got it</button>
+            </div>
+          </div>
+        </div>
+        <div class="stack">
+          <span class="tag">Nothing planned</span>
+          <div class="widget">
+            <div class="whead">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 2v7c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2V2M7 2v20M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg>
+              <span>Meals</span><span class="when">· Tonight</span>
+            </div>
+            <div class="dish" style="color: var(--muted-foreground);">Nothing planned</div>
+            <div class="sides">the week's still open</div>
+            <div class="rail">
+              <button class="solid-btn" type="button">Plan it</button>
+              <button class="ghost-btn" type="button">I've got it</button>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="mock-caption">The sides line is the state's voice in every variant — menu note, gap statement, or invitation. The history prompt ("last Thursday you did tacos") slots into the nothing-planned sides line <b>if</b> M5/2 finds the lookback query free; copy above is the shipping default.</p>
+    </div>
+
+    <h3 class="sub">Large + compact</h3>
+    <div class="mockwrap">
+      <div class="row-of-mocks">
+        <div class="stack">
+          <div class="widget large">
+            <div class="whead">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 2v7c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2V2M7 2v20M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg>
+              <span>Meals</span><span class="when">· Tonight</span>
+            </div>
+            <div class="dish">Rigatoni</div>
+            <div class="sides">with roasted veggies &amp; garlic bread</div>
+            <div class="rail" style="margin-top: 12px;">
+              <span class="who"><span class="avatar av-20 teal">Z</span>Zach is cooking</span>
+              <span class="chip trybite">Try bite · the veggies</span>
+            </div>
+            <div class="strip">
+              <div class="strip-label"><span>This week</span><span class="need">· 2 days need a cook</span></div>
+              <div class="strip-days">
+                <div class="sday today"><span class="avatar av-20 teal" style="margin: 0 auto;">Z</span><div class="dl">Sun</div></div>
+                <div class="sday"><span class="avatar av-20 plum" style="margin: 0 auto;">S</span><div class="dl">Mon</div></div>
+                <div class="sday"><span class="hollow" style="margin: 0 auto;"></span><div class="dl">Tue</div></div>
+                <div class="sday"><span class="avatar av-20 plum" style="margin: 0 auto;">S</span><div class="dl">Wed</div></div>
+                <div class="sday"><span class="hollow" style="margin: 0 auto;"></span><div class="dl">Thu</div></div>
+                <div class="sday"><span class="avatar av-20 teal" style="margin: 0 auto;">Z</span><div class="dl">Fri</div></div>
+                <div class="sday"><span class="avatar av-20 marigold" style="margin: 0 auto;">E</span><div class="dl">Sat</div></div>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="stack">
+          <div class="widget compact">
+            <div class="whead">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M3 2v7c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2V2M7 2v20M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg>
+              <span>Tonight</span>
+            </div>
+            <div class="dish" style="font-size: 24px; margin-top: 12px;">Rigatoni</div>
+            <div class="rail"><span class="who" style="font-size: 12px;"><span class="avatar av-16 teal">Z</span>Zach</span></div>
+          </div>
+          <p class="mock-caption">Compact drops sides and the try bite — the settled subtraction.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= S2 ================= -->
+  <section class="surface" id="s2">
+    <p class="surface-no">Final · <code>/meals</code> week plan</p>
+    <h2>The week plan</h2>
+    <p class="note"><code>PageContainer width="list"</code> · seven <code>ItemCard</code> rows · owner-identity spines (the meals page is exactly where the person answers the screen's question) · verb carries kind · needs-push is a text link · no amber anywhere (S2.D3 calm). Header states the week's gap count — the same sentence as the widget strip.</p>
+
+    <div class="callout push">
+      <b>Pushback rendered here:</b> the critique's hairline rows are rejected for this page by the critique's own card/row rule — a day is an independent object with three actions (edit, claim, push needs). Cards also keep this page speaking the same language as chores and calendar. <code>ListRow</code> lives one section down, where it belongs. <b>The asymmetric-evidence charge is answered, not dodged:</b> the hairline version of this exact page is fully rendered in the critique's part-2 file — both pictures exist, and this call rests on the rule, not on which option got drawn.
+    </div>
+
+    <div class="mockwrap">
+      <div class="row-of-mocks">
+        <div class="page">
+          <div class="page-head">
+            <div>
+              <p class="page-title">This week</p>
+              <div class="page-sub">Aug 9–15 · <b>2 days need a cook</b></div>
+            </div>
+          </div>
+          <div class="item-card today">
+            <span class="spine" style="background: var(--identity-teal);"></span>
+            <div class="dwhen"><div class="dow">Sun</div><div class="dnum">9</div></div>
+            <div class="dbody">
+              <div class="dmeal">Rigatoni <span class="with">· roasted veggies, garlic bread</span></div>
+              <div class="dmeta"><span class="cook"><span class="avatar av-16 teal">Z</span>Zach is cooking</span><span>· try bite: the veggies</span></div>
+            </div>
+            <div class="dact"><button class="textlink" type="button">3 things needed</button></div>
+          </div>
+          <div class="item-card">
+            <span class="spine" style="background: var(--identity-plum);"></span>
+            <div class="dwhen"><div class="dow">Mon</div><div class="dnum">10</div></div>
+            <div class="dbody">
+              <div class="dmeal">Leftover night</div>
+              <div class="dmeta"><span class="cook"><span class="avatar av-16 plum">S</span>Sam is reheating</span></div>
+            </div>
+          </div>
+          <div class="item-card empty">
+            <span class="spine none"></span>
+            <div class="dwhen"><div class="dow">Tue</div><div class="dnum">11</div></div>
+            <div class="dbody"><div class="dmeal" style="font-weight: 500; color: var(--muted-foreground);">Nothing planned</div></div>
+            <div class="dact">
+              <button class="ghost-btn" type="button" style="font-size: 12px; padding: 6px 12px;">Plan it</button>
+              <button class="ghost-btn" type="button" style="font-size: 12px; padding: 6px 12px;">I've got it</button>
+            </div>
+          </div>
+          <div class="item-card">
+            <span class="spine none"></span>
+            <div class="dwhen"><div class="dow">Thu</div><div class="dnum">13</div></div>
+            <div class="dbody">
+              <div class="dmeal">Sheet-pan chicken</div>
+              <div class="dmeta"><span style="font-style: italic;">Nobody's got it yet</span></div>
+            </div>
+            <div class="dact"><button class="ghost-btn" type="button" style="font-size: 12px; padding: 6px 12px;">I've got it</button></div>
+          </div>
+          <div class="item-card">
+            <span class="spine" style="background: var(--identity-marigold);"></span>
+            <div class="dwhen"><div class="dow">Sat</div><div class="dnum">15</div></div>
+            <div class="dbody">
+              <div class="dmeal">Breakfast for dinner</div>
+              <div class="dmeta"><span class="cook"><span class="avatar av-16 marigold">E</span>Emma is cooking</span><span>· with help</span></div>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="mock-caption">Five of seven rows shown. Two flavours of empty stay distinct: <b>Tue</b> has no meal (dashed card + dashed spine, paired actions); <b>Thu</b> has a meal nobody claimed (solid card, dashed spine, meal intact, single claim). Unclaimed keeps a dashed <i>spine</i> because owner identity is exactly what's missing — the slot renders its absence.</p>
+    </div>
+
+    <p class="note" style="margin-top: 14px;">The editor drawer is settled from v2 and unchanged: title (placeholder "Rigatoni" + standing helper "The headline — name it like you'd say it to the kids"), <b>sides</b>, try bite (with the punches-their-card helper), needs, kind, owner, optional P$ — 440px, RHF + Zod.</p>
+  </section>
+
+  <!-- ================= S3 ================= -->
+  <section class="surface" id="s3">
+    <p class="surface-no">Final · Calendar day marks (ADR 050)</p>
+    <h2>Day marks</h2>
+    <p class="note">All v2 calls stand: initial-in-tint + glyph (never hue-only, ADR 044), "Zach's got dinner" voice in the agenda header, no mark for unclaimed days. The critique's tightening is in: 3px gap, glyph lightened, so a mark reads as one object and the two-mark cap doesn't look like four.</p>
+
+    <div class="mockwrap">
+      <div class="row-of-mocks">
+        <div class="stack">
+          <div class="month-week" role="img" aria-label="Month week row with dinner day marks">
+            <div class="mcell today"><span class="dnum">9</span>
+              <span class="mpill" style="background: var(--identity-terracotta-tint); color: var(--identity-terracotta-ink);">Soccer 10:00</span>
+              <div class="marks"><span class="mark"><span class="avatar av-16 teal">Z</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 2v7c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2V2M7 2v20M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg></span></div>
+            </div>
+            <div class="mcell"><span class="dnum">10</span>
+              <div class="marks"><span class="mark"><span class="avatar av-16 plum">S</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 2v7c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2V2M7 2v20M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg></span></div>
+            </div>
+            <div class="mcell"><span class="dnum">11</span>
+              <span class="mpill" style="background: var(--identity-marigold-tint); color: var(--identity-marigold-ink);">Piano 4:00</span>
+            </div>
+            <div class="mcell"><span class="dnum">12</span>
+              <span class="mpill" style="background: var(--identity-family-tint); color: var(--identity-family-ink);">Dentist 2:30</span>
+              <div class="marks">
+                <span class="mark"><span class="avatar av-16 plum">S</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 2v7c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2V2M7 2v20M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg></span>
+                <span class="mark"><span class="avatar av-16 marigold">E</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M22 10v6M2 10l10-5 10 5-10 5z"/><path d="M6 12v5c3 3 9 3 12 0v-5"/></svg></span>
+              </div>
+            </div>
+            <div class="mcell"><span class="dnum">13</span></div>
+            <div class="mcell"><span class="dnum">14</span>
+              <div class="marks"><span class="mark"><span class="avatar av-16 teal">Z</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 2v7c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2V2M7 2v20M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg></span></div>
+            </div>
+            <div class="mcell"><span class="dnum">15</span>
+              <div class="marks"><span class="mark"><span class="avatar av-16 marigold">E</span><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"><path d="M3 2v7c0 1.1.9 2 2 2h2a2 2 0 0 0 2-2V2M7 2v20M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3zm0 0v7"/></svg></span></div>
+            </div>
+          </div>
+          <p class="mock-caption">Thursday bare — the unclaimed sheet-pan chicken makes no mark. The calendar records; the widget and nudge pressure.</p>
+        </div>
+        <div class="stack">
+          <div class="agenda">
+            <div class="agenda-day">
+              <span class="ad-date">Sun 9</span>
+              <span class="ad-mark"><span class="avatar av-16 teal">Z</span>Zach's got dinner</span>
+            </div>
+            <div class="agenda-ev"><span class="t">10:00</span><span class="spine" style="width: 3px; height: 26px; background: var(--identity-terracotta);"></span><span style="font-size: 15px; font-weight: 500;">Soccer practice</span></div>
+            <div class="agenda-day">
+              <span class="ad-date">Mon 10</span>
+              <span class="ad-mark"><span class="avatar av-16 plum">S</span>Sam's got dinner</span>
+            </div>
+            <div class="agenda-ev"><span class="t">—</span><span style="font-size: 14px; color: var(--muted-foreground);">Nothing else on</span></div>
+          </div>
+          <p class="mock-caption">Mark right-aligned in the day header; attribution only, never the meal name.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= GROCERIES ================= -->
+  <section class="surface" id="groc">
+    <p class="surface-no">Final · Groceries — phone and wall</p>
+    <h2>One list, every surface</h2>
+    <p class="note">The critique's consolidation is accepted: <b>one aisle-grouped list everywhere</b> — rings always visible, add bar always present, the build/shop mode split retired as separate arrangements. What made "build mode" want a flat recency list — "did my add land?" — is answered by the add flashing into place in its aisle; what made "shop mode" special (big targets, dim-in-place, offline) is now just how the list always behaves. Auto-filing via the aisle dictionary; the "Which aisle?" chips appear only for the words it doesn't know. <b>No identity chrome anywhere on groceries</b> (the narrowed hue rule): "Sam got it" / "Emma added" are text notes.</p>
+
+    <div class="mockwrap">
+      <div class="row-of-mocks">
+        <div class="stack">
+          <span class="tag">Phone · 390px · in the store</span>
+          <div class="phone">
+            <div class="inner-pad" style="display: flex; align-items: center; justify-content: space-between;">
+              <span class="ptitle">Groceries</span>
+              <span style="font-size: 13px; font-weight: 600; font-variant-numeric: tabular-nums;">2 in the cart <span style="color: var(--muted-foreground); font-weight: 500;">· 8 to go</span></span>
+            </div>
+            <div class="inner-pad" style="margin-top: 8px;">
+              <div class="wall-track" style="min-width: 0; margin-top: 0;"><div class="wall-fill" style="width: 20%;"></div></div>
+            </div>
+            <div class="inner-pad" style="margin-top: 8px;">
+              <span class="offline-pill">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M1 1l22 22M8.5 16.5a5 5 0 0 1 7 0M5 12.55a11 11 0 0 1 5.17-2.39M10.71 5.05A16 16 0 0 1 22.58 9M1.42 9a15.9 15.9 0 0 1 4.7-2.88"/><circle cx="12" cy="20" r="1"/></svg>
+                Offline — checks will sync
+              </span>
+            </div>
+            <div class="aisle" style="padding-top: 8px;"><span class="n">Produce</span><span class="cnt">2 left</span></div>
+            <div class="grow got">
+              <span class="ring"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2"><path d="M20 6 9 17l-5-5"/></svg></span>
+              <span class="gtext"><span class="gname">Bananas</span><span class="gnote">Sam got it</span></span>
+            </div>
+            <div class="grow">
+              <span class="ring"></span>
+              <span class="gtext"><span class="gname">Broccoli</span><span class="gnote">for Sunday's rigatoni</span></span>
+            </div>
+            <div class="grow">
+              <span class="ring"></span>
+              <span class="gtext"><span class="gname">Snap peas</span><span class="gnote">Emma added these</span></span>
+            </div>
+            <div class="aisle"><span class="n">Dairy</span><span class="cnt">1 left</span></div>
+            <div class="grow got">
+              <span class="ring"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2"><path d="M20 6 9 17l-5-5"/></svg></span>
+              <span class="gtext"><span class="gname">Milk</span><span class="gnote">Sam got it</span></span>
+            </div>
+            <div class="grow">
+              <span class="ring"></span>
+              <span class="gtext"><span class="gname">Yogurt cups</span></span>
+            </div>
+            <div class="grow" style="border-top: none;">
+              <span class="ring"></span>
+              <span class="gtext"><span class="gname">Quinoa</span></span>
+            </div>
+            <div class="filerow"><span class="q">Which aisle?</span><span class="achip">Produce</span><span class="achip">Pantry</span><span class="achip">Frozen</span><span class="achip" style="background: transparent; border: 1px dashed var(--border); color: var(--muted-foreground);">Leave it here</span></div>
+            <div class="cleared">
+              <span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2"><path d="M20 6 9 17l-5-5"/></svg></span>
+              <span class="cl-n">Bakery</span><span class="cl-s">all 2 in the cart</span>
+            </div>
+            <div class="staples-row" style="border-top: 1px solid var(--border); padding-top: 10px; margin-top: 4px;">
+              <span class="schip">Milk</span><span class="schip">Eggs</span><span class="schip">Bread</span>
+            </div>
+            <div class="addbar" style="margin-bottom: 0;">
+              <span class="ph">Add — “milk”, “quinoa”…</span>
+              <span class="addbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg></span>
+            </div>
+          </div>
+          <p class="mock-caption">Whole-row check (S5.D1-A), fixed walk order (S5.D2-A), checked dims in place, no destructive taps. "Quinoa" wasn't in the dictionary — the filing chips appear under it and nowhere else. <b>The add bar lives at the bottom</b> — the thumb zone; the top of a phone is for reading, not acting. The chip strip above it is staples at rest and becomes typeahead while typing. <b>Progress is structure, not caption:</b> the track under the title fills as the cart does.</p>
+        </div>
+      </div>
+    </div>
+
+    <div class="mockwrap" style="margin-top: 16px;">
+      <div class="row-of-mocks">
+        <div class="stack">
+          <span class="tag">Wall · fridge iPad · 1060px content — pushback: three columns, not four at 1180</span>
+          <div class="wall">
+            <div class="wallhead">
+              <div>
+                <p class="wall-title">Groceries</p>
+                <div class="shopping"><span class="pulse"></span>Sam is at the store right now</div>
+              </div>
+              <div>
+                <div class="wall-stat">2 in the cart <span class="dim">· 8 to go</span></div>
+                <div class="wall-track"><div class="wall-fill" style="width: 20%;"></div></div>
+              </div>
+            </div>
+            <div class="wall-add">
+              <div class="wall-addbar">
+                <span class="ph">Add to the list — try “sourdough” or “quinoa”</span>
+                <span class="addbtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4"><path d="M12 5v14M5 12h14"/></svg></span>
+              </div>
+              <div class="staples-row" style="padding: 0;">
+                <span class="schip">Milk</span><span class="schip">Eggs</span><span class="schip">Bread</span><span class="schip">Bananas</span>
+              </div>
+            </div>
+            <div class="wall-cols">
+              <div class="colgroup">
+                <div class="aisle"><span class="n">Produce</span><span class="cnt">2 left</span></div>
+                <div class="grow got"><span class="ring"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2"><path d="M20 6 9 17l-5-5"/></svg></span><span class="gtext"><span class="gname">Bananas</span><span class="gnote">Sam got it</span></span></div>
+                <div class="grow"><span class="ring"></span><span class="gtext"><span class="gname">Broccoli</span><span class="gnote">for Sunday's rigatoni</span></span></div>
+                <div class="grow"><span class="ring"></span><span class="gtext"><span class="gname">Snap peas</span><span class="gnote">Emma added these</span></span></div>
+              </div>
+              <div class="colgroup">
+                <div class="cleared" style="border-top: none; margin-top: 6px;"><span class="tick"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2"><path d="M20 6 9 17l-5-5"/></svg></span><span class="cl-n">Bakery</span><span class="cl-s">all 2 in the cart</span></div>
+              </div>
+              <div class="colgroup">
+                <div class="aisle"><span class="n">Meat</span><span class="cnt">1 left</span></div>
+                <div class="grow"><span class="ring"></span><span class="gtext"><span class="gname">Chicken thighs</span><span class="gnote">2 lbs · for Friday</span></span></div>
+              </div>
+              <div class="colgroup">
+                <div class="aisle"><span class="n">Dairy</span><span class="cnt">2 left</span></div>
+                <div class="grow got"><span class="ring"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3.2"><path d="M20 6 9 17l-5-5"/></svg></span><span class="gtext"><span class="gname">Milk</span><span class="gnote">Sam got it</span></span></div>
+                <div class="grow"><span class="ring"></span><span class="gtext"><span class="gname">Yogurt cups</span></span></div>
+                <div class="grow"><span class="ring"></span><span class="gtext"><span class="gname">Parmesan</span><span class="gnote">for Sunday's rigatoni</span></span></div>
+              </div>
+              <div class="colgroup">
+                <div class="aisle"><span class="n">Pantry</span><span class="cnt">2 left</span></div>
+                <div class="grow"><span class="ring"></span><span class="gtext"><span class="gname">Rigatoni</span><span class="gnote">1 box</span></span></div>
+                <div class="grow"><span class="ring"></span><span class="gtext"><span class="gname">Olive oil</span></span></div>
+              </div>
+              <div class="colgroup">
+                <div class="aisle"><span class="n">Frozen</span><span class="cnt">1 left</span></div>
+                <div class="grow"><span class="ring"></span><span class="gtext"><span class="gname">Frozen peas</span></span></div>
+              </div>
+            </div>
+          </div>
+          <p class="mock-caption">The whole list, no scrolling — the wall's one real advantage, kept. Staples chips beside the add bar (the width exists here; it doesn't on the phone). "Sam is at the store" comes from shop-session activity — an M5/7 implementation note, not new infra. Column count drops to three at the iPad's real 1060px; re-flow on add/clear stays and gets checked on the actual fridge before M5/7 closes.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= SHEET ================= -->
+  <section class="surface" id="sheet">
+    <p class="surface-no">The record</p>
+    <h2>Final decisions — all of them</h2>
+    <div class="sheetwrap">
+      <table class="sheet">
+        <thead><tr><th>Gate</th><th>Final call</th><th>Origin</th></tr></thead>
+        <tbody>
+          <tr><td>S1.D1</td><td>Menu card — main headline, italic sides line, bottom rail; date dropped; kind lives in the verb</td><td><span class="src mine">v2</span> + <span class="src crit">critique</span></td></tr>
+          <tr><td>S1.D1b</td><td>Lora display headline; row-scale renders stay 16px DM Sans</td><td><span class="src mine">v2</span></td></tr>
+          <tr><td>S1.D2</td><td>Quiet until the 4:00 nudge, then <b>localised badge + solid claim</b> — never a full-card wash</td><td><span class="src crit">critique</span></tr>
+          <tr><td>S1.D2b</td><td>Nothing-planned ships neutral copy; history prompt is a marked fast-follow only if free in M5/2</td><td><span class="src pb">pushback</span></td></tr>
+          <tr><td>S1.D3</td><td>Large = week claim-strip, today marked, count stated in words</td><td><span class="src mine">v2</span> + <span class="src crit">critique</span></td></tr>
+          <tr><td>S2.D1</td><td><b><code>ItemCard</code> rows</b> (three actions = card contract), verb-kind, needs-push as text link</td><td><span class="src pb">pushback</span></td></tr>
+          <tr><td>S2.D2</td><td>Title placeholder + standing helper; <code>sides</code> field beneath; try-bite helper</td><td><span class="src mine">v2</span></td></tr>
+          <tr><td>S2.D3</td><td>Page stays calm — no amber on the planning surface, ever</td><td><span class="src mine">v2</span></td></tr>
+          <tr><td>S3.D1</td><td>Initial-in-tint + glyph, 3px gap, lightened glyph — one object per mark</td><td><span class="src mine">v2</span> + <span class="src crit">critique</span></td></tr>
+          <tr><td>S3.D2</td><td>"Zach's got dinner", right-aligned in the agenda day header; never the meal name</td><td><span class="src mine">v2</span></td></tr>
+          <tr><td>S3.D3</td><td>Unclaimed makes no calendar mark</td><td><span class="src mine">v2</span></td></tr>
+          <tr><td>S4.D1</td><td>Always-present add bar; staples as chips (phone: below bar · wall: beside it)</td><td><span class="src mine">v2</span> + <span class="src crit">critique</span></td></tr>
+          <tr><td>S4.D2</td><td><b>Superseded:</b> one aisle-grouped list everywhere; the just-added flash answers "did it land"; build/shop split retired</td><td><span class="src crit">critique</span></td></tr>
+          <tr><td>S4.D3</td><td><b>Superseded:</b> aisle dictionary auto-files; "Which aisle?" chips only for unknown words</td><td><span class="src crit">critique</span></td></tr>
+          <tr><td>S5.D1</td><td>Whole-row check toggle, tap again to undo, nothing destructive</td><td><span class="src mine">v2</span></td></tr>
+          <tr><td>S5.D2</td><td>Fixed walk order (Produce → Bakery → Meat → Dairy → Pantry → Frozen → Other); per-family reorder is a named non-goal</td><td><span class="src mine">v2</span></td></tr>
+          <tr><td>S5.D3</td><td><b>Superseded:</b> partner presence is the "Sam got it" text note — no identity chrome on groceries</td><td><span class="src crit">critique</span></td></tr>
+          <tr><td>S5.D4</td><td>Cleared-aisle collapse row, tap to reopen</td><td><span class="src crit">critique</span></td></tr>
+          <tr><td>Wall</td><td>Groceries at 1060px (fridge iPad), <b>three</b> balanced columns, presence line, whole list visible</td><td><span class="src crit">critique</span> + <span class="src pb">pushback</span></td></tr>
+        </tbody>
+      </table>
+    </div>
+  </section>
+
+  <!-- ================= OUTPUTS ================= -->
+  <section class="surface" id="outputs">
+    <p class="surface-no">On approval</p>
+    <h2>What close-out writes</h2>
+    <div class="callout">
+      <b>Two ADR-shaped decisions surfaced by this session</b> — they get real ADRs, not silent adoption:
+      <br>1. <b><code>ListRow</code> joins <code>ItemCard</code></b> with the written rule: <i>cards for independent objects with several actions; rows for a set you scan and act on one way.</i> First consumers: grocery list (rows), week plan (cards — the rule applied, not an exception).
+      <br>2. <b>The hue rule narrows</b> (amends ADR 043/044 application): identity hue appears where the person is the answer to the surface's question — not on every multi-person surface. Groceries loses all identity chrome; meals keeps spines.
+    </div>
+    <div class="callout">
+      <b>Spec/schema ripples:</b> <code>planned_meals.sides text nullable</code> · grocery <code>category</code> is the dictionary-assigned aisle — ~200 keywords shipping, <b>plus a per-family override learned from corrections</b> (re-filing an item teaches it; one small table) · <code>unknown → Other + ask on the row</code> · shop-session presence ("Sam is at the store") noted for M5/7, derived from check activity, no new tables. <b>Spec-language amendment, stated rather than slid past:</b> "checked items dim in place, never vanish" gains a reconciliation — a <i>fully cleared aisle</i> may collapse to a stated row ("Bakery · all 2 in the cart", tap to reopen). The rule exists to answer "did I already get that?", and the stated row answers it better than dimmed lines; individual checked items still never vanish. <b>Design-system entries:</b> the localised-escalation pattern (badge + solid action, never a full wash — dashboards must stay diagnosable) and the menu-card widget anatomy.
+    </div>
+    <p class="colophon">Tokens verbatim from <code>packages/ui/src/styles.css</code>, both themes. Slot geometry true (522×180 · 253×180 · 522×376); wall at the fridge iPad's ~1060px content width per <code>design-system.md</code> §Grid; week plan is <code>PageContainer width="list"</code>. People: Zach (teal), Sam (plum), Emma (marigold) per ADR 044. The interactive wall demo lives in the critique's part-2 file; this document is the decision record. Lora / DM Sans fall back to Georgia / Helvetica Neue where not installed.</p>
+  </section>
+</div>

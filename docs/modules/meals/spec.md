@@ -1,7 +1,8 @@
 # Meals & Groceries — Module Spec
 
 > Spec drafted in the M4/M5 planning session (2026-07-21). Story-level design
-> decisions are still owed to a design session; this is the scope boundary.
+> was settled in **M5/1 (2026-08-11)** — see `design.md` in this directory and
+> ADR 063/064. Amendments from that session are marked _[M5/1]_ inline.
 
 ---
 
@@ -51,7 +52,7 @@ agenda day header. It never writes `calendar.events`.
 room for it — the month cell has no space for "creamy sausage rigatoni" and it would be
 unreadable across the room anyway.
 
-### Build mode and shop mode are two different apps
+### Build mode and shop mode are two different contexts — not two arrangements
 
 - **Build** — at home, over a week, many contributors, three-second adds. _"We're out of
   milk,"_ said standing at the fridge.
@@ -61,6 +62,14 @@ Most grocery apps design for build and ship a miserable shop mode. **Design for 
 Concretely: grouped by **aisle, not entry order** (re-sorting forty items by hand is why
 people go back to paper); big targets; checked items **dim in place, never vanish**
 ("did I already get that?"); no destructive taps; two shoppers see each other's checks.
+
+_[M5/1]_ The mode **split** is retired: one aisle-grouped list everywhere, no
+Build/Shop toggle. Capture's "did my add land?" is answered by a just-added
+flash in place; items file themselves via an aisle dictionary + learned
+per-family overrides. **Dim-in-place, amended:** a _fully cleared aisle_ may
+collapse to a stated row ("Bakery · all 2 in the cart", tap to reopen) — the
+stated row answers "did I already get that?" better than dimmed lines;
+individual checked items still never vanish. See `design.md` §M5/6–M5/7.
 
 **Offline is a requirement, not a nicety.** The service worker is network-first for
 `/api`, so today this feature fails in exactly the place it is used. That is a story,
@@ -90,7 +99,9 @@ Two mechanisms, neither needing a schema field:
 
 **How the parent phrases the title _is_ the feature**, and no schema change fixes
 "creamy sausage rigatoni with veggies". The design session makes the input's placeholder
-do the teaching.
+do the teaching. _[M5/1]_ A `sides` column now does half of it structurally — the full
+menu has a home that isn't the title — and a standing helper line does the rest
+(a placeholder dies at the first keystroke).
 
 ---
 
@@ -175,7 +186,8 @@ planned_meals
   date        date
   slot        text  default 'dinner'      -- breakfast/lunch reserved, not built
   title       text                        -- the kid-facing name; phrasing is the feature
-  kind        text                        -- 'cooked' | 'takeout' | 'leftovers' | 'out'
+  sides       text  nullable              -- [M5/1] "roasted veggies, garlic bread" — the menu's second line
+  kind        text                        -- 'cooked' | 'takeout' | 'leftovers' | 'out' — renders as a verb, never a chip
   owner_id    uuid  nullable              -- null = UNCLAIMED, a first-class state
   coin_reward integer nullable            -- ADR 048; cooking dinner is a chore
   notes       text  nullable
@@ -189,7 +201,7 @@ planned_meals
 grocery_items
   id           uuid  PK
   name         text
-  category     text                       -- the aisle; drives shop-mode grouping
+  category     text                       -- the aisle; dictionary-assigned on add, corrections learned per family [M5/1]
   quantity     text  nullable             -- free text ("2 lbs"), not a number
   status       text  default 'needed'     -- 'needed' | 'got'
   source_type  text                       -- 'manual' | 'meal' | 'staple'

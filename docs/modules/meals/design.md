@@ -1,0 +1,202 @@
+# Meals & Groceries — UX Design Spec
+
+> Locked in **M5/1 Design: Meals & Groceries** (2026-08-09 → 2026-08-11, three
+> rounds + an external design critique). The dev-facing distillation of
+> `docs/sessions/logs/2026-08-11-design-meals-groceries.md`. Visual reference:
+> `docs/sessions/artifacts/2026-08-11-meals-groceries-final.html` (the decision
+> record; the earlier gate doc with the option history is
+> `2026-08-09-meals-groceries-ux.html`). New system rules this session minted:
+> **ADR 063** (`ListRow` beside `ItemCard`) and **ADR 064** (hue where the person
+> answers the surface's question).
+
+---
+
+## Shared language (applies everywhere)
+
+- **The menu-card grammar.** A meal renders as _main + sides + rail_: the `title`
+  is the headline, `sides` ride beneath in italic Lora at lower affordance, and
+  owner/try-bite share one bottom rail. The **kind lives in the verb**, never a
+  chip: cooked → "Zach **is cooking**" · takeout → "**is calling it in**" ·
+  leftovers → "**is reheating**" · out → "**we're going out**".
+- **Headline face:** Lora at display scale (the type scale has no sans rung
+  above 20px; `text-metric` is numerals-only). The same meal name in a **row**
+  is 16px DM Sans like every other row title.
+- **Escalation is localised, never a wash.** A widget that needs to shout gets
+  an amber **badge** in its sides slot + a solid action button; the card surface
+  stays `--card`. Rationale: dashboards must stay diagnosable — several widgets
+  washing amber at 5pm is a screen that reads as broken. (Design-system entry.)
+- **Two flavours of empty, everywhere:** _nothing planned_ (no meal) vs
+  _unclaimed_ (meal exists, `owner_id` null). Never conflate them.
+- **No identity chrome on groceries** (ADR 064). "Sam got it" / "Emma added
+  these" are text notes. Meals surfaces keep identity spines — there the person
+  is the answer.
+
+---
+
+## M5/2 — Week Plan + Tonight's Dinner
+
+### `meals.tonight` widget (four states, all built)
+
+| State                | Headline                  | Sides slot                                    | Rail                                                   |
+| -------------------- | ------------------------- | --------------------------------------------- | ------------------------------------------------------ |
+| Claimed              | title, 32px Lora          | sides, italic 16px muted                      | owner avatar + verb · try-bite chip                    |
+| Unclaimed (pre-4pm)  | title                     | _"planned — nobody's on it yet"_              | hollow dashed ring · ghost **I've got it**             |
+| Unclaimed (post-4pm) | title                     | **amber badge** _"Still needs a cook · 4:30"_ | solid **I've got it** · "Parents were nudged at 4:00." |
+| Nothing planned      | _"Nothing planned"_ muted | _"the week's still open"_ ¹                   | solid **Plan it** · ghost **I've got it**              |
+
+¹ Fast-follow (only if the lookback query is free in this story): replace with a
+history prompt — _"last Thursday you did tacos"_. Do **not** build history infra
+for it; spec.md defers that deliberately.
+
+- **No date in the header** — the screen already states it. Header is the
+  standard identity row: utensils 13px + `MEALS · TONIGHT`.
+- **Compact** (253×180): `TONIGHT` label, title at 24px, owner initial only.
+  Drops sides + try bite.
+- **Large** (522×376): standard content + the **week strip** in a sunken plane —
+  seven chips (owner avatar / hollow dashed ring per day), **today marked**
+  (primary underline on the day label), and the label states the count in words:
+  `THIS WEEK · 2 days need a cook`. The strip label's count is the deliverable;
+  never make the viewer tally rings.
+- Widget escalation hour = the ADR 045 poll hour (one message, two channels).
+
+### `/meals` week page
+
+- `PageContainer width="list"`. Header: "This week" (Lora page-title) +
+  `Aug 9–15 · **2 days need a cook**` + prev/next week nav.
+- **Seven `ItemCard` rows** (ADR 063: a day is an independent object with three
+  actions — edit, claim, needs-push — so it's a card, not a `ListRow`). Spine =
+  owner identity hue in every state (ADR 043 holds here); **unclaimed/empty rows
+  get a dashed spine** — identity's absence, rendered. Empty day additionally
+  drops to dashed card chrome.
+- Row anatomy: day column (DOW + date, primary-coloured on today) · title 16px
+  DM Sans + `· sides` muted inline · meta line (avatar + verb, `· try bite: …`)
+  · trailing. **Needs-push is a text link** ("3 things needed"), not a bordered
+  button — it must not be the loudest thing on the row.
+- Row actions: nothing-planned → paired ghost **Plan it** / **I've got it**;
+  unclaimed → single ghost **I've got it** (claims without opening the drawer).
+- The page is **calm** — no amber ever. The widget and the nudge do the shouting.
+
+### The editor drawer (440px, RHF + Zod)
+
+Field order: **title → sides → try bite → needs → kind → owner → P$ (optional)**.
+
+- Title: placeholder `Rigatoni`, standing helper _"The headline — name it like
+  you'd say it to the kids."_ (helper survives typing; a placeholder dies at the
+  first keystroke).
+- Sides (optional): placeholder `roasted veggies, garlic bread`.
+- Try bite (optional): placeholder `the veggies`, helper _"One small thing to
+  try — it punches their card."_
+- The title/sides split does most of the anti-ambush teaching structurally; the
+  helper does the rest.
+
+### Schema
+
+`planned_meals` gains `sides text nullable`. `try_bite` unchanged — sides
+describe the plate, the try bite is the ask.
+
+---
+
+## M5/3 — Who's Got Dinner
+
+- Claim = set `owner_id` (one tap from widget rail or week row; no drawer).
+- The afternoon poll (ADR 045 precedent) fires at **4:00**: owner nudge (carries
+  title + try bite), tier-4 nudge if unclaimed. At the same hour the widget
+  flips to its escalated state — badge + solid claim.
+- Kind verbs (shared language above) are the only kind rendering anywhere.
+- Optional `coinReward` — second earn source, proof ADR 048 generalizes; no
+  design surface beyond the drawer field.
+
+---
+
+## M5/4 — Calendar Day Marks (platform, ADR 050)
+
+- **Month cell mark:** 16px identity-**tint** disc carrying the owner's initial
+  (`aria-hidden`; owner name in the cell's accessible text) + utensils glyph at
+  a **3px** gap, glyph at ~75% muted so the pair reads as **one object**. Max
+  two marks per cell (school will be the second consumer).
+- Never hue-only (ADR 044): the initial is the required second channel. A photo
+  avatar is **not** used at 16px — it carries neither hue nor letter at distance.
+- **Agenda day header label:** _"Zach's got dinner"_ — the module's own voice,
+  right-aligned (avatar 16px + text), attribution only, **never the meal name**.
+- **Unclaimed days make no mark.** An ownerless mark has no who, and the who is
+  the entire payload. The calendar records; the widget and nudge pressure.
+
+---
+
+## M5/5 — Try Bites
+
+- On meals surfaces the try bite is a quiet **accent chip**: `Try bite · the
+veggies` (accent at 12% wash, accent ink). No gold — gold is XP/reward only.
+- The **stamp/punch vocabulary** (dashed square, sunken plane, slam animation)
+  belongs to the table-time surface where the kid actually taps — design it in
+  this story against the chores punch wall, not on the widget.
+
+---
+
+## M5/6 — The Grocery List (capture + filing)
+
+> The build/shop **mode split is retired**. One aisle-grouped list everywhere;
+> "build" and "shop" are contexts, not arrangements. What flat-capture-order
+> existed for — "did my add land?" — is answered by the **just-added flash**
+> (the row flashes primary-tint in place, in its aisle). What shop mode was —
+> big targets, dim-in-place, offline — is how the list always behaves.
+
+- **Rows are `ListRow`** (ADR 063): hairline-separated, 56px min, leading 26px
+  check ring, name 17px, note line 13px muted. No cards — forty bordered cards
+  was the density failure the critique caught.
+- **Aisle heads govern their group:** 13px bold + count (`2 left`), full-width
+  hairline under, sticky within scroll contexts.
+- **Add bar at the bottom on the phone** (thumb zone; the top is for reading).
+  The chip strip above it shows **staples at rest, typeahead while typing**.
+  On the wall the add bar sits top with staples beside it — the width exists
+  there and reach doesn't constrain.
+- **Items file themselves:** aisle dictionary (~200 keywords shipping) assigns
+  `category` on add; unknown words land in **Other** with a one-time
+  `Which aisle?` chip row rendered **on the row, in place** — never a layout
+  jump above the list. **Corrections teach a per-family override** (one small
+  table); re-filing an item updates it.
+- Provenance is one grammar: the **note line** — `for Sunday's rigatoni` (needs
+  push), `Emma added these` (manual), `Sam got it` (checked). Never a chip in
+  the name line.
+- Meal `needs` push: comma-split into items, each noted with its meal; dedupe
+  by name against open items (re-adding an existing checked item unchecks it).
+
+---
+
+## M5/7 — Shop Context, Sync + Offline, the Wall
+
+- **Whole-row tap toggles** got/needed; tap again undoes; nothing on a row is
+  destructive. Checked rows **dim in place** (0.46 opacity + strikethrough) and
+  keep position.
+- **A fully cleared aisle collapses** to a stated row — `✓ Bakery · all 2 in
+the cart`, tap to reopen. This is the sanctioned reading of "dim in place,
+  never vanish" (spec.md amended): the rule answers _"did I already get
+  that?"_, and the stated row answers it better than dimmed lines. Individual
+  checked items still never vanish.
+- **Progress is structure:** `2 in the cart · 8 to go` + a filled track under
+  the page title, on every surface. Completion is a real moment — the track
+  fills, aisles collapse, the list physically shrinks as the store is walked.
+- **Fixed walk order:** Produce → Bakery → Meat → Dairy → Pantry → Frozen →
+  Other. Per-family reorder is a **named non-goal** (revisit only if the fixed
+  order demonstrably annoys).
+- **Partner sync renders as text**, not identity chrome (ADR 064): a row checked
+  by the other shopper reads `Sam got it` in the note line.
+- **Offline:** quiet pill under the title — `Offline — checks will sync`. Not a
+  banner, not amber; offline is expected, not exceptional. (The SW work itself
+  is this story's other half; see queue.)
+- **The wall (fridge iPad, ~1060px content):** aisles as **three balanced
+  columns** — the whole list visible, no scrolling, groups never split across
+  columns (`break-inside: avoid`). Header carries the one fact only the wall
+  can: **"Sam is at the store right now"** (green pulse dot), derived from
+  check activity — no new tables. Column re-flow after add/clear is accepted
+  pending a check on the physical fridge before this story closes.
+
+---
+
+## Decision provenance
+
+The full gate-by-gate record (16 gates: origin v2 / critique / pushback) lives
+in the final artifact's decision table. The three held pushbacks: the wall is
+the 1060px fridge iPad, not a 24" panel; the week plan stays on `ItemCard` by
+ADR 063's own rule; the empty-state history prompt is gated behind "free in
+M5/2", not shipped.

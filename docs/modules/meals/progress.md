@@ -9,7 +9,7 @@
 
 | Story                | Status         | Notes                                                                                                          |
 | -------------------- | -------------- | -------------------------------------------------------------------------------------------------------------- |
-| Design gate          | ⬜ Not Started | Tonight's Dinner widget (readable from the door), unclaimed state, day-mark density, **shop mode**             |
+| Design gate          | ✅ Done        | 2026-08-11 — three rounds + external critique; `design.md`, ADR 063/064, final artifact. Mode split retired    |
 | Week Plan + Tonight  | ⬜ Not Started | `planned_meals`; `/meals` week view; `meals.tonight` widget at the 18px across-room floor                      |
 | Who's Got Dinner     | ⬜ Not Started | Owner + `kind` (cooked/takeout/leftovers/out); **unclaimed is first-class**; afternoon nudge; optional P-Bucks |
 | Calendar Day Marks   | ⬜ Not Started | **Platform story** — read-time provider (ADR 050). Small. Shared with M7 School. One mark/provider/day         |
