@@ -1,7 +1,7 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
 import { BrowserRouter, Routes, Route } from 'react-router-dom'
-import { Rss, CheckSquare, CalendarDays, Gift } from 'lucide-react'
+import { Rss, CheckSquare, CalendarDays, Gift, Utensils } from 'lucide-react'
 import { AuthProvider } from '@family-os/platform'
 import type { RegistryEntry, PluginManifest } from '@family-os/platform'
 import './styles.css'
@@ -54,6 +54,7 @@ const ICON_MAP: Record<string, React.ComponentType<{ size?: number; 'aria-hidden
   'check-square': CheckSquare,
   'calendar-days': CalendarDays,
   gift: Gift,
+  utensils: Utensils,
 }
 
 type LoadedPlugin = PluginManifest & { remoteName: string }

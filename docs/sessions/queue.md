@@ -67,10 +67,10 @@ One pre-launch family task: **name the feature at the dinner table** (ADR 061 �
 
 ### M5/2 — Dev: Week Plan + Tonight's Dinner
 
-**Type:** development · **Kickoff:** _to be written_
-The `meals` plugin, `planned_meals` (**+ `sides`**), the week view (`ItemCard` rows),
-and the `meals.tonight` widget — four states, menu-card grammar, kind-as-verb.
-Build to `docs/modules/meals/design.md` §M5/2. _Depends on: M5/1 ✅._
+**Type:** development · **Kickoff:** `kickoffs/dev-meals-week-plan-tonight.md`
+**In flight** on `dev/meals-week-plan-tonight` — all built + tested; the widget
+is **locked** (2026-08-12 live review, v3 rework). Remaining: live-review +
+iterate the week page and drawer, then close out. _Depends on: M5/1 ✅._
 
 ### M5/3 — Dev: Who's Got Dinner
 

@@ -13,6 +13,10 @@ export interface SpineProps {
       dense filled-pill recipe (widget rows). Default `false` → self-stretches to
       the full content box (card/list rows). */
   inset?: boolean
+  /** Render the bar as dashes — identity's absence, not an identity (the meals
+      unclaimed-day recipe, design.md §M5/2). Single color only: a split spine
+      states who is present, which is exactly what a dashed spine states isn't. */
+  dashed?: boolean
   className?: string
 }
 
@@ -36,12 +40,17 @@ function spineFill(color: string | string[]): string {
    surfaces across chores, feed, and calendar stop hand-rolling the same inline
    <span>. Render it as the first child of a `flex` row that carries the gap to
    the content. */
-export function Spine({ color, inset = false, className }: SpineProps) {
+export function Spine({ color, inset = false, dashed = false, className }: SpineProps) {
+  const solid = Array.isArray(color) ? (color[0] ?? 'transparent') : color
   return (
     <span
       aria-hidden
       className={cn('w-1 shrink-0 self-stretch rounded-sm', inset && 'my-2', className)}
-      style={{ background: spineFill(color) }}
+      style={{
+        background: dashed
+          ? `repeating-linear-gradient(180deg, ${solid} 0 6px, transparent 6px 11px)`
+          : spineFill(color),
+      }}
     />
   )
 }

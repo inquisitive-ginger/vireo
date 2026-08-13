@@ -14,6 +14,7 @@
     "@family-os/plugin-calendar": "workspace:*",
     "@family-os/plugin-chores": "workspace:*",
     "@family-os/plugin-family-feed": "workspace:*",
+    "@family-os/plugin-meals": "workspace:*",
     "@family-os/plugin-rewards": "workspace:*",
     "@family-os/schemas": "workspace:*",
     "@fastify/cookie": "^11.0.2",

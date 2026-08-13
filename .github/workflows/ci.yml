@@ -30,7 +30,7 @@ jobs:
       - run: pnpm lint
       - name: Migrate + seed the test database
         run: |
-          for p in platform plugin-family-feed plugin-chores plugin-calendar plugin-rewards; do
+          for p in platform plugin-family-feed plugin-chores plugin-calendar plugin-rewards plugin-meals; do
             pnpm --filter "@family-os/$p" exec prisma migrate deploy
           done
           pnpm --filter @family-os/platform exec prisma db seed

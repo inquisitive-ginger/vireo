@@ -1,0 +1,30 @@
+{
+  "name": "meals",
+  "version": "0.0.1",
+  "remoteEntry": "http://localhost:3015/assets/remoteEntry.js",
+  "exposes": ["./Plugin", "./widgets/Tonight"],
+  "routes": ["/meals"],
+  "schema": "meals",
+  "events": {
+    "publishes": ["meals.dinner.planned", "meals.dinner.claimed"],
+    "subscribes": []
+  },
+  "widgets": [
+    {
+      "id": "meals.tonight",
+      "displayName": "Tonight's Dinner",
+      "component": "./widgets/Tonight",
+      "defaultSize": "standard",
+      "supportedSizes": ["compact", "standard", "large"],
+      "minTier": 1,
+      "requiredPermission": "meals.plan.view",
+      "description": "What's for dinner, who's got it, and tonight's try bite."
+    }
+  ],
+  "navItem": {
+    "label": "Meals",
+    "route": "/meals",
+    "icon": "utensils",
+    "minTier": 1
+  }
+}

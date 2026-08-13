@@ -16,7 +16,7 @@ import { Pool } from 'pg'
 import { PrismaPg } from '@prisma/adapter-pg'
 import { PrismaClient } from '../src/generated/prisma'
 
-const KNOWN_MODULES = ['family-feed', 'chores', 'calendar', 'rewards'] as const
+const KNOWN_MODULES = ['family-feed', 'chores', 'calendar', 'rewards', 'meals'] as const
 type Module = (typeof KNOWN_MODULES)[number]
 
 type Options = { modules: Set<Module>; platformOnly: boolean; keepProfiles: boolean }
@@ -101,6 +101,10 @@ async function resetRewards() {
   await pool.query('DELETE FROM rewards.balances')
 }
 
+async function resetMeals() {
+  await pool.query('DELETE FROM meals.planned_meals')
+}
+
 async function main() {
   const { modules, platformOnly, keepProfiles } = parseArgs()
 
@@ -136,6 +140,11 @@ async function main() {
   if (modules.has('rewards')) {
     await resetRewards()
     console.log('  rewards: ledger + balances cleared')
+  }
+
+  if (modules.has('meals')) {
+    await resetMeals()
+    console.log('  meals: planned meals cleared')
   }
 
   console.log(keepProfiles ? 'Done.' : 'Done. Navigate to / to start onboarding.')

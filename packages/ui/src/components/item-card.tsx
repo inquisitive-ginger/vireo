@@ -8,6 +8,8 @@ export interface ItemCardProps {
       spine carries no semantic on its own: the call site decides identity vs.
       status (see design-system.md "Status vs identity colour"). */
   spine?: string | string[]
+  /** Dashed spine — identity's absence rendered (see `SpineProps.dashed`). */
+  spineDashed?: boolean
   /** `card` — elevated row chrome: `--radius-card` corners, border, `--card`
       fill, `--shadow-card`, and the standard `px-4 py-3`. `bare` — layout only,
       no chrome/padding, for surfaces that own their container (widget slots). */
@@ -59,6 +61,7 @@ export interface ItemCardProps {
    spine color, which `<Spine>` keeps inline. */
 export function ItemCard({
   spine,
+  spineDashed = false,
   chrome = 'card',
   align = 'stretch',
   dimmed = false,
@@ -84,7 +87,7 @@ export function ItemCard({
       )}
       style={style}
     >
-      {spine !== undefined && <Spine color={spine} />}
+      {spine !== undefined && <Spine color={spine} dashed={spineDashed} />}
       {onActivate && (
         <button
           type="button"

@@ -166,6 +166,18 @@ export const PERMISSION_REGISTRY = {
     action: 'create',
     subject: 'calendar.Event',
   },
+  'meals.plan.view': {
+    label: 'View the meal plan',
+    module: 'meals',
+    action: 'view',
+    subject: 'meals.PlannedMeal',
+  },
+  'meals.dinner.claim': {
+    label: "Claim tonight's dinner",
+    module: 'meals',
+    action: 'update',
+    subject: 'meals.PlannedMeal',
+  },
 } as const
 
 export type PermissionString = keyof typeof PERMISSION_REGISTRY
