@@ -21,9 +21,9 @@ before it reads anything else, and it is size-capped — see
   at the December visit. `product-design-beacon.md`.
 - **Deployment:** 🟢 live at `https://vireohome.app` on the Pi; merge to `main`
   auto-deploys; off-LAN via Tailscale. Runbook: `docs/deployment.md`.
-- **Last session:** 2026-08-13 — dev, M5/2 close-out (four review rounds; P$
-  retired from meals — paid dinners become chores).
-  `logs/2026-08-13-dev-meals-week-plan-tonight.md`.
+- **Last session:** 2026-08-13 — dev, meals iPad tweaks (kind-first drawer,
+  optional takeout owner, post-dinner tense, `useFitRows` offsetTop fix).
+  `logs/2026-08-13-dev-meals-ipad-tweaks.md`.
 - **What's next and everything outstanding:** `docs/sessions/queue.md` — the one
   index. Cheapest high-value item: Deployment Part F, offsite backups.
 - **Owed in-app:** reports `35a65002` (#102) and `4225b7ce` (#103) still need a

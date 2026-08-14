@@ -37,12 +37,14 @@
 
 ### `meals.tonight` widget (as shipped — v3 rework, 2026-08-12 live review)
 
-**Two audiences, one card:** the kid zone above a hairline (headline · sides ·
-try-bite chip — what a kid reads at 3:30), the adult logistics rail below
-(avatar + kind verb, **second person when the viewer owns tonight**). Headline
-tokens 36/29/26 (large/standard/compact); it **wraps to two lines** before
-ellipsizing — the fridge reads the meal name from the door. The **whole tile
-deep-links to `/meals`** (overlay link, controls z-lifted).
+**Two audiences, one card:** the kid zone above a hairline (headline, then
+sides with the **try-bite chip on the line's right edge**), the adult
+logistics rail below (avatar + kind verb, **second person when the viewer owns
+tonight**, past tense after `DINNER_DONE_HOUR` 20:00 — "You cooked", and the
+escalation window is [16:00, 20:00)). Headline is **display-lg** everywhere
+but compact (page-title) — the 36px hero rung read as the loudest thing on the
+wall (iPad review, 2026-08-13); it **wraps to two lines** before ellipsizing.
+The **whole tile deep-links to `/meals`** (overlay link, controls z-lifted).
 
 | State                | Headline                  | Below the headline                            | Rail                                         |
 | -------------------- | ------------------------- | --------------------------------------------- | -------------------------------------------- |
@@ -55,14 +57,18 @@ deep-links to `/meals`** (overlay link, controls z-lifted).
 ¹ Fast-follow (was not free in M5/2): the history prompt — _"last Thursday you
 did tacos"_. Do **not** build history infra for it.
 
-- **Going out is attribution-free:** ownerless `kind='out'` is covered, not
-  unclaimed (`isCovered()`) — no claim, no escalation, doesn't count as needing
-  a cook.
+- **Going out — and ownerless takeout — are covered, not unclaimed**
+  (`isCovered()`): takeout's owner is optional (iPad review, 2026-08-13);
+  ownerless reads "we're ordering in" with the Hearth dot — no claim, no
+  escalation, doesn't count as needing a cook.
 - **Large:** **NEXT UP** replaces the seven-chip week strip — the next 3 days in
   a full-bleed sunken groove, equal flex bands, per-row store flag (`N to buy`,
   comma count of `needs`; renders nothing when empty — blank is never
-  "everything's in the house"). The widget fetches a rolling today→+3 window.
-- Widget escalation hour = the ADR 045 poll hour (one message, two channels).
+  "everything's in the house"). The groove **fits its slot** (`useFitRows`,
+  whole rows + "+N more day(s)"). The widget fetches a rolling today→+3 window.
+- Widget escalation hour = the ADR 045 poll hour (one message, two channels);
+  the window closes at `DINNER_DONE_HOUR` — after dinner the card records, it
+  doesn't shout.
 
 ### `/meals` week page (as shipped — 2026-08-13 review rounds)
 
@@ -76,11 +82,12 @@ did tacos"_. Do **not** build history infra for it.
   column — day slots, not rows that shrink with their state). Spine = owner
   identity hue; **unclaimed/empty rows get a dashed spine** — identity's
   absence, rendered; empty day additionally drops to dashed card chrome;
-  **going out has no spine** (transparent — it names nobody; reversed the
-  Hearth-spine call, 2026-08-13).
+  **covered-but-ownerless (going out, ownerless takeout) has no spine**
+  (transparent — it names nobody; reversed the Hearth-spine call, 2026-08-13).
 - **Past days recede:** dimmed, past-tense verbs ("Zach cooked"), **no actions
   at all behind today** — an unplanned past day states "No dinner was planned".
-  The page records history; today forward it acts.
+  The page records history; today forward it acts. Today's own verbs flip past
+  after `DINNER_DONE_HOUR`.
 - Row anatomy: day column (DOW + date, primary-coloured on today) · title 16px
   DM Sans + `· sides` muted inline · meta line (avatar + verb, `· try bite: …`)
   · trailing. **Needs-push** ("3 things needed", a text link, never a bordered
@@ -92,14 +99,21 @@ did tacos"_. Do **not** build history infra for it.
 
 ### The editor drawer (440px, RHF + Zod)
 
-Field order: **title → sides → try bite → needs → kind → owner**. No P$
-(2026-08-13): a paid dinner is a dedicated chore in the chores module — meals
-carries no coin UI or data.
+**Kind-first** (iPad review 2026-08-13, amending M5/1's title-first order —
+it was designed around cooking): _"How's it happening?"_ leads and the form
+reshapes per kind. Unused fields submit null; the schema is unchanged. No P$:
+a paid dinner is a dedicated chore in the chores module.
 
-- Title: placeholder `Rigatoni`, standing helper _"The headline — name it like
-  you'd say it to the kids."_ (helper survives typing; a placeholder dies at the
-  first keystroke).
-- Sides (optional): placeholder `roasted veggies, garlic bread`.
+| Kind      | Title field          | Then                                                        |
+| --------- | -------------------- | ----------------------------------------------------------- |
+| Cooking   | "What's for dinner?" | sides → try bite → needs → "Who's got it?"                  |
+| Takeout   | "Where from?"        | "Who's ordering?" (optional — null: "Nobody in particular") |
+| Leftovers | "What's on deck?"    | "Who's reheating?"                                          |
+| Going out | "Where to?"          | —                                                           |
+
+- Cooking title: placeholder `Rigatoni`, standing helper _"The headline — name
+  it like you'd say it to the kids."_ (helper survives typing; a placeholder
+  dies at the first keystroke).
 - Try bite (optional): placeholder `the veggies`, helper _"One small thing to
   try — it punches their card."_
 - The title/sides split does most of the anti-ambush teaching structurally; the

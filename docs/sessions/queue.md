@@ -220,6 +220,11 @@ suite mirroring chores/calendar. _Depends on: none._
 
 > Two-line index; full detail in the linked log.
 
+- **2026-08-13 — Dev: meals iPad tweaks (ad-hoc, PR #106).** Kind-first drawer,
+  optional takeout owner, post-dinner past tense, headline down a rung — and a
+  `useFitRows` offsetTop bug fixed in the primitive (was also chores'
+  flakiness). See `logs/2026-08-13-dev-meals-ipad-tweaks.md`.
+
 - **2026-08-13 — Dev: Week Plan + Tonight's Dinner (M5/2, PR #105).** The meals
   plugin ships: week page, drawer, tonight widget, one-tap claim. P$ dropped
   from meals entirely (paid dinners become chores — M5/3 loses the earn
