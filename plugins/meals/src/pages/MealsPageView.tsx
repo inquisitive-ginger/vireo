@@ -22,6 +22,8 @@ export interface MealsPageViewProps {
   days: WeekDay[]
   membersById: Map<string, MealMember>
   todayKey: string
+  /** Past DINNER_DONE_HOUR — today's verbs go past tense too. */
+  dinnerDone: boolean
   /** The date-range title ("August 9 – 15") — the calendar week view's grammar. */
   weekTitle: string
   /** null hides the count — a past week is history, not coverage to state. */
@@ -51,6 +53,7 @@ export function MealsPageView({
   days,
   membersById,
   todayKey,
+  dinnerDone,
   weekTitle,
   needCount,
   canManage,
@@ -107,6 +110,7 @@ export function MealsPageView({
             day={day}
             isToday={day.key === todayKey}
             isPast={day.key < todayKey}
+            dinnerDone={dinnerDone}
             membersById={membersById}
             canManage={canManage}
             canClaim={canClaim}
@@ -125,6 +129,7 @@ function DayRow({
   day,
   isToday,
   isPast,
+  dinnerDone,
   membersById,
   canManage,
   canClaim,
@@ -136,6 +141,7 @@ function DayRow({
   day: WeekDay
   isToday: boolean
   isPast: boolean
+  dinnerDone: boolean
   membersById: Map<string, MealMember>
   canManage: boolean
   canClaim: boolean
@@ -146,12 +152,14 @@ function DayRow({
 }) {
   const meal = day.meal
   const owner = meal?.ownerId ? membersById.get(meal.ownerId) : undefined
-  // Going out carries no identity, so no spine (live review 2026-08-13,
-  // reversing the Hearth-spine call) — transparent, not omitted, so the day
-  // column stays aligned. Never dashed: an ownerless out-meal is covered.
+  // Verbs go past when the day is behind us OR tonight's dinner hour has passed.
+  const spoken = isPast || (isToday && dinnerDone)
+  // A covered-but-ownerless meal (going out, ordering in) names nobody, so no
+  // spine (transparent, not omitted, keeps the day column aligned) and never
+  // dashed — dashed is for a cook still owed.
   const spine = owner
     ? identityToken(resolveHue(owner.name, owner.identityHue))
-    : meal?.kind === 'out'
+    : meal && isCovered(meal)
       ? 'transparent'
       : 'var(--border)'
 
@@ -182,7 +190,7 @@ function DayRow({
   return (
     <ItemCard
       spine={spine}
-      spineDashed={!owner && meal?.kind !== 'out'}
+      spineDashed={!(meal && isCovered(meal))}
       align="center"
       dimmed={isPast}
       className={cn(!meal && 'border-dashed shadow-none')}
@@ -230,18 +238,18 @@ function DayRow({
                     identity={resolveHue(owner.name, owner.identityHue)}
                   />
                   <span className="text-sm-token truncate text-muted-foreground">
-                    {kindVerb(meal.kind, owner.name, false, isPast)}
+                    {kindVerb(meal.kind, owner.name, false, spoken)}
                     {meal.tryBite && ` · try bite: ${meal.tryBite}`}
                   </span>
                 </>
-              ) : meal.kind === 'out' ? (
+              ) : isCovered(meal) ? (
                 <span className="text-sm-token truncate text-muted-foreground">
-                  {kindVerb('out', '', false, isPast)}
+                  {kindVerb(meal.kind, '', false, spoken)}
                   {meal.tryBite && ` · try bite: ${meal.tryBite}`}
                 </span>
               ) : (
                 <span className="text-sm-token truncate text-muted-foreground">
-                  {isPast ? 'planned — nobody claimed it' : "planned — nobody's on it yet"}
+                  {spoken ? 'planned — nobody claimed it' : "planned — nobody's on it yet"}
                   {meal.tryBite && ` · try bite: ${meal.tryBite}`}
                 </span>
               )}

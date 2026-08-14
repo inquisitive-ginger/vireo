@@ -38,7 +38,9 @@ export function useFitRows<T>(rows: T[], reserve: number): FitRows<T> {
   const clamp = useCallback(
     (avail: number) => {
       const bottoms = bottomsRef.current
-      if (avail <= 0 || bottoms.length !== rows.length || bottoms[rows.length - 1] <= avail) {
+      // +1: rects are subpixel and clientHeight rounds — a list that fills its
+      // box exactly must never lose its last row to a 0.4px overhang.
+      if (avail <= 0 || bottoms.length !== rows.length || bottoms[rows.length - 1] <= avail + 1) {
         setCut(rows.length)
         return
       }
@@ -61,7 +63,16 @@ export function useFitRows<T>(rows: T[], reserve: number): FitRows<T> {
     const list = listRef.current
     if (!box || !list) return
     const kids = Array.from(list.children) as HTMLElement[]
-    bottomsRef.current = kids.slice(0, rows.length).map((el) => el.offsetTop + el.offsetHeight)
+    // Rect math, anchored to the list — NOT offsetTop, which measures from the
+    // nearest positioned ancestor. Two consumers shipped without `relative` on
+    // the box (chores' summary, meals' lookahead under its overlay-link root),
+    // so rows measured from the widget root — or the page — and the clamp cut
+    // rows that plainly fit. The list anchor makes the call site unable to get
+    // this wrong.
+    const top = list.getBoundingClientRect().top
+    bottomsRef.current = kids
+      .slice(0, rows.length)
+      .map((el) => el.getBoundingClientRect().bottom - top)
     setMeasured(rows)
     clamp(box.clientHeight)
   }, [measuring, rows, clamp])

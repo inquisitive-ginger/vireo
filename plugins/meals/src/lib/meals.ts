@@ -5,6 +5,11 @@ import { toDateKey } from './dates'
     (design.md: one message, two channels). Client-local until the poll ships. */
 export const ESCALATION_HOUR = 16
 
+/** Dinner's over (iPad review, 2026-08-13): verbs flip past ("You cooked") and
+    the escalation window closes — "Still needs a cook · 9:15" is an epitaph,
+    not a nudge. Client-local constant; per-family dinner time is M5/3 scope. */
+export const DINNER_DONE_HOUR = 20
+
 /** The kind lives in the verb, never a chip (design.md §Shared language).
     Second person when the viewer IS the owner (v3 review, 2026-08-12) — the
     morning glance reads "You're cooking", not your own name. Past tense on
@@ -18,6 +23,8 @@ export function kindVerb(
 ): string {
   switch (kind) {
     case 'takeout':
+      // Ownerless takeout is the family voice — covered, nobody named.
+      if (!ownerName && !isViewer) return past ? 'we ordered in' : "we're ordering in"
       if (past) return isViewer ? 'You called it in' : `${ownerName} called it in`
       return isViewer ? "You're calling it in" : `${ownerName} is calling it in`
     case 'leftovers':
@@ -41,11 +48,13 @@ export function needsCount(meal: PlannedMeal | null | undefined): number {
 }
 
 /** A going-out dinner needs no planner and no attribution — "we're going out"
-    is the whole sentence (live review, 2026-08-12). Ownerless is its resting
-    state, not a gap: it never reads unclaimed, never escalates, never counts
-    as needing a cook. */
+    is the whole sentence (live review, 2026-08-12). Takeout's owner is
+    OPTIONAL (iPad review, 2026-08-13): ownerless reads "we're ordering in" and
+    is covered — assign an owner only to put it on someone. Ownerless is a
+    resting state for both, not a gap: never unclaimed, never escalates, never
+    counts as needing a cook. */
 export function isCovered(meal: PlannedMeal | null | undefined): boolean {
-  return Boolean(meal && (meal.ownerId || meal.kind === 'out'))
+  return Boolean(meal && (meal.ownerId || meal.kind === 'out' || meal.kind === 'takeout'))
 }
 
 /* "N days need a cook" counts today forward — Monday's gap is not news on

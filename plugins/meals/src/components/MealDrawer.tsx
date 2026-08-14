@@ -46,12 +46,41 @@ export interface MealDrawerProps {
   onSubmit: (input: MealDrawerInput) => Promise<void> | void
 }
 
-/* The single plan/edit surface (design.md §M5/2) — field order is the menu-card
-   grammar taught structurally: title → sides → try bite → needs → kind → owner.
-   The title and try-bite helpers are STANDING lines, not placeholders — a
-   placeholder dies at the first keystroke and the phrasing lesson is the feature.
-   No P$ here (live review, 2026-08-13): a paid dinner is a chore in the chores
-   module, not a meals concern. */
+/* The single plan/edit surface — KIND-FIRST (iPad review, 2026-08-13, amending
+   the M5/1 title-first order, which was designed around cooking): "How's it
+   happening?" leads and the form reshapes per kind. Cooking keeps the full
+   menu-card grammar (title → sides → try bite → needs → owner); takeout is
+   "Where from?" + an optional owner (ownerless = "we're ordering in", covered);
+   leftovers is "What's on deck?" + a cook; going out is "Where to?" alone.
+   Unused fields submit null — the schema is unchanged. The cooking title and
+   try-bite helpers are STANDING lines, not placeholders — a placeholder dies at
+   the first keystroke and the phrasing lesson is the feature. No P$ (2026-08-13):
+   a paid dinner is a chore in the chores module, not a meals concern. */
+const KIND_COPY: Record<
+  MealKind,
+  { title: string; placeholder: string; owner?: string; ownerNull?: string }
+> = {
+  cooked: {
+    title: "What's for dinner?",
+    placeholder: 'Rigatoni',
+    owner: "Who's got it?",
+    ownerNull: 'Nobody yet',
+  },
+  takeout: {
+    title: 'Where from?',
+    placeholder: "Luigi's",
+    owner: "Who's ordering?",
+    ownerNull: 'Nobody in particular',
+  },
+  leftovers: {
+    title: "What's on deck?",
+    placeholder: 'Taco leftovers',
+    owner: "Who's reheating?",
+    ownerNull: 'Nobody yet',
+  },
+  out: { title: 'Where to?', placeholder: "Luigi's" },
+}
+
 export function MealDrawer({
   open,
   onClose,
@@ -102,65 +131,26 @@ export function MealDrawer({
       const trimmed = s.trim()
       return trimmed.length > 0 ? trimmed : null
     }
+    // Fields the chosen kind doesn't show submit null — switching kinds after
+    // typing must not smuggle a cooking plate onto a restaurant.
+    const cooking = values.kind === 'cooked'
     await onSubmit({
       title: values.title.trim(),
-      sides: clean(values.sides),
-      tryBite: clean(values.tryBite),
-      needs: clean(values.needs),
+      sides: cooking ? clean(values.sides) : null,
+      tryBite: cooking ? clean(values.tryBite) : null,
+      needs: cooking ? clean(values.needs) : null,
       kind: values.kind,
-      // Going out needs no planner and no attribution — the whole family goes.
       ownerId: values.kind === 'out' ? null : values.ownerId,
     })
   })
+
+  const copy = KIND_COPY[kind]
 
   return (
     <Drawer open={open} onClose={onClose} title={isEdit ? `Edit ${dayLabel}` : `Plan ${dayLabel}`}>
       <form onSubmit={submit} className="flex h-full flex-col">
         <div className="flex-1 overflow-y-auto p-6">
           <div className="flex flex-col gap-6">
-            <div>
-              <FieldLabel htmlFor="meal-title">What's for dinner?</FieldLabel>
-              <Input id="meal-title" placeholder="Rigatoni" {...register('title')} />
-              <p className="text-sm-token mt-2 text-muted-foreground">
-                The headline — name it like you'd say it to the kids.
-              </p>
-            </div>
-
-            <div>
-              <FieldLabel htmlFor="meal-sides" optional>
-                Sides
-              </FieldLabel>
-              <Input
-                id="meal-sides"
-                placeholder="roasted veggies, garlic bread"
-                {...register('sides')}
-              />
-            </div>
-
-            <div>
-              <FieldLabel htmlFor="meal-try-bite" optional>
-                Try bite
-              </FieldLabel>
-              <Input id="meal-try-bite" placeholder="the veggies" {...register('tryBite')} />
-              <p className="text-sm-token mt-2 text-muted-foreground">
-                One small thing to try — it punches their card.
-              </p>
-            </div>
-
-            <div>
-              <FieldLabel htmlFor="meal-needs" optional>
-                Needs
-              </FieldLabel>
-              <Input
-                id="meal-needs"
-                placeholder="chicken thighs, broccoli"
-                {...register('needs')}
-              />
-              <p className="text-sm-token mt-2 text-muted-foreground">
-                What it needs from the store — one tap to the grocery list, once that ships.
-              </p>
-            </div>
-
             <div>
               <FieldLabel>How's it happening?</FieldLabel>
               <Controller
@@ -183,9 +173,58 @@ export function MealDrawer({
               />
             </div>
 
-            {kind !== 'out' && (
+            <div>
+              <FieldLabel htmlFor="meal-title">{copy.title}</FieldLabel>
+              <Input id="meal-title" placeholder={copy.placeholder} {...register('title')} />
+              {kind === 'cooked' && (
+                <p className="text-sm-token mt-2 text-muted-foreground">
+                  The headline — name it like you'd say it to the kids.
+                </p>
+              )}
+            </div>
+
+            {kind === 'cooked' && (
+              <>
+                <div>
+                  <FieldLabel htmlFor="meal-sides" optional>
+                    Sides
+                  </FieldLabel>
+                  <Input
+                    id="meal-sides"
+                    placeholder="roasted veggies, garlic bread"
+                    {...register('sides')}
+                  />
+                </div>
+
+                <div>
+                  <FieldLabel htmlFor="meal-try-bite" optional>
+                    Try bite
+                  </FieldLabel>
+                  <Input id="meal-try-bite" placeholder="the veggies" {...register('tryBite')} />
+                  <p className="text-sm-token mt-2 text-muted-foreground">
+                    One small thing to try — it punches their card.
+                  </p>
+                </div>
+
+                <div>
+                  <FieldLabel htmlFor="meal-needs" optional>
+                    Needs
+                  </FieldLabel>
+                  <Input
+                    id="meal-needs"
+                    placeholder="chicken thighs, broccoli"
+                    {...register('needs')}
+                  />
+                  <p className="text-sm-token mt-2 text-muted-foreground">
+                    What it needs from the store — one tap to the grocery list, once that ships.
+                  </p>
+                </div>
+              </>
+            )}
+
+            {copy.owner && (
               <div>
-                <FieldLabel>Who's got it?</FieldLabel>
+                <FieldLabel optional={kind === 'takeout'}>{copy.owner}</FieldLabel>
                 <Controller
                   control={control}
                   name="ownerId"
@@ -200,7 +239,7 @@ export function MealDrawer({
                           onClick={() => field.onChange(m.id)}
                         />
                       ))}
-                      {/* Unclaimed is a first-class pick — a hollow dashed dot,
+                      {/* Ownerless is a first-class pick — a hollow dashed dot,
                         identity's absence, matching the row spine's grammar.
                         Selected goes dashed-border + muted fill: absence has no
                         hue to fill with, but it still owes a MemberChip-weight
@@ -213,7 +252,7 @@ export function MealDrawer({
                           <span className="size-2 shrink-0 rounded-full border border-dashed border-muted-foreground" />
                         }
                       >
-                        Nobody yet
+                        {copy.ownerNull}
                       </Chip>
                     </div>
                   )}

@@ -49,6 +49,7 @@ function renderView(props: Partial<Parameters<typeof MealsPageView>[0]> = {}) {
       days={weekOf({ '2026-08-13': meal() })}
       membersById={membersById}
       todayKey="2026-08-11"
+      dinnerDone={false}
       weekTitle="August 9 – 15"
       needCount={2}
       canManage
@@ -126,6 +127,24 @@ describe('MealsPageView', () => {
     })
     expect(screen.getByText(/we're going out/)).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: "I've got it" })).not.toBeInTheDocument()
+  })
+
+  it('treats ownerless takeout as covered too — the family voice, no claim', () => {
+    renderView({
+      days: weekOf({ '2026-08-13': meal({ kind: 'takeout', ownerId: null }) }),
+      canManage: false,
+    })
+    expect(screen.getByText(/we're ordering in/)).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: "I've got it" })).not.toBeInTheDocument()
+  })
+
+  it("flips today's verb past once dinner is done", () => {
+    renderView({
+      days: weekOf({ '2026-08-11': meal({ date: '2026-08-11' }) }),
+      dinnerDone: true,
+      canManage: false,
+    })
+    expect(screen.getByText(/Dad cooked/)).toBeInTheDocument()
   })
 
   it('never claims for a viewer below tier 3', () => {

@@ -112,6 +112,28 @@ describe('TonightView — going out needs no planner', () => {
     expect(screen.queryByRole('button', { name: "I've got it" })).not.toBeInTheDocument()
     expect(screen.queryByText(/Still needs a cook/)).not.toBeInTheDocument()
   })
+
+  it('renders ownerless takeout as covered — "we\'re ordering in", no escalation', () => {
+    renderView({ meals: [meal({ kind: 'takeout', ownerId: null, sides: null })], now: FIVE_PM })
+    expect(screen.getByText("we're ordering in")).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: "I've got it" })).not.toBeInTheDocument()
+    expect(screen.queryByText(/Still needs a cook/)).not.toBeInTheDocument()
+  })
+})
+
+describe('TonightView — after dinner', () => {
+  const NINE_PM = new Date(2026, 7, 13, 21, 0)
+
+  it('flips the verb past and stands the badge down', () => {
+    renderView({ meals: [meal()], now: NINE_PM })
+    expect(screen.getByText('Dad cooked')).toBeInTheDocument()
+  })
+
+  it('an unclaimed dinner reads as history, not an alarm', () => {
+    renderView({ meals: [meal({ ownerId: null })], now: NINE_PM })
+    expect(screen.queryByText(/Still needs a cook/)).not.toBeInTheDocument()
+    expect(screen.getByText(/nobody claimed it/)).toBeInTheDocument()
+  })
 })
 
 describe('TonightView — second person for the owner', () => {

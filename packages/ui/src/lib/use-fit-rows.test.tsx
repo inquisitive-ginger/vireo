@@ -22,16 +22,25 @@ beforeAll(() => {
       return this.dataset.box ? available : 0
     },
   })
-  Object.defineProperty(HTMLElement.prototype, 'offsetHeight', {
+  // The hook measures rows with list-anchored rects (never offsetTop — see the
+  // hook), so the stub feeds rects: each row a ROW-tall band, the list at 0.
+  Object.defineProperty(HTMLElement.prototype, 'getBoundingClientRect', {
     configurable: true,
-    get(this: HTMLElement) {
-      return this.dataset.row ? ROW : 0
-    },
-  })
-  Object.defineProperty(HTMLElement.prototype, 'offsetTop', {
-    configurable: true,
-    get(this: HTMLElement) {
-      return this.dataset.row ? Number(this.dataset.row) * ROW : 0
+    value(this: HTMLElement): DOMRect {
+      const row = this.dataset.row
+      const top = row ? Number(row) * ROW : 0
+      const height = row ? ROW : 0
+      return {
+        top,
+        bottom: top + height,
+        height,
+        left: 0,
+        right: 0,
+        width: 0,
+        x: 0,
+        y: top,
+        toJSON: () => ({}),
+      } as DOMRect
     },
   })
 })

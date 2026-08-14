@@ -12,10 +12,11 @@ import {
   cn,
   identityToken,
   resolveHue,
+  useFitRows,
 } from '@family-os/ui'
 import type { MealMember, PlannedMeal, WidgetSize } from '../types'
-import { toDateKey } from '../lib/dates'
-import { ESCALATION_HOUR, isCovered, kindVerb, needsCount } from '../lib/meals'
+import { fromDateKey, toDateKey } from '../lib/dates'
+import { DINNER_DONE_HOUR, ESCALATION_HOUR, isCovered, kindVerb, needsCount } from '../lib/meals'
 
 /* `meals.tonight` — the pure view (data comes from `Tonight.tsx`). The fridge
    anti-ambush surface (spec.md): the meal name is the headline, readable from
@@ -35,10 +36,12 @@ import { ESCALATION_HOUR, isCovered, kindVerb, needsCount } from '../lib/meals'
    replacing the seven-chip week strip; the week-level count stays on the page.
 
    Escalation is localised, never a wash — the badge + solid button shout; the
-   card surface stays `--card`. The hour is the ADR 045 poll hour
-   (ESCALATION_HOUR) — one message, two channels once M5/3 wires the nudge.
-   Three sizes self-size via container queries (the shell renders `<Widget />`
-   with no size prop; `size` is a Storybook/test override). */
+   card surface stays `--card`. The window is [ESCALATION_HOUR, DINNER_DONE_HOUR)
+   — after dinner the verbs flip past and the badge stands down (iPad review,
+   2026-08-13). Ownerless takeout is covered like going out — "we're ordering
+   in", family dot, no claim pressure. Three sizes self-size via container
+   queries (the shell renders `<Widget />` with no size prop; `size` is a
+   Storybook/test override). */
 
 export interface TonightViewProps {
   meals: PlannedMeal[]
@@ -56,6 +59,8 @@ interface ZoneProps {
   today: PlannedMeal | null
   owner: MealMember | undefined
   escalated: boolean
+  /** Past DINNER_DONE_HOUR — tonight is history, verbs go past tense. */
+  dinnerDone: boolean
   meals: PlannedMeal[]
   now: Date
   viewerId: string | null
@@ -88,7 +93,9 @@ function CardLink() {
 
 /* Wraps to two lines before it ellipsizes — the fridge reads the meal name from
    the door, and a one-line truncate ate the headline it exists for. Compact is
-   the one slot with no room to wrap.
+   the one slot with no room to wrap. Display-lg at every non-compact size (iPad
+   review, 2026-08-13): the 36px hero rung made the meal the loudest thing on
+   the wall and starved the NEXT UP groove.
 
    The pb/-mb pair is clip room: truncate/line-clamp set overflow-hidden, and
    Lora's descenders reach below the display tokens' 1.2 line box — without it
@@ -98,18 +105,15 @@ function Headline({
   children,
   muted = false,
   compact = false,
-  hero = false,
 }: {
   children: ReactNode
   muted?: boolean
   compact?: boolean
-  hero?: boolean
 }) {
   return (
     <span
       className={cn(
-        compact ? 'text-page-title' : hero ? 'text-display-xl' : 'text-display-lg',
-        compact ? 'block truncate' : 'line-clamp-2',
+        compact ? 'text-page-title block truncate' : 'text-display-lg line-clamp-2',
         '-mb-1.5 pb-1.5',
         muted ? 'text-muted-foreground italic' : 'text-foreground'
       )}
@@ -160,20 +164,14 @@ function FamilyDot() {
    hairline; the adult logistics rail below it. `stretch` pins the rail to the
    box bottom (standard, a short slot); large stacks content instead and lets
    the slack fall between the rail and the lookahead groove. */
-function Body({
-  stretch = true,
-  hero = false,
-  ...zone
-}: ZoneProps & { stretch?: boolean; hero?: boolean }) {
-  const { today, owner, escalated, now, viewerId, canClaim, canPlan, onClaim } = zone
+function Body({ stretch = true, ...zone }: ZoneProps & { stretch?: boolean }) {
+  const { today, owner, escalated, dinnerDone, now, viewerId, canClaim, canPlan, onClaim } = zone
   const frame = cn('flex min-h-0 flex-col gap-2', stretch && 'flex-1 justify-between')
   if (!today) {
     return (
       <div className={frame}>
         <div className="min-w-0">
-          <Headline muted hero={hero}>
-            Nothing planned
-          </Headline>
+          <Headline muted>Nothing planned</Headline>
           <p className="text-prose mt-1 truncate text-muted-foreground italic">
             the week's still open
           </p>
@@ -193,21 +191,19 @@ function Body({
     return (
       <div className={frame}>
         <div className="min-w-0">
-          <Headline hero={hero}>{today.title}</Headline>
-          {escalated ? (
-            <div className="mt-1.5">
+          <Headline>{today.title}</Headline>
+          {/* The chip rides the status line's right edge — a level shallower,
+              and the card's right half stops being dead air (iPad review). */}
+          <div className="mt-1 flex min-w-0 items-center justify-between gap-3">
+            {escalated ? (
               <Badge variant="warning">Still needs a cook · {timeLabel(now)}</Badge>
-            </div>
-          ) : (
-            <p className="text-prose mt-1 truncate text-muted-foreground italic">
-              planned — nobody's on it yet
-            </p>
-          )}
-          {today.tryBite && (
-            <div className="mt-2">
-              <TryBiteChip tryBite={today.tryBite} />
-            </div>
-          )}
+            ) : (
+              <p className="text-prose min-w-0 truncate text-muted-foreground italic">
+                {dinnerDone ? 'planned — nobody claimed it' : "planned — nobody's on it yet"}
+              </p>
+            )}
+            {today.tryBite && <TryBiteChip tryBite={today.tryBite} />}
+          </div>
         </div>
         <div className="flex items-center gap-2.5 border-t border-border/50 pt-3">
           <HollowRing />
@@ -229,13 +225,13 @@ function Body({
   return (
     <div className={frame}>
       <div className="min-w-0">
-        <Headline hero={hero}>{today.title}</Headline>
-        {today.sides && (
-          <p className="text-prose mt-1 truncate text-muted-foreground italic">{today.sides}</p>
-        )}
-        {today.tryBite && (
-          <div className="mt-2">
-            <TryBiteChip tryBite={today.tryBite} />
+        <Headline>{today.title}</Headline>
+        {(today.sides || today.tryBite) && (
+          <div className="mt-1 flex min-w-0 items-center justify-between gap-3">
+            <p className="text-prose min-w-0 truncate text-muted-foreground italic">
+              {today.sides}
+            </p>
+            {today.tryBite && <TryBiteChip tryBite={today.tryBite} />}
           </div>
         )}
       </div>
@@ -249,14 +245,14 @@ function Body({
               identity={resolveHue(owner.name, owner.identityHue)}
             />
             <span className="text-base-token min-w-0 truncate text-foreground">
-              {kindVerb(today.kind, owner.name, today.ownerId === viewerId)}
+              {kindVerb(today.kind, owner.name, today.ownerId === viewerId, dinnerDone)}
             </span>
           </>
         ) : (
           <>
             <FamilyDot />
             <span className="text-base-token min-w-0 truncate text-foreground">
-              we're going out
+              {kindVerb(today.kind, '', false, dinnerDone)}
             </span>
           </>
         )}
@@ -265,11 +261,19 @@ function Body({
   )
 }
 
-/* Large only: NEXT UP — the next two days in a sunken plane (ADR 040 groove).
+/* Room to state "+N more day(s)" when the clamp drops a row. */
+const MORE_RESERVE = 20
+
+/* Large only: NEXT UP — the 3-day lookahead in a sunken plane (ADR 040 groove).
    Day · cook · meal · store flag: the Tuesday answer to "do I shop for
    Thursday?". The flag is a comma count of the meal's `needs`; it never claims
    the inverse (see `needsCount`). Unclaimed and empty days keep the dashed
-   grammar — identity's absence, rendered. */
+   grammar — identity's absence, rendered.
+
+   A widget list fits its slot, it does not crop (iPad review, 2026-08-13 — the
+   third day sheared off at the fridge): bands compress to min-h-12, and
+   `useFitRows` drops to whole rows + "+N more" when even that doesn't fit. The
+   shown rows stay equal flex bands, so slack still pads every row. */
 function NextUp({
   meals,
   membersById,
@@ -281,70 +285,85 @@ function NextUp({
   now: Date
   viewerId: string | null
 }) {
-  const byDate = new Map(meals.map((m) => [m.date, m]))
-  const days = [1, 2, 3].map((offset) => {
-    const d = new Date(now.getFullYear(), now.getMonth(), now.getDate() + offset)
-    return { date: d, meal: byDate.get(toDateKey(d)) ?? null }
-  })
+  // Keyed on the date STRING, not `now` — the container makes a fresh Date every
+  // render, and an unstable rows identity makes useFitRows re-measure each pass.
+  const todayKey = toDateKey(now)
+  const days = useMemo(() => {
+    const byDate = new Map(meals.map((m) => [m.date, m]))
+    const start = fromDateKey(todayKey)
+    return [1, 2, 3].map((offset) => {
+      const d = new Date(start.getFullYear(), start.getMonth(), start.getDate() + offset)
+      return { date: d, meal: byDate.get(toDateKey(d)) ?? null }
+    })
+  }, [meals, todayKey])
+  const { boxRef, listRef, shown, hiddenCount, measuring } = useFitRows(days, MORE_RESERVE)
 
   return (
-    <div className="-mx-6 -mb-6 mt-4 flex min-h-0 flex-1 flex-col bg-surface-sunken px-6 pb-5 pt-4 shadow-[var(--shadow-inset)]">
+    <div className="-mx-6 -mb-6 mt-4 flex min-h-0 flex-1 flex-col bg-surface-sunken px-6 pb-4 pt-3 shadow-[var(--shadow-inset)]">
       <div className="text-section-label mb-1.5 text-muted-foreground">Next up</div>
-      {/* The rows split the groove's full depth into equal bands (each flex-1,
-          hairlines as the dividers) — the slack pads every row instead of
-          pooling under the last one. */}
-      <div className="flex min-h-0 flex-1 flex-col">
-        {days.map(({ date, meal }, i) => {
-          const owner = meal?.ownerId ? membersById.get(meal.ownerId) : undefined
-          const toBuy = needsCount(meal)
-          return (
-            <div
-              key={date.getDay()}
-              className={cn(
-                'flex min-h-14 min-w-0 flex-1 items-center gap-3 py-2.5',
-                i > 0 && 'border-t border-border/50'
-              )}
-            >
-              <span className="text-xs-token w-8 shrink-0 font-semibold text-muted-foreground">
-                {date.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase()}
-              </span>
-              {owner ? (
-                <ProfileAvatar
-                  name={owner.name}
-                  size="sm"
-                  avatarUrl={owner.avatarUrl}
-                  identity={resolveHue(owner.name, owner.identityHue)}
-                />
-              ) : meal?.kind === 'out' ? (
-                <FamilyDot />
-              ) : (
-                <HollowRing />
-              )}
-              {meal ? (
-                <span className="text-base-token min-w-0 flex-1 truncate text-foreground">
-                  {meal.title}
-                  {(owner || meal.kind === 'out') && (
-                    <span className="text-muted-foreground">
-                      {' '}
-                      · {kindVerb(meal.kind, owner?.name ?? '', meal.ownerId === viewerId)}
-                    </span>
-                  )}
+      {/* Measuring pass renders the rows at natural (min-band) height — h-full
+          would stretch them to fill the box, caching bottoms that scale with
+          whatever height the box happened to have at measure time. Fit is
+          judged on the minimum bands; the shown rows then stretch. */}
+      <div ref={boxRef} className="relative min-h-0 flex-1 overflow-hidden">
+        <div ref={listRef} className={cn('flex min-h-0 flex-col', !measuring && 'h-full')}>
+          {shown.map(({ date, meal }, i) => {
+            const owner = meal?.ownerId ? membersById.get(meal.ownerId) : undefined
+            const toBuy = needsCount(meal)
+            return (
+              <div
+                key={date.getDay()}
+                className={cn(
+                  'flex min-h-12 min-w-0 flex-1 items-center gap-3 py-2',
+                  i > 0 && 'border-t border-border/50'
+                )}
+              >
+                <span className="text-xs-token w-8 shrink-0 font-semibold text-muted-foreground">
+                  {date.toLocaleDateString('en-US', { weekday: 'short' }).toUpperCase()}
                 </span>
-              ) : (
-                <span className="text-base-token min-w-0 flex-1 truncate text-muted-foreground/70 italic">
-                  nothing planned
-                </span>
-              )}
-              {toBuy > 0 && (
-                <span className="text-sm-token flex shrink-0 items-center gap-1 font-medium text-muted-foreground">
-                  <ShoppingCart size={13} aria-hidden />
-                  {toBuy} to buy
-                </span>
-              )}
-            </div>
-          )
-        })}
+                {owner ? (
+                  <ProfileAvatar
+                    name={owner.name}
+                    size="sm"
+                    avatarUrl={owner.avatarUrl}
+                    identity={resolveHue(owner.name, owner.identityHue)}
+                  />
+                ) : isCovered(meal) ? (
+                  <FamilyDot />
+                ) : (
+                  <HollowRing />
+                )}
+                {meal ? (
+                  <span className="text-base-token min-w-0 flex-1 truncate text-foreground">
+                    {meal.title}
+                    {isCovered(meal) && (
+                      <span className="text-muted-foreground">
+                        {' '}
+                        · {kindVerb(meal.kind, owner?.name ?? '', meal.ownerId === viewerId)}
+                      </span>
+                    )}
+                  </span>
+                ) : (
+                  <span className="text-base-token min-w-0 flex-1 truncate text-muted-foreground/70 italic">
+                    nothing planned
+                  </span>
+                )}
+                {toBuy > 0 && (
+                  <span className="text-sm-token flex shrink-0 items-center gap-1 font-medium text-muted-foreground">
+                    <ShoppingCart size={13} aria-hidden />
+                    {toBuy} to buy
+                  </span>
+                )}
+              </div>
+            )
+          })}
+        </div>
       </div>
+      {!measuring && hiddenCount > 0 && (
+        <div className="text-sm-token shrink-0 pt-1 text-muted-foreground">
+          +{hiddenCount} more day{hiddenCount > 1 ? 's' : ''}
+        </div>
+      )}
     </div>
   )
 }
@@ -373,7 +392,7 @@ function Compact({ today, owner, escalated }: ZoneProps) {
                 avatarUrl={owner.avatarUrl}
                 identity={resolveHue(owner.name, owner.identityHue)}
               />
-            ) : today.kind === 'out' ? (
+            ) : isCovered(today) ? (
               <FamilyDot />
             ) : escalated ? (
               <Badge variant="warning">Still needs a cook</Badge>
@@ -405,7 +424,7 @@ function Large(props: ZoneProps & { membersById: Map<string, MealMember> }) {
       <CardLink />
       <WidgetHeader icon={Utensils} label="Meals · Tonight" />
       <div className="mt-2.5 flex min-h-0 flex-col">
-        <Body {...zone} stretch={false} hero />
+        <Body {...zone} stretch={false} />
       </div>
       <NextUp
         meals={zone.meals}
@@ -446,12 +465,14 @@ export function TonightView({
   const todayKey = toDateKey(now)
   const today = useMemo(() => meals.find((m) => m.date === todayKey) ?? null, [meals, todayKey])
   const owner = today?.ownerId ? membersById.get(today.ownerId) : undefined
-  const escalated = now.getHours() >= ESCALATION_HOUR
+  const dinnerDone = now.getHours() >= DINNER_DONE_HOUR
+  const escalated = now.getHours() >= ESCALATION_HOUR && !dinnerDone
 
   const zone: ZoneProps = {
     today,
     owner,
     escalated,
+    dinnerDone,
     meals,
     now,
     viewerId,

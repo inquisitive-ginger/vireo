@@ -11,7 +11,7 @@ import type { Profile } from '@family-os/platform/types'
 import { ConfirmDialog, ErrorCard } from '@family-os/ui'
 import type { MealMember, PlanResponse, PlannedMeal } from '../types'
 import { toDateKey, weekDays, weekRangeLabel, weekStart } from '../lib/dates'
-import { daysNeedingCook } from '../lib/meals'
+import { DINNER_DONE_HOUR, daysNeedingCook } from '../lib/meals'
 import { MealDrawer, type MealDrawerInput } from '../components/MealDrawer'
 import { MealsPageView, type WeekDay } from './MealsPageView'
 
@@ -157,6 +157,7 @@ export function MealsPage() {
         days={weekModel}
         membersById={membersById}
         todayKey={toDateKey(now)}
+        dinnerDone={now.getHours() >= DINNER_DONE_HOUR}
         weekTitle={weekRangeLabel(start)}
         needCount={
           offset < 0 ? null : daysNeedingCook(days, mealsByDate, offset === 0 ? now : days[0])
