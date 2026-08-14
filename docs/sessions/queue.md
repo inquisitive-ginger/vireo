@@ -65,21 +65,14 @@ One pre-launch family task: **name the feature at the dinner table** (ADR 061 �
 
 ---
 
-### M5/2 — Dev: Week Plan + Tonight's Dinner
-
-**Type:** development · **Kickoff:** `kickoffs/dev-meals-week-plan-tonight.md`
-**In flight** on `dev/meals-week-plan-tonight` — all built + tested; the widget
-is **locked** (2026-08-12 live review, v3 rework). Remaining: live-review +
-iterate the week page and drawer, then close out. _Depends on: M5/1 ✅._
-
 ### M5/3 — Dev: Who's Got Dinner
 
 **Type:** development · **Kickoff:** _to be written_
-Owner + `kind` (cooked/takeout/leftovers/out — calling it in still counts as having
-dinner), the **unclaimed** state with one-tap claim, and an afternoon `notify()` poll
-(ADR 045's in-plugin scheduler is the precedent): to the owner, or to tier 4 if nobody
-has it. Optional `coinReward` on the meal — **this is the second earn source and the
-proof that ADR 048 generalizes.** _Depends on: M5/2, M4/3._
+The afternoon `notify()` poll (ADR 045's in-plugin scheduler is the precedent): to
+the owner, or to tier 4 if nobody has it; the widget's escalated state flips at the
+same hour (`ESCALATION_HOUR`). Kind verbs + one-tap claim already shipped in M5/2;
+**`coinReward` retired 2026-08-13** — a paid dinner is a dedicated chore, meals is
+not an earn source. _Depends on: M5/2 ✅, M4/3._
 
 ### M5/4 — Platform: Calendar Day Marks
 
@@ -226,6 +219,11 @@ suite mirroring chores/calendar. _Depends on: none._
 ## Recently Completed
 
 > Two-line index; full detail in the linked log.
+
+- **2026-08-13 — Dev: Week Plan + Tonight's Dinner (M5/2, PR #105).** The meals
+  plugin ships: week page, drawer, tonight widget, one-tap claim. P$ dropped
+  from meals entirely (paid dinners become chores — M5/3 loses the earn
+  wiring). See `logs/2026-08-13-dev-meals-week-plan-tonight.md`.
 
 - **2026-08-11 — Design: Meals & Groceries (M5/1, ADR 063/064).** All 16 gates
   settled over three rounds + an external critique — menu-card grammar, `sides`

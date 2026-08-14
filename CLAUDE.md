@@ -15,20 +15,19 @@ before it reads anything else, and it is size-capped — see
 > **At most six one-line bullets.** Update at the end of every session. If a
 > session's detail doesn't fit on one line it belongs in the session log.
 
-- **Milestone:** M4.5 — Companion (M4.5/3 next); **M5/1 done 2026-08-11** —
-  meals design settled (ADR 063/064, `docs/modules/meals/design.md`), M5/2 buildable.
+- **Milestone:** M4.5 — Companion (M4.5/3 next); **M5/2 done 2026-08-13, PR
+  #105** — meals plugin live (week page, drawer, tonight widget, claim).
 - **Active stories:** none in flight; **beacon track queued** — custom build due
   at the December visit. `product-design-beacon.md`.
 - **Deployment:** 🟢 live at `https://vireohome.app` on the Pi; merge to `main`
   auto-deploys; off-LAN via Tailscale. Runbook: `docs/deployment.md`.
-- **Last session:** 2026-08-11 — design, M5/1 meals & groceries (three rounds +
-  external critique; grocery mode split retired; `ListRow` + narrowed hue rule).
-  `logs/2026-08-11-design-meals-groceries.md`.
+- **Last session:** 2026-08-13 — dev, M5/2 close-out (four review rounds; P$
+  retired from meals — paid dinners become chores).
+  `logs/2026-08-13-dev-meals-week-plan-tonight.md`.
 - **What's next and everything outstanding:** `docs/sessions/queue.md` — the one
   index. Cheapest high-value item: Deployment Part F, offsite backups.
-- **Owed in-app:** every report through #94 was `deployed`; reports `35a65002`
-  (#102) and `4225b7ce` (#103) are now fixed and deployed but still need a
-  tier-4 session to `PATCH … deployed` — that's the only notification.
+- **Owed in-app:** reports `35a65002` (#102) and `4225b7ce` (#103) still need a
+  tier-4 `PATCH … deployed`; same session can do the meals prod check.
 
 ---
 
@@ -150,7 +149,8 @@ outranks any milestone number found in an older doc or log.
   **widgets → manifest + Query cache invalidation** (ADR 022).
 - **New plugin → mirror the `family-feed` structure** (db export, prisma config,
   federation singletons, manifest); register it in `plugins.json`,
-  `load-plugin.ts`, `federation.d.ts`, and the shell `ICON_MAP`.
+  `load-plugin.ts`, `federation.d.ts`, the shell `ICON_MAP`, **and `Home.tsx`
+  `WIDGET_META`** — a widget silently drops without that fifth one.
 
 ---
 

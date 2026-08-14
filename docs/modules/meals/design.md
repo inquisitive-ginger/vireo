@@ -35,50 +35,66 @@
 
 ## M5/2 — Week Plan + Tonight's Dinner
 
-### `meals.tonight` widget (four states, all built)
+### `meals.tonight` widget (as shipped — v3 rework, 2026-08-12 live review)
 
-| State                | Headline                  | Sides slot                                    | Rail                                                   |
-| -------------------- | ------------------------- | --------------------------------------------- | ------------------------------------------------------ |
-| Claimed              | title, 32px Lora          | sides, italic 16px muted                      | owner avatar + verb · try-bite chip                    |
-| Unclaimed (pre-4pm)  | title                     | _"planned — nobody's on it yet"_              | hollow dashed ring · ghost **I've got it**             |
-| Unclaimed (post-4pm) | title                     | **amber badge** _"Still needs a cook · 4:30"_ | solid **I've got it** · "Parents were nudged at 4:00." |
-| Nothing planned      | _"Nothing planned"_ muted | _"the week's still open"_ ¹                   | solid **Plan it** · ghost **I've got it**              |
+**Two audiences, one card:** the kid zone above a hairline (headline · sides ·
+try-bite chip — what a kid reads at 3:30), the adult logistics rail below
+(avatar + kind verb, **second person when the viewer owns tonight**). Headline
+tokens 36/29/26 (large/standard/compact); it **wraps to two lines** before
+ellipsizing — the fridge reads the meal name from the door. The **whole tile
+deep-links to `/meals`** (overlay link, controls z-lifted).
 
-¹ Fast-follow (only if the lookback query is free in this story): replace with a
-history prompt — _"last Thursday you did tacos"_. Do **not** build history infra
-for it; spec.md defers that deliberately.
+| State                | Headline                  | Below the headline                            | Rail                                         |
+| -------------------- | ------------------------- | --------------------------------------------- | -------------------------------------------- |
+| Claimed              | title                     | sides italic · try-bite chip                  | owner avatar + verb                          |
+| Going out            | title                     | —                                             | Hearth `HandPlatter` dot · "we're going out" |
+| Unclaimed (pre-4pm)  | title                     | _"planned — nobody's on it yet"_              | hollow dashed ring · ghost **I've got it**   |
+| Unclaimed (post-4pm) | title                     | **amber badge** _"Still needs a cook · 4:30"_ | solid **I've got it**                        |
+| Nothing planned      | _"Nothing planned"_ muted | _"the week's still open"_ ¹                   | solid **Plan it**                            |
 
-- **No date in the header** — the screen already states it. Header is the
-  standard identity row: utensils 13px + `MEALS · TONIGHT`.
-- **Compact** (253×180): `TONIGHT` label, title at 24px, owner initial only.
-  Drops sides + try bite.
-- **Large** (522×376): standard content + the **week strip** in a sunken plane —
-  seven chips (owner avatar / hollow dashed ring per day), **today marked**
-  (primary underline on the day label), and the label states the count in words:
-  `THIS WEEK · 2 days need a cook`. The strip label's count is the deliverable;
-  never make the viewer tally rings.
+¹ Fast-follow (was not free in M5/2): the history prompt — _"last Thursday you
+did tacos"_. Do **not** build history infra for it.
+
+- **Going out is attribution-free:** ownerless `kind='out'` is covered, not
+  unclaimed (`isCovered()`) — no claim, no escalation, doesn't count as needing
+  a cook.
+- **Large:** **NEXT UP** replaces the seven-chip week strip — the next 3 days in
+  a full-bleed sunken groove, equal flex bands, per-row store flag (`N to buy`,
+  comma count of `needs`; renders nothing when empty — blank is never
+  "everything's in the house"). The widget fetches a rolling today→+3 window.
 - Widget escalation hour = the ADR 045 poll hour (one message, two channels).
 
-### `/meals` week page
+### `/meals` week page (as shipped — 2026-08-13 review rounds)
 
-- `PageContainer width="list"`. Header: "This week" (Lora page-title) +
-  `Aug 9–15 · **2 days need a cook**` + prev/next week nav.
-- **Seven `ItemCard` rows** (ADR 063: a day is an independent object with three
-  actions — edit, claim, needs-push — so it's a card, not a `ListRow`). Spine =
-  owner identity hue in every state (ADR 043 holds here); **unclaimed/empty rows
-  get a dashed spine** — identity's absence, rendered. Empty day additionally
-  drops to dashed card chrome.
+- `PageContainer width="list"`. Header is the **calendar week view's grammar**:
+  the range as the Lora title ("August 9 – 15"), nav pinned right (**This week**
+  reset innermost — always visible — then the chevrons outermost, so the cluster
+  never moves with the title's width). The cook count is the subline: semibold
+  **primary** when >0 (the ask speaks in the action colour, never amber), muted
+  regular at zero, hidden for past weeks.
+- **Seven `ItemCard` rows** (ADR 063), **equal height** (`min-h-14` content
+  column — day slots, not rows that shrink with their state). Spine = owner
+  identity hue; **unclaimed/empty rows get a dashed spine** — identity's
+  absence, rendered; empty day additionally drops to dashed card chrome;
+  **going out has no spine** (transparent — it names nobody; reversed the
+  Hearth-spine call, 2026-08-13).
+- **Past days recede:** dimmed, past-tense verbs ("Zach cooked"), **no actions
+  at all behind today** — an unplanned past day states "No dinner was planned".
+  The page records history; today forward it acts.
 - Row anatomy: day column (DOW + date, primary-coloured on today) · title 16px
   DM Sans + `· sides` muted inline · meta line (avatar + verb, `· try bite: …`)
-  · trailing. **Needs-push is a text link** ("3 things needed"), not a bordered
-  button — it must not be the loudest thing on the row.
-- Row actions: nothing-planned → paired ghost **Plan it** / **I've got it**;
-  unclaimed → single ghost **I've got it** (claims without opening the drawer).
+  · trailing. **Needs-push** ("3 things needed", a text link, never a bordered
+  button) lands with M5/6 — deliberately absent until the list exists.
+- Row actions: nothing-planned → **Plan it** only (one-tap "I've got it" on an
+  unplanned day needs M5/3's semantics); unclaimed → single ghost **I've got
+  it**. Remove lives in `RowActions` and **the page confirms** (`ConfirmDialog`).
 - The page is **calm** — no amber ever. The widget and the nudge do the shouting.
 
 ### The editor drawer (440px, RHF + Zod)
 
-Field order: **title → sides → try bite → needs → kind → owner → P$ (optional)**.
+Field order: **title → sides → try bite → needs → kind → owner**. No P$
+(2026-08-13): a paid dinner is a dedicated chore in the chores module — meals
+carries no coin UI or data.
 
 - Title: placeholder `Rigatoni`, standing helper _"The headline — name it like
   you'd say it to the kids."_ (helper survives typing; a placeholder dies at the
@@ -103,8 +119,8 @@ describe the plate, the try bite is the ask.
   title + try bite), tier-4 nudge if unclaimed. At the same hour the widget
   flips to its escalated state — badge + solid claim.
 - Kind verbs (shared language above) are the only kind rendering anywhere.
-- Optional `coinReward` — second earn source, proof ADR 048 generalizes; no
-  design surface beyond the drawer field.
+- ~~Optional `coinReward`~~ — **retired 2026-08-13** (column dropped in M5/2):
+  a paid dinner is a dedicated chore; meals is not an earn source.
 
 ---
 
