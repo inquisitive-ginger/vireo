@@ -128,7 +128,6 @@ exports.Prisma.PlannedMealScalarFieldEnum = {
   sides: 'sides',
   kind: 'kind',
   ownerId: 'ownerId',
-  coinReward: 'coinReward',
   notes: 'notes',
   tryBite: 'tryBite',
   needs: 'needs',

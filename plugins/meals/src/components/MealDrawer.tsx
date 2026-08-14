@@ -5,8 +5,6 @@ import { z } from 'zod'
 import {
   Button,
   Chip,
-  CoinAmountField,
-  CURRENCY,
   Drawer,
   FieldLabel,
   Input,
@@ -16,8 +14,6 @@ import {
 import type { Profile } from '@family-os/platform/types'
 import { MEAL_KINDS, type MealKind, type PlannedMeal } from '../types'
 
-const COIN_PRESETS = [1, 2, 5, 10]
-
 export interface MealDrawerInput {
   title: string
   sides: string | null
@@ -25,7 +21,6 @@ export interface MealDrawerInput {
   needs: string | null
   kind: MealKind
   ownerId: string | null
-  coinReward: number
 }
 
 // The UI-shaped form. ownerId null is a REAL pick — "nobody yet" submits an
@@ -37,7 +32,6 @@ const MealFormSchema = z.object({
   needs: z.string(),
   kind: z.enum(MEAL_KINDS),
   ownerId: z.string().nullable(),
-  coinReward: z.number(),
 })
 type MealForm = z.input<typeof MealFormSchema>
 
@@ -53,9 +47,11 @@ export interface MealDrawerProps {
 }
 
 /* The single plan/edit surface (design.md §M5/2) — field order is the menu-card
-   grammar taught structurally: title → sides → try bite → needs → kind → owner →
-   P$. The title and try-bite helpers are STANDING lines, not placeholders — a
-   placeholder dies at the first keystroke and the phrasing lesson is the feature. */
+   grammar taught structurally: title → sides → try bite → needs → kind → owner.
+   The title and try-bite helpers are STANDING lines, not placeholders — a
+   placeholder dies at the first keystroke and the phrasing lesson is the feature.
+   No P$ here (live review, 2026-08-13): a paid dinner is a chore in the chores
+   module, not a meals concern. */
 export function MealDrawer({
   open,
   onClose,
@@ -83,7 +79,6 @@ export function MealDrawer({
       needs: '',
       kind: 'cooked',
       ownerId: null,
-      coinReward: 0,
     },
   })
 
@@ -96,7 +91,6 @@ export function MealDrawer({
       needs: editingMeal?.needs ?? '',
       kind: editingMeal?.kind ?? 'cooked',
       ownerId: editingMeal?.ownerId ?? null,
-      coinReward: editingMeal?.coinReward ?? 0,
     })
   }, [open, editingMeal, reset])
 
@@ -116,7 +110,6 @@ export function MealDrawer({
       kind: values.kind,
       // Going out needs no planner and no attribution — the whole family goes.
       ownerId: values.kind === 'out' ? null : values.ownerId,
-      coinReward: values.coinReward,
     })
   })
 
@@ -208,10 +201,14 @@ export function MealDrawer({
                         />
                       ))}
                       {/* Unclaimed is a first-class pick — a hollow dashed dot,
-                        identity's absence, matching the row spine's grammar. */}
+                        identity's absence, matching the row spine's grammar.
+                        Selected goes dashed-border + muted fill: absence has no
+                        hue to fill with, but it still owes a MemberChip-weight
+                        selected state. */}
                       <Chip
                         selected={field.value === null}
                         onClick={() => field.onChange(null)}
+                        selectedClassName="border-dashed border-muted-foreground bg-muted text-foreground"
                         leading={
                           <span className="size-2 shrink-0 rounded-full border border-dashed border-muted-foreground" />
                         }
@@ -223,29 +220,6 @@ export function MealDrawer({
                 />
               </div>
             )}
-
-            <div>
-              <FieldLabel htmlFor="meal-pays" optional>
-                Pays ({CURRENCY.code})
-              </FieldLabel>
-              <Controller
-                control={control}
-                name="coinReward"
-                render={({ field }) => (
-                  <CoinAmountField
-                    id="meal-pays"
-                    value={field.value === 0 ? '' : String(field.value)}
-                    onChange={(s) => field.onChange(s === '' ? 0 : parseInt(s, 10))}
-                    presets={COIN_PRESETS}
-                    placeholder="0"
-                  />
-                )}
-              />
-              <p className="text-sm-token mt-2 text-muted-foreground">
-                Having dinner covered can pay like a chore (the payout wires up with the nudge
-                story).
-              </p>
-            </div>
           </div>
         </div>
 

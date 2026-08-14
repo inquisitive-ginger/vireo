@@ -218,7 +218,6 @@ export const MealInputSchema = z.object({
   sides: OptionalText,
   kind: z.enum(MEAL_KINDS).optional().default('cooked'),
   ownerId: UuidSchema.nullish().transform((v) => v ?? null),
-  coinReward: z.number().int().min(0).max(1000).optional().default(0),
   tryBite: OptionalText,
   needs: OptionalText,
   notes: OptionalText,

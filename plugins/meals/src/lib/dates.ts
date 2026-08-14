@@ -23,20 +23,15 @@ export function weekDays(start: Date): Date[] {
   })
 }
 
-const monthShort = (d: Date) => d.toLocaleDateString('en-US', { month: 'short' })
+const monthLong = (d: Date) => d.toLocaleDateString('en-US', { month: 'long' })
 
+/** The page title — the calendar week view's title grammar verbatim
+    ("August 9 – 15"), so the two week surfaces read as one pattern. */
 export function weekRangeLabel(start: Date): string {
   const end = new Date(start)
   end.setDate(start.getDate() + 6)
   if (start.getMonth() === end.getMonth()) {
-    return `${monthShort(start)} ${start.getDate()}–${end.getDate()}`
+    return `${monthLong(start)} ${start.getDate()} – ${end.getDate()}`
   }
-  return `${monthShort(start)} ${start.getDate()} – ${monthShort(end)} ${end.getDate()}`
-}
-
-export function weekTitle(offsetWeeks: number, start: Date): string {
-  if (offsetWeeks === 0) return 'This week'
-  if (offsetWeeks === 1) return 'Next week'
-  if (offsetWeeks === -1) return 'Last week'
-  return `Week of ${monthShort(start)} ${start.getDate()}`
+  return `${monthLong(start)} ${start.getDate()} – ${monthLong(end)} ${end.getDate()}`
 }

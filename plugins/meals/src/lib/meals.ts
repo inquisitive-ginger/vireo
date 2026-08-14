@@ -7,16 +7,26 @@ export const ESCALATION_HOUR = 16
 
 /** The kind lives in the verb, never a chip (design.md §Shared language).
     Second person when the viewer IS the owner (v3 review, 2026-08-12) — the
-    morning glance reads "You're cooking", not your own name. */
-export function kindVerb(kind: MealKind, ownerName: string, isViewer = false): string {
+    morning glance reads "You're cooking", not your own name. Past tense on
+    days already behind us (critique, 2026-08-13) — the page records those,
+    it doesn't offer them. */
+export function kindVerb(
+  kind: MealKind,
+  ownerName: string,
+  isViewer = false,
+  past = false
+): string {
   switch (kind) {
     case 'takeout':
+      if (past) return isViewer ? 'You called it in' : `${ownerName} called it in`
       return isViewer ? "You're calling it in" : `${ownerName} is calling it in`
     case 'leftovers':
+      if (past) return isViewer ? 'You reheated' : `${ownerName} reheated`
       return isViewer ? "You're reheating" : `${ownerName} is reheating`
     case 'out':
-      return "we're going out"
+      return past ? 'we went out' : "we're going out"
     default:
+      if (past) return isViewer ? 'You cooked' : `${ownerName} cooked`
       return isViewer ? "You're cooking" : `${ownerName} is cooking`
   }
 }

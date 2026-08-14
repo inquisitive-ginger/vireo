@@ -19,7 +19,6 @@ model PlannedMeal {
   sides      String?
   kind       String   @default("cooked")
   ownerId    String?  @map("owner_id") @db.Uuid
-  coinReward Int?     @map("coin_reward")
   notes      String?
   tryBite    String?  @map("try_bite")
   needs      String?

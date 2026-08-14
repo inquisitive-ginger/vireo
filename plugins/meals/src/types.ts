@@ -10,7 +10,6 @@ export interface PlannedMeal {
   sides: string | null
   kind: MealKind
   ownerId: string | null
-  coinReward: number | null
   notes: string | null
   tryBite: string | null
   needs: string | null

@@ -19,7 +19,6 @@ function meal(overrides: Partial<PlannedMeal> = {}): PlannedMeal {
     sides: 'roasted veggies',
     kind: 'cooked',
     ownerId: DAD_ID,
-    coinReward: null,
     notes: null,
     tryBite: 'the veggies',
     needs: null,
@@ -50,13 +49,13 @@ function renderView(props: Partial<Parameters<typeof MealsPageView>[0]> = {}) {
       days={weekOf({ '2026-08-13': meal() })}
       membersById={membersById}
       todayKey="2026-08-11"
-      weekTitle="This week"
-      weekLabel="Aug 9–15"
+      weekTitle="August 9 – 15"
       needCount={2}
       canManage
       canClaim
       onPrevWeek={vi.fn()}
       onNextWeek={vi.fn()}
+      onThisWeek={vi.fn()}
       onPlan={vi.fn()}
       onEdit={vi.fn()}
       onClaim={vi.fn()}
@@ -67,10 +66,9 @@ function renderView(props: Partial<Parameters<typeof MealsPageView>[0]> = {}) {
 }
 
 describe('MealsPageView', () => {
-  it('renders the header with the range and the stated count', () => {
+  it('renders the range title and the stated count', () => {
     renderView()
-    expect(screen.getByRole('heading', { name: 'This week' })).toBeInTheDocument()
-    expect(screen.getByText(/Aug 9–15/)).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'August 9 – 15' })).toBeInTheDocument()
     expect(screen.getByText('2 days need a cook')).toBeInTheDocument()
   })
 
@@ -79,7 +77,32 @@ describe('MealsPageView', () => {
     expect(screen.getByText('Rigatoni')).toBeInTheDocument()
     expect(screen.getByText('· roasted veggies')).toBeInTheDocument()
     expect(screen.getByText(/Dad is cooking/)).toBeInTheDocument()
-    expect(screen.getAllByText('Nothing planned')).toHaveLength(6)
+    expect(screen.getAllByText('Nothing planned')).toHaveLength(4)
+    expect(screen.getAllByText('No dinner was planned')).toHaveLength(2)
+  })
+
+  it('recedes past days — past tense, no claim, no planning the past', () => {
+    renderView({
+      days: weekOf({
+        '2026-08-09': meal({ date: '2026-08-09' }),
+        '2026-08-10': meal({ date: '2026-08-10', ownerId: null }),
+      }),
+    })
+    expect(screen.getByText(/Dad cooked/)).toBeInTheDocument()
+    expect(screen.getByText(/nobody claimed it/)).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: "I've got it" })).not.toBeInTheDocument()
+    // No actions at all behind today — no edit, no remove, no tap-to-edit.
+    expect(screen.queryByRole('button', { name: /Edit|Remove/ })).not.toBeInTheDocument()
+    // Plan it only on today + the four future empty days, never behind today.
+    expect(screen.getAllByRole('button', { name: 'Plan it' })).toHaveLength(5)
+  })
+
+  it('hides the cook count for a past week; This week resets', () => {
+    const onThisWeek = vi.fn()
+    renderView({ needCount: null, onThisWeek })
+    expect(screen.queryByText(/need(s)? a cook/)).not.toBeInTheDocument()
+    screen.getByRole('button', { name: 'This week' }).click()
+    expect(onThisWeek).toHaveBeenCalled()
   })
 
   it('offers a single ghost claim on an unclaimed day', () => {

@@ -63,6 +63,79 @@ session's work.
    - Delete this kickoff, open the PR (no co-author trailer / no generated
      footer), tier-4 live check on prod after merge.
 
+## Week-page critique round (2026-08-13) — outcomes
+
+Incorporated: **past days recede** (dimmed, past-tense verbs via `kindVerb`,
+no actions at all behind today — the record has no consumer yet, and on touch
+tap-row-to-edit would make a "receded" row a full-width drawer target; past
+empty reads "No dinner was planned") — also resolves the header count not
+reconciling with visible rows, since `daysNeedingCook` already counts today
+forward. **Remove now confirms** (`ConfirmDialog`, the chores pattern —
+RowActions only reports intent; the page had skipped the host-confirm half).
+**"This week" reset** renders beside the chevrons when off-week; a past week
+shows no cook count. **Spine dashes lengthened** (4×10px — the 4×6 dash read
+as a drag-handle dot column).
+
+Pushed back: attached-plane rebuild of the seven cards (re-litigates ADR 063,
+which already held this against the M5/1 critique; its do-not-revisit clause
+demands an ADR, and the real rows are ~66px, not the critique mock's 135px);
+Hearth spine on "out" (ADR 041, locked in the 2026-08-12 live review — not an
+invented hue); needs-push link (deliberately absent until M5/6); paired
+"I've got it" on unplanned days (M5/3 semantics); header facts-not-counts
+(the count is design.md's spec'd header and breaks at n>3 by the critique's
+own admission); title size (token is 16px, the critique measured its own
+mock); ghost-button complaint ("ghost" in design.md means not-solid — the
+widget's settled `outline` reading).
+
+Carry to M5/5's gate: the critique's teal-chip point is real — the accent
+chip spends the identity channel; consider a neutral hairline chip there.
+
+Live-review round 2 (2026-08-13, Zach): **header realigned to the calendar
+week view's grammar** — range title ("August 9 – 15", calendar's `weekTitle`
+format verbatim), nav cluster inline beside it (h-5 chevrons + always-visible
+ghost reset), cook count alone as the subline. `weekTitle`/"This week · Next
+week" titles retired from `lib/dates.ts`. One divergence kept: the reset says
+"This week", not "Today" — the surface's unit is the week. **Rows hold equal
+height** (`min-h-14` content column = the two-line planned block), so
+unplanned / going-out / claimed days read as seven equal slots. Amend
+design.md §M5/2's header line at close-out.
+
+Live-review round 3 (2026-08-13, Zach) — the drawer: **P$ leaves meals
+entirely** (a paid dinner will be a dedicated chore in the chores module):
+drawer field, `MealInputSchema.coinReward`, API writes, `PlannedMeal` type,
+and the `coin_reward` column all removed — migration
+`20260813120000_drop_coin_reward` applied to dev and hand-applied to
+`familyos_test` (P3009 footgun); design.md §M5/3's coinReward line dies at
+close-out, and M5/3 loses the earn wiring from its scope. **"Nobody yet"
+selected state** now dashed-border + muted fill (was font-weight only —
+invisible next to MemberChip's tint fill). **Header nav pinned right**
+(This week innermost, chevrons outermost) — the inline-after-title cluster
+moved with the title's width and the mouse had to chase it. Also fixed:
+`home.test.ts` still asserted the pre-M5/2 default layout (calendar 2×2,
+chores at y 0) — a gap this branch's layout change left; three tests updated
+to the shipped grid.
+
+Live-review round 4 (2026-08-13, Zach) — the widget + polish: **out rows lose
+the Hearth spine on the week page** (Zach's call, reversing the 2026-08-12
+Hearth-spine decision: the spine is an identity channel and going out names
+nobody; transparent spine keeps the day column aligned; the widget's
+HandPlatter family dot stays). **Widget headline wraps to two lines** before
+ellipsizing (was one-line truncate — it ate the meal name on the surface that
+exists to show it; compact keeps truncate). **The whole tile deep-links to
+/meals** via ItemCard's overlay recipe (sibling link, controls z-lifted) —
+the headline alone was the only target. **"every day's covered" de-emphasized**
+(muted regular); a gap renders semibold **primary** — bold ink read as a
+heading, not an ask, and the page's calm rule keeps amber off the table.
+**Headline descender clipping fixed** (the g in "Rigatoni"):
+truncate/line-clamp's overflow-hidden clipped Lora below the 1.2 line box —
+pb/-mb pair gives the descenders clip room without moving the layout.
+
+Polish, not blocking (queue if unshipped at close-out): **groove alignment** —
+the calendar and meals widgets' sunken-plane top edges near-miss side by side.
+Zone spacing already matches (26px both); the delta is content height (hero vs
+kid zone). Fix = `min-height` on the meals kid zone tuned live to the default
+hero height; drifts only in escalated states.
+
 ## Constraints & footguns carried forward
 
 - **Prod won't show the widget from the code deploy alone** — deployed

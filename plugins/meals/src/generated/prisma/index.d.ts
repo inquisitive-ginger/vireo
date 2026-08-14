@@ -872,18 +872,8 @@ export namespace Prisma {
 
   export type AggregatePlannedMeal = {
     _count: PlannedMealCountAggregateOutputType | null
-    _avg: PlannedMealAvgAggregateOutputType | null
-    _sum: PlannedMealSumAggregateOutputType | null
     _min: PlannedMealMinAggregateOutputType | null
     _max: PlannedMealMaxAggregateOutputType | null
-  }
-
-  export type PlannedMealAvgAggregateOutputType = {
-    coinReward: number | null
-  }
-
-  export type PlannedMealSumAggregateOutputType = {
-    coinReward: number | null
   }
 
   export type PlannedMealMinAggregateOutputType = {
@@ -894,7 +884,6 @@ export namespace Prisma {
     sides: string | null
     kind: string | null
     ownerId: string | null
-    coinReward: number | null
     notes: string | null
     tryBite: string | null
     needs: string | null
@@ -911,7 +900,6 @@ export namespace Prisma {
     sides: string | null
     kind: string | null
     ownerId: string | null
-    coinReward: number | null
     notes: string | null
     tryBite: string | null
     needs: string | null
@@ -928,7 +916,6 @@ export namespace Prisma {
     sides: number
     kind: number
     ownerId: number
-    coinReward: number
     notes: number
     tryBite: number
     needs: number
@@ -939,14 +926,6 @@ export namespace Prisma {
   }
 
 
-  export type PlannedMealAvgAggregateInputType = {
-    coinReward?: true
-  }
-
-  export type PlannedMealSumAggregateInputType = {
-    coinReward?: true
-  }
-
   export type PlannedMealMinAggregateInputType = {
     id?: true
     date?: true
@@ -955,7 +934,6 @@ export namespace Prisma {
     sides?: true
     kind?: true
     ownerId?: true
-    coinReward?: true
     notes?: true
     tryBite?: true
     needs?: true
@@ -972,7 +950,6 @@ export namespace Prisma {
     sides?: true
     kind?: true
     ownerId?: true
-    coinReward?: true
     notes?: true
     tryBite?: true
     needs?: true
@@ -989,7 +966,6 @@ export namespace Prisma {
     sides?: true
     kind?: true
     ownerId?: true
-    coinReward?: true
     notes?: true
     tryBite?: true
     needs?: true
@@ -1037,18 +1013,6 @@ export namespace Prisma {
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
      * 
-     * Select which fields to average
-    **/
-    _avg?: PlannedMealAvgAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
-     * Select which fields to sum
-    **/
-    _sum?: PlannedMealSumAggregateInputType
-    /**
-     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     * 
      * Select which fields to find the minimum value
     **/
     _min?: PlannedMealMinAggregateInputType
@@ -1079,8 +1043,6 @@ export namespace Prisma {
     take?: number
     skip?: number
     _count?: PlannedMealCountAggregateInputType | true
-    _avg?: PlannedMealAvgAggregateInputType
-    _sum?: PlannedMealSumAggregateInputType
     _min?: PlannedMealMinAggregateInputType
     _max?: PlannedMealMaxAggregateInputType
   }
@@ -1093,7 +1055,6 @@ export namespace Prisma {
     sides: string | null
     kind: string
     ownerId: string | null
-    coinReward: number | null
     notes: string | null
     tryBite: string | null
     needs: string | null
@@ -1101,8 +1062,6 @@ export namespace Prisma {
     createdAt: Date
     updatedAt: Date
     _count: PlannedMealCountAggregateOutputType | null
-    _avg: PlannedMealAvgAggregateOutputType | null
-    _sum: PlannedMealSumAggregateOutputType | null
     _min: PlannedMealMinAggregateOutputType | null
     _max: PlannedMealMaxAggregateOutputType | null
   }
@@ -1129,7 +1088,6 @@ export namespace Prisma {
     sides?: boolean
     kind?: boolean
     ownerId?: boolean
-    coinReward?: boolean
     notes?: boolean
     tryBite?: boolean
     needs?: boolean
@@ -1146,7 +1104,6 @@ export namespace Prisma {
     sides?: boolean
     kind?: boolean
     ownerId?: boolean
-    coinReward?: boolean
     notes?: boolean
     tryBite?: boolean
     needs?: boolean
@@ -1163,7 +1120,6 @@ export namespace Prisma {
     sides?: boolean
     kind?: boolean
     ownerId?: boolean
-    coinReward?: boolean
     notes?: boolean
     tryBite?: boolean
     needs?: boolean
@@ -1180,7 +1136,6 @@ export namespace Prisma {
     sides?: boolean
     kind?: boolean
     ownerId?: boolean
-    coinReward?: boolean
     notes?: boolean
     tryBite?: boolean
     needs?: boolean
@@ -1189,7 +1144,7 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type PlannedMealOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "date" | "slot" | "title" | "sides" | "kind" | "ownerId" | "coinReward" | "notes" | "tryBite" | "needs" | "createdBy" | "createdAt" | "updatedAt", ExtArgs["result"]["plannedMeal"]>
+  export type PlannedMealOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "date" | "slot" | "title" | "sides" | "kind" | "ownerId" | "notes" | "tryBite" | "needs" | "createdBy" | "createdAt" | "updatedAt", ExtArgs["result"]["plannedMeal"]>
 
   export type $PlannedMealPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "PlannedMeal"
@@ -1202,7 +1157,6 @@ export namespace Prisma {
       sides: string | null
       kind: string
       ownerId: string | null
-      coinReward: number | null
       notes: string | null
       tryBite: string | null
       needs: string | null
@@ -1639,7 +1593,6 @@ export namespace Prisma {
     readonly sides: FieldRef<"PlannedMeal", 'String'>
     readonly kind: FieldRef<"PlannedMeal", 'String'>
     readonly ownerId: FieldRef<"PlannedMeal", 'String'>
-    readonly coinReward: FieldRef<"PlannedMeal", 'Int'>
     readonly notes: FieldRef<"PlannedMeal", 'String'>
     readonly tryBite: FieldRef<"PlannedMeal", 'String'>
     readonly needs: FieldRef<"PlannedMeal", 'String'>
@@ -2039,7 +1992,6 @@ export namespace Prisma {
     sides: 'sides',
     kind: 'kind',
     ownerId: 'ownerId',
-    coinReward: 'coinReward',
     notes: 'notes',
     tryBite: 'tryBite',
     needs: 'needs',
@@ -2120,20 +2072,6 @@ export namespace Prisma {
    */
   export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
     
-
-
-  /**
-   * Reference to a field of type 'Float'
-   */
-  export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
-    
-
-
-  /**
-   * Reference to a field of type 'Float[]'
-   */
-  export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
-    
   /**
    * Deep Input Types
    */
@@ -2150,7 +2088,6 @@ export namespace Prisma {
     sides?: StringNullableFilter<"PlannedMeal"> | string | null
     kind?: StringFilter<"PlannedMeal"> | string
     ownerId?: UuidNullableFilter<"PlannedMeal"> | string | null
-    coinReward?: IntNullableFilter<"PlannedMeal"> | number | null
     notes?: StringNullableFilter<"PlannedMeal"> | string | null
     tryBite?: StringNullableFilter<"PlannedMeal"> | string | null
     needs?: StringNullableFilter<"PlannedMeal"> | string | null
@@ -2167,7 +2104,6 @@ export namespace Prisma {
     sides?: SortOrderInput | SortOrder
     kind?: SortOrder
     ownerId?: SortOrderInput | SortOrder
-    coinReward?: SortOrderInput | SortOrder
     notes?: SortOrderInput | SortOrder
     tryBite?: SortOrderInput | SortOrder
     needs?: SortOrderInput | SortOrder
@@ -2188,7 +2124,6 @@ export namespace Prisma {
     sides?: StringNullableFilter<"PlannedMeal"> | string | null
     kind?: StringFilter<"PlannedMeal"> | string
     ownerId?: UuidNullableFilter<"PlannedMeal"> | string | null
-    coinReward?: IntNullableFilter<"PlannedMeal"> | number | null
     notes?: StringNullableFilter<"PlannedMeal"> | string | null
     tryBite?: StringNullableFilter<"PlannedMeal"> | string | null
     needs?: StringNullableFilter<"PlannedMeal"> | string | null
@@ -2205,7 +2140,6 @@ export namespace Prisma {
     sides?: SortOrderInput | SortOrder
     kind?: SortOrder
     ownerId?: SortOrderInput | SortOrder
-    coinReward?: SortOrderInput | SortOrder
     notes?: SortOrderInput | SortOrder
     tryBite?: SortOrderInput | SortOrder
     needs?: SortOrderInput | SortOrder
@@ -2213,10 +2147,8 @@ export namespace Prisma {
     createdAt?: SortOrder
     updatedAt?: SortOrder
     _count?: PlannedMealCountOrderByAggregateInput
-    _avg?: PlannedMealAvgOrderByAggregateInput
     _max?: PlannedMealMaxOrderByAggregateInput
     _min?: PlannedMealMinOrderByAggregateInput
-    _sum?: PlannedMealSumOrderByAggregateInput
   }
 
   export type PlannedMealScalarWhereWithAggregatesInput = {
@@ -2230,7 +2162,6 @@ export namespace Prisma {
     sides?: StringNullableWithAggregatesFilter<"PlannedMeal"> | string | null
     kind?: StringWithAggregatesFilter<"PlannedMeal"> | string
     ownerId?: UuidNullableWithAggregatesFilter<"PlannedMeal"> | string | null
-    coinReward?: IntNullableWithAggregatesFilter<"PlannedMeal"> | number | null
     notes?: StringNullableWithAggregatesFilter<"PlannedMeal"> | string | null
     tryBite?: StringNullableWithAggregatesFilter<"PlannedMeal"> | string | null
     needs?: StringNullableWithAggregatesFilter<"PlannedMeal"> | string | null
@@ -2247,7 +2178,6 @@ export namespace Prisma {
     sides?: string | null
     kind?: string
     ownerId?: string | null
-    coinReward?: number | null
     notes?: string | null
     tryBite?: string | null
     needs?: string | null
@@ -2264,7 +2194,6 @@ export namespace Prisma {
     sides?: string | null
     kind?: string
     ownerId?: string | null
-    coinReward?: number | null
     notes?: string | null
     tryBite?: string | null
     needs?: string | null
@@ -2281,7 +2210,6 @@ export namespace Prisma {
     sides?: NullableStringFieldUpdateOperationsInput | string | null
     kind?: StringFieldUpdateOperationsInput | string
     ownerId?: NullableStringFieldUpdateOperationsInput | string | null
-    coinReward?: NullableIntFieldUpdateOperationsInput | number | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     tryBite?: NullableStringFieldUpdateOperationsInput | string | null
     needs?: NullableStringFieldUpdateOperationsInput | string | null
@@ -2298,7 +2226,6 @@ export namespace Prisma {
     sides?: NullableStringFieldUpdateOperationsInput | string | null
     kind?: StringFieldUpdateOperationsInput | string
     ownerId?: NullableStringFieldUpdateOperationsInput | string | null
-    coinReward?: NullableIntFieldUpdateOperationsInput | number | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     tryBite?: NullableStringFieldUpdateOperationsInput | string | null
     needs?: NullableStringFieldUpdateOperationsInput | string | null
@@ -2315,7 +2242,6 @@ export namespace Prisma {
     sides?: string | null
     kind?: string
     ownerId?: string | null
-    coinReward?: number | null
     notes?: string | null
     tryBite?: string | null
     needs?: string | null
@@ -2332,7 +2258,6 @@ export namespace Prisma {
     sides?: NullableStringFieldUpdateOperationsInput | string | null
     kind?: StringFieldUpdateOperationsInput | string
     ownerId?: NullableStringFieldUpdateOperationsInput | string | null
-    coinReward?: NullableIntFieldUpdateOperationsInput | number | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     tryBite?: NullableStringFieldUpdateOperationsInput | string | null
     needs?: NullableStringFieldUpdateOperationsInput | string | null
@@ -2349,7 +2274,6 @@ export namespace Prisma {
     sides?: NullableStringFieldUpdateOperationsInput | string | null
     kind?: StringFieldUpdateOperationsInput | string
     ownerId?: NullableStringFieldUpdateOperationsInput | string | null
-    coinReward?: NullableIntFieldUpdateOperationsInput | number | null
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     tryBite?: NullableStringFieldUpdateOperationsInput | string | null
     needs?: NullableStringFieldUpdateOperationsInput | string | null
@@ -2423,17 +2347,6 @@ export namespace Prisma {
     not?: NestedUuidNullableFilter<$PrismaModel> | string | null
   }
 
-  export type IntNullableFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableFilter<$PrismaModel> | number | null
-  }
-
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
@@ -2452,17 +2365,12 @@ export namespace Prisma {
     sides?: SortOrder
     kind?: SortOrder
     ownerId?: SortOrder
-    coinReward?: SortOrder
     notes?: SortOrder
     tryBite?: SortOrder
     needs?: SortOrder
     createdBy?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-  }
-
-  export type PlannedMealAvgOrderByAggregateInput = {
-    coinReward?: SortOrder
   }
 
   export type PlannedMealMaxOrderByAggregateInput = {
@@ -2473,7 +2381,6 @@ export namespace Prisma {
     sides?: SortOrder
     kind?: SortOrder
     ownerId?: SortOrder
-    coinReward?: SortOrder
     notes?: SortOrder
     tryBite?: SortOrder
     needs?: SortOrder
@@ -2490,17 +2397,12 @@ export namespace Prisma {
     sides?: SortOrder
     kind?: SortOrder
     ownerId?: SortOrder
-    coinReward?: SortOrder
     notes?: SortOrder
     tryBite?: SortOrder
     needs?: SortOrder
     createdBy?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
-  }
-
-  export type PlannedMealSumOrderByAggregateInput = {
-    coinReward?: SortOrder
   }
 
   export type UuidWithAggregatesFilter<$PrismaModel = never> = {
@@ -2583,22 +2485,6 @@ export namespace Prisma {
     _max?: NestedStringNullableFilter<$PrismaModel>
   }
 
-  export type IntNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedFloatNullableFilter<$PrismaModel>
-    _sum?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedIntNullableFilter<$PrismaModel>
-    _max?: NestedIntNullableFilter<$PrismaModel>
-  }
-
   export type StringFieldUpdateOperationsInput = {
     set?: string
   }
@@ -2609,14 +2495,6 @@ export namespace Prisma {
 
   export type NullableStringFieldUpdateOperationsInput = {
     set?: string | null
-  }
-
-  export type NullableIntFieldUpdateOperationsInput = {
-    set?: number | null
-    increment?: number
-    decrement?: number
-    multiply?: number
-    divide?: number
   }
 
   export type NestedUuidFilter<$PrismaModel = never> = {
@@ -2678,17 +2556,6 @@ export namespace Prisma {
     gt?: string | StringFieldRefInput<$PrismaModel>
     gte?: string | StringFieldRefInput<$PrismaModel>
     not?: NestedUuidNullableFilter<$PrismaModel> | string | null
-  }
-
-  export type NestedIntNullableFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableFilter<$PrismaModel> | number | null
   }
 
   export type NestedUuidWithAggregatesFilter<$PrismaModel = never> = {
@@ -2764,6 +2631,17 @@ export namespace Prisma {
     _max?: NestedStringNullableFilter<$PrismaModel>
   }
 
+  export type NestedIntNullableFilter<$PrismaModel = never> = {
+    equals?: number | IntFieldRefInput<$PrismaModel> | null
+    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
+    lt?: number | IntFieldRefInput<$PrismaModel>
+    lte?: number | IntFieldRefInput<$PrismaModel>
+    gt?: number | IntFieldRefInput<$PrismaModel>
+    gte?: number | IntFieldRefInput<$PrismaModel>
+    not?: NestedIntNullableFilter<$PrismaModel> | number | null
+  }
+
   export type NestedUuidNullableWithAggregatesFilter<$PrismaModel = never> = {
     equals?: string | StringFieldRefInput<$PrismaModel> | null
     in?: string[] | ListStringFieldRefInput<$PrismaModel> | null
@@ -2776,33 +2654,6 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedStringNullableFilter<$PrismaModel>
     _max?: NestedStringNullableFilter<$PrismaModel>
-  }
-
-  export type NestedIntNullableWithAggregatesFilter<$PrismaModel = never> = {
-    equals?: number | IntFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListIntFieldRefInput<$PrismaModel> | null
-    lt?: number | IntFieldRefInput<$PrismaModel>
-    lte?: number | IntFieldRefInput<$PrismaModel>
-    gt?: number | IntFieldRefInput<$PrismaModel>
-    gte?: number | IntFieldRefInput<$PrismaModel>
-    not?: NestedIntNullableWithAggregatesFilter<$PrismaModel> | number | null
-    _count?: NestedIntNullableFilter<$PrismaModel>
-    _avg?: NestedFloatNullableFilter<$PrismaModel>
-    _sum?: NestedIntNullableFilter<$PrismaModel>
-    _min?: NestedIntNullableFilter<$PrismaModel>
-    _max?: NestedIntNullableFilter<$PrismaModel>
-  }
-
-  export type NestedFloatNullableFilter<$PrismaModel = never> = {
-    equals?: number | FloatFieldRefInput<$PrismaModel> | null
-    in?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    notIn?: number[] | ListFloatFieldRefInput<$PrismaModel> | null
-    lt?: number | FloatFieldRefInput<$PrismaModel>
-    lte?: number | FloatFieldRefInput<$PrismaModel>
-    gt?: number | FloatFieldRefInput<$PrismaModel>
-    gte?: number | FloatFieldRefInput<$PrismaModel>
-    not?: NestedFloatNullableFilter<$PrismaModel> | number | null
   }
 
 

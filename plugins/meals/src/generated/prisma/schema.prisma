@@ -12,20 +12,19 @@ datasource db {
 // schema and cross-schema constraints are off the table (calendar precedent).
 // ownerId null = UNCLAIMED, a first-class state (spec.md).
 model PlannedMeal {
-  id         String   @id @default(uuid()) @db.Uuid
-  date       DateTime @db.Date
-  slot       String   @default("dinner")
-  title      String
-  sides      String?
-  kind       String   @default("cooked")
-  ownerId    String?  @map("owner_id") @db.Uuid
-  coinReward Int?     @map("coin_reward")
-  notes      String?
-  tryBite    String?  @map("try_bite")
-  needs      String?
-  createdBy  String   @map("created_by") @db.Uuid
-  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  id        String   @id @default(uuid()) @db.Uuid
+  date      DateTime @db.Date
+  slot      String   @default("dinner")
+  title     String
+  sides     String?
+  kind      String   @default("cooked")
+  ownerId   String?  @map("owner_id") @db.Uuid
+  notes     String?
+  tryBite   String?  @map("try_bite")
+  needs     String?
+  createdBy String   @map("created_by") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
 
   @@unique([date, slot])
   @@map("planned_meals")

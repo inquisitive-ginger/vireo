@@ -8,9 +8,9 @@ import {
   useQueryClient,
 } from '@family-os/platform'
 import type { Profile } from '@family-os/platform/types'
-import { ErrorCard } from '@family-os/ui'
+import { ConfirmDialog, ErrorCard } from '@family-os/ui'
 import type { MealMember, PlanResponse, PlannedMeal } from '../types'
-import { toDateKey, weekDays, weekRangeLabel, weekStart, weekTitle } from '../lib/dates'
+import { toDateKey, weekDays, weekRangeLabel, weekStart } from '../lib/dates'
 import { daysNeedingCook } from '../lib/meals'
 import { MealDrawer, type MealDrawerInput } from '../components/MealDrawer'
 import { MealsPageView, type WeekDay } from './MealsPageView'
@@ -23,6 +23,9 @@ export function MealsPage() {
     open: false,
     day: null,
   })
+  // Set → the remove-confirm dialog is open for this meal (RowActions only
+  // reports intent; the host confirms — the chores pattern).
+  const [removeTarget, setRemoveTarget] = useState<PlannedMeal | null>(null)
 
   const canManage = tier >= 4
   const canClaim = tier >= 3 && id !== FAMILY_PROFILE_ID
@@ -117,7 +120,10 @@ export function MealsPage() {
       fetch(`/api/meals/plan/${meal.id}`, { method: 'DELETE' }).then((r) => {
         if (!r.ok) throw new Error(String(r.status))
       }),
-    onSuccess: () => void invalidate(),
+    onSuccess: () => {
+      void invalidate()
+      setRemoveTarget(null)
+    },
   })
 
   if (planQuery.isLoading) {
@@ -151,20 +157,31 @@ export function MealsPage() {
         days={weekModel}
         membersById={membersById}
         todayKey={toDateKey(now)}
-        weekTitle={weekTitle(offset, start)}
-        weekLabel={weekRangeLabel(start)}
+        weekTitle={weekRangeLabel(start)}
         needCount={
-          offset < 0 ? 0 : daysNeedingCook(days, mealsByDate, offset === 0 ? now : days[0])
+          offset < 0 ? null : daysNeedingCook(days, mealsByDate, offset === 0 ? now : days[0])
         }
         canManage={canManage}
         canClaim={canClaim}
         onPrevWeek={() => setOffset((o) => o - 1)}
         onNextWeek={() => setOffset((o) => o + 1)}
+        onThisWeek={() => setOffset(0)}
         onPlan={(day) => setDrawer({ open: true, day })}
         onEdit={(day) => setDrawer({ open: true, day })}
         onClaim={(meal) => claimMeal.mutate(meal)}
-        onRemove={(meal) => removeMeal.mutate(meal)}
+        onRemove={(meal) => setRemoveTarget(meal)}
       />
+      {removeTarget && (
+        <ConfirmDialog
+          open
+          title={`Remove “${removeTarget.title}”?`}
+          description="It comes off the week's plan. This can't be undone."
+          confirmLabel="Remove"
+          onConfirm={() => removeMeal.mutate(removeTarget)}
+          onCancel={() => setRemoveTarget(null)}
+          isPending={removeMeal.isPending}
+        />
+      )}
       <MealDrawer
         open={drawer.open}
         onClose={() => setDrawer({ open: false, day: null })}

@@ -72,9 +72,28 @@ function timeLabel(now: Date): string {
     .replace(/\s?[AP]M$/i, '')
 }
 
-/* The headline deep-links to /meals — the tile can't be one big Link like
-   calendar's because the claim button is a real control, and a button inside an
-   anchor is a nested-interactive fault. */
+/* The WHOLE TILE deep-links to /meals (live review, 2026-08-13 — the headline
+   alone was too small a target). A button inside an anchor is a
+   nested-interactive fault, so it's ItemCard's overlay recipe instead: a
+   sibling link stretched across the tile, real controls lifted above it. */
+function CardLink() {
+  return (
+    <Link
+      to="/meals"
+      aria-label="Open the meals week"
+      className="absolute inset-0 z-10 rounded-[inherit] focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset focus-visible:outline-none"
+    />
+  )
+}
+
+/* Wraps to two lines before it ellipsizes — the fridge reads the meal name from
+   the door, and a one-line truncate ate the headline it exists for. Compact is
+   the one slot with no room to wrap.
+
+   The pb/-mb pair is clip room: truncate/line-clamp set overflow-hidden, and
+   Lora's descenders reach below the display tokens' 1.2 line box — without it
+   the g in "Rigatoni" loses its tail. Padding is inside the clip box, the
+   negative margin gives the room back to the layout. */
 function Headline({
   children,
   muted = false,
@@ -87,17 +106,16 @@ function Headline({
   hero?: boolean
 }) {
   return (
-    <Link to="/meals" className="no-underline">
-      <span
-        className={cn(
-          compact ? 'text-page-title' : hero ? 'text-display-xl' : 'text-display-lg',
-          'block truncate',
-          muted ? 'text-muted-foreground italic' : 'text-foreground'
-        )}
-      >
-        {children}
-      </span>
-    </Link>
+    <span
+      className={cn(
+        compact ? 'text-page-title' : hero ? 'text-display-xl' : 'text-display-lg',
+        compact ? 'block truncate' : 'line-clamp-2',
+        '-mb-1.5 pb-1.5',
+        muted ? 'text-muted-foreground italic' : 'text-foreground'
+      )}
+    >
+      {children}
+    </span>
   )
 }
 
@@ -162,7 +180,7 @@ function Body({
         </div>
         {canPlan && (
           <div className="flex items-center gap-2 border-t border-border/50 pt-3">
-            <Button size="sm" asChild>
+            <Button size="sm" asChild className="relative z-20">
               <Link to="/meals">Plan it</Link>
             </Button>
           </div>
@@ -197,6 +215,7 @@ function Body({
             <Button
               size="sm"
               variant={escalated ? 'default' : 'outline'}
+              className="relative z-20"
               onClick={() => onClaim(today)}
             >
               I've got it
@@ -332,7 +351,8 @@ function NextUp({
 
 function Compact({ today, owner, escalated }: ZoneProps) {
   return (
-    <div className={cn('flex size-full flex-col', INSET.compact)}>
+    <div className={cn('relative flex size-full flex-col', INSET.compact)}>
+      <CardLink />
       <WidgetHeader icon={Utensils} label="Tonight" />
       <div className="mt-2 flex min-h-0 flex-1 flex-col justify-between gap-1.5">
         <div className="min-w-0">
@@ -368,7 +388,8 @@ function Compact({ today, owner, escalated }: ZoneProps) {
 
 function Standard(props: ZoneProps) {
   return (
-    <div className={cn('flex size-full flex-col', INSET.standard)}>
+    <div className={cn('relative flex size-full flex-col', INSET.standard)}>
+      <CardLink />
       <WidgetHeader icon={Utensils} label="Meals · Tonight" />
       <div className="mt-2.5 flex min-h-0 flex-1 flex-col">
         <Body {...props} />
@@ -380,7 +401,8 @@ function Standard(props: ZoneProps) {
 function Large(props: ZoneProps & { membersById: Map<string, MealMember> }) {
   const { membersById, ...zone } = props
   return (
-    <div className={cn('flex size-full flex-col', INSET.large)}>
+    <div className={cn('relative flex size-full flex-col', INSET.large)}>
+      <CardLink />
       <WidgetHeader icon={Utensils} label="Meals · Tonight" />
       <div className="mt-2.5 flex min-h-0 flex-col">
         <Body {...zone} stretch={false} hero />

@@ -19,7 +19,6 @@ function meal(overrides: Partial<PlannedMeal> = {}): PlannedMeal {
     sides: 'roasted veggies',
     kind: 'cooked',
     ownerId: DAD_ID,
-    coinReward: null,
     notes: null,
     tryBite: 'the veggies',
     needs: null,
@@ -52,6 +51,14 @@ function renderView(props: Partial<Parameters<typeof TonightView>[0]> = {}) {
 }
 
 describe('TonightView — the four states', () => {
+  it('deep-links the whole tile to /meals', () => {
+    renderView()
+    expect(screen.getByRole('link', { name: 'Open the meals week' })).toHaveAttribute(
+      'href',
+      '/meals'
+    )
+  })
+
   it('claimed: headline, sides, owner verb, try-bite chip', () => {
     renderView()
     expect(screen.getByText('Rigatoni')).toBeInTheDocument()
