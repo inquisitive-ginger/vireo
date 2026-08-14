@@ -23,10 +23,28 @@
 		# distinguish from success.
 		@asset path *.png *.jpg *.jpeg *.webp *.svg *.ico *.webmanifest *.js *.css *.map *.json *.woff *.woff2 *.txt
 		handle @asset {
+			# Mutable files at stable URLs must revalidate on every request
+			# (ETag 304s keep that cheap). Without an explicit Cache-Control,
+			# browsers apply HEURISTIC freshness — a stale remoteEntry.js
+			# outlived two deploys and kept pointing at hashed chunks those
+			# deploys had deleted, crashing plugin views through any number of
+			# reloads (auto-bug #107).
+			@mutable path /sw.js /manifest.webmanifest */remoteEntry.js
+			header @mutable Cache-Control "no-cache"
+
+			# Content-hashed bundles never change under their URL.
+			@hashed {
+				path /assets/* /plugins/*/assets/*
+				not path */remoteEntry.js
+			}
+			header @hashed Cache-Control "public, max-age=31536000, immutable"
+
 			file_server
 		}
 
 		handle {
+			# The SPA document is as mutable as it gets — same rule as above.
+			header Cache-Control "no-cache"
 			try_files {path} /index.html
 			file_server
 		}
