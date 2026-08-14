@@ -26,9 +26,9 @@ before it reads anything else, and it is size-capped — see
   `logs/2026-08-14-fix-auto-bug-107.md`.
 - **What's next and everything outstanding:** `docs/sessions/queue.md` — the one
   index. Cheapest high-value item: Deployment Part F, offsite backups.
-- **Owed in-app:** reports `35a65002` (#102), `4225b7ce` (#103), and `18381226`
-  (#107) need the tier-4 `PATCH … deployed`; affected phones need one
-  site-data clear (pre-header caches).
+- **Owed in-app:** reports `35a65002` (#102), `4225b7ce` (#103), `18381226`
+  (#107), and `ea489fed` (#109) need the tier-4 `PATCH … deployed`; no client
+  clearing needed since #110 (versioned remoteEntry URLs).
 
 ---
 
