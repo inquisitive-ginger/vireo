@@ -12,7 +12,8 @@ WORKDIR /repo
 COPY . .
 RUN pnpm install --frozen-lockfile
 RUN pnpm --filter @family-os/plugin-family-feed --filter @family-os/plugin-chores \
-        --filter @family-os/plugin-calendar --filter @family-os/plugin-rewards build
+        --filter @family-os/plugin-calendar --filter @family-os/plugin-rewards \
+        --filter @family-os/plugin-meals build
 RUN pnpm --filter @family-os/shell build
 
 # Caddy with the Cloudflare DNS-01 module, cross-compiled to the target arch
@@ -29,3 +30,4 @@ COPY --from=build /repo/plugins/family-feed/dist /srv/plugins/family-feed
 COPY --from=build /repo/plugins/chores/dist       /srv/plugins/chores
 COPY --from=build /repo/plugins/calendar/dist     /srv/plugins/calendar
 COPY --from=build /repo/plugins/rewards/dist      /srv/plugins/rewards
+COPY --from=build /repo/plugins/meals/dist        /srv/plugins/meals

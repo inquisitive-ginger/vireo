@@ -78,7 +78,7 @@ describe('GET /api/home/layout', () => {
     expect(slots.filter((s) => s.prominence === 'feature')).toHaveLength(0)
 
     const calendar = slots.find((s) => s.widgetId === 'calendar.up-next')!
-    expect(calendar).toMatchObject({ x: 0, y: 0, w: 2, h: 2, prominence: 'card' })
+    expect(calendar).toMatchObject({ x: 0, y: 0, w: 2, h: 4, prominence: 'card' })
     expect(slots.find((s) => s.widgetId === 'family-feed.feed')!.prominence).toBe('quiet')
   })
 
@@ -89,7 +89,7 @@ describe('GET /api/home/layout', () => {
     expect(slots.filter((s) => s.prominence === 'feature')).toHaveLength(0)
 
     const calendar = slots.find((s) => s.widgetId === 'calendar.up-next')!
-    expect(calendar).toMatchObject({ x: 0, y: 0, w: 2, h: 2, prominence: 'card' })
+    expect(calendar).toMatchObject({ x: 0, y: 0, w: 2, h: 4, prominence: 'card' })
     expect(slots.find((s) => s.widgetId === 'family-feed.feed')!.prominence).toBe('quiet')
   })
 
@@ -126,7 +126,7 @@ describe('GET /api/home/layout', () => {
 
   it('tracks a changed default instead of pinning the first one served', async () => {
     const before = await layoutFor('seed-parent-1')
-    expect(before.find((s) => s.widgetId === 'chores.today-summary')!.y).toBe(0)
+    expect(before.find((s) => s.widgetId === 'chores.today-summary')!.y).toBe(2)
 
     // The default moves (as it did when the elevation ladder re-ranked the column).
     await prisma.systemConfig.update({

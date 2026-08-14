@@ -44,6 +44,10 @@ export const DEFAULT_LAYOUTS: Record<string, LayoutDefault[]> = {
     { widgetId: 'chores.today-summary', x: 2, y: 0, w: 2, h: 1, prominence: 'card' },
     { widgetId: 'calendar.up-next', x: 0, y: 1, w: 2, h: 1, prominence: 'quiet' },
     { widgetId: 'family-feed.feed', x: 2, y: 1, w: 2, h: 1, prominence: 'quiet' },
+    /* Tonight's dinner (M5/2) — quiet, below the quiet peers, so the column's
+       elevation order holds without re-ranking a settled grid. The anti-ambush
+       read mostly happens on the family fridge surface anyway. */
+    { widgetId: 'meals.tonight', x: 0, y: 2, w: 2, h: 1, prominence: 'quiet' },
   ],
   /* Teens — the same kid ranking, one register down: no feature (a teen's surface
      declines to shout, same as the parent's), so the wallet leads by position, not
@@ -54,6 +58,7 @@ export const DEFAULT_LAYOUTS: Record<string, LayoutDefault[]> = {
     { widgetId: 'chores.today-summary', x: 2, y: 0, w: 2, h: 1, prominence: 'card' },
     { widgetId: 'calendar.up-next', x: 0, y: 1, w: 2, h: 1, prominence: 'quiet' },
     { widgetId: 'family-feed.feed', x: 2, y: 1, w: 2, h: 1, prominence: 'quiet' },
+    { widgetId: 'meals.tonight', x: 0, y: 2, w: 2, h: 1, prominence: 'quiet' },
   ],
   /* Parents / the family pseudo-profile — NO feature (ADR 039, amended). A parent
      (or the unattended fridge tablet, sitting on the family profile) triages, and
@@ -63,9 +68,14 @@ export const DEFAULT_LAYOUTS: Record<string, LayoutDefault[]> = {
      dominance this surface doesn't have. (The key name predates the tier-3 split —
      it stays because deployed `system_config` overrides are looked up by it.) */
   default_layout_tier_3_4: [
-    { widgetId: 'calendar.up-next', x: 0, y: 0, w: 2, h: 2, prominence: 'card' },
-    { widgetId: 'chores.today-summary', x: 2, y: 0, w: 2, h: 1, prominence: 'card' },
-    { widgetId: 'family-feed.feed', x: 2, y: 1, w: 2, h: 1, prominence: 'quiet' },
+    { widgetId: 'calendar.up-next', x: 0, y: 0, w: 2, h: 4, prominence: 'card' },
+    /* Tonight's dinner (M5/2) — card, leading the right column at 2×2 (live
+       review, 2026-08-12): the tall box is what engages the large variant, and
+       the NEXT UP lookahead is the morning-glance job this dashboard exists
+       for. "What's for dinner" is a live answer to "what needs me". */
+    { widgetId: 'meals.tonight', x: 2, y: 0, w: 2, h: 2, prominence: 'card' },
+    { widgetId: 'chores.today-summary', x: 2, y: 2, w: 2, h: 1, prominence: 'card' },
+    { widgetId: 'family-feed.feed', x: 2, y: 3, w: 2, h: 1, prominence: 'quiet' },
   ],
 }
 

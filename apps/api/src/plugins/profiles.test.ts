@@ -615,7 +615,7 @@ describe('GET /api/profiles/:id/permissions', () => {
         overrideId: string | null
       }>
     }>()
-    expect(permissions).toHaveLength(15)
+    expect(permissions).toHaveLength(17)
     expect(permissions.every((p) => p.override === null && p.overrideId === null)).toBe(true)
     // tier 1 baseline: view platform.Plugin + view chores.Task + complete
     // chores.Task (every tier can complete its own assigned task) + view
@@ -638,6 +638,10 @@ describe('GET /api/profiles/:id/permissions', () => {
     // punch its OWN card (ADR 049 — the kid draws the check)
     expect(permissions.find((p) => p.key === 'rewards.redemption.create')?.inBaseline).toBe(true)
     expect(permissions.find((p) => p.key === 'rewards.card.punch')?.inBaseline).toBe(true)
+    // + view the meal plan (M5/2 — the fridge widget is a tier-1 surface); claiming
+    // dinner is tier 3+
+    expect(permissions.find((p) => p.key === 'meals.plan.view')?.inBaseline).toBe(true)
+    expect(permissions.find((p) => p.key === 'meals.dinner.claim')?.inBaseline).toBe(false)
     expect(permissions.find((p) => p.key === 'platform.profile.view')?.inBaseline).toBe(false)
     expect(permissions.find((p) => p.key === 'platform.profile.switch')?.inBaseline).toBe(false)
     expect(permissions.find((p) => p.key === 'family-feed.post.create')?.inBaseline).toBe(false)

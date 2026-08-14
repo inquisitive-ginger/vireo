@@ -1,0 +1,32 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  schemas  = ["meals"]
+}
+
+// owner_id/created_by are plain uuids, not FKs — profiles live in the platform
+// schema and cross-schema constraints are off the table (calendar precedent).
+// ownerId null = UNCLAIMED, a first-class state (spec.md).
+model PlannedMeal {
+  id         String   @id @default(uuid()) @db.Uuid
+  date       DateTime @db.Date
+  slot       String   @default("dinner")
+  title      String
+  sides      String?
+  kind       String   @default("cooked")
+  ownerId    String?  @map("owner_id") @db.Uuid
+  notes      String?
+  tryBite    String?  @map("try_bite")
+  needs      String?
+  createdBy  String   @map("created_by") @db.Uuid
+  createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@unique([date, slot])
+  @@map("planned_meals")
+  @@schema("meals")
+}

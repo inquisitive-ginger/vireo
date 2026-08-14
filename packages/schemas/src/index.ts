@@ -202,6 +202,29 @@ export const ChoreRoutineInputSchema = ChoreFieldsSchema.extend({
 export type ChoreTaskInput = z.infer<typeof ChoreTaskInputSchema>
 export type ChoreRoutineInput = z.infer<typeof ChoreRoutineInputSchema>
 
+// ─── Meals: the week plan (M5/2) ──────────────────────────────────────────────
+
+/** The kind renders as a verb, never a chip (design.md §Shared language) —
+    calling it in still counts as having dinner. */
+export const MEAL_KINDS = ['cooked', 'takeout', 'leftovers', 'out'] as const
+export type MealKind = (typeof MEAL_KINDS)[number]
+
+// The create + edit drawer submits the full field set, so one schema covers both.
+// ownerId null = UNCLAIMED, a first-class state (spec.md). title vs sides is the
+// anti-ambush split: the headline the kid reads, then the rest of the plate.
+export const MealInputSchema = z.object({
+  date: IsoDateSchema,
+  title: z.string().trim().min(1, 'title is required'),
+  sides: OptionalText,
+  kind: z.enum(MEAL_KINDS).optional().default('cooked'),
+  ownerId: UuidSchema.nullish().transform((v) => v ?? null),
+  tryBite: OptionalText,
+  needs: OptionalText,
+  notes: OptionalText,
+})
+
+export type MealInput = z.infer<typeof MealInputSchema>
+
 // ─── Bug reports ──────────────────────────────────────────────────────────────
 
 /** The lifecycle a report moves through (ADR 046). `deployed` is the only status the

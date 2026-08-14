@@ -49,3 +49,15 @@ declare module 'rewards/widgets/Wallet' {
   const Wallet: ComponentType
   export default Wallet
 }
+
+declare module 'meals/Plugin' {
+  import type { ComponentType } from 'react'
+  const Plugin: ComponentType
+  export default Plugin
+}
+
+declare module 'meals/widgets/Tonight' {
+  import type { ComponentType } from 'react'
+  const Tonight: ComponentType
+  export default Tonight
+}

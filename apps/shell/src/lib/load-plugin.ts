@@ -8,6 +8,7 @@ const pluginLoaders: Record<string, () => Promise<{ default: ComponentType }>> =
   chores: () => import('chores/Plugin'),
   calendar: () => import('calendar/Plugin'),
   rewards: () => import('rewards/Plugin'),
+  meals: () => import('meals/Plugin'),
 }
 
 const widgetLoaders: Record<string, () => Promise<{ default: ComponentType }>> = {
@@ -15,6 +16,7 @@ const widgetLoaders: Record<string, () => Promise<{ default: ComponentType }>> =
   chores: () => import('chores/widgets/TodaySummary'),
   calendar: () => import('calendar/widgets/UpNext'),
   rewards: () => import('rewards/widgets/Wallet'),
+  meals: () => import('meals/widgets/Tonight'),
 }
 
 const pluginCache = new Map<string, LazyExoticComponent<ComponentType>>()
