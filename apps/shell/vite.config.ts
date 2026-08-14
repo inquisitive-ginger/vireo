@@ -9,6 +9,15 @@ import type { RegistryEntry } from '@family-os/platform/types'
 const registryPath = path.resolve(__dirname, '../../plugins.json')
 const registry: RegistryEntry[] = JSON.parse(readFileSync(registryPath, 'utf-8'))
 
+// Bust every client cache of remoteEntry.js on each deploy by versioning its
+// URL. remoteEntry is mutable at a stable path, and a cached copy maps exposes
+// to hashed chunks the next deploy deletes — auto-bug #107 was a phone whose
+// HTTP cache pinned an Aug 11 copy through two deploys and every reload; the
+// server-side no-cache header (PR #108) can't reach copies cached before it
+// existed. A per-build query string can: the URL itself moves. CI stamps the
+// commit sha; local builds fall back to a timestamp.
+const buildStamp = (process.env.GITHUB_SHA ?? Date.now().toString(36)).slice(0, 8)
+
 // Stamp the built service worker's cache name with the entry chunk's content
 // hash so every deploy gets a fresh SW (byte-changed → browser reinstalls) and
 // `activate` purges the prior cache. Without this the SW is byte-identical each
@@ -40,7 +49,7 @@ export default defineConfig({
     federation({
       name: 'shell',
       remotes: Object.fromEntries(
-        registry.map((p) => [p.name, `/plugins/${p.name}/assets/remoteEntry.js`])
+        registry.map((p) => [p.name, `/plugins/${p.name}/assets/remoteEntry.js?v=${buildStamp}`])
       ),
       shared: {
         react: { singleton: true, requiredVersion: '^19.0.0' },
