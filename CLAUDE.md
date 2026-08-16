@@ -19,13 +19,13 @@ before it reads anything else, and it is size-capped — see
   #105** — meals plugin live (week page, drawer, tonight widget, claim).
 - **Active stories:** none in flight; **beacon track queued** — custom build due
   at the December visit. `product-design-beacon.md`.
-- **Deployment:** 🟢 live at `https://vireohome.app` on the Pi; merge to `main`
-  auto-deploys; off-LAN via Tailscale. Runbook: `docs/deployment.md`.
-- **Last session:** 2026-08-14 — ops + fix: SSD outage recovered; auto-bug
-  #107 (no Cache-Control → stale remoteEntry crashed plugin views).
-  `logs/2026-08-14-fix-auto-bug-107.md`.
+- **Deployment:** 🟢 live at `https://vireohome.app` — **on a Pi 5 since
+  2026-08-16** (192.168.0.42); auto-deploy + Tailscale intact; **nightly
+  restic → R2 backups live, restore-tested**. Runbook: `docs/deployment.md`.
+- **Last session:** 2026-08-16 — outage → SSD rescue → Pi 5 migration →
+  Part F offsite backups shipped. `logs/2026-08-16-infra-offsite-backups.md`.
 - **What's next and everything outstanding:** `docs/sessions/queue.md` — the one
-  index. Cheapest high-value item: Deployment Part F, offsite backups.
+  index. New small item: retire the 3B as second-copy backup puller.
 - **Owed in-app:** reports `35a65002` (#102), `4225b7ce` (#103), `18381226`
   (#107), and `ea489fed` (#109) need the tier-4 `PATCH … deployed`; no client
   clearing needed since #110 (versioned remoteEntry URLs).

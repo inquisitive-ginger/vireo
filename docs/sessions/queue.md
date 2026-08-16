@@ -109,14 +109,14 @@ _Depends on: M5/6._
 
 ---
 
-### Deployment: Part F — offsite backups (most important)
+### Retire the Pi 3B: second-copy backup puller
 
-**Type:** infra · **Kickoff:** _to be written_
-The app is **live** and the whole household now lives in one Postgres volume on
-the Pi with **no backup**. Nightly `docker compose exec -T postgres pg_dump` →
-compressed → **off the Pi** (offsite bucket / second disk), on a systemd timer or
-cron; test a restore once. _Reads: `docs/deployment.md` Part F._ _Depends on:
-none (live)._
+**Type:** infra (small) · **Kickoff:** _to be written_
+Part F shipped 2026-08-16 (restic → R2, restore-tested; prod now on a Pi 5 —
+`logs/2026-08-16-infra-offsite-backups.md`). The 3B still holds stale
+docker/tailscale/runner state: wipe it, then give it a weekly
+`restic copy`-style second-copy pull of the R2 repo. Also owed from that log:
+live-test the backup failure hook. _Depends on: none._
 
 ### Deployment: shrink the api image
 

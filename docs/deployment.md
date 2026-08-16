@@ -1,8 +1,11 @@
 # Deployment — Family OS on a Raspberry Pi 4
 
-> **Status: 🟢 LIVE (2026-07-20) at `https://vireohome.app`.** Parts A + B + C all
-> done on a **Pi 3B v1.2 (1 GB RAM)**, not the Pi 4 in the title (memory
-> `project-poc-hardware`). Docker Compose (postgres + api + Caddy), GHCR images,
+> **Status: 🟢 LIVE at `https://vireohome.app` — on a Pi 5 (4 GB) since
+> 2026-08-16** (LAN IP 192.168.0.42; migrated after the 3B's USB power budget
+> killed the SSD twice — see `logs/2026-08-16-infra-offsite-backups.md`; SSD in
+> an Insignia NS-PC25HDE USB 3 enclosure, memory `project-poc-hardware`).
+> Originally brought up 2026-07-20 on a **Pi 3B v1.2 (1 GB RAM)**, not the Pi 4
+> in the title. Docker Compose (postgres + api + Caddy), GHCR images,
 > Cloudflare DNS-01 Let's Encrypt cert, PWA installed. Deviations from the runbook
 > below, all intentional: **the API runs via `tsx`, not `node dist`** (imports
 > workspace TS at runtime; no `pnpm deploy --prod` stage — the Part B code samples
@@ -18,8 +21,9 @@
 > containerd's `root`; see Part C9.
 > **Remote access is LIVE (2026-07-28)** — Tailscale subnet route, family devices
 > reach the app from anywhere, no public listener. See Part G.
-> **Remaining (non-blocking):** Part F offsite backups (most important) and
-> shrinking the api image.
+> **Offsite backups LIVE (2026-08-16)** — nightly restic → R2, restore-tested;
+> see Part F.
+> **Remaining (non-blocking):** shrinking the api image.
 
 Target: a Pi 4 bolted near the kitchen serves the app to a wall-mounted iPad as
 an installable PWA over trusted HTTPS, updated automatically on merge to `main`.
@@ -529,13 +533,21 @@ jobs:
 
 ## Part F — Ops
 
-- **Backups:** the whole house lives in Postgres (profiles, chores, calendar,
-  **and every avatar photo** — ADR 042 stores image bytes in the DB). A nightly
-  `pg_dump` to a second disk / cloud bucket is not optional:
-  ```bash
-  docker compose exec -T postgres pg_dump -U familyos familyos | gzip > /backup/familyos-$(date +%F).sql.gz
-  ```
-  Put it on a systemd timer or cron. Test a restore once.
+- **Backups (LIVE 2026-08-16):** nightly restic → Cloudflare R2, encrypted,
+  restore-tested. The whole house lives in Postgres (profiles, chores, calendar,
+  **and every avatar photo** — ADR 042 stores image bytes in the DB).
+  - `familyos-backup.timer` (03:30, `Persistent=true`) →
+    `/opt/family-os/backup/backup.sh`: `pg_dump | restic backup --stdin`,
+    then `forget --keep-daily 14 --keep-weekly 8 --prune`.
+  - Creds + repo in `/opt/family-os/backup/restic.env` (0600). R2 quirks: the
+    S3 access key ID is the API **token's ID**, the secret is the 64-hex value
+    shown once at creation. Encryption password also lives in the user's
+    password manager — without it the backups are unreadable.
+  - On failure, `OnFailure=` posts to the family feed via unauthenticated LAN
+    `POST /api/family-feed/posts` (authored "Family", visible on the fridge).
+  - **Restore:** `restic dump latest /familyos.sql | docker exec -i
+family-os-postgres-1 psql -U familyos -d <target-db>` — verified
+    2026-08-16 into a scratch DB, counts matched prod.
 - **Logs:** `docker compose logs -f api web`.
 - **Health:** `docker compose ps`; add an uptime check hitting
   `https://family.example.com` if you want to be paged.
