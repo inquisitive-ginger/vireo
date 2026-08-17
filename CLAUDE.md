@@ -22,13 +22,13 @@ before it reads anything else, and it is size-capped — see
 - **Deployment:** 🟢 live at `https://vireohome.app` — **on a Pi 5 since
   2026-08-16** (192.168.0.42); auto-deploy + Tailscale intact; **nightly
   restic → R2 backups live, restore-tested**. Runbook: `docs/deployment.md`.
-- **Last session:** 2026-08-16 — outage → SSD rescue → Pi 5 migration →
-  Part F offsite backups shipped. `logs/2026-08-16-infra-offsite-backups.md`.
+- **Last session:** 2026-08-17 — auto-bug fixes #112 (nav caps at 5 tabs, More
+  sheet) + #111 (wide→1400px), PR #113. `logs/2026-08-17-fix-auto-bug-111-112.md`.
 - **What's next and everything outstanding:** `docs/sessions/queue.md` — the one
   index. New small item: retire the 3B as second-copy backup puller.
 - **Owed in-app:** reports `35a65002` (#102), `4225b7ce` (#103), `18381226`
-  (#107), and `ea489fed` (#109) need the tier-4 `PATCH … deployed`; no client
-  clearing needed since #110 (versioned remoteEntry URLs).
+  (#107), `ea489fed` (#109), `58f181b7` (#111), and `1e426540` (#112) need the
+  tier-4 `PATCH … deployed`; no client clearing needed since #110.
 
 ---
 

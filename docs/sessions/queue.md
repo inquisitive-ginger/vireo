@@ -220,6 +220,11 @@ suite mirroring chores/calendar. _Depends on: none._
 
 > Two-line index; full detail in the linked log.
 
+- **2026-08-17 — Fix: mobile nav overflow + calendar canvas (auto-bug #112 + #111,
+  PR #113).** Bottom bar caps at 5 tabs (Home + three pinned + a More sheet;
+  ADR 033's trigger fired early); `--container-wide` 1100→1400px. See
+  `logs/2026-08-17-fix-auto-bug-111-112.md`.
+
 - **2026-08-13 — Dev: meals iPad tweaks (ad-hoc, PR #106).** Kind-first drawer,
   optional takeout owner, post-dinner past tense, headline down a rung — and a
   `useFitRows` offsetTop bug fixed in the primitive (was also chores'
