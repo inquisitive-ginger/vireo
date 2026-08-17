@@ -70,7 +70,7 @@
        full  — no max: the home dashboard grid fills the viewport. */
   --container-content: 680px; /* prose */
   --container-list: 840px;
-  --container-wide: 1100px;
+  --container-wide: 1400px;
   --container-drawer: 440px;
 }
 

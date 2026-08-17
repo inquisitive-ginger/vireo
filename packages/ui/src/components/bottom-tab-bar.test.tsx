@@ -99,4 +99,50 @@ describe('BottomTabBar', () => {
     fireEvent.click(screen.getByText('Home'))
     expect(onNavigate).toHaveBeenCalledWith('/')
   })
+
+  const FIVE_ITEMS: TabBarItem[] = ['Calendar', 'Chores', 'Meals', 'Rewards', 'Feed'].map(
+    (label) => ({
+      to: `/${label.toLowerCase()}`,
+      icon: <span data-testid={`icon-${label.toLowerCase()}`} />,
+      label,
+      minTier: 1,
+    })
+  )
+
+  it('caps the bar at five tabs and folds the rest under More', () => {
+    render(<BottomTabBar {...BASE_PROPS} tier={4} navItems={FIVE_ITEMS} />)
+    const bar = screen.getByTestId('bottom-tab-bar')
+    expect(bar.querySelectorAll('button')).toHaveLength(5)
+    expect(screen.getByText('More')).toBeInTheDocument()
+    expect(screen.queryByText('Rewards')).not.toBeInTheDocument()
+    expect(screen.queryByText('Feed')).not.toBeInTheDocument()
+  })
+
+  it('renders no More tab when Home plus items fit within five', () => {
+    render(<BottomTabBar {...BASE_PROPS} tier={4} navItems={FIVE_ITEMS.slice(0, 4)} />)
+    expect(screen.queryByText('More')).not.toBeInTheDocument()
+    expect(screen.getByText('Rewards')).toBeInTheDocument()
+  })
+
+  it('applies the tier filter before the cap', () => {
+    const items = FIVE_ITEMS.map((item, i) => (i === 4 ? { ...item, minTier: 3 as const } : item))
+    render(<BottomTabBar {...BASE_PROPS} tier={1} navItems={items} />)
+    expect(screen.queryByText('More')).not.toBeInTheDocument()
+    expect(screen.getByText('Rewards')).toBeInTheDocument()
+  })
+
+  it('More opens a sheet whose items navigate and close it', () => {
+    const onNavigate = vi.fn()
+    render(<BottomTabBar {...BASE_PROPS} onNavigate={onNavigate} tier={4} navItems={FIVE_ITEMS} />)
+    fireEvent.click(screen.getByText('More'))
+    fireEvent.click(screen.getByText('Rewards'))
+    expect(onNavigate).toHaveBeenCalledWith('/rewards')
+    expect(screen.queryByText('Feed')).not.toBeInTheDocument()
+  })
+
+  it('marks the More tab active when an overflowed route is active', () => {
+    render(<BottomTabBar {...BASE_PROPS} activeRoute="/rewards" tier={4} navItems={FIVE_ITEMS} />)
+    const moreBtn = screen.getByText('More').closest('button')
+    expect(moreBtn).toHaveAttribute('aria-current', 'page')
+  })
 })
