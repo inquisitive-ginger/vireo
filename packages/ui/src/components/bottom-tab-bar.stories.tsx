@@ -1,5 +1,5 @@
 import type { Meta, StoryObj } from '@storybook/react'
-import { Rss, ClipboardList, Calendar } from 'lucide-react'
+import { Rss, ClipboardList, Calendar, Gift, Utensils } from 'lucide-react'
 import { BottomTabBar } from './bottom-tab-bar'
 import type { TabBarItem } from './bottom-tab-bar'
 
@@ -58,6 +58,20 @@ export const TierFiltered: Story = {
       { to: '/calendar', icon: <Calendar size={20} aria-hidden />, label: 'Calendar', minTier: 3 },
     ],
     activeRoute: '/feed',
+  },
+}
+
+export const Overflow: Story = {
+  name: 'Overflow — five-tab cap with a More sheet',
+  args: {
+    navItems: [
+      { to: '/calendar', icon: <Calendar size={20} aria-hidden />, label: 'Calendar', minTier: 1 },
+      { to: '/chores', icon: <ClipboardList size={20} aria-hidden />, label: 'Chores', minTier: 1 },
+      { to: '/meals', icon: <Utensils size={20} aria-hidden />, label: 'Meals', minTier: 1 },
+      { to: '/rewards', icon: <Gift size={20} aria-hidden />, label: 'Rewards', minTier: 1 },
+      { to: '/family-feed', icon: <Rss size={20} aria-hidden />, label: 'Feed', minTier: 1 },
+    ],
+    activeRoute: '/meals',
   },
 }
 

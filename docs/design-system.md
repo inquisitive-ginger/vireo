@@ -1786,7 +1786,7 @@ A route surface states its **role**, not a width. Four roles:
 | ------- | ----------------------------- | ---------------------------------------------- |
 | `prose` | `--container-content` (680px) | Family feed — Lora body at 18px                |
 | `list`  | `--container-list` (840px)    | Chores board · taskee · focus · Settings       |
-| `wide`  | `--container-wide` (1100px)   | Calendar month / week — a canvas, not a column |
+| `wide`  | `--container-wide` (1400px)   | Calendar month / week — a canvas, not a column |
 | `full`  | no max                        | Home dashboard · calendar mobile agenda        |
 
 A **list is not prose.** 680px is a reading measure; a list row carries a spine, a

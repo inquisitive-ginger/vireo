@@ -18,6 +18,8 @@
 
 **Overflow ceiling:** At M1, all core module tabs have `minTier: 1` — every user sees the same 4 tabs; no overflow needed. When the marketplace (M8+) makes it possible to install many plugins, Frame A will need a "More" tab and a tab-pinning management UI. That is a deferred design session.
 
+**Overflow shipped early (2026-08-17, issue #112):** the revisit trigger fired — five core modules pushed the bar to six tabs. The bar now caps at **5 tabs**: Home + the first three tier-visible plugin tabs + a **More** tab that opens a bottom `Sheet` listing the rest (More shows active state when an overflowed route is current; no overflow renders when everything fits). Pinning is registry order in `plugins.json` (calendar, chores, meals ahead of rewards, family-feed); the tab-pinning **management UI** remains deferred to M8+.
+
 **Open questions deferred to mobile dev session:**
 
 - ~~Notification bell placement~~ — **resolved by ADR 034**: bell lives in the right slot of the mobile brand top bar.

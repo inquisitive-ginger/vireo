@@ -7,7 +7,7 @@ export type PageWidth = 'prose' | 'list' | 'wide' | 'full'
 export interface PageContainerProps {
   /** `prose` — a reading column (the feed: Lora body, 680px).
       `list`  — a scannable row list (chores board, settings: 840px).
-      `wide`  — a canvas that needs room (the calendar month grid: 1100px).
+      `wide`  — a canvas that needs room (the calendar month grid: 1400px).
       `full`  — no max width (the home dashboard grid fills the viewport). */
   width: PageWidth
   className?: string

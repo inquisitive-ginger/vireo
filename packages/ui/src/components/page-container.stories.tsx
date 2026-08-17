@@ -25,7 +25,7 @@ const ROLES: { width: PageWidth; px: string; who: string; why: string }[] = [
   },
   {
     width: 'wide',
-    px: '1100px',
+    px: '1400px',
     who: 'Calendar month / week',
     why: 'A canvas. A 7-column grid crushed into a reading column stops being glanceable across the room.',
   },
