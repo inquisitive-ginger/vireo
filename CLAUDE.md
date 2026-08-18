@@ -26,9 +26,7 @@ before it reads anything else, and it is size-capped — see
   sheet) + #111 (wide→1400px), PR #113. `logs/2026-08-17-fix-auto-bug-111-112.md`.
 - **What's next and everything outstanding:** `docs/sessions/queue.md` — the one
   index. New small item: retire the 3B as second-copy backup puller.
-- **Owed in-app:** reports `35a65002` (#102), `4225b7ce` (#103), `18381226`
-  (#107), `ea489fed` (#109), `58f181b7` (#111), and `1e426540` (#112) need the
-  tier-4 `PATCH … deployed`; no client clearing needed since #110.
+- **Owed in-app:** none — all six open reports marked `deployed` 2026-08-17.
 
 ---
 
