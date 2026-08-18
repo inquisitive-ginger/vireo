@@ -13,6 +13,11 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: [self-hosted, linux, ARM64]
     steps:
+      # The pull relied on a docker login done by hand at Pi setup; the Pi 5
+      # migration (2026-08-16) didn't carry it over and the first deploy died
+      # unauthorized. The job's GITHUB_TOKEN already has Packages: read.
+      - name: Log in to GHCR
+        run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
       - name: Pull the release images and restart the stack
         working-directory: /opt/family-os
         env:

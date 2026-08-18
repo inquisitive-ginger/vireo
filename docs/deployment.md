@@ -517,6 +517,7 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     runs-on: [self-hosted, linux, ARM64]
     steps:
+      - run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
       - run: |
           cd /opt/family-os
           export TAG=${{ github.event.workflow_run.head_sha }}
