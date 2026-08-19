@@ -220,6 +220,11 @@ suite mirroring chores/calendar. _Depends on: none._
 
 > Two-line index; full detail in the linked log.
 
+- **2026-08-19 — Fix: shared weekly events qualify as activities (auto-bug #114,
+  PR #115).** `is_activity` widened to any-attendee weekly (ADR 038 amended,
+  rows backfilled); a shared activity fans into each attendee's roster group.
+  See `logs/2026-08-19-fix-auto-bug-114.md`.
+
 - **2026-08-17 — Fix: mobile nav overflow + calendar canvas (auto-bug #112 + #111,
   PR #113).** Bottom bar caps at 5 tabs (Home + three pinned + a More sheet;
   ADR 033's trigger fired early); `--container-wide` 1100→1400px. See

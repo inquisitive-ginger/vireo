@@ -22,11 +22,12 @@ before it reads anything else, and it is size-capped — see
 - **Deployment:** 🟢 live at `https://vireohome.app` — **on a Pi 5 since
   2026-08-16** (192.168.0.42); auto-deploy + Tailscale intact; **nightly
   restic → R2 backups live, restore-tested**. Runbook: `docs/deployment.md`.
-- **Last session:** 2026-08-17 — auto-bug fixes #112 (nav caps at 5 tabs, More
-  sheet) + #111 (wide→1400px), PR #113. `logs/2026-08-17-fix-auto-bug-111-112.md`.
+- **Last session:** 2026-08-19 — auto-bug fix #114 (shared weekly events are
+  activities; ADR 038 amended), PR #115. `logs/2026-08-19-fix-auto-bug-114.md`.
 - **What's next and everything outstanding:** `docs/sessions/queue.md` — the one
   index. New small item: retire the 3B as second-copy backup puller.
-- **Owed in-app:** none — all six open reports marked `deployed` 2026-08-17.
+- **Owed in-app:** report `603e89eb` (#114, fixed+live 2026-08-19) needs its
+  `deployed` flip — Zach, from Settings → Reported problems.
 
 ---
 
