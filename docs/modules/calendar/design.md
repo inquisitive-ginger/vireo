@@ -137,8 +137,9 @@ are** (T&T, gymnastics, Vision Therapy, speech/OT). A recurring _event_ (trash d
 Sunday dinner) just lands on the calendar again — nobody carries it as load.
 
 - **Derive, don't categorize.** Users never choose "event vs activity."
-  `is_activity` is **derived**: a **weekly-recurring event owned by a person** is an
-  activity and appears in their roster; Family / un-owned / one-off recurring things
+  `is_activity` is **derived**: a **weekly-recurring event with member attendees**
+  is an activity and appears in each attendee's roster (shared events included —
+  ADR 038 amendment, 2026-08-19); Family / un-owned / one-off recurring things
   don't. The Activities surface is a **lens** on the calendar, not a separate object
   type. ("Add activity" just opens the event drawer with repeat-weekly on.)
 - **Reached as a view on the calendar** (a Month ⇄ Activities switch).

@@ -9,14 +9,19 @@ import { STORY_ACTIVITIES, STORY_MEMBERS, STORY_TODAY } from './fixtures'
 const NOW = STORY_TODAY
 
 function activity(
-  p: Partial<CalendarEvent> & { id: string; title: string; startsAt: string; ownerId: string }
+  p: Partial<CalendarEvent> & {
+    id: string
+    title: string
+    startsAt: string
+    ownerId: string | null
+  }
 ): CalendarEvent {
   return {
     seriesId: p.id,
     occurrenceDate: null,
     isOccurrence: false,
     description: null,
-    attendeeIds: [p.ownerId],
+    attendeeIds: p.ownerId ? [p.ownerId] : [],
     createdBy: 'p1',
     seriesStartsAt: p.startsAt,
     endsAt: null,
@@ -59,6 +64,37 @@ describe('ActivitiesView', () => {
     expect(screen.getByText('Gymnastics')).toBeInTheDocument()
     expect(screen.getByText(/Mondays · 4:00 PM · Flips Gym/)).toBeInTheDocument()
     expect(screen.getByText('Yoga')).toBeInTheDocument()
+  })
+
+  it('puts a shared activity in each attendee’s group, naming the co-attendee', () => {
+    // Serialized shared events carry ownerId: null — the roster must not rely on it.
+    const shared = activity({
+      id: 'shared',
+      title: 'Swim Lessons',
+      ownerId: null,
+      attendeeIds: ['p3', 'p4'],
+      startsAt: new Date(2026, 5, 24, 16, 0).toISOString(),
+    })
+    renderView({ activities: [...STORY_ACTIVITIES, shared] })
+    const rows = screen.getAllByText('Swim Lessons')
+    expect(rows).toHaveLength(2)
+    expect(screen.getByText(/Wednesdays · 4:00 PM · with Teddy/)).toBeInTheDocument()
+    expect(screen.getByText(/Wednesdays · 4:00 PM · with Zoe/)).toBeInTheDocument()
+  })
+
+  it('collapses a shared activity to one Seasons bar', () => {
+    const shared = activity({
+      id: 'shared',
+      title: 'Swim Lessons',
+      ownerId: null,
+      attendeeIds: ['p3', 'p4'],
+      startsAt: new Date(2026, 5, 24, 16, 0).toISOString(),
+      recurrenceUntil: '2026-11-14',
+    })
+    renderView({ activities: [...STORY_ACTIVITIES, shared] })
+    fireEvent.click(screen.getByRole('radio', { name: 'Seasons' }))
+    expect(screen.getAllByText('Swim Lessons')).toHaveLength(1)
+    expect(screen.getByText('until Nov 14')).toBeInTheDocument()
   })
 
   it('drops activities whose season has already ended (measured against now)', () => {

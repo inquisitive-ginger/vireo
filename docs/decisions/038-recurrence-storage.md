@@ -1,6 +1,7 @@
 # ADR 038 — Recurrence Storage Model (Calendar)
 
-**Status:** Decided — 2026-06-23
+**Status:** Decided — 2026-06-23 · Amended 2026-08-19 (`is_activity` includes
+shared events — issue #114)
 
 ## Decision
 
@@ -30,7 +31,10 @@ attendee id when there is exactly one, else `null`.
   re-implementing the rule.
 - An occurrence whose date matches a `cancelled` exception is omitted.
 - `is_activity` is **derived on write**: `recurrence === 'weekly' && attendeeIds
-.length === 1`. (Family/un-owned/one-off recurring events stay false.)
+.length >= 1`. (Family/un-owned/one-off recurring events stay false.) Originally
+  `=== 1`; amended 2026-08-19 after a real household case — weekly swim lessons
+  shared by two kids is a standing commitment for both (issue #114). A shared
+  activity appears in **each** attendee's roster group.
 
 ### Mutation contract
 

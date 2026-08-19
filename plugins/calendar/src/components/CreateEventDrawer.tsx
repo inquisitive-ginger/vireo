@@ -163,7 +163,8 @@ function blankDefaults(opts?: {
 }): EventForm {
   return {
     title: '',
-    // Activities are single-owner by definition; the per-person "+ Add" seeds it.
+    // The per-person "+ Add" seeds its owner; more members can be added (a shared
+    // activity lands in each attendee's roster).
     ownerIds: opts?.ownerId ? [opts.ownerId] : [],
     family: false,
     multiDay: false,

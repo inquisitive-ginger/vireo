@@ -75,10 +75,11 @@ async function parseEventBody(body: unknown): Promise<ParseResult> {
   }
 
   const recurrence = input.recurrence ?? null
-  // Derived, never user-chosen (ADR 038): a weekly event owned by exactly one
-  // person is that person's standing Activity. A bounded daily window (ADR 057)
-  // is not a standing commitment and never one.
-  const isActivity = recurrence === 'weekly' && attendeeIds.length === 1
+  // Derived, never user-chosen (ADR 038, amended 2026-08-19): a weekly event with
+  // any member attendees is a standing Activity for each of them; only Family
+  // (zero-attendee) events stay out. A bounded daily window (ADR 057) is not a
+  // standing commitment and never one.
+  const isActivity = recurrence === 'weekly' && attendeeIds.length >= 1
 
   return {
     ok: true,
