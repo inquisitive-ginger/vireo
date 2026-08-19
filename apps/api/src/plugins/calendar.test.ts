@@ -468,9 +468,9 @@ async function listActivities(cookie: string) {
 }
 
 describe('GET /calendar/activities — the Activities lens', () => {
-  it('returns only weekly single-owner series (not one-offs, Family, or shared)', async () => {
+  it('returns weekly attended series — solo and shared — not one-offs or Family', async () => {
     const cookie = await getCookieForProfile(PARENT_ID)
-    // An activity: weekly + exactly one owner.
+    // Activities: weekly + one owner, and weekly + shared (ADR 038 amendment, #114).
     await createEvent(cookie, {
       title: 'Gymnastics',
       startsAt: '2026-07-07T17:15:00.000Z',
@@ -478,7 +478,13 @@ describe('GET /calendar/activities — the Activities lens', () => {
       recurrence: 'weekly',
       recurrenceUntil: '2026-08-25',
     })
-    // Not activities: one-off owned, Family weekly (no owner), shared weekly (2 owners).
+    await createEvent(cookie, {
+      title: 'Swim Lessons',
+      startsAt: '2026-07-08T16:00:00.000Z',
+      attendeeIds: [KID_ID, TEEN_ID],
+      recurrence: 'weekly',
+    })
+    // Not activities: one-off owned, Family weekly (no owner).
     await createEvent(cookie, {
       title: 'Haircut',
       startsAt: '2026-07-02T15:00:00.000Z',
@@ -489,17 +495,11 @@ describe('GET /calendar/activities — the Activities lens', () => {
       startsAt: '2026-07-01T12:00:00.000Z',
       recurrence: 'weekly',
     })
-    await createEvent(cookie, {
-      title: 'Date night',
-      startsAt: '2026-07-04T23:00:00.000Z',
-      attendeeIds: [PARENT_ID, TEEN_ID],
-      recurrence: 'weekly',
-    })
 
     const res = await listActivities(cookie)
     expect(res.statusCode).toBe(200)
     const acts = res.json().activities as Record<string, unknown>[]
-    expect(acts.map((a) => a.title)).toEqual(['Gymnastics'])
+    expect(acts.map((a) => a.title)).toEqual(['Gymnastics', 'Swim Lessons'])
     // Canonical series (not an expanded occurrence) carrying the lens's fields.
     expect(acts[0]).toMatchObject({
       isActivity: true,
@@ -508,6 +508,9 @@ describe('GET /calendar/activities — the Activities lens', () => {
       isOccurrence: false,
     })
     expect(acts[0].seriesId).toBe(acts[0].id)
+    // Shared: no single owner, but every attendee travels on the payload.
+    expect(acts[1]).toMatchObject({ isActivity: true, ownerId: null })
+    expect(acts[1].attendeeIds).toEqual(expect.arrayContaining([KID_ID, TEEN_ID]))
   })
 
   it('is readable by any tier 1+ (shared calendar)', async () => {

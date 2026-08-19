@@ -14,12 +14,15 @@ import {
 } from '@family-os/ui'
 import type { CalendarEvent, CalendarMember } from '../types'
 import { formatTime, localDateKey } from '../lib/grid'
+import { fillForHues } from '../lib/hues'
 
 /* The Activities lens (design.md §4, story #5) — a LENS on the calendar, not a
    separate object type: every standing activity is just a weekly-recurring event
-   owned by one person (`is_activity`, derived on write). This surface groups them
-   by owner (colour = person) and splits two questions behind a [Roster · Seasons]
-   sub-switch:
+   with member attendees (`is_activity`, derived on write; ADR 038 amended
+   2026-08-19 to include shared events). This surface groups them by member
+   (colour = person) — a shared activity appears under EACH attendee so every
+   kid's weekday load stays truthful — and splits two questions behind a
+   [Roster · Seasons] sub-switch:
      · Roster  — who's committed to what, plus each kid's weekday-load strip
                  ("is Teddy overbooked? room for more?").
      · Seasons — a schematic Gantt to each activity's end ("what frees up in
@@ -51,9 +54,10 @@ type OwnerGroup = {
   days: Set<number>
 }
 
-/** Group standing activities by their single owner, in roster order. An activity
- *  is "standing" when it hasn't ended yet (no season end, or the end is today or
- *  later — measured against the injected `now`). */
+/** Group standing activities by attendee, in roster order — a shared activity
+ *  lands in every attendee's group. An activity is "standing" when it hasn't
+ *  ended yet (no season end, or the end is today or later — measured against the
+ *  injected `now`). */
 function groupByOwner(
   activities: CalendarEvent[],
   membersById: Map<string, CalendarMember>,
@@ -61,14 +65,16 @@ function groupByOwner(
 ): OwnerGroup[] {
   const nowKey = localDateKey(now)
   const standing = activities.filter(
-    (a) => a.ownerId && (!a.recurrenceUntil || a.recurrenceUntil >= nowKey)
+    (a) => a.attendeeIds.length > 0 && (!a.recurrenceUntil || a.recurrenceUntil >= nowKey)
   )
 
   const byOwner = new Map<string, CalendarEvent[]>()
   for (const a of standing) {
-    const list = byOwner.get(a.ownerId!) ?? []
-    list.push(a)
-    byOwner.set(a.ownerId!, list)
+    for (const id of a.attendeeIds) {
+      const list = byOwner.get(id) ?? []
+      list.push(a)
+      byOwner.set(id, list)
+    }
   }
 
   // Roster order follows the profiles map; unknown owners are dropped.
@@ -168,6 +174,7 @@ export function ActivitiesView({
             <OwnerRoster
               key={g.ownerId}
               group={g}
+              membersById={membersById}
               canManage={canManage}
               onAdd={onAdd}
               onEdit={onEdit}
@@ -186,12 +193,14 @@ export function ActivitiesView({
 
 function OwnerRoster({
   group,
+  membersById,
   canManage,
   onAdd,
   onEdit,
   onRemove,
 }: {
   group: OwnerGroup
+  membersById: Map<string, CalendarMember>
   canManage: boolean
   onAdd?: (ownerId?: string) => void
   onEdit?: (activity: CalendarEvent) => void
@@ -227,6 +236,10 @@ function OwnerRoster({
             key={activity.seriesId}
             activity={activity}
             hue={group.hue}
+            withNames={activity.attendeeIds
+              .filter((id) => id !== group.ownerId)
+              .map((id) => membersById.get(id)?.name)
+              .filter((n): n is string => Boolean(n))}
             canManage={canManage}
             onEdit={onEdit}
             onRemove={onRemove}
@@ -269,12 +282,16 @@ function WeekdayLoad({ hue, days }: { hue: IdentityHue; days: Set<number> }) {
 function ActivityRow({
   activity,
   hue,
+  withNames,
   canManage,
   onEdit,
   onRemove,
 }: {
   activity: CalendarEvent
   hue: IdentityHue
+  /** Co-attendees on a shared activity — named in the meta so the row says who
+   *  else goes without leaning on colour alone (ADR 044). */
+  withNames: string[]
   canManage: boolean
   onEdit?: (activity: CalendarEvent) => void
   onRemove?: (activity: CalendarEvent) => void
@@ -283,7 +300,7 @@ function ActivityRow({
   const weekday = start.toLocaleDateString(undefined, { weekday: 'long' })
   const meta = `${weekday}s · ${formatTime(activity.startsAt)}${
     activity.location ? ` · ${activity.location}` : ''
-  }`
+  }${withNames.length > 0 ? ` · with ${withNames.join(', ')}` : ''}`
 
   const editable = canManage && onEdit
 
@@ -332,7 +349,12 @@ function monthsFromStart(date: Date, start: Date): number {
   return m + (date.getDate() - 1) / dim
 }
 
-type TimelineBar = { key: string; name: string; hue: IdentityHue; recurrenceUntil: string | null }
+type TimelineBar = {
+  key: string
+  name: string
+  hues: IdentityHue[]
+  recurrenceUntil: string | null
+}
 
 function SeasonTimeline({ groups, now }: { groups: OwnerGroup[]; now: Date }) {
   const axisStart = new Date(now.getFullYear(), now.getMonth(), 1)
@@ -341,14 +363,23 @@ function SeasonTimeline({ groups, now }: { groups: OwnerGroup[]; now: Date }) {
       month: 'short',
     })
   )
-  const bars: TimelineBar[] = groups.flatMap((g) =>
-    g.activities.map((a) => ({
-      key: a.seriesId,
-      name: a.title,
-      hue: g.hue,
-      recurrenceUntil: a.recurrenceUntil,
-    }))
-  )
+  // The timeline is family-wide, so a shared activity (in several roster groups)
+  // collapses to one bar carrying every attendee's hue.
+  const barsBySeries = new Map<string, TimelineBar>()
+  for (const g of groups) {
+    for (const a of g.activities) {
+      const bar = barsBySeries.get(a.seriesId)
+      if (bar) bar.hues.push(g.hue)
+      else
+        barsBySeries.set(a.seriesId, {
+          key: a.seriesId,
+          name: a.title,
+          hues: [g.hue],
+          recurrenceUntil: a.recurrenceUntil,
+        })
+    }
+  }
+  const bars = [...barsBySeries.values()]
 
   return (
     <section className="flex flex-col gap-4 rounded-panel border border-border bg-card p-6 shadow-[var(--shadow-card)]">
@@ -392,20 +423,21 @@ function SeasonTimeline({ groups, now }: { groups: OwnerGroup[]; now: Date }) {
             return (
               <div key={b.key} className="flex items-center">
                 <div style={GUTTER} className="flex items-center gap-1.5 pr-3">
-                  <span
-                    className="size-2 shrink-0 rounded-full"
-                    style={{ background: identityToken(b.hue) }}
-                  />
+                  <span className="flex shrink-0 gap-0.5">
+                    {b.hues.map((h, i) => (
+                      <span
+                        key={i}
+                        className="size-2 rounded-full"
+                        style={{ background: identityToken(h) }}
+                      />
+                    ))}
+                  </span>
                   <span className="text-sm-token truncate text-foreground">{b.name}</span>
                 </div>
                 <div className="relative h-7 flex-1">
                   <div
                     className="text-xs-token absolute inset-y-1 left-0 flex items-center rounded-md px-2 font-semibold"
-                    style={{
-                      width: `${width}%`,
-                      background: identityToken(b.hue, 'tint'),
-                      color: identityToken(b.hue, 'ink'),
-                    }}
+                    style={{ width: `${width}%`, ...fillForHues(b.hues) }}
                   >
                     <span className="truncate">
                       {ongoing ? 'ongoing →' : seasonLabel(b.recurrenceUntil)}

@@ -40,10 +40,11 @@ paper beautifully + capture-once + remind_, not a from-scratch interaction model
   gymnastics, **Vision Therapy**, speech/OT. A recurring _event_ (trash day,
   Sunday dinner) just lands on the calendar again and nobody carries it as load.
   - **Derive, don't categorize:** users never choose "event vs activity." Any
-    **weekly-recurring event owned by a person** _is_ an activity and appears in
-    their roster automatically; Family / un-owned / one-off recurring things do
-    not. The Activities surface is a **lens** on the calendar, not a separate
-    object type. ("Add activity" just opens the event drawer with repeat-weekly on.)
+    **weekly-recurring event with member attendees** _is_ an activity and appears
+    in each attendee's roster automatically (shared events included — ADR 038
+    amendment, 2026-08-19); Family / un-owned / one-off recurring things do not.
+    The Activities surface is a **lens** on the calendar, not a separate object
+    type. ("Add activity" just opens the event drawer with repeat-weekly on.)
   - **Why it earns its keep** (what paper/month-grid can't answer): a per-person
     **weekday-load** read (committed days filled in their hue → over/under-booking
     at a glance) and a family **season timeline** (bars to each activity's end →
@@ -232,8 +233,9 @@ events
   for the view within the queried date range (subject to the owed recurrence ADR).
 - An **Activity** is a recurring event with `is_activity = true` — same table,
   surfaced and managed as a named standing commitment. `is_activity` is **derived,
-  not user-chosen**: a weekly-recurring event owned by a person sets it true
-  (Family / un-owned recurring events stay false). The Activities surface filters
+  not user-chosen**: a weekly-recurring event with one or more member attendees
+  sets it true (Family / un-owned recurring events stay false). The Activities
+  surface filters
   on it and adds the load lens (weekday-load + season timeline).
 - **Attendees drive the fill** (design session): no attendee → **Family** (neutral
   pill + people glyph); one → solo tint; 2+ → **split fill** of each attendee's hue.
