@@ -1,7 +1,6 @@
 import { Pool } from 'pg'
 import { PrismaPg } from '@prisma/adapter-pg'
 import { PrismaClient } from '../src/generated/prisma'
-import { DEFAULT_LAYOUTS } from '../src/home-layout'
 
 const pool = new Pool({
   connectionString:
@@ -10,11 +9,12 @@ const pool = new Pool({
 const adapter = new PrismaPg(pool)
 const prisma = new PrismaClient({ adapter })
 
-/* The widget layouts come from `src/home-layout.ts` — the one definition, shared with
-   the API and the shell. This file used to keep its own hand-maintained copy, and it
-   drifted: the composition was re-ranked (chores above feed) in the API's copy only,
-   so a seeded database served the old geometry under the new elevation rungs. Never
-   re-declare the layouts here. */
+/* The widget layouts are NOT seeded. `src/home-layout.ts` is the one definition and
+   the API serves it whenever no `default_layout_*` config row exists; this file used
+   to upsert those rows, which made every database a cache of the default at seed time
+   — prod kept serving a re-ranked composition's OLD geometry because the seed never
+   runs there (auto-bug #116). A config row is a deliberate per-deploy override now,
+   written by hand or by a future customization UI, never pre-populated. */
 
 async function main() {
   await prisma.profile.upsert({
@@ -34,17 +34,6 @@ async function main() {
     update: {},
     create: { id: 'seed-child-1', name: 'Child', tier: 1, avatarUrl: null },
   })
-
-  // Geometry only — `prominence` is derived on read from the composition, never
-  // stored, so it can't drift out of sync with the code (ADR 039).
-  for (const [key, items] of Object.entries(DEFAULT_LAYOUTS)) {
-    const value = items.map(({ widgetId, x, y, w, h }) => ({ widgetId, x, y, w, h }))
-    await prisma.systemConfig.upsert({
-      where: { key },
-      update: { value },
-      create: { key, value },
-    })
-  }
 
   // Starter reward catalog (M4/5) — DEV SEED ONLY (spec §Seed catalog). A fresh family
   // gets these nine to edit or retire; prod is seeded separately. Written as raw SQL
@@ -81,7 +70,7 @@ async function main() {
     console.log('Rewards catalog already has rows — skipping starter seed')
   }
 
-  console.log('Seeded: profiles, default widget layouts')
+  console.log('Seeded: profiles')
 }
 
 main()

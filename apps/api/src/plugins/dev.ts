@@ -1,7 +1,7 @@
 import fp from 'fastify-plugin'
 import type { FastifyPluginAsync } from 'fastify'
 import { prisma } from '@family-os/platform/server'
-import { DEFAULT_LAYOUTS, FAMILY_PROFILE_ID } from '@family-os/platform/types'
+import { FAMILY_PROFILE_ID } from '@family-os/platform/types'
 
 const devPlugin: FastifyPluginAsync = async (fastify) => {
   fastify.post('/dev/reset', async () => {
@@ -13,23 +13,28 @@ const devPlugin: FastifyPluginAsync = async (fastify) => {
     await prisma.widgetLayout.deleteMany()
     await prisma.permissionOverride.deleteMany()
     await prisma.profile.deleteMany({ where: { id: { not: FAMILY_PROFILE_ID } } })
+    // default_layout_* rows are deliberately NOT re-created: a reset leaves no
+    // config rows, so /home/layout serves the in-code DEFAULT_LAYOUTS (auto-bug
+    // #116 — a pre-populated row is a cache that outlives a corrected default).
     await prisma.systemConfig.deleteMany({
-      where: { key: { in: ['family_pin_hash', 'onboarding_step', 'family_name'] } },
+      where: {
+        key: {
+          in: [
+            'family_pin_hash',
+            'onboarding_step',
+            'family_name',
+            'default_layout_tier_1_2',
+            'default_layout_tier_3',
+            'default_layout_tier_3_4',
+          ],
+        },
+      },
     })
     await prisma.profile.upsert({
       where: { id: FAMILY_PROFILE_ID },
       update: {},
       create: { id: FAMILY_PROFILE_ID, name: 'Family', tier: 1, avatarUrl: null },
     })
-    // Geometry only — `prominence` is derived on read, never stored (ADR 039).
-    for (const [key, items] of Object.entries(DEFAULT_LAYOUTS)) {
-      const value = items.map(({ widgetId, x, y, w, h }) => ({ widgetId, x, y, w, h }))
-      await prisma.systemConfig.upsert({
-        where: { key },
-        update: { value },
-        create: { key, value },
-      })
-    }
     return { ok: true }
   })
 }

@@ -9,6 +9,10 @@ export const WIDGET_CQ = {
    *  standard variant. */
   wideMinWidth: '440px',
   shortMaxHeight: '299px',
+  /** The complement of `wideMinWidth` — a tall slot at/below this width is the
+   *  mobile stack (or a cramped grid column), where a gutter-anatomy list has no
+   *  room for its text. */
+  narrowMaxWidth: '439px',
 } as const
 
 /* The widget inset, scaled to the slot (design-system.md §Spacing). `WidgetSlot`

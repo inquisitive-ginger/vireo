@@ -19,12 +19,12 @@ function getCookie(res: LightMyRequestResponse): string {
   return header.split(';')[0] ?? ''
 }
 
-// Geometry only, from the one definition — mirrors what the seed writes.
-async function seedConfig() {
-  for (const [key, items] of Object.entries(DEFAULT_LAYOUTS)) {
-    const value = items.map(({ widgetId, x, y, w, h }) => ({ widgetId, x, y, w, h }))
-    await prisma.systemConfig.upsert({ where: { key }, update: { value }, create: { key, value } })
-  }
+// No default_layout_* rows exist unless a test writes one: the seed stopped
+// pre-populating them (auto-bug #116 — a seeded row is a cache of the default
+// that wins over a later correction), so the route's normal path is the in-code
+// DEFAULT_LAYOUTS and a config row is a deliberate override.
+async function clearConfig() {
+  await prisma.systemConfig.deleteMany({ where: { key: { in: Object.keys(DEFAULT_LAYOUTS) } } })
 }
 
 async function cookieFor(targetProfileId: string): Promise<string> {
@@ -56,7 +56,6 @@ async function layoutFor(profileId: string): Promise<Slot[]> {
 
 beforeAll(async () => {
   app = await buildServer()
-  await seedConfig()
 })
 
 afterAll(async () => {
@@ -66,7 +65,7 @@ afterAll(async () => {
 
 beforeEach(async () => {
   await prisma.widgetLayout.deleteMany()
-  await seedConfig()
+  await clearConfig()
 })
 
 describe('GET /api/home/layout', () => {
@@ -124,24 +123,24 @@ describe('GET /api/home/layout', () => {
     expect(rows).toHaveLength(0)
   })
 
-  it('tracks a changed default instead of pinning the first one served', async () => {
+  it('serves a config-row override over the in-code default', async () => {
     const before = await layoutFor('seed-parent-1')
     expect(before.find((s) => s.widgetId === 'chores.today-summary')!.y).toBe(2)
 
-    // The default moves (as it did when the elevation ladder re-ranked the column).
-    await prisma.systemConfig.update({
-      where: { key: 'default_layout_tier_3_4' },
+    // A deploy-level geometry override — the hook the unseeded config key exists for.
+    await prisma.systemConfig.create({
       data: {
+        key: 'default_layout_tier_3_4',
         value: [
           { widgetId: 'calendar.up-next', x: 0, y: 0, w: 2, h: 2 },
-          { widgetId: 'family-feed.feed', x: 2, y: 0, w: 2, h: 1 },
-          { widgetId: 'chores.today-summary', x: 2, y: 1, w: 2, h: 1 },
+          { widgetId: 'chores.today-summary', x: 2, y: 0, w: 2, h: 1 },
+          { widgetId: 'family-feed.feed', x: 2, y: 1, w: 2, h: 1 },
         ],
       },
     })
 
     const after = await layoutFor('seed-parent-1')
-    expect(after.find((s) => s.widgetId === 'chores.today-summary')!.y).toBe(1)
+    expect(after.find((s) => s.widgetId === 'chores.today-summary')!.y).toBe(0)
     // Prominence is still derived from the code, not the stored geometry.
     expect(after.find((s) => s.widgetId === 'chores.today-summary')!.prominence).toBe(
       prominenceFor('default_layout_tier_3_4', 'chores.today-summary')

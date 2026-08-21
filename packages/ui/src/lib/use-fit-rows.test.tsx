@@ -1,25 +1,37 @@
 import { describe, it, expect, beforeAll, afterEach } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, act } from '@testing-library/react'
 import { useFitRows } from './use-fit-rows'
 
 /* jsdom has no layout, so the clamp has to be fed one: `available` is the box's
-   height and every row is `ROW` tall. */
+   height and every row is `ROW` tall. `hidden` zeroes everything, the way
+   `display: none` does under a container-query variant toggle. */
 const ROW = 50
 const RESERVE = 20
 let available = 0
+let hidden = false
+const roCallbacks: ResizeObserverCallback[] = []
+
+function fireResize() {
+  act(() => {
+    for (const cb of roCallbacks) cb([], undefined as unknown as ResizeObserver)
+  })
+}
 
 beforeAll(() => {
   class ResizeObserverStub {
+    constructor(cb: ResizeObserverCallback) {
+      roCallbacks.push(cb)
+    }
     observe() {}
     unobserve() {}
     disconnect() {}
   }
-  globalThis.ResizeObserver ??= ResizeObserverStub as unknown as typeof ResizeObserver
+  globalThis.ResizeObserver = ResizeObserverStub as unknown as typeof ResizeObserver
 
   Object.defineProperty(HTMLElement.prototype, 'clientHeight', {
     configurable: true,
     get(this: HTMLElement) {
-      return this.dataset.box ? available : 0
+      return this.dataset.box && !hidden ? available : 0
     },
   })
   // The hook measures rows with list-anchored rects (never offsetTop — see the
@@ -28,8 +40,8 @@ beforeAll(() => {
     configurable: true,
     value(this: HTMLElement): DOMRect {
       const row = this.dataset.row
-      const top = row ? Number(row) * ROW : 0
-      const height = row ? ROW : 0
+      const top = row && !hidden ? Number(row) * ROW : 0
+      const height = row && !hidden ? ROW : 0
       return {
         top,
         bottom: top + height,
@@ -47,6 +59,8 @@ beforeAll(() => {
 
 afterEach(() => {
   available = 0
+  hidden = false
+  roCallbacks.length = 0
 })
 
 function List({ items }: { items: string[] }) {
@@ -90,5 +104,22 @@ describe('useFitRows', () => {
     render(<List items={NAMES} />)
     expect(screen.getByTestId('more')).toHaveTextContent('+0')
     for (const name of NAMES) expect(screen.getByText(name)).toBeInTheDocument()
+  })
+
+  /* The container-query widgets ship every variant and CSS reveals one, so a
+     consumer can mount `display: none` and measure nothing but zeros. Trusting
+     that measurement after the slot crosses a breakpoint meant no clamp at all —
+     the tile cropped instead of fitting (auto-bug #116). */
+  it('re-measures when a variant hidden at mount is revealed', () => {
+    hidden = true
+    available = 170
+    render(<List items={NAMES} />)
+    for (const name of NAMES) expect(screen.getByText(name)).toBeInTheDocument()
+
+    hidden = false
+    fireResize()
+    expect(screen.getByText('Teddy')).toBeInTheDocument()
+    expect(screen.queryByText('Nora')).not.toBeInTheDocument()
+    expect(screen.getByTestId('more')).toHaveTextContent('+1')
   })
 })

@@ -298,9 +298,24 @@ function NextUp({
   }, [meals, todayKey])
   const { boxRef, listRef, shown, hiddenCount, measuring } = useFitRows(days, MORE_RESERVE)
 
+  /* Zero whole rows fit (a MacBook-height slot engages large with ~80px of
+     groove — auto-bug #116 review): an empty sunken plane stating "+3 more
+     days" reads as a broken tile, so the groove goes blank instead. Visuals
+     only — the label and more-line keep their space (`invisible`) and the
+     chrome toggles are non-layout, because collapsing anything here resizes
+     the measured box and the clamp would oscillate rows in and out. */
+  const empty = !measuring && shown.length === 0
+
   return (
-    <div className="-mx-6 -mb-6 mt-4 flex min-h-0 flex-1 flex-col bg-surface-sunken px-6 pb-4 pt-3 shadow-[var(--shadow-inset)]">
-      <div className="text-section-label mb-1.5 text-muted-foreground">Next up</div>
+    <div
+      className={cn(
+        '-mx-6 -mb-6 mt-4 flex min-h-0 flex-1 flex-col px-6 pb-4 pt-3',
+        !empty && 'bg-surface-sunken shadow-[var(--shadow-inset)]'
+      )}
+    >
+      <div className={cn('text-section-label mb-1.5 text-muted-foreground', empty && 'invisible')}>
+        Next up
+      </div>
       {/* Measuring pass renders the rows at natural (min-band) height — h-full
           would stretch them to fill the box, caching bottoms that scale with
           whatever height the box happened to have at measure time. Fit is
@@ -360,7 +375,9 @@ function NextUp({
         </div>
       </div>
       {!measuring && hiddenCount > 0 && (
-        <div className="text-sm-token shrink-0 pt-1 text-muted-foreground">
+        <div
+          className={cn('text-sm-token shrink-0 pt-1 text-muted-foreground', empty && 'invisible')}
+        >
           +{hiddenCount} more day{hiddenCount > 1 ? 's' : ''}
         </div>
       )}
