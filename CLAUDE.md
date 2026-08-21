@@ -19,11 +19,11 @@ before it reads anything else, and it is size-capped — see
   #105** — meals plugin live (week page, drawer, tonight widget, claim).
 - **Active stories:** none in flight; **beacon track queued** — custom build due
   at the December visit. `product-design-beacon.md`.
-- **Deployment:** 🟢 live at `https://vireohome.app` — **on a Pi 5 since
-  2026-08-16** (192.168.0.42); auto-deploy + Tailscale intact; **nightly
-  restic → R2 backups live, restore-tested**. Runbook: `docs/deployment.md`.
-- **Last session:** 2026-08-19 — auto-bug fix #114 (shared weekly events are
-  activities; ADR 038 amended), PR #115. `logs/2026-08-19-fix-auto-bug-114.md`.
+- **Deployment:** 🟢 live at `https://vireohome.app` — Pi 5 (192.168.0.42);
+  auto-deploy + Tailscale + restic→R2 intact; **SSD watchdog + external
+  dead-man ping live 2026-08-20** (USB outage; NVMe HAT queued). Runbook Part F.
+- **Last session:** 2026-08-20 — SSD outage recovered + self-heal hardening.
+  `logs/2026-08-20-infra-ssd-outage-selfheal.md`.
 - **What's next and everything outstanding:** `docs/sessions/queue.md` — the one
   index. New small item: retire the 3B as second-copy backup puller.
 - **Owed in-app:** report `603e89eb` (#114, fixed+live 2026-08-19) needs its

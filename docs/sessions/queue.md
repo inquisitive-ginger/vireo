@@ -109,6 +109,15 @@ _Depends on: M5/6._
 
 ---
 
+### Prod storage off USB: NVMe HAT for the Pi 5
+
+**Type:** infra (small, needs a purchase) · **Kickoff:** _to be written_
+The 2026-08-20 outage was the USB enclosure again (UAS hang → xHCI controller
+death; `logs/2026-08-20-infra-ssd-outage-selfheal.md`). Mitigations are live
+(UAS quirk, watchdog + external dead-man ping), but the durable fix is an NVMe
+HAT on the Pi 5's PCIe port: buy HAT + NVMe drive, rsync the storage roots
+(runbook Part C9 pattern), swap fstab, retire the enclosure. _Depends on: none._
+
 ### Retire the Pi 3B: second-copy backup puller
 
 **Type:** infra (small) · **Kickoff:** _to be written_
@@ -219,6 +228,11 @@ suite mirroring chores/calendar. _Depends on: none._
 ## Recently Completed
 
 > Two-line index; full detail in the linked log.
+
+- **2026-08-20 — Infra: SSD outage + self-heal watchdog (ad-hoc, no PR).** The
+  enclosure's UAS hang killed the xHCI controller; recovered, UAS disabled,
+  1-min watchdog + Healthchecks.io dead-man ping live. NVMe HAT queued as the
+  durable fix. See `logs/2026-08-20-infra-ssd-outage-selfheal.md`.
 
 - **2026-08-19 — Fix: shared weekly events qualify as activities (auto-bug #114,
   PR #115).** `is_activity` widened to any-attendee weekly (ADR 038 amended,

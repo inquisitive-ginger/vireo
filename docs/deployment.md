@@ -550,8 +550,28 @@ jobs:
 family-os-postgres-1 psql -U familyos -d <target-db>` — verified
     2026-08-16 into a scratch DB, counts matched prod.
 - **Logs:** `docker compose logs -f api web`.
-- **Health:** `docker compose ps`; add an uptime check hitting
-  `https://family.example.com` if you want to be paged.
+- **Health:** `docker compose ps`; external paging is live via the watchdog below.
+- **SSD watchdog + self-heal (LIVE 2026-08-20)** — after the enclosure's UAS
+  firmware hung mid-write, aborted the ext4 journal, and took the Pi's whole
+  xHCI USB controller down with it (only a reboot recovers a dead controller;
+  see `logs/2026-08-20-infra-ssd-outage-selfheal.md`):
+  - **UAS disabled** for the Insignia enclosure: `usb-storage.quirks=6655:a580:u`
+    in `/boot/firmware/cmdline.txt` — the standard fix for this hang; costs a
+    little sequential I/O.
+  - **fstab `x-systemd.device-timeout` raised 10s → 60s** — the drive can take
+    > 10s to enumerate at boot, and the old timeout left `/mnt/data` unmounted
+    > (and Docker down, by the `RequiresMountsFor=` guard) on an otherwise
+    > healthy boot.
+  - **`vireo-watchdog.timer`** (1 min) → `/usr/local/sbin/vireo-watchdog.sh`:
+    healthy = `/mnt/data` mounted **read-write** + `/api/plugins` 200 through
+    Caddy. When healthy it pings the Healthchecks.io dead-man URL in
+    `/etc/vireo-healthcheck-url` (0600) — a quiet box pages Zach externally.
+    When unhealthy: if the disk is on the bus, remount + restart services +
+    `compose up -d`; if the disk is gone (or recovery fails), reboot — stamped
+    in `/var/lib` so a genuinely dead drive degrades to one reboot per 2h, not
+    a boot storm. Logs to syslog as `vireo-watchdog`.
+  - The durable fix is **off USB entirely**: NVMe HAT on the Pi 5's PCIe port —
+    queued.
 
 ---
 
