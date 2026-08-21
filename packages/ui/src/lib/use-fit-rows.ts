@@ -81,7 +81,18 @@ export function useFitRows<T>(rows: T[], reserve: number): FitRows<T> {
     const box = boxRef.current
     if (!box) return
     const ro = new ResizeObserver(() => {
-      if (!measuring) clamp(box.clientHeight)
+      if (measuring) return
+      // A consumer hidden at measure time (a `display: none` variant under a
+      // container-query toggle) records all-zero rects, and a clamp fed those
+      // shows every row forever — the tile crops instead of fitting (auto-bug
+      // #116). When the box turns out to have height after all, the cached
+      // measurement is garbage: throw it away and measure for real.
+      const bottoms = bottomsRef.current
+      if (box.clientHeight > 0 && bottoms.length > 0 && bottoms[bottoms.length - 1] === 0) {
+        setMeasured(null)
+        return
+      }
+      clamp(box.clientHeight)
     })
     ro.observe(box)
     return () => ro.disconnect()

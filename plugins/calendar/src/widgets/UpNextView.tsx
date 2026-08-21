@@ -241,14 +241,22 @@ function buildRows(days: WeekDay[], now: Date): Row[] {
 const MORE_RESERVE = 26
 
 /* Renders only the whole rows that fit the slot height, then a "+N more" line —
-   never a partial row, never a scrollbar. `useFitRows` owns the measure/clamp. */
+   never a partial row, never a scrollbar. `useFitRows` owns the measure/clamp.
+
+   Two anatomies (auto-bug #117, gated 2026-08-20). The day gutter needs ~100px
+   of every row, which a wide tile affords and the ~350px mobile stack does not —
+   there it left event titles ~150px and truncated most of them. `stackedDays`
+   moves the day label onto its own full-width line above its events, so the rows
+   get the whole width. The header lives INSIDE its day's first row element, not
+   as a sibling, so the clamp can never strand a day label above a "+N more". */
 function DayList({
   week,
   membersById,
   now,
   framing,
   showOwners = true,
-}: ZoneProps & { showOwners?: boolean }) {
+  stackedDays = false,
+}: ZoneProps & { showOwners?: boolean; stackedDays?: boolean }) {
   const rows = useMemo(() => buildRows(week.days, now), [week.days, now])
   const { boxRef, listRef, shown, measuring } = useFitRows(rows, MORE_RESERVE)
 
@@ -257,40 +265,59 @@ function DayList({
   // counts if it carries an event — an empty day's band is not news withheld.
   const more = rows.slice(shown.length).filter((r) => r.event).length + week.beyond
 
+  const rowBody = (row: Row) =>
+    row.event ? (
+      <EventRow
+        event={row.event}
+        membersById={membersById}
+        framing={framing}
+        showOwners={showOwners}
+        whenLabel={row.starting ? startingWhenLabel(row.event, now) : undefined}
+      />
+    ) : (
+      <div className={cn(ROW_BAND, 'text-sm-token text-muted-foreground/70')}>
+        Nothing else scheduled
+      </div>
+    )
+
   return (
     <div ref={boxRef} className="relative min-h-0 flex-1 overflow-hidden">
       <div ref={listRef} className="flex flex-col">
-        {shown.map((row, i) => (
-          <div key={row.key} className="grid grid-cols-[84px_1fr] gap-x-4">
-            <div className={cn(row.lead && GUTTER_INSET)}>
+        {shown.map((row, i) =>
+          stackedDays ? (
+            <div key={row.key}>
               {row.lead && (
-                <>
-                  <div className={GUTTER_LEAD}>
-                    <span className="text-base-token font-semibold text-foreground">
-                      {row.lead}
-                    </span>
-                  </div>
-                  {row.sub && <div className="text-sm-token text-muted-foreground">{row.sub}</div>}
-                </>
-              )}
-            </div>
-            <div className={cn(i > 0 && 'border-t border-border/50')}>
-              {row.event ? (
-                <EventRow
-                  event={row.event}
-                  membersById={membersById}
-                  framing={framing}
-                  showOwners={showOwners}
-                  whenLabel={row.starting ? startingWhenLabel(row.event, now) : undefined}
-                />
-              ) : (
-                <div className={cn(ROW_BAND, 'text-sm-token text-muted-foreground/70')}>
-                  Nothing else scheduled
+                <div className={cn(i > 0 && GUTTER_INSET, 'flex items-baseline gap-1.5')}>
+                  <span className="text-base-token font-semibold text-foreground">{row.lead}</span>
+                  {row.sub && (
+                    <span className="text-sm-token text-muted-foreground">· {row.sub}</span>
+                  )}
                 </div>
               )}
+              <div className={cn(i > 0 && !row.lead && 'border-t border-border/50')}>
+                {rowBody(row)}
+              </div>
             </div>
-          </div>
-        ))}
+          ) : (
+            <div key={row.key} className="grid grid-cols-[84px_1fr] gap-x-4">
+              <div className={cn(row.lead && GUTTER_INSET)}>
+                {row.lead && (
+                  <>
+                    <div className={GUTTER_LEAD}>
+                      <span className="text-base-token font-semibold text-foreground">
+                        {row.lead}
+                      </span>
+                    </div>
+                    {row.sub && (
+                      <div className="text-sm-token text-muted-foreground">{row.sub}</div>
+                    )}
+                  </>
+                )}
+              </div>
+              <div className={cn(i > 0 && 'border-t border-border/50')}>{rowBody(row)}</div>
+            </div>
+          )
+        )}
         {!measuring && more > 0 && (
           <div className="text-sm-token mt-2 text-muted-foreground">
             <span className="underline underline-offset-4">Show {more} more</span>
@@ -389,9 +416,10 @@ function Standard(props: ZoneProps) {
   )
 }
 
-/* Large (2×2): the full three-zone hierarchy — raised hero, recessed all-week
-   groove, flat day list. */
-function Large(props: ZoneProps) {
+/* Large (2×2, and the mobile stack): the full three-zone hierarchy — raised hero,
+   recessed all-week groove, flat day list. `stackedDays` is the narrow-slot day
+   list anatomy (see `DayList`). */
+function Large({ stackedDays, ...props }: ZoneProps & { stackedDays?: boolean }) {
   const { week, membersById, now, framing } = props
   return (
     <div className={cn('flex size-full flex-col', INSET.large)}>
@@ -409,7 +437,7 @@ function Large(props: ZoneProps) {
       </div>
       <AllWeekBand {...props} />
       <div className="mt-3.5 flex min-h-0 flex-1 flex-col">
-        <DayList {...props} />
+        <DayList {...props} stackedDays={stackedDays} />
       </div>
     </div>
   )
@@ -418,15 +446,22 @@ function Large(props: ZoneProps) {
 /* Container-query density toggle — ship every variant, let CSS reveal the one that
    fits the rendered box (mirrors chores `today-summary`). The two-column standard
    is wide-and-short, so it engages only when the slot is both wide (≥440px) and
-   short (≤299px); everything narrower reflows to compact (short) or large (tall). */
+   short (≤299px); everything narrower reflows to compact (short) or large (tall).
+   A tall slot at ≤439px (the mobile stack) is large with stacked day headers —
+   the gutter anatomy has no room for its titles there (auto-bug #117). */
 const WIDGET_STYLES = `
-  .cun-compact, .cun-standard, .cun-large { height: 100%; }
+  .cun-compact, .cun-standard, .cun-large, .cun-narrow { height: 100%; }
   .cun-compact  { display: block; }
   .cun-standard { display: none; }
   .cun-large    { display: none; }
+  .cun-narrow   { display: none; }
   @container (min-height: ${WIDGET_CQ.tallMinHeight}) {
     .cun-compact  { display: none; }
     .cun-large    { display: block; }
+  }
+  @container (max-width: ${WIDGET_CQ.narrowMaxWidth}) and (min-height: ${WIDGET_CQ.tallMinHeight}) {
+    .cun-large    { display: none; }
+    .cun-narrow   { display: block; }
   }
   @container (min-width: ${WIDGET_CQ.wideMinWidth}) and (max-height: ${WIDGET_CQ.shortMaxHeight}) {
     .cun-compact  { display: none; }
@@ -469,6 +504,9 @@ export function UpNextView({ events, membersById, now, framing, size }: UpNextVi
         </div>
         <div className="cun-large">
           <Large {...zones} />
+        </div>
+        <div className="cun-narrow">
+          <Large {...zones} stackedDays />
         </div>
       </div>
     )

@@ -35,30 +35,29 @@ export type LayoutDefault = {
    they must not disagree. */
 export const DEFAULT_LAYOUTS: Record<string, LayoutDefault[]> = {
   /* Kids (and teens below) rank by what a kid actually opens the app for:
-     wallet > chores > feed = calendar. Four equal 2×1 tiles — kids see this on
-     tablets, where a 2×2 slot is mostly air — so the wallet leads by position and
-     its feature elevation, chores beside it as the way to fill it, calendar and
-     feed as equal quiet peers on the bottom row. */
+     wallet > chores > feed = calendar = meals. The wallet leads by position and
+     its feature elevation, chores beside it as the way to fill it; the calendar
+     takes the 2×2 under the wallet and the quiet peers stack the right column
+     (auto-bug #118, gated 2026-08-20 — the old paired grid left an empty slot
+     beside meals on any desktop-width screen). Chores stays atop the right
+     column, not meals as reported: the kid ranking and the column's elevation
+     order both put the card above the quiet rungs. */
   default_layout_tier_1_2: [
     { widgetId: 'rewards.wallet', x: 0, y: 0, w: 2, h: 1, prominence: 'feature' },
+    { widgetId: 'calendar.up-next', x: 0, y: 1, w: 2, h: 2, prominence: 'quiet' },
     { widgetId: 'chores.today-summary', x: 2, y: 0, w: 2, h: 1, prominence: 'card' },
-    { widgetId: 'calendar.up-next', x: 0, y: 1, w: 2, h: 1, prominence: 'quiet' },
-    { widgetId: 'family-feed.feed', x: 2, y: 1, w: 2, h: 1, prominence: 'quiet' },
-    /* Tonight's dinner (M5/2) — quiet, below the quiet peers, so the column's
-       elevation order holds without re-ranking a settled grid. The anti-ambush
-       read mostly happens on the family fridge surface anyway. */
-    { widgetId: 'meals.tonight', x: 0, y: 2, w: 2, h: 1, prominence: 'quiet' },
+    { widgetId: 'meals.tonight', x: 2, y: 1, w: 2, h: 1, prominence: 'quiet' },
+    { widgetId: 'family-feed.feed', x: 2, y: 2, w: 2, h: 1, prominence: 'quiet' },
   ],
-  /* Teens — the same kid ranking, one register down: no feature (a teen's surface
+  /* Teens — the same kid grid, one register down: no feature (a teen's surface
      declines to shout, same as the parent's), so the wallet leads by position, not
-     size. Four equal 2×1 tiles — at desktop row heights a 2×2 wallet is mostly air
-     above its footnote. */
+     elevation. */
   default_layout_tier_3: [
     { widgetId: 'rewards.wallet', x: 0, y: 0, w: 2, h: 1, prominence: 'card' },
+    { widgetId: 'calendar.up-next', x: 0, y: 1, w: 2, h: 2, prominence: 'quiet' },
     { widgetId: 'chores.today-summary', x: 2, y: 0, w: 2, h: 1, prominence: 'card' },
-    { widgetId: 'calendar.up-next', x: 0, y: 1, w: 2, h: 1, prominence: 'quiet' },
-    { widgetId: 'family-feed.feed', x: 2, y: 1, w: 2, h: 1, prominence: 'quiet' },
-    { widgetId: 'meals.tonight', x: 0, y: 2, w: 2, h: 1, prominence: 'quiet' },
+    { widgetId: 'meals.tonight', x: 2, y: 1, w: 2, h: 1, prominence: 'quiet' },
+    { widgetId: 'family-feed.feed', x: 2, y: 2, w: 2, h: 1, prominence: 'quiet' },
   ],
   /* Parents / the family pseudo-profile — NO feature (ADR 039, amended). A parent
      (or the unattended fridge tablet, sitting on the family profile) triages, and
@@ -70,9 +69,13 @@ export const DEFAULT_LAYOUTS: Record<string, LayoutDefault[]> = {
   default_layout_tier_3_4: [
     { widgetId: 'calendar.up-next', x: 0, y: 0, w: 2, h: 4, prominence: 'card' },
     /* Tonight's dinner (M5/2) — card, leading the right column at 2×2 (live
-       review, 2026-08-12): the tall box is what engages the large variant, and
-       the NEXT UP lookahead is the morning-glance job this dashboard exists
-       for. "What's for dinner" is a live answer to "what needs me". */
+       review, 2026-08-12; reaffirmed 2026-08-20, auto-bug #116). h=2 is the
+       geometry that GUARANTEES the NEXT UP lookahead: rows floor at 180px, so
+       this slot is never shorter than 376px, which always fits the headline
+       plus at least one lookahead row — an h=1 slot can land at heights where
+       the large variant fits none. The #116 crop itself was the widgets not
+       clamping (fixed in the views), not this split; chores and feed render
+       whole rows and state the remainder at any height a 2×1 deals them. */
     { widgetId: 'meals.tonight', x: 2, y: 0, w: 2, h: 2, prominence: 'card' },
     { widgetId: 'chores.today-summary', x: 2, y: 2, w: 2, h: 1, prominence: 'card' },
     { widgetId: 'family-feed.feed', x: 2, y: 3, w: 2, h: 1, prominence: 'quiet' },

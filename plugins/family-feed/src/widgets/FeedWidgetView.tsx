@@ -1,6 +1,12 @@
 import type { ReactNode } from 'react'
 import { MessagesSquare } from 'lucide-react'
-import { WidgetHeader as UiWidgetHeader, WIDGET_CQ, WIDGET_INSET, cn } from '@family-os/ui'
+import {
+  WidgetHeader as UiWidgetHeader,
+  WIDGET_CQ,
+  WIDGET_INSET,
+  cn,
+  useFitRows,
+} from '@family-os/ui'
 import type { FeedPost } from '../types'
 import { FeedPostCard } from '../components/FeedPostCard'
 import { FeedEmptyState } from '../components/FeedEmptyState'
@@ -21,6 +27,32 @@ const WIDGET_STYLES = `
    primitive supplied with this module's glyph + label. */
 function WidgetHeader() {
   return <UiWidgetHeader icon={MessagesSquare} label="Family Feed" />
+}
+
+/* Reserve for the "+N more" line when the list is clamped. */
+const MORE_RESERVE = 24
+
+/* The tall slot's height comes from the viewport, not the author, so a fixed
+   post count crops mid-post at whatever height the grid happens to deal
+   (auto-bug #116 — the h=1 slot crossed the tall threshold at ~305px and this
+   variant sliced three posts into it). Whole posts only, remainder stated —
+   `useFitRows` owns the measure/clamp, same as chores and the calendar. */
+function FitPostList({ posts }: { posts: FeedPost[] }) {
+  const { boxRef, listRef, shown, hiddenCount, measuring } = useFitRows(posts, MORE_RESERVE)
+  return (
+    <div ref={boxRef} className="mt-7 min-h-0 flex-1 overflow-hidden">
+      <div ref={listRef} className="flex flex-col">
+        {shown.map((post, i) => (
+          <div key={post.id} className={cn(i > 0 && 'mt-6 border-t border-border pt-6')}>
+            <FeedPostCard post={post} lineClamp={2} variant="widget" dense />
+          </div>
+        ))}
+        {!measuring && hiddenCount > 0 && (
+          <div className="text-sm-token mt-3 text-muted-foreground">+{hiddenCount} more</div>
+        )}
+      </div>
+    </div>
+  )
 }
 
 export interface FeedWidgetViewProps {
@@ -58,21 +90,10 @@ export function FeedWidgetView({ posts, emptyAction }: FeedWidgetViewProps) {
         )}
       </div>
 
-      {/* Tall — up to 3 posts, denser body */}
+      {/* Tall — as many whole posts as fit, denser body */}
       <div className={cn('ffeed-multi', WIDGET_INSET.large)}>
         <WidgetHeader />
-        {posts.length === 0 ? (
-          empty
-        ) : (
-          <div className="mt-7 min-h-0 overflow-hidden">
-            {posts.slice(0, 3).map((post, i, arr) => (
-              <div key={post.id}>
-                <FeedPostCard post={post} lineClamp={2} variant="widget" dense />
-                {i < arr.length - 1 && <div className="my-6 h-px bg-border" />}
-              </div>
-            ))}
-          </div>
-        )}
+        {posts.length === 0 ? empty : <FitPostList posts={posts} />}
       </div>
     </div>
   )
