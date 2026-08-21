@@ -13,8 +13,8 @@
 - [ ] `docs/modules/platform/stories/push-multi-profile-device.md`
 - [ ] `docs/modules/platform/progress.md`
 - [ ] `docs/sessions/logs/2026-06-07-dev-web-push.md` — existing subscribe/unsubscribe/410 implementation
-- [ ] `prisma/schema.prisma` — `push_subscriptions` table current definition
-- [ ] `apps/server/src/routes/push.ts` (or wherever subscribe/unsubscribe/410 routes live)
+- [ ] `packages/platform/prisma/schema.prisma` — `push_subscriptions` table current definition
+- [ ] `apps/api/src/plugins/push.ts` (or wherever subscribe/unsubscribe/410 routes live)
 
 ## Session scope
 
@@ -39,7 +39,7 @@ Change `push_subscriptions` to key on `(profileId, endpoint)` instead of `endpoi
 
 **1. Schema migration**
 
-In `prisma/schema.prisma`, on `push_subscriptions`:
+In `packages/platform/prisma/schema.prisma`, on `push_subscriptions`:
 
 - Remove `@unique` on `endpoint`
 - Add `@@unique([profileId, endpoint])`

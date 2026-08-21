@@ -135,8 +135,8 @@ A routine that wakes on a cron, fixes what has queued up, and sleeps. Better if
 you would rather batch than react.
 
 **Do not run fixes on the Pi.** Its self-hosted runner is right for `docker pull`
-and nothing heavier — it is a 1 GB Pi 3B ([`project-poc-hardware`]). It cannot run
-a build and the test suite. Fixes belong on a dev machine or a GitHub-hosted
+and nothing heavier — it is a 4 GB Pi 5 serving the live household
+([`project-poc-hardware`]), not a build box. Fixes belong on a dev machine or a GitHub-hosted
 runner; only the deploy touches the Pi.
 
 ---

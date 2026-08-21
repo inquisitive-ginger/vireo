@@ -27,7 +27,7 @@ The chores module lets parents assign tasks to family members, tracks kid comple
 - Multiple assignees per task
 - Teen self-assignment (tier 3 propose flow)
 - XP levels, badges, leaderboards, streaks
-- P-Bucks earning from chores (wired in **M4 Rewards** — ADR 002; `coinReward` lands on `Task` and rides `chores.task.completed` per ADR 048)
+- ~~P-Bucks earning from chores (wired in **M4 Rewards** — ADR 002; `coinReward` lands on `Task` and rides `chores.task.completed` per ADR 048)~~ — **shipped 2026-07-23** (M4/3, PR #64; live in prod since PR #75)
 - Due-date filtering UI
 - Reversal / dispute flow
 - Per-occurrence routine skip ("no trash this week"), routine end dates, monthly

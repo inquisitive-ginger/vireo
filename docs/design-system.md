@@ -1,11 +1,15 @@
 # Design System
 
-> Last updated: 2026-07-28 — **ADR 057: daily time-window recurrence.** A repeating
-> time window ("M–F 9:30–3:30, Aug 3–21") is a third event shape with its own
-> statement rules: stated **once** in the span band with the grammar
-> **day-set · window · bound**, never repeated in day rows, **today's occurrence
-> hero-eligible**, and rendered in the month grid as **consecutive-day run bars**
-> in the span lanes. See [Daily time-window series](#daily-time-window-series--a-condition-with-a-clock-settled--2026-07-28). Prior: 2026-07-24 — **ADR 054: the currency is named Pritchett Bucks.** The coin now bears a struck **P-mark** (0.66 of the face, stroke 2.5) in place of ADR 051's placeholder `Coins` glyph, and the name has **four registers** — the mark · `P$` · `P-Bucks` · `Pritchett Bucks` — one per medium, chosen by naming an export in `packages/ui/src/lib/currency.ts`. See [Currency marks](#currency-marks). Prior: 2026-07-22 — **ADR 051: the coin belongs to the currency that buys things.** P-Bucks takes gold, the disc and the coin glyph; **XP demotes to a quiet star**. The coin's gold moves off `--identity-marigold`, and what separates it from a member's hue is **form** — one struck disc, never a disc inside a ring (a washer) and never notched (a gear). See [Currency marks](#currency-marks). Prior: 2026-07-12 — **ADR 044: a colour is assigned, not derived; and it is not the only channel.** The member palette grows to **eight** (`moss`, `indigo`); a member's hue is **persisted and unique** (`resolveHue`, never `identityColor(name)`), so palette size is now a **cap on household size**. The **tint layer is rebuilt** — it flattened every hue to off-white on the one surface (the month grid) where colour does all the work. Eight nameable hues cannot survive red-green colour-blindness, so **any surface where a hue is the sole discriminator owes a second channel** — the calendar chip carries its owner's initial.
+> Last updated: 2026-08-20 — **ADR 063** (ListRow), **ADR 064** (identity-hue
+> trigger narrowed).
+>
+> Prior: 2026-07-28 — ADR 057, daily time-window recurrence
+> ([Daily time-window series](#daily-time-window-series--a-condition-with-a-clock-settled--2026-07-28));
+> 2026-07-24 — ADR 054, currency named Pritchett Bucks
+> ([Currency marks](#currency-marks)); 2026-07-22 — ADR 051, gold and coin to
+> P-Bucks ([Currency marks](#currency-marks)); 2026-07-12 — ADR 044, hues
+> assigned, unique, never the sole channel
+> ([Member identity palette](#member-identity-palette)).
 
 This document records settled design decisions. Deferred items are
 explicitly marked — do not treat absence of a spec as a free choice.
@@ -595,8 +599,6 @@ family-feed's hand-rolled `14px 18px 16px`.
 
 ## Surfaces
 
-**Tablet is the only M0 surface.** All others are deferred.
-
 ### Tablet — Primary Hub
 
 The family's central display. Always-on, landscape, touch-first.
@@ -755,7 +757,8 @@ Triggered when switching to a profile at a higher tier than the current active p
 - **Copy:** "Enter family PIN" — no attribution to a specific parent
 - **No PIN set:** Returns 423; upward switching is blocked until a tier-4 profile
   completes first-run PIN setup
-- **Failed attempt:** Wrong-PIN message shown inline. Rate-limiting deferred to M1.
+- **Failed attempt:** Wrong-PIN message shown inline. Repeated failures trip the
+  API's lockout — a Too-many-attempts response with `retryAfter`, surfaced inline.
 
 ### Future — Biometrics
 
@@ -1073,7 +1076,7 @@ hand-rolled Month/Week/Day switch was its first adopter.
 ### Widget prominence — the elevation ladder
 
 **Settled** — home-dashboard hierarchy exploration, 2026-07-10
-(`logs/2026-07-10-design-home-dashboard-hierarchy.md`).
+(`logs/2026-07-10-design-dev-home-dashboard-elevation-ladder.md`).
 
 Widget slots were uniform — every live widget got `--card` + `--shadow-card` +
 `border` + `rounded-xl`, so nothing was a focal point and the surface read as three
@@ -1146,8 +1149,8 @@ Two levels:
 
 ### Layout persistence
 
-Per-user layout stored in the platform DB as `{ widgetId, x, y, w, h }[]`.
-Exact schema deferred to the M1 implementation session.
+Per-user layout stored in the platform DB as `{ widgetId, x, y, w, h }[]` —
+the `widget_layouts` table, documented in `architecture.md`.
 
 **Edit rights:**
 
@@ -1173,60 +1176,65 @@ new users and the reserved slot behavior for core modules.
 
 ### Default layouts
 
-Three tier-appropriate default layouts are seeded from platform config. All slot
-dimensions reference the 1280×800 viewport; widget components use CSS container
-queries to adapt to their actual rendered size.
+Three tier-appropriate default layouts are defined in
+`packages/platform/src/home-layout.ts` (`DEFAULT_LAYOUTS` — the one definition;
+the seed, the API and the shell all import it). All slot dimensions reference the
+1280×800 viewport; widget components use CSS container queries to adapt to their
+actual rendered size. Each slot also carries a **prominence** rung (see
+[Widget prominence](#widget-prominence--the-elevation-ladder)); within a column
+the higher rung sits above the lower — elevation and reading order must not
+disagree.
 
-**Family pseudo-profile** (unattended tablet — shared family display):
+**Tiers 1–2** (child profiles — wallet-first):
 
 ```
-┌─────────────────────────────────────────────┐
-│           Family Feed        [banner 4×1]   │
-├──────────────────────┬──────────────────────┤
-│  Chores  [standard]  │  Calendar [standard] │
+┌──────────────────────┬──────────────────────┐
+│  Wallet    [feature] │  Chores       [card] │
+├──────────────────────┼──────────────────────┤
+│  Calendar  [quiet]   │  Family Feed [quiet] │
+├──────────────────────┼──────────────────────┤
+│  Dinner    [quiet]   │                      │
 └──────────────────────┴──────────────────────┘
 ```
 
-| `widgetId`             | x   | y   | w   | h   |
-| ---------------------- | --- | --- | --- | --- |
-| `family-feed.feed`     | 0   | 0   | 4   | 1   |
-| `chores.today-summary` | 0   | 1   | 2   | 1   |
-| `calendar.today`       | 2   | 1   | 2   | 1   |
+| `widgetId`             | x   | y   | w   | h   | prominence |
+| ---------------------- | --- | --- | --- | --- | ---------- |
+| `rewards.wallet`       | 0   | 0   | 2   | 1   | `feature`  |
+| `chores.today-summary` | 2   | 0   | 2   | 1   | `card`     |
+| `calendar.up-next`     | 0   | 1   | 2   | 1   | `quiet`    |
+| `family-feed.feed`     | 2   | 1   | 2   | 1   | `quiet`    |
+| `meals.tonight`        | 0   | 2   | 2   | 1   | `quiet`    |
 
-**Tiers 1–2** (child profiles — chores-first):
+**Tier 3** (teen profiles — the same ranking, one register down: no `feature`;
+the wallet leads by position, not size):
 
-```
-┌──────────────────┬───────────────────────────┐
-│                  │  Family Feed  [standard]  │
-│  Chores  [large] ├───────────────────────────┤
-│                  │  Calendar     [standard]  │
-└──────────────────┴───────────────────────────┘
-```
+| `widgetId`             | x   | y   | w   | h   | prominence |
+| ---------------------- | --- | --- | --- | --- | ---------- |
+| `rewards.wallet`       | 0   | 0   | 2   | 1   | `card`     |
+| `chores.today-summary` | 2   | 0   | 2   | 1   | `card`     |
+| `calendar.up-next`     | 0   | 1   | 2   | 1   | `quiet`    |
+| `family-feed.feed`     | 2   | 1   | 2   | 1   | `quiet`    |
+| `meals.tonight`        | 0   | 2   | 2   | 1   | `quiet`    |
 
-| `widgetId`             | x   | y   | w   | h   |
-| ---------------------- | --- | --- | --- | --- |
-| `chores.today-summary` | 0   | 0   | 2   | 2   |
-| `family-feed.feed`     | 2   | 0   | 2   | 1   |
-| `calendar.today`       | 2   | 1   | 2   | 1   |
-
-**Tiers 3–4** (parent/teen profiles — calendar-first):
+**Tiers 3–4 and the family pseudo-profile** (parents / the unattended fridge
+tablet — calendar-first triage, no `feature`):
 
 ```
-┌──────────────────┬───────────────────────────┐
-│                  │  Family Feed  [standard]  │
-│ Calendar [large] ├───────────────────────────┤
-│                  │  Chores       [standard]  │
-└──────────────────┴───────────────────────────┘
+┌──────────────────────┬──────────────────────┐
+│                      │  Dinner       [card] │
+│                      ├──────────────────────┤
+│  Calendar    [card]  │  Chores       [card] │
+│                      ├──────────────────────┤
+│                      │  Family Feed [quiet] │
+└──────────────────────┴──────────────────────┘
 ```
 
-| `widgetId`             | x   | y   | w   | h   |
-| ---------------------- | --- | --- | --- | --- |
-| `calendar.today`       | 0   | 0   | 2   | 2   |
-| `family-feed.feed`     | 2   | 0   | 2   | 1   |
-| `chores.today-summary` | 2   | 1   | 2   | 1   |
-
-These are initial defaults, expected to be tuned once real content is rendering and
-interaction patterns are established post-M1 build-out.
+| `widgetId`             | x   | y   | w   | h   | prominence |
+| ---------------------- | --- | --- | --- | --- | ---------- |
+| `calendar.up-next`     | 0   | 0   | 2   | 3   | `card`     |
+| `meals.tonight`        | 2   | 0   | 2   | 1   | `card`     |
+| `chores.today-summary` | 2   | 1   | 2   | 1   | `card`     |
+| `family-feed.feed`     | 2   | 2   | 2   | 1   | `quiet`    |
 
 ### Core module reservation
 
@@ -1254,7 +1262,7 @@ A reserved slot whose module is not installed renders in a **flat slot** (`Widge
   `--muted-foreground/10` rounded icon well
 - Module name: 13px, medium weight, `--muted-foreground`
 - One-line description: 11px, `--muted-foreground/70`
-- No install CTA (marketplace pathway is M8)
+- No install CTA (marketplace pathway is M9)
 - No widget identity header (exempt — the placeholder carries its own anatomy)
 
 The flat/elevated contrast between placeholder slots and live widget slots is the primary
@@ -1602,42 +1610,50 @@ Every export is a commitment plugins can depend on.
 
 ## Mobile Surface
 
-**Settled** — design-mobile-surface session, 2026-06-14. See ADR 033.
+**Settled** — design-mobile-surface session, 2026-06-14. See ADR 033 (amended
+2026-08-17: 5-tab cap + More sheet) and ADR 034 (brand top bar).
 
 ### Breakpoint
 
 `md:` (768px) is the canonical tablet/mobile split. Below this threshold the sidebar is hidden and the bottom tab bar appears. This is a settled shell convention — all responsive work keys off this breakpoint.
 
-### Nav pattern — bottom tab bar
+### Nav pattern — top bar + bottom tab bar
 
-4 module tabs (Home, Feed, Chores, Calendar) + profile avatar as the rightmost (5th) tab. Always visible, thumb-friendly, 1 tap to any primary destination.
+Two chrome strips bookend the page content, both on `--secondary` material: a
+**brand top bar** (ADR 034) — profile avatar (left) · **Family OS** wordmark
+(center, DM Sans, never Lora) · notification bell (right) — and a **nav-only
+bottom tab bar** capped at **5 tabs** (ADR 033, amended 2026-08-17): Home + the
+first three tier-visible plugin tabs + a **More** tab. Always visible,
+thumb-friendly, 1 tap to any pinned destination.
 
 ```
 ┌─────────────────────────────────────┐
+│ [avatar]    Family OS       [bell]  │
+├─────────────────────────────────────┤
 │         [page content]              │
 │                                     │
 ├──────┬──────┬──────┬──────┬────────┤
-│ Home │ Feed │Chores│ Cal  │ Avatar │
+│ Home │ Cal  │Chores│Meals │  More  │
 └──────┴──────┴──────┴──────┴────────┘
 ```
 
 - **Tab height:** 56px minimum touch target
 - **Active tab:** icon + label in `--primary`
 - **Inactive tab:** icon + label in `--muted-foreground`
-- **Tier filtering:** all M1 core tabs have `minTier: 1` — every profile sees the same 4 tabs. Future tier-gated modules are filtered at the tab level using the same `minTier` convention as the sidebar.
-- **Overflow:** deferred to M8+ (marketplace). When installed modules exceed 4 a "More" tab and tab-pinning UI will be required — separate design session.
+- **Tier filtering:** plugin tabs are filtered at the tab level using the same `minTier` convention as the sidebar.
+- **Overflow:** the **More** tab opens a bottom `Sheet` listing the remaining tier-visible modules, and shows active state when an overflowed route is current; when everything fits in 5 tabs, no More tab renders. Pinning is registry order in `plugins.json`; the tab-pinning management UI is deferred to M9 (marketplace).
 
 ### Profile chip on mobile
 
-The profile avatar is the rightmost tab. Tapping it opens the `ProfileGrid` overlay, anchored above the tab bar. No top header bar on mobile — the `MobileTopBar` carries the page title and bell instead.
+The profile avatar sits in the left slot of the brand top bar (ADR 034). Tapping it opens the `ProfileGrid` (switch rows → Family view → Settings) as a top-anchored dropdown beneath the bar. The bottom tab bar carries no profile slot.
 
 ### Notification bell on mobile
 
-**Settled** — dev-mobile-surface session, 2026-06-14. **Option A: bell in the mobile top bar.**
+**Settled** — ADR 034 (superseding the 2026-06-14 page-title top bar).
 
-A minimal top bar (`min-h-[48px]`) renders on mobile only (`flex md:hidden`) with the current page title on the left and the `NotificationBell` on the right. The bell badge (unread count + severity) stays in peripheral vision on every page — same tier-2+ gate as the sidebar bell. The top bar disappears on tablet; the sidebar bell takes over.
+The bell occupies the right slot of the brand top bar, which applies `padding-top: env(safe-area-inset-top)` for notch clearance. The bell badge (unread count + severity) stays in peripheral vision on every page — same tier-2+ gate as the sidebar bell. The top bar disappears on tablet; the sidebar bell takes over.
 
-Why Option A over Option B (bell in profile sheet): the badge is the primary value of the notification bell — it delivers ambient awareness. Hiding it behind 2 taps defeats that.
+Why a persistent top bar over a bell in the profile sheet: the badge is the primary value of the notification bell — it delivers ambient awareness. Hiding it behind 2 taps defeats that.
 
 ### Widget grid on mobile
 
@@ -1688,34 +1704,25 @@ The M1 prohibition list (no page slide animations) extends to mobile. Tab-to-tab
 
 ---
 
-## Reward / XP — the "gold" semantic
+## Reward — the "gold" semantic
 
-**Settled** — M2 Design: Chores (2026-06-15).
+**Settled** — M2 Design: Chores (2026-06-15); reassigned by ADR 051 (2026-07-22).
 
-XP (and reward/treasure cues generally) use a dedicated **gold** treatment built
-on the marigold/`--warning` hue family (≈ hue 78), kept well clear of error-red
-(hue 12) so a reward never reads as an alarm.
-
-| Layer     | Value (light)          | Use                              |
-| --------- | ---------------------- | -------------------------------- |
-| gold      | `oklch(0.74 0.13 80)`  | coin gradient mid, chip borders  |
-| gold-hi   | `oklch(0.88 0.09 86)`  | coin highlight (top-left)        |
-| gold-deep | `oklch(0.55 0.12 66)`  | gold numerals / deep edge        |
-| gold-tint | `oklch(0.95 0.045 86)` | soft gold chip / pill background |
-| gold-ink  | `oklch(0.45 0.1 70)`   | gold text on tint                |
-
-> Currently inline constants in the chores surfaces; promote to `--reward-*`
-> tokens (light + dark) when a second module needs them.
+Gold belongs to **P-Bucks** — the currency that buys things. It renders as the
+struck brass coin — the shared `Coin` / `CoinValue` components (`@family-os/ui`)
+on the `--coin-*` tokens (light + dark) — kept well clear of error-red so a
+reward never reads as an alarm. Anatomy, brass values and the four registers:
+[Currency marks](#currency-marks).
 
 **Rules:**
 
-- **Gold is reserved for XP/reward only.** Status never uses gold; XP never uses
-  red/green.
-- **XP numerals are DM Sans** (`text-metric`), not Lora — the gold treatment
-  carries the warmth, the type scale stays compliant.
-- The **lifetime total** reads as a minted "score plate" (coin + numeral +
-  `XP / TOTAL`); **daily earned** is a lighter momentum stat (TrendingUp icon,
-  gold-ink text) — distinct in weight/icon so the two don't read at one level.
+- **Gold is reserved for P-Bucks only.** Status never uses gold; **XP is a
+  quiet star** — a `Star` glyph and the value in `--muted-foreground` (ADR 051).
+  A score is a fact about you, not a thing you hold.
+- **Currency and XP numerals are DM Sans** (`text-metric`), not Lora — the gold
+  treatment carries the warmth, the type scale stays compliant.
+- The **lifetime XP total** reads as a stone "score plate" (`ScorePlate`: star +
+  numeral) — distinct in weight from the coin-marked money it sits beside.
 
 ## Status vs identity colour
 
@@ -1727,9 +1734,14 @@ identity: neutral default, **red only for overdue**, green for done. Flooding
 such a surface with the owner's identity tint is both meaningless and a false
 alarm (e.g. a terracotta owner makes every row read red-ish).
 
-When a surface shows **multiple people** (admin / family / cross-member views),
-the identity hue **does** carry meaning — use it for per-person lanes, dots, and
-avatars.
+When a surface shows **multiple people**, the identity hue can carry meaning —
+but the trigger is narrower than "multi-person" (ADR 064, 2026-08-11):
+**identity hue appears where the person is the answer to the surface's
+question.** The meals week plan keeps spines ("who's got Thursday" is the
+module's whole sentence); the grocery list carries no identity chrome at all —
+adder and shopper facts render as text notes. Where hue does appear (admin /
+family / cross-member views), use it for per-person lanes, dots, and avatars
+under ADR 043/044's rules.
 
 > Corollary: **red is reserved for overdue/error**, never identity. The
 > terracotta identity hue ≠ the error red.
@@ -1737,7 +1749,8 @@ avatars.
 The `<Spine>` primitive (see _Identity in widget slots_) is deliberately
 **color-agnostic** so this rule lives at the call site, not the component: a
 single-person surface passes a status color (`spineColor(task)`), a multi-person
-one passes `identityColor(name)`.
+one passes the assigned hue via `resolveHue` (ADR 044 — never re-derive from the
+name).
 
 ### When a row must carry both — ADR 043 (settled 2026-07-12)
 
@@ -1882,8 +1895,9 @@ be spent — and any future currency treatment has to preserve it.
 ## Rewards surfaces
 
 The kid surfaces are the **ticket system** (ADR 055, gated 2026-07-26 on the rework
-artifact): a redemption is a ticket — buy → own → explicit use. The wallet widget and
-punch card remain build targets from the 2026-07-22 session, revisable without an ADR.
+artifact): a redemption is a ticket — buy → own → explicit use. The wallet widget
+(M4/5c, 2026-07-26) and punch card (M4/6, 2026-08-01) are both shipped — the punch
+card's settled anatomy is [Punch card — the stamp wall](#punch-card--the-stamp-wall).
 
 ### The ticket
 
@@ -1929,7 +1943,8 @@ ready count (the parent page's Approvals tab rides the same badge). The purse is
 store's hero — whose money, the struck coin, the metric numeral. "My stuff" holds the
 pocket (ready tickets → "Use it" / "Ask to use"; an asked ticket quiets down under a
 waiting pill) and the **stub shelf** — torn-stub chips with counts, the trophy row
-moved out of the shop. Punch cards (M4/6) land in My stuff too — that's why it isn't
+moved out of the shop. Punching happens on the Chores "Today · Punch cards" tab;
+finished cards and their outputs land in My stuff — that's why it isn't
 "My tickets".
 
 ### The moments
@@ -1975,5 +1990,5 @@ countable by eye. Rail prize names are UI sans, never the display serif.
 
 | Item                   | Deferred to        |
 | ---------------------- | ------------------ |
-| TV ambient layout      | M4+ design session |
-| Pi room display layout | M4+ design session |
+| TV ambient layout      | M6+ design session |
+| Pi room display layout | M6+ design session |

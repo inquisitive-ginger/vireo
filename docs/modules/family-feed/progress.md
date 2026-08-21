@@ -2,7 +2,7 @@
 
 ---
 
-## M1 — Platform Shell · 🔄 In Progress
+## M1 — Platform Shell · ✅ Done (2026-06-15)
 
 > **Milestone done when:** A family can set up the system, see a meaningful home screen, and post to a shared feed.
 

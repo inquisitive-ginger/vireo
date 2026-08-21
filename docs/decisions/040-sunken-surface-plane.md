@@ -1,7 +1,7 @@
 # ADR 040 — The Sunken Surface Plane
 
 **Status:** Decided (2026-07-11)
-**Amends:** [022](022-widget-composition.md) (surface vocabulary), [030](030-member-identity-palette.md) (reserves the chromatic range for identity), [039](039-widget-prominence.md) (extends the elevation ladder downward)
+**Amends:** [022](022-widget-system.md) (surface vocabulary), [030](030-member-identity-colors.md) (reserves the chromatic range for identity), [039](039-widget-prominence.md) (extends the elevation ladder downward)
 
 ---
 

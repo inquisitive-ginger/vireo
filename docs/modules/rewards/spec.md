@@ -50,20 +50,10 @@ nothing about it changes. **P-Bucks goes up and down.** A chore completion mints
 
 ## Pricing — settled (ADR 052)
 
-**A normal week earns about 10 P-Bucks.** Everything else derives from that.
-
-**Chores opt IN to paying.** `coinReward` defaults to **0**; a parent ticks the chores
-that pay when setting them up. XP is unchanged and still lands on every chore.
-
-| Chore                                 | `coinReward` |
-| ------------------------------------- | ------------ |
-| Routine (bed, plate in the sink)      | 0            |
-| Weekly effort (dishwasher, recycling) | 2            |
-| Real effort (mow, bathroom)           | 5            |
-| Big or unpleasant                     | 10           |
-
-Two to four paying chores a week is the target shape. Balances stay in **tens** — no
-cents, no thousands: a kid has to do the subtraction in their head while spending.
+**A normal week earns about 10 P-Bucks**; chores opt IN to paying (`coinReward`
+defaults to **0**) and balances stay in tens. The full ladder and rationale are
+ADR 052's — amended by **ADR 056**, which made XP derived (`5 + coinReward × 10`)
+rather than independent.
 
 ### Seed catalog
 

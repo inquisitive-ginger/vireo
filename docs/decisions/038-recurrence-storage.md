@@ -1,7 +1,8 @@
 # ADR 038 — Recurrence Storage Model (Calendar)
 
-**Status:** Decided — 2026-06-23 · Amended 2026-08-19 (`is_activity` includes
-shared events — issue #114)
+**Status:** Decided — 2026-06-23 · Amended by ADR 057 (2026-07-28, daily
+time-window recurrence) · Amended 2026-08-19 (`is_activity` includes shared
+events — issue #114)
 
 ## Decision
 

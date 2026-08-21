@@ -28,7 +28,7 @@ tint 0.96/0.05/95 · ink 0.44/0.105/78`.
   channel). A spine is a flat 4px bar and can never be struck metal.
 - **The M2 XP surfaces are re-struck as part of M4/3** — `ScorePlate`, `XpPill`,
   `FlightChip`, `FocusView`, `CreateTaskDrawer`. Gold constants move out of
-  `plugins/chores/src/lib/gold.ts` and into the shared token set as the currency mark.
+  `plugins/chores/src/lib/economy.ts` and into the shared token set as the currency mark.
 
 ## Why
 

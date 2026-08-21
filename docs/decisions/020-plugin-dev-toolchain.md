@@ -3,7 +3,7 @@
 **Status:** Decided
 
 **Decision:** Turborepo generator (`pnpm turbo gen plugin`) scaffolds new
-plugins. Templates live in `turbo/generators/plugin/`. No custom CLI.
+plugins. Templates live in `turbo/generators/templates/plugin/`. No custom CLI.
 
 **Why:** Turborepo (ADR 016) ships a built-in `turbo gen` command with file
 templating and variable substitution — zero additional dependencies. The demo

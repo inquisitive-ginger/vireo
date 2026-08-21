@@ -64,23 +64,13 @@ iPad. The name resolves to a private IP; that's fine.
 These gaps exist because everything to date has run off `vite preview` +
 `tsx watch` behind a Cloudflare quick-tunnel. None of that is a production serve.
 
-### A1. Service-worker cache strategy (the one queued story on the critical path)
+### A1. Service-worker cache strategy ✅ shipped 2026-07-19
 
-`apps/shell/public/sw.js` caches `/` and `/index.html` **cache-first** under a
-fixed name `family-os-v1`. Once the PWA is installed, a new deploy will **not
-reach the iPad** — it keeps serving the stale `index.html`, and therefore the
-stale hashed bundles it points at. Your CI/CD could push all day and the fridge
-would never change.
-
-Fix (small): serve `index.html` **network-first** (or stamp the cache name with
-the build hash so `activate` evicts the old shell). This is the deferred
-**"Service Worker cache strategy (prod)"** story — it is now part of deployment,
-not optional.
-
-Note the good news already in `main.tsx:19`: in a **production** build the SW
-registers and its `push` handler fires. Web Push was only broken because the
-tunnel served the _dev_ build (which tears the SW down). On a real HTTPS prod
-build, push works — once A1 lands, both push and updates are reliable.
+**The cache name is stamped with the build hash**, so `activate` evicts the old
+shell on every deploy — an installed PWA no longer serves a stale `index.html`.
+On a real HTTPS prod build the SW registers and push fires (`main.tsx:19`), so
+both updates and push are reliable. Details in
+`logs/2026-07-19-dev-sw-cache-strategy.md`.
 
 ### A2. Verify plugins serve under a subpath ✅ verified 2026-07-19
 
@@ -89,39 +79,26 @@ build, push works — once A1 lands, both push and updates are reliable.
 against `import.meta.url`, so a `remoteEntry.js` loaded from
 `/plugins/<name>/assets/` pulls its chunks from that same dir. Verified static +
 HTTP (flat prod tree, all URLs `200` with correct MIME) and in a real browser
-against the flat tree with `/api` proxied — all three plugins render. Details in
-`logs/2026-07-19-dev-prod-serve.md`. Original analysis below, kept for context.
-
-Plugins build to `dist/{index.html,manifest.json,assets/remoteEntry.js,…}` with
-Vite `base` defaulting to `/`. In prod they're served at `/plugins/<name>/`. The
-shell already requests `/plugins/<name>/assets/remoteEntry.js`, so relative
-chunk imports should resolve — **but this must be verified live.** If any chunk
-or the manifest resolves against `/assets/...` instead of
-`/plugins/<name>/assets/...`, set a per-plugin prod `base: '/plugins/<name>/'`.
-This is the highest-risk item in Part A; nail it with a real browser before
-declaring victory.
+against the flat tree with `/api` proxied — all five plugins render. Details in
+`logs/2026-07-19-dev-prod-serve.md`.
 
 ### A3. Production API run + migrations ✅ scripts done 2026-07-19
 
-**`db:deploy` (`prisma migrate deploy`) added to all four packages.**
+**`db:deploy` (`prisma migrate deploy`) added to all six packages.**
 `family-feed` had no migrations folder (dev table applied via `db push`) — its
 initial migration is now baselined (`20260719120000_init_family_feed`, marked
 applied in dev; creates the schema+table fresh on an empty prod DB). The compiled
 `node dist/index.js` run happens in the Dockerfile (Part B); the entrypoint below
 already calls `db:deploy` per package.
 
-- The API currently starts with `tsx watch` (`apps/api` `dev`). Prod runs the
-  compiled output: `pnpm --filter @family-os/api build` → `node dist/index.js`.
-- Migrations are split across **four** Prisma schemas, all on the same DB:
-  - `packages/platform/prisma/schema.prisma`
-  - `plugins/family-feed/prisma/schema.prisma`
-  - `plugins/chores/prisma/schema.prisma`
-  - `plugins/calendar/prisma/schema.prisma`
+Migrations are split across **six** Prisma schemas, all on the same DB:
 
-  Add a `db:deploy` script (`prisma migrate deploy`) to each of those packages,
-  and run all four on container start **before** the API binds. Confirm each
-  package has a committed `prisma/migrations/` folder — `migrate deploy` refuses
-  to run without one.
+- `packages/platform/prisma/schema.prisma`
+- `plugins/family-feed/prisma/schema.prisma`
+- `plugins/chores/prisma/schema.prisma`
+- `plugins/calendar/prisma/schema.prisma`
+- `plugins/rewards/prisma/schema.prisma`
+- `plugins/meals/prisma/schema.prisma`
 
 ### A4. Real secrets
 
@@ -432,9 +409,10 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm lint
       - run: |
-          for p in platform plugin-family-feed plugin-chores plugin-calendar; do
+          for p in platform plugin-family-feed plugin-chores plugin-calendar plugin-rewards plugin-meals; do
             pnpm --filter "@family-os/$p" exec prisma migrate deploy
           done
+          pnpm --filter @family-os/platform exec prisma db seed
       - run: pnpm test
       - run: pnpm build
 ```
@@ -578,23 +556,14 @@ family-os-postgres-1 psql -U familyos -d <target-db>` — verified
 ## Part G — Access from outside the house (Tailscale)
 
 **Live 2026-07-28.** Family devices reach `https://vireohome.app` from anywhere.
-The Pi gained no publicly reachable listener in the process.
-
-### Why not just publish it
-
-The app has no network-boundary authentication and is not built to have any.
-`auth.ts` resolves an unauthenticated request to the `family` pseudo-profile, and
-`POST /auth/switch` hands out any tier 1–3 profile **with no credential at all** —
-both correct under ADR 021 for an appliance on a trusted LAN, and both fatal on
-the open internet. Only tier 4 is gated, by a **four-digit** family PIN.
-
-So the family boundary is enforced at the **network** layer. The app's own auth is
-defence in depth behind it, not the front door.
+The Pi gained no publicly reachable listener in the process. Why this
+architecture: `docs/decisions/060-family-profile-network-boundary.md` +
+`logs/2026-07-28-infra-remote-access.md`.
 
 ### The shape
 
 ```
-public DNS (unchanged):  vireohome.app  A  192.168.0.31   ← RFC 1918, unroutable
+public DNS (unchanged):  vireohome.app  A  192.168.0.42   ← RFC 1918, unroutable
 router (unchanged):      no port forwarding
 
 at home:   device ──LAN──────────────────────────────▶ Pi:443
@@ -602,17 +571,10 @@ away:      device ──WireGuard──▶ tailnet ──/32 route──▶ Pi:4
 fridge:    no Tailscale client at all, pure LAN
 ```
 
-**Nothing about the origin changes** — same hostname, same Let's Encrypt cert,
-same PWA install, same session, same push subscription. A second `away.` hostname
-would have split all four. The cert keeps renewing because DNS-01 needs no
-inbound reachability.
-
-The Pi advertises **only `192.168.0.31/32`**, not the whole `/24`. A tailnet
+The Pi advertises **only `192.168.0.42/32`**, not the whole `/24`. A tailnet
 device gets a route to the app and to nothing else on the home network.
 
-**The fridge iPad deliberately runs no client.** It is the always-on household
-surface, so it must not acquire a dependency on the tailnet, on Tailscale's
-coordination server, or on the house having internet at all.
+**The fridge iPad is NOT enrolled** — it stays pure LAN.
 
 ### Setup on the Pi
 
@@ -623,7 +585,7 @@ printf 'net.ipv4.ip_forward = 1\nnet.ipv6.conf.all.forwarding = 1\n' \
   | sudo tee /etc/sysctl.d/99-tailscale.conf
 sudo sysctl -p /etc/sysctl.d/99-tailscale.conf
 
-sudo tailscale up --advertise-routes=192.168.0.31/32 --accept-dns=false \
+sudo tailscale up --advertise-routes=192.168.0.42/32 --accept-dns=false \
   --hostname=vireo-pi
 ```
 
@@ -633,7 +595,7 @@ nothing and Caddy's DNS-01 renewals depend on that resolver.
 Then, in the [admin console](https://login.tailscale.com/admin/machines), on
 `vireo-pi` — **both are required and neither has a CLI equivalent**:
 
-1. **Edit route settings → approve `192.168.0.31/32`.** Advertising is a request;
+1. **Edit route settings → approve `192.168.0.42/32`.** Advertising is a request;
    until it is approved, `tailscale status --json` reports `PrimaryRoutes: null`
    and remote access silently does not work.
 2. **Disable key expiry.** Node keys default to a 180-day life. On expiry the Pi
@@ -649,7 +611,7 @@ enrolment — no per-device config, no profile, no URL change.
 
 `--accept-routes` is on by default on iOS, iPadOS and macOS. On a Linux client it
 is **not**; that client needs `sudo tailscale up --accept-routes` or it will
-resolve `vireohome.app` to `192.168.0.31` and route it out its own default gateway.
+resolve `vireohome.app` to `192.168.0.42` and route it out its own default gateway.
 
 ### Verifying it
 
@@ -667,31 +629,13 @@ On the Pi, `PrimaryRoutes` populating is the signal the route went live:
 tailscale status --json | grep -A2 PrimaryRoutes
 ```
 
-### What this does and does not buy you
-
-It reduces "who can reach the app" from _everyone_ to _devices enrolled in your
-tailnet_. It does **not** change what someone can do once they are there — a
-tailnet device can still become any kid with no credential, by design.
-
-**A lost phone that is signed into the tailnet is a full-access device**, and
-removing it in the admin console is the only revocation that exists. There is no
-per-device sign-out inside the app.
+**A lost phone signed into the tailnet is a full-access device** — removing it
+in the admin console is the only revocation that exists.
 
 ---
 
-## Sequencing — how to actually roll this out
+## Sequencing — the order this rolled out (all executed, 2026-07-19 → 2026-08-16)
 
-1. **Dev session: production serve + SW fix (Part A).** The real work. Build
-   Caddy-serves-static locally, verify federated plugins load under
-   `/plugins/<name>/` (A2), fix the SW (A1), add `db:deploy` scripts (A3). Close
-   it with a live review, same as any dev session.
-2. **Dev/infra session: containerize (Part B) + CI (E1).** Get green CI and
-   images that build.
-3. **Provision the Pi (Part C, D).** One-time, manual.
-4. **Wire CD (E2, E3).** Self-hosted runner + release/deploy workflows.
-5. **Backups + kiosk (Part F, D4).** Before the family actually depends on it.
-
-Everything else in the queue (family-feed tests, validation audit, family-wall
-typography, plugin-generator hardening) is real debt but **does not block** the
-deploy. The only queued story on the critical path is the SW cache strategy,
-folded into step 1.
+Kept as the order to follow on a rebuild: production serve + SW (Part A) →
+containerize + CI (Part B, E1) → provision the Pi (Part C, D) → CD (E2, E3) →
+backups + kiosk (Part F, D4).

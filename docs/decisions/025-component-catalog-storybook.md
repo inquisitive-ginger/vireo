@@ -20,7 +20,7 @@ Storybook 10 has native Vite integration — it uses the same Vite config as the
 
 ## Scope
 
-Storybook lives in `packages/ui`. Stories for `apps/shell` components that aren't part of the shared UI package live in `apps/shell/.storybook/`. Plugins are expected to include stories for any widgets they expose.
+Storybook lives in `packages/ui` (`packages/ui/.storybook/` is the only Storybook config). Stories for `apps/shell` components that aren't part of the shared UI package sit beside their components (e.g. `apps/shell/src/components/Sidebar.stories.tsx`). Plugins are expected to include stories for any widgets they expose.
 
 `pnpm storybook` starts the catalog; it is not wired into the Turborepo `build` or `test` pipelines (it's a dev tool, not a CI artifact).
 

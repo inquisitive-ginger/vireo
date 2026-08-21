@@ -162,61 +162,22 @@ matrix) and `Admin B+ — composed + reassign` (recommended composition).
 ### ✅ LOCKED — the "XP flight" earn moment (all views)
 
 One reward feedback across every view: on complete, the task's **gold +XP badge
-lifts off from its exact position and arcs up to the score plate** (a measured
-flight — real `getBoundingClientRect` start/end, rendered `position: fixed` so no
-ancestor `overflow` clips it). The lifetime total then **grows → counts up →
-settles** as the chip lands (banked on arrival, not on tap). Chosen over the
-quieter inline-only and the louder sparkle-burst alternatives — the flight makes
-the action→reward link explicit without overstimulating, so it suits the focus /
-ADHD view too. (Earlier leaning toward per-view feedback was dropped in favour of
-one consistent moment.)
+lifts off from its exact position and arcs up to the score plate**; the lifetime
+total **grows → counts up → settles** as the chip lands (banked on arrival, not
+on tap). Chosen over the quieter inline-only and the louder sparkle-burst
+alternatives — the flight makes the action→reward link explicit without
+overstimulating, so it suits the focus / ADHD view too. (Earlier leaning toward
+per-view feedback was dropped in favour of one consistent moment. A card
+morphing on tap was also rejected — it detached the points from their chore;
+the card must not change until landing.)
 
 Reference: `completion.stories.tsx` → `XP flight (locked)` (both taskee views).
 
-**Tap targets (per view, from Group 1):**
-
-- **Focus view** — the big green **"Mark done"** button on the featured "Next up"
-  card. On complete the next task auto-promotes; empties to "🎉 All done today!".
-- **Agency view** — the **40px completion circle** on each card.
-  Both fire the same flight; origin is measured per task so it works from wherever
-  the badge sits.
-
-**Locked sequence (order matters — this is the fix that makes XP feel tethered
-to its chore):**
-
-1. On tap, measure the badge's rect and the plate's rect, launch the chip
-   **immediately** (visible from frame 0 — no opacity ramp) at the badge's exact
-   position, and **hide the source badge** so it reads as the badge itself lifting
-   off (not a duplicate).
-2. **During the flight the originating card does NOT change** — no morph, no
-   reorder; the complete control is disabled so it can't re-fire. (Earlier the
-   card morphed on tap, which detached the points from their chore — rejected.)
-3. **On landing:** the card morphs to done (focus view promotes the next task to
-   "Next up"; empties to "All done today"), XP **banks**, the plate
-   grows→counts→settles, and the circle pops its check.
-
-**Motion spec (as tuned):**
-
-- Flight: ~980ms, `cubic-bezier(0.45, 0, 0.2, 1)` (ease-in-out), gentle arc
-  (≈36px midpoint lift), scales 1→0.5 + fades slightly as it nears the plate.
-- Score plate: grow to 1.09 (held ~22–70%) then settle, ~860ms; count-up on
-  easeInOutCubic (~640ms), time-aligned so the number ticks while enlarged.
-- Circle: quick pop + check fade-in on landing.
-- All under `prefers-reduced-motion: no-preference`.
-
-**Implementation notes for dev:**
-
-- The chip is rendered `position: fixed` at the document level (a portal in the
-  real app) so no ancestor `overflow: hidden` clips its path. Start/end are live
-  `getBoundingClientRect` centres — robust to layout/scroll.
-- Card state machine per task: `pending → inFlight (badge hidden, control
-disabled) → done+banked`. The visible "done today" count and daily-XP also
-  update on landing, not on tap.
-- Each flight runs its animation exactly once (mount-only effect + an `onDone`
-  ref) — depending on the fresh `onDone` closure restarts it mid-flight.
-- Edge cases: if the score plate is scrolled off-screen, fall back to a quiet
-  bank (no flight) or pin the plate. Under reduced-motion, skip the flight —
-  morph + bank + update the total directly on tap.
+Anatomy detail — per-view tap targets, the tethered three-step sequence, state
+machine, implementation notes, edge/reduced-motion cases:
+`docs/modules/chores/design.md` §2. The motion numbers tuned in this session
+(~980ms flight / ~860ms plate / ~640ms count-up) were **superseded** by the
+snappier values in design.md §2 (~760 / ~660 / ~500, dev review).
 
 ---
 
@@ -227,31 +188,15 @@ disabled) → done+banked`. The visible "done today" count and daily-XP also
 Create/assign uses a **right-side drawer** (slides in from the right; the board
 stays visible but dimmed behind a light scrim). Chosen over the centered modal
 (heavier / more interrupting than needed) and the inline form (awkward in the
-dense admin board). The drawer is the same surface for every entry point.
+dense admin board). One form, three entry points (global create / per-person
+prefill / edit — one component, mode flag), all opening the same drawer.
 
 Reference: `create-surface.stories.tsx` → `Right drawer (locked)` + `Modes`.
 
-**One form, three entry points (all open the same drawer):**
-
-- **Create · global** — from the admin "New Task" button (blank).
-- **Create · per-person prefill** — from a group header's "+ add" → assignee
-  pre-selected to that person.
-- **Edit** — admin taps an existing task → fields prefilled; CTA becomes
-  "Save changes"; a destructive **Remove** action appears (far left of footer).
-
-**Form (locked language):** title; identity-hue **assignee chips** (required,
-single-select); a gold **Reward** row — preset chips 5/10/15/20/25, default 10,
-selected chip carries the gold treatment + star (gold = XP only); optional due
-date. DM Sans throughout; header "New task" / "Edit task" + close (X); footer is
-a **full-width** primary CTA ("Assign task" / "Save changes") with a destructive
-**Remove task** link beneath it (edit only).
-
-**Notes for dev:**
-
-- xp_reward presets cover the common range; default 10. (If a custom value is
-  ever needed, the preset row can grow a "custom" affordance — not M2.)
-- Assignee required to submit (single). Title required. Due date optional.
-- Edit and create share one component (mode flag); Remove needs a confirm step.
+Form anatomy and entry-point detail: `docs/modules/chores/design.md` §3 — which
+also records the later reconciliation moving the destructive **Remove** out of
+the drawer footer (as specced here) to a row action. Log-only note: if a custom
+XP value is ever needed, the preset row can grow a "custom" affordance — not M2.
 
 ---
 
@@ -264,35 +209,19 @@ chores module; it does not mutate. Rationale: the completion XP-flight needs the
 module page's score plate as its target, which isn't reliably present in a slot
 (esp. compact). **Inline-complete from the widget = 1.5 fast-follow** (the
 widget's own mini score plate becomes the flight target then). Whole tile is the
-tap target.
+tap target. **Two framings by viewing profile** (same `chores.today-summary` id):
+taskee (status-only colour, XP shown) and family (management pulse, **no XP** —
+not a kid KPI; momentum surfaced via "X of Y done", not just the backlog).
+**Completion is surfaced** (resolved Q): at the summary level and as a per-person
+green **"✓ all done"** state; rows otherwise lead with what's outstanding so the
+"who needs a nudge" scan stays clean.
 
 Reference: `widget.stories.tsx` (5 stories).
 
-**Sizes shipped:** standard 2×1 + large 2×2 for **both** framings; **compact 1×1
-taskee** as a nice-to-have. No compact family (1×1 too small for a multi-person
-pulse).
-
-**Two framings, by viewing profile** (same `chores.today-summary` id):
-
-- **Taskee** (tiers 1–3) — "N tasks left today", a peek of today's tasks (status
-  spine + gold +XP), a success **progress bar**, daily XP (header) and the gold
-  **coin score** (lifetime total). Status-only colour (identity carries no info).
-- **Family** (tier 4 / admin) — pending headline + **"X of Y done today"**
-  progress (momentum is surfaced, not just the backlog) + overdue pill; per-person
-  rows with **identity avatars** and labelled count chips. **No XP** (management
-  pulse, not a kid KPI).
-
-**Completion is surfaced** (resolved Q): at the **summary** level (family "done
-today" progress) and as a per-person **state** — someone with 0 left shows a green
-**"✓ all done"** chip instead of count pills. Rows otherwise lead with what's
-outstanding (overdue wash + "N left") so the "who needs a nudge" scan stays clean.
-
-**Visual conventions (fresher than the first ledger pass):** soft rounded,
-gap-separated rows (no full-width divider lines); gentle overdue **wash** via
-`color-mix(in oklch, var(--error) 8%, transparent)`; labelled count **chips**
-(no bare trailing numbers); identity **avatars** (tint + initial); 2×2s fill
-their height (hero + growing list, no dead gap); staggered row rise on load
-(reduced-motion aware). WidgetHeader unchanged (CheckSquare + "CHORES" in accent).
+Sizes, framing anatomy, and visual conventions:
+`docs/modules/chores/design.md` §4 — the shipped spec **evolved past this
+session** (Hero-split rework, a family compact added despite the "no compact
+family" call here, container-query self-sizing); design.md is current.
 
 ---
 

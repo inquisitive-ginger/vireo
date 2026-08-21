@@ -17,17 +17,10 @@
 
 ## Up Next
 
-> **M4 — Rewards & Wallet is the active milestone** as of the 2026-07-21 planning
-> session, followed by **M5 — Meals & Groceries**. The infra items below still come
-> first in wall-clock terms where they are cheap (Part F is a real risk to the
-> household's data), but the feature work is what the family is waiting on.
-
-> **P-BUCKS IS LIVE (2026-07-26, PR #75).** `dev/rewards-store-wallet` (M4/5a–d +
-> M4/8, ADR 055/056) merged with a merge commit — main was merged into the branch
-> first (two conflicts: the cherry-picked ec2303e, and both sides adding the same
-> `ResizeObserver` stub). Deploy verified on prod: `rewards` in `/api/plugins`, its
-> remote served (remotes live at `/plugins/<name>/assets/remoteEntry.js`), and the
-> deployed chores chunk carries the M4/8 markup (`chore-pays`, "Scores").
+> **M4.5 — Companion is the active milestone** (M4.5/3 next). M4 — Rewards &
+> Wallet shipped 2026-07-26 (PR #75, P-Bucks live); M5/2 shipped 2026-08-13
+> (PR #105) with M5/3+ queued below. Part F offsite backups went live 2026-08-16,
+> so the remaining infra items are improvements, not risks to the data.
 
 ### Beacon — Product+Design: paired friend lamps (deadline: the friends' December visit)
 
@@ -229,305 +222,190 @@ suite mirroring chores/calendar. _Depends on: none._
 
 > Two-line index; full detail in the linked log.
 
-- **2026-08-20 — Infra: SSD outage + self-heal watchdog (ad-hoc, no PR).** The
-  enclosure's UAS hang killed the xHCI controller; recovered, UAS disabled,
-  1-min watchdog + Healthchecks.io dead-man ping live. NVMe HAT queued as the
-  durable fix. See `logs/2026-08-20-infra-ssd-outage-selfheal.md`.
+- **2026-08-20 — Audit: doc staleness sweep (ad-hoc, docs only).** 24 issue
+  groups fixed across 30 files (−~700 lines): dead refs, post-renumber/post-ship
+  claims, queue + log pare-downs. See `logs/2026-08-20-audit-docs-staleness.md`.
+
+- **2026-08-20 — Infra: SSD outage + self-heal watchdog (ad-hoc, no PR).** UAS
+  hang recovered; watchdog + dead-man ping live, NVMe HAT queued as the durable
+  fix. See `logs/2026-08-20-infra-ssd-outage-selfheal.md`.
 
 - **2026-08-19 — Fix: shared weekly events qualify as activities (auto-bug #114,
-  PR #115).** `is_activity` widened to any-attendee weekly (ADR 038 amended,
-  rows backfilled); a shared activity fans into each attendee's roster group.
+  PR #115).** `is_activity` widened to any-attendee weekly (ADR 038 amended).
   See `logs/2026-08-19-fix-auto-bug-114.md`.
 
 - **2026-08-17 — Fix: mobile nav overflow + calendar canvas (auto-bug #112 + #111,
-  PR #113).** Bottom bar caps at 5 tabs (Home + three pinned + a More sheet;
-  ADR 033's trigger fired early); `--container-wide` 1100→1400px. See
-  `logs/2026-08-17-fix-auto-bug-111-112.md`.
+  PR #113).** Bottom bar caps at 5 tabs (ADR 033); `--container-wide` 1100→1400px.
+  See `logs/2026-08-17-fix-auto-bug-111-112.md`.
 
-- **2026-08-13 — Dev: meals iPad tweaks (ad-hoc, PR #106).** Kind-first drawer,
-  optional takeout owner, post-dinner past tense, headline down a rung — and a
-  `useFitRows` offsetTop bug fixed in the primitive (was also chores'
-  flakiness). See `logs/2026-08-13-dev-meals-ipad-tweaks.md`.
+- **2026-08-13 — Dev: meals iPad tweaks (ad-hoc, PR #106).** Kind-first drawer
+  plus a `useFitRows` offsetTop bug fixed in the primitive. See
+  `logs/2026-08-13-dev-meals-ipad-tweaks.md`.
 
 - **2026-08-13 — Dev: Week Plan + Tonight's Dinner (M5/2, PR #105).** The meals
-  plugin ships: week page, drawer, tonight widget, one-tap claim. P$ dropped
-  from meals entirely (paid dinners become chores — M5/3 loses the earn
-  wiring). See `logs/2026-08-13-dev-meals-week-plan-tonight.md`.
+  plugin ships; P$ dropped from meals entirely. See
+  `logs/2026-08-13-dev-meals-week-plan-tonight.md`.
 
 - **2026-08-11 — Design: Meals & Groceries (M5/1, ADR 063/064).** All 16 gates
-  settled over three rounds + an external critique — menu-card grammar, `sides`
-  column, localised escalation, grocery mode split retired onto one `ListRow`
-  list, hue rule narrowed. Spec: `docs/modules/meals/design.md`. See
+  settled; spec at `docs/modules/meals/design.md`. See
   `logs/2026-08-11-design-meals-groceries.md`.
 
 - **2026-08-08 — Design: Companion gear + asset library (M4.5/2).** V1 art
-  complete: 20 curated bodies + 15 gear items with per-species × per-stage fit
-  data; 4 body-conforming items parked pending renderer extensions. See
+  complete: 20 bodies + 15 gear items; 4 parked pending renderer extensions. See
   `logs/2026-08-08-design-companion-gear-assets.md`.
 
 - **2026-08-07 — Design: XP Sink direction (was M4/9 → now M4.5 Companion, ADR
-  061/062).** XP's sink is a per-kid critter (Whisp/Skitter/Sprout, kid-tested),
-  milestone 1-of-3 picks, generated-art pipeline; five sessions queued. See
+  061/062).** XP's sink is a per-kid critter; five sessions queued. See
   `logs/2026-08-07-design-xp-sink-direction.md`.
 
 - **2026-08-06 — Fix: recurring up-for-grabs chores stuck to the last claimer,
-  punch-card row squeezed on mobile (auto-bug #102 + #103, PR #104).** A
-  claimed-but-uncompleted up-for-grabs occurrence kept its assignee across
-  every roll-forward instead of releasing; the Wallets punch-card row's two
-  text buttons never yielded space to the title. See
-  `logs/2026-08-06-fix-auto-bug-102-103.md`.
+  punch-card row squeezed on mobile (auto-bug #102 + #103, PR #104).** Uncompleted
+  claims now release on roll-forward. See `logs/2026-08-06-fix-auto-bug-102-103.md`.
 
-- **2026-08-05 — Design+Dev: Parent Bonus Grant (M4/7, PR #101).** Gated to the
-  wallet-shelf option: Tickets became **Wallets** (leftmost, landing) — every kid
-  seeded with balance + "Give a bonus"; the grant is its ledger entry (`grantId`
-  idempotency), reason verbatim to the kid's alert and history row. **Only M4/9
-  remains in M4.** See `logs/2026-08-05-design-dev-parent-bonus-grant.md`.
+- **2026-08-05 — Design+Dev: Parent Bonus Grant (M4/7, PR #101).** Tickets became
+  **Wallets**; the grant is its own ledger entry. **Only M4/9 remains in M4.**
+  See `logs/2026-08-05-design-dev-parent-bonus-grant.md`.
 
 - **2026-08-02 — Dev: punch cards joy rework (PR #100).** The kid's tab rebuilt to
-  the gated artifact — glyph stamp wall with slam, always-visible prize rail, gold
-  full→won arc + confetti, finished shelf; `lastPunchedAt` with no migration. Punch
-  jitter was a stale-cache frame — mutations now write the response card into the
-  cache before the pending flag drops. See `logs/2026-08-02-dev-punch-joy.md`.
+  the gated artifact; punch jitter was a stale-cache frame, fixed at the mutation.
+  See `logs/2026-08-02-dev-punch-joy.md`.
 
-- **2026-08-02 — Dev: punch-card emoji set (PR #99).** The template drawer was
-  picking from the _reward_ set, so a card could only wear its prize — "try bites"
-  had no 🥦. `PUNCH_EMOJI_GROUPS` is habit-shaped and separate. See
+- **2026-08-02 — Dev: punch-card emoji set (PR #99).** `PUNCH_EMOJI_GROUPS` is
+  habit-shaped and separate from the reward set. See
   `logs/2026-08-02-dev-punch-emojis.md`.
 
 - **2026-08-01 — Design+Dev: Punch Cards (M4/6, PR #98, deployed).** Punching lives
-  on a Chores **Today · Punch cards** tab; the parent curates prize options and the
-  kid names their pick (Modal ticket picker, mint waits on the pick); take-down ends
-  audience eligibility. **M5/5 try bites is unblocked.** See
+  on a Chores **Today · Punch cards** tab. **M5/5 try bites is unblocked.** See
   `logs/2026-08-01-design-dev-punch-cards.md`.
 
 - **2026-07-31 — Arch: family pseudo-profile exposure (docs only, ADR 060).** The
-  app is not on the public internet (`vireohome.app` → `192.168.0.31`, no public
-  listener); the network is the boundary, the anonymous dashboard stays as ADR 021
-  designed it. Closes the #92 triage flag. See
-  `logs/2026-07-31-arch-family-profile-exposure.md`.
+  network is the boundary; the anonymous dashboard stays. Closes the #92 triage
+  flag. See `logs/2026-07-31-arch-family-profile-exposure.md`.
 
 - **2026-07-31 — Fix: the widget counted the offer board as your work (auto-bug
-  #94, PR #97).** Gate D6's own-work-only rule reached the page and not the
-  `chores.today-summary` widget; unclaimed work also grouped as a **member row**
-  in the family framing and is a header chip now. See
+  #94, PR #97).** Gate D6's own-work-only rule now reaches the widget too. See
   `logs/2026-07-31-fix-auto-bug-94.md`.
 
 - **2026-07-30 — Design+Dev: recurring chores + up for grabs (ad-hoc, PRs #90 +
-  #91, ADR 058/059).** Routines stamp out real `Task` rows lazily on read
-  (client-local `?today=`; ongoing = back tomorrow; missed days roll); unowned
-  chores are claimed before completion and live on the kid's surface as a sunken
-  offer board, own-work-only meter. See
-  `logs/2026-07-30-design-dev-recurring-chores.md`.
+  #91, ADR 058/059).** Routines stamp out real `Task` rows lazily on read; unowned
+  chores are claimed first. See `logs/2026-07-30-design-dev-recurring-chores.md`.
 
 - **2026-07-30 — Design+Dev: parent ticket corrections (ad-hoc, PR #89).** A tier-4
-  **Tickets** tab — the module's first parent-facing ticket surface — carrying
-  `restore` ("put it back", no ledger movement) and M4/5a's revoke, which had shipped
-  buttonless. `Disclosure`/`RevealMore` extracted to `@family-os/ui` at the third
-  caller. **Never live-reviewed.** See
+  **Tickets** tab carrying `restore` + revoke. **Never live-reviewed.** See
   `logs/2026-07-30-design-dev-parent-ticket-corrections.md`.
 
 - **2026-07-29 — Dev: new calendar event notifies the other parent (ad-hoc, PR #88).**
-  `calendar.event.created` subscriber → `notify()` at `alert` (Web Push, ADR 029) to
-  every tier-4 profile except the creator; recurring series notify once at creation.
-  See `logs/2026-07-29-dev-calendar-event-created-notification.md`.
+  `calendar.event.created` → `notify()` at `alert` to tier-4 non-creators. See
+  `logs/2026-07-29-dev-calendar-event-created-notification.md`.
 
 - **2026-07-29 — Dev: the household had no photo, and no row to hold one (auto-bug #86,
-  PR #87).** Two defects: `AvatarField` had been household-aware and unreachable since
-  ADR 042, and prod had no `family` profiles row at all because only the seed scripts
-  ever wrote the one ADR 021 calls permanently seeded — so the upload 404'd before the
-  tier guard ran. Migration backfills it; the affordance sits in the tier-4 Family
-  section. **Retires the "household has no row in prod" backlog item — ADR 021 had
-  already decided it.** See `logs/2026-07-29-dev-auto-bug-86-household-avatar.md`.
+  PR #87).** Migration backfills the missing `family` profiles row (ADR 021). See
+  `logs/2026-07-29-dev-auto-bug-86-household-avatar.md`.
 
 - **2026-07-28 — Dev: the two lists that grow forever (auto-bug #81, #82, PR #85).**
-  Agency `TaskeeView` (tier 3) was the one chores framing with no completed-chore
-  treatment — now a shared collapsed `Done · N` with a count clamp, and the progress
-  meter counts today (the #73 defect on the page, not the widget). `GET /bug-reports`
-  gained `status`/`limit`/`cursor`, retiring a `take: 100` that dropped the oldest
-  silently. See `logs/2026-07-28-dev-auto-bug-81-82-unbounded-lists.md`.
+  Shared collapsed `Done · N` on `TaskeeView`; `GET /bug-reports` paginated. See
+  `logs/2026-07-28-dev-auto-bug-81-82-unbounded-lists.md`.
 
 - **2026-07-28 — Design+Dev: Recurring daily time-window events (ADR 057, PR #83).**
-  "M–F 9:30–3:30, Aug 3–21" is a third event shape — `recurrence: 'daily'` + a
-  weekday-offset set, compute-on-read from one shared expansion module; month bars,
-  stated-once band + today-hero, gate-4 band/grammar rework. Closes auto-bug #77.
-  See `logs/2026-07-28-design-dev-recurring-daily-time-window.md`.
+  A third event shape, compute-on-read. Closes auto-bug #77. See
+  `logs/2026-07-28-design-dev-recurring-daily-time-window.md`.
 
-- **2026-07-28 — Infra: Remote access off-LAN (PR #84).** Tailscale subnet route
-  advertising `192.168.0.31/32`; origin, cert and PWA install unchanged, fridge iPad
-  runs no client. The app has no boundary auth to enforce "family" with (ADR 021), so
-  the network does — plus a PIN lockout, `trustProxy: 1`, and Secure cookies.
+- **2026-07-28 — Infra: Remote access off-LAN (PR #84).** Tailscale subnet route;
+  the network enforces "family" (ADR 021), plus PIN lockout + Secure cookies.
   See `logs/2026-07-28-infra-remote-access.md`.
 
-- **2026-07-26 — Design+Dev: XP Derived from P-Bucks (M4/8, ADR 056).** One value at
-  assignment: xp = 5 + coinReward × 10, XP picker gone, server derives and ignores the
-  client; Pays/Cost align on a shared `CoinAmountField` (typed amount · taught presets).
-  **The `dev/rewards-store-wallet` PR is unblocked.** The XP sink split out to M4/9.
-  See `logs/2026-07-26-design-dev-xp-derived-from-pbucks.md`.
+- **2026-07-26 — Design+Dev: XP Derived from P-Bucks (M4/8, ADR 056).** xp = 5 +
+  coinReward × 10, server-derived; the XP sink split out to M4/9. See
+  `logs/2026-07-26-design-dev-xp-derived-from-pbucks.md`.
 
 - **2026-07-26 — Dev: History Sheet + Ripples ∥ Parent Drawer Words (M4/5c+d).** The
-  purse's "Where'd it go?" sheet (no new endpoint — `/rewards/wallet` already was the
-  ledger), widget ticket-ready line, family-profile chooser, tier-3 wallet layout,
-  drawer description field + tear-grammar hint. See
+  purse's "Where'd it go?" sheet — no new endpoint needed. See
   `logs/2026-07-26-dev-rewards-history-ripples-parent-words.md`.
 - **2026-07-26 — Dev: Ticket Store + Pocket UI (M4/5b).** The kid surface built to
-  ADR 055: TabBar tabs, die-cut tickets, the roll at fridge width, the tear, the stub
-  shelf — plus the queue's use-tense pulled forward from M4/5d (a decline button still
-  promised the deleted refund). **Carries the prod flip: merging the branch is the
-  launch, M4/8 gates the PR.** See `logs/2026-07-26-dev-rewards-ticket-store-ui.md`.
+  ADR 055. **Merging the branch is the launch; M4/8 gates the PR.** See
+  `logs/2026-07-26-dev-rewards-ticket-store-ui.md`.
 
 - **2026-07-26 — Dev: chores widget's "today" never checked the date (auto-bug
-  #73, PR #74).** `todayCompleted`/daily-XP filtered on `status === 'completed'`
-  alone, no `completedAt` check — with no archive, completions from any day ever
-  kept accumulating as "today," forever. Scoped to `isToday()` across all six
-  size×framing variants (fixing the numerator alone would have broken the family
-  framings' `total - done` pending math). Deployed and confirmed live; **report
-  #73 still needs a tier-4 parent to move it to `deployed`** on the triage board
-  (no CLI path exists). See `logs/2026-07-26-dev-auto-bug-73-chores-widget-today.md`.
+  #73, PR #74).** Scoped to `isToday()` across all six variants; deployed and
+  confirmed live. See `logs/2026-07-26-dev-auto-bug-73-chores-widget-today.md`.
 
-- **2026-07-26 — Dev: Ticket Lifecycle (M4/5a).** ADR 055 in the API: buy always
-  debits and lands `owned`, use is explicit (`POST :id/use`), not-now keeps the ticket,
-  tier-4 `DELETE` revoke refunds-and-deletes. Migration **stacked, not edited** — the
-  M4/4 one is merged and applied in prod, contrary to the kickoff. See
+- **2026-07-26 — Dev: Ticket Lifecycle (M4/5a).** ADR 055 in the API: buy debits
+  and lands `owned`, use is explicit, revoke refunds-and-deletes. See
   `logs/2026-07-26-dev-rewards-ticket-lifecycle.md`.
 
-- **2026-07-26 — Design: Rewards Store Rework (mid-M4/5 review, ADR 055).** Live-drove
-  the in-flight store and reworked it around one idea: a redemption is a **ticket** —
-  buy debits once, owning is a state, the ask moves to use-time, "not now" keeps the
-  ticket. M4/5 re-cut as M4/5a–d. See `logs/2026-07-26-design-rewards-store-rework.md`.
+- **2026-07-26 — Design: Rewards Store Rework (mid-M4/5 review, ADR 055).** A
+  redemption is a **ticket**; M4/5 re-cut as M4/5a–d. See
+  `logs/2026-07-26-design-rewards-store-rework.md`.
 
-- **2026-07-25 — Dev: chores widget clipped its family list (auto-bug #70, PR #72).** The
-  family framing had 185px of list room in a 363px slot and sliced the fourth member. The
-  aggregate above it drops to one line (~46px back, a whole tile), and every chores list
-  now measures its slot via a new shared **`useFitRows`** — whole rows plus `+N more`,
-  never a mid-tile crop. Extracted from calendar's `DayList`, which had solved it first.
-  **Deployed and confirmed live; report moved to `deployed`, closing ADR 046's loop.**
-  See `logs/2026-07-25-dev-chores-widget-family-overflow.md`.
+- **2026-07-25 — Dev: chores widget clipped its family list (auto-bug #70, PR #72).**
+  Every chores list now measures its slot via a new shared **`useFitRows`**. See
+  `logs/2026-07-25-dev-chores-widget-family-overflow.md`.
 
-- **2026-07-25 — Dev: Catalog + Redemption (M4/4, PR #71).** Reward catalog (tier-4 CRUD,
-  retire-not-delete) + redemption flow (debit on request, refund on decline, cost
-  snapshotted) + the module's first frontend: a **by-kid approvals queue** deciding chore
-  payouts + redemptions via one shared `CoinDecisionTray`, and a Faces-&-seal catalog with
-  a **"?" seal** for approval and a **grounded, scoped `EmojiPicker`**. Frontend ships
-  **dormant** — not registered in `plugins.json`/`load-plugin.ts` until M4/5 flips it. See
+- **2026-07-25 — Dev: Catalog + Redemption (M4/4, PR #71).** Catalog + redemption
+  flow + the module's first frontend, shipped **dormant** until M4/5 flips it. See
   `logs/2026-07-25-dev-rewards-catalog-redemption.md`.
 
-- **2026-07-24 — Ad-hoc: Pritchett Bucks (ADR 054, PR #68).** The currency is renamed and
-  the coin bears a struck **P-mark**; four registers (mark · `P$` · `P-Bucks` ·
-  `Pritchett Bucks`), one per medium, from `packages/ui/src/lib/currency.ts`. Free to do
-  because nothing had shipped visibly and the schema was already currency-agnostic — no
-  migration. Also fixed an M4/3b gap: the chores widget showed **held** and **declined**
-  payouts as banked. See `logs/2026-07-24-adhoc-pritchett-bucks.md`.
+- **2026-07-24 — Ad-hoc: Pritchett Bucks (ADR 054, PR #68).** The currency is
+  renamed; four registers from `packages/ui/src/lib/currency.ts`, no migration.
+  See `logs/2026-07-24-adhoc-pritchett-bucks.md`.
 
 - **2026-07-24 — Dev: Payout Approval (M4/3b, PR #65).** Per-chore `requiresApproval`
-  holds the P-Bucks payout in `pending_payouts` (rewards stays plugin-agnostic, ADR 048);
-  approve releases the normal entry with the same provenance pair, decline writes
-  nothing. Reopen-before-decision **voids**, reopen-after-payout **debits** (clawback
-  confirmed with the resulting balance), delete voids a held payout. **Review-driven:**
-  XP now awarded **once per task** (`xp_awarded` — reopen/complete no longer farms XP;
-  P-Bucks nets correctly), a **Redo** state for reopened tasks, and a "chip = reward" meta
-  rework (only P-Bucks is a chip; shared `TaskMeta` unifies Focus + Agency). Editing a
-  completed chore is locked — reopen is the way back. Behind `REWARDS_UI_ENABLED`.
-  See `logs/2026-07-24-dev-rewards-payout-approval.md`.
+  holds the payout in `pending_payouts` (ADR 048); XP now awarded once per task. See
+  `logs/2026-07-24-dev-rewards-payout-approval.md`.
 
-- **2026-07-23 — Dev: Chores Earn + the XP re-strike (M4/3, PR #64).** `coinReward` on the
-  task credits/debits the ledger off chore events (ADR 048), keyed by the completion
-  **instance** `taskId@completedAt` so reopen→re-complete re-earns. XP re-struck to a quiet
-  star, P-Bucks takes the brass coin (ADR 051, shared `Coin`/`CoinValue`). **P-Bucks surfaces behind
-  `REWARDS_UI_ENABLED` — off in prod until M4/5.** P-Bucks tiers landed as `1/2/5/10` (minor ADR 052
-  deviation). See `logs/2026-07-23-dev-chores-earn-xp-restrike.md`.
+- **2026-07-23 — Dev: Chores Earn + the XP re-strike (M4/3, PR #64).** `coinReward`
+  credits the ledger off chore events (ADR 048); XP re-struck per ADR 051. See
+  `logs/2026-07-23-dev-chores-earn-xp-restrike.md`.
 
-- **2026-07-22 — Dev: Ledger + Balance (M4/2, PR #63).** Append-only `ledger_entries` +
-  a `balances` cache behind `GET /rewards/wallet`; the ledger service every later story
-  calls. **Overdrafts are permitted** — a symmetric reversal is legitimate and
-  affordability belongs at the spend site, which is what queued **M4/3b**.
-  See `logs/2026-07-22-dev-rewards-ledger-balance.md`.
+- **2026-07-22 — Dev: Ledger + Balance (M4/2, PR #63).** Append-only `ledger_entries`
+  - a `balances` cache; **overdrafts permitted**, which queued M4/3b. See
+    `logs/2026-07-22-dev-rewards-ledger-balance.md`.
 
-- **2026-07-22 — Design: Rewards & Wallet (M4/1).** Pricing settled first: **~10 P-Bucks a
-  week**, chores opt **in** to paying (`coinReward` default 0), small reward 10 · big 40,
-  catalog seeded. Three ADRs — **051** the coin belongs to the currency that buys things
-  (P-Bucks takes gold and the disc; **XP demotes to a quiet star**) · **052** the economy is
-  priced from a weekly earn rate · **053** a balance belongs to a person (no household
-  pot; **tier 1 holds a wallet**, amending the tier table). Store/wallet/punch renders are
-  **provisional build targets**, revisable without an ADR.
-  See `logs/2026-07-22-design-rewards-wallet.md`.
+- **2026-07-22 — Design: Rewards & Wallet (M4/1).** The economy priced from **~10
+  P-Bucks a week**; ADRs 051/052/053. See `logs/2026-07-22-design-rewards-wallet.md`.
 
-- **2026-07-21 — Planning: Rewards & Meals (docs only).** Roadmap renumbered — the old
-  M6 Finance **split**, with the reward economy pulled forward to **M4** and
-  allowance/cashout/Monarch left in **M8**; Meals moved up to **M5** and grew groceries.
-  Four ADRs: **047** append-only P-Bucks ledger · **048** earning is contributed over the bus,
-  not owned by chores · **049** punch cards are a rewards primitive (try bites are one
-  instance) · **050** a day mark is a property of a day, not an event — dinner has no time
-  a family can honour to ±30 min. **ADR 002/005 already settled the currency**, so no new
-  currency decision was made. _[log](logs/2026-07-21-planning-rewards-meals.md)_
-- **2026-07-21 — Push toggle stuck off, from auto-bug #53 (PRs #54–#58).** **Push had
-  never worked in prod**: a dismissed permission prompt read as a denial, and the
-  service worker was never registered (a `load` listener added after `load` fires never
-  runs). Alerts now send `urgency: 'high'` — Doze was batching them ~4 min late.
-  **The lesson is the blind `catch {}`**: four bugs hid behind swallowed errors, costing
-  three round trips through a human with a phone; the fix that broke it open (#55) fixed
-  nothing and only made the failure speak. Now a standing convention.
+- **2026-07-21 — Planning: Rewards & Meals (docs only).** Roadmap renumbered — the
+  reward economy pulled forward to **M4**, Meals up to **M5**; ADRs 047–050.
+  _[log](logs/2026-07-21-planning-rewards-meals.md)_
+- **2026-07-21 — Push toggle stuck off, from auto-bug #53 (PRs #54–#58).** Push had
+  never worked in prod; the blind-`catch {}` lesson became a standing convention.
   _[log](logs/2026-07-21-dev-push-toggle-stuck.md)_
 - **2026-07-20 — Docker storage onto the SSD (ad-hoc infra, no PR).** Both roots
-  moved to `/mnt/data` and verified across a reboot — **`data-root` alone would have
-  moved 48 MB**: Docker 29 uses the containerd image store, so the 2.8 GB of layers
-  live under `containerd`'s own `root`. `RequiresMountsFor` drop-ins stop a missing
-  SSD from silently handing Postgres an empty data dir.
+  moved to `/mnt/data` and verified across a reboot.
   _[log](logs/2026-07-20-infra-ssd-storage-move.md)_
 - **2026-07-21 — In-situ bug reporting (PRs #47, #49). ADR 046.** "Report a problem"
-  in the tray footer captures route/build/viewport/errors, opens an `auto-bug` GitHub
-  issue best-effort, and tells the reporter when it ships. **Live check on prod caught
-  a 500**: no `profiles` row exists for the household pseudo-profile — the default
-  profile — so the `reporterId` FK made the likeliest report in the house fail.
+  opens an `auto-bug` GitHub issue best-effort and tells the reporter when it ships.
   _[log](logs/2026-07-21-design-dev-bug-reporting.md)_
 - **2026-07-21 — Deploy hardening: E3 auto-deploy + faster builds (PRs #45, #46).**
-  Merging to `main` now deploys itself (`release` → `deploy` on a self-hosted runner
-  on the Pi); release wall-clock ~15 min → **4m20s** (web builds native via
-  `$BUILDPLATFORM` + cross-compiled Caddy; buildx GHA cache). Splitting the api
-  install into `pnpm fetch` + `--offline` **took the API down in prod** — reverted;
-  rollback via `TAG` worked. _[log](logs/2026-07-21-infra-deploy-hardening.md)_
+  Merging to `main` now deploys itself; release wall-clock ~15 min → **4m20s**.
+  _[log](logs/2026-07-21-infra-deploy-hardening.md)_
 - **2026-07-20 — LIVE: Part C go-live + day-picker fix.** Family OS is deployed on
-  the Pi 3B at **`https://vireohome.app`** (Docker Compose, GHCR images, Cloudflare
-  DNS-01 Let's Encrypt cert, PWA installed on the fridge iPad). Fixed the first prod
-  bug — the calendar date-picker rendered unstyled because `react-day-picker`'s CSS
-  was JS-imported inside `@family-os/ui` and orphaned in the federated build (PR #43);
-  moved it to `ui/styles.css`. _[log](logs/2026-07-20-deploy-golive.md)_
+  the Pi at **`https://vireohome.app`**; first prod bug fixed (PR #43).
+  _[log](logs/2026-07-20-deploy-golive.md)_
 - **2026-07-19 — Containerize (deployment Part B, PR #42).** Two GHCR images the
-  Pi pulls: **api runs via `tsx`** (imports workspace TS at runtime; driver-adapter
-  Prisma clients are arch-independent) with an entrypoint that `migrate deploy`s all
-  four schemas; **web** = shell/plugins served flat by Caddy (Cloudflare DNS-01).
-  Compose + `ci.yml` (E1, green) + `release.yml` (E2, arm64→GHCR). Fixed two clean-
-  checkout bugs: pnpm `allowBuilds` placeholder + platform's uncommitted Prisma
-  client. _[log](logs/2026-07-19-dev-containerize.md)_
-- **2026-07-19 — Production Serve (deployment Part A).** A2 verified in a real
-  browser — federated plugins render under `/plugins/<name>/` from the flat prod
-  tree, no `base` override (relative via `import.meta.url`); `db:deploy` added to
-  all four Prisma packages; `family-feed`'s missing init migration baselined. Part
-  B (containerize) + E1 CI is next. _[log](logs/2026-07-19-dev-prod-serve.md)_
-- **2026-07-19 — Service Worker Cache Strategy (prod).** First deployment-critical
-  story. `sw.js` → network-first for navigations + `/api`·`/events`·`/plugins/*`,
-  cache-first for hashed assets; a Vite build-stamp plugin bakes the entry hash into
-  the cache name so every shell deploy reinstalls the SW and purges the old cache.
-  Installed PWAs now update without a manual clear. _[log](logs/2026-07-19-dev-sw-cache-strategy.md)_
+  Pi pulls (api via `tsx`, web via Caddy); Compose + `ci.yml` + `release.yml`.
+  _[log](logs/2026-07-19-dev-containerize.md)_
+- **2026-07-19 — Production Serve (deployment Part A).** A2 verified — federated
+  plugins render from the flat prod tree, no `base` override.
+  _[log](logs/2026-07-19-dev-prod-serve.md)_
+- **2026-07-19 — Service Worker Cache Strategy (prod).** `sw.js` network-first for
+  navigations + `/api`; build-stamped cache name so every deploy purges the old.
+  _[log](logs/2026-07-19-dev-sw-cache-strategy.md)_
 - **2026-07-19 — Event Reminders (story 6, PR #41). M3 MVP-complete.** 60s in-process
-  poll computing due reminders on read + a sparse `calendar.reminder_log` ledger (dual of
-  `event_exceptions`, so ADR 038 holds); `notify()` at `alert`, audience = attendees +
-  tier-4 parents / everyone for Family; edit re-arms on time/lead change. **ADR 045.**
-  Native push still blocked by the deferred SW story. _[log](logs/2026-07-19-dev-event-reminders.md)_
+  poll + a sparse `calendar.reminder_log` ledger. **ADR 045.**
+  _[log](logs/2026-07-19-dev-event-reminders.md)_
 - **2026-07-12 — Identity Hue Assignment (PR #40).** Member hue is now persisted +
-  unique (`Profile.identityHue`, `resolveHue`), palette grew to eight, the tint layer
-  was rebuilt, and the calendar chip gained an owner-initial second channel for
-  colour-blindness. **ADR 044.** _[log](logs/2026-07-12-design-dev-identity-hue-assignment.md)_
+  unique (`resolveHue`). **ADR 044.**
+  _[log](logs/2026-07-12-design-dev-identity-hue-assignment.md)_
 - **2026-07-12 — Chores Overhaul (PR #39).** Spine carries identity in every state,
-  status moved to the row field; extracted `ItemCard onActivate` / `RowActions` /
-  `MemberGroupHeader` and `PageContainer` (4 roles); chores' first 17 tests. **ADR 043.**
+  status moved to the row field; chores' first 17 tests. **ADR 043.**
   _[log](logs/2026-07-12-design-dev-chores-overhaul.md)_
 - **2026-07-11 — Avatar Images (PR #38).** Uploadable/croppable photos; a photo is a
   face, not a hue (no ring — chrome beside the avatar carries identity); client-side
   crop→WebP, bytes in Postgres. **ADR 042.** _[log](logs/2026-07-11-design-dev-avatar-images.md)_
 - **2026-07-11 — Family Fill Re-home / Span Primitive / Type Floor (PR #37).**
-  Reserved `family` "Hearth" hue (**ADR 041**); shared `SpanBand` (groove/panel); type
-  floor rescoped by viewing distance; home-layout composition centralized and
-  served-not-persisted. _[log](logs/2026-07-11-design-dev-family-fill-rehome.md)_
+  Reserved `family` "Hearth" hue (**ADR 041**); shared `SpanBand`.
+  _[log](logs/2026-07-11-design-dev-family-fill-rehome.md)_
 - **2026-07-10 — Home Dashboard Elevation Ladder (PR #34).** Three prominence rungs
   (feature/card/quiet) on `WidgetSlot`, one feature per surface re-ranked per profile.
   **ADR 039.** _[log](logs/2026-07-10-design-dev-home-dashboard-elevation-ladder.md)_

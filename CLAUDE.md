@@ -22,8 +22,8 @@ before it reads anything else, and it is size-capped — see
 - **Deployment:** 🟢 live at `https://vireohome.app` — Pi 5 (192.168.0.42);
   auto-deploy + Tailscale + restic→R2 intact; **SSD watchdog + external
   dead-man ping live 2026-08-20** (USB outage; NVMe HAT queued). Runbook Part F.
-- **Last session:** 2026-08-20 — SSD outage recovered + self-heal hardening.
-  `logs/2026-08-20-infra-ssd-outage-selfheal.md`.
+- **Last session:** 2026-08-20 — docs audit: 24 stale/duplicate issue groups
+  fixed, −700 lines. `logs/2026-08-20-audit-docs-staleness.md`.
 - **What's next and everything outstanding:** `docs/sessions/queue.md` — the one
   index. New small item: retire the 3B as second-copy backup puller.
 - **Owed in-app:** none — #114's report flipped `deployed` 2026-08-20.
@@ -108,18 +108,15 @@ outranks any milestone number found in an older doc or log.
   the shell `@source`-scans `plugins/*/src`. Never raw px sizes, hardcoded colours,
   or reimplemented primitives.
 - **A member's colour is assigned, not derived** (ADR 044). Use
-  `resolveHue(name, profile.identityHue)`; the hue is persisted, **unique across
-  the family**, and travels on every payload carrying a person.
-  `getIdentityHue(name)` is a fallback only — it collides and moves on rename.
-  Uniqueness makes the palette size a **hard cap on household size**:
-  `nextFreeHue` returning `null` means say the palette is full, never double a
-  colour. Watch the silent failure — rebuilding a profile as an object literal and
-  dropping `identityHue` passes every grep and still hashes.
-- **Colour is the primary identity channel, not the only one** (ADR 044). Any
-  surface where hue is the ONLY thing separating two people owes a second channel.
-  **Judge a colour on the layer that renders it** — hues are quoted at `base` but
-  fills paint at `tint`. Identity tokens live in **three** theme blocks; grep all
-  three.
+  `resolveHue(name, profile.identityHue)`; the hue is persisted, unique, and on
+  every payload carrying a person — `nextFreeHue` returning `null` means say the
+  palette is full, never double a colour. Watch the silent failure: rebuilding a
+  profile as an object literal and dropping `identityHue` passes every grep and
+  still hashes. Full rules: `design-system.md` §"Member identity palette".
+- **Colour is the primary identity channel, not the only one** (ADR 044). Hue-only
+  separation owes a second channel, and judge a colour on the layer that renders
+  it — quoted at `base`, painted at `tint`. Identity tokens live in **three**
+  theme blocks; grep all three. See design-system.md §"Member identity palette".
 - **The spine carries the identity; the avatar carries the face** (ADR 042). An
   avatar can hold a photograph, so it is not a colour signal — never delete a row's
   spine because it has an avatar. Any surface showing more than one person at once

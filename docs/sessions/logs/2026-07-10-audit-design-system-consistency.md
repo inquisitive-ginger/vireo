@@ -99,113 +99,24 @@ The framing is inverted in places: `packages/ui` is comment-dense on its documen
 ### Current state
 
 - `packages/ui/src/styles.css` defines **no** `--spacing-*` tokens and one radius token (`--radius-card: 0.5rem`, line 31).
-- 82 arbitrary dimension values across 27 files: 77 bracket utilities (`px-[18px]`, `min-h-[54px]`, …) + 5 `calc()` expressions. Full disposition in the mapping table below.
+- 82 arbitrary dimension values across 27 files: 77 bracket utilities (`px-[18px]`, `min-h-[54px]`, …) + 5 `calc()` expressions. Disposition summarized in B.4.
 - The codebase otherwise uses standard Tailwind numeric utilities (base-4 grid), so most arbitrary values are near-grid stragglers or unnamed semantic dimensions.
 
 ### B.1 Rhythm scale
 
-> **✅ Approved 2026-07-10 (decision a: snap to base-4 grid).** The three custom off-grid values (7px, 18px, 22px) are **not** blessed as steps — they snap to the grid (7→8, 18→16, 22→24). Standard Tailwind half-steps (0.5/1.5/2.5/3.5) remain available; no custom rhythm steps exist.
+**✅ Approved 2026-07-10 (decision a: snap to base-4 grid** — 7→8, 18→16, 22→24; no custom rhythm steps). A sanctioned-step convention on Tailwind v4's single `--spacing: 0.25rem` base — zero CSS additions; bracket-arbitrary `[Npx]` spacing banned once migration lands, except documented exemptions. Table lives in design-system.md §Spacing.
 
-Tailwind v4 derives every numeric spacing utility from the single `--spacing: 0.25rem` base, so the scale needs **zero CSS additions** — it is a _sanctioned-step convention_ (documented in design-system.md, enforceable by grep/lint), in the same style as the type scale:
+### B.2 Semantic dimension tokens
 
-| Step | Example utility                         | px  | Role                                                                |
-| ---- | --------------------------------------- | --- | ------------------------------------------------------------------- |
-| 0.5  | `gap-0.5`                               | 2   | hairline gaps                                                       |
-| 1    | `w-1`                                   | 4   | Spine width, tight inline gaps                                      |
-| 1.5  | `gap-1.5`                               | 6   | icon–label gaps, chip padding                                       |
-| 2    | `p-2`                                   | 8   | dense row padding, field-label gap                                  |
-| 2.5  | `px-2.5`                                | 10  | compact controls                                                    |
-| 3    | `py-3`                                  | 12  | row padding (ItemCard `py`)                                         |
-| 3.5  | `px-3.5`                                | 14  | —                                                                   |
-| 4    | `px-4`                                  | 16  | card padding (ItemCard `px`), grid gap, board/lane inset            |
-| 5    | `p-5`                                   | 20  | —                                                                   |
-| 6    | `p-6`                                   | 24  | panel padding, widget section rhythm (divider stacks, hero padding) |
-| 8    | `p-8`                                   | 32  | page-level breathing room                                           |
-| 12+  | `w-18`, `min-h-20`, `min-h-32`, `w-35`… | 4×N | larger fixed dimensions stay on the 4px grid via numeric utilities  |
-
-Rule (to add to design-system.md): spacing is a step from this table or a semantic token from B.2 — bracket-arbitrary `[Npx]` spacing is banned once migration lands, except the documented exemptions in B.4.
-
-### B.2 Semantic dimension tokens (new CSS — `@theme` in `packages/ui/src/styles.css`)
-
-> **✅ Approved 2026-07-10** — with `--spacing-meter: 6px` (decision b).
-
-| Token                 | Value | Utility                                                                      | Covers                                                                                  |
-| --------------------- | ----- | ---------------------------------------------------------------------------- | --------------------------------------------------------------------------------------- |
-| `--spacing-touch`     | 48px  | `min-h-touch` / `min-w-touch`                                                | minimum touch target (already settled in §Surfaces)                                     |
-| `--spacing-row-touch` | 64px  | `min-h-row-touch`                                                            | minimum card/list-item height (settled in §Surfaces)                                    |
-| `--spacing-tab-bar`   | 56px  | `h-tab-bar`, `pb-[calc(var(--spacing-tab-bar)+env(safe-area-inset-bottom))]` | bottom tab bar + everything anchored to it (App.tsx scroll padding, ProfileGrid anchor) |
-| `--spacing-top-bar`   | 52px  | `min-h-top-bar`                                                              | mobile brand top bar + its safe-area calc                                               |
-| `--spacing-sidebar`   | 220px | `w-sidebar`                                                                  | settled sidebar width (§Tablet Nav Layout)                                              |
-| `--spacing-meter`     | 6px   | `h-meter`                                                                    | progress-meter bar height (unifies the 5px/6px drift, finding #28; decision b: 6px)     |
-| `--container-content` | 680px | `max-w-content`                                                              | single-column content pages (4 identical uses today)                                    |
-| `--container-drawer`  | 440px | `md:w-drawer`                                                                | side-drawer width                                                                       |
-
-(Tailwind v4: `--spacing-*` theme keys generate all spacing-namespace utilities; `--container-*` keys generate the `max-w-*`/`w-*` size utilities.)
+**✅ Approved 2026-07-10** — with `--spacing-meter: 6px` (decision b). Eight tokens (`--spacing-touch/row-touch/tab-bar/top-bar/sidebar/meter`, `--container-content/drawer`) landed in `@theme` in `packages/ui/src/styles.css`. Table lives in design-system.md §Spacing.
 
 ### B.3 Radius companion (resolves finding #13)
 
-> **✅ Approved 2026-07-10** — `--radius-hero: 1rem` (decision e: 16px; FocusView's two 18px cards tighten by 2px).
+**✅ Approved 2026-07-10** — `--radius-hero: 1rem` (decision e: 16px; FocusView's two 18px cards tighten by 2px). Adds `--radius-panel` (12px) and `--radius-hero` (16px) beside the existing `--radius-card`. Table lives in design-system.md §Spacing.
 
-| Token            | Value          | Utility         | Covers                                                                                                             |
-| ---------------- | -------------- | --------------- | ------------------------------------------------------------------------------------------------------------------ |
-| `--radius-card`  | 0.5rem (8px)   | `rounded-card`  | **exists** — card rows (unchanged)                                                                                 |
-| `--radius-panel` | 0.75rem (12px) | `rounded-panel` | panels and widget pills — absorbs `rounded-xl` sites (same px) and the 10/11/12px arbitraries (≤2px visual change) |
-| `--radius-hero`  | 1rem (16px)    | `rounded-hero`  | hero cards — absorbs `rounded-2xl` sites (same px) and `rounded-[18px]` (−2px; approved)                           |
+### B.4 Mapping table
 
-### B.4 Mapping table — current value → disposition
-
-Every cataloged occurrence. "Step" = B.1 numeric utility (no CSS change); "token" = B.2/B.3.
-
-| Current                                                                                                            | File:Line                                                                                                                             | Proposed                                                                 | Notes                                                                                                 |
-| ------------------------------------------------------------------------------------------------------------------ | ------------------------------------------------------------------------------------------------------------------------------------- | ------------------------------------------------------------------------ | ----------------------------------------------------------------------------------------------------- |
-| `px-[18px]`                                                                                                        | plugins/chores/src/components/AdminBoard.tsx:135                                                                                      | `px-4`                                                                   | snap −2px (decision a)                                                                                |
-| `pl-[18px]`                                                                                                        | AdminBoard.tsx:210                                                                                                                    | `pl-4`                                                                   | snap −2px (decision a)                                                                                |
-| `py-[9px]`                                                                                                         | AdminBoard.tsx:216                                                                                                                    | `py-2`                                                                   | snap −1px (row has min-h; no visual effect)                                                           |
-| `mt-[5px]`                                                                                                         | AdminBoard.tsx:147                                                                                                                    | `mt-1`                                                                   | snap −1px                                                                                             |
-| `h-[5px]`                                                                                                          | AdminBoard.tsx:148; FocusView.tsx:63; TaskeeView.tsx:54                                                                               | `h-meter`                                                                | token; +1px unify (decision b: 6px)                                                                   |
-| `h-[6px]`                                                                                                          | plugins/chores/src/widgets/TodaySummaryView.tsx:85                                                                                    | `h-meter`                                                                | token (exact)                                                                                         |
-| `max-w-[120px]`                                                                                                    | AdminBoard.tsx:148                                                                                                                    | `max-w-30`                                                               | step (exact)                                                                                          |
-| `min-h-[54px]`                                                                                                     | AdminBoard.tsx:210                                                                                                                    | `min-h-row-touch`                                                        | decision c: raise to 64px; visual check on a full board                                               |
-| `min-w-[44px]`                                                                                                     | plugins/chores/src/components/CreateTaskDrawer.tsx:218                                                                                | `min-w-touch`                                                            | decision d: raise to 48px                                                                             |
-| `p-[22px]`                                                                                                         | FocusView.tsx:121                                                                                                                     | `p-6`                                                                    | snap +2px (decision a)                                                                                |
-| `rounded-[18px]`                                                                                                   | FocusView.tsx:121,235                                                                                                                 | `rounded-hero`                                                           | −2px (decision e: 16px)                                                                               |
-| `max-w-[680px]`                                                                                                    | FocusView.tsx:55; TaskeeView.tsx:46; ChoresPageView.tsx:69; plugins/family-feed/src/pages/FeedPageView.tsx:56                         | `max-w-content`                                                          | token                                                                                                 |
-| `size-[22px]`                                                                                                      | plugins/chores/src/components/ScorePlate.tsx:79                                                                                       | `size-6`                                                                 | snap +2px (coin glyph; visual check)                                                                  |
-| `rounded-[11px]`                                                                                                   | TodaySummaryView.tsx:190,224                                                                                                          | `rounded-panel`                                                          | +1px unify                                                                                            |
-| `rounded-[12px]`                                                                                                   | TodaySummaryView.tsx:479                                                                                                              | `rounded-panel`                                                          | exact                                                                                                 |
-| `w-[140px]`                                                                                                        | TodaySummaryView.tsx:388,665                                                                                                          | `w-35`                                                                   | step (exact)                                                                                          |
-| `w-[72px]`                                                                                                         | plugins/calendar/src/components/AgendaRow.tsx:42                                                                                      | `w-18`                                                                   | step (exact)                                                                                          |
-| `w-[68px]`                                                                                                         | plugins/calendar/src/widgets/UpNextView.tsx:105                                                                                       | `w-18`                                                                   | +4px unify with AgendaRow (decision g: 72px; verify longest time strings fit)                         |
-| `my-[22px]`, `mt-[22px] pt-[22px]`                                                                                 | UpNextView.tsx:166,170; plugins/family-feed/src/widgets/FeedWidgetView.tsx:73                                                         | `my-6` / `mt-6 pt-6`                                                     | snap +2px (decision a); cross-widget rhythm stays aligned — migrate all sites together                |
-| `mb-[7px]`                                                                                                         | packages/ui/src/components/field-label.tsx:18; plugins/calendar/src/components/CreateEventDrawer.tsx:571                              | `mb-2`                                                                   | snap +1px (decision a); the drawer's copy should compose `FieldLabel` instead (drive-by in migration) |
-| `min-h-[128px]`                                                                                                    | plugins/calendar/src/components/MonthGrid.tsx:65; CalendarPage.tsx:589                                                                | `min-h-32`                                                               | step (exact); keep grid + skeleton in sync via one plugin-local constant                              |
-| `max-w-[1100px]`                                                                                                   | CalendarPage.tsx:426                                                                                                                  | keep as-is                                                               | single consumer; tokenize only if a second wide-canvas page appears                                   |
-| `pb-[calc(env(safe-area-inset-bottom)+1.5rem)]`                                                                    | CreateEventDrawer.tsx:531                                                                                                             | keep                                                                     | sanctioned safe-area pattern (§Mobile Surface)                                                        |
-| `min-h-[48px]`                                                                                                     | apps/shell/src/components/Sidebar.tsx:93; packages/ui/src/components/bell-badge.tsx:55                                                | `min-h-touch`                                                            | token                                                                                                 |
-| `min-h-[56px]`                                                                                                     | Sidebar.tsx:44                                                                                                                        | `min-h-14`                                                               | step (exact; profile chip, not the tab bar)                                                           |
-| `min-h-[56px]`                                                                                                     | packages/ui/src/components/bottom-tab-bar.tsx:35                                                                                      | `min-h-tab-bar`                                                          | token                                                                                                 |
-| `top-[56px]`                                                                                                       | apps/shell/src/components/ProfileGrid.tsx:97                                                                                          | `top-tab-bar` or `top-14`                                                | verify which 56 it anchors to during migration                                                        |
-| `w-[220px]`                                                                                                        | Sidebar.tsx:20                                                                                                                        | `w-sidebar`                                                              | token (settled value, named)                                                                          |
-| `w-[3px]`                                                                                                          | Sidebar.tsx:103                                                                                                                       | keep (exempt)                                                            | hairline indicator geometry, analogous to border widths (no 0.75 step in the approved scale)          |
-| `min-h-[52px]`                                                                                                     | apps/shell/src/components/MobileBrandTopBar.tsx:15                                                                                    | `min-h-top-bar`                                                          | token                                                                                                 |
-| `calc(52px+env(safe-area-inset-top))`                                                                              | apps/shell/src/App.tsx:52                                                                                                             | `calc(var(--spacing-top-bar)+env(safe-area-inset-top))`                  | token-derived                                                                                         |
-| `calc(56px+env(safe-area-inset-bottom))`                                                                           | App.tsx:34; MobileCanvas.tsx:70                                                                                                       | `calc(var(--spacing-tab-bar)+env(safe-area-inset-bottom))`               | token-derived                                                                                         |
-| `min-h-[400px]`                                                                                                    | apps/shell/src/pages/DemoPage.tsx:3                                                                                                   | keep                                                                     | dev-only page                                                                                         |
-| `h-[7px] w-[7px]`                                                                                                  | bell-badge.tsx:39                                                                                                                     | `size-2`                                                                 | snap +1px (decision a)                                                                                |
-| `h-[18px] min-w-[18px]`                                                                                            | bell-badge.tsx:65                                                                                                                     | `h-4 min-w-4`                                                            | snap −2px (decision a); visual check — count pill holds 10px text                                     |
-| `min-h-[80px]`                                                                                                     | packages/ui/src/components/textarea.tsx:14                                                                                            | `min-h-20`                                                               | step (exact)                                                                                          |
-| `w-[340px]`                                                                                                        | packages/ui/src/components/confirm-dialog.tsx:39                                                                                      | keep                                                                     | one-off dialog width                                                                                  |
-| `max-w-[400px]`                                                                                                    | packages/ui/src/components/notification-tray.tsx:44                                                                                   | keep                                                                     | one-off tray width                                                                                    |
-| `md:w-[440px]`                                                                                                     | packages/ui/src/components/drawer.tsx:24                                                                                              | `md:w-drawer`                                                            | token                                                                                                 |
-| `calc(env(safe-area-inset-top)+1.25rem)`                                                                           | drawer.tsx:31                                                                                                                         | keep                                                                     | sanctioned safe-area pattern                                                                          |
-| `rounded-[10px]`                                                                                                   | packages/ui/src/components/placeholder-card.tsx:48                                                                                    | `rounded-panel`                                                          | +2px                                                                                                  |
-| `borderRadius: 14` (inline)                                                                                        | packages/ui/src/components/compose-form.tsx:37                                                                                        | `rounded-panel`                                                          | −2px; part of finding #19 cleanup                                                                     |
-| `backdrop-blur-[1px]`; `border-[2.5px]`; `translate-x-[3px]`/`[21px]`; `h-[22px]` (switch); `outline-offset-[3px]` | drawer.tsx:19; completion-toggle.tsx:56,76; switch.tsx:31,42-43; profile-avatar.tsx:50                                                | **exempt**                                                               | component-internal geometry (switch thumb travel, stroke widths, focus offsets) — not layout spacing  |
-| `text-[10px]`                                                                                                      | permission-toggle-item.tsx:35,40; bottom-tab-bar.tsx:40                                                                               | `text-xs-token`                                                          | typography, cross-ref #21                                                                             |
-| `text-[11px]`                                                                                                      | Settings.tsx:455; error-card.tsx:35; placeholder-card.tsx:55; profile-avatar.tsx:28; profile-list-item.tsx:26; settings-layout.tsx:20 | `text-section-label` where uppercase label; otherwise new `text-xs-body` | decision f: add an 11px/400 `xs-body` token — settled anatomies stay pixel-identical                  |
-| `text-[13px]`                                                                                                      | confirm-dialog.tsx:46; error-card.tsx:28; placeholder-card.tsx:52; profile-avatar.tsx:29                                              | `text-sm-token`                                                          | exact                                                                                                 |
-| `text-[15px]`                                                                                                      | MobileBrandTopBar.tsx:27                                                                                                              | `text-base-token`                                                        | snap −1px (consistent with decision a's snap-to-scale spirit)                                         |
-| `text-[22px]`                                                                                                      | profile-avatar.tsx:31                                                                                                                 | keep                                                                     | scales with avatar size variant                                                                       |
+All 82 call sites across 27 files were mapped to a per-site disposition (B.1 step / B.2–B.3 token / keep-exempt) and fully migrated in this session's execution pass; the surviving exemption rules (component-internal geometry, safe-area `calc()`, single-consumer widths) live in design-system.md §Spacing §Rules.
 
 ### B.5 Decisions — **all resolved 2026-07-10** (human review in this session)
 
@@ -226,206 +137,49 @@ Consequence of (f): the type-scale table in design-system.md gains one row (`xs-
 
 ---
 
-## Part C — Remediation plan (structured for a multi-agent fix workflow)
+## Part C — Remediation plan
 
-Atomic tasks, grouped by axis. "Parallel" means no shared files / no ordering constraint. **Part B was approved 2026-07-10 (all B.5 decisions resolved), so no task is gated on human input anymore** — the only remaining ordering constraint is that `spacing-tokens-land` runs before the migration tasks that consume its tokens.
+Atomic tasks grouped by axis, executed same day — outcomes in the Execution
+addendum below. The per-task files/AC detail was cut after execution; task ids
+retained. Only ordering constraint: `spacing-tokens-land` before the migration
+tasks that consume its tokens.
 
-### Axis 1 — Radix / a11y / token compliance in packages/ui
+**Axis 1 — Radix / a11y / token compliance in packages/ui:**
+`a11y-completion-state` — expose checked state on CompletionToggle (#1) ·
+`a11y-notification-delete` — keyboard-accessible notification delete (#2) ·
+`tabbar-radix-decision` — TabBar: Radix Tabs or complete + document (#7) ·
+`segmented-radix-decision` — same decision for SegmentedControl (#8) ·
+`ui-color-literals` — replace raw oklch literals with tokens (#9) ·
+`button-token-pass` — Button onto elevation/type tokens (#17) ·
+`ui-inline-style-cleanup` — utility-first ui chrome + pin-input focus ring (#19) ·
+`avatar-fallback` — initials fallback behind avatar photos (#22) ·
+`motion-token-pass` — hardcoded durations/easings → motion tokens (#20) ·
+`ui-type-token-pass` — raw px font sizes in ui → type tokens (#21)
 
-- **id:** `a11y-completion-state`
-  **title:** Expose checked state on CompletionToggle
-  **findings:** #1
-  **files:** packages/ui/src/components/completion-toggle.tsx, completion-toggle.stories.tsx (+ new test)
-  **parallel with:** everything
-  **AC:** interactive variant renders `role="checkbox"` + `aria-checked` (or is rebuilt on Radix Checkbox); state change is announced by AT; rendered visuals unchanged (Storybook diff); test asserts the ARIA state flips on toggle.
+**Axis 2 — Spacing scale:**
+`spacing-tokens-land` — land B.2/B.3 tokens + design-system.md §Spacing (#4, #13) ·
+`spacing-migrate-{ui,shell,chores,calendar,feed}` — apply the B.4 mapping per
+package, parallel (#4, #13, #23, #27, #28) ·
+`touch-target-fixes` — 64px rows / 48px control per decisions c/d (#18)
 
-- **id:** `a11y-notification-delete`
-  **title:** Keyboard-accessible notification delete
-  **findings:** #2
-  **files:** packages/ui/src/components/notification-item.tsx, notification-tray.test.tsx
-  **parallel with:** everything
-  **AC:** the × button is reachable by keyboard (rendered on focus-within, not only mouse hover) and activates with Enter/Space; hover and swipe behavior unchanged; test covers the keyboard path.
+**Axis 3 — Cleanliness / DRY:**
+`comment-banner-cleanup` — strip CUT-class comments (#25) ·
+`shared-date-lib` — one shared relativeDayLabel + date-only primitives (#5, #16) ·
+`widget-header-primitive` — WidgetHeader in @family-os/ui (#6) ·
+`widget-cq-breakpoints` — shared container-query breakpoint constants (#15) ·
+`dead-export-trim` — unexport file-internal types / decide PopoverAnchor (#26)
 
-- **id:** `tabbar-radix-decision`
-  **title:** TabBar: back with Radix Tabs or complete + document the hand-rolled version
-  **findings:** #7
-  **files:** packages/ui/src/components/tab-bar.tsx, tab-bar.test.tsx (+ package.json if Radix chosen)
-  **parallel with:** everything
-  **AC:** either rebuilt on `@radix-ui/react-tabs` with identical visuals, or Home/End key support added and a header comment documents the deliberate exception; tests cover Home/End.
-
-- **id:** `segmented-radix-decision`
-  **title:** SegmentedControl: same decision as TabBar
-  **findings:** #8
-  **files:** packages/ui/src/components/segmented-control.tsx, segmented-control.test.tsx
-  **parallel with:** everything
-  **AC:** same shape as `tabbar-radix-decision` (RadioGroup/ToggleGroup as the Radix backing).
-
-- **id:** `ui-color-literals`
-  **title:** Replace raw oklch literals in ui components with tokens
-  **findings:** #9
-  **files:** packages/ui/src/components/permission-toggle-item.tsx, pin-input.tsx, confirm-dialog.tsx
-  **parallel with:** everything
-  **AC:** `grep -rn 'oklch(' packages/ui/src/components` returns nothing outside calendar.css/styles.css; replacements use tokens or `color-mix` over tokens; visuals equivalent.
-
-- **id:** `button-token-pass`
-  **title:** Move Button onto elevation/type tokens
-  **findings:** #17
-  **files:** packages/ui/src/components/button.tsx
-  **parallel with:** everything (coordinate with `focusview-button`)
-  **AC:** `shadow`/`shadow-sm` → shadow tokens or documented flat; `text-sm`/`text-xs` → token utilities; focus-ring treatment decided and documented; full Storybook visual pass (this touches every button in the app — human design review required before merge).
-
-- **id:** `ui-inline-style-cleanup`
-  **title:** Utility-first conversion of inline-styled ui chrome + pin-input focus ring
-  **findings:** #19
-  **files:** packages/ui/src/components/compose-form.tsx, page-header.tsx, empty-state.tsx, pin-input.tsx
-  **must run after:** `spacing-tokens-land` (the `borderRadius: 14` → `rounded-panel` bit); the rest can proceed independently
-  **AC:** no `style={{…}}` for static chrome in these files; pin-input shows a visible focus indication; visuals unchanged except the 14→12px radius.
-
-- **id:** `avatar-fallback`
-  **title:** Initials fallback behind avatar photos
-  **findings:** #22
-  **files:** packages/ui/src/components/profile-avatar.tsx
-  **parallel with:** everything
-  **AC:** a broken/slow `avatarUrl` shows initials, not an empty circle (layered render or load-error state).
-
-- **id:** `motion-token-pass`
-  **title:** Replace hardcoded durations/easings with motion tokens
-  **findings:** #20
-  **files:** packages/ui/src/components/switch.tsx, notification-item.tsx; plugins/chores/src/components/TaskeeView.tsx, FocusView.tsx; apps/shell/src/components/ProfileGrid.tsx
-  **parallel with:** everything
-  **AC:** all timing via `--duration-*`/`--ease-*` (320ms → `--duration-slow` unless design objects); switch thumb `bg-white` → token; `prefers-reduced-motion` behavior unchanged.
-
-- **id:** `ui-type-token-pass`
-  **title:** Replace raw px font sizes in ui with type tokens
-  **findings:** #21
-  **files:** packages/ui/src/components/{error-card,placeholder-card,settings-layout,profile-list-item,profile-avatar,permission-toggle-item,confirm-dialog,bottom-tab-bar,input,textarea,notification-item}.tsx
-  **must run after:** `spacing-tokens-land` (which lands the approved `xs-body` token, decision f)
-  **AC:** no `text-[Npx]` in packages/ui except documented exemptions (avatar 22px); 11px regular text uses `text-xs-body`; default `text-sm`/`text-xs` on content text replaced with token utilities.
-
-### Axis 2 — Spacing scale (Part B approved — ready to run)
-
-- **id:** `spacing-tokens-land`
-  **title:** Land spacing/dimension/radius tokens + design-system.md section
-  **findings:** #4, #13 (token half)
-  **files:** packages/ui/src/styles.css, docs/design-system.md
-  **must run after:** nothing (Part B approved 2026-07-10); runs first in this group
-  **AC:** B.2 + B.3 tokens exist in `@theme` (`--spacing-meter: 6px`, `--radius-hero: 1rem` per decisions b/e) plus the `xs-body` type token (decision f); design-system.md gains a Spacing section mirroring B.1/B.2 tables and the type-scale row; utilities compile (canary usage in a story); no call sites migrated yet.
-
-- **id:** `spacing-migrate-ui` · `spacing-migrate-shell` · `spacing-migrate-chores` · `spacing-migrate-calendar` · `spacing-migrate-feed`
-  **title:** Apply the B.4 mapping table per package (5 independent tasks)
-  **findings:** #4, #13 (call sites), #23, #27 (calendar task), #28 (chores task)
-  **files:** per the B.4 table, split by package
-  **must run after:** `spacing-tokens-land`; **parallel with:** each other (worktree isolation recommended)
-  **AC:** every B.4 row in scope applied per the approved rulings; `grep -rE -- '-\[[0-9.]+(px|rem)\]'` over the package returns only the exempt list; typecheck + package tests + Storybook build green; visual pass on the snap sites (18→16 lane inset, 22→24 widget rhythm, 7→8 label gap, bell-badge pill); calendar task includes 68→72 unify, chores task includes meter unify at 6px.
-
-- **id:** `touch-target-fixes`
-  **title:** Bring sub-minimum touch targets up to spec
-  **findings:** #18
-  **files:** plugins/chores/src/components/AdminBoard.tsx, CreateTaskDrawer.tsx
-  **must run after:** `spacing-tokens-land` (decisions c/d resolved: 64px rows, 48px control)
-  **AC:** AdminBoard rows use `min-h-row-touch` (64px), the drawer control `min-w-touch` (48px); admin board density visually reviewed at the new row height.
-
-### Axis 3 — Cleanliness / DRY
-
-- **id:** `comment-banner-cleanup`
-  **title:** Strip CUT-class comments (banners + structural JSX labels)
-  **findings:** #25
-  **files:** plugins/chores/src/widgets/TodaySummaryView.tsx, components/{FocusView,ScorePlate}.tsx; plugins/calendar/src/widgets/UpNextView.tsx, lib/grid.ts, components/{ActivitiesView,CreateEventDrawer}.tsx, pages/CalendarPage.tsx
-  **parallel with:** everything (pure deletions — rebase-trivial)
-  **AC:** rule-line banners (`====`, `───`) and WHAT-restating JSX labels removed; all ADR/design citations and WHY comments untouched; zero behavior change (no code lines modified).
-
-- **id:** `shared-date-lib`
-  **title:** One shared date lib: parametric relativeDayLabel + date-only primitives
-  **findings:** #5, #16
-  **files:** new packages/ui/src/lib/dates.ts (+ index export); plugins/chores/src/lib/dates.ts; plugins/calendar/src/widgets/UpNextView.tsx, components/AgendaView.tsx (and lib/grid.ts re-exports); plugins/family-feed/src/pages/FeedPageView.tsx
-  **parallel with:** `widget-header-primitive` (different files)
-  **AC:** one `relativeDayLabel(date, now, { direction })` (+ shared `startOfDay`/`dayDiff`/`isSameDay`) with unit tests; all four call sites migrated; rendered labels unchanged (existing plugin tests green).
-
-- **id:** `widget-header-primitive`
-  **title:** WidgetHeader primitive in @family-os/ui
-  **findings:** #6
-  **files:** new packages/ui/src/components/widget-header.tsx (+ story, test, index export); the three widget views
-  **parallel with:** `shared-date-lib`
-  **AC:** `WidgetHeader({ icon, label, trailing? })` implements the settled identity-header anatomy; all three widgets compose it; visuals pixel-identical.
-
-- **id:** `widget-cq-breakpoints`
-  **title:** Share the widget container-query breakpoint constants
-  **findings:** #15
-  **files:** packages/ui (new constant/helper export); the three widget views
-  **parallel with:** everything (touches same widget files as `widget-header-primitive` — sequence those two if run concurrently)
-  **AC:** the 300px/440px breakpoint values defined once; per-widget variant markup unchanged.
-
-- **id:** `dead-export-trim`
-  **title:** Remove superfluous export keywords / decide PopoverAnchor
-  **findings:** #26
-  **files:** plugins/calendar/src/lib/{grid,hues}.ts, plugins/chores/src/lib/use-xp-flight.ts, packages/ui/src/components/popover.tsx
-  **parallel with:** everything
-  **AC:** file-internal types unexported; `PopoverAnchor` either removed or kept with a one-line shadcn-convention note; typecheck green.
-
-### Axis 4 — Cross-view consistency / unimplemented anatomies
-
-- **id:** `widget-error-boundary`
-  **title:** Per-slot widget error boundary wiring ErrorCard
-  **findings:** #3
-  **files:** apps/shell/src/pages/Home.tsx, new apps/shell/src/components/WidgetErrorBoundary.tsx (+ test)
-  **parallel with:** everything
-  **AC:** a throwing widget renders `ErrorCard` in a flat `WidgetSlot` (per §Error state (slot level)) with a working retry remount; sibling slots unaffected; `ErrorCard` gains its production consumer (retires finding #3's dead-code half).
-
-- **id:** `route-error-anatomy`
-  **title:** Level-3 error anatomy on route-level failure surfaces
-  **findings:** #12
-  **files:** apps/shell/src/pages/PluginNotFound.tsx, apps/shell/src/components/PluginErrorBoundary.tsx (+ tests)
-  **parallel with:** everything
-  **AC:** both render the settled anatomy (Lucide icon 40px muted, Lora heading, one-line muted body, Back/Retry action).
-
-- **id:** `settings-segmented-controls`
-  **title:** Replace Settings' hand-rolled button groups with SegmentedControl
-  **findings:** #10
-  **files:** apps/shell/src/pages/Settings.tsx
-  **parallel with:** everything
-  **AC:** the appearance/tier/other groups compose `SegmentedControl`; behavior and persisted values identical; AT reads one radiogroup per switch.
-
-- **id:** `focusview-button`
-  **title:** FocusView "Mark done" composes Button
-  **findings:** #11
-  **files:** plugins/chores/src/components/FocusView.tsx (+ possibly a Button size variant in packages/ui)
-  **must run after:** `button-token-pass` (soft — avoids double visual churn on the same control)
-  **AC:** the CTA is a `Button` (new size/variant if needed); tap target and visuals design-reviewed on the tier-1 surface.
-
-- **id:** `radius-token-migrate`
-  **title:** Migrate C1 radius sites onto rounded-panel / rounded-hero
-  **findings:** #13
-  **files:** the finding-#13 site list (folds naturally into the per-package `spacing-migrate-*` tasks — implement there, keep this id for tracking)
-  **must run after:** `spacing-tokens-land` (decision e resolved: 16px)
-  **AC:** no `rounded-[Npx]` on card-like surfaces; panels/pills on `rounded-panel`, heroes on `rounded-hero` (FocusView's 2px tightening design-reviewed).
-
-- **id:** `plugin-type-tokens`
-  **title:** Replace raw px/inline font sizes in plugin content
-  **findings:** #14
-  **files:** plugins/chores/src/components/FocusView.tsx, widgets/TodaySummaryView.tsx
-  **must run after:** nothing (decision h resolved: hero heading → `text-page-title`)
-  **AC:** no inline `fontSize` on text content (decorative emoji sizing exempt); FocusView hero heading uses `text-page-title` (now Lora — design-review the tier-1 surface); `text-base` → token utility.
-
-- **id:** `scoreplate-shadow`
-  **title:** ScorePlate resting shadow onto --shadow-card
-  **findings:** #24
-  **files:** plugins/chores/src/components/ScorePlate.tsx
-  **parallel with:** everything
-  **AC:** the plain resting shadow uses the token; coin-material shadows (FlightChip, coin highlight) left for the future gold-token promotion, with a one-line note.
-
-- **id:** `doc-adminboard-exception`
-  **title:** Document the AdminBoard dense-lane exception in design-system.md
-  **findings:** #29
-  **files:** docs/design-system.md (§ItemCard)
-  **parallel with:** everything
-  **AC:** the ItemCard section records the sanctioned exception and its criteria (dense divider list + overlay/multi-control rows), so future sessions don't "fix" it.
-
-### Gating summary (updated after Part B approval, 2026-07-10)
-
-| Gate                                                                          | Tasks                                                                                                                                                                                                                                                                                  |
-| ----------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| ~~Part B approval~~ **resolved** — sequenced after `spacing-tokens-land` only | `spacing-migrate-{ui,shell,chores,calendar,feed}`, `touch-target-fixes`, `radius-token-migrate`, `ui-type-token-pass`, tail of `ui-inline-style-cleanup`                                                                                                                               |
-| No gate — start anytime                                                       | `spacing-tokens-land`, all axis-1 a11y/color/motion tasks, all axis-3 tasks, `widget-error-boundary`, `route-error-anatomy`, `settings-segmented-controls`, `focusview-button` (soft-after `button-token-pass`), `plugin-type-tokens`, `scoreplate-shadow`, `doc-adminboard-exception` |
+**Axis 4 — Cross-view consistency / unimplemented anatomies:**
+`widget-error-boundary` — per-slot boundary wiring ErrorCard (#3) ·
+`route-error-anatomy` — Level-3 anatomy on route failure surfaces (#12) ·
+`settings-segmented-controls` — Settings button groups → SegmentedControl (#10) ·
+`focusview-button` — "Mark done" composes Button (#11) ·
+`radius-token-migrate` — radius sites onto rounded-panel/hero (#13; folded into
+`spacing-migrate-*`, id kept for tracking) ·
+`plugin-type-tokens` — raw px/inline font sizes in plugin content (#14) ·
+`scoreplate-shadow` — ScorePlate resting shadow onto `--shadow-card` (#24) ·
+`doc-adminboard-exception` — document the AdminBoard exception in
+design-system.md (#29)
 
 ---
 

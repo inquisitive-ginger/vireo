@@ -32,7 +32,8 @@ paper beautifully + capture-once + remind_, not a from-scratch interaction model
 - **Event shape:** all-day **and** timed events; **multi-day spanning** events
   (the travel/camp arrows — "Zach to London →", "FISW camp") are first-class
 - **Simple weekly recurrence:** "every Tuesday at 5:15" with an optional end date.
-  Per-occurrence edits/skips are deferred
+  Per-occurrence **skip** shipped in story 1 (`event_exceptions`, ADR 038, PR #27)
+  and "remove this week" in story 3 (PR #30); per-occurrence edits/moves are deferred
 - **Recurring activities are first-class — as a _load lens_, not just a list**
   (refined in M3 Design, 2026-06-22). An **Activity** is not "an event that
   repeats" (events repeat too); it's a **standing commitment a specific person
@@ -72,9 +73,10 @@ paper beautifully + capture-once + remind_, not a from-scratch interaction model
   **model is reserved now** (the `suggested` status + a `source` field); the
   ingest + extraction build is a later story (north star). _Owed ADR: external-ingest
   extension point._
-- **Per-occurrence recurrence edits/skips/exceptions** (move just this week's
-  practice). MVP weekly repeat is uniform.
-- **Complex recurrence** (every-other-week, monthly-nth-weekday, RRULE).
+- **Per-occurrence recurrence edits/moves** (move just this week's practice) —
+  per-occurrence **skips** shipped (`event_exceptions`, ADR 038, PRs #27/#30).
+- **Complex recurrence** (every-other-week, monthly-nth-weekday, RRULE) — weekly +
+  daily time-window series shipped (ADR 057, 2026-07-28, PR #83).
 - **Per-occurrence attendance / streak tracking** (the antibiotics-checkmark
   pattern) — closer to a chores/health concern; not a calendar MVP feature.
 - **Per-member calendars composited with show/hide toggles** — single shared
@@ -110,10 +112,10 @@ flow, not in M3 MVP.
 | `calendar.event.updated` | calendar on PATCH success  | `{ eventId, ownerId, title, startsAt, endsAt, allDay, recurrence }`            |
 | `calendar.event.deleted` | calendar on DELETE success | `{ eventId, ownerId }`                                                         |
 
-> `ownerId` is `null` for **Family** events. M5 School is the first downstream
+> `ownerId` is `null` for **Family** events. M7 School is the first downstream
 > subscriber — school events will surface into this calendar via this namespace.
 > Reminders fire through `platform.notify()` and do **not** add a calendar event
-> (the firing mechanism is an owed ADR — see below).
+> (the firing mechanism is settled — **ADR 045**, in-process poll).
 >
 > The calendar API plugin self-subscribes to `calendar.event.created`: every
 > tier-4 profile except the creator gets a `platform.notify()` at priority
@@ -200,9 +202,8 @@ federation singletons, manifest); register in `plugins.json`, `load-plugin.ts`,
 
 ## Database schema (`calendar`)
 
-> The exact storage shape for recurrence (the columns below vs. a separate
-> `occurrences` table, and computed-on-read vs. materialized) is an **owed ADR** —
-> see "Owed architecture." The shape below is the product-level model.
+> Recurrence storage is settled — computed-on-read from the canonical row
+> (**ADR 038**). The shape below is the product-level model.
 
 ```
 events
@@ -219,7 +220,7 @@ events
   ends_at         timestamptz  nullable                        -- end; carries multi-day spans
   all_day         boolean  default false
   location        text  nullable
-  recurrence      text  nullable    ('weekly' | null)          -- MVP: weekly only
+  recurrence      text  nullable    ('weekly' | 'daily' | null) -- daily time-window series added by ADR 057
   recurrence_until date  nullable                              -- inclusive end of the repeat
   is_activity     boolean  default false                       -- recurring series surfaced as an Activity
   status          text  ('confirmed' | 'suggested')  default 'confirmed'  -- reserves the email north star
@@ -229,8 +230,8 @@ events
   updated_at      timestamptz
 ```
 
-- A **recurring event** is the canonical row; its weekly occurrences are derived
-  for the view within the queried date range (subject to the owed recurrence ADR).
+- A **recurring event** is the canonical row; its occurrences are derived
+  for the view within the queried date range (computed-on-read, ADR 038).
 - An **Activity** is a recurring event with `is_activity = true` — same table,
   surfaced and managed as a named standing commitment. `is_activity` is **derived,
   not user-chosen**: a weekly-recurring event with one or more member attendees
@@ -246,22 +247,19 @@ events
 
 ## Home surface placement
 
-Calendar is a reserved module in all three default layouts (ADR 028). Final sizes
-and exact positions are a **design-session** call (the design kickoff owns widget
-sizing); the reserved slots already exist as placeholders today.
+Calendar is a reserved module in all three default layouts (ADR 028).
+`calendar.up-next` has filled the slot since 2026-07-10 (PR #33).
 
 ---
 
 ## Owed architecture (logged to the queue, not improvised here)
 
 Per the product-session rule (don't settle architecture in a product session),
-three questions are logged as **owed ADRs** in `docs/sessions/queue.md`:
+three questions were logged as **owed ADRs** in `docs/sessions/queue.md`:
 
-1. **Recurrence storage model** — materialized `occurrences` rows vs.
-   computed-on-read from the canonical event + range; gates the Event Model story.
-2. **Time-based reminder scheduling** — how a "remind me 30 min before" fires,
-   given the event bus is an in-process `EventEmitter` with no timer/cron
-   primitive today (ADR 008); gates the Event Reminders story.
-3. **External-ingest / suggested-events extension point** — the contract by which
-   parsed email events (and, later, iCal/Google sync) land as `suggested` events;
-   gates the Suggested-Events Inbox story (and the email north star).
+1. ~~**Recurrence storage model**~~ — **resolved, ADR 038** (computed-on-read).
+2. ~~**Time-based reminder scheduling**~~ — **resolved, ADR 045** (in-process poll).
+3. **External-ingest / suggested-events extension point** — still owed; the
+   contract by which parsed email events (and, later, iCal/Google sync) land as
+   `suggested` events; gates the Suggested-Events Inbox story (and the email
+   north star).

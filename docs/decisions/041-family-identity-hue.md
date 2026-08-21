@@ -1,7 +1,7 @@
 # ADR 041 — The Family Identity Hue
 
 **Status:** Decided (2026-07-11)
-**Amends:** [030](030-member-identity-palette.md) (adds a seventh, reserved entry), [040](040-sunken-surface-plane.md) (walks through the door it left open), [031](031-interaction-state-language.md) (takes `--secondary` back for chrome)
+**Amends:** [030](030-member-identity-colors.md) (adds a seventh, reserved entry), [040](040-sunken-surface-plane.md) (walks through the door it left open), [031](031-interaction-state-language.md) (takes `--secondary` back for chrome)
 
 ---
 

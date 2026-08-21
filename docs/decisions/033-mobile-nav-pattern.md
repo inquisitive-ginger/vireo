@@ -1,8 +1,8 @@
 # 033 — Mobile Nav Pattern
 
-**Status:** Decided · the "Profile chip on mobile" clause and the "no top header bar on mobile in M1" stance are **superseded by [ADR 034](034-mobile-brand-top-bar.md)** (profile + bell now live in a brand top bar; the bottom bar is nav-only). The bottom-tab-bar, breakpoint, widget-reflow, and safe-area decisions below still stand.
+**Status:** Decided · the "Profile chip on mobile" clause and the "no top header bar on mobile in M1" stance are **superseded by [ADR 034](034-mobile-brand-top-bar.md)** (profile + bell now live in a brand top bar; the bottom bar is nav-only). The bottom-tab-bar, breakpoint, widget-reflow, and safe-area decisions below still stand. **Amended 2026-08-17** (auto-bug #112, PR #113): the bar now caps at **5 tabs** with a **More** sheet for overflow — see "Overflow shipped early" below.
 
-**Decision:** Bottom tab bar — 4 module tabs (Home, Feed, Chores, Calendar) + profile avatar as the rightmost tab. The sidebar (ADR 022) is hidden below the `md:` breakpoint (768px); the bottom tab bar appears instead. Single-column widget stack on mobile. Bottom tab bar uses `env(safe-area-inset-bottom)` for home indicator clearance.
+**Decision:** Bottom tab bar — ~~4 module tabs (Home, Feed, Chores, Calendar)~~ **(superseded 2026-08-17 — the bar caps at 5 tabs with a More sheet, see below)** + ~~profile avatar as the rightmost tab~~ **(superseded by ADR 034 — no avatar tab)**. The sidebar (ADR 022) is hidden below the `md:` breakpoint (768px); the bottom tab bar appears instead. Single-column widget stack on mobile. Bottom tab bar uses `env(safe-area-inset-bottom)` for home indicator clearance.
 
 **Why:** The four M1 primary surfaces fit within 5 tabs with no overflow. The bottom tab bar is thumb-friendly, always visible, and matches iOS/Android conventions family members already know. The hamburger drawer alternative adds a mandatory extra tap to every navigation action and hides what surfaces are available until opened — not appropriate for a glanceable shared-family display. Drawer does scale better to many modules (scrollable list vs. fixed tabs), but that problem doesn't exist until the marketplace ships.
 
@@ -25,4 +25,4 @@
 - ~~Notification bell placement~~ — **resolved by ADR 034**: bell lives in the right slot of the mobile brand top bar.
 - Page transition animations — the M1 prohibition list was written for tablet. Mobile may warrant slide transitions. Decision belongs in the mobile dev session.
 
-**Do not revisit unless:** Core M1 module count exceeds 4 (requiring overflow before M8+), or user testing shows bottom tab bar is inappropriate for the shared-device use case.
+**Do not revisit unless:** ~~Core M1 module count exceeds 4 (requiring overflow before M8+)~~ **(fired 2026-08-17 — overflow shipped, see above)**, or user testing shows bottom tab bar is inappropriate for the shared-device use case.

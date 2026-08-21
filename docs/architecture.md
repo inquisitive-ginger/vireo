@@ -1,6 +1,6 @@
 # Architecture
 
-> Last updated: 2026-07-21 — settled-decisions table extended through ADR 046; `bug_reports` added to the platform schema (ADR 046).
+> Last updated: 2026-08-20 — settled-decisions table extended through ADR 064; `bug_reports` added to the platform schema (ADR 046).
 
 ---
 
@@ -36,15 +36,15 @@
 
 ```mermaid
 graph TD
-  subgraph Server["Primary Server — Ubuntu Server LTS, Docker Compose"]
+  subgraph Server["Primary Server — Raspberry Pi 5, Docker Compose"]
     Shell["Shell\nReact / Vite"]
     Plugins["Plugin Services\nNode.js / Fastify"]
     Bus["Event Bus\nEventEmitter + WebSocket bridge"]
     PG["PostgreSQL\nper-plugin schemas"]
-    MQTT["MQTT Bridge\nM4+"]
+    MQTT["MQTT Bridge\nM6+"]
   end
 
-  subgraph Edge["Edge Devices — M4+"]
+  subgraph Edge["Edge Devices — M6+"]
     Pi["Pi Room Display\nSSE, thin agent"]
     MCU["Microcontrollers\nESP32 / Arduino via MQTT"]
   end
@@ -78,7 +78,7 @@ is warranted.
 | 005 | Allowance as ledger — system tracks balances, never moves real money; cashout is a parent-confirmed event                                                                                                                                                                                                                                                        |
 | 006 | TypeScript end-to-end — React shell, Node.js/Fastify plugin services                                                                                                                                                                                                                                                                                             |
 | 007 | Vite Module Federation for plugin loading — each plugin publishes a remoteEntry.js and manifest                                                                                                                                                                                                                                                                  |
-| 008 | In-process EventEmitter + @fastify/websocket bridge; MQTT bridge is a defined extension point for M4+                                                                                                                                                                                                                                                            |
+| 008 | In-process EventEmitter + @fastify/websocket bridge; MQTT bridge is a defined extension point for M6+                                                                                                                                                                                                                                                            |
 | 009 | PostgreSQL (Docker), single instance, per-plugin schemas; JSONB for semi-structured config                                                                                                                                                                                                                                                                       |
 | 010 | PWA for mobile (Android); Web Push for out-of-home notifications; no native app planned                                                                                                                                                                                                                                                                          |
 | 011 | Shell home surface is a composable, role-aware widget grid; M0 must not foreclose this model; implementation deferred to M1                                                                                                                                                                                                                                      |
@@ -103,12 +103,12 @@ is warranted.
 | 030 | Member identity colors — six fixed palette hues; every family member maps to one hue used everywhere; `getIdentityHue` / `identityToken` / `identityColor` helpers; plugins never invent member colors                                                                                                                                                           |
 | 031 | Interaction-state language — `--primary` owns active/hover/selected across the app; `--accent` locked to module identity only; sidebar uses lightness delta, no hairlines                                                                                                                                                                                        |
 | 032 | Plugin nav-item registration — plugins declare a `navItem` (`label`, `route`, `icon`, `minTier`) in `manifest.json`; the sidebar renders tier-filtered nav from the registry                                                                                                                                                                                     |
-| 033 | Mobile nav pattern — bottom tab bar (4 module tabs + profile) below the `md:` breakpoint; single-column widget reflow; `env(safe-area-inset-*)`. Profile/top-bar clauses superseded by ADR 034                                                                                                                                                                   |
+| 033 | Mobile nav pattern — nav-only bottom tab bar below the `md:` breakpoint (avatar/bell live in ADR 034's brand top bar); since 2026-08-17 capped at 5 tabs — Home + three pinned + a **More** sheet; single-column widget reflow; `env(safe-area-inset-*)`                                                                                                         |
 | 034 | Mobile brand top bar — avatar · wordmark · bell on mobile; bottom bar is nav-only. Supersedes the "profile chip on mobile" / no-top-bar clauses of ADR 033                                                                                                                                                                                                       |
 | 035 | Plugin styling — first-party plugins styled utility-first like the shell; shell `@source`-scans `plugins/*/src`. Third-party per-plugin build deferred (Option 2)                                                                                                                                                                                                |
 | 036 | Focus Mode — per-profile `focus_mode` setting (null = derive from tier) selects the chores taskee variant                                                                                                                                                                                                                                                        |
 | 037 | Date inputs — react-day-picker v10 themed by token; `Calendar`/`Popover`/`DatePicker`/`DateRangePicker` in `@family-os/ui`                                                                                                                                                                                                                                       |
-| 038 | Calendar recurrence storage — one canonical event row, weekly expansion computed-on-read; per-occurrence skip via `event_exceptions`; attendees via join; `is_activity` derived                                                                                                                                                                                  |
+| 038 | Calendar recurrence storage — one canonical event row, weekly and daily time-window (ADR 057) expansion computed-on-read; per-occurrence skip via `event_exceptions`; attendees via join; `is_activity` derived (widened to shared events 2026-08-19)                                                                                                            |
 | 039 | Widget prominence — three elevation rungs (feature/card/quiet) resolved on read per profile (`GET /home/layout` carries `prominence`); at most one feature per surface; not a persisted column                                                                                                                                                                   |
 | 040 | Sunken surface plane — `--surface-sunken` + `--shadow-inset` as the one step down; only inside a card, near-achromatic so it never reads as an identity fill                                                                                                                                                                                                     |
 | 041 | Family identity hue — reserved `family` ("Hearth") entry excluded from `IDENTITY_HUES`; `--secondary` is chrome again; `huesForEvent([])` → `[FAMILY_HUE]`                                                                                                                                                                                                       |
@@ -116,7 +116,7 @@ is warranted.
 | 043 | Identity takes the edge, status takes the field — on a multi-person row the spine is always the identity hue; status moves to the row's field. `ItemCard` owns row affordances (AdminBoard exception withdrawn)                                                                                                                                                  |
 | 044 | Member hue is assigned, not derived — persisted `Profile.identityHue`, unique across the family (palette size caps household size); `resolveHue` canonical, `getIdentityHue` a fallback; palette grows to eight. Amends ADR 030                                                                                                                                  |
 | 045 | Reminder scheduling — a 60s in-process poll computes due reminders ON READ and dedupes via a sparse `calendar.reminder_log` ledger (a record of the past, never a materialized future), so ADR 038's no-occurrences-table invariant holds                                                                                                                        |
-| 046 | In-situ bug reporting — a report is a CAPTURE (route, build hash, viewport, UA, error ring) not a complaint; every tier reports, so below tier 2 the control takes the bell's slot; the `auto-bug` GitHub issue is a best-effort bridge; only `deployed` pings. `reporterId` carries no FK — the household pseudo-profile has no row in prod                     |
+| 046 | In-situ bug reporting — a report is a CAPTURE (route, build hash, viewport, UA, error ring) not a complaint; every tier reports, so below tier 2 the control takes the bell's slot; the `auto-bug` GitHub issue is a best-effort bridge; only `deployed` pings. `reporterId` carries no FK                                                                       |
 | 047 | The P-Bucks ledger is append-only and the balance is a derived cache — corrections are compensating entries, `(source_type, source_id)` is UNIQUE so idempotency lives in the schema                                                                                                                                                                             |
 | 048 | Earning is contributed, not owned — `rewards` never imports another plugin; the earner owns the amount (`coinReward`), `rewards` owns the ledger, and an earn source is a manifest line plus a handler                                                                                                                                                           |
 | 049 | Punch cards are a `rewards` primitive, not a `meals` one — template → per-profile card → punches, payout in P-Bucks or a catalog reward, and the kid punches their own card                                                                                                                                                                                      |
@@ -125,6 +125,16 @@ is warranted.
 | 052 | The economy is priced from a weekly earn rate (~10 P-Bucks/week) — chores opt IN to paying (`coinReward` default 0), small reward ≈1 week, big ≈1 month; repricing after launch is a household event, never a silent re-basing                                                                                                                                   |
 | 053 | A balance belongs to a person — the `family` pseudo-profile never holds P-Bucks (a household pot is a second balance by another name), and tier 1 holds a wallet, amending the tier table's "no financial data" to mean the household's money (M8)                                                                                                               |
 | 054 | The currency is named **Pritchett Bucks** — the coin bears a struck **P-mark** (0.66 of the face, stroke 2.5) replacing ADR 051's placeholder `Coins` glyph, and the name has FOUR registers (mark · `P$` · `P-Bucks` · `Pritchett Bucks`), one per medium, chosen by naming an export in `packages/ui/src/lib/currency.ts` rather than by typing two characters |
+| 055 | A redemption is a ticket — buy debits the wallet once with no parent gate; the owned ticket waits in the kid's pocket; `requiresApproval` gates USE, not purchase; a decline is "not now", never confiscation; used is fulfilment; tier-4 revoke-and-refund is the administrative exception                                                                      |
+| 056 | XP is derived from P-Bucks — `xp = 5 + coinReward × 10`, server-derived on create and every edit (client `xpReward` ignored); the XP picker is gone, legacy values drain rather than migrate, and this is not conversion (ADR 002 holds). Amends ADR 052                                                                                                         |
+| 057 | Daily time-window recurrence — a third event shape (date range + weekday set + one clock window per day) stored ADR 038's way: one canonical row, occurrences computed on read via `recurrence_day_offsets`; one shared expansion module serves the events route and the reminder scheduler. Amends ADR 038                                                      |
+| 058 | Chore routines materialize real tasks — a `chores.routines` row holds the rule; occurrences are ordinary `Task` rows spawned lazily on read (no scheduler), at most one open row per routine, `(routine_id, due_date)` unique so spawning is idempotent                                                                                                          |
+| 059 | Up-for-grabs chores are claimed, then done — a null-assignee chore belongs to the household (Hearth identity) until an explicit claim makes it an ordinary assigned task; completing an unclaimed task is refused so the economy never learns a new earner                                                                                                       |
+| 060 | The network is the boundary for the family pseudo-profile — the unauthenticated family dashboard stays as ADR 021 designed it, with no app-side gating by source network; exposure is home LAN + enrolled tailnet, verified rather than code-gated                                                                                                               |
+| 061 | The XP sink is a companion — a per-kid critter hatched once, grown by XP earned since hatch (unlock, never spend), dressed by 1-of-3 milestone picks; a new `companion` plugin owns it and never touches the `rewards` ledger; gear renders on the critter only                                                                                                  |
+| 062 | Companion art is a generated, curated library — image-model output at build time, human-curated, shipped as static plugin assets; bodies are neutral grayscale hued at runtime by the owner's identity triplet; the kid loop never calls a generation API                                                                                                        |
+| 063 | `ListRow` joins `ItemCard` — cards when items are independent objects with several actions, rows when items are a set you scan and act on one way; "never hand-roll a row" now means compose one of the two primitives                                                                                                                                           |
+| 064 | Identity hue appears where the person is the answer to the surface's question — meals keep spines (an unclaimed day renders a dashed one), groceries carry no identity chrome (text notes instead); narrows the application of ADR 043/044                                                                                                                       |
 
 ---
 
@@ -192,8 +202,8 @@ The `widgets` field is optional — plugins that only add routes do not need it.
 flowchart LR
   P["Plugin Service"] --> EB["EventEmitter\n(typed channels)"]
   EB -->|"@fastify/websocket"| B["Browser Clients"]
-  EB -->|SSE| R["Read-only Clients\nPi displays, M4+"]
-  EB --> MB["MQTT Bridge\nM4+"]
+  EB -->|SSE| R["Read-only Clients\nPi displays, M6+"]
+  EB --> MB["MQTT Bridge\nM6+"]
   MB -->|Mosquitto| MCU["Microcontrollers"]
 ```
 
@@ -215,11 +225,11 @@ flowchart LR
 
 ## Hosting
 
-- **Runtime:** Docker Compose on Ubuntu Server 24.04 LTS
-- **Hardware:** repurposed x86 laptop (8GB+ RAM, SSD recommended)
-- **Images:** multi-arch (`linux/amd64` + `linux/arm64`) from day one so Pi agents can pull the same images
+- **Runtime:** Docker Compose on Raspberry Pi OS Lite (64-bit)
+- **Hardware:** Raspberry Pi 5 (4 GB) at `192.168.0.42` — SD-card boot, data on a USB SSD (ext4, `/mnt/data`); NVMe HAT queued. Runbook: `docs/deployment.md`
+- **Images:** multi-arch (`linux/amd64` + `linux/arm64`) from day one so dev machines and the Pi pull the same images
 - **Networking:** wired Ethernet preferred; server exposed on local network only
-- **Future edge devices:** Raspberry Pi(s) running lightweight agents or SSE-connected displays
+- **Future edge devices:** Pi Zero 2 Ws for the queued beacon build
 
 ---
 
@@ -257,8 +267,6 @@ export function useEventBus(): {
   publish(event: EventName, payload: unknown): void
   subscribe(event: EventName, handler: (payload: unknown) => void): () => void
 }
-// Note: currently a callback-based dev hook in apps/shell. Promoted to
-// @family-os/platform with this publish/subscribe shape in auth-and-profiles.
 ```
 
 ### Server exports (`@family-os/platform/server`)
@@ -366,7 +374,7 @@ proxy: {
 - **Session payload:** `{ activeProfileId: string }` — resolved to a full `Profile` object by auth middleware on each request
 - **Profile switching:** `POST /auth/switch { targetProfileId }` — unblocked if target tier ≤ current tier; 403 if target tier > current tier (requires `POST /auth/verify-pin { pin, targetProfileId }` first)
 - **Reactive updates:** `AuthProvider` queries `/api/auth/me` via TanStack Query with key `['api/auth/me']`; `queryClient.invalidateQueries({ queryKey: ['api/auth/me'] })` on a successful switch re-renders all `TierGate` and `PermissionGate` trees without a page reload
-- **M0 dev mechanism:** query-parameter or UI selector — real login/profile-switch UX is a separate design session (see queue)
+- **Login UX:** profile grid + single global family PIN (ADR 021); shipped in M1 auth-and-profiles
 
 **`platform` schema tables:**
 
@@ -391,7 +399,7 @@ profile_images                            -- avatar photo bytes (ADR 042); serve
 
 bug_reports                               -- in-app problem reports (ADR 046)
   id                  uuid  PK
-  reporter_id         text                 -- NO FK: the household pseudo-profile ('family') has no profiles row on prod and is the DEFAULT profile; resolved at read time with a fallback
+  reporter_id         text                 -- NO FK by design: the household pseudo-profile ('family') is the DEFAULT profile (it has had a profiles row everywhere since the 2026-07-29 backfill, PR #87); resolved at read time with a fallback
   description         text                 -- the reporter's own words
   context             jsonb                -- the capture: route, build hash, viewport, UA, console errors. Schemaless on purpose — evidence, not queryable data
   status              text  default 'new'  -- new | triaged | fixing | deployed | wont_fix
@@ -490,4 +498,4 @@ apps/
 Deferred to later sessions:
 
 - **External integrations** — Monarch, Greenlight, calendar sync (per module)
-- **MQTT bridge design** — deferred to M4+ (Smart Home)
+- **MQTT bridge design** — deferred to M6+ (Smart Home)

@@ -205,11 +205,11 @@ mutation elsewhere refreshes it.
 
 ## Open / owed
 
-- **ADR — recurrence storage** (owed, gates Event Model #1): now also covers the
-  **`event_attendees` join** for multi-person (0 rows = Family · 1 = solo · 2+ =
-  shared split fill) and whether a solo-case `owner_id` shortcut is kept.
-- **ADR — time-based reminder scheduling** (owed, gates Event Reminders #6): how
-  the 30-min default reminder actually fires.
+- **ADR — recurrence storage** — **resolved, ADR 038** (gated Event Model #1):
+  also covers the **`event_attendees` join** for multi-person (0 rows = Family ·
+  1 = solo · 2+ = shared split fill) and the solo-case `owner_id` shortcut.
+- **ADR — time-based reminder scheduling** — **resolved, ADR 045** (gated Event
+  Reminders #6): how the 30-min default reminder actually fires.
 - **ADR — external-ingest / suggested events** (owed, gates #8).
 - **ADR — member capacity** (owed from chores): Activities is its first consumer
   (the load lens). The weekday-load + season-timeline visuals don't need it for

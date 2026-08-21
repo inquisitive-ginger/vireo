@@ -24,8 +24,8 @@ Groceries follows from both, and is the biggest surface in the module.
 - **Who's got dinner** — owner + kind, an explicit **unclaimed** state, a day-level nudge
 - Calendar presence as a **day mark** (ADR 050) — the _who_, never the _what_
 - **Try bites** at the table — punches a `rewards` card (ADR 049)
-- **Grocery list — build mode** (manual adds, staples, meal "needs" push)
-- **Grocery list — shop mode** (aisle grouping, live sync) + offline
+- **Grocery list** — one aisle-grouped list (the mode split is retired, ADR 063 — see
+  below): capture + filing, shop sync + offline
 
 ## Explicitly deferred
 
@@ -42,15 +42,9 @@ Groceries follows from both, and is the biggest surface in the module.
 
 ### The meal is not a calendar event (ADR 050)
 
-Dinner has **no time a family can honour to ±30 minutes**. Making it an all-day or
-fixed-time event claims a precision the fact doesn't have and takes an event slot to
-say something that is really a property of the day. So `meals` owns its table and
-contributes a **day mark** — an avatar and a glyph in the month cell, the label in the
-agenda day header. It never writes `calendar.events`.
-
-**The mark carries the _who_. The _what_ lives on meals' own surfaces**, where there is
-room for it — the month cell has no space for "creamy sausage rigatoni" and it would be
-unreadable across the room anyway.
+`meals` owns its table and contributes a **day mark** — an avatar and a glyph in the
+month cell, the label in the agenda day header; it never writes `calendar.events`. The
+mark carries the _who_; the _what_ lives on meals' own surfaces. The why is ADR 050's.
 
 ### Build mode and shop mode are two different contexts — not two arrangements
 
@@ -113,12 +107,13 @@ menu has a home that isn't the title — and a standing helper line does the res
 | ------------------------ | ----------------------- | ------------------------------------------------- |
 | `meals.dinner.planned`   | POST/PATCH planned meal | `{ mealId, date, title, kind, ownerId, tryBite }` |
 | `meals.dinner.claimed`   | owner set on a meal     | `{ mealId, date, ownerId }`                       |
-| `meals.dinner.fulfilled` | meal marked done        | `{ mealId, date, ownerId, coinReward }`           |
+| `meals.dinner.fulfilled` | meal marked done        | `{ mealId, date, ownerId }`                       |
 | `meals.trybite.taken`    | a kid taps their bite   | `{ mealId, date, profileId, tryBite }`            |
 | `meals.grocery.added`    | POST grocery item       | `{ itemId, name, addedBy, sourceType }`           |
 
-`meals.dinner.fulfilled` and `meals.trybite.taken` are the module's contribution to the
-earn contract (ADR 048) — `meals` knows nothing about ledgers or punch cards.
+`meals.trybite.taken` is the module's contribution to the earn contract (ADR 048) —
+`meals` knows nothing about ledgers or punch cards. The cook award was retired in
+M5/2 (2026-08-13); a paid dinner is a dedicated chore.
 
 ---
 
@@ -189,7 +184,6 @@ planned_meals
   sides       text  nullable              -- [M5/1] "roasted veggies, garlic bread" — the menu's second line
   kind        text                        -- 'cooked' | 'takeout' | 'leftovers' | 'out' — renders as a verb, never a chip
   owner_id    uuid  nullable              -- null = UNCLAIMED, a first-class state
-  coin_reward integer nullable            -- ADR 048; cooking dinner is a chore
   notes       text  nullable
   try_bite    text  nullable              -- the one named, bounded ask
   needs       text  nullable              -- free text → grocery push; no recipe model

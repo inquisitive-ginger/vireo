@@ -15,7 +15,8 @@ network: home LAN plus enrolled tailnet devices, nothing else.
 
 The #92 triage flag ("the whole family answers to anyone who can reach
 `vireohome.app`") is resolved by verification, not code: `vireohome.app`
-resolves to `192.168.0.31` in public DNS, the Pi has no publicly reachable
+resolves to `192.168.0.31` in public DNS (`192.168.0.42` since the 2026-08-16
+Pi 5 migration), the Pi has no publicly reachable
 listener, and off-LAN access exists only through the Tailscale subnet route
 advertising that single address. The app is not on the public internet.
 

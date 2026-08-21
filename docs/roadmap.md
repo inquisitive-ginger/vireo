@@ -13,22 +13,15 @@
 
 ## Active Milestone
 
-**M3 — Calendar** is ✅ **MVP-complete** (2026-07-19): all 7 MVP stories shipped
-(design 2026-06-22; dev stories 1–7). **Event Reminders (story 6, PR #41)** closed it —
-a 60s in-process poll (ADR 045) firing `platform.notify()` at reminder time. Story 8
-(Suggested Events Inbox) is the deferred north star, gated by the external-ingest ADR. MVP
-thesis delivered: a glanceable tablet twin of the paper calendar + mobile capture +
-reminders. M2 — Chores ✅ done (2026-06-20).
+**M4.5 — Companion** — direction settled 2026-08-07 (ADRs 061/062; grew out of
+M4/9 when the XP sink outgrew a single session). Sessions 1–2 (style bible +
+duotone proof; gear taxonomy + asset library) shipped 2026-08-07/08; **M4.5/3
+Feature UX is next**, then dev foundation and surfaces. See
+`docs/modules/companion/spec.md`.
 
-**In flight: M4 — Rewards & Wallet** — the design gate closed 2026-07-22 (ADRs 051–053;
-the economy is priced at ~10 P-Bucks/week), and **M4/2 Ledger + Balance is next**. Then
-**M5 — Meals & Groceries** (planning session 2026-07-21). M2 has minted XP with nothing
-to spend it on since June; M4 closes that loop. M5 depends on M4 only for try bites — its dinner and grocery stories can start
-independently.
-
-**M4/9 became M4.5 — Companion** (2026-08-07): the XP-sink story outgrew a single
-session at its direction gate. M4's remaining feature work is done; the sink ships
-as its own five-session milestone. See `docs/modules/companion/spec.md`.
+**Also in flight: M5 — Meals & Groceries** — design gate closed 2026-08-11
+(M5/1, ADRs 063/064) and **M5/2 Week Plan + Tonight's Dinner shipped 2026-08-13
+(PR #105)**. M5/3 Who's Got Dinner is queued next.
 
 ## Completed
 
@@ -36,6 +29,7 @@ as its own five-session milestone. See `docs/modules/companion/spec.md`.
 **M1 — Platform Shell** · ✅ Done (2026-06-15)
 **M2 — Chores** · ✅ Done (2026-06-20)
 **M3 — Calendar** · ✅ MVP-complete (2026-07-19) — story 8 (Suggested Events Inbox) deferred
+**M4 — Rewards & Wallet** · ✅ Done (2026-07-26, live in prod PR #75) — the XP sink split out as M4.5
 
 ---
 
@@ -147,8 +141,8 @@ Two jobs that turn out to be one module: **nobody gets ambushed by dinner**, and
   first-class state**, and at 4pm on a Thursday it is the most valuable one
 - Calendar presence as a **day mark**, not an event (**ADR 050**) — a small platform
   story shared with M7 School
-- **Try bites** — punches a rewards card (**ADR 049**); depends on M4
-- **Grocery list** — build mode, shop mode (aisle-grouped), and offline
+- **Try bites** — punches a rewards card (**ADR 049**; punch cards shipped M4/6, 2026-08-01)
+- **Grocery list** — one aisle-grouped list (the build/shop mode split was retired in M5/1, ADR 063) and offline
 
 **Deferred deliberately:** the recipe bank. A free-text `needs` field on the planned
 meal pushes to groceries and removes the reason to build ingredient parsing.
