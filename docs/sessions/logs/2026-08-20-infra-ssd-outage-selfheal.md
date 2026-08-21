@@ -45,4 +45,3 @@ PCIe port — gets storage off USB entirely.
 ## Open
 
 - smartmontools not installed; no SMART baseline for the SSD (declined for now).
-- Report `603e89eb` (#114) still owes its `deployed` flip.

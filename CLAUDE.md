@@ -26,8 +26,7 @@ before it reads anything else, and it is size-capped — see
   `logs/2026-08-20-infra-ssd-outage-selfheal.md`.
 - **What's next and everything outstanding:** `docs/sessions/queue.md` — the one
   index. New small item: retire the 3B as second-copy backup puller.
-- **Owed in-app:** report `603e89eb` (#114, fixed+live 2026-08-19) needs its
-  `deployed` flip — Zach, from Settings → Reported problems.
+- **Owed in-app:** none — #114's report flipped `deployed` 2026-08-20.
 
 ---
 
