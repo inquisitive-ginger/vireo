@@ -22,11 +22,13 @@ before it reads anything else, and it is size-capped — see
 - **Deployment:** 🟢 live at `https://vireohome.app` — Pi 5 (192.168.0.42);
   auto-deploy + Tailscale + restic→R2 intact; **SSD watchdog + external
   dead-man ping live 2026-08-20** (USB outage; NVMe HAT queued). Runbook Part F.
-- **Last session:** 2026-08-20 — docs audit: 24 stale/duplicate issue groups
-  fixed, −700 lines. `logs/2026-08-20-audit-docs-staleness.md`.
+- **Last session:** 2026-08-20 — auto-bug #116–118 fix (PR #119, deployed):
+  widget clamping, kid grid, layout defaults unseeded.
+  `logs/2026-08-20-fix-auto-bug-116-118.md`.
 - **What's next and everything outstanding:** `docs/sessions/queue.md` — the one
-  index. New small item: retire the 3B as second-copy backup puller.
-- **Owed in-app:** none — #114's report flipped `deployed` 2026-08-20.
+  index. New small item: watchdog deploy-quiescence window.
+- **Owed in-app:** `deployed` flips for the three #116–118 reports (ids in the
+  queue's Recently Completed entry).
 
 ---
 

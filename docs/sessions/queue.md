@@ -102,6 +102,16 @@ _Depends on: M5/6._
 
 ---
 
+### Watchdog: deploy-quiescence window
+
+**Type:** infra (small) · **Kickoff:** _to be written_
+The 2026-08-20 deploy (PR #119) tripped `vireo-watchdog` mid-pipeline and the
+Pi rebooted under a deploy that had already succeeded — a minute-cadence health
+check can't tell "SSD gone" from "containers restarting". Teach the watchdog to
+stand down while a deploy is in flight (touch-file from deploy.yml, or a longer
+unhealthy grace before the reboot path). See
+`logs/2026-08-20-fix-auto-bug-116-118.md` §Deploy. _Depends on: none._
+
 ### Prod storage off USB: NVMe HAT for the Pi 5
 
 **Type:** infra (small, needs a purchase) · **Kickoff:** _to be written_
@@ -221,6 +231,13 @@ suite mirroring chores/calendar. _Depends on: none._
 ## Recently Completed
 
 > Two-line index; full detail in the linked log.
+
+- **2026-08-20 — Fix: home widget clamping + layouts (auto-bug #116 #117 #118,
+  PR #119).** Fit-rows gaps closed (feed, hidden-variant re-measure, meals empty
+  groove); day list stacks headers on narrow; kid grid reworked; seeded
+  `default_layout_*` config rows unseeded + deleted in prod. See
+  `logs/2026-08-20-fix-auto-bug-116-118.md`. **Owed:** `deployed` flips for
+  reports `5a6cfca1…`, `67345432…`, `f21228f7…` (in-app, with resolutions).
 
 - **2026-08-20 — Audit: doc staleness sweep (ad-hoc, docs only).** 24 issue
   groups fixed across 30 files (−~700 lines): dead refs, post-renumber/post-ship
