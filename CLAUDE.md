@@ -22,9 +22,9 @@ before it reads anything else, and it is size-capped — see
 - **Deployment:** 🟢 live at `https://vireohome.app` — Pi 5 (192.168.0.42);
   auto-deploy + Tailscale + restic→R2 intact; **SSD watchdog + external
   dead-man ping live 2026-08-20** (USB outage; NVMe HAT queued). Runbook Part F.
-- **Last session:** 2026-08-20 — auto-bug #116–118 fix (PR #119, deployed):
-  widget clamping, kid grid, layout defaults unseeded.
-  `logs/2026-08-20-fix-auto-bug-116-118.md`.
+- **Last session:** 2026-08-22 — the Vireo commit: olive primary + oat neutrals
+  (ADR 065, PR #120); local dir now `~/Develop/vireo`.
+  `logs/2026-08-22-design-dev-olive-primary.md`.
 - **What's next and everything outstanding:** `docs/sessions/queue.md` — the one
   index. New small item: watchdog deploy-quiescence window.
 - **Owed in-app:** `deployed` flips for the three #116–118 reports (ids in the

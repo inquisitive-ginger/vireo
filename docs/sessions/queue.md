@@ -232,6 +232,11 @@ suite mirroring chores/calendar. _Depends on: none._
 
 > Two-line index; full detail in the linked log.
 
+- **2026-08-22 — Design+dev: the Vireo commit — olive primary (ADR 065, PR
+  #120).** Primary/ring terracotta → deep olive; clay neutrals → oat; icon set
+  re-rendered; latent shadcn accent-hover + colour-only tab state fixed. See
+  `logs/2026-08-22-design-dev-olive-primary.md`.
+
 - **2026-08-20 — Fix: home widget clamping + layouts (auto-bug #116 #117 #118,
   PR #119).** Fit-rows gaps closed (feed, hidden-variant re-measure, meals empty
   groove); day list stacks headers on narrow; kid grid reworked; seeded
