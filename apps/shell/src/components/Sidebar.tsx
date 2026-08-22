@@ -129,7 +129,7 @@ function NavItem({
           // ADR 031 (amended): `--primary` tint owns active on the seamless rail;
           // the old `--secondary` surface is now the hover wash. No left-bar.
           isActive
-            ? 'bg-primary/10 text-primary font-medium'
+            ? 'bg-primary/13 text-primary font-medium'
             : 'text-muted-foreground hover:bg-secondary/70 hover:text-foreground'
         )
       }

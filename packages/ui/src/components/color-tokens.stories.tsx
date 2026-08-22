@@ -16,12 +16,12 @@ type SwatchItem = {
 }
 
 const CORE: SwatchItem[] = [
-  { token: '--background', role: 'Page surface — warm off-white / warm clay (dark)' },
+  { token: '--background', role: 'Page surface — warm off-white / deep loam (dark)' },
   { token: '--foreground', fgToken: '--background', role: 'Primary text' },
   {
     token: '--primary',
     fgToken: '--primary-foreground',
-    role: 'Terracotta — actions, active states',
+    role: 'Deep olive — actions, active states',
   },
   {
     token: '--secondary',
@@ -153,9 +153,9 @@ export const StatusTokens: Story = {
 }
 
 const IDENTITY_ROLES: Record<OwnerHue, string> = {
-  terracotta: 'Assignable — harmonized with --primary',
+  terracotta: 'Assignable',
   marigold: 'Assignable',
-  moss: 'Assignable — added in ADR 044',
+  moss: 'Assignable — added in ADR 044; nearest --primary (ADR 065)',
   sage: 'Assignable',
   teal: 'Assignable — harmonized with --accent',
   sky: 'Assignable',

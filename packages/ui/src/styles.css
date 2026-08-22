@@ -209,38 +209,38 @@
     --ease-in: cubic-bezier(0.4, 0, 1, 1);
     --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
 
-    /* Terracotta & Teal — light */
-    --background: oklch(0.985 0.008 75);
-    --foreground: oklch(0.18 0.04 50);
-    --primary: oklch(0.57 0.14 35);
+    /* Olive & Teal — light */
+    --background: oklch(0.985 0.008 100);
+    --foreground: oklch(0.18 0.03 100);
+    --primary: oklch(0.5 0.11 122);
     --primary-foreground: oklch(0.99 0 0);
-    --secondary: oklch(0.93 0.022 72);
-    --secondary-foreground: oklch(0.28 0.05 50);
-    --muted: oklch(0.93 0.016 72);
-    --muted-foreground: oklch(0.52 0.04 58);
+    --secondary: oklch(0.93 0.02 100);
+    --secondary-foreground: oklch(0.28 0.04 100);
+    --muted: oklch(0.93 0.016 100);
+    --muted-foreground: oklch(0.52 0.035 100);
     --accent: oklch(0.47 0.07 185);
     --accent-foreground: oklch(0.99 0 0);
-    --border: oklch(0.88 0.022 75);
-    --input: oklch(0.88 0.022 75);
-    --ring: oklch(0.57 0.14 35);
+    --border: oklch(0.88 0.02 100);
+    --input: oklch(0.88 0.02 100);
+    --ring: oklch(0.5 0.11 122);
 
     /* Surface elevation — cards lift toward warm white, above --background */
-    --card: oklch(0.999 0.004 80);
+    --card: oklch(0.999 0.004 100);
     --card-foreground: var(--foreground);
-    --shadow-card: 0 1px 2px oklch(0.35 0.06 50 / 0.06), 0 2px 10px oklch(0.35 0.06 50 / 0.07);
-    --shadow-raised: 0 2px 6px oklch(0.35 0.06 50 / 0.07), 0 10px 28px oklch(0.35 0.06 50 / 0.12);
+    --shadow-card: 0 1px 2px oklch(0.35 0.05 100 / 0.06), 0 2px 10px oklch(0.35 0.05 100 / 0.07);
+    --shadow-raised: 0 2px 6px oklch(0.35 0.05 100 / 0.07), 0 10px 28px oklch(0.35 0.05 100 / 0.12);
 
     /* The sunken plane — the ladder's one step DOWN, below --card (ADR 040).
-       Deliberately near-achromatic (chroma 0.006 against --secondary's 0.022): an
+       Deliberately near-achromatic (chroma 0.006 against --secondary's 0.02): an
        identity fill is always chromatic, so a desaturated plane can never be read
        as one — which --secondary, doubling as the Family fill, could not promise.
        Pair with --shadow-inset; the tint alone is a grey rectangle, the inner
        shadow is what makes it a recess. */
-    --surface-sunken: oklch(0.955 0.006 75);
+    --surface-sunken: oklch(0.955 0.006 100);
     --shadow-inset:
-      inset 0 2px 3px -1px oklch(0.35 0.06 50 / 0.1), inset 0 -1px 0 0 oklch(1 0 0 / 0.55);
+      inset 0 2px 3px -1px oklch(0.35 0.05 100 / 0.1), inset 0 -1px 0 0 oklch(1 0 0 / 0.55);
 
-    /* Member identity palette — EIGHT fixed hues harmonized with Terracotta & Teal
+    /* Member identity palette — EIGHT fixed hues harmonized with Olive & Teal
        (ADR 044). base: spines, rings, markers · tint: fills · ink: text on tint.
 
        The six original hues are unchanged — nobody's colour moved. `moss` (117) and
@@ -319,30 +319,30 @@
 
   @media (prefers-color-scheme: dark) {
     :root:not([data-theme='light']) {
-      /* Terracotta & Teal — dark */
-      --background: oklch(0.15 0.022 45);
-      --foreground: oklch(0.92 0.012 75);
-      --primary: oklch(0.66 0.14 35);
+      /* Olive & Teal — dark */
+      --background: oklch(0.15 0.018 105);
+      --foreground: oklch(0.92 0.012 100);
+      --primary: oklch(0.62 0.11 122);
       --primary-foreground: oklch(0.99 0 0);
-      --secondary: oklch(0.22 0.02 48);
-      --secondary-foreground: oklch(0.82 0.012 70);
-      --muted: oklch(0.2 0.016 48);
-      --muted-foreground: oklch(0.56 0.022 60);
+      --secondary: oklch(0.22 0.016 105);
+      --secondary-foreground: oklch(0.82 0.012 100);
+      --muted: oklch(0.2 0.014 105);
+      --muted-foreground: oklch(0.56 0.02 100);
       --accent: oklch(0.56 0.08 185);
       --accent-foreground: oklch(0.99 0 0);
-      --border: oklch(0.3 0.022 48);
-      --input: oklch(0.3 0.022 48);
-      --ring: oklch(0.66 0.14 35);
+      --border: oklch(0.3 0.018 105);
+      --input: oklch(0.3 0.018 105);
+      --ring: oklch(0.62 0.11 122);
 
-      --card: oklch(0.21 0.022 47);
+      --card: oklch(0.21 0.018 105);
       --card-foreground: var(--foreground);
       --shadow-card: 0 1px 2px oklch(0 0 0 / 0.3), 0 2px 10px oklch(0 0 0 / 0.35);
       --shadow-raised: 0 2px 6px oklch(0 0 0 / 0.35), 0 10px 28px oklch(0 0 0 / 0.45);
 
-      /* Sunken plane (ADR 040) — darker than --card, toward the clay background.
+      /* Sunken plane (ADR 040) — darker than --card, toward the loam background.
          The bottom lip lightens instead of whitening, so the recess reads without
          a bright seam on dark. */
-      --surface-sunken: oklch(0.175 0.008 47);
+      --surface-sunken: oklch(0.175 0.008 105);
       --shadow-inset: inset 0 2px 4px -1px oklch(0 0 0 / 0.4), inset 0 -1px 0 0 oklch(1 0 0 / 0.04);
 
       /* Eight hues (ADR 044). The dark tint is a dark chip, so the fill repair runs
@@ -399,21 +399,21 @@
 
   /* Manual dark mode override — per-profile preference (AC8) */
   [data-theme='dark'] {
-    --background: oklch(0.15 0.022 45);
-    --foreground: oklch(0.92 0.012 75);
-    --primary: oklch(0.66 0.14 35);
+    --background: oklch(0.15 0.018 105);
+    --foreground: oklch(0.92 0.012 100);
+    --primary: oklch(0.62 0.11 122);
     --primary-foreground: oklch(0.99 0 0);
-    --secondary: oklch(0.22 0.02 48);
-    --secondary-foreground: oklch(0.82 0.012 70);
-    --muted: oklch(0.2 0.016 48);
-    --muted-foreground: oklch(0.56 0.022 60);
+    --secondary: oklch(0.22 0.016 105);
+    --secondary-foreground: oklch(0.82 0.012 100);
+    --muted: oklch(0.2 0.014 105);
+    --muted-foreground: oklch(0.56 0.02 100);
     --accent: oklch(0.56 0.08 185);
     --accent-foreground: oklch(0.99 0 0);
-    --border: oklch(0.3 0.022 48);
-    --input: oklch(0.3 0.022 48);
-    --ring: oklch(0.66 0.14 35);
+    --border: oklch(0.3 0.018 105);
+    --input: oklch(0.3 0.018 105);
+    --ring: oklch(0.62 0.11 122);
 
-    --card: oklch(0.21 0.022 47);
+    --card: oklch(0.21 0.018 105);
     --card-foreground: var(--foreground);
     --shadow-card: 0 1px 2px oklch(0 0 0 / 0.3), 0 2px 10px oklch(0 0 0 / 0.35);
     --shadow-raised: 0 2px 6px oklch(0 0 0 / 0.35), 0 10px 28px oklch(0 0 0 / 0.45);
@@ -422,7 +422,7 @@
        prefers-color-scheme block above: this is the EXPLICIT theme toggle, and a
        token missing from it silently falls back to the light `:root` value. That
        shipped once already — the groove rendered near-white in toggled dark mode. */
-    --surface-sunken: oklch(0.175 0.008 47);
+    --surface-sunken: oklch(0.175 0.008 105);
     --shadow-inset: inset 0 2px 4px -1px oklch(0 0 0 / 0.4), inset 0 -1px 0 0 oklch(1 0 0 / 0.04);
 
     /* Eight hues (ADR 044) — repeated here, not only in the prefers-color-scheme

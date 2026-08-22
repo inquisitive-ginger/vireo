@@ -53,7 +53,7 @@ function TopBarFrame({
 
 /**
  * Mobile brand top bar (ADR 034). Three-slot header: profile avatar (left) ·
- * "Family OS" wordmark (center) · notification bell (right). Visible only on
+ * "Vireo" wordmark (center) · notification bell (right). Visible only on
  * mobile (`md:hidden`). Hidden at `md:` and up where the sidebar takes over.
  */
 const meta: Meta = {

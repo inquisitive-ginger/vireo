@@ -45,7 +45,7 @@ export function formatIssueBody(input: IssueInput): string {
     '',
     '---',
     '',
-    `_Filed by Family OS. Moving the report to \`deployed\` notifies ${input.reporterName} in-app._`
+    `_Filed by Vireo. Moving the report to \`deployed\` notifies ${input.reporterName} in-app._`
   )
 
   return lines.join('\n')

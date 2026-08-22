@@ -471,7 +471,7 @@ function Step3() {
               )}
               style={
                 !isMismatch && i < current.length
-                  ? { background: 'oklch(0.57 0.14 35 / 0.08)' }
+                  ? { background: 'color-mix(in oklab, var(--primary) 8%, transparent)' }
                   : {}
               }
             >
@@ -533,7 +533,7 @@ function OnboardingFlow({ initialStep }: { initialStep: Step }) {
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-background p-6">
       <p className="text-muted-foreground text-xs tracking-[0.15em] uppercase font-semibold mb-6">
-        Family OS
+        Vireo
       </p>
 
       <div className="w-full max-w-md bg-card border border-border rounded-2xl shadow-[var(--shadow-raised)] overflow-hidden">

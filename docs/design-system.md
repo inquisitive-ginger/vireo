@@ -150,12 +150,12 @@ All tokens are defined as CSS utilities in `packages/ui/src/styles.css` and are 
 
 ## Color & Tokens
 
-**Settled** — Visual Language design session, 2026-06-02.
+**Settled** — Visual Language design session, 2026-06-02. Primary re-cut from
+terracotta to deep olive 2026-08-22 (**ADR 065**); everything else unchanged.
 
-**Palette: Terracotta & Teal.** A warm burnt-orange primary paired
-with a muted sage-teal accent — earthy warmth balanced by a calm
-complement. Deliberately two distinct hues rather than a single-hue
-scale.
+**Palette: Olive & Teal.** A deep olive primary — the vireo's own plumage —
+paired with a muted sage-teal accent over warm oat neutrals. Deliberately two
+distinct hues rather than a single-hue scale.
 
 Theming is cascade-based via CSS custom properties defined in
 `packages/ui/src/styles.css`. No JavaScript overhead. Plugins consume
@@ -163,20 +163,20 @@ semantic tokens only — never raw oklch values.
 
 ### Core tokens — light mode
 
-| Token                    | Value                   | Role                                                                   |
-| ------------------------ | ----------------------- | ---------------------------------------------------------------------- |
-| `--background`           | `oklch(0.985 0.008 75)` | Page background — warm off-white                                       |
-| `--foreground`           | `oklch(0.18 0.04 50)`   | Primary text                                                           |
-| `--primary`              | `oklch(0.57 0.14 35)`   | Terracotta — main actions, active states                               |
-| `--primary-foreground`   | `oklch(0.99 0 0)`       | Text on primary                                                        |
-| `--secondary`            | `oklch(0.93 0.022 72)`  | Inset / structural surfaces — sidebar, grouped rows, settings sections |
-| `--secondary-foreground` | `oklch(0.28 0.05 50)`   | Text on secondary                                                      |
-| `--muted`                | `oklch(0.93 0.016 72)`  | Subtle backgrounds                                                     |
-| `--muted-foreground`     | `oklch(0.52 0.04 58)`   | Subdued labels, timestamps                                             |
-| `--accent`               | `oklch(0.47 0.07 185)`  | Muted sage-teal — module identity only (see Accent scope below)        |
-| `--accent-foreground`    | `oklch(0.99 0 0)`       | Text on accent                                                         |
-| `--border` / `--input`   | `oklch(0.88 0.022 75)`  | Borders and input outlines                                             |
-| `--ring`                 | `oklch(0.57 0.14 35)`   | Focus ring (matches primary)                                           |
+| Token                    | Value                    | Role                                                                   |
+| ------------------------ | ------------------------ | ---------------------------------------------------------------------- |
+| `--background`           | `oklch(0.985 0.008 100)` | Page background — warm off-white                                       |
+| `--foreground`           | `oklch(0.18 0.03 100)`   | Primary text                                                           |
+| `--primary`              | `oklch(0.5 0.11 122)`    | Deep olive — main actions, active states                               |
+| `--primary-foreground`   | `oklch(0.99 0 0)`        | Text on primary                                                        |
+| `--secondary`            | `oklch(0.93 0.02 100)`   | Inset / structural surfaces — sidebar, grouped rows, settings sections |
+| `--secondary-foreground` | `oklch(0.28 0.04 100)`   | Text on secondary                                                      |
+| `--muted`                | `oklch(0.93 0.016 100)`  | Subtle backgrounds                                                     |
+| `--muted-foreground`     | `oklch(0.52 0.035 100)`  | Subdued labels, timestamps                                             |
+| `--accent`               | `oklch(0.47 0.07 185)`   | Muted sage-teal — module identity only (see Accent scope below)        |
+| `--accent-foreground`    | `oklch(0.99 0 0)`        | Text on accent                                                         |
+| `--border` / `--input`   | `oklch(0.88 0.02 100)`   | Borders and input outlines                                             |
+| `--ring`                 | `oklch(0.5 0.11 122)`    | Focus ring (matches primary)                                           |
 
 ### Surface elevation
 
@@ -186,18 +186,18 @@ The original token set had no depth layer — `--secondary` (oklch 0.93) on
 `--background` (oklch 0.985) read as nearly flat, which made every surface
 look like the same beige. Elevation now carries surface hierarchy:
 
-| Token               | Light                   | Dark                    | Role                                       |
-| ------------------- | ----------------------- | ----------------------- | ------------------------------------------ |
-| `--surface-sunken`  | `oklch(0.955 0.006 75)` | `oklch(0.175 0.008 47)` | A recess cut _into_ a card (ADR 040)       |
-| `--shadow-inset`    | warm inner shadow       | deep inner shadow       | The depth cue that makes the tint a groove |
-| `--card`            | `oklch(0.999 0.004 80)` | `oklch(0.21 0.022 47)`  | Content cards — lifts _above_ background   |
-| `--card-foreground` | `var(--foreground)`     | `var(--foreground)`     | Text on cards                              |
-| `--shadow-card`     | warm-tinted, subtle     | deep black, subtle      | Resting cards, widget slots                |
-| `--shadow-raised`   | warm-tinted, pronounced | deep black, pronounced  | Compose forms, overlays, pickers           |
+| Token               | Light                    | Dark                     | Role                                       |
+| ------------------- | ------------------------ | ------------------------ | ------------------------------------------ |
+| `--surface-sunken`  | `oklch(0.955 0.006 100)` | `oklch(0.175 0.008 105)` | A recess cut _into_ a card (ADR 040)       |
+| `--shadow-inset`    | warm inner shadow        | deep inner shadow        | The depth cue that makes the tint a groove |
+| `--card`            | `oklch(0.999 0.004 100)` | `oklch(0.21 0.018 105)`  | Content cards — lifts _above_ background   |
+| `--card-foreground` | `var(--foreground)`      | `var(--foreground)`      | Text on cards                              |
+| `--shadow-card`     | warm-tinted, subtle      | deep black, subtle       | Resting cards, widget slots                |
+| `--shadow-raised`   | warm-tinted, pronounced  | deep black, pronounced   | Compose forms, overlays, pickers           |
 
 Rules:
 
-- Light-mode shadows are **warm-tinted** (`oklch(0.35 0.06 50 / …)`), never
+- Light-mode shadows are **warm-tinted** (`oklch(0.35 0.05 100 / …)`), never
   neutral gray — gray shadows go cold against the warm palette
 - `--card` is _lighter_ than `--background` in light mode (lift toward white);
   in dark mode it is lighter than the clay background by ~0.06 L
@@ -300,7 +300,7 @@ condition **and** an appointment, so it takes the span rule with one carve-out:
 list itself lives in `@family-os/schemas` — the API allocates hues and the UI paints
 them, and that is the only leaf package both can import.
 
-**Eight** fixed hues harmonized with Terracotta & Teal. Every family member maps to
+**Eight** fixed hues harmonized with Olive & Teal. Every family member maps to
 one hue and keeps it **everywhere** — avatar fill, feed post spine, calendar chips,
 chore assignments. Three layers per hue, light + dark aware:
 
@@ -480,7 +480,7 @@ value to maintain.
 ### Dark mode
 
 Triggered by `prefers-color-scheme: dark` — no JavaScript required,
-cascade-based. The dark background is a **warm clay** (`oklch(0.15 0.022 45)`)
+cascade-based. The dark background is a **deep loam** (`oklch(0.15 0.018 105)`)
 rather than the cold blue-black common in most apps. Primaries lighten
 to maintain contrast against dark surfaces.
 
@@ -494,17 +494,17 @@ to maintain contrast against dark surfaces.
 > OS-preference dark screenshots all looked correct. If you add a token, grep for
 > all three.
 
-| Token                  | Light                   | Dark                   |
-| ---------------------- | ----------------------- | ---------------------- |
-| `--background`         | `oklch(0.985 0.008 75)` | `oklch(0.15 0.022 45)` |
-| `--foreground`         | `oklch(0.18 0.04 50)`   | `oklch(0.92 0.012 75)` |
-| `--primary`            | `oklch(0.57 0.14 35)`   | `oklch(0.66 0.14 35)`  |
-| `--accent`             | `oklch(0.47 0.07 185)`  | `oklch(0.56 0.08 185)` |
-| `--secondary`          | `oklch(0.93 0.022 72)`  | `oklch(0.22 0.020 48)` |
-| `--muted`              | `oklch(0.93 0.016 72)`  | `oklch(0.20 0.016 48)` |
-| `--muted-foreground`   | `oklch(0.52 0.04 58)`   | `oklch(0.56 0.022 60)` |
-| `--border` / `--input` | `oklch(0.88 0.022 75)`  | `oklch(0.30 0.022 48)` |
-| `--error`              | `oklch(0.50 0.17 12)`   | `oklch(0.62 0.17 12)`  |
+| Token                  | Light                    | Dark                    |
+| ---------------------- | ------------------------ | ----------------------- |
+| `--background`         | `oklch(0.985 0.008 100)` | `oklch(0.15 0.018 105)` |
+| `--foreground`         | `oklch(0.18 0.03 100)`   | `oklch(0.92 0.012 100)` |
+| `--primary`            | `oklch(0.5 0.11 122)`    | `oklch(0.62 0.11 122)`  |
+| `--accent`             | `oklch(0.47 0.07 185)`   | `oklch(0.56 0.08 185)`  |
+| `--secondary`          | `oklch(0.93 0.02 100)`   | `oklch(0.22 0.016 105)` |
+| `--muted`              | `oklch(0.93 0.016 100)`  | `oklch(0.2 0.014 105)`  |
+| `--muted-foreground`   | `oklch(0.52 0.035 100)`  | `oklch(0.56 0.02 100)`  |
+| `--border` / `--input` | `oklch(0.88 0.02 100)`   | `oklch(0.3 0.018 105)`  |
+| `--error`              | `oklch(0.50 0.17 12)`    | `oklch(0.62 0.17 12)`   |
 
 A manual dark mode toggle is available to all tiers in display preferences.
 The preference is stored per-profile and overrides `prefers-color-scheme` on
@@ -863,12 +863,12 @@ _Amended 2026-07-11 (ADR 031 amendment) — active softened to `/10` on the seam
 `--background` rail; hover moved to the reused `--secondary` surface so it stays distinct
 from the primary-tinted active._
 
-| State                   | Classes                                       | Notes                                                                 |
-| ----------------------- | --------------------------------------------- | --------------------------------------------------------------------- |
-| Active nav item         | `bg-primary/10 text-primary font-medium`      | "You are here" — soft terracotta tint on the bare `--background` rail |
-| Nav hover               | `hover:bg-secondary/70 hover:text-foreground` | The retired sidebar surface, reused as the hover wash                 |
-| Profile chip rest       | `bg-card border shadow-[var(--shadow-card)]`  | Elevated header chip (ADR 039 ladder), not a nav item                 |
-| Profile chip hover/open | `shadow-[var(--shadow-raised)]`               | Lifts on hover and while the switch menu is open                      |
+| State                   | Classes                                       | Notes                                                            |
+| ----------------------- | --------------------------------------------- | ---------------------------------------------------------------- |
+| Active nav item         | `bg-primary/13 text-primary font-medium`      | "You are here" — soft olive tint on the bare `--background` rail |
+| Nav hover               | `hover:bg-secondary/70 hover:text-foreground` | The retired sidebar surface, reused as the hover wash            |
+| Profile chip rest       | `bg-card border shadow-[var(--shadow-card)]`  | Elevated header chip (ADR 039 ladder), not a nav item            |
+| Profile chip hover/open | `shadow-[var(--shadow-raised)]`               | Lifts on hover and while the switch menu is open                 |
 
 The active profile avatar uses a `--primary` ring (ADR 030). Ring (circular, avatar-level)
 and fill (rectangular, item-level) are visually distinct shapes of the same
@@ -1638,7 +1638,7 @@ thumb-friendly, 1 tap to any pinned destination.
 ```
 
 - **Tab height:** 56px minimum touch target
-- **Active tab:** icon + label in `--primary`
+- **Active tab:** icon on a `bg-primary/13` pill + label in `--primary` semibold — colour alone cannot separate olive from the muted ink (ADR 065)
 - **Inactive tab:** icon + label in `--muted-foreground`
 - **Tier filtering:** plugin tabs are filtered at the tab level using the same `minTier` convention as the sidebar.
 - **Overflow:** the **More** tab opens a bottom `Sheet` listing the remaining tier-visible modules, and shows active state when an overflowed route is current; when everything fits in 5 tabs, no More tab renders. Pinning is registry order in `plugins.json`; the tab-pinning management UI is deferred to M9 (marketplace).
