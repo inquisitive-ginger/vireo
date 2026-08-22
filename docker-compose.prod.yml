@@ -17,6 +17,10 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+      # Crash recovery on the USB SSD fsynced for 92s after the 2026-08-22
+      # reboot; without a start period the api's depends_on gate turns that into
+      # a failed deploy rather than a slow one.
+      start_period: 180s
 
   api:
     image: ghcr.io/inquisitive-ginger/family-os-api:${TAG:-latest}
