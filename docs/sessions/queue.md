@@ -105,7 +105,7 @@ _Depends on: M5/6._
 ### Watchdog: deploy-quiescence window
 
 **Type:** infra (small, **now urgent — 2 for 2 on recent deploys**) ·
-**Kickoff:** _to be written_
+**Kickoff:** `kickoffs/infra-watchdog-quiescence.md`
 A minute-cadence health check can't tell "SSD gone" from "containers
 restarting". PR #119's deploy tripped it and the Pi rebooted under a deploy
 that had already succeeded; **PR #120 (2026-08-22) was worse** — the reboot
