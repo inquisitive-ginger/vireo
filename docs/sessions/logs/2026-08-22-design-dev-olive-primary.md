@@ -48,3 +48,15 @@
 
 - Installed-PWA icons refresh lazily; iOS homescreens may need a re-add to show
   the olive icon (Safari behavior, not ours).
+
+## Deploy incident (post-merge)
+
+The known watchdog/deploy race fired again, worse: during the PR #120 rollout,
+postgres's slow cold start held the `api` recreate at its health gate, the
+watchdog's probe (`/api/plugins` through Caddy) saw the stack down, and it
+**rebooted the Pi under the in-flight deploy** (reboot stamp 11:22, deploy
+"canceled" 11:23). Prod was fully down (~11:25–11:40) until the watchdog's own
+`compose up -d` retry loop finished the rollout with the already-pulled images.
+Verified after: `#596C17` served, `/api/plugins` 200, all containers healthy.
+The api container carries a compose temp name (`1aa1b727c2d6_…`) until the next
+clean deploy — cosmetic. Queue item escalated: 2 for 2 on recent deploys.

@@ -104,13 +104,18 @@ _Depends on: M5/6._
 
 ### Watchdog: deploy-quiescence window
 
-**Type:** infra (small) · **Kickoff:** _to be written_
-The 2026-08-20 deploy (PR #119) tripped `vireo-watchdog` mid-pipeline and the
-Pi rebooted under a deploy that had already succeeded — a minute-cadence health
-check can't tell "SSD gone" from "containers restarting". Teach the watchdog to
-stand down while a deploy is in flight (touch-file from deploy.yml, or a longer
-unhealthy grace before the reboot path). See
-`logs/2026-08-20-fix-auto-bug-116-118.md` §Deploy. _Depends on: none._
+**Type:** infra (small, **now urgent — 2 for 2 on recent deploys**) ·
+**Kickoff:** _to be written_
+A minute-cadence health check can't tell "SSD gone" from "containers
+restarting". PR #119's deploy tripped it and the Pi rebooted under a deploy
+that had already succeeded; **PR #120 (2026-08-22) was worse** — the reboot
+landed mid-`api` recreate, killed the runner (deploy shows "canceled"), and
+left prod down ~15 min until the watchdog's own `compose up -d` loop finished
+the rollout. Teach the watchdog to stand down while a deploy is in flight
+(touch-file from deploy.yml, or a longer unhealthy grace before the reboot
+path). See `logs/2026-08-20-fix-auto-bug-116-118.md` §Deploy and
+`logs/2026-08-22-design-dev-olive-primary.md` §Deploy incident.
+_Depends on: none._
 
 ### Prod storage off USB: NVMe HAT for the Pi 5
 

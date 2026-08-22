@@ -26,7 +26,7 @@ before it reads anything else, and it is size-capped — see
   (ADR 065, PR #120); local dir now `~/Develop/vireo`.
   `logs/2026-08-22-design-dev-olive-primary.md`.
 - **What's next and everything outstanding:** `docs/sessions/queue.md` — the one
-  index. New small item: watchdog deploy-quiescence window.
+  index. **Watchdog deploy-quiescence now urgent** — rebooted mid-deploy on #120.
 - **Owed in-app:** `deployed` flips for the three #116–118 reports (ids in the
   queue's Recently Completed entry).
 
