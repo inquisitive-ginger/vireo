@@ -11,9 +11,12 @@ const buttonVariants = cva(
       variant: {
         default:
           'bg-primary text-primary-foreground shadow-[var(--shadow-card)] hover:bg-primary/90',
+        // Hover is the neutral `--secondary` wash (the nav-rail idiom), not
+        // shadcn's `bg-accent` — here --accent is module-identity teal, never
+        // an interaction state.
         outline:
-          'border border-input bg-background shadow-[var(--shadow-card)] hover:bg-accent hover:text-accent-foreground',
-        ghost: 'hover:bg-accent hover:text-accent-foreground',
+          'border border-input bg-background shadow-[var(--shadow-card)] hover:bg-secondary/70 hover:text-foreground',
+        ghost: 'hover:bg-secondary/70 hover:text-foreground',
         'ghost-destructive': 'text-muted-foreground hover:bg-destructive/10 hover:text-destructive',
         secondary:
           'bg-secondary text-secondary-foreground shadow-[var(--shadow-card)] hover:bg-secondary/80',

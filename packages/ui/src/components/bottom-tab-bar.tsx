@@ -40,8 +40,17 @@ function TabItem({
         active ? 'text-primary' : 'text-muted-foreground'
       )}
     >
-      {icon}
-      <span className="text-xs-token font-medium leading-none">{label}</span>
+      <span
+        className={cn(
+          'grid h-6 place-items-center rounded-full px-4 transition-colors duration-[var(--duration-fast)]',
+          active && 'bg-primary/13'
+        )}
+      >
+        {icon}
+      </span>
+      <span className={cn('text-xs-token leading-none', active ? 'font-semibold' : 'font-medium')}>
+        {label}
+      </span>
     </button>
   )
 }
@@ -100,7 +109,7 @@ export function BottomTabBar({ navItems = [], tier, activeRoute, onNavigate }: B
                 aria-current={isActive(item) ? 'page' : undefined}
                 className={cn(
                   'flex min-h-touch items-center gap-3 rounded-card px-3 text-left transition-colors duration-[var(--duration-fast)]',
-                  isActive(item) ? 'text-primary' : 'text-foreground'
+                  isActive(item) ? 'bg-primary/13 text-primary' : 'text-foreground'
                 )}
               >
                 {item.icon}

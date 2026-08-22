@@ -204,7 +204,7 @@ export const Scale: Story = {
               color: t.name === 'section-label' ? 'var(--muted-foreground)' : 'var(--foreground)',
             }}
           >
-            Family OS
+            Vireo
           </span>
 
           <div

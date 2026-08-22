@@ -150,7 +150,7 @@ export const ShadowTokens: Story = {
         <SurfaceRow key={s.token} {...s} chipBg="var(--card)" />
       ))}
       <Footnote>
-        Light-mode shadows are warm-tinted (<code>oklch(0.35 0.06 50 / …)</code>) — never neutral
+        Light-mode shadows are warm-tinted (<code>oklch(0.35 0.05 100 / …)</code>) — never neutral
         gray, which goes cold against the warm palette. Dark mode deepens to black. Use the tokens;
         never hardcode <code>box-shadow</code>.
       </Footnote>

@@ -1,5 +1,5 @@
-/* Member identity colors — EIGHT fixed hues harmonized with the Terracotta & Teal
-   palette (ADR 044). A member's hue is ASSIGNED and persisted (`Profile.identityHue`),
+/* Member identity colors — EIGHT fixed hues harmonized with the Olive & Teal
+   palette (ADR 044, primary re-cut in ADR 065). A member's hue is ASSIGNED and persisted (`Profile.identityHue`),
    unique across the family; the name hash below survives only as a FALLBACK, for a
    profile that has not been assigned one yet.
 

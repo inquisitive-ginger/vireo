@@ -40,7 +40,7 @@ export function MobileBrandTopBar({
         />
       </button>
       <span className="justify-self-center text-base-token font-semibold tracking-tight text-foreground">
-        Family OS
+        Vireo
       </span>
       <NotificationBell className="justify-self-end" compact />
     </header>
