@@ -548,6 +548,39 @@ family-os-postgres-1 psql -U familyos -d <target-db>` — verified
     `compose up -d`; if the disk is gone (or recovery fails), reboot — stamped
     in `/var/lib` so a genuinely dead drive degrades to one reboot per 2h, not
     a boot storm. Logs to syslog as `vireo-watchdog`.
+  - **Deploy quiescence (2026-08-22)** — the watchdog rebooted the Pi under both
+    the #119 and #120 rollouts (a container recreate looks exactly like a dead
+    stack from the probe's side). `deploy.yml` now touches
+    `/opt/family-os/.deploy-in-progress` before `pull` and again before `up -d`,
+    and removes it in an `if: always()` step; the watchdog stands down entirely —
+    no remount, no `compose up -d`, no reboot — while that file is under 15
+    minutes old. The TTL is what keeps a runner killed mid-deploy (exactly what
+    #120 did) from suppressing recovery forever. The dead-man ping is unchanged:
+    it still fires only on a healthy tick, so a deploy shows up as a short gap.
+  - **The reboot needs a sustained failure (2026-08-22)** — a deploy is not the
+    only slow window: the 13:55 reboot that day took **25 minutes** to serve
+    traffic again (92s postgres crash-recovery fsync, then the api's six
+    sequential `prisma migrate deploy` runs and its `tsx` start), and every one
+    of those minutes looks unhealthy. The watchdog now counts consecutive
+    unhealthy ticks in `/var/lib/vireo-watchdog-fail-count` (cleared the moment
+    it goes healthy) and splits the two failure modes: `/dev/sda` **missing** is
+    the controller-death mode that only a reboot fixes, so it reboots after 3
+    ticks; `/dev/sda` **present** with the app down is usually just slow, so it
+    holds for 30. `compose up -d` runs on the first unhealthy tick only —
+    repeating it every minute just added I/O to a box already failing its probe.
+  - **The script lives in the repo** at `scripts/vireo-watchdog.sh`, but nothing
+    deploys it — after editing, install it by hand:
+    `sudo install -m 755 scripts/vireo-watchdog.sh /usr/local/sbin/vireo-watchdog.sh`.
+    Same for `docker-compose.prod.yml`: the Pi's copy at `/opt/family-os/` is
+    hand-synced, the deploy job only rewrites `TAG=` in `.env`.
+  - **The UAS quirk cost ~40× of the disk (measured 2026-08-22).** `dd … iflag=direct`
+    on `/dev/sda`: **318 kB/s at 4k**, 542 kB/s at 64k, 18 MB/s at 1M — against
+    **15 MB/s at 4k for the SD card**, on a SuperSpeed (5 Gbps) link. Forcing
+    usb-storage BOT removed command queuing, so every I/O is a serialized round
+    trip (~13 ms). Deploy wall-clock confirms it: a steady 250–340 s from 2026-07-31
+    through 2026-08-14, then 550 s / 686 s / 622 s after the Pi 5 move and the quirk.
+    Every symptom above — the fsync, the 25-minute boot, multi-second API responses
+    — is downstream of this. **The NVMe HAT is the fix, not a code change.**
   - The durable fix is **off USB entirely**: NVMe HAT on the Pi 5's PCIe port —
     queued.
 

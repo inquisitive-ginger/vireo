@@ -29,9 +29,18 @@ jobs:
           else
             echo "TAG=$TAG" >> .env
           fi
+          # The watchdog probes the app through Caddy every minute and rebooted
+          # the Pi under both of the last two rollouts. Re-stamped before `up -d`
+          # so its 15-min TTL starts at the window where the api is actually down.
+          touch .deploy-in-progress
           docker compose -f docker-compose.prod.yml --env-file .env pull
+          touch .deploy-in-progress
           docker compose -f docker-compose.prod.yml --env-file .env up -d
           # -f alone only drops dangling layers, so every superseded release tag
           # stayed on disk (13 images / 11.7 GB before the first sweep). The
           # window keeps the last week of tags available for a TAG= rollback.
           docker image prune -af --filter "until=168h"
+      - name: Let the watchdog resume
+        if: always()
+        working-directory: /opt/family-os
+        run: rm -f .deploy-in-progress
