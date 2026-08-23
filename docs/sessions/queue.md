@@ -239,7 +239,7 @@ suite mirroring chores/calendar. _Depends on: none._
 > directory listing is the changelog. Do not restore entries pruned from here.
 
 - **2026-08-23 — Fix: mobile nav active-tab wash** (auto-bug #123, PR #126) — one
-  active-nav recipe with the sidebar. **Owed:** `deployed` flip for `f6423b36…`.
+  active-nav recipe with the sidebar; verified live, reporter notified.
   _[log](logs/2026-08-23-dev-mobile-nav-tab-wash.md)_
 - **2026-08-22 — Design+dev: the app icon set** (PR #122) — a vireo family in a
   lit birdhouse, generated then traced to vector; Android's blank-square badge

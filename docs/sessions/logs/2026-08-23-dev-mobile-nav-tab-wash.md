@@ -66,7 +66,8 @@ Calendar / Chores / Meals / More), not only in tests:
   and its second-channel requirement (the semibold label still satisfies it).
   None of them settle the active treatment — that detail belongs to
   `design-system.md`, and it now says so.
-- **The report still needs flipping to `deployed`** — it is the only status that
-  notifies the reporter, and it is the whole reason anyone reports a second bug.
-  It needs a prod session cookie, so it is a hand-run `!` command or Settings →
-  Reported problems. Same debt as #116–118.
+- **Closed the loop the same day.** Verified in the deployed app at 426×860 —
+  computed radius 12px, wash 67.7 × 38px in an 85.2 × 56px button, both themes —
+  and the reporter was notified by hand. The `deployed` flip still needs a prod
+  session cookie, which is why #116–118 have been sitting unnotified since
+  2026-08-20; that is a real gap in the loop, not a chore.

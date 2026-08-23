@@ -28,8 +28,8 @@ before it reads anything else, and it is size-capped — see
   `logs/2026-08-23-dev-mobile-nav-tab-wash.md`.
 - **What's next and everything outstanding:** `docs/sessions/queue.md` — the one
   index. M4.5/3 or M5 wave 1 next; NVMe HAT is an upgrade, not a rescue.
-- **Owed in-app:** `deployed` flips for #116–118 **and #123** (`f6423b36…`) — the
-  only status that notifies the reporter. Needs a prod session cookie.
+- **Owed in-app:** `deployed` flips for the three #116–118 reports (ids in the
+  queue's Recently Completed entry) — the only status that notifies the reporter.
 
 ---
 
