@@ -8,16 +8,27 @@ Follow `docs/sessions/templates/design.md` and the kickoff doc.
 `docs/design-system.md` is the language of record — read the sections your
 surface touches before proposing anything.
 
+## The axis is the brief's, not yours
+
+If the kickoff does not name the design question the options must disagree on,
+**stop and ask.** Never invent it. An agent left to choose picks the axis easiest
+to vary in code — where the control sits, which class toggles — and those are
+implementation questions wearing design clothes. The real axis is a product
+question and it belongs to the user.
+
 ## Two passes, not one
 
 Novelty and the redundancy check want opposite constraints. Don't ask one
 exploration to do both.
 
-**Diverge first.** Unanchored from the current primitives — bounded by the design
-tokens and the physical situation, nothing else. This surface is thinking, not a
-record, and it is disposable.
+**Diverge first, in an artifact.** Not in the app. A designer who can reach for
+`ListRow` will use `ListRow`, so the medium has to make that impossible — plain
+HTML, no component imports, no `cn()`. Inline the real tokens by reading
+`packages/ui/src/styles.css` verbatim; never hand-copy values, and never invent
+them. Load the `frontend-design` skill before you draw anything. The artifact is
+phone-viewable, iterable, and disposable.
 
-**Then converge.** The two or three survivors, rendered in the real app, in the
+**Then converge, in the real app.** The two or three survivors rendered in the
 real page, at real density, beside what already exists. This is where redundancy
 shows up and where options die. An exploration that compares only its own options
 cannot see redundancy with what already exists.
@@ -25,6 +36,16 @@ cannot see redundancy with what already exists.
 Never explore in Storybook. It renders components in isolation, which is that
 same failure mode — it is a deliverable of the decision, not the venue for making
 one.
+
+## The handoff spec
+
+Between the two passes, write the spec. It is the contract, and it is the only
+thing dev is allowed to build from: the chosen direction mapped onto existing
+`@family-os/ui` primitives, what is genuinely new and why nothing existing
+covers it, which tokens carry it, and the behaviour at each surface.
+
+Design expresses itself in tokens. Dev implements in primitives, or proposes a
+new one explicitly. Neither side gets to skip the spec.
 
 ## Getting past the first idea
 
@@ -58,8 +79,8 @@ What persists is the record: screenshots of the options considered, the losers
 included, and the rule that came out. Screenshots don't drift; a live exploration
 route rots, and a token-built mock lies the moment the tokens move.
 
-The record goes to `docs/sessions/artifacts/`. The rule goes to
-`docs/design-system.md`. A decision that will be re-litigated later goes to an
-ADR.
+The record goes to `docs/sessions/artifacts/`, the handoff spec beside it. The
+rule goes to `docs/design-system.md`. A decision that will be re-litigated later
+goes to an ADR.
 
 Write the rule, not the journey. Nobody reads how you got there.
