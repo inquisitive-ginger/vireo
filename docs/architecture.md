@@ -12,6 +12,7 @@
   - [Loading](#loading)
   - [Plugin Contract](#plugin-contract)
   - [Plugin Manifest](#plugin-manifest-shape)
+  - [Day-mark Provider Contract](#day-mark-provider-contract-adr-050-adr-066)
 - [Event Bus](#event-bus)
   - [Internal Flow](#internal-flow)
   - [Event Naming Convention](#event-naming-convention)
@@ -191,6 +192,41 @@ API** — a typed SDK injected at mount time. Plugins may not:
 ```
 
 The `widgets` field is optional — plugins that only add routes do not need it. See ADR 022 for full widget manifest field rules, slot taxonomy, and role-aware composition model.
+
+### Day-mark provider contract (ADR 050, ADR 066)
+
+A second, narrower extension point alongside the widget/event mechanisms above: a
+**day mark** is a date-scoped fact (an optional owner, a glyph, a short label) a
+plugin contributes to the calendar **at read time**, without ever writing
+`calendar.Event`. No start time, no duration, no span — that's an event.
+
+```typescript
+// @family-os/platform/server
+export type DayMarkProvider = {
+  name: string
+  action: string // CASL action, e.g. "view"
+  subject: string // CASL subject, e.g. "meals.PlannedMeal" — required, no default
+  fetch(from: string, to: string, ability: AppAbility): Promise<DayMark[]>
+}
+export function createDayMarkRegistry(): DayMarkRegistry // { register, list }
+```
+
+- **Registered on the calendar plugin**, the surface that owns the read:
+  `fastify.dayMarks.register({ name, action, subject, fetch })` (`meals.ts` does
+  this in one block). `plugins/calendar` (the frontend) never imports a provider
+  package — a provider names its `glyph` as a **string** (e.g. `'utensils'`),
+  resolved to an icon by a small map local to `plugins/calendar`.
+- **`GET /calendar/day-marks?from=&to=`** aggregates: `calendar.event.view` gates
+  the surface first (403s exactly like `/calendar/events`); each provider's own
+  `(action, subject)` gates its own marks (ADR 066) — a provider the caller
+  cannot see is skipped before `fetch` ever runs, so a mark never crosses the
+  wire to a caller who can't see the underlying fact.
+- **Caps apply after filtering, not before**: one mark per provider per day, two
+  marks per day overall, tie-broken by **registration order** — a caller never
+  loses a mark they can see to one they can't.
+- meals is the first consumer (`view meals.PlannedMeal`, glyph `'utensils'`); M7
+  School is the second, intended to register with no code changes to
+  `plugins/calendar` or the aggregator.
 
 ---
 

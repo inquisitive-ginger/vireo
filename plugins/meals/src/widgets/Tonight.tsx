@@ -67,7 +67,12 @@ export default function Tonight({ size }: TonightProps) {
         if (!r.ok) throw new Error(String(r.status))
         return r.json() as Promise<PlannedMeal>
       }),
-    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['meals/plan'] }),
+    // `calendar/day-marks` too — a claim from the widget has to refresh the
+    // calendar's mark the same as a claim from the meals page (M5/4 AC6).
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['meals/plan'] })
+      void queryClient.invalidateQueries({ queryKey: ['calendar/day-marks'] })
+    },
   })
 
   if (isLoading) {

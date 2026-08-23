@@ -1,5 +1,6 @@
 import fp from 'fastify-plugin'
 import type { FastifyPluginAsync } from 'fastify'
+import { prisma } from '@family-os/platform/server'
 import { FAMILY_PROFILE_ID } from '@family-os/platform/types'
 import { mealPrisma } from '@family-os/plugin-meals/db'
 import { MealInputSchema } from '@family-os/schemas'
@@ -181,6 +182,45 @@ const mealsPlugin: FastifyPluginAsync = async (fastify) => {
 
     return reply.status(204).send()
   })
+
+  // Day-mark provider (ADR 050/066) — meals never writes calendar.events; the
+  // calendar reads this at render time. A day marks ONLY when it has an owner:
+  // an unclaimed day makes no mark, and neither does a covered-but-ownerless
+  // takeout/out day (`isCovered()`'s other true case) — the who is the whole
+  // payload, so no owner means no mark, not a special "ownerless" one.
+  fastify.dayMarks.register({
+    name: 'meals',
+    action: 'view',
+    subject: 'meals.PlannedMeal',
+    async fetch(from, to) {
+      const meals = await mealPrisma.plannedMeal.findMany({
+        where: { date: { gte: new Date(from), lte: new Date(to) }, ownerId: { not: null } },
+        orderBy: { date: 'asc' },
+      })
+      if (meals.length === 0) return []
+
+      const ownerIds = [...new Set(meals.map((m) => m.ownerId as string))]
+      const owners = await prisma.profile.findMany({
+        where: { id: { in: ownerIds } },
+        select: { id: true, name: true },
+      })
+      const nameById = new Map(owners.map((o) => [o.id, o.name]))
+
+      return meals
+        .filter((m) => nameById.has(m.ownerId as string))
+        .map((meal) => ({
+          date: meal.date.toISOString().slice(0, 10),
+          ownerId: meal.ownerId as string,
+          glyph: 'utensils',
+          label: `${nameById.get(meal.ownerId as string)}'s got dinner`,
+        }))
+    },
+  })
 }
 
-export default fp(mealsPlugin, { name: 'meals' })
+// `dependencies: ['calendar']` — this plugin calls `fastify.dayMarks.register()`,
+// a decorator only `calendar.ts` adds. `server.ts`'s registration order already
+// puts calendar first, but that ordering is easy to disturb (M7 School will be
+// editing that same list); fastify-plugin turns a wrong order into a named boot
+// error instead of "Cannot read properties of undefined (reading 'register')".
+export default fp(mealsPlugin, { name: 'meals', dependencies: ['calendar'] })

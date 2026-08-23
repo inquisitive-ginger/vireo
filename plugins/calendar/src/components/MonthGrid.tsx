@@ -1,9 +1,12 @@
 import { Plus } from 'lucide-react'
 import { cn } from '@family-os/ui'
+import type { DayMark } from '@family-os/platform/types'
 import type { LaidOutWeek } from '../lib/grid'
-import { WEEKDAY_LABELS, isSameDay, dayDiff } from '../lib/grid'
+import { WEEKDAY_LABELS, isSameDay, dayDiff, localDateKey } from '../lib/grid'
 import { EventChip } from './EventChip'
 import { SpanBar } from './SpanBar'
+import { DayMarkOwnerDot } from './DayMarkOwnerDot'
+import { DAY_MARK_GLYPHS } from '../lib/day-mark-glyphs'
 import type { CalendarMember } from '../types'
 
 // Layout constants (px) — ported from the locked exploration so the span overlay
@@ -16,12 +19,17 @@ const FIRST_LANE_TOP = CELL_PT + NUMBER_H + NUM_GAP
 
 const MAX_CHIPS = 3
 
+// Stable empty default so an omitted `marksByDate` doesn't churn identity on
+// every render (a fresh `new Map()` default would).
+const EMPTY_MARKS: Map<string, DayMark[]> = new Map()
+
 export function MonthGrid({
   weeks,
   membersById,
   today,
   onDrillDay,
   onQuickAdd,
+  marksByDate = EMPTY_MARKS,
 }: {
   weeks: LaidOutWeek[]
   membersById: Map<string, CalendarMember>
@@ -31,6 +39,10 @@ export function MonthGrid({
       that creates an event prefilled to that day. Touch devices never see it —
       they reach the same add via tap → day agenda → "+ Add". */
   onQuickAdd?: (date: Date) => void
+  /** Read-time day marks (ADR 050), keyed by `YYYY-MM-DD`. Already capped at two
+      per day and permission-filtered server-side (ADR 066) — this component just
+      renders what it's given. */
+  marksByDate?: Map<string, DayMark[]>
 }) {
   return (
     <div className="overflow-hidden rounded-panel border border-border bg-card shadow-[var(--shadow-card)]">
@@ -52,12 +64,28 @@ export function MonthGrid({
               const more = cell.events.length - visible.length
               const isToday = isSameDay(cell.date, today)
               const isPast = dayDiff(today, cell.date) < 0 // before today → dim-events
+              // Today-forward only (live review, round 2): "who had dinner last
+              // Tuesday" is noise on a forward-looking view. A RENDER-level
+              // filter, deliberately — the provider still returns the whole
+              // range (ADR 050; M7 School wants that range intact), the
+              // aggregator/cap/registration shape are untouched. The month cell
+              // just declines to paint what it gets for a day that's passed.
+              const dayMarks = isPast ? [] : (marksByDate.get(localDateKey(cell.date)) ?? [])
+              // `role="button"` is children-presentational and an author aria-label
+              // wins the accessible-name computation over any descendant text — an
+              // sr-only span inside this cell would never reach assistive tech
+              // (ADR 044/ADR 050: "the owner's name lives in the cell's accessible
+              // text" means THIS string, not a node buried in the DOM under it).
+              const cellLabel =
+                dayMarks.length > 0
+                  ? `View ${cell.date.toDateString()}, ${dayMarks.map((m) => m.label).join(', ')}`
+                  : `View ${cell.date.toDateString()}`
               return (
                 <div
                   key={ci}
                   role="button"
                   tabIndex={0}
-                  aria-label={`View ${cell.date.toDateString()}`}
+                  aria-label={cellLabel}
                   onClick={() => onDrillDay(cell.date)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') onDrillDay(cell.date)
@@ -68,20 +96,53 @@ export function MonthGrid({
                     !cell.inMonth && 'bg-muted/30'
                   )}
                 >
-                  {/* date number — today gets the filled primary circle */}
+                  {/* Date number and day mark left-packed and adjacent (live
+                      review round 2 — not the far-edge `justify-between` pairing
+                      this had before). Left-packing does NOT create more width;
+                      it only relocates the same slack — the date span keeps its
+                      shrink-0 from the prior round so IT never deforms under
+                      pressure. Quick-add stays pushed to the far right via the
+                      outer justify-between, unrelated to this ask. */}
                   <div className="flex h-5 items-center justify-between">
-                    <span
-                      className={cn(
-                        'flex h-6 w-6 items-center justify-center rounded-full text-sm-token',
-                        isToday
-                          ? 'bg-primary font-semibold text-primary-foreground'
-                          : 'text-muted-foreground',
-                        !cell.inMonth && 'opacity-50',
-                        isPast && !isToday && 'opacity-40'
+                    <div className="flex items-center gap-1">
+                      <span
+                        className={cn(
+                          'flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-sm-token',
+                          isToday
+                            ? 'bg-primary font-semibold text-primary-foreground'
+                            : 'text-muted-foreground',
+                          !cell.inMonth && 'opacity-50',
+                          isPast && !isToday && 'opacity-40'
+                        )}
+                      >
+                        {cell.date.getDate()}
+                      </span>
+                      {dayMarks.length > 0 && (
+                        // Two marks (ADR 050's cap) fit side by side without
+                        // crowding the date number — how a THIRD-provider's
+                        // world stacks/reveals is explicitly deferred, not
+                        // decided here. No isPast dim here: a past cell has no
+                        // marks to dim (today-forward filter, above).
+                        <div className="flex items-center gap-1.5">
+                          {dayMarks.map((mark) => {
+                            const owner = mark.ownerId ? membersById.get(mark.ownerId) : undefined
+                            const Glyph = DAY_MARK_GLYPHS[mark.glyph]
+                            return (
+                              <div
+                                key={`${mark.ownerId ?? ''}-${mark.glyph}`}
+                                className="flex items-center gap-[3px]"
+                                title={mark.label}
+                              >
+                                {owner && <DayMarkOwnerDot member={owner} />}
+                                {Glyph && (
+                                  <Glyph aria-hidden className="h-3 w-3 shrink-0 opacity-75" />
+                                )}
+                              </div>
+                            )
+                          })}
+                        </div>
                       )}
-                    >
-                      {cell.date.getDate()}
-                    </span>
+                    </div>
                     {onQuickAdd && (
                       // Hover-only quick-add (hover-capable devices); revealed on
                       // cell hover or keyboard focus. Hidden entirely on touch.
@@ -100,7 +161,9 @@ export function MonthGrid({
                   </div>
                   {/* reserved space: gap below the number + the span band */}
                   <div style={{ height: NUM_GAP + spanBandH }} />
-                  {/* single-day chips — past days recede */}
+                  {/* single-day chips — past days recede. Marks never interleave
+                      here and never count toward "+N more" — that count is
+                      events-only. */}
                   <div className={cn('flex flex-col gap-0.5', isPast && 'opacity-60')}>
                     {visible.map((event) => (
                       <EventChip key={event.id} event={event} membersById={membersById} />

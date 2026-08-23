@@ -16,7 +16,7 @@ import {
   useQuery,
   useQueryClient,
 } from '@family-os/platform'
-import type { Profile } from '@family-os/platform/types'
+import type { DayMark, Profile } from '@family-os/platform/types'
 import type {
   ActivitiesResponse,
   CalendarEvent,
@@ -58,7 +58,7 @@ const LENS_TABS: TabBarOption<CalendarLens>[] = [
 ]
 
 export function CalendarPage() {
-  const { tier } = useAuth()
+  const { id, tier } = useAuth()
   // Create / edit / remove are tier-4 only (matches the API's `calendar.Event`
   // write rule and the locked design).
   const canManage = tier >= 4
@@ -107,6 +107,27 @@ export function CalendarPage() {
       }),
   })
 
+  // Read-time day marks (ADR 050) — meals' "who's got dinner" today, School's
+  // "no school Monday" later. Profile-scoped: a mark's visibility is per-provider
+  // (ADR 066), and a bare `['calendar/day-marks', range]` key would let one
+  // profile's marks paint from cache the instant a lower-permission profile
+  // switches in, before the refetch drops them — the exact leak ADR 066 exists
+  // to close, arriving through the client cache instead of the wire (the
+  // `['meals/plan', id, fromKey]` key follows the same rule, for the same
+  // reason). Prefix invalidation from `plugins/meals` still finds it — TanStack
+  // matches on key PREFIX, and `'calendar/day-marks'` is still element 0.
+  const dayMarksQuery = useQuery({
+    queryKey: ['calendar/day-marks', id, { from: range.from, to: range.to }],
+    queryFn: () =>
+      fetch(`/api/calendar/day-marks?from=${range.from}&to=${range.to}`).then((r) => {
+        if (!r.ok) {
+          console.error('[calendar] failed to load day marks', r.status)
+          throw new Error('Failed to load day marks')
+        }
+        return r.json() as Promise<{ marks: DayMark[] }>
+      }),
+  })
+
   // The Activities lens (story #5) — standing series, not range-expanded. Lazily
   // fetched only when the lens is open (either viewport), so the calendar/agenda
   // path pays nothing.
@@ -140,6 +161,16 @@ export function CalendarPage() {
       map.set(m.id, { name: m.name, identityHue: m.identityHue, avatarUrl: m.avatarUrl })
     return map
   }, [profilesQuery.data])
+
+  const marksByDate = useMemo(() => {
+    const map = new Map<string, DayMark[]>()
+    for (const mark of dayMarksQuery.data?.marks ?? []) {
+      const existing = map.get(mark.date)
+      if (existing) existing.push(mark)
+      else map.set(mark.date, [mark])
+    }
+    return map
+  }, [dayMarksQuery.data])
 
   // One invalidation refreshes the month view + (story 7) the up-next widget,
   // which share the `['calendar/events']` prefix (ADR 013). Activities are a
@@ -269,6 +300,16 @@ export function CalendarPage() {
     </div>
   )
 
+  // A day-marks failure is deliberately non-fatal — the calendar's own data
+  // still renders — but it must not be SILENT (no blind catch on a path a
+  // family member can reach): the queryFn above already `console.error`s it,
+  // and this is the surfaced half.
+  const dayMarksErrorNote = dayMarksQuery.isError ? (
+    <p className="mt-2 text-xs-token text-muted-foreground">
+      Some day marks (like who's got dinner) couldn't load.
+    </p>
+  ) : null
+
   // Shared lens bodies (loading / error / content), reused by the tablet chrome and
   // the mobile surface so both viewports render the same agenda + Activities lens.
   const agendaBody = isLoading ? (
@@ -276,13 +317,17 @@ export function CalendarPage() {
   ) : eventsQuery.isError ? (
     errorCard
   ) : (
-    <AgendaView
-      events={events}
-      membersById={membersById}
-      now={today}
-      onEditEvent={canManage ? openEdit : undefined}
-      onAdd={canManage ? () => openCreate(null) : undefined}
-    />
+    <>
+      <AgendaView
+        events={events}
+        membersById={membersById}
+        now={today}
+        onEditEvent={canManage ? openEdit : undefined}
+        onAdd={canManage ? () => openCreate(null) : undefined}
+        marksByDate={marksByDate}
+      />
+      {dayMarksErrorNote}
+    </>
   )
 
   const activitiesBody =
@@ -385,12 +430,14 @@ export function CalendarPage() {
             today={today}
             onDrillDay={drillDay}
             onQuickAdd={canManage ? (date) => openCreate(date) : undefined}
+            marksByDate={marksByDate}
           />
           {events.length === 0 && (
             <p className="mt-4 text-center text-sm-token text-muted-foreground">
               Nothing on the calendar this month.
             </p>
           )}
+          {dayMarksErrorNote}
         </>
       ) : (
         <DetailView

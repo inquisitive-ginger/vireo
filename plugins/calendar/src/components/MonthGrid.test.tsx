@@ -1,7 +1,8 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
+import type { DayMark } from '@family-os/platform/types'
 import type { CalendarEvent } from '../types'
-import { layoutMonth } from '../lib/grid'
+import { layoutMonth, localDateKey } from '../lib/grid'
 import { MonthGrid } from './MonthGrid'
 
 const members = new Map([
@@ -148,5 +149,128 @@ describe('MonthGrid', () => {
     const onDrill = renderGrid([])
     fireEvent.click(screen.getByLabelText(/Mon Jun 22 2026/))
     expect(onDrill).toHaveBeenCalledTimes(1)
+  })
+
+  describe('day marks (ADR 050)', () => {
+    // June 25 — after `today` (June 22) below, so the today-forward filter
+    // (live review round 2) doesn't suppress it out from under these tests.
+    const dayKey = localDateKey(new Date(2026, 5, 25))
+    const mark: DayMark = {
+      date: dayKey,
+      ownerId: 'p1',
+      glyph: 'utensils',
+      label: "Zoe's got dinner",
+    }
+
+    it("renders the owner disc + glyph, and carries the name in the cell's own accessible name", () => {
+      const { container } = render(
+        <MonthGrid
+          weeks={layoutMonth([], 2026, 5)}
+          membersById={members}
+          today={new Date(2026, 5, 22)}
+          onDrillDay={vi.fn()}
+          marksByDate={new Map([[dayKey, [mark]]])}
+        />
+      )
+      // The disc carries the initial, aria-hidden. `role="button"` is
+      // children-presentational and an author `aria-label` wins the accessible-name
+      // computation over descendant text, so the name has to live ON the cell's own
+      // aria-label — a buried sr-only span would never reach assistive tech.
+      expect(screen.getByText('Z', { selector: 'span[aria-hidden]' })).toBeInTheDocument()
+      expect(container.querySelector('.lucide-utensils')).toBeInTheDocument()
+      expect(screen.getByLabelText(/Zoe's got dinner/)).toBeInTheDocument()
+    })
+
+    it('renders no mark on an unmarked day', () => {
+      render(
+        <MonthGrid
+          weeks={layoutMonth([], 2026, 5)}
+          membersById={members}
+          today={new Date(2026, 5, 22)}
+          onDrillDay={vi.fn()}
+        />
+      )
+      expect(document.querySelector('.lucide-utensils')).not.toBeInTheDocument()
+    })
+
+    it('renders at most two marks — the caller trusts the server cap, but still only shows what it gets', () => {
+      const twoMarks: DayMark[] = [
+        mark,
+        { date: dayKey, ownerId: 'p2', glyph: 'utensils', label: "Teddy's got dinner" },
+      ]
+      render(
+        <MonthGrid
+          weeks={layoutMonth([], 2026, 5)}
+          membersById={members}
+          today={new Date(2026, 5, 22)}
+          onDrillDay={vi.fn()}
+          marksByDate={new Map([[dayKey, twoMarks]])}
+        />
+      )
+      const cell = screen.getByLabelText(/Zoe's got dinner/)
+      expect(cell.getAttribute('aria-label')).toContain("Teddy's got dinner")
+    })
+
+    it('sits in the date row, left-packed with the date number — never inside the chip list (live review: it was getting lost among events)', () => {
+      const cell = renderCellWithMark()
+      // Assert the SHARED PARENT, not just co-presence somewhere in the date
+      // row — a bare `.justify-between` check also passes under the round-2
+      // far-edge layout (date left, mark pushed to the opposite end), so it
+      // pins nothing about left-packing. The date number and the mark must
+      // share one `.gap-1` wrapper (the only element with that exact class —
+      // the marks' own inner row is `gap-1.5`, a different token).
+      const dateGroup = cell.querySelector('.gap-1')
+      expect(dateGroup).not.toBeNull()
+      expect(dateGroup?.textContent).toContain('25') // the date number, same parent
+      expect(dateGroup?.querySelector('.lucide-utensils')).toBeInTheDocument()
+
+      // Still never in the chip column.
+      const chipColumn = cell.querySelector('.flex-col')
+      expect(chipColumn?.querySelector('.lucide-utensils')).not.toBeInTheDocument()
+    })
+
+    it('shows no mark for a PAST day, even when the provider returned one (live review round 2 — today-forward only)', () => {
+      const pastKey = localDateKey(new Date(2026, 5, 9)) // before today (Jun 22)
+      const { container } = render(
+        <MonthGrid
+          weeks={layoutMonth([], 2026, 5)}
+          membersById={members}
+          today={new Date(2026, 5, 22)}
+          onDrillDay={vi.fn()}
+          marksByDate={new Map([[pastKey, [mark]]])}
+        />
+      )
+      expect(container.querySelector('.lucide-utensils')).not.toBeInTheDocument()
+      // The past day's own cell announces no mark either — the render-level
+      // filter applies before the accessible name is built, not just visually.
+      expect(screen.queryByLabelText(/Zoe's got dinner/)).not.toBeInTheDocument()
+    })
+
+    it('shows a mark for TODAY itself — the filter is today-forward, not future-only', () => {
+      const todayKey = localDateKey(new Date(2026, 5, 22))
+      const { container } = render(
+        <MonthGrid
+          weeks={layoutMonth([], 2026, 5)}
+          membersById={members}
+          today={new Date(2026, 5, 22)}
+          onDrillDay={vi.fn()}
+          marksByDate={new Map([[todayKey, [mark]]])}
+        />
+      )
+      expect(container.querySelector('.lucide-utensils')).toBeInTheDocument()
+    })
+
+    function renderCellWithMark(): HTMLElement {
+      render(
+        <MonthGrid
+          weeks={layoutMonth([], 2026, 5)}
+          membersById={members}
+          today={new Date(2026, 5, 22)}
+          onDrillDay={vi.fn()}
+          marksByDate={new Map([[dayKey, [mark]]])}
+        />
+      )
+      return screen.getByLabelText(/Zoe's got dinner/)
+    }
   })
 })
