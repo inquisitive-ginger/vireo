@@ -23,9 +23,9 @@ before it reads anything else, and it is size-capped — see
   auto-deploy + Tailscale + restic→R2 + watchdog intact. **A bad USB cable was
   the cause of the 2026-08-20 "enclosure" outage and all the slowness** — disk now
   256 MB/s, deploys 1 min. Runbook Part F.
-- **Last session:** 2026-08-22 — session roles are now `.claude/agents/` (dev sends
-  correctness to `reviewer`); doc budgets widened; ADR 066.
-  `logs/2026-08-22-infra-agent-delegation.md`.
+- **Last session:** 2026-08-22 — new app icon set (PR #122), a vireo family in a
+  lit birdhouse; Android badge square fixed. **e2e unrun, unseen on a phone.**
+  `logs/2026-08-22-design-dev-brand-icon-set.md`.
 - **What's next and everything outstanding:** `docs/sessions/queue.md` — the one
   index. M4.5/3 or M5 wave 1 next; NVMe HAT is an upgrade, not a rescue.
 - **Owed in-app:** `deployed` flips for the three #116–118 reports (ids in the

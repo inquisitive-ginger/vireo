@@ -238,6 +238,10 @@ suite mirroring chores/calendar. _Depends on: none._
 > start. `docs/sessions/logs/` is date-ordered and holds the record — that
 > directory listing is the changelog. Do not restore entries pruned from here.
 
+- **2026-08-22 — Design+dev: the app icon set** (PR #122) — a vireo family in a
+  lit birdhouse, generated then traced to vector; Android's blank-square badge
+  fixed. **e2e unrun; unseen on a real phone.**
+  _[log](logs/2026-08-22-design-dev-brand-icon-set.md)_
 - **2026-08-22 — Infra: session roles as agents; doc budgets widened** (ADR 066) —
   five `.claude/agents/`; correctness routes to `reviewer`; queue pruned 32.5→14.7 KB;
   all five M5 kickoffs written. _[log](logs/2026-08-22-infra-agent-delegation.md)_
