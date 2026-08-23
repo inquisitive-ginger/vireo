@@ -78,7 +78,10 @@ self.addEventListener('push', (e) => {
     self.registration.showNotification(data.title, {
       body: data.body,
       icon: '/icons/icon-192.png',
-      badge: '/icons/icon-192.png',
+      // Android keeps only the badge's alpha channel and tints the result, so
+      // this must be a transparent stencil. Pointing it at the full-colour icon
+      // hands it an edge-to-edge opaque square, which is exactly what it draws.
+      badge: '/icons/badge-72.png',
     })
   )
 })

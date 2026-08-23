@@ -29,6 +29,30 @@ test('app icons are served', async ({ page }) => {
   expect(maskable.ok()).toBe(true)
 })
 
+test('notification badge is an alpha stencil, not an opaque square', async ({ page }) => {
+  const badge = await page.request.get('/icons/badge-72.png')
+  expect(badge.ok()).toBe(true)
+
+  // Android masks the badge by its alpha channel and tints the result, so a
+  // fully opaque file renders as a plain coloured square. Decode it and require
+  // real transparency — the regression this guards is invisible in the markup.
+  const png = await badge.body()
+  await page.goto('/')
+  const transparent = await page.evaluate(async (bytes) => {
+    const blob = new Blob([new Uint8Array(bytes)], { type: 'image/png' })
+    const bitmap = await createImageBitmap(blob)
+    const canvas = new OffscreenCanvas(bitmap.width, bitmap.height)
+    const ctx = canvas.getContext('2d')!
+    ctx.drawImage(bitmap, 0, 0)
+    const { data } = ctx.getImageData(0, 0, bitmap.width, bitmap.height)
+    let clear = 0
+    for (let i = 3; i < data.length; i += 4) if (data[i] === 0) clear++
+    return clear / (data.length / 4)
+  }, Array.from(png))
+
+  expect(transparent).toBeGreaterThan(0.25)
+})
+
 test('service worker is registered after first visit', async ({ page }) => {
   await page.goto('/')
   await page.waitForFunction(async () => !!(await navigator.serviceWorker.getRegistration('/')), {
