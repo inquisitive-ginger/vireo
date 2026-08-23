@@ -7,8 +7,8 @@
       "Bash(pnpm test *)",
       "Bash(pnpm --filter * exec prisma migrate status *)",
       "Bash(npm info *)",
-      "Write(docs/sessions/kickoffs/**)",
-      "Write(docs/sessions/logs/**)",
+      "Edit(docs/sessions/kickoffs/**)",
+      "Edit(docs/sessions/logs/**)",
       "Edit(docs/sessions/queue.md)",
       "Edit(docs/modules/*/progress.md)"
     ]
