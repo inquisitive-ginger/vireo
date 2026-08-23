@@ -160,7 +160,7 @@ describe('MonthGrid', () => {
       label: "Zoe's got dinner",
     }
 
-    it('renders the owner disc + glyph, and carries the name in accessible text', () => {
+    it("renders the owner disc + glyph, and carries the name in the cell's own accessible name", () => {
       const { container } = render(
         <MonthGrid
           weeks={layoutMonth([], 2026, 5)}
@@ -170,11 +170,13 @@ describe('MonthGrid', () => {
           marksByDate={new Map([[dayKey, [mark]]])}
         />
       )
-      // The disc carries the initial, aria-hidden — the accessible name comes
-      // from the sr-only label instead.
+      // The disc carries the initial, aria-hidden. `role="button"` is
+      // children-presentational and an author `aria-label` wins the accessible-name
+      // computation over descendant text, so the name has to live ON the cell's own
+      // aria-label — a buried sr-only span would never reach assistive tech.
       expect(screen.getByText('Z', { selector: 'span[aria-hidden]' })).toBeInTheDocument()
       expect(container.querySelector('.lucide-utensils')).toBeInTheDocument()
-      expect(screen.getByText("Zoe's got dinner", { selector: '.sr-only' })).toBeInTheDocument()
+      expect(screen.getByLabelText(/Zoe's got dinner/)).toBeInTheDocument()
     })
 
     it('renders no mark on an unmarked day', () => {
@@ -203,8 +205,8 @@ describe('MonthGrid', () => {
           marksByDate={new Map([[dayKey, twoMarks]])}
         />
       )
-      expect(screen.getByText("Zoe's got dinner", { selector: '.sr-only' })).toBeInTheDocument()
-      expect(screen.getByText("Teddy's got dinner", { selector: '.sr-only' })).toBeInTheDocument()
+      const cell = screen.getByLabelText(/Zoe's got dinner/)
+      expect(cell.getAttribute('aria-label')).toContain("Teddy's got dinner")
     })
   })
 })

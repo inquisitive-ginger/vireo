@@ -58,7 +58,7 @@ const LENS_TABS: TabBarOption<CalendarLens>[] = [
 ]
 
 export function CalendarPage() {
-  const { tier } = useAuth()
+  const { id, tier } = useAuth()
   // Create / edit / remove are tier-4 only (matches the API's `calendar.Event`
   // write rule and the locked design).
   const canManage = tier >= 4
@@ -108,14 +108,22 @@ export function CalendarPage() {
   })
 
   // Read-time day marks (ADR 050) — meals' "who's got dinner" today, School's
-  // "no school Monday" later. Own query, own key prefix: a meals claim
-  // invalidates `['calendar/day-marks']` directly (ADR 013 — see
-  // `plugins/meals`'s `invalidate()`), which is what makes AC6 hold.
+  // "no school Monday" later. Profile-scoped: a mark's visibility is per-provider
+  // (ADR 066), and a bare `['calendar/day-marks', range]` key would let one
+  // profile's marks paint from cache the instant a lower-permission profile
+  // switches in, before the refetch drops them — the exact leak ADR 066 exists
+  // to close, arriving through the client cache instead of the wire (the
+  // `['meals/plan', id, fromKey]` key follows the same rule, for the same
+  // reason). Prefix invalidation from `plugins/meals` still finds it — TanStack
+  // matches on key PREFIX, and `'calendar/day-marks'` is still element 0.
   const dayMarksQuery = useQuery({
-    queryKey: ['calendar/day-marks', { from: range.from, to: range.to }],
+    queryKey: ['calendar/day-marks', id, { from: range.from, to: range.to }],
     queryFn: () =>
       fetch(`/api/calendar/day-marks?from=${range.from}&to=${range.to}`).then((r) => {
-        if (!r.ok) throw new Error('Failed to load day marks')
+        if (!r.ok) {
+          console.error('[calendar] failed to load day marks', r.status)
+          throw new Error('Failed to load day marks')
+        }
         return r.json() as Promise<{ marks: DayMark[] }>
       }),
   })
@@ -292,6 +300,16 @@ export function CalendarPage() {
     </div>
   )
 
+  // A day-marks failure is deliberately non-fatal — the calendar's own data
+  // still renders — but it must not be SILENT (no blind catch on a path a
+  // family member can reach): the queryFn above already `console.error`s it,
+  // and this is the surfaced half.
+  const dayMarksErrorNote = dayMarksQuery.isError ? (
+    <p className="mt-2 text-xs-token text-muted-foreground">
+      Some day marks (like who's got dinner) couldn't load.
+    </p>
+  ) : null
+
   // Shared lens bodies (loading / error / content), reused by the tablet chrome and
   // the mobile surface so both viewports render the same agenda + Activities lens.
   const agendaBody = isLoading ? (
@@ -299,14 +317,17 @@ export function CalendarPage() {
   ) : eventsQuery.isError ? (
     errorCard
   ) : (
-    <AgendaView
-      events={events}
-      membersById={membersById}
-      now={today}
-      onEditEvent={canManage ? openEdit : undefined}
-      onAdd={canManage ? () => openCreate(null) : undefined}
-      marksByDate={marksByDate}
-    />
+    <>
+      <AgendaView
+        events={events}
+        membersById={membersById}
+        now={today}
+        onEditEvent={canManage ? openEdit : undefined}
+        onAdd={canManage ? () => openCreate(null) : undefined}
+        marksByDate={marksByDate}
+      />
+      {dayMarksErrorNote}
+    </>
   )
 
   const activitiesBody =
@@ -416,6 +437,7 @@ export function CalendarPage() {
               Nothing on the calendar this month.
             </p>
           )}
+          {dayMarksErrorNote}
         </>
       ) : (
         <DetailView

@@ -26,7 +26,18 @@ export async function aggregateDayMarks(
   for (const provider of providers) {
     if (!ability.can(provider.action as CanArgs[0], provider.subject as CanArgs[1])) continue
 
-    const marks = await provider.fetch(from, to, ability)
+    // A provider's own failure must not take the whole route down — ADR 066's
+    // "per provider, not all-or-nothing" holds for permissions AND for a
+    // provider that's simply broken: the moment a second provider (M7 School)
+    // registers, its DB error must not also erase meals' marks. Never a blind
+    // catch — logged, so "marks stopped showing" has a thread to pull.
+    let marks: DayMark[]
+    try {
+      marks = await provider.fetch(from, to, ability)
+    } catch (err) {
+      console.error(`[day-marks] provider "${provider.name}" fetch failed`, err)
+      continue
+    }
     const seenDates = new Set<string>()
     for (const mark of marks) {
       if (seenDates.has(mark.date)) continue

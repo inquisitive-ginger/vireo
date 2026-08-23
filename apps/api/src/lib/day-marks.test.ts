@@ -1,4 +1,4 @@
-import { describe, it, expect } from 'vitest'
+import { describe, it, expect, vi } from 'vitest'
 import type { AppAbility, DayMarkProvider } from '@family-os/platform/server'
 import type { DayMark } from '@family-os/platform/types'
 import { aggregateDayMarks } from './day-marks'
@@ -51,6 +51,40 @@ describe('aggregateDayMarks', () => {
     const result = await aggregateDayMarks([provider1], ability, '2026-08-24', '2026-08-24')
     expect(called).toBe(false)
     expect(result).toEqual([])
+  })
+
+  it("isolates one provider's failure — it never takes the whole route down", async () => {
+    const ability = abilityAllowing('view meals.PlannedMeal', 'view school.SchoolDay')
+    const broken: DayMarkProvider = {
+      name: 'school',
+      action: 'view',
+      subject: 'school.SchoolDay',
+      fetch: async () => {
+        throw new Error('db unreachable')
+      },
+    }
+    const errors: unknown[] = []
+    const spy = vi.spyOn(console, 'error').mockImplementation((...args) => {
+      errors.push(args)
+    })
+    try {
+      const result = await aggregateDayMarks(
+        [
+          broken,
+          provider('meals', 'view', 'meals.PlannedMeal', [
+            { date: '2026-08-24', ownerId: 'p1', glyph: 'utensils', label: "Zach's got dinner" },
+          ]),
+        ],
+        ability,
+        '2026-08-24',
+        '2026-08-24'
+      )
+      expect(result).toHaveLength(1)
+      expect(result[0].label).toBe("Zach's got dinner")
+      expect(errors).toHaveLength(1) // logged, not swallowed
+    } finally {
+      spy.mockRestore()
+    }
   })
 
   it('keeps at most one mark per provider per day even if fetch misbehaves', async () => {

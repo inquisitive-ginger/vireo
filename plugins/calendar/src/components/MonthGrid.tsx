@@ -65,12 +65,21 @@ export function MonthGrid({
               const isToday = isSameDay(cell.date, today)
               const isPast = dayDiff(today, cell.date) < 0 // before today → dim-events
               const dayMarks = marksByDate.get(localDateKey(cell.date)) ?? []
+              // `role="button"` is children-presentational and an author aria-label
+              // wins the accessible-name computation over any descendant text — an
+              // sr-only span inside this cell would never reach assistive tech
+              // (ADR 044/ADR 050: "the owner's name lives in the cell's accessible
+              // text" means THIS string, not a node buried in the DOM under it).
+              const cellLabel =
+                dayMarks.length > 0
+                  ? `View ${cell.date.toDateString()}, ${dayMarks.map((m) => m.label).join(', ')}`
+                  : `View ${cell.date.toDateString()}`
               return (
                 <div
                   key={ci}
                   role="button"
                   tabIndex={0}
-                  aria-label={`View ${cell.date.toDateString()}`}
+                  aria-label={cellLabel}
                   onClick={() => onDrillDay(cell.date)}
                   onKeyDown={(e) => {
                     if (e.key === 'Enter' || e.key === ' ') onDrillDay(cell.date)
@@ -130,7 +139,6 @@ export function MonthGrid({
                               {Glyph && (
                                 <Glyph aria-hidden className="h-3 w-3 shrink-0 opacity-75" />
                               )}
-                              <span className="sr-only">{mark.label}</span>
                             </div>
                           )
                         })}

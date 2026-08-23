@@ -218,4 +218,9 @@ const mealsPlugin: FastifyPluginAsync = async (fastify) => {
   })
 }
 
-export default fp(mealsPlugin, { name: 'meals' })
+// `dependencies: ['calendar']` — this plugin calls `fastify.dayMarks.register()`,
+// a decorator only `calendar.ts` adds. `server.ts`'s registration order already
+// puts calendar first, but that ordering is easy to disturb (M7 School will be
+// editing that same list); fastify-plugin turns a wrong order into a named boot
+// error instead of "Cannot read properties of undefined (reading 'register')".
+export default fp(mealsPlugin, { name: 'meals', dependencies: ['calendar'] })
