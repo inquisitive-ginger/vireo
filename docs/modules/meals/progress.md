@@ -7,16 +7,16 @@
 > **Milestone done when:** Nobody in the house has to ask what's for dinner or who's
 > making it, and the week's shopping happens off the list in the app.
 
-| Story               | Status         | Notes                                                                                                                                                            |
-| ------------------- | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| Design gate         | ✅ Done        | 2026-08-11 — three rounds + external critique; `design.md`, ADR 063/064, final artifact. Mode split retired                                                      |
-| Week Plan + Tonight | ✅ Done        | 2026-08-13, PR #105 — week page, drawer, widget, one-tap claim. P$ dropped from meals. Log: `2026-08-13-dev-…`                                                   |
-| Who's Got Dinner    | ✅ Done        | 2026-08-23, PR #124 — afternoon nudge poll (ADR 045): owner at 16:00, every tier-4 parent when nobody has it; `(date, audience)` ledger. Log: `2026-08-23-dev-…` |
-| Calendar Day Marks  | ✅ Done        | 2026-08-23, PR #125 — platform provider contract (ADR 050/066), meals first consumer; marks are **today-forward only**. Log: `2026-08-23-dev-…`                  |
-| Try Bites           | ⬜ Not Started | `meals.trybite.taken` → punches a `rewards` card (ADR 049). Depends on M4                                                                                        |
-| Grocery List (M5/6) | 🔄 In Progress | PR #127 open — API, aisle dictionary, schemas, tests green; **`ListRow` anatomy + page treatment go back for a design gate** before it merges                    |
-| Grocery Shop (M5/7) | ⬜ Not Started | Shop context, sync + offline, the wall — whole-row checks, cleared-aisle collapse, shopper sync; **SW is network-first for `/api`**, offline is its own chunk    |
-| Recipe Bank         | ⬜ Deferred    | Deliberately out of MVP — the free-text `needs` field removes the reason to build it                                                                             |
+| Story               | Status         | Notes                                                                                                                                                                                                                                             |
+| ------------------- | -------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Design gate         | ✅ Done        | 2026-08-11 — three rounds + external critique; `design.md`, ADR 063/064, final artifact. Mode split retired                                                                                                                                       |
+| Week Plan + Tonight | ✅ Done        | 2026-08-13, PR #105 — week page, drawer, widget, one-tap claim. P$ dropped from meals. Log: `2026-08-13-dev-…`                                                                                                                                    |
+| Who's Got Dinner    | ✅ Done        | 2026-08-23, PR #124 — afternoon nudge poll (ADR 045): owner at 16:00, every tier-4 parent when nobody has it; `(date, audience)` ledger. Log: `2026-08-23-dev-…`                                                                                  |
+| Calendar Day Marks  | ✅ Done        | 2026-08-23, PR #125 — platform provider contract (ADR 050/066), meals first consumer; marks are **today-forward only**. Log: `2026-08-23-dev-…`                                                                                                   |
+| Try Bites           | ⬜ Not Started | `meals.trybite.taken` → punches a `rewards` card (ADR 049). Depends on M4                                                                                                                                                                         |
+| Grocery List (M5/6) | 🔄 In Progress | PR #127 open — API, dictionary, schemas, tests green. **Design gate closed 2026-08-23**: per-store lists, inline completion, no note line. Rework above the data layer; `ListRow` unchanged. Spec: `artifacts/2026-08-23-grocery-list-handoff.md` |
+| Grocery Shop (M5/7) | ⬜ Not Started | Shop context, sync + offline, the wall — whole-row checks, cleared-aisle collapse, shopper sync; **SW is network-first for `/api`**, offline is its own chunk                                                                                     |
+| Recipe Bank         | ⬜ Deferred    | Deliberately out of MVP — the free-text `needs` field removes the reason to build it                                                                                                                                                              |
 
 > Try bites punch a `rewards` card — punch cards shipped 2026-08-01. The cook
 > award is gone: `coinReward` retired from meals 2026-08-13 (M5/2); a paid dinner
