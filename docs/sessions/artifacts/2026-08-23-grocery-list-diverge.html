@@ -1,0 +1,436 @@
+<title>Grocery List Diverge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@400;500;600;700&display=swap">
+
+<style>
+  /* Tokens read verbatim from packages/ui/src/styles.css. */
+  :root {
+    --background: oklch(0.985 0.008 100);
+    --foreground: oklch(0.18 0.03 100);
+    --primary: oklch(0.5 0.11 122);
+    --primary-foreground: oklch(0.99 0.005 100);
+    --muted: oklch(0.93 0.016 100);
+    --muted-foreground: oklch(0.52 0.035 100);
+    --accent: oklch(0.47 0.07 185);
+    --border: oklch(0.88 0.02 100);
+    --card: oklch(0.999 0.004 100);
+    --surface-sunken: oklch(0.955 0.006 100);
+    --success: oklch(0.44 0.1 148);
+    --warning: oklch(0.69 0.12 78);
+
+    --page-bg: oklch(0.955 0.004 230);
+    --page-fg: oklch(0.22 0.02 240);
+    --page-muted: oklch(0.48 0.02 240);
+    --page-rule: oklch(0.87 0.01 240);
+    --page-chip: oklch(0.91 0.012 240);
+
+    --font-display: 'Lora', Georgia, 'Times New Roman', serif;
+    --font-ui: 'DM Sans', 'Helvetica Neue', Arial, sans-serif;
+    --radius-card: 0.5rem;
+    --radius-panel: 0.75rem;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --background: oklch(0.15 0.018 105);
+      --foreground: oklch(0.92 0.012 100);
+      --primary: oklch(0.62 0.11 122);
+      --primary-foreground: oklch(0.14 0.02 105);
+      --muted: oklch(0.2 0.014 105);
+      --muted-foreground: oklch(0.56 0.02 100);
+      --accent: oklch(0.56 0.08 185);
+      --border: oklch(0.3 0.018 105);
+      --card: oklch(0.21 0.018 105);
+      --surface-sunken: oklch(0.175 0.008 105);
+      --success: oklch(0.57 0.1 148);
+      --warning: oklch(0.75 0.11 78);
+      --page-bg: oklch(0.17 0.012 240);
+      --page-fg: oklch(0.9 0.012 240);
+      --page-muted: oklch(0.62 0.018 240);
+      --page-rule: oklch(0.3 0.014 240);
+      --page-chip: oklch(0.24 0.014 240);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --background: oklch(0.15 0.018 105);
+    --foreground: oklch(0.92 0.012 100);
+    --primary: oklch(0.62 0.11 122);
+    --primary-foreground: oklch(0.14 0.02 105);
+    --muted: oklch(0.2 0.014 105);
+    --muted-foreground: oklch(0.56 0.02 100);
+    --accent: oklch(0.56 0.08 185);
+    --border: oklch(0.3 0.018 105);
+    --card: oklch(0.21 0.018 105);
+    --surface-sunken: oklch(0.175 0.008 105);
+    --success: oklch(0.57 0.1 148);
+    --warning: oklch(0.75 0.11 78);
+    --page-bg: oklch(0.17 0.012 240);
+    --page-fg: oklch(0.9 0.012 240);
+    --page-muted: oklch(0.62 0.018 240);
+    --page-rule: oklch(0.3 0.014 240);
+    --page-chip: oklch(0.24 0.014 240);
+  }
+
+  * { box-sizing: border-box; }
+  body {
+    margin: 0; background: var(--page-bg); color: var(--page-fg);
+    font-family: var(--font-ui); font-size: 15px; line-height: 1.55;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1180px; margin: 0 auto; padding: 56px 24px 120px; }
+
+  .eyebrow {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--page-muted); margin: 0 0 14px;
+  }
+  h1 {
+    font-family: var(--font-display); font-weight: 600;
+    font-size: clamp(30px, 4.4vw, 44px); line-height: 1.12;
+    margin: 0 0 18px; text-wrap: balance; letter-spacing: -0.01em;
+  }
+  .lede { font-size: 17px; color: var(--page-muted); max-width: 62ch; margin: 0; }
+  .lede strong { color: var(--page-fg); font-weight: 600; }
+
+  .settled { margin: 32px 0 0; padding: 20px 22px; background: var(--page-chip);
+    border-left: 2px solid var(--primary); border-radius: 0 var(--radius-card) var(--radius-card) 0; max-width: 70ch; }
+  .settled .k { font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--primary); margin: 0 0 12px; }
+  .settled dl { margin: 0; display: grid; grid-template-columns: auto 1fr; gap: 8px 16px; font-size: 14.5px; }
+  .settled dt { font-weight: 600; color: var(--page-fg); white-space: nowrap; }
+  .settled dd { margin: 0; color: var(--page-muted); }
+
+  section { margin-top: 72px; }
+  .sec-head { border-top: 1px solid var(--page-rule); padding-top: 20px; margin-bottom: 8px; }
+  .sec-num { font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); }
+  h2 { font-family: var(--font-display); font-weight: 600; font-size: 27px; margin: 8px 0 10px; letter-spacing: -0.01em; }
+  .q { font-size: 16px; color: var(--page-muted); max-width: 64ch; margin: 0; }
+  .q em { color: var(--page-fg); font-style: normal; font-weight: 600; }
+
+  .opts { display: flex; flex-direction: column; gap: 38px; margin-top: 32px; }
+  .opt-head { display: flex; align-items: baseline; gap: 10px; flex-wrap: wrap; margin-bottom: 12px; }
+  .tag { font-size: 11px; font-weight: 700; letter-spacing: 0.06em; text-transform: uppercase;
+    background: var(--page-fg); color: var(--page-bg); padding: 3px 8px; border-radius: 4px; }
+  .tag.breaks { background: var(--warning); color: oklch(0.2 0.03 78); }
+  .opt-name { font-weight: 600; font-size: 16px; }
+  .opt-why { font-size: 14px; color: var(--page-muted); max-width: 66ch; margin: 0 0 16px; }
+  .opt-why b { color: var(--page-fg); font-weight: 600; }
+
+  .rail { display: flex; gap: 22px; flex-wrap: wrap; align-items: flex-start; }
+  .frame-label { font-size: 10px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase;
+    color: var(--page-muted); margin-bottom: 7px; font-variant-numeric: tabular-nums; }
+
+  .app { background: var(--background); color: var(--foreground);
+    border: 1px solid var(--page-rule); border-radius: var(--radius-panel);
+    overflow: hidden; font-family: var(--font-ui); }
+  .app.phone { width: 330px; }
+  .app.wall { width: 100%; max-width: 720px; }
+
+  .pad { padding: 14px 16px; }
+  .app-title { font-family: var(--font-display); font-weight: 600; font-size: 21px; margin: 0; letter-spacing: -0.01em; }
+  .app-sub { font-size: 12px; color: var(--muted-foreground); margin: 2px 0 0; }
+
+  .backbar { display: flex; align-items: center; gap: 9px; padding: 12px 16px; border-bottom: 1px solid var(--border); }
+  .backbar .b { font-size: 17px; color: var(--muted-foreground); }
+  .backbar .t { font-family: var(--font-display); font-size: 19px; font-weight: 600; }
+  .backbar .c { margin-left: auto; font-size: 12px; color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
+
+  .grouphead { display: flex; align-items: baseline; justify-content: space-between;
+    padding: 13px 16px 5px; border-bottom: 1px solid var(--border); }
+  .grouphead .name { font-size: 12px; font-weight: 700; letter-spacing: 0.07em; text-transform: uppercase; }
+  .grouphead .count { font-size: 11px; font-weight: 500; color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
+
+  .row { display: flex; align-items: center; gap: 12px; min-height: 56px; padding: 8px 16px; border-bottom: 1px solid var(--border); }
+  .row:last-child { border-bottom: none; }
+  .ring { width: 22px; height: 22px; flex: 0 0 22px; border: 1.5px solid var(--border); border-radius: 999px; }
+  .row.done .ring { border-color: var(--success); background: var(--success); position: relative; }
+  .row.done .ring::after { content: ''; position: absolute; inset: 0; background: var(--background);
+    clip-path: polygon(20% 52%, 34% 66%, 78% 26%, 84% 34%, 34% 80%, 14% 58%); }
+  .row-main { min-width: 0; flex: 1; }
+  .row-name { font-size: 16px; font-weight: 500; line-height: 1.3; }
+  .row-note { font-size: 12.5px; color: var(--muted-foreground); line-height: 1.35; margin-top: 1px; }
+  .row.done .row-name { opacity: 0.46; text-decoration: line-through; }
+  .qty-pill { font-size: 12px; font-weight: 600; font-variant-numeric: tabular-nums; white-space: nowrap;
+    background: var(--muted); color: var(--muted-foreground); padding: 2px 7px; border-radius: 999px; }
+  .who { width: 20px; height: 20px; flex: 0 0 20px; border-radius: 999px; display: grid; place-items: center;
+    font-size: 9.5px; font-weight: 700; }
+  .who.z { background: color-mix(in oklch, var(--accent) 26%, var(--background)); color: var(--accent); }
+  .who.h { background: color-mix(in oklch, var(--warning) 30%, var(--background)); color: oklch(0.42 0.09 78); }
+
+  .addbar { display: flex; align-items: center; gap: 10px; padding: 10px 14px;
+    border-top: 1px solid var(--border); background: var(--card); }
+  .field { flex: 1; min-width: 0; background: var(--surface-sunken); border: 1px solid var(--border);
+    border-radius: 999px; padding: 9px 14px; font-size: 15px; color: var(--muted-foreground); }
+  .field.typing { color: var(--foreground); border-color: var(--primary); }
+  .field .caret { display: inline-block; width: 1.5px; height: 15px; vertical-align: -2px; background: var(--primary); margin-left: 1px; }
+  .inline-ghost { color: var(--muted-foreground); }
+  .addbtn { flex: 0 0 auto; width: 36px; height: 36px; border-radius: 999px;
+    background: var(--primary); color: var(--primary-foreground); display: grid; place-items: center; font-size: 19px; line-height: 1; }
+
+  .chipstrip { display: flex; gap: 7px; padding: 9px 14px 11px; flex-wrap: nowrap; overflow-x: auto; }
+  .chip { font-size: 13px; font-weight: 500; white-space: nowrap; border: 1px solid var(--border);
+    background: var(--card); padding: 5px 11px; border-radius: 999px; color: var(--foreground); }
+  .chip.ghost { border-style: dashed; color: var(--muted-foreground); }
+  .col-label { font-size: 10px; font-weight: 700; letter-spacing: 0.09em; text-transform: uppercase;
+    color: var(--muted-foreground); margin-bottom: 7px; }
+
+  .sug-sheet { border-top: 1px solid var(--border); background: var(--card); }
+  .sug-row { display: flex; align-items: center; gap: 11px; padding: 10px 16px; border-bottom: 1px solid var(--border); }
+  .sug-row:last-child { border-bottom: none; }
+  .sug-row .lead { width: 20px; flex: 0 0 20px; text-align: center; font-size: 12px; color: var(--muted-foreground); }
+  .sug-name { font-size: 15px; flex: 1; min-width: 0; }
+  .sug-name b { font-weight: 700; }
+  .sug-meta { font-size: 11px; color: var(--muted-foreground); text-transform: uppercase; letter-spacing: 0.06em; font-weight: 600; }
+
+  .wallcols { display: grid; grid-template-columns: 1fr 1fr 1fr; }
+  .wallcols > div + div { border-left: 1px solid var(--border); }
+  .wallcol-head { display: flex; align-items: baseline; justify-content: space-between; padding: 13px 14px 10px; border-bottom: 1px solid var(--border); }
+  .wallcol-head .n { font-family: var(--font-display); font-size: 16px; font-weight: 600; }
+  .wallcol-head .c { font-size: 11px; color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
+  .wallcols .row { padding: 7px 14px; min-height: 48px; }
+  .wallcols .row-name { font-size: 15px; }
+
+  .note { margin-top: 14px; font-size: 13.5px; color: var(--page-muted); max-width: 66ch; }
+  .note b { color: var(--page-fg); font-weight: 600; }
+
+  .ask { margin-top: 76px; border-top: 2px solid var(--page-fg); padding-top: 22px; }
+  .ask h2 { margin-top: 0; }
+  .ask ol { margin: 0; padding-left: 20px; max-width: 66ch; }
+  .ask li { margin-bottom: 11px; color: var(--page-muted); }
+  .ask li b { color: var(--page-fg); font-weight: 600; }
+
+  @media (max-width: 640px) {
+    .wrap { padding: 36px 16px 80px; }
+    .app.phone { width: 100%; }
+    .wallcols { grid-template-columns: 1fr; }
+    .wallcols > div + div { border-left: none; border-top: 1px solid var(--border); }
+    .settled dl { grid-template-columns: 1fr; gap: 2px 0; }
+    .settled dd { margin-bottom: 10px; }
+  }
+</style>
+
+<div class="wrap">
+
+  <p class="eyebrow">M5/6 · structure settled · two questions left</p>
+  <h1>What goes on a grocery row</h1>
+  <p class="lede">
+    Navigation is decided. What's left is what the row says and what happens while you type —
+    now rendered <strong>inside</strong> the settled structure rather than against a generic list.
+  </p>
+
+  <div class="settled">
+    <p class="k">Settled</p>
+    <dl>
+      <dt>Structure</dt><dd>Each store is its own list. Home is an index of lists; tap to enter one full-screen.</dd>
+      <dt>Empty lists</dt><dd>Permanent lists (Grocery, Costco) stay visible and dim at zero. Runtime lists appear when they have items.</dd>
+      <dt>Creating</dt><dd>Tier 4 makes lists. Anyone who can add an item can add to an existing one.</dd>
+      <dt>Grouping</dt><dd>Aisle, inside a store — where aisle order is walk order. Not universal: a future non-food list won't have aisles.</dd>
+      <dt>Adding</dt><dd>Inside a list the destination is implied. Only the index needs "Add to…".</dd>
+    </dl>
+  </div>
+
+  <!-- ============ AUTOSUGGEST ============ -->
+  <section>
+    <div class="sec-head"><span class="sec-num">Open · 1 of 2</span></div>
+    <h2>What happens while you type</h2>
+    <p class="q">
+      The pills felt crude because they were <em>equal-weight buttons with no stated relationship
+      to what you typed</em>. Three ways out, all inside a store list where the destination is
+      already known.
+    </p>
+
+    <div class="opts">
+
+      <div>
+        <div class="opt-head"><span class="tag">S1</span><span class="opt-name">Inline completion</span></div>
+        <p class="opt-why">
+          The field completes ahead of the cursor in muted text. <b>Nothing appears and nothing
+          moves</b> — no layout shift, no second target, no thumb travel. Fastest for a word you've
+          typed a hundred times, silent for anything new.
+        </p>
+        <div class="rail"><div><div class="frame-label">Inside Grocery</div><div class="app phone">
+          <div class="backbar"><span class="b">‹</span><span class="t">Grocery Store</span><span class="c">9 left</span></div>
+          <div class="grouphead"><span class="name">Dairy</span><span class="count">3 left</span></div>
+          <div class="row"><div class="ring"></div><div class="row-main"><div class="row-name">Whole milk</div></div><span class="qty-pill">2</span></div>
+          <div class="row"><div class="ring"></div><div class="row-main"><div class="row-name">Butter</div></div></div>
+          <div class="addbar"><div class="field typing">sou<span class="inline-ghost">rdough</span><span class="caret"></span></div><div class="addbtn">+</div></div>
+        </div></div></div>
+      </div>
+
+      <div>
+        <div class="opt-head"><span class="tag">S2</span><span class="opt-name">A ranked sheet in the list's own anatomy</span></div>
+        <p class="opt-why">
+          Matches rise above the field as <b>rows shaped like the rows they'll become</b> — match
+          bolded, aisle on the right. Room for a reason a pill can't hold, and the last row is
+          always "add as new" so an unknown word has somewhere to go.
+        </p>
+        <div class="rail"><div><div class="frame-label">Inside Grocery</div><div class="app phone">
+          <div class="backbar"><span class="b">‹</span><span class="t">Grocery Store</span><span class="c">9 left</span></div>
+          <div class="row"><div class="ring"></div><div class="row-main"><div class="row-name">Whole milk</div></div><span class="qty-pill">2</span></div>
+          <div class="sug-sheet">
+            <div class="sug-row"><span class="lead">↑</span><span class="sug-name"><b>Sou</b>rdough</span><span class="sug-meta">Bakery</span></div>
+            <div class="sug-row"><span class="lead">↑</span><span class="sug-name"><b>Sou</b>r cream</span><span class="sug-meta">Dairy</span></div>
+            <div class="sug-row"><span class="lead">+</span><span class="sug-name inline-ghost">Add “sou” as new</span></div>
+          </div>
+          <div class="addbar"><div class="field typing">sou<span class="caret"></span></div><div class="addbtn">+</div></div>
+        </div></div></div>
+        <p class="note"><b>The aisle on the right is doing real work</b> — it's the only place the filing decision becomes visible before you commit, which is what the "Which aisle?" correction prompt exists to fix after the fact.</p>
+      </div>
+
+      <div>
+        <div class="opt-head"><span class="tag">S3</span><span class="opt-name">The same pills, labelled</span></div>
+        <p class="opt-why">
+          At rest the strip is <b>your regulars, stated as such</b>. While typing the heading changes
+          with the contents. Same real estate as today — <b>the fix for "crude" is the label</b>, not
+          a new mechanism.
+        </p>
+        <div class="rail">
+          <div><div class="frame-label">At rest</div><div class="app phone">
+            <div class="backbar"><span class="b">‹</span><span class="t">Grocery Store</span><span class="c">9 left</span></div>
+            <div class="row"><div class="ring"></div><div class="row-main"><div class="row-name">Whole milk</div></div><span class="qty-pill">2</span></div>
+            <div style="border-top:1px solid var(--border)">
+              <div class="pad" style="padding-bottom:0"><div class="col-label">You buy these most weeks</div></div>
+              <div class="chipstrip"><span class="chip">Milk</span><span class="chip">Eggs</span><span class="chip">Bread</span><span class="chip">Bananas</span></div>
+            </div>
+            <div class="addbar"><div class="field">Add an item</div><div class="addbtn">+</div></div>
+          </div></div>
+          <div><div class="frame-label">Typing “ba”</div><div class="app phone">
+            <div class="backbar"><span class="b">‹</span><span class="t">Grocery Store</span><span class="c">9 left</span></div>
+            <div class="row"><div class="ring"></div><div class="row-main"><div class="row-name">Whole milk</div></div><span class="qty-pill">2</span></div>
+            <div style="border-top:1px solid var(--border)">
+              <div class="pad" style="padding-bottom:0"><div class="col-label">Matching “ba”</div></div>
+              <div class="chipstrip"><span class="chip">Bananas</span><span class="chip">Bacon</span><span class="chip">Baguette</span><span class="chip ghost">Add “ba”</span></div>
+            </div>
+            <div class="addbar"><div class="field typing">ba<span class="caret"></span></div><div class="addbtn">+</div></div>
+          </div></div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ METADATA ============ -->
+  <section>
+    <div class="sec-head"><span class="sec-num">Open · 2 of 2</span></div>
+    <h2>What earns a place on the row</h2>
+    <p class="q">
+      #127 puts <em>who added it</em> on the note line. For a two-person list that may answer a
+      question nobody asked. <em>Quantity</em> and <em>what it's for</em> are the candidates that
+      change what you put in the cart.
+    </p>
+
+    <div class="opts">
+
+      <div>
+        <div class="opt-head"><span class="tag">M1</span><span class="opt-name">Name only</span></div>
+        <p class="opt-why">What Keep does. <b>Fastest to scan, nothing to maintain.</b> The honest baseline — if the others can't beat this they don't belong.</p>
+        <div class="rail"><div><div class="frame-label">Inside Grocery</div><div class="app phone">
+          <div class="backbar"><span class="b">‹</span><span class="t">Grocery Store</span><span class="c">6 left</span></div>
+          <div class="grouphead"><span class="name">Dairy</span><span class="count">2 left</span></div>
+          <div class="row"><div class="ring"></div><div class="row-main"><div class="row-name">Whole milk</div></div></div>
+          <div class="row"><div class="ring"></div><div class="row-main"><div class="row-name">Parmesan</div></div></div>
+          <div class="grouphead"><span class="name">Pantry</span><span class="count">2 left</span></div>
+          <div class="row"><div class="ring"></div><div class="row-main"><div class="row-name">Rigatoni</div></div></div>
+          <div class="row"><div class="ring"></div><div class="row-main"><div class="row-name">Olive oil</div></div></div>
+        </div></div></div>
+      </div>
+
+      <div>
+        <div class="opt-head"><span class="tag">M2</span><span class="opt-name">Quantity right, purpose on the note</span></div>
+        <p class="opt-why">
+          Quantity is <b>a decision made at the shelf</b>, so it sits where the eye lands last —
+          right-aligned, tabular. Purpose takes the note line only when it exists, so most rows stay
+          single-line and the list doesn't double in height for four items that need context.
+        </p>
+        <div class="rail"><div><div class="frame-label">Inside Grocery</div><div class="app phone">
+          <div class="backbar"><span class="b">‹</span><span class="t">Grocery Store</span><span class="c">6 left</span></div>
+          <div class="grouphead"><span class="name">Dairy</span><span class="count">2 left</span></div>
+          <div class="row"><div class="ring"></div><div class="row-main"><div class="row-name">Whole milk</div></div><span class="qty-pill">2</span></div>
+          <div class="row"><div class="ring"></div><div class="row-main"><div class="row-name">Parmesan</div><div class="row-note">for Sunday's ziti</div></div></div>
+          <div class="grouphead"><span class="name">Pantry</span><span class="count">2 left</span></div>
+          <div class="row"><div class="ring"></div><div class="row-main"><div class="row-name">Rigatoni</div><div class="row-note">for Sunday's ziti</div></div></div>
+          <div class="row"><div class="ring"></div><div class="row-main"><div class="row-name">Olive oil</div></div><span class="qty-pill">2</span></div>
+        </div></div></div>
+        <p class="note"><b>Watch the repetition.</b> Two rows from one meal repeat the same note, and aisle grouping guarantees they're never adjacent. Worth deciding whether a meal's items say it once somewhere else.</p>
+      </div>
+
+      <div>
+        <div class="opt-head"><span class="tag breaks">M3 · shown to be rejected</span><span class="opt-name">Who added it, as a dot</span></div>
+        <p class="opt-why">
+          Identity as a 20px initial — costs no vertical space, survives beside a purpose note.
+          <b>On a two-person list the answer is always "one of us two."</b> Its only real case is a
+          kid adding, where who is the difference between a request and a decision — and that
+          doesn't pay until tier 1 can add.
+        </p>
+        <div class="rail"><div><div class="frame-label">Inside Grocery</div><div class="app phone">
+          <div class="backbar"><span class="b">‹</span><span class="t">Grocery Store</span><span class="c">6 left</span></div>
+          <div class="grouphead"><span class="name">Dairy</span><span class="count">2 left</span></div>
+          <div class="row"><div class="ring"></div><div class="row-main"><div class="row-name">Whole milk</div></div><span class="who h">H</span><span class="qty-pill">2</span></div>
+          <div class="row"><div class="ring"></div><div class="row-main"><div class="row-name">Parmesan</div><div class="row-note">for Sunday's ziti</div></div><span class="who z">Z</span></div>
+          <div class="grouphead"><span class="name">Pantry</span><span class="count">2 left</span></div>
+          <div class="row"><div class="ring"></div><div class="row-main"><div class="row-name">Rigatoni</div><div class="row-note">for Sunday's ziti</div></div><span class="who z">Z</span></div>
+          <div class="row"><div class="ring"></div><div class="row-main"><div class="row-name">Olive oil</div></div><span class="who h">H</span></div>
+        </div></div></div>
+      </div>
+
+    </div>
+  </section>
+
+  <!-- ============ WALL ============ -->
+  <section>
+    <div class="sec-head"><span class="sec-num">Also open</span></div>
+    <h2>Does the wall get columns?</h2>
+    <p class="q">
+      A 1024px tablet has room for every list at once, so <em>switching is a phone problem</em>.
+      If the wall gets columns it's a different layout, not a wide phone — and with four lists it
+      needs a rule for which ones get one.
+    </p>
+    <div class="rail" style="margin-top:28px">
+      <div style="width:100%">
+        <div class="frame-label">Wall · 1024 · permanent lists get columns, runtime lists queue behind</div>
+        <div class="app wall">
+          <div class="wallcols">
+            <div>
+              <div class="wallcol-head"><span class="n">Grocery</span><span class="c">9</span></div>
+              <div class="row"><div class="ring"></div><div class="row-main"><div class="row-name">Baby spinach</div></div></div>
+              <div class="row"><div class="ring"></div><div class="row-main"><div class="row-name">Whole milk</div></div><span class="qty-pill">2</span></div>
+              <div class="row"><div class="ring"></div><div class="row-main"><div class="row-name">Butter</div></div></div>
+              <div class="row done"><div class="ring"></div><div class="row-main"><div class="row-name">Eggs</div></div></div>
+              <div class="row"><div class="ring"></div><div class="row-main"><div class="row-name">Sourdough</div></div></div>
+            </div>
+            <div>
+              <div class="wallcol-head"><span class="n">Costco</span><span class="c">5</span></div>
+              <div class="row"><div class="ring"></div><div class="row-main"><div class="row-name">Paper towels</div></div></div>
+              <div class="row"><div class="ring"></div><div class="row-main"><div class="row-name">Rotisserie chicken</div></div></div>
+              <div class="row"><div class="ring"></div><div class="row-main"><div class="row-name">Olive oil</div></div><span class="qty-pill">2</span></div>
+            </div>
+            <div>
+              <div class="wallcol-head"><span class="n">Specialty</span><span class="c">3</span></div>
+              <div class="row"><div class="ring"></div><div class="row-main"><div class="row-name">Saffron</div></div></div>
+              <div class="row"><div class="ring"></div><div class="row-main"><div class="row-name">Gochujang</div></div></div>
+              <div class="row"><div class="ring"></div><div class="row-main"><div class="row-name">Pomegranate molasses</div></div></div>
+            </div>
+          </div>
+          <div class="addbar"><div class="field">Add an item — drop it in a column</div><div class="addbtn">+</div></div>
+        </div>
+      </div>
+    </div>
+    <p class="note">
+      <b>Aisle heads have to go here.</b> Three columns of them at four feet is unreadable, and the
+      columns are already the grouping. That means the wall and the phone group differently, which
+      is a real inconsistency to accept on purpose or reject.
+    </p>
+  </section>
+
+  <div class="ask">
+    <h2>What I need from you</h2>
+    <ol>
+      <li><b>S1, S2, or S3</b> — or a pair. S1 and S3 compose; S2 replaces both.</li>
+      <li><b>M1, M2, or M3.</b> If M2, say whether repeated meal notes bother you enough to need a different treatment.</li>
+      <li><b>Wall columns: yes or no</b> — and if yes, whether losing aisle heads there is acceptable.</li>
+      <li>Then I write the handoff spec and take it into the real app.</li>
+    </ol>
+  </div>
+
+</div>
