@@ -154,3 +154,25 @@ where github_issue_number is null and status = 'new';
 
 Fix the token, then file those by hand. If this happens more than once, that is
 the argument for a retry — not before.
+
+---
+
+## Checking what is actually owed
+
+Do not trust a doc bullet for this. Report status is a database column, and
+`CLAUDE.md` / the queue only record what someone believed at closeout — an
+"owed" line written in one session survives every later session that flips the
+status by hand:
+
+```bash
+ssh vireo-pi "docker exec \$(docker ps --format '{{.Names}}' | grep -i postgres | head -1) \
+  psql -U familyos -d familyos -c \
+  \"select left(id::text,8), status, left(description,44) from platform.bug_reports \
+    where status <> 'deployed' order by created_at desc;\""
+```
+
+Empty result means nothing is owed. Note the schema — the table is
+`platform.bug_reports`, not `bug_reports`, and it is not on the default
+`search_path`. `GET /api/bug-reports` is no substitute: it scopes to the calling
+profile's own reports unless the caller is tier 4, so a partial list reads as a
+complete one.

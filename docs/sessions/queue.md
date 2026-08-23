@@ -253,8 +253,6 @@ suite mirroring chores/calendar. _Depends on: none._
 - **2026-08-22 — Design+dev: the Vireo commit, olive primary** (ADR 065, PR #120).
   _[log](logs/2026-08-22-design-dev-olive-primary.md)_
 - **2026-08-20 — Fix: home widget clamping + layouts** (auto-bug #116–118, PR #119).
-  **Owed:** in-app `deployed` flips for reports `5a6cfca1…`, `67345432…`,
-  `f21228f7…`, with resolutions.
   _[log](logs/2026-08-20-fix-auto-bug-116-118.md)_
 - **2026-08-20 — Audit: doc staleness sweep** — 24 issue groups across 30 files.
   _[log](logs/2026-08-20-audit-docs-staleness.md)_
