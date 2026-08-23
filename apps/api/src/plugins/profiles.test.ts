@@ -3,7 +3,7 @@ import type { FastifyInstance } from 'fastify'
 import type { LightMyRequestResponse } from 'fastify'
 import { buildServer } from '../server'
 import { prisma } from '@family-os/platform/server'
-import { DEFAULT_LAYOUTS } from '@family-os/platform/types'
+import { DEFAULT_LAYOUTS, PERMISSION_REGISTRY } from '@family-os/platform/types'
 import bcrypt from 'bcryptjs'
 
 let app: FastifyInstance
@@ -615,7 +615,10 @@ describe('GET /api/profiles/:id/permissions', () => {
         overrideId: string | null
       }>
     }>()
-    expect(permissions).toHaveLength(17)
+    // Asserted against the registry, not a hardcoded count — the endpoint's
+    // contract is "returns ALL registry permissions," so this is the actual
+    // claim under test, and still fails if the route filters or drops entries.
+    expect(permissions).toHaveLength(Object.keys(PERMISSION_REGISTRY).length)
     expect(permissions.every((p) => p.override === null && p.overrideId === null)).toBe(true)
     // tier 1 baseline: view platform.Plugin + view chores.Task + complete
     // chores.Task (every tier can complete its own assigned task) + view
