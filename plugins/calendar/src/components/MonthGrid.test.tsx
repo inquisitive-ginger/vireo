@@ -1,7 +1,8 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
+import type { DayMark } from '@family-os/platform/types'
 import type { CalendarEvent } from '../types'
-import { layoutMonth } from '../lib/grid'
+import { layoutMonth, localDateKey } from '../lib/grid'
 import { MonthGrid } from './MonthGrid'
 
 const members = new Map([
@@ -148,5 +149,62 @@ describe('MonthGrid', () => {
     const onDrill = renderGrid([])
     fireEvent.click(screen.getByLabelText(/Mon Jun 22 2026/))
     expect(onDrill).toHaveBeenCalledTimes(1)
+  })
+
+  describe('day marks (ADR 050)', () => {
+    const dayKey = localDateKey(new Date(2026, 5, 9))
+    const mark: DayMark = {
+      date: dayKey,
+      ownerId: 'p1',
+      glyph: 'utensils',
+      label: "Zoe's got dinner",
+    }
+
+    it('renders the owner disc + glyph, and carries the name in accessible text', () => {
+      const { container } = render(
+        <MonthGrid
+          weeks={layoutMonth([], 2026, 5)}
+          membersById={members}
+          today={new Date(2026, 5, 22)}
+          onDrillDay={vi.fn()}
+          marksByDate={new Map([[dayKey, [mark]]])}
+        />
+      )
+      // The disc carries the initial, aria-hidden — the accessible name comes
+      // from the sr-only label instead.
+      expect(screen.getByText('Z', { selector: 'span[aria-hidden]' })).toBeInTheDocument()
+      expect(container.querySelector('.lucide-utensils')).toBeInTheDocument()
+      expect(screen.getByText("Zoe's got dinner", { selector: '.sr-only' })).toBeInTheDocument()
+    })
+
+    it('renders no mark on an unmarked day', () => {
+      render(
+        <MonthGrid
+          weeks={layoutMonth([], 2026, 5)}
+          membersById={members}
+          today={new Date(2026, 5, 22)}
+          onDrillDay={vi.fn()}
+        />
+      )
+      expect(document.querySelector('.lucide-utensils')).not.toBeInTheDocument()
+    })
+
+    it('renders at most two marks — the caller trusts the server cap, but still only shows what it gets', () => {
+      const twoMarks: DayMark[] = [
+        mark,
+        { date: dayKey, ownerId: 'p2', glyph: 'utensils', label: "Teddy's got dinner" },
+      ]
+      render(
+        <MonthGrid
+          weeks={layoutMonth([], 2026, 5)}
+          membersById={members}
+          today={new Date(2026, 5, 22)}
+          onDrillDay={vi.fn()}
+          marksByDate={new Map([[dayKey, twoMarks]])}
+        />
+      )
+      expect(screen.getByText("Zoe's got dinner", { selector: '.sr-only' })).toBeInTheDocument()
+      expect(screen.getByText("Teddy's got dinner", { selector: '.sr-only' })).toBeInTheDocument()
+    })
   })
 })

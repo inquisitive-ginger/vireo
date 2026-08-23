@@ -410,6 +410,26 @@ segments · the family hue for Family).
 > made one token mean two things (chrome _and_ an identity), and the two collided —
 > see ADR 041. `--secondary` is now chrome only.
 
+#### Day marks (settled — ADR 050, ADR 066, M5/4)
+
+A day mark (a plugin's read-time contribution to the calendar — "Zach's got
+dinner", later "no school Monday") is the smallest instance of the second-channel
+rule above, and generalizes past the calendar:
+
+- **A 16px identity-tint disc, carrying the owner's initial, `aria-hidden`.**
+  Never a photo — at 16px an avatar carries neither hue nor letter at a glance,
+  so any surface rendering identity that small takes the same disc, not
+  `ProfileAvatar` scaled down.
+- **The owner's name lives in the mark's accessible text**, not the disc — a
+  screen reader gets the name from the label (visible in the agenda, `sr-only`
+  in the month cell), matching the initial/`aria-hidden` pattern the calendar
+  chip already set.
+- **The month cell pairs the disc with a glyph** at a 3px gap, the glyph ~75%
+  opacity so the two read as one object, not a disc and an unrelated icon.
+- **No owner, no mark.** A mark's entire payload is the who — an unclaimed or
+  ownerless-but-covered day (`meals`' `isCovered()` without an owner) makes
+  none, never a placeholder "someone" mark.
+
 ### Avatar photos — the spine carries the identity, the avatar carries the face (settled — 2026-07-11)
 
 **Settled** — see ADR 042 (amends ADR 030). Component: `ProfileAvatar avatarUrl`;

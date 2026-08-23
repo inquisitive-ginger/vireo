@@ -81,7 +81,14 @@ export function MealsPage() {
     return { key, date, meal: mealsByDate.get(key) ?? null }
   })
 
-  const invalidate = () => queryClient.invalidateQueries({ queryKey: ['meals/plan'] })
+  // Shares its key prefix with the calendar's day-mark query (ADR 013) — a
+  // claim/plan/remove here has to invalidate BOTH: `meals/plan` refreshes this
+  // page and the Tonight widget, `calendar/day-marks` is what makes the month
+  // grid + agenda mark itself update without a reload (M5/4 AC6).
+  const invalidate = () => {
+    queryClient.invalidateQueries({ queryKey: ['meals/plan'] })
+    queryClient.invalidateQueries({ queryKey: ['calendar/day-marks'] })
+  }
 
   const saveMeal = useMutation({
     mutationFn: ({ day, input }: { day: WeekDay; input: MealDrawerInput }) => {

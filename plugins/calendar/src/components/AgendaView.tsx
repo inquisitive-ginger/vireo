@@ -1,11 +1,13 @@
 import { CalendarDays, Plus } from 'lucide-react'
 import { Button, EmptyState, relativeDayLabel } from '@family-os/ui'
+import type { DayMark } from '@family-os/platform/types'
 import type { CalendarEvent, CalendarMember } from '../types'
-import { isSameDay } from '../lib/grid'
+import { isSameDay, localDateKey } from '../lib/grid'
 import { buildAgenda } from '../lib/week'
 import { AgendaRow } from './AgendaRow'
 import { NextEventHero } from './NextEventHero'
 import { SpanBand, SpanRow } from './SpanBand'
+import { DayMarkOwnerDot } from './DayMarkOwnerDot'
 
 /* The mobile read surface (story #4): a forward-looking, day-grouped agenda led
    by an "Up next" hero — the one thing a parent opens the phone to check —
@@ -23,12 +25,15 @@ import { SpanBand, SpanRow } from './SpanBand'
    surface sits directly on `--background`, and a recess needs something to be
    recessed into (ADR 040). */
 
+const EMPTY_MARKS: Map<string, DayMark[]> = new Map()
+
 export function AgendaView({
   events,
   membersById,
   now,
   onEditEvent,
   onAdd,
+  marksByDate = EMPTY_MARKS,
 }: {
   events: CalendarEvent[]
   membersById: Map<string, CalendarMember>
@@ -38,8 +43,13 @@ export function AgendaView({
   onEditEvent?: (event: CalendarEvent) => void
   /** Empty-state CTA (tier 4). */
   onAdd?: () => void
+  /** Read-time day marks (ADR 050), keyed by `YYYY-MM-DD` — already capped and
+      permission-filtered server-side (ADR 066). A day with only a mark and no
+      events still gets a header, so the label has somewhere to sit. */
+  marksByDate?: Map<string, DayMark[]>
 }) {
-  const { hero, running, days } = buildAgenda(events, now)
+  const markDates = new Set(marksByDate.keys())
+  const { hero, running, days } = buildAgenda(events, now, markDates)
 
   if (days.length === 0 && running.length === 0 && !hero) {
     return (
@@ -86,17 +96,36 @@ export function AgendaView({
 
       {days.map((day) => {
         const { lead, sub } = sectionLabel(day.date, now, heroIsToday)
+        const dayMarks = marksByDate.get(localDateKey(day.date)) ?? []
         return (
           <section key={day.date.toISOString()}>
-            <div className="mb-2.5 flex items-baseline gap-2">
-              <h3
-                className={`text-card-title ${
-                  isSameDay(day.date, now) ? 'text-primary' : 'text-foreground'
-                }`}
-              >
-                {lead}
-              </h3>
-              {sub && <span className="text-sm-token text-muted-foreground">{sub}</span>}
+            <div className="mb-2.5 flex items-baseline justify-between gap-2">
+              <div className="flex items-baseline gap-2">
+                <h3
+                  className={`text-card-title ${
+                    isSameDay(day.date, now) ? 'text-primary' : 'text-foreground'
+                  }`}
+                >
+                  {lead}
+                </h3>
+                {sub && <span className="text-sm-token text-muted-foreground">{sub}</span>}
+              </div>
+              {dayMarks.length > 0 && (
+                <div className="flex items-center gap-3">
+                  {dayMarks.map((mark) => {
+                    const owner = mark.ownerId ? membersById.get(mark.ownerId) : undefined
+                    return (
+                      <div
+                        key={`${mark.ownerId ?? ''}-${mark.glyph}`}
+                        className="flex items-center gap-1.5 text-sm-token text-muted-foreground"
+                      >
+                        {owner && <DayMarkOwnerDot member={owner} />}
+                        <span>{mark.label}</span>
+                      </div>
+                    )
+                  })}
+                </div>
+              )}
             </div>
             <div className="flex flex-col gap-2.5">
               {/* A span begins here — stated once, in the day it starts, and never

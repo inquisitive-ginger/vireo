@@ -1,9 +1,12 @@
 import { Plus } from 'lucide-react'
 import { cn } from '@family-os/ui'
+import type { DayMark } from '@family-os/platform/types'
 import type { LaidOutWeek } from '../lib/grid'
-import { WEEKDAY_LABELS, isSameDay, dayDiff } from '../lib/grid'
+import { WEEKDAY_LABELS, isSameDay, dayDiff, localDateKey } from '../lib/grid'
 import { EventChip } from './EventChip'
 import { SpanBar } from './SpanBar'
+import { DayMarkOwnerDot } from './DayMarkOwnerDot'
+import { DAY_MARK_GLYPHS } from '../lib/day-mark-glyphs'
 import type { CalendarMember } from '../types'
 
 // Layout constants (px) — ported from the locked exploration so the span overlay
@@ -16,12 +19,17 @@ const FIRST_LANE_TOP = CELL_PT + NUMBER_H + NUM_GAP
 
 const MAX_CHIPS = 3
 
+// Stable empty default so an omitted `marksByDate` doesn't churn identity on
+// every render (a fresh `new Map()` default would).
+const EMPTY_MARKS: Map<string, DayMark[]> = new Map()
+
 export function MonthGrid({
   weeks,
   membersById,
   today,
   onDrillDay,
   onQuickAdd,
+  marksByDate = EMPTY_MARKS,
 }: {
   weeks: LaidOutWeek[]
   membersById: Map<string, CalendarMember>
@@ -31,6 +39,10 @@ export function MonthGrid({
       that creates an event prefilled to that day. Touch devices never see it —
       they reach the same add via tap → day agenda → "+ Add". */
   onQuickAdd?: (date: Date) => void
+  /** Read-time day marks (ADR 050), keyed by `YYYY-MM-DD`. Already capped at two
+      per day and permission-filtered server-side (ADR 066) — this component just
+      renders what it's given. */
+  marksByDate?: Map<string, DayMark[]>
 }) {
   return (
     <div className="overflow-hidden rounded-panel border border-border bg-card shadow-[var(--shadow-card)]">
@@ -52,6 +64,7 @@ export function MonthGrid({
               const more = cell.events.length - visible.length
               const isToday = isSameDay(cell.date, today)
               const isPast = dayDiff(today, cell.date) < 0 // before today → dim-events
+              const dayMarks = marksByDate.get(localDateKey(cell.date)) ?? []
               return (
                 <div
                   key={ci}
@@ -102,6 +115,27 @@ export function MonthGrid({
                   <div style={{ height: NUM_GAP + spanBandH }} />
                   {/* single-day chips — past days recede */}
                   <div className={cn('flex flex-col gap-0.5', isPast && 'opacity-60')}>
+                    {dayMarks.length > 0 && (
+                      <div className="flex items-center gap-1.5">
+                        {dayMarks.map((mark) => {
+                          const owner = mark.ownerId ? membersById.get(mark.ownerId) : undefined
+                          const Glyph = DAY_MARK_GLYPHS[mark.glyph]
+                          return (
+                            <div
+                              key={`${mark.ownerId ?? ''}-${mark.glyph}`}
+                              className="flex items-center gap-[3px]"
+                              title={mark.label}
+                            >
+                              {owner && <DayMarkOwnerDot member={owner} />}
+                              {Glyph && (
+                                <Glyph aria-hidden className="h-3 w-3 shrink-0 opacity-75" />
+                              )}
+                              <span className="sr-only">{mark.label}</span>
+                            </div>
+                          )
+                        })}
+                      </div>
+                    )}
                     {visible.map((event) => (
                       <EventChip key={event.id} event={event} membersById={membersById} />
                     ))}

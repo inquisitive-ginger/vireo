@@ -16,7 +16,7 @@ import {
   useQuery,
   useQueryClient,
 } from '@family-os/platform'
-import type { Profile } from '@family-os/platform/types'
+import type { DayMark, Profile } from '@family-os/platform/types'
 import type {
   ActivitiesResponse,
   CalendarEvent,
@@ -107,6 +107,19 @@ export function CalendarPage() {
       }),
   })
 
+  // Read-time day marks (ADR 050) — meals' "who's got dinner" today, School's
+  // "no school Monday" later. Own query, own key prefix: a meals claim
+  // invalidates `['calendar/day-marks']` directly (ADR 013 — see
+  // `plugins/meals`'s `invalidate()`), which is what makes AC6 hold.
+  const dayMarksQuery = useQuery({
+    queryKey: ['calendar/day-marks', { from: range.from, to: range.to }],
+    queryFn: () =>
+      fetch(`/api/calendar/day-marks?from=${range.from}&to=${range.to}`).then((r) => {
+        if (!r.ok) throw new Error('Failed to load day marks')
+        return r.json() as Promise<{ marks: DayMark[] }>
+      }),
+  })
+
   // The Activities lens (story #5) — standing series, not range-expanded. Lazily
   // fetched only when the lens is open (either viewport), so the calendar/agenda
   // path pays nothing.
@@ -140,6 +153,16 @@ export function CalendarPage() {
       map.set(m.id, { name: m.name, identityHue: m.identityHue, avatarUrl: m.avatarUrl })
     return map
   }, [profilesQuery.data])
+
+  const marksByDate = useMemo(() => {
+    const map = new Map<string, DayMark[]>()
+    for (const mark of dayMarksQuery.data?.marks ?? []) {
+      const existing = map.get(mark.date)
+      if (existing) existing.push(mark)
+      else map.set(mark.date, [mark])
+    }
+    return map
+  }, [dayMarksQuery.data])
 
   // One invalidation refreshes the month view + (story 7) the up-next widget,
   // which share the `['calendar/events']` prefix (ADR 013). Activities are a
@@ -282,6 +305,7 @@ export function CalendarPage() {
       now={today}
       onEditEvent={canManage ? openEdit : undefined}
       onAdd={canManage ? () => openCreate(null) : undefined}
+      marksByDate={marksByDate}
     />
   )
 
@@ -385,6 +409,7 @@ export function CalendarPage() {
             today={today}
             onDrillDay={drillDay}
             onQuickAdd={canManage ? (date) => openCreate(date) : undefined}
+            marksByDate={marksByDate}
           />
           {events.length === 0 && (
             <p className="mt-4 text-center text-sm-token text-muted-foreground">

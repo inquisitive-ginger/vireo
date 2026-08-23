@@ -187,6 +187,26 @@ export type RegistryEntry = {
   baseUrl: string
 }
 
+/** A read-time day mark (ADR 050) — a date-scoped fact a plugin contributes to the
+ *  calendar without writing `calendar.Event`. No start time, no duration, no span:
+ *  anything needing one of those is an event. `ownerId` is optional at the type
+ *  level (a fact can belong to no one — "no school Monday"), but an owner-bearing
+ *  mark is never hue-only (ADR 044) — the month cell pairs it with the owner's
+ *  initial, so a provider that has an owner must send one. */
+export type DayMark = {
+  /** `YYYY-MM-DD`, local to the household. */
+  date: string
+  ownerId?: string | null
+  /** An icon name the calendar resolves to a component — never a React node, so
+   *  the payload stays JSON over the wire. `plugins/calendar` owns the name→icon
+   *  map; a provider names a glyph, it never reaches into the calendar's render. */
+  glyph: string
+  /** The agenda day header's copy, in the provider's own voice (e.g. "Zach's got
+   *  dinner"). The month cell never renders it — that surface carries only the
+   *  disc + glyph (ADR 050). */
+  label: string
+}
+
 export type NavItemManifest = {
   label: string
   route: string

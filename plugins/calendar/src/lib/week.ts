@@ -1,6 +1,6 @@
 import { addDays, dayDiff, isSameDay, startOfDay } from '@family-os/ui'
 import type { CalendarEvent } from '../types'
-import { formatChipTime, isMultiDay, spanEndDate } from './grid'
+import { formatChipTime, isMultiDay, localDateKey, spanEndDate } from './grid'
 import { daySetLabel, dailySeriesReps, isDailyWindow, windowWeekdays } from './series'
 
 /* The `calendar.up-next` week model. Pure (no React, no hue) so it unit-tests
@@ -138,6 +138,8 @@ export interface AgendaDay {
   startingSpans: CalendarEvent[]
 }
 
+const EMPTY_MARK_DATES: ReadonlySet<string> = new Set()
+
 export interface AgendaModel {
   hero: CalendarEvent | null
   /** Spans already under way — pinned in a band, because their start day is in the
@@ -155,7 +157,15 @@ export interface AgendaModel {
    passed, so no section below can carry it), otherwise inline, once, in the day it
    begins. Either way it never repeats across the days it covers, which is the bug
    this replaces. */
-export function buildAgenda(events: CalendarEvent[], now: Date, horizon: number = 42): AgendaModel {
+export function buildAgenda(
+  events: CalendarEvent[],
+  now: Date,
+  /** Dates (`YYYY-MM-DD`) carrying a day mark (ADR 050) — a day with a mark but no
+      events still needs its section, so "Zach's got dinner" has a header to sit
+      in. Empty by default; callers with no marks pass nothing. */
+  markDates: ReadonlySet<string> = EMPTY_MARK_DATES,
+  horizon: number = 42
+): AgendaModel {
   const first = startOfDay(now)
   const lastExclusive = addDays(first, horizon)
 
@@ -187,7 +197,9 @@ export function buildAgenda(events: CalendarEvent[], now: Date, horizon: number 
     const date = addDays(first, i)
     const timed = listable.filter((e) => e.id !== hero?.id && isSameDay(new Date(e.startsAt), date))
     const startingSpans = upcoming.filter((e) => isSameDay(new Date(e.startsAt), date))
-    if (timed.length || startingSpans.length) days.push({ date, timed, startingSpans })
+    if (timed.length || startingSpans.length || markDates.has(localDateKey(date))) {
+      days.push({ date, timed, startingSpans })
+    }
   }
 
   return { hero, running, days }

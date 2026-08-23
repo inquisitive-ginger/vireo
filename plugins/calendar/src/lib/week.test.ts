@@ -182,6 +182,23 @@ describe('buildAgenda', () => {
   it('is empty on a clear calendar', () => {
     expect(buildAgenda([], NOW)).toEqual({ hero: null, running: [], days: [] })
   })
+
+  it('gives a day-mark date its own section even with no events (M5/4 AC4)', () => {
+    // Mon 13 has neither an event nor a span — only a day mark.
+    const markDates = new Set([localDateKey(new Date(2026, 6, 13))])
+    const { days } = buildAgenda([], NOW, markDates)
+    expect(days).toHaveLength(1)
+    expect(days[0].date.getDate()).toBe(13)
+    expect(days[0].timed).toEqual([])
+    expect(days[0].startingSpans).toEqual([])
+  })
+
+  it('does not duplicate a day that already has events just because it also has a mark', () => {
+    const markDates = new Set([localDateKey(new Date(2026, 6, 12))]) // Sun 12 — TOMORROW's day
+    const { days } = buildAgenda([TODAY_LATER, TOMORROW], NOW, markDates)
+    expect(days).toHaveLength(1)
+    expect(days[0].date.getDate()).toBe(12)
+  })
 })
 
 describe('spanWhenLabel', () => {

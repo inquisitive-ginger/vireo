@@ -1,6 +1,8 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
+import type { DayMark } from '@family-os/platform/types'
 import type { CalendarEvent, CalendarMember } from '../types'
+import { localDateKey } from '../lib/grid'
 import { AgendaView } from './AgendaView'
 
 const MEMBERS = new Map<string, CalendarMember>([
@@ -110,5 +112,34 @@ describe('AgendaView', () => {
     render(<AgendaView events={[GROCERY]} membersById={MEMBERS} now={NOW} />)
     expect(screen.getByText('Up next')).toBeInTheDocument()
     expect(screen.getByText('Family')).toBeInTheDocument()
+  })
+
+  describe('day marks (ADR 050)', () => {
+    it('renders the label with the owner disc, on a day that has no events (AC4)', () => {
+      // Wednesday (KARATE's day) also carries a dinner mark.
+      const wed = localDateKey(new Date(2026, 5, 24))
+      const marksByDate = new Map<string, DayMark[]>([
+        [wed, [{ date: wed, ownerId: 'p1', glyph: 'utensils', label: "Zoe's got dinner" }]],
+      ])
+      render(
+        <AgendaView events={[KARATE]} membersById={MEMBERS} now={NOW} marksByDate={marksByDate} />
+      )
+      expect(screen.getByText("Zoe's got dinner")).toBeInTheDocument()
+    })
+
+    it('gives a day its own header for a mark alone, with no events', () => {
+      // Thursday: no events at all, only a mark.
+      const thu = localDateKey(new Date(2026, 5, 25))
+      const marksByDate = new Map<string, DayMark[]>([
+        [thu, [{ date: thu, ownerId: 'p2', glyph: 'utensils', label: "Teddy's got dinner" }]],
+      ])
+      render(<AgendaView events={[]} membersById={MEMBERS} now={NOW} marksByDate={marksByDate} />)
+      expect(screen.getByText("Teddy's got dinner")).toBeInTheDocument()
+    })
+
+    it('renders no mark row when the day carries none', () => {
+      render(<AgendaView events={[KARATE]} membersById={MEMBERS} now={NOW} />)
+      expect(screen.queryByText(/got dinner/)).not.toBeInTheDocument()
+    })
   })
 })

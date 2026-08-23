@@ -1,12 +1,22 @@
 import fp from 'fastify-plugin'
 import type { FastifyPluginAsync } from 'fastify'
-import { prisma } from '@family-os/platform/server'
-import type { EventBus } from '@family-os/platform/server'
+import { prisma, createDayMarkRegistry } from '@family-os/platform/server'
+import type { EventBus, DayMarkRegistry } from '@family-os/platform/server'
 import { EventInputSchema, type EventInput } from '@family-os/schemas'
 import { calendarPrisma } from '@family-os/plugin-calendar/db'
 import { notify } from '../lib/notify'
 import { startReminderScheduler } from '../lib/reminder-scheduler'
 import { isRecurring, occurrenceDateKey, occurrenceStarts } from '../lib/recurrence'
+import { aggregateDayMarks } from '../lib/day-marks'
+
+// Registered here — the calendar is the surface that owns the day-marks read
+// (ADR 050/066); providers (meals, later School) reach it via
+// `fastify.dayMarks.register(...)`, never by calendar importing them.
+declare module 'fastify' {
+  interface FastifyInstance {
+    dayMarks: DayMarkRegistry
+  }
+}
 
 // ─── Row shapes (the generated Prisma types stay inside the plugin package) ──────
 
@@ -228,9 +238,29 @@ async function handleEventCreatedNotification(payload: unknown, eventBus: EventB
   )
 }
 
+// ─── Range query parsing (shared by /calendar/events and /calendar/day-marks) ────
+
+type RangeQuery = { fromRaw: string; toRaw: string; from: Date; to: Date }
+type RangeResult = { ok: true; range: RangeQuery } | { ok: false; status: number; error: string }
+
+function parseRangeQuery(query: unknown): RangeResult {
+  const { from: fromRaw, to: toRaw } = (query ?? {}) as { from?: string; to?: string }
+  if (!fromRaw || !toRaw) {
+    return { ok: false, status: 400, error: 'from and to are required' }
+  }
+  const from = new Date(fromRaw)
+  const to = new Date(toRaw)
+  if (isNaN(from.getTime()) || isNaN(to.getTime())) {
+    return { ok: false, status: 400, error: 'Invalid from/to' }
+  }
+  return { ok: true, range: { fromRaw, toRaw, from, to } }
+}
+
 // ─── Routes ───────────────────────────────────────────────────────────────────
 
 const calendarPlugin: FastifyPluginAsync = async (fastify) => {
+  fastify.decorate('dayMarks', createDayMarkRegistry())
+
   // Time-based reminder poll (ADR 045). Not in tests — they drive `runReminderTick`
   // directly with a mocked clock; a live 60s interval would leak and fire on fixtures.
   if (process.env.NODE_ENV !== 'test') {
@@ -245,15 +275,9 @@ const calendarPlugin: FastifyPluginAsync = async (fastify) => {
       return reply.status(403).send({ error: 'Permission denied' })
     }
 
-    const { from: fromRaw, to: toRaw } = request.query as { from?: string; to?: string }
-    if (!fromRaw || !toRaw) {
-      return reply.status(400).send({ error: 'from and to are required' })
-    }
-    const from = new Date(fromRaw)
-    const to = new Date(toRaw)
-    if (isNaN(from.getTime()) || isNaN(to.getTime())) {
-      return reply.status(400).send({ error: 'Invalid from/to' })
-    }
+    const parsed = parseRangeQuery(request.query)
+    if (!parsed.ok) return reply.status(parsed.status).send({ error: parsed.error })
+    const { from, to } = parsed.range
 
     const events = (await calendarPrisma.event.findMany({
       include: { attendees: true, exceptions: true },
@@ -273,6 +297,24 @@ const calendarPlugin: FastifyPluginAsync = async (fastify) => {
     result.sort((a, b) => a.startsAt.localeCompare(b.startsAt))
 
     return { events: result }
+  })
+
+  // GET /calendar/day-marks?from=&to= — read-time provider aggregation (ADR 050).
+  // The calendar surface gate (`calendar.event.view`) applies first, same as
+  // /calendar/events; each provider's own gate applies inside `aggregateDayMarks`
+  // (ADR 066). `plugins/calendar` never imports a provider — this route is the
+  // only place the registry is read.
+  fastify.get('/calendar/day-marks', async (request, reply) => {
+    if (!request.ability.can('view', 'calendar.Event')) {
+      return reply.status(403).send({ error: 'Permission denied' })
+    }
+
+    const parsed = parseRangeQuery(request.query)
+    if (!parsed.ok) return reply.status(parsed.status).send({ error: parsed.error })
+    const { fromRaw, toRaw } = parsed.range
+
+    const marks = await aggregateDayMarks(fastify.dayMarks.list(), request.ability, fromRaw, toRaw)
+    return { marks }
   })
 
   // GET /calendar/activities — the Activities lens (story #5). Returns each
