@@ -18,11 +18,22 @@ missing an AC.
 
 ## Where you stop
 
-Two gates belong to the user and cannot be delegated, self-approved, or skipped:
+Two gates belong to the user and cannot be delegated, self-approved, or skipped.
+They sit at opposite ends of the work:
 
-- **UI design gate** — visual sign-off on a new surface.
-- **Live-app review gate** — the change seen running in the real shell before any
-  closeout task.
+- **UI design gate — before you build.** A new surface, or a new shared primitive
+  in `@family-os/ui`, needs the user's pick among rendered options first. Build the
+  options inside the real components, not only against each other, then stop and
+  report. Do not write the surface, the Storybook entry, or the `design-system.md`
+  record until they have chosen — each of those records a decision the user has
+  not made.
+- **Live-app review gate — after you build.** The change seen running in the real
+  shell before any closeout task.
+
+You cannot run either gate yourself — you have no way to ask. Stopping and
+reporting is how you reach one. A gate you report at the end is a gate you
+skipped: the design gate reached after the surface exists is a review, not a
+choice.
 
 Correctness is not a gate you bring to the user. Run `pnpm typecheck` and
 `pnpm test` yourself, then hand the branch to `reviewer`. Bring the user a

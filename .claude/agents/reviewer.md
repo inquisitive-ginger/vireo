@@ -21,6 +21,9 @@ Then review the diff against, in order:
    dropped in an object rebuild, a plugin missing one of its five registrations,
    a blind `catch {}` on a path a family member can reach.
 3. The ADRs the kickoff names.
+4. A new surface or a new `@family-os/ui` primitive with no recorded design
+   sign-off is a send-back, however good it looks. Whether the gate happened is a
+   fact, not a taste — check for it.
 
 ## Verdict
 

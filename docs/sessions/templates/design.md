@@ -35,12 +35,21 @@ _List the open questions this session must close. Each becomes a section in
 
 ## During the session
 
+**Explore in two passes.** Diverge first — unanchored from the current
+primitives, bounded only by tokens and the physical situation. Then converge —
+the survivors rendered in the real app, in the real page, at real density, beside
+what already exists. Storybook is a deliverable of the decision, never the venue
+for making one.
+
+Name the axis the options must disagree on. Require one option that breaks a
+house convention and says which. Three options, not two.
+
 For each decision:
 
 1. State the options and their tradeoffs
 2. Ask: does this hold across all surfaces in scope?
 3. Ask: does this hold at all trust tiers?
-4. Make the call
+4. Gate it — rendered options, explicit pick from the user
 5. Record it in `docs/design-system.md` before moving on
 
 If a design decision requires a new architectural constraint, **stop and
@@ -51,6 +60,8 @@ write an ADR** rather than burying it in the design doc.
 ## Outputs (required before closing)
 
 - [ ] `docs/design-system.md` updated with decisions from this session; **Last updated** header updated to today's date
+- [ ] Record in `docs/sessions/artifacts/` — screenshots of the options considered, losers included, and which won and why
+- [ ] Exploration route deleted; nothing ephemeral left on the branch
 - [ ] Any new ADRs written to `docs/decisions/NNN-title.md`
 - [ ] If this session produced code (Storybook stories, token changes, component updates): branch opened, PR created
 - [ ] Session log committed to `docs/sessions/logs/YYYY-MM-DD-design-[topic].md`
