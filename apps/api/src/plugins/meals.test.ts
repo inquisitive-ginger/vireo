@@ -69,6 +69,9 @@ beforeAll(async () => {
 
 afterAll(async () => {
   await clearMeals()
+  // A stray notification against one of these ids blocks the profile delete
+  // below with a FK violation (notifications_profile_id_fkey) — clear first.
+  await prisma.notification.deleteMany({ where: { profileId: { in: ALL_IDS } } })
   await prisma.profile.deleteMany({ where: { id: { in: ALL_IDS } } })
   await prisma.systemConfig.deleteMany({ where: { key: 'family_pin_hash' } })
   await app.close()

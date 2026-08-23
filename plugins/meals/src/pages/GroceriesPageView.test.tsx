@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { GroceriesPageView } from './GroceriesPageView'
 import type { GroceryItem, Staple } from '../types'
 
@@ -29,10 +29,14 @@ function renderView(props: Partial<Parameters<typeof GroceriesPageView>[0]> = {}
       items={[]}
       staples={STAPLES}
       canAdd
+      canCorrect
       flashItemId={null}
-      onAdd={vi.fn()}
+      errorMessage={null}
+      onAdd={vi.fn().mockResolvedValue(undefined)}
       onTapStaple={vi.fn()}
       onCorrect={vi.fn()}
+      onDismissCorrection={vi.fn()}
+      dismissedCorrectionIds={new Set()}
       {...props}
     />
   )
@@ -63,23 +67,38 @@ describe('GroceriesPageView', () => {
     expect(screen.getByText(/Nothing on the list/)).toBeInTheDocument()
   })
 
-  it('adds an item by typing and pressing Enter', () => {
-    const onAdd = vi.fn()
+  it('shows the last error inline — no silent failure', () => {
+    renderView({ errorMessage: "Couldn't add that — try again." })
+    expect(screen.getByText("Couldn't add that — try again.")).toBeInTheDocument()
+  })
+
+  it('adds an item by typing and pressing Enter', async () => {
+    const onAdd = vi.fn().mockResolvedValue(undefined)
     renderView({ onAdd })
     const input = screen.getAllByPlaceholderText('Add to the list…')[0]
     fireEvent.change(input, { target: { value: 'Snap peas' } })
     fireEvent.keyDown(input, { key: 'Enter' })
-    expect(onAdd).toHaveBeenCalledWith('Snap peas')
+    await waitFor(() => expect(onAdd).toHaveBeenCalledWith('Snap peas'))
   })
 
-  it('adds an item via the Add button and clears the input', () => {
-    const onAdd = vi.fn()
+  it('adds an item via the Add button and clears the input on success', async () => {
+    const onAdd = vi.fn().mockResolvedValue(undefined)
     renderView({ onAdd })
     const input = screen.getAllByPlaceholderText('Add to the list…')[0]
     fireEvent.change(input, { target: { value: 'Snap peas' } })
     fireEvent.click(screen.getAllByRole('button', { name: 'Add' })[0])
     expect(onAdd).toHaveBeenCalledWith('Snap peas')
-    expect(input).toHaveValue('')
+    await waitFor(() => expect(input).toHaveValue(''))
+  })
+
+  it('keeps the typed text when the add fails — no retyping after a blip', async () => {
+    const onAdd = vi.fn().mockRejectedValue(new Error('500'))
+    renderView({ onAdd })
+    const input = screen.getAllByPlaceholderText('Add to the list…')[0]
+    fireEvent.change(input, { target: { value: 'Snap peas' } })
+    fireEvent.click(screen.getAllByRole('button', { name: 'Add' })[0])
+    await waitFor(() => expect(onAdd).toHaveBeenCalled())
+    expect(input).toHaveValue('Snap peas')
   })
 
   it('tapping a staple chip quick-adds it', () => {
@@ -100,7 +119,7 @@ describe('GroceriesPageView', () => {
     expect(screen.getAllByRole('button', { name: 'Eggs' }).length).toBeGreaterThan(0)
   })
 
-  it('an Other-filed item shows a one-time "Which aisle?" correction row, in place', () => {
+  it('an Other-filed item shows a one-time "Which aisle?" correction row, in place, to a manager', () => {
     const onCorrect = vi.fn()
     const other = item({ name: 'Kombucha', category: 'Other' })
     renderView({ items: [other], onCorrect })
@@ -108,6 +127,28 @@ describe('GroceriesPageView', () => {
     expect(screen.getByText('Which aisle?')).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Produce' }))
     expect(onCorrect).toHaveBeenCalledWith(other, 'Produce')
+  })
+
+  it('"Leave it" dismisses the correction prompt without refiling', () => {
+    const onCorrect = vi.fn()
+    const onDismissCorrection = vi.fn()
+    const other = item({ name: 'Paper towels', category: 'Other' })
+    renderView({ items: [other], onCorrect, onDismissCorrection })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Leave it' }))
+    expect(onDismissCorrection).toHaveBeenCalledWith(other)
+    expect(onCorrect).not.toHaveBeenCalled()
+  })
+
+  it('a dismissed item shows no correction row', () => {
+    const other = item({ id: 'other-1', category: 'Other' })
+    renderView({ items: [other], dismissedCorrectionIds: new Set(['other-1']) })
+    expect(screen.queryByText('Which aisle?')).not.toBeInTheDocument()
+  })
+
+  it('hides the correction row from a non-manager — teaching an override is tier 4', () => {
+    renderView({ items: [item({ category: 'Other' })], canCorrect: false })
+    expect(screen.queryByText('Which aisle?')).not.toBeInTheDocument()
   })
 
   it('no correction row on a filed item', () => {

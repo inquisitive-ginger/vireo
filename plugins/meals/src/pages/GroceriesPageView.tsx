@@ -8,13 +8,27 @@ export interface GroceriesPageViewProps {
   items: GroceryItem[]
   staples: Staple[]
   canAdd: boolean
+  /** Tier 4 (spec.md §Permissions: "tier 4 manages") — gates the "Which
+      aisle?" correction, which teaches a family-wide override, not just this
+      row. Tier 1–3 still see the item filed under Other, just no prompt to
+      act on. */
+  canCorrect: boolean
   /** The just-added item — flashes primary-tint in place, in its aisle, the
       answer to "did my add land?" (design.md §M5/6). Cleared by the container
       after the flash plays. */
   flashItemId: string | null
-  onAdd: (name: string) => void
+  /** A brief, user-facing line for the last failed add/correct — the "no
+      blind catch" rule (CLAUDE.md): a family member on the fridge tablet gets
+      no devtools, so a failed mutation must say so, not vanish. */
+  errorMessage: string | null
+  onAdd: (name: string) => Promise<void>
   onTapStaple: (staple: Staple) => void
   onCorrect: (item: GroceryItem, category: string) => void
+  /** "Leave it in Other" — the other half of AC4's ONE-TIME chip row: a
+      genuinely miscellaneous item (paper towels, batteries) must have a way
+      to dismiss the prompt, or it wraps the row forever. */
+  onDismissCorrection: (item: GroceryItem) => void
+  dismissedCorrectionIds: ReadonlySet<string>
 }
 
 const CORRECTABLE_AISLES = AISLES.filter((a) => a !== 'Other')
@@ -28,10 +42,14 @@ export function GroceriesPageView({
   items,
   staples,
   canAdd,
+  canCorrect,
   flashItemId,
+  errorMessage,
   onAdd,
   onTapStaple,
   onCorrect,
+  onDismissCorrection,
+  dismissedCorrectionIds,
 }: GroceriesPageViewProps) {
   const groups = useMemo(() => {
     const byAisle = new Map<string, GroceryItem[]>()
@@ -46,6 +64,7 @@ export function GroceriesPageView({
   return (
     <PageContainer width="list">
       <h1 className="text-page-title text-foreground">Groceries</h1>
+      {errorMessage && <p className="text-sm-token mt-1 text-destructive">{errorMessage}</p>}
 
       {canAdd && (
         <div className="hidden md:block">
@@ -58,7 +77,9 @@ export function GroceriesPageView({
           Nothing on the list — add something below.
         </p>
       ) : (
-        <div className="mt-5 flex flex-col pb-4">
+        // Bottom padding clears the fixed mobile add bar (~132px: tab bar +
+        // bar chrome) so the last aisle's rows aren't hidden behind it.
+        <div className="mt-5 flex flex-col pb-36 md:pb-4">
           {groups.map(([aisle, aisleItems]) => (
             <section key={aisle}>
               <div className="sticky top-0 z-10 flex items-baseline justify-between border-b border-border bg-background pb-1.5 pt-3">
@@ -72,7 +93,11 @@ export function GroceriesPageView({
                   key={item.id}
                   item={item}
                   flash={item.id === flashItemId}
+                  showCorrection={
+                    canCorrect && item.category === 'Other' && !dismissedCorrectionIds.has(item.id)
+                  }
                   onCorrect={onCorrect}
+                  onDismissCorrection={onDismissCorrection}
                 />
               ))}
             </section>
@@ -81,7 +106,9 @@ export function GroceriesPageView({
       )}
 
       {canAdd && (
-        <div className="sticky bottom-[calc(var(--spacing-tab-bar)+env(safe-area-inset-bottom))] z-20 border-t border-border bg-background pt-2 pb-2 md:hidden">
+        // `fixed`, not `sticky` — a short list doesn't fill the viewport, and
+        // the thumb zone (AC3) has to hold regardless of list length.
+        <div className="fixed inset-x-0 bottom-[calc(var(--spacing-tab-bar)+env(safe-area-inset-bottom))] z-20 border-t border-border bg-background pt-2 pb-2 md:hidden">
           <AddBar staples={staples} onAdd={onAdd} onTapStaple={onTapStaple} layout="narrow" />
         </div>
       )}
@@ -92,16 +119,20 @@ export function GroceriesPageView({
 function GroceryRow({
   item,
   flash,
+  showCorrection,
   onCorrect,
+  onDismissCorrection,
 }: {
   item: GroceryItem
   flash: boolean
+  showCorrection: boolean
   onCorrect: (item: GroceryItem, category: string) => void
+  onDismissCorrection: (item: GroceryItem) => void
 }) {
   return (
     <ListRow
       leading={
-        <span className="size-[26px] shrink-0 rounded-full border-2 border-border" aria-hidden />
+        <span className="size-6.5 shrink-0 rounded-full border-2 border-border" aria-hidden />
       }
       className={cn(
         'items-start py-2 transition-colors duration-[var(--duration-slow)]',
@@ -118,7 +149,7 @@ function GroceryRow({
         {item.note && (
           <span className="text-sm-token block truncate text-muted-foreground">{item.note}</span>
         )}
-        {item.category === 'Other' && (
+        {showCorrection && (
           <div className="mt-1.5 flex flex-wrap items-center gap-1.5">
             <span className="text-xs-body text-muted-foreground">Which aisle?</span>
             {CORRECTABLE_AISLES.map((aisle) => (
@@ -131,6 +162,13 @@ function GroceryRow({
                 {aisle}
               </Chip>
             ))}
+            <button
+              type="button"
+              onClick={() => onDismissCorrection(item)}
+              className="text-xs-body text-muted-foreground underline-offset-2 hover:underline"
+            >
+              Leave it
+            </button>
           </div>
         )}
       </div>
@@ -145,17 +183,23 @@ function AddBar({
   layout,
 }: {
   staples: Staple[]
-  onAdd: (name: string) => void
+  onAdd: (name: string) => Promise<void>
   onTapStaple: (staple: Staple) => void
   layout: 'wide' | 'narrow'
 }) {
   const [value, setValue] = useState('')
 
-  const submit = () => {
+  const submit = async () => {
     const name = value.trim()
     if (!name) return
-    onAdd(name)
-    setValue('')
+    try {
+      await onAdd(name)
+      setValue('')
+    } catch {
+      // The container already logged and surfaced the failure (errorMessage
+      // above) — keeping the typed text here is the recovery: a family
+      // member shouldn't have to retype "chicken thighs" after a blip.
+    }
   }
 
   const typed = value.trim().toLowerCase()
@@ -179,13 +223,19 @@ function AddBar({
         value={value}
         onChange={(e) => setValue(e.target.value)}
         onKeyDown={(e) => {
-          if (e.key === 'Enter') submit()
+          if (e.key === 'Enter') void submit()
         }}
         placeholder="Add to the list…"
         aria-label="Add to the grocery list"
         className="flex-1"
       />
-      <Button type="button" size="icon" aria-label="Add" onClick={submit} disabled={!value.trim()}>
+      <Button
+        type="button"
+        size="icon"
+        aria-label="Add"
+        onClick={() => void submit()}
+        disabled={!value.trim()}
+      >
         <Plus className="size-4" aria-hidden />
       </Button>
     </div>

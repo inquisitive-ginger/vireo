@@ -79,6 +79,9 @@ beforeAll(async () => {
 afterAll(async () => {
   await clearGroceries()
   await clearMeals()
+  // A stray notification against one of these ids blocks the profile delete
+  // below with a FK violation (notifications_profile_id_fkey) — clear first.
+  await prisma.notification.deleteMany({ where: { profileId: { in: ALL_IDS } } })
   await prisma.profile.deleteMany({ where: { id: { in: ALL_IDS } } })
   await prisma.systemConfig.deleteMany({ where: { key: 'family_pin_hash' } })
   await app.close()
@@ -202,6 +205,20 @@ describe('POST /api/groceries/:id/aisle', () => {
     })
     expect(res.statusCode).toBe(404)
   })
+
+  it('returns 403 for a tier-3 profile — teaching a family-wide override is tier 4 (manage)', async () => {
+    const parentCookie = await getCookieForProfile(PARENT_ID)
+    const created = (await addItem(parentCookie, { name: 'Kombucha' })).json()
+
+    const cookie = await getCookieForProfile(TEEN_ID)
+    const res = await app.inject({
+      method: 'POST',
+      url: `/api/groceries/${created.id}/aisle`,
+      headers: { cookie },
+      payload: { category: 'Pantry' },
+    })
+    expect(res.statusCode).toBe(403)
+  })
 })
 
 // ─── POST /api/groceries/push-needs ────────────────────────────────────────────
@@ -254,6 +271,22 @@ describe('POST /api/groceries/push-needs', () => {
 
     const all = await mealPrisma.groceryItem.findMany()
     expect(all).toHaveLength(1) // no duplicate created
+  })
+
+  it('dedupes a repeated name WITHIN the same push, not just against pre-existing items', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const meal = await planMealWithNeeds(cookie, 'milk, eggs, milk')
+
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/groceries/push-needs',
+      headers: { cookie },
+      payload: { mealId: meal.id },
+    })
+    expect(res.json().items).toHaveLength(2)
+
+    const all = await mealPrisma.groceryItem.findMany()
+    expect(all).toHaveLength(2)
   })
 
   it('re-adding an existing checked item unchecks it', async () => {

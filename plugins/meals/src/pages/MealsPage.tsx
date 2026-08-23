@@ -28,6 +28,7 @@ export function MealsPage() {
   // Set → the remove-confirm dialog is open for this meal (RowActions only
   // reports intent; the host confirms — the chores pattern).
   const [removeTarget, setRemoveTarget] = useState<PlannedMeal | null>(null)
+  const [pushNeedsError, setPushNeedsError] = useState<string | null>(null)
 
   const canManage = tier >= 4
   const canClaim = tier >= 3 && id !== FAMILY_PROFILE_ID
@@ -138,8 +139,15 @@ export function MealsPage() {
         return r.json()
       }),
     onSuccess: () => {
+      setPushNeedsError(null)
       void queryClient.invalidateQueries({ queryKey: ['meals/groceries'] })
       navigate('/groceries')
+    },
+    // No blind catch (CLAUDE.md): the link otherwise does nothing on failure
+    // — no navigation, no row, no sign the tap registered at all.
+    onError: (err) => {
+      console.error('[meals] needs push failed', err)
+      setPushNeedsError("Couldn't push that to the list — try again.")
     },
   })
 
@@ -193,6 +201,7 @@ export function MealsPage() {
         canManage={canManage}
         canClaim={canClaim}
         canPushNeeds={canPushNeeds}
+        pushNeedsError={pushNeedsError}
         onPrevWeek={() => setOffset((o) => o - 1)}
         onNextWeek={() => setOffset((o) => o + 1)}
         onThisWeek={() => setOffset(0)}

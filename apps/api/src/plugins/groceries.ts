@@ -153,8 +153,11 @@ const groceriesPlugin: FastifyPluginAsync = async (fastify) => {
   // POST /groceries/:id/aisle — the "Which aisle?" correction (AC4/AC5):
   // re-files this item AND teaches a per-family override, keyed by the same
   // normalized name, so the next add of "snap peas" files itself correctly.
+  // Gated on `manage`, not `create` — this doesn't just fix one row, it
+  // rewrites how every future add of the name files itself for the whole
+  // household (spec.md §Permissions: "tier 4 manages").
   fastify.post('/groceries/:id/aisle', async (request, reply) => {
-    if (!request.ability.can('create', 'meals.GroceryItem')) {
+    if (!request.ability.can('manage', 'meals.GroceryItem')) {
       return reply.status(403).send({ error: 'Permission denied' })
     }
 
@@ -239,6 +242,7 @@ const groceriesPlugin: FastifyPluginAsync = async (fastify) => {
           data: { status: 'needed', gotBy: null, gotAt: null },
         })
         touched.push(reopened)
+        existingByName.set(key, reopened) // a same-batch repeat of this name dedupes against it too
         continue
       }
       const category = fileAisle(name, overrideByName.get(key) ?? null)
@@ -253,6 +257,7 @@ const groceriesPlugin: FastifyPluginAsync = async (fastify) => {
         },
       })
       touched.push(created)
+      existingByName.set(key, created) // a same-batch repeat of this name dedupes against it too
       fastify.eventBus.emit('meals.grocery.added', {
         itemId: created.id,
         name: created.name,

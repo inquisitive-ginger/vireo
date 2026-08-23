@@ -13,7 +13,7 @@ type Story = StoryObj<typeof ListRow>
 // ListRow doesn't render the ring itself (ADR 063 decision: the primitive
 // takes a generic `leading` slot); this is what the first consumer passes.
 const Ring = () => (
-  <span className="size-[26px] shrink-0 rounded-full border-2 border-border" aria-hidden />
+  <span className="size-6.5 shrink-0 rounded-full border-2 border-border" aria-hidden />
 )
 
 const Body = ({ name, note }: { name: string; note?: string }) => (

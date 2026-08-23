@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen } from '@testing-library/react'
+import { MemoryRouter } from 'react-router-dom'
 import { MealsPageView, type WeekDay } from './MealsPageView'
 import type { MealMember, PlannedMeal } from '../types'
 import { fromDateKey } from '../lib/dates'
@@ -45,30 +46,38 @@ function weekOf(mealsByDate: Record<string, PlannedMeal>): WeekDay[] {
 
 function renderView(props: Partial<Parameters<typeof MealsPageView>[0]> = {}) {
   return render(
-    <MealsPageView
-      days={weekOf({ '2026-08-13': meal() })}
-      membersById={membersById}
-      todayKey="2026-08-11"
-      dinnerDone={false}
-      weekTitle="August 9 – 15"
-      needCount={2}
-      canManage
-      canClaim
-      canPushNeeds
-      onPrevWeek={vi.fn()}
-      onNextWeek={vi.fn()}
-      onThisWeek={vi.fn()}
-      onPlan={vi.fn()}
-      onEdit={vi.fn()}
-      onClaim={vi.fn()}
-      onRemove={vi.fn()}
-      onPushNeeds={vi.fn()}
-      {...props}
-    />
+    <MemoryRouter>
+      <MealsPageView
+        days={weekOf({ '2026-08-13': meal() })}
+        membersById={membersById}
+        todayKey="2026-08-11"
+        dinnerDone={false}
+        weekTitle="August 9 – 15"
+        needCount={2}
+        canManage
+        canClaim
+        canPushNeeds
+        pushNeedsError={null}
+        onPrevWeek={vi.fn()}
+        onNextWeek={vi.fn()}
+        onThisWeek={vi.fn()}
+        onPlan={vi.fn()}
+        onEdit={vi.fn()}
+        onClaim={vi.fn()}
+        onRemove={vi.fn()}
+        onPushNeeds={vi.fn()}
+        {...props}
+      />
+    </MemoryRouter>
   )
 }
 
 describe('MealsPageView', () => {
+  it('always offers a Groceries link — the only standing entry point to the list', () => {
+    renderView()
+    expect(screen.getByRole('link', { name: 'Groceries' })).toHaveAttribute('href', '/groceries')
+  })
+
   it('renders the range title and the stated count', () => {
     renderView()
     expect(screen.getByRole('heading', { name: 'August 9 – 15' })).toBeInTheDocument()

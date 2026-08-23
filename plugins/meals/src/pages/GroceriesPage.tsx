@@ -17,11 +17,18 @@ import { GroceriesPageView } from './GroceriesPageView'
 const FLASH_MS = 1400
 
 export function GroceriesPage() {
-  const { id } = useAuth()
+  const { id, tier } = useAuth()
   const queryClient = useQueryClient()
   const [flashItemId, setFlashItemId] = useState<string | null>(null)
+  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  // "Leave it" or a correction both retire the one-time prompt for this item
+  // (AC4) — client-side is enough here, since either action changes what the
+  // next fetch renders (a new category, in the correction case) or simply
+  // never needs to be asked again this session (the dismiss case).
+  const [dismissedCorrectionIds, setDismissedCorrectionIds] = useState<Set<string>>(new Set())
 
   const canAdd = id !== FAMILY_PROFILE_ID
+  const canCorrect = tier >= 4
 
   // Shares the 'meals/groceries' key prefix with anything else that reads the
   // list (ADR 013) — one invalidation refreshes every consumer.
@@ -65,8 +72,15 @@ export function GroceriesPage() {
         return r.json() as Promise<GroceryItem>
       }),
     onSuccess: (item) => {
+      setErrorMessage(null)
       setFlashItemId(item.id)
       void invalidate()
+    },
+    // No blind catch (CLAUDE.md): logged for whoever's watching the console,
+    // and surfaced in the page — a kid on the fridge tablet has no devtools.
+    onError: (err) => {
+      console.error('[groceries] add failed', err)
+      setErrorMessage("Couldn't add that — try again.")
     },
   })
 
@@ -80,7 +94,14 @@ export function GroceriesPage() {
         if (!r.ok) throw new Error(String(r.status))
         return r.json() as Promise<GroceryItem>
       }),
-    onSuccess: () => void invalidate(),
+    onSuccess: () => {
+      setErrorMessage(null)
+      void invalidate()
+    },
+    onError: (err) => {
+      console.error('[groceries] aisle correction failed', err)
+      setErrorMessage("Couldn't refile that — try again.")
+    },
   })
 
   if (itemsQuery.isLoading || staplesQuery.isLoading) {
@@ -110,10 +131,16 @@ export function GroceriesPage() {
       items={itemsQuery.data?.items ?? []}
       staples={staplesQuery.data?.staples ?? []}
       canAdd={canAdd}
+      canCorrect={canCorrect}
       flashItemId={flashItemId}
-      onAdd={(name) => addItem.mutate(name)}
+      errorMessage={errorMessage}
+      onAdd={(name) => addItem.mutateAsync(name).then(() => {})}
       onTapStaple={(staple: Staple) => addItem.mutate(staple.name)}
       onCorrect={(item, category) => correctAisle.mutate({ item, category })}
+      onDismissCorrection={(item) =>
+        setDismissedCorrectionIds((prev) => new Set(prev).add(item.id))
+      }
+      dismissedCorrectionIds={dismissedCorrectionIds}
     />
   )
 }

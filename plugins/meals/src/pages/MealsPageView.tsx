@@ -1,3 +1,4 @@
+import { Link } from 'react-router-dom'
 import { ChevronLeft, ChevronRight } from 'lucide-react'
 import {
   Button,
@@ -33,6 +34,9 @@ export interface MealsPageViewProps {
   /** Grocery add capability (everyone but the unattended family dashboard) —
       the needs-push link's gate, same baseline as `meals.grocery.add`. */
   canPushNeeds: boolean
+  /** A brief, user-facing line for the last failed needs-push — the "no
+      blind catch" rule (CLAUDE.md). */
+  pushNeedsError: string | null
   onPrevWeek: () => void
   onNextWeek: () => void
   onThisWeek: () => void
@@ -63,6 +67,7 @@ export function MealsPageView({
   canManage,
   canClaim,
   canPushNeeds,
+  pushNeedsError,
   onPrevWeek,
   onNextWeek,
   onThisWeek,
@@ -95,8 +100,16 @@ export function MealsPageView({
               {needsCookLabel(needCount)}
             </p>
           )}
+          {pushNeedsError && (
+            <p className="text-sm-token mt-1 text-destructive">{pushNeedsError}</p>
+          )}
         </div>
         <div className="flex shrink-0 items-center gap-1">
+          {/* The list's only standing entry point besides mutating a push — a
+              second nav item is off the table (ADR 032: one per plugin). */}
+          <Button variant="ghost" size="sm" asChild>
+            <Link to="/groceries">Groceries</Link>
+          </Button>
           <Button variant="ghost" size="sm" onClick={onThisWeek}>
             This week
           </Button>
