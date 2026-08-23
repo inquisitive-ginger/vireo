@@ -213,13 +213,18 @@ describe('MonthGrid', () => {
 
     it('sits in the date row, left-packed with the date number — never inside the chip list (live review: it was getting lost among events)', () => {
       const cell = renderCellWithMark()
-      // The date row is `.justify-between` (date+mark group left, quick-add
-      // right — round 2 moved the mark next to the number, not across from
-      // it). The chip column is the separate `.flex-col` sibling below it; a
-      // mark is a different kind of object and must never land there.
-      const dateRow = cell.querySelector('.justify-between')
-      expect(dateRow?.querySelector('.lucide-utensils')).toBeInTheDocument()
+      // Assert the SHARED PARENT, not just co-presence somewhere in the date
+      // row — a bare `.justify-between` check also passes under the round-2
+      // far-edge layout (date left, mark pushed to the opposite end), so it
+      // pins nothing about left-packing. The date number and the mark must
+      // share one `.gap-1` wrapper (the only element with that exact class —
+      // the marks' own inner row is `gap-1.5`, a different token).
+      const dateGroup = cell.querySelector('.gap-1')
+      expect(dateGroup).not.toBeNull()
+      expect(dateGroup?.textContent).toContain('25') // the date number, same parent
+      expect(dateGroup?.querySelector('.lucide-utensils')).toBeInTheDocument()
 
+      // Still never in the chip column.
       const chipColumn = cell.querySelector('.flex-col')
       expect(chipColumn?.querySelector('.lucide-utensils')).not.toBeInTheDocument()
     })
