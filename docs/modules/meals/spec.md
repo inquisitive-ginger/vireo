@@ -119,17 +119,25 @@ M5/2 (2026-08-13); a paid dinner is a dedicated chore.
 
 ## Permissions namespace
 
-| Permission key        | CASL                                 | Default baseline                    |
-| --------------------- | ------------------------------------ | ----------------------------------- |
-| `meals.plan.view`     | `can('view', 'meals.Meal')`          | Tier 1+                             |
-| `meals.dinner.claim`  | `can('claim', 'meals.Meal')`         | Tier 3+ (claim an unclaimed dinner) |
-| `meals.trybite.take`  | `can('take', 'meals.TryBite')`       | Tier 1+ (row-level: own)            |
-| `meals.grocery.view`  | `can('view', 'meals.GroceryItem')`   | Tier 1+                             |
-| `meals.grocery.add`   | `can('create', 'meals.GroceryItem')` | Tier 1+                             |
-| `meals.grocery.check` | `can('check', 'meals.GroceryItem')`  | Tier 2+                             |
+| Permission key              | CASL                                 | Default baseline                    |
+| --------------------------- | ------------------------------------ | ----------------------------------- |
+| `meals.plan.view`           | `can('view', 'meals.PlannedMeal')`   | Tier 1+                             |
+| `meals.dinner.claim`        | `can('update', 'meals.PlannedMeal')` | Tier 3+ (claim an unclaimed dinner) |
+| `meals.trybite.take`        | `can('take', 'meals.TryBite')`       | Tier 1+ (row-level: own)            |
+| `meals.grocery.view`        | `can('view', 'meals.GroceryItem')`   | Tier 1+                             |
+| `meals.grocery.add`         | `can('create', 'meals.GroceryItem')` | Tier 1+                             |
+| `meals.grocery.check`       | `can('check', 'meals.GroceryItem')`  | Tier 2+                             |
+| `meals.grocery-list.create` | `can('create', 'meals.GroceryList')` | Tier 4 (ADR 067, grantable)         |
 
-Tier-4 baselines (not registry keys): `can('manage', 'meals.Meal')` — plan, assign,
-edit, delete — and `can('manage', 'meals.GroceryItem')`.
+The claim row is `update` on `meals.PlannedMeal`, not `claim` on `meals.Meal` — the
+route narrows `update` to claim-only, and full edits stay behind `manage`.
+
+Tier-4 baselines (not registry keys): `can('manage', 'meals.PlannedMeal')` — plan,
+assign, edit, delete — and `can('manage', 'meals.GroceryItem')`.
+
+**Lists** (ADR 067): creating one is the only gated list action — reading is covered by
+`view meals.GroceryItem`, and renaming, deleting and reordering stay inside tier 4's
+`manage all`. Adding to an existing list is `create meals.GroceryItem`, tier 1+.
 
 > **Kids adding to the grocery list is deliberate.** It is low-stakes participation for
 > tier 1–2, and it closes the loop: a kid adds a vegetable they want to try → it lands

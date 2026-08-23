@@ -19,7 +19,7 @@
 
 > **M4.5 — Companion is the active milestone** (M4.5/3 next). M5 is running
 > alongside it: /2 shipped 2026-08-13, /3 and /4 on 2026-08-23, and **M5/6's design
-> gate is the one runnable M5 session**. Part F offsite backups went live
+> rework is the one runnable M5 session**. Part F offsite backups went live
 > 2026-08-16, so the remaining infra items are improvements, not risks to the data.
 
 ### Beacon — Product+Design: paired friend lamps (deadline: the friends' December visit)
@@ -61,9 +61,10 @@ One pre-launch family task: **name the feature at the dinner table** (ADR 061 �
 ### M5 — Meals & Groceries: five sessions, two waves
 
 **Wave 1 landed 2026-08-23** — M5/3 (PR #124) and M5/4 (PR #125) are done; M5/6 is
-open as PR #127 and back for a design gate (below). Wave 2 is M5/5 + M5/7, and both
-share `apps/api/src/plugins/meals.ts` and `plugins/meals/prisma/` — land routes in a
-**new file**, rebase + `prisma generate` before merging. _Log:
+open as PR #127, its design gate now closed and the rework queued (below). Wave 2 is
+M5/5 + M5/7, and both share `apps/api/src/plugins/meals.ts` and
+`plugins/meals/prisma/` — land routes in a **new file**, rebase + `prisma generate`
+before merging. _Log:
 `logs/2026-08-22-infra-agent-delegation.md`._
 
 ### M5/5 — Dev: Try Bites
@@ -72,14 +73,14 @@ share `apps/api/src/plugins/meals.ts` and `plugins/meals/prisma/` — land route
 `meals.trybite.taken` → punches a `rewards` card. Replaces the paper sheet (15 squares →
 small reward → reset). `meals` knows nothing about cards. _Depends on: M5/2, M4/6._
 
-### M5/6 — Design: `ListRow` + the grocery list · **run this next**
+### M5/6 — Dev: the grocery list, reworked on PR #127 · **run this next**
 
-**Type:** design · **Kickoff:** `kickoffs/design-grocery-list-listrow.md`
-PR #127 built the whole story and **skipped its design gate** — no playground frames,
-no sign-off, and a 44-line `design-system.md` `ListRow` entry recording an ungated
-call. The non-visual half (routes, dictionary, schemas, migrations, tests) stands; the
-row's anatomy and the page's treatment go through a real gate on top of the branch.
-_Depends on: nothing — #127 waits on this._
+**Type:** development · **Kickoff:** `kickoffs/dev-grocery-list.md`
+Design gate closed 2026-08-23 — the contract is
+`artifacts/2026-08-23-grocery-list-handoff.md`, permissions are ADR 067. Rework above
+the data layer: index of lists → per-list view, a list reference on `grocery_items`,
+the `tier >= 4` gate at `GroceriesPage.tsx:26` → `ability.can`. `ListRow` unchanged.
+_Depends on: nothing — #127 is open and waits on this._
 
 ### M5/7 — Dev: Shop Context, Sync + Offline, the Wall
 
@@ -225,6 +226,9 @@ suite mirroring chores/calendar. _Depends on: none._
 > start. `docs/sessions/logs/` is date-ordered and holds the record — that
 > directory listing is the changelog. Do not restore entries pruned from here.
 
+- **2026-08-23 — Design: the grocery list gate** (M5/6, ADR 067) — each store is its
+  own list, index → drill-in, no note line; `ListRow` survives unchanged. Contract:
+  _[handoff](artifacts/2026-08-23-grocery-list-handoff.md)_
 - **2026-08-23 — Dev: Calendar Day Marks** (M5/4, PR #125) — ADR 050's provider
   contract at platform level, ADR 066's two gates server-side; **marks are
   today-forward only**, filtered in `MonthGrid` so M7's range survives.
@@ -246,18 +250,6 @@ suite mirroring chores/calendar. _Depends on: none._
   _[log](logs/2026-08-22-infra-watchdog-quiescence.md)_
 - **2026-08-22 — Design+dev: the Vireo commit, olive primary** (ADR 065, PR #120).
   _[log](logs/2026-08-22-design-dev-olive-primary.md)_
-- **2026-08-20 — Fix: home widget clamping + layouts** (auto-bug #116–118, PR #119).
-  _[log](logs/2026-08-20-fix-auto-bug-116-118.md)_
-- **2026-08-20 — Audit: doc staleness sweep** — 24 issue groups across 30 files.
-  _[log](logs/2026-08-20-audit-docs-staleness.md)_
-- **2026-08-20 — Infra: SSD outage + self-heal watchdog.**
-  _[log](logs/2026-08-20-infra-ssd-outage-selfheal.md)_
-- **2026-08-19 — Fix: shared weekly events qualify as activities** (auto-bug #114,
-  PR #115, ADR 038 amended). _[log](logs/2026-08-19-fix-auto-bug-114.md)_
-- **2026-08-17 — Fix: mobile nav overflow + calendar canvas** (auto-bug #111–112,
-  PR #113). _[log](logs/2026-08-17-fix-auto-bug-111-112.md)_
-- **2026-08-13 — Dev: meals iPad tweaks** (PR #106).
-  _[log](logs/2026-08-13-dev-meals-ipad-tweaks.md)_
 - **2026-08-13 — Dev: Week Plan + Tonight's Dinner** (M5/2, PR #105) — meals ships.
   _[log](logs/2026-08-13-dev-meals-week-plan-tonight.md)_
 - **2026-08-11 — Design: Meals & Groceries** (M5/1, ADR 063/064); spec at

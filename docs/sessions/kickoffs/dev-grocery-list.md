@@ -1,90 +1,99 @@
-# Kickoff — M5/6 · Dev: The Grocery List (capture + filing)
+# Kickoff — M5/6 · Dev: The Grocery List (rework on PR #127)
 
-**Type:** Development · **Modules:** `ui` + `meals` · **Branch:** `dev/meals-grocery-list`
-**Depends on:** M5/2 ✅ (`needs` ships on the meal)
+**Type:** Development · **Modules:** `ui` + `meals` · **Branch:** `dev/meals-grocery-list` (PR #127, open)
+**Depends on:** M5/2 ✅ · design gate closed 2026-08-23 · ADR 067
 
 ## Pre-session checklist
 
-- [ ] Read `CLAUDE.md`, `docs/modules/meals/design.md` §M5/6 (build to it — the mode
-      split is retired), `spec.md` §"Database schema" + §Permissions
-- [ ] Read **ADR 063** (`ListRow` beside `ItemCard`, and the rule for choosing) and
-      **ADR 064** (no identity chrome on groceries)
-- [ ] Read `packages/ui/src/components/item-card.tsx` + `row-actions.tsx` +
-      `row-primitives.test.tsx` — the sibling primitive you are matching, and what
-      `ListRow` must **not** inherit
-- [ ] Read `plugins/meals/src/pages/MealsPageView.tsx` (the needs-push link lands
-      here) and `apps/api/src/plugins/meals.ts` (route + Zod + event conventions)
+- [ ] Read `CLAUDE.md`, then **`docs/sessions/artifacts/2026-08-23-grocery-list-handoff.md`
+      — that spec is the contract**. Build from it, not from `design.md` §M5/6 and not
+      from the exploration HTML beside it.
+- [ ] Read **ADR 067** (list = its own subject, tier 4 to create), **ADR 063**
+      (`ListRow` beside `ItemCard`), **ADR 064** (no identity chrome on groceries),
+      **ADR 018** (registry + why a tier read is not a gate)
+- [ ] Read your own branch: `plugins/meals/src/pages/GroceriesPage(View).tsx`,
+      `apps/api/src/plugins/groceries.ts`, `plugins/meals/prisma/schema.prisma`
+- [ ] `docs/modules/meals/spec.md` §Permissions — and note the two drifts logged there
 - [ ] Worktree: copy `.env` in or `turbo dev` dies
 
 ## Session scope
 
-_One sentence:_ Build `ListRow` in `@family-os/ui`, then the one aisle-grouped grocery
-list on top of it — adds that file themselves, staples, a `needs` push from the week
-plan — up to but not including shop context, sync, or offline.
+_One sentence:_ Rework PR #127 above the data layer into an **index of lists plus a
+per-list view**, add the list row to the data model and the permission registry, and
+fix the one tier-read gate — up to but not including shop context, sync, or offline.
 
-## Acceptance criteria
+## What survives on #127, unchanged
 
-1. **`ListRow` in `@family-os/ui`** per ADR 063: hairline-separated (no per-row
-   border/shadow/radius), 56px minimum, leading control slot, name + note lines,
-   whole-row activation. Storybook story + tests beside `ItemCard`'s.
-2. One aisle-grouped list, **no Build/Shop toggle**. Aisle heads: 13px bold + count
-   (`2 left`), full-width hairline under, sticky within the scroll context. Fixed walk
-   order: Produce → Bakery → Meat → Dairy → Pantry → Frozen → Other.
-3. **Add bar at the bottom on the phone** (thumb zone); the chip strip above it shows
-   **staples at rest, typeahead while typing**. A new item **flashes primary-tint in
-   place, in its aisle** — that is the answer to "did my add land?".
-4. **Items file themselves:** the shipped aisle dictionary assigns `category` on add;
-   an unknown word lands in **Other** with a one-time `Which aisle?` chip row rendered
-   **on the row, in place** — never a layout jump above the list.
-5. **A correction teaches a per-family override**, and re-filing an item updates it.
-6. Provenance is the **note line**, one grammar: `for Sunday's rigatoni` (needs push),
-   `Emma added these` (manual). Never a chip in the name line, never an avatar or a
-   spine (ADR 064).
-7. **Needs push:** the week page's `3 things needed` **text link** (never a bordered
-   button) comma-splits `needs` into items, each noted with its meal; dedupe by name
-   against open items, and re-adding an existing checked item unchecks it.
-8. Tier 1+ can view and add; tier 4 manages. A kid adding is deliberate — do not gate
-   it up.
+The aisle dictionary, the Zod schemas, the API routes, the migrations, and the tests
+**stand**. Aisle grouping survives **inside a store** — walk order is still the
+grouping inside one list. This is a rework above the data layer, not a restart.
+
+## What changes
+
+1. **The page becomes two surfaces.** An index of lists (tap enters one full-screen)
+   plus a per-list view. Permanent lists stay visible and dim at zero; runtime lists
+   appear only while they hold items. Inside a list the destination is implied — no
+   store picker; only the index needs `Add to…`. Same structure on the wall tablet,
+   larger type, **no columns**.
+2. **`grocery_items` needs a list reference.** The model today has neither a store nor
+   a list column — a list is its own row with its own producer, and the item points at
+   it. New migration; the existing ones stay.
+3. **`design-system.md`'s 44-line `ListRow` entry is replaced**, not appended to. It
+   records an ungated call; the gate's outcome supersedes it.
+4. **`ListRow` itself needs no change.** It already takes a generic `leading` slot
+   rather than owning a check ring — that was ADR 063's open question and the gate kept
+   the answer. Quantity goes in `children` beside the `min-w-0 flex-1` wrapper. **Do not
+   redesign the primitive.**
+5. **One concrete defect.** `plugins/meals/src/pages/GroceriesPage.tsx:26` reads
+   `const canCorrect = tier >= 4`. Per ADR 018 a raw tier comparison is a `TierGate` — a
+   structural ceiling the override system cannot reach — and a parent handing a shopping
+   teen the correction is exactly what overrides are for. It must be
+   `ability.can('manage', 'meals.GroceryItem')`. The tier is right; the mechanism is
+   wrong. **The server route is already correct** — this is client-side only.
+6. **ADR 067's new registry key.** `meals.grocery-list.create` ("Create a shopping
+   list"), subject `meals.GroceryList`, action `create`, baseline tier 4 via
+   `manage all`, grantable per profile. Reading a list is **not** separately gated —
+   `view meals.GroceryItem` covers the index. Adding to an existing list is unchanged.
+
+## Settled — not decisions for this session
+
+- **Needs-pushed items arrive as plain items.** There is no note line, so the original
+  **AC6 and AC7 are superseded**: the week page's `N things needed` link still
+  comma-splits `needs` into items, it just does not mark them with their meal. Do not
+  quietly reintroduce the note.
+- **Row content** is name plus quantity, right-aligned and tabular when set.
+- **Typing** is inline ghost completion in the field — nothing appears, nothing moves;
+  Tab or right-arrow accepts. Not a suggestion sheet, not a pill strip.
+- Rejected directions and their reasons are in the handoff spec. Read them before
+  proposing an alternative.
 
 ## Constraints coming in
 
-- ADR 063's rule, applied not re-litigated: rows here, cards on the week plan. Forty
-  bordered cards was the density failure the M5/1 critique caught.
-- `grocery_items` / `staples` columns are specified in `spec.md` — build them, don't
-  redesign them. Validation through a `@family-os/schemas` Zod schema, `safeParse` →
-  400 flatten. Server data via TanStack Query, profile-scoped keys, shared prefix
-  between the list and anything else reading it.
-- **Parallel run:** wave 1 alongside M5/3 and M5/4, and you are the biggest of the
-  three — land first if the choice is yours. You own `packages/ui/**` and the new
-  grocery surfaces; you share `apps/api/src/plugins/meals.ts` and
-  `plugins/meals/prisma/` with M5/3. Put the grocery routes in their own file rather
-  than appending to the meals plugin body, and `prisma generate` + commit only
-  schema-derived generated files.
-
-## Decisions to make
-
-1. **Route shape** — `/groceries` as a second route in the `meals` plugin, or a tab
-   inside `/meals`. The manifest carries one route and one nav item today; a second
-   route means the manifest, `plugins.json`, the shell `ICON_MAP`, and the nav.
-2. **Where filing happens** — the dictionary on the server at `POST` time (one source
-   of truth, works for the needs push) or on the client (instant chip). The override
-   table's key shape (normalized name) follows from this.
-3. **`ListRow`'s API** — does it own the check ring, or take a generic leading slot
-   that M5/7 fills? Decide for the primitive, not for this one consumer.
-4. **Dedupe rule** for AC7 — normalized name match, and what "open" means.
+- **A list is its own row, never a column on the item. The list carries its producer.
+  Aisle grouping is a property of the list, not of the app.** A cross-plugin shopping
+  list (Home Depot, Michaels) is explicitly **not being built** — but the model must not
+  preclude it. Subject names stay namespaced to the producing plugin (ADR 067): a
+  subject rename is a data migration on live `platform.permission_overrides` rows.
+- The remaining ACs from `design.md` §M5/6 stand as written: items file themselves via
+  the shipped dictionary, unknown words land in **Other** with an in-place
+  `Which aisle?` row (never a layout jump), a correction teaches a per-family override,
+  and a just-added item flashes in place in its aisle.
+- Standard: server data via TanStack Query with a shared `meals/groceries` key prefix,
+  validation through `@family-os/schemas` (`safeParse` → 400 flatten), grocery routes
+  stay in their own `groceries.ts`, `prisma generate` commits only schema-derived files.
+- **Wave-2 neighbours:** M5/7 builds on this branch. Do not start the store.
 
 ## Non-goals
 
-Whole-row checking, cleared-aisle collapse, the progress track, shopper sync,
-presence, the wall, offline — all M5/7. Ship the list; do not start the store.
+Whole-row checking, cleared-aisle collapse, the progress track, shopper sync, presence,
+the wall's own layout, offline — all M5/7.
 
 ## Outputs (required before closing)
 
-- [ ] Design gate: playground frames → sign-off → Storybook → integration; playground
-      deleted
-- [ ] Live-app review on a phone-width viewport **and** the fridge tablet
+- [ ] **Live-app review** at phone width **and** on the fridge tablet — the only user
+      gate this session owes. The design gate is closed; do not re-run it.
 - [ ] Tests: dictionary + override filing (unit), routes (`fastify.inject()`), RTL for
-      add / correct / needs-push; `ListRow` tests in `packages/ui`
-- [ ] `docs/design-system.md` gains the `ListRow` entry and the card/row rule
+      add / correct / needs-push and the index → list drill-in
+- [ ] `docs/design-system.md` — the `ListRow` entry **replaced** by the gate's outcome
 - [ ] `pnpm typecheck` + `pnpm test` clean; progress row ✅, session log, `CLAUDE.md`,
-      queue, PR; delete this kickoff
+      queue, PR #127 updated; delete this kickoff
