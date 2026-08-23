@@ -20,8 +20,10 @@ Feature UX is next**, then dev foundation and surfaces. See
 `docs/modules/companion/spec.md`.
 
 **Also in flight: M5 — Meals & Groceries** — design gate closed 2026-08-11
-(M5/1, ADRs 063/064) and **M5/2 Week Plan + Tonight's Dinner shipped 2026-08-13
-(PR #105)**. M5/3 Who's Got Dinner is queued next.
+(M5/1, ADRs 063/064); **M5/2 shipped 2026-08-13 (PR #105)**, **M5/3 Who's Got
+Dinner and M5/4 Calendar Day Marks shipped 2026-08-23 (PRs #124/#125)**. M5/6
+The Grocery List is in flight (PR #127, back for a design gate); M5/5 + M5/7 are
+wave 2.
 
 ## Completed
 

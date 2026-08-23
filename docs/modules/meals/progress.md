@@ -11,10 +11,10 @@
 | ------------------- | -------------- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Design gate         | ✅ Done        | 2026-08-11 — three rounds + external critique; `design.md`, ADR 063/064, final artifact. Mode split retired                                                      |
 | Week Plan + Tonight | ✅ Done        | 2026-08-13, PR #105 — week page, drawer, widget, one-tap claim. P$ dropped from meals. Log: `2026-08-13-dev-…`                                                   |
-| Who's Got Dinner    | ⬜ Not Started | Owner + `kind` (cooked/takeout/leftovers/out); **unclaimed is first-class**; afternoon nudge (claim shipped in M5/2; P$ retired)                                 |
-| Calendar Day Marks  | ⬜ Not Started | **Platform story** — read-time provider (ADR 050). Small. Shared with M7 School. One mark/provider/day                                                           |
+| Who's Got Dinner    | ✅ Done        | 2026-08-23, PR #124 — afternoon nudge poll (ADR 045): owner at 16:00, every tier-4 parent when nobody has it; `(date, audience)` ledger. Log: `2026-08-23-dev-…` |
+| Calendar Day Marks  | ✅ Done        | 2026-08-23, PR #125 — platform provider contract (ADR 050/066), meals first consumer; marks are **today-forward only**. Log: `2026-08-23-dev-…`                  |
 | Try Bites           | ⬜ Not Started | `meals.trybite.taken` → punches a `rewards` card (ADR 049). Depends on M4                                                                                        |
-| Grocery List (M5/6) | ⬜ Not Started | Capture + filing — mode split retired 2026-08-11 (ADR 063): one aisle-grouped `ListRow` list, aisle dictionary + learned corrections, tier 1+ adds, `needs` push |
+| Grocery List (M5/6) | 🔄 In Progress | PR #127 open — API, aisle dictionary, schemas, tests green; **`ListRow` anatomy + page treatment go back for a design gate** before it merges                    |
 | Grocery Shop (M5/7) | ⬜ Not Started | Shop context, sync + offline, the wall — whole-row checks, cleared-aisle collapse, shopper sync; **SW is network-first for `/api`**, offline is its own chunk    |
 | Recipe Bank         | ⬜ Deferred    | Deliberately out of MVP — the free-text `needs` field removes the reason to build it                                                                             |
 

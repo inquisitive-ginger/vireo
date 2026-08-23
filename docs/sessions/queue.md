@@ -17,10 +17,10 @@
 
 ## Up Next
 
-> **M4.5 — Companion is the active milestone** (M4.5/3 next). M4 — Rewards &
-> Wallet shipped 2026-07-26 (PR #75, P-Bucks live); M5/2 shipped 2026-08-13
-> (PR #105) with M5/3+ queued below. Part F offsite backups went live 2026-08-16,
-> so the remaining infra items are improvements, not risks to the data.
+> **M4.5 — Companion is the active milestone** (M4.5/3 next). M5 is running
+> alongside it: /2 shipped 2026-08-13, /3 and /4 on 2026-08-23, and **M5/6's design
+> gate is the one runnable M5 session**. Part F offsite backups went live
+> 2026-08-16, so the remaining infra items are improvements, not risks to the data.
 
 ### Beacon — Product+Design: paired friend lamps (deadline: the friends' December visit)
 
@@ -60,31 +60,11 @@ One pre-launch family task: **name the feature at the dinner table** (ADR 061 �
 
 ### M5 — Meals & Groceries: five sessions, two waves
 
-All five kickoffs written 2026-08-22 — **wave 1 is ready to run now**: M5/3, M5/4 and
-M5/6 in parallel (M5/6 is the biggest — land it first if the choice is free). Wave 2
-is M5/5 + M5/7. Four of the five share `apps/api/src/plugins/meals.ts` and
-`plugins/meals/prisma/`, so each lands its routes in a **new file** and rebases +
-`prisma generate` before merging. _Log:
+**Wave 1 landed 2026-08-23** — M5/3 (PR #124) and M5/4 (PR #125) are done; M5/6 is
+open as PR #127 and back for a design gate (below). Wave 2 is M5/5 + M5/7, and both
+share `apps/api/src/plugins/meals.ts` and `plugins/meals/prisma/` — land routes in a
+**new file**, rebase + `prisma generate` before merging. _Log:
 `logs/2026-08-22-infra-agent-delegation.md`._
-
-### M5/3 — Dev: Who's Got Dinner
-
-**Type:** development · **Kickoff:** `kickoffs/dev-meals-whos-got-dinner.md`
-The afternoon `notify()` poll (ADR 045's in-plugin scheduler is the precedent): to
-the owner, or to tier 4 if nobody has it; the widget's escalated state flips at the
-same hour (`ESCALATION_HOUR`). Kind verbs + one-tap claim already shipped in M5/2;
-**`coinReward` retired 2026-08-13** — a paid dinner is a dedicated chore, meals is
-not an earn source. _Depends on: M5/2 ✅, M4/3._
-
-### M5/4 — Platform: Calendar Day Marks
-
-**Type:** development (platform) · **Kickoff:** `kickoffs/dev-calendar-day-marks.md`
-The read-time provider contract from **ADR 050**: for a date range, a plugin returns at
-most one mark per day; a month cell renders at most two. **Small** — no positioning, no
-spans, no reminders. Shared with M7 School. Visibility settled by **ADR 066** — both
-gates apply, cap after filtering. _Reads: ADR 050, ADR 066, `plugins/calendar` month
-grid + mobile agenda._ _Depends on: M5/2 ✅ — **not M5/3** (corrected 2026-08-22); a
-merge-order edge only, if the day-mark registry lands server-side._
 
 ### M5/5 — Dev: Try Bites
 
@@ -92,13 +72,14 @@ merge-order edge only, if the day-mark registry lands server-side._
 `meals.trybite.taken` → punches a `rewards` card. Replaces the paper sheet (15 squares →
 small reward → reset). `meals` knows nothing about cards. _Depends on: M5/2, M4/6._
 
-### M5/6 — Dev: The Grocery List (capture + filing)
+### M5/6 — Design: `ListRow` + the grocery list · **run this next**
 
-**Type:** development · **Kickoff:** `kickoffs/dev-grocery-list.md`
-`grocery_items` + `staples`; **the mode split is retired (M5/1)** — one aisle-grouped
-`ListRow` list, bottom add bar, aisle dictionary + learned per-family corrections,
-tier 1+ adds, `needs` push. **Build `ListRow` in `@family-os/ui` first (ADR 063).**
-Build to `design.md` §M5/6. _Depends on: M5/2._
+**Type:** design · **Kickoff:** `kickoffs/design-grocery-list-listrow.md`
+PR #127 built the whole story and **skipped its design gate** — no playground frames,
+no sign-off, and a 44-line `design-system.md` `ListRow` entry recording an ungated
+call. The non-visual half (routes, dictionary, schemas, migrations, tests) stands; the
+row's anatomy and the page's treatment go through a real gate on top of the branch.
+_Depends on: nothing — #127 waits on this._
 
 ### M5/7 — Dev: Shop Context, Sync + Offline, the Wall
 
@@ -109,7 +90,7 @@ network-first for `/api`, so today the list fails in the exact place it is used;
 SW has bitten twice — treat the offline half as its own reviewable chunk. **Check wall
 column re-flow on the physical fridge before closing.** _Reads: `design.md` §M5/7,
 `apps/shell/public/sw.js`, `logs/2026-07-19-dev-sw-cache-strategy.md`._
-_Depends on: M5/6._
+_Depends on: M5/6 (PR #127)._
 
 ---
 
@@ -170,6 +151,12 @@ suite mirroring chores/calendar. _Depends on: none._
   story #1; the contract is settled when story #8 (Suggested Events Inbox, the
   deferred north star) is scheduled. _Reads: calendar `spec.md` north-star section,
   `stories/suggested-events-inbox.md`, ADR 008, ADR 029._
+- **A second day mark has nowhere to go** — the month cell's date row fits exactly one
+  mark. Min-content is 83px against ~77px available at the 768px breakpoint, and
+  left-packing did not change that; the deficit currently lands on the quick-add
+  button. Stacking and reveal are **deferred by the user** until a second provider
+  exists. **M7 School owes the decision** — drop the quick-add below some width, wrap,
+  or shrink the glyph. _Reads: `logs/2026-08-23-dev-calendar-day-marks.md`._
 - **Member capacity** — where per-member capacity lives and who sets it. Gates the
   capacity-aware chores workload meter (chores 1.5, a post-MVP enhancement); blocks
   no MVP story. _Reads: `docs/modules/chores/design.md` §1._
@@ -238,6 +225,13 @@ suite mirroring chores/calendar. _Depends on: none._
 > start. `docs/sessions/logs/` is date-ordered and holds the record — that
 > directory listing is the changelog. Do not restore entries pruned from here.
 
+- **2026-08-23 — Dev: Calendar Day Marks** (M5/4, PR #125) — ADR 050's provider
+  contract at platform level, ADR 066's two gates server-side; **marks are
+  today-forward only**, filtered in `MonthGrid` so M7's range survives.
+  _[log](logs/2026-08-23-dev-calendar-day-marks.md)_
+- **2026-08-23 — Dev: Who's Got Dinner** (M5/3, PR #124) — the 16:00 nudge poll on a
+  `(date, audience)` ledger; a standing convention (`console.error` on every catch)
+  overruled an ADR 045 precedent. _[log](logs/2026-08-23-dev-meals-whos-got-dinner.md)_
 - **2026-08-23 — Fix: mobile nav active-tab wash** (auto-bug #123, PR #126) — one
   active-nav recipe with the sidebar; verified live, reporter notified.
   _[log](logs/2026-08-23-dev-mobile-nav-tab-wash.md)_

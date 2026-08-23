@@ -15,19 +15,19 @@ before it reads anything else, and it is size-capped — see
 > **At most six one-line bullets.** Update at the end of every session. If a
 > session's detail doesn't fit on one line it belongs in the session log.
 
-- **Milestone:** M4.5 — Companion (M4.5/3 next); **M5/2 done 2026-08-13, PR
-  #105** — meals plugin live (week page, drawer, tonight widget, claim).
-- **Active stories:** none in flight; **all five M5 kickoffs written** — wave 1
-  (M5/3 + M5/4 + M5/6) runs in parallel. Beacon still due at the December visit.
+- **Milestone:** M4.5 — Companion (M4.5/3 next); **M5/3 + M5/4 done 2026-08-23,
+  PRs #124/#125** — the 16:00 dinner nudge and calendar day marks (ADR 050/066).
+- **Active stories:** **M5/6 is PR #127, held for a design gate** it skipped —
+  kickoff `design-grocery-list-listrow.md`. Beacon due at the December visit.
 - **Deployment:** 🟢 live at `https://vireohome.app` — Pi 5 (192.168.0.42);
   auto-deploy + Tailscale + restic→R2 + watchdog intact. **A bad USB cable was
   the cause of the 2026-08-20 "enclosure" outage and all the slowness** — disk now
   256 MB/s, deploys 1 min. Runbook Part F.
-- **Last session:** 2026-08-23 — auto-bug #123 fixed (PR #126): the mobile nav's
-  active wash now covers icon **and** label at `rounded-panel`, matching the sidebar.
-  `logs/2026-08-23-dev-mobile-nav-tab-wash.md`.
+- **Last session:** 2026-08-23 — day marks (PR #125). **Marks are today-forward
+  only**, filtered in `MonthGrid`; a second mark does not fit the date row — M7 owes
+  that call. `logs/2026-08-23-dev-calendar-day-marks.md`.
 - **What's next and everything outstanding:** `docs/sessions/queue.md` — the one
-  index. M4.5/3 or M5 wave 1 next; NVMe HAT is an upgrade, not a rescue.
+  index. M4.5/3 or the M5/6 design gate next; NVMe HAT is an upgrade, not a rescue.
 - **Owed in-app:** nothing — every row in `platform.bug_reports` is `deployed`
   (verified 2026-08-23 over ssh). Check the table, not this bullet.
 
