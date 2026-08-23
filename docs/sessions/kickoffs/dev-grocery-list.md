@@ -5,16 +5,16 @@
 
 ## Pre-session checklist
 
-- [ ] Read `CLAUDE.md`, then **`docs/sessions/artifacts/2026-08-23-grocery-list-handoff.md`
-      — that spec is the contract**, not `design.md` §M5/6 and not the exploration
-      HTML beside it. Its rejected directions are why; read them first.
+- [ ] Read `CLAUDE.md`, then **`artifacts/2026-08-23-grocery-list-handoff.md` (the
+      contract) and `artifacts/2026-08-23-grocery-list-diverge.html` (the visual
+      reference) — both**. Its rejected directions are why; read them first. The
+      index of lists is the subject of that page; the composer is secondary.
 - [ ] **ADR 067** (list = its own subject, tier 4 to create), **063** (`ListRow`),
       **064** (no identity chrome on groceries), **018** (registry; a tier read is not
       a gate)
 - [ ] Your branch: `plugins/meals/src/pages/GroceriesPage(View).tsx`,
       `apps/api/src/plugins/groceries.ts`, `plugins/meals/prisma/schema.prisma`
 - [ ] `spec.md` §Permissions — the `meals.grocery-list.create` row is written already
-- [ ] Worktree: copy `.env` in or `turbo dev` dies
 
 ## Session scope
 
@@ -55,8 +55,7 @@ The PR body still says "provenance is the note line"; update it before closing.
 5. **`ListRow` itself needs no change.** Its generic `leading` slot was ADR 063's open
    question and the gate kept the answer. Quantity goes in `children` beside the
    `min-w-0 flex-1` wrapper. **Do not redesign the primitive.** Its `design-system.md`
-   entry is replaced by the gate's outcome; the false part is its closing sentence,
-   "a fact in the note line".
+   entry is replaced by the gate's outcome ("a fact in the note line" is the false part).
 
 ## Decisions this session makes
 

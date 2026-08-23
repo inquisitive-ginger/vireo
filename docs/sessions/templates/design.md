@@ -61,6 +61,10 @@ write an ADR** rather than burying it in the design doc.
 
 - [ ] `docs/design-system.md` updated with decisions from this session; **Last updated** header updated to today's date
 - [ ] Record in `docs/sessions/artifacts/` — screenshots of the options considered, losers included, and which won and why
+- [ ] **Handoff wording** — the spec is the contract and the artifact is the
+      visual reference; the build session reads **both**. Never write "build from
+      this, not the exploration" — name the rejected options as rejected instead.
+      Prose settles what is decided and cannot settle proportion.
 - [ ] Exploration route deleted; nothing ephemeral left on the branch
 - [ ] Any new ADRs written to `docs/decisions/NNN-title.md`
 - [ ] If this session produced code (Storybook stories, token changes, component updates): branch opened, PR created

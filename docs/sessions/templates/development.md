@@ -15,6 +15,11 @@
 - [ ] Read the target story spec (`docs/modules/[name]/stories/[story].md`)
 - [ ] Read `docs/modules/[name]/progress.md`
 - [ ] Read all ADRs referenced in the story's Notes section
+- [ ] **If a design session ran first: read its handoff spec AND its rendered
+      artifact in `docs/sessions/artifacts/`** — both, always. The spec settles
+      what is decided; the artifact is where the proportion lives. A handoff that
+      says "build from the spec, not the exploration" is guarding against building
+      a rejected option — it is not a reason to skip the file.
 - [ ] Re-read the **Standing Engineering Conventions** in `CLAUDE.md` — the
       cross-cutting decisions (data fetching, components/tokens, permissions,
       events, identity, plugin wiring) that apply regardless of this story

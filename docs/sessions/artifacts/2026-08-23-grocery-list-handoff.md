@@ -4,7 +4,11 @@ Design gate closed 2026-08-23. Options and rejected directions:
 `2026-08-23-grocery-list-diverge.html` (self-contained, tokens inlined from
 `packages/ui/src/styles.css` — a snapshot, not a live view).
 
-This spec is the contract. Build from it, not from the exploration.
+This spec is the contract; the exploration above is the **visual reference**.
+Read both. What this clause guards against is building a _rejected_ option —
+they are listed below — not looking at the file. (Amended 2026-08-23: as first
+written this said "build from it, not from the exploration," and the build that
+followed satisfied every line here and still got the page's proportions wrong.)
 
 ---
 
