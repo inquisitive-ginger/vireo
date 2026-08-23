@@ -136,6 +136,13 @@ exports.Prisma.PlannedMealScalarFieldEnum = {
   updatedAt: 'updatedAt'
 };
 
+exports.Prisma.DinnerNudgeLogScalarFieldEnum = {
+  date: 'date',
+  audience: 'audience',
+  mealId: 'mealId',
+  firedAt: 'firedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -153,7 +160,8 @@ exports.Prisma.NullsOrder = {
 
 
 exports.Prisma.ModelName = {
-  PlannedMeal: 'PlannedMeal'
+  PlannedMeal: 'PlannedMeal',
+  DinnerNudgeLog: 'DinnerNudgeLog'
 };
 
 /**

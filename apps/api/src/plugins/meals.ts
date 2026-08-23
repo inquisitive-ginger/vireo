@@ -3,6 +3,7 @@ import type { FastifyPluginAsync } from 'fastify'
 import { FAMILY_PROFILE_ID } from '@family-os/platform/types'
 import { mealPrisma } from '@family-os/plugin-meals/db'
 import { MealInputSchema } from '@family-os/schemas'
+import { startMealsNudgeScheduler } from '../lib/meals-nudge'
 
 type PlannedMealRow = Awaited<ReturnType<typeof mealPrisma.plannedMeal.create>>
 
@@ -26,6 +27,14 @@ function plannedPayload(meal: PlannedMealRow) {
 const DATE_KEY = /^\d{4}-\d{2}-\d{2}$/
 
 const mealsPlugin: FastifyPluginAsync = async (fastify) => {
+  // The afternoon nudge poll (ADR 045 precedent, spec.md §"Day-level nudge"). Not
+  // in tests — they drive `runMealsNudgeTick` directly with a mocked clock; a live
+  // 60s interval would leak and fire on fixtures.
+  if (process.env.NODE_ENV !== 'test') {
+    const stop = startMealsNudgeScheduler(fastify.eventBus)
+    fastify.addHook('onClose', async () => stop())
+  }
+
   fastify.get('/meals/plan', async (request, reply) => {
     if (!request.ability.can('view', 'meals.PlannedMeal')) {
       return reply.status(403).send({ error: 'Permission denied' })
