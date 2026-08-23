@@ -58,9 +58,18 @@ One pre-launch family task: **name the feature at the dinner table** (ADR 061 �
 
 ---
 
+### M5 — Meals & Groceries: five sessions, two waves
+
+All five kickoffs written 2026-08-22 — **wave 1 is ready to run now**: M5/3, M5/4 and
+M5/6 in parallel (M5/6 is the biggest — land it first if the choice is free). Wave 2
+is M5/5 + M5/7. Four of the five share `apps/api/src/plugins/meals.ts` and
+`plugins/meals/prisma/`, so each lands its routes in a **new file** and rebases +
+`prisma generate` before merging. _Log:
+`logs/2026-08-22-infra-agent-delegation.md`._
+
 ### M5/3 — Dev: Who's Got Dinner
 
-**Type:** development · **Kickoff:** _to be written_
+**Type:** development · **Kickoff:** `kickoffs/dev-meals-whos-got-dinner.md`
 The afternoon `notify()` poll (ADR 045's in-plugin scheduler is the precedent): to
 the owner, or to tier 4 if nobody has it; the widget's escalated state flips at the
 same hour (`ESCALATION_HOUR`). Kind verbs + one-tap claim already shipped in M5/2;
@@ -69,21 +78,23 @@ not an earn source. _Depends on: M5/2 ✅, M4/3._
 
 ### M5/4 — Platform: Calendar Day Marks
 
-**Type:** development (platform) · **Kickoff:** _to be written_
+**Type:** development (platform) · **Kickoff:** `kickoffs/dev-calendar-day-marks.md`
 The read-time provider contract from **ADR 050**: for a date range, a plugin returns at
 most one mark per day; a month cell renders at most two. **Small** — no positioning, no
-spans, no reminders. Shared with M7 School. Plugins never write `calendar.events`.
-_Reads: ADR 050, `plugins/calendar` month grid + mobile agenda._ _Depends on: M5/3._
+spans, no reminders. Shared with M7 School. Visibility settled by **ADR 066** — both
+gates apply, cap after filtering. _Reads: ADR 050, ADR 066, `plugins/calendar` month
+grid + mobile agenda._ _Depends on: M5/2 ✅ — **not M5/3** (corrected 2026-08-22); a
+merge-order edge only, if the day-mark registry lands server-side._
 
 ### M5/5 — Dev: Try Bites
 
-**Type:** development · **Kickoff:** _to be written_
+**Type:** development · **Kickoff:** `kickoffs/dev-try-bites.md`
 `meals.trybite.taken` → punches a `rewards` card. Replaces the paper sheet (15 squares →
 small reward → reset). `meals` knows nothing about cards. _Depends on: M5/2, M4/6._
 
 ### M5/6 — Dev: The Grocery List (capture + filing)
 
-**Type:** development · **Kickoff:** _to be written_
+**Type:** development · **Kickoff:** `kickoffs/dev-grocery-list.md`
 `grocery_items` + `staples`; **the mode split is retired (M5/1)** — one aisle-grouped
 `ListRow` list, bottom add bar, aisle dictionary + learned per-family corrections,
 tier 1+ adds, `needs` push. **Build `ListRow` in `@family-os/ui` first (ADR 063).**
@@ -91,7 +102,7 @@ Build to `design.md` §M5/6. _Depends on: M5/2._
 
 ### M5/7 — Dev: Shop Context, Sync + Offline, the Wall
 
-**Type:** development · **Kickoff:** _to be written_
+**Type:** development · **Kickoff:** `kickoffs/dev-grocery-shop-offline.md`
 Whole-row checks, cleared-aisle collapse, progress track, "Sam got it" sync between
 shoppers, the three-column wall view + presence line — and **offline**. The SW is
 network-first for `/api`, so today the list fails in the exact place it is used; the
@@ -227,6 +238,9 @@ suite mirroring chores/calendar. _Depends on: none._
 > start. `docs/sessions/logs/` is date-ordered and holds the record — that
 > directory listing is the changelog. Do not restore entries pruned from here.
 
+- **2026-08-22 — Infra: session roles as agents; doc budgets widened** (ADR 066) —
+  five `.claude/agents/`; correctness routes to `reviewer`; queue pruned 32.5→14.7 KB;
+  all five M5 kickoffs written. _[log](logs/2026-08-22-infra-agent-delegation.md)_
 - **2026-08-22 — Infra: watchdog deploy-quiescence + the bad USB cable** (PR #121).
   _[log](logs/2026-08-22-infra-watchdog-quiescence.md)_
 - **2026-08-22 — Design+dev: the Vireo commit, olive primary** (ADR 065, PR #120).
@@ -251,8 +265,6 @@ suite mirroring chores/calendar. _Depends on: none._
   `docs/modules/meals/design.md`. _[log](logs/2026-08-11-design-meals-groceries.md)_
 - **2026-08-08 — Design: Companion gear + asset library** (M4.5/2) — 20 bodies,
   15 gear, 4 parked. _[log](logs/2026-08-08-design-companion-gear-assets.md)_
-- **2026-08-07 — Design: XP Sink direction** (ADR 061/062) — the sink is a per-kid
-  critter; M4.5 opened. _[log](logs/2026-08-07-design-xp-sink-direction.md)_
 
 Everything before 2026-08-07 (M0 through M4, deployment Parts A–F): see
 `docs/sessions/logs/` and `docs/roadmap.md`.

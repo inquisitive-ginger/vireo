@@ -6,7 +6,11 @@
       "Bash(pnpm --filter * exec tsc --noEmit *)",
       "Bash(pnpm test *)",
       "Bash(pnpm --filter * exec prisma migrate status *)",
-      "Bash(npm info *)"
+      "Bash(npm info *)",
+      "Write(docs/sessions/kickoffs/**)",
+      "Write(docs/sessions/logs/**)",
+      "Edit(docs/sessions/queue.md)",
+      "Edit(docs/modules/*/progress.md)"
     ]
   },
   "hooks": {
@@ -17,7 +21,7 @@
           {
             "type": "command",
             "command": "$CLAUDE_PROJECT_DIR/scripts/check-context-budget.sh",
-            "statusMessage": "Checking CLAUDE.md budget"
+            "statusMessage": "Checking doc budgets"
           }
         ]
       }

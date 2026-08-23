@@ -17,17 +17,17 @@ before it reads anything else, and it is size-capped — see
 
 - **Milestone:** M4.5 — Companion (M4.5/3 next); **M5/2 done 2026-08-13, PR
   #105** — meals plugin live (week page, drawer, tonight widget, claim).
-- **Active stories:** none in flight; **beacon track queued** — custom build due
-  at the December visit. `product-design-beacon.md`.
+- **Active stories:** none in flight; **all five M5 kickoffs written** — wave 1
+  (M5/3 + M5/4 + M5/6) runs in parallel. Beacon still due at the December visit.
 - **Deployment:** 🟢 live at `https://vireohome.app` — Pi 5 (192.168.0.42);
   auto-deploy + Tailscale + restic→R2 + watchdog intact. **A bad USB cable was
   the cause of the 2026-08-20 "enclosure" outage and all the slowness** — disk now
   256 MB/s, deploys 1 min. Runbook Part F.
-- **Last session:** 2026-08-22 — watchdog stands down during deploys, needs a
-  sustained failure to reboot (PR #121); found the cable.
-  `logs/2026-08-22-infra-watchdog-quiescence.md`.
+- **Last session:** 2026-08-22 — session roles are now `.claude/agents/` (dev sends
+  correctness to `reviewer`); doc budgets widened; ADR 066.
+  `logs/2026-08-22-infra-agent-delegation.md`.
 - **What's next and everything outstanding:** `docs/sessions/queue.md` — the one
-  index. NVMe HAT downgraded to an upgrade; M4.5/3 is the next real session.
+  index. M4.5/3 or M5 wave 1 next; NVMe HAT is an upgrade, not a rescue.
 - **Owed in-app:** `deployed` flips for the three #116–118 reports (ids in the
   queue's Recently Completed entry).
 

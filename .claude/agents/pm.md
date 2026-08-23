@@ -41,7 +41,7 @@ six bullets go to `CLAUDE.md`.
 ## Hard limits
 
 - Kickoff: 6 KB. Log: 6 KB. Queue entry: 3 lines plus a log pointer.
-- `scripts/check-doc-budget.sh` enforces these. If it fails, cut content — never
+- `scripts/check-context-budget.sh` enforces these. If it fails, cut content — never
   raise a cap.
 - A **Recently Completed** entry is the headline decision plus a pointer. Never
   the summary.
