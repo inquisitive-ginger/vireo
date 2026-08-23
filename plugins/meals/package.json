@@ -3,7 +3,8 @@
   "version": "0.0.1",
   "private": true,
   "exports": {
-    "./db": "./src/db.ts"
+    "./db": "./src/db.ts",
+    "./lib/meals": "./src/lib/meals.ts"
   },
   "scripts": {
     "dev": "vite build && concurrently \"vite build --watch\" \"vite preview\"",

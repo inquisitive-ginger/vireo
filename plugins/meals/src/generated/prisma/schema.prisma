@@ -12,21 +12,38 @@ datasource db {
 // schema and cross-schema constraints are off the table (calendar precedent).
 // ownerId null = UNCLAIMED, a first-class state (spec.md).
 model PlannedMeal {
-  id        String   @id @default(uuid()) @db.Uuid
-  date      DateTime @db.Date
-  slot      String   @default("dinner")
+  id        String           @id @default(uuid()) @db.Uuid
+  date      DateTime         @db.Date
+  slot      String           @default("dinner")
   title     String
   sides     String?
-  kind      String   @default("cooked")
-  ownerId   String?  @map("owner_id") @db.Uuid
+  kind      String           @default("cooked")
+  ownerId   String?          @map("owner_id") @db.Uuid
   notes     String?
-  tryBite   String?  @map("try_bite")
+  tryBite   String?          @map("try_bite")
   needs     String?
-  createdBy String   @map("created_by") @db.Uuid
-  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
-  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  createdBy String           @map("created_by") @db.Uuid
+  createdAt DateTime         @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime         @updatedAt @map("updated_at") @db.Timestamptz(6)
+  nudges    DinnerNudgeLog[]
 
   @@unique([date, slot])
   @@map("planned_meals")
+  @@schema("meals")
+}
+
+// ADR 045's shape, dual of calendar.reminder_log: a sparse past-only ledger keyed
+// by the day being nudged (not the meal row) — editing a meal's date must not
+// carry its old day's claim forward to the new day. `meal_id` is kept for
+// cascade-delete only, not part of the PK.
+model DinnerNudgeLog {
+  date     DateTime    @db.Date
+  audience String
+  mealId   String      @map("meal_id") @db.Uuid
+  firedAt  DateTime    @default(now()) @map("fired_at") @db.Timestamptz(6)
+  meal     PlannedMeal @relation(fields: [mealId], references: [id], onDelete: Cascade)
+
+  @@id([date, audience])
+  @@map("dinner_nudge_log")
   @@schema("meals")
 }

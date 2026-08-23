@@ -53,7 +53,9 @@ export function needsCount(meal: PlannedMeal | null | undefined): number {
     is covered — assign an owner only to put it on someone. Ownerless is a
     resting state for both, not a gap: never unclaimed, never escalates, never
     counts as needing a cook. */
-export function isCovered(meal: PlannedMeal | null | undefined): boolean {
+export function isCovered(
+  meal: { ownerId: string | null; kind: string } | null | undefined
+): boolean {
   return Boolean(meal && (meal.ownerId || meal.kind === 'out' || meal.kind === 'takeout'))
 }
 

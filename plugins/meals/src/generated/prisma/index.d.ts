@@ -18,6 +18,11 @@ export type PrismaPromise<T> = $Public.PrismaPromise<T>
  * 
  */
 export type PlannedMeal = $Result.DefaultSelection<Prisma.$PlannedMealPayload>
+/**
+ * Model DinnerNudgeLog
+ * 
+ */
+export type DinnerNudgeLog = $Result.DefaultSelection<Prisma.$DinnerNudgeLogPayload>
 
 /**
  * ##  Prisma Client ʲˢ
@@ -149,6 +154,16 @@ export class PrismaClient<
     * ```
     */
   get plannedMeal(): Prisma.PlannedMealDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.dinnerNudgeLog`: Exposes CRUD operations for the **DinnerNudgeLog** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more DinnerNudgeLogs
+    * const dinnerNudgeLogs = await prisma.dinnerNudgeLog.findMany()
+    * ```
+    */
+  get dinnerNudgeLog(): Prisma.DinnerNudgeLogDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -583,7 +598,8 @@ export namespace Prisma {
 
 
   export const ModelName: {
-    PlannedMeal: 'PlannedMeal'
+    PlannedMeal: 'PlannedMeal',
+    DinnerNudgeLog: 'DinnerNudgeLog'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -599,7 +615,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "plannedMeal"
+      modelProps: "plannedMeal" | "dinnerNudgeLog"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -674,6 +690,80 @@ export namespace Prisma {
           count: {
             args: Prisma.PlannedMealCountArgs<ExtArgs>
             result: $Utils.Optional<PlannedMealCountAggregateOutputType> | number
+          }
+        }
+      }
+      DinnerNudgeLog: {
+        payload: Prisma.$DinnerNudgeLogPayload<ExtArgs>
+        fields: Prisma.DinnerNudgeLogFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.DinnerNudgeLogFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DinnerNudgeLogPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.DinnerNudgeLogFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DinnerNudgeLogPayload>
+          }
+          findFirst: {
+            args: Prisma.DinnerNudgeLogFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DinnerNudgeLogPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.DinnerNudgeLogFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DinnerNudgeLogPayload>
+          }
+          findMany: {
+            args: Prisma.DinnerNudgeLogFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DinnerNudgeLogPayload>[]
+          }
+          create: {
+            args: Prisma.DinnerNudgeLogCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DinnerNudgeLogPayload>
+          }
+          createMany: {
+            args: Prisma.DinnerNudgeLogCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.DinnerNudgeLogCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DinnerNudgeLogPayload>[]
+          }
+          delete: {
+            args: Prisma.DinnerNudgeLogDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DinnerNudgeLogPayload>
+          }
+          update: {
+            args: Prisma.DinnerNudgeLogUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DinnerNudgeLogPayload>
+          }
+          deleteMany: {
+            args: Prisma.DinnerNudgeLogDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.DinnerNudgeLogUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.DinnerNudgeLogUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DinnerNudgeLogPayload>[]
+          }
+          upsert: {
+            args: Prisma.DinnerNudgeLogUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$DinnerNudgeLogPayload>
+          }
+          aggregate: {
+            args: Prisma.DinnerNudgeLogAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateDinnerNudgeLog>
+          }
+          groupBy: {
+            args: Prisma.DinnerNudgeLogGroupByArgs<ExtArgs>
+            result: $Utils.Optional<DinnerNudgeLogGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.DinnerNudgeLogCountArgs<ExtArgs>
+            result: $Utils.Optional<DinnerNudgeLogCountAggregateOutputType> | number
           }
         }
       }
@@ -786,6 +876,7 @@ export namespace Prisma {
   }
   export type GlobalOmitConfig = {
     plannedMeal?: PlannedMealOmit
+    dinnerNudgeLog?: DinnerNudgeLogOmit
   }
 
   /* Types for Logging */
@@ -860,6 +951,36 @@ export namespace Prisma {
    * Count Types
    */
 
+
+  /**
+   * Count Type PlannedMealCountOutputType
+   */
+
+  export type PlannedMealCountOutputType = {
+    nudges: number
+  }
+
+  export type PlannedMealCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    nudges?: boolean | PlannedMealCountOutputTypeCountNudgesArgs
+  }
+
+  // Custom InputTypes
+  /**
+   * PlannedMealCountOutputType without action
+   */
+  export type PlannedMealCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the PlannedMealCountOutputType
+     */
+    select?: PlannedMealCountOutputTypeSelect<ExtArgs> | null
+  }
+
+  /**
+   * PlannedMealCountOutputType without action
+   */
+  export type PlannedMealCountOutputTypeCountNudgesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: DinnerNudgeLogWhereInput
+  }
 
 
   /**
@@ -1094,6 +1215,8 @@ export namespace Prisma {
     createdBy?: boolean
     createdAt?: boolean
     updatedAt?: boolean
+    nudges?: boolean | PlannedMeal$nudgesArgs<ExtArgs>
+    _count?: boolean | PlannedMealCountOutputTypeDefaultArgs<ExtArgs>
   }, ExtArgs["result"]["plannedMeal"]>
 
   export type PlannedMealSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
@@ -1145,10 +1268,18 @@ export namespace Prisma {
   }
 
   export type PlannedMealOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "date" | "slot" | "title" | "sides" | "kind" | "ownerId" | "notes" | "tryBite" | "needs" | "createdBy" | "createdAt" | "updatedAt", ExtArgs["result"]["plannedMeal"]>
+  export type PlannedMealInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    nudges?: boolean | PlannedMeal$nudgesArgs<ExtArgs>
+    _count?: boolean | PlannedMealCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type PlannedMealIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+  export type PlannedMealIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
 
   export type $PlannedMealPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "PlannedMeal"
-    objects: {}
+    objects: {
+      nudges: Prisma.$DinnerNudgeLogPayload<ExtArgs>[]
+    }
     scalars: $Extensions.GetPayloadResult<{
       id: string
       date: Date
@@ -1557,6 +1688,7 @@ export namespace Prisma {
    */
   export interface Prisma__PlannedMealClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
     readonly [Symbol.toStringTag]: "PrismaPromise"
+    nudges<T extends PlannedMeal$nudgesArgs<ExtArgs> = {}>(args?: Subset<T, PlannedMeal$nudgesArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DinnerNudgeLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
@@ -1616,6 +1748,10 @@ export namespace Prisma {
      */
     omit?: PlannedMealOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PlannedMealInclude<ExtArgs> | null
+    /**
      * Filter, which PlannedMeal to fetch.
      */
     where: PlannedMealWhereUniqueInput
@@ -1634,6 +1770,10 @@ export namespace Prisma {
      */
     omit?: PlannedMealOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PlannedMealInclude<ExtArgs> | null
+    /**
      * Filter, which PlannedMeal to fetch.
      */
     where: PlannedMealWhereUniqueInput
@@ -1651,6 +1791,10 @@ export namespace Prisma {
      * Omit specific fields from the PlannedMeal
      */
     omit?: PlannedMealOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PlannedMealInclude<ExtArgs> | null
     /**
      * Filter, which PlannedMeal to fetch.
      */
@@ -1700,6 +1844,10 @@ export namespace Prisma {
      */
     omit?: PlannedMealOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PlannedMealInclude<ExtArgs> | null
+    /**
      * Filter, which PlannedMeal to fetch.
      */
     where?: PlannedMealWhereInput
@@ -1747,6 +1895,10 @@ export namespace Prisma {
      * Omit specific fields from the PlannedMeal
      */
     omit?: PlannedMealOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PlannedMealInclude<ExtArgs> | null
     /**
      * Filter, which PlannedMeals to fetch.
      */
@@ -1796,6 +1948,10 @@ export namespace Prisma {
      */
     omit?: PlannedMealOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PlannedMealInclude<ExtArgs> | null
+    /**
      * The data needed to create a PlannedMeal.
      */
     data: XOR<PlannedMealCreateInput, PlannedMealUncheckedCreateInput>
@@ -1843,6 +1999,10 @@ export namespace Prisma {
      * Omit specific fields from the PlannedMeal
      */
     omit?: PlannedMealOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PlannedMealInclude<ExtArgs> | null
     /**
      * The data needed to update a PlannedMeal.
      */
@@ -1910,6 +2070,10 @@ export namespace Prisma {
      */
     omit?: PlannedMealOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PlannedMealInclude<ExtArgs> | null
+    /**
      * The filter to search for the PlannedMeal to update in case it exists.
      */
     where: PlannedMealWhereUniqueInput
@@ -1936,6 +2100,10 @@ export namespace Prisma {
      */
     omit?: PlannedMealOmit<ExtArgs> | null
     /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PlannedMealInclude<ExtArgs> | null
+    /**
      * Filter which PlannedMeal to delete.
      */
     where: PlannedMealWhereUniqueInput
@@ -1956,6 +2124,30 @@ export namespace Prisma {
   }
 
   /**
+   * PlannedMeal.nudges
+   */
+  export type PlannedMeal$nudgesArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DinnerNudgeLog
+     */
+    select?: DinnerNudgeLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DinnerNudgeLog
+     */
+    omit?: DinnerNudgeLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DinnerNudgeLogInclude<ExtArgs> | null
+    where?: DinnerNudgeLogWhereInput
+    orderBy?: DinnerNudgeLogOrderByWithRelationInput | DinnerNudgeLogOrderByWithRelationInput[]
+    cursor?: DinnerNudgeLogWhereUniqueInput
+    take?: number
+    skip?: number
+    distinct?: DinnerNudgeLogScalarFieldEnum | DinnerNudgeLogScalarFieldEnum[]
+  }
+
+  /**
    * PlannedMeal without action
    */
   export type PlannedMealDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
@@ -1967,6 +2159,1060 @@ export namespace Prisma {
      * Omit specific fields from the PlannedMeal
      */
     omit?: PlannedMealOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: PlannedMealInclude<ExtArgs> | null
+  }
+
+
+  /**
+   * Model DinnerNudgeLog
+   */
+
+  export type AggregateDinnerNudgeLog = {
+    _count: DinnerNudgeLogCountAggregateOutputType | null
+    _min: DinnerNudgeLogMinAggregateOutputType | null
+    _max: DinnerNudgeLogMaxAggregateOutputType | null
+  }
+
+  export type DinnerNudgeLogMinAggregateOutputType = {
+    date: Date | null
+    audience: string | null
+    mealId: string | null
+    firedAt: Date | null
+  }
+
+  export type DinnerNudgeLogMaxAggregateOutputType = {
+    date: Date | null
+    audience: string | null
+    mealId: string | null
+    firedAt: Date | null
+  }
+
+  export type DinnerNudgeLogCountAggregateOutputType = {
+    date: number
+    audience: number
+    mealId: number
+    firedAt: number
+    _all: number
+  }
+
+
+  export type DinnerNudgeLogMinAggregateInputType = {
+    date?: true
+    audience?: true
+    mealId?: true
+    firedAt?: true
+  }
+
+  export type DinnerNudgeLogMaxAggregateInputType = {
+    date?: true
+    audience?: true
+    mealId?: true
+    firedAt?: true
+  }
+
+  export type DinnerNudgeLogCountAggregateInputType = {
+    date?: true
+    audience?: true
+    mealId?: true
+    firedAt?: true
+    _all?: true
+  }
+
+  export type DinnerNudgeLogAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which DinnerNudgeLog to aggregate.
+     */
+    where?: DinnerNudgeLogWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DinnerNudgeLogs to fetch.
+     */
+    orderBy?: DinnerNudgeLogOrderByWithRelationInput | DinnerNudgeLogOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: DinnerNudgeLogWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DinnerNudgeLogs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DinnerNudgeLogs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned DinnerNudgeLogs
+    **/
+    _count?: true | DinnerNudgeLogCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: DinnerNudgeLogMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: DinnerNudgeLogMaxAggregateInputType
+  }
+
+  export type GetDinnerNudgeLogAggregateType<T extends DinnerNudgeLogAggregateArgs> = {
+        [P in keyof T & keyof AggregateDinnerNudgeLog]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateDinnerNudgeLog[P]>
+      : GetScalarType<T[P], AggregateDinnerNudgeLog[P]>
+  }
+
+
+
+
+  export type DinnerNudgeLogGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: DinnerNudgeLogWhereInput
+    orderBy?: DinnerNudgeLogOrderByWithAggregationInput | DinnerNudgeLogOrderByWithAggregationInput[]
+    by: DinnerNudgeLogScalarFieldEnum[] | DinnerNudgeLogScalarFieldEnum
+    having?: DinnerNudgeLogScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: DinnerNudgeLogCountAggregateInputType | true
+    _min?: DinnerNudgeLogMinAggregateInputType
+    _max?: DinnerNudgeLogMaxAggregateInputType
+  }
+
+  export type DinnerNudgeLogGroupByOutputType = {
+    date: Date
+    audience: string
+    mealId: string
+    firedAt: Date
+    _count: DinnerNudgeLogCountAggregateOutputType | null
+    _min: DinnerNudgeLogMinAggregateOutputType | null
+    _max: DinnerNudgeLogMaxAggregateOutputType | null
+  }
+
+  type GetDinnerNudgeLogGroupByPayload<T extends DinnerNudgeLogGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<DinnerNudgeLogGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof DinnerNudgeLogGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], DinnerNudgeLogGroupByOutputType[P]>
+            : GetScalarType<T[P], DinnerNudgeLogGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type DinnerNudgeLogSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    date?: boolean
+    audience?: boolean
+    mealId?: boolean
+    firedAt?: boolean
+    meal?: boolean | PlannedMealDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["dinnerNudgeLog"]>
+
+  export type DinnerNudgeLogSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    date?: boolean
+    audience?: boolean
+    mealId?: boolean
+    firedAt?: boolean
+    meal?: boolean | PlannedMealDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["dinnerNudgeLog"]>
+
+  export type DinnerNudgeLogSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    date?: boolean
+    audience?: boolean
+    mealId?: boolean
+    firedAt?: boolean
+    meal?: boolean | PlannedMealDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["dinnerNudgeLog"]>
+
+  export type DinnerNudgeLogSelectScalar = {
+    date?: boolean
+    audience?: boolean
+    mealId?: boolean
+    firedAt?: boolean
+  }
+
+  export type DinnerNudgeLogOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"date" | "audience" | "mealId" | "firedAt", ExtArgs["result"]["dinnerNudgeLog"]>
+  export type DinnerNudgeLogInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    meal?: boolean | PlannedMealDefaultArgs<ExtArgs>
+  }
+  export type DinnerNudgeLogIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    meal?: boolean | PlannedMealDefaultArgs<ExtArgs>
+  }
+  export type DinnerNudgeLogIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    meal?: boolean | PlannedMealDefaultArgs<ExtArgs>
+  }
+
+  export type $DinnerNudgeLogPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "DinnerNudgeLog"
+    objects: {
+      meal: Prisma.$PlannedMealPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      date: Date
+      audience: string
+      mealId: string
+      firedAt: Date
+    }, ExtArgs["result"]["dinnerNudgeLog"]>
+    composites: {}
+  }
+
+  type DinnerNudgeLogGetPayload<S extends boolean | null | undefined | DinnerNudgeLogDefaultArgs> = $Result.GetResult<Prisma.$DinnerNudgeLogPayload, S>
+
+  type DinnerNudgeLogCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<DinnerNudgeLogFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: DinnerNudgeLogCountAggregateInputType | true
+    }
+
+  export interface DinnerNudgeLogDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['DinnerNudgeLog'], meta: { name: 'DinnerNudgeLog' } }
+    /**
+     * Find zero or one DinnerNudgeLog that matches the filter.
+     * @param {DinnerNudgeLogFindUniqueArgs} args - Arguments to find a DinnerNudgeLog
+     * @example
+     * // Get one DinnerNudgeLog
+     * const dinnerNudgeLog = await prisma.dinnerNudgeLog.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends DinnerNudgeLogFindUniqueArgs>(args: SelectSubset<T, DinnerNudgeLogFindUniqueArgs<ExtArgs>>): Prisma__DinnerNudgeLogClient<$Result.GetResult<Prisma.$DinnerNudgeLogPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one DinnerNudgeLog that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {DinnerNudgeLogFindUniqueOrThrowArgs} args - Arguments to find a DinnerNudgeLog
+     * @example
+     * // Get one DinnerNudgeLog
+     * const dinnerNudgeLog = await prisma.dinnerNudgeLog.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends DinnerNudgeLogFindUniqueOrThrowArgs>(args: SelectSubset<T, DinnerNudgeLogFindUniqueOrThrowArgs<ExtArgs>>): Prisma__DinnerNudgeLogClient<$Result.GetResult<Prisma.$DinnerNudgeLogPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first DinnerNudgeLog that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DinnerNudgeLogFindFirstArgs} args - Arguments to find a DinnerNudgeLog
+     * @example
+     * // Get one DinnerNudgeLog
+     * const dinnerNudgeLog = await prisma.dinnerNudgeLog.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends DinnerNudgeLogFindFirstArgs>(args?: SelectSubset<T, DinnerNudgeLogFindFirstArgs<ExtArgs>>): Prisma__DinnerNudgeLogClient<$Result.GetResult<Prisma.$DinnerNudgeLogPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first DinnerNudgeLog that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DinnerNudgeLogFindFirstOrThrowArgs} args - Arguments to find a DinnerNudgeLog
+     * @example
+     * // Get one DinnerNudgeLog
+     * const dinnerNudgeLog = await prisma.dinnerNudgeLog.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends DinnerNudgeLogFindFirstOrThrowArgs>(args?: SelectSubset<T, DinnerNudgeLogFindFirstOrThrowArgs<ExtArgs>>): Prisma__DinnerNudgeLogClient<$Result.GetResult<Prisma.$DinnerNudgeLogPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more DinnerNudgeLogs that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DinnerNudgeLogFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all DinnerNudgeLogs
+     * const dinnerNudgeLogs = await prisma.dinnerNudgeLog.findMany()
+     * 
+     * // Get first 10 DinnerNudgeLogs
+     * const dinnerNudgeLogs = await prisma.dinnerNudgeLog.findMany({ take: 10 })
+     * 
+     * // Only select the `date`
+     * const dinnerNudgeLogWithDateOnly = await prisma.dinnerNudgeLog.findMany({ select: { date: true } })
+     * 
+     */
+    findMany<T extends DinnerNudgeLogFindManyArgs>(args?: SelectSubset<T, DinnerNudgeLogFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DinnerNudgeLogPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a DinnerNudgeLog.
+     * @param {DinnerNudgeLogCreateArgs} args - Arguments to create a DinnerNudgeLog.
+     * @example
+     * // Create one DinnerNudgeLog
+     * const DinnerNudgeLog = await prisma.dinnerNudgeLog.create({
+     *   data: {
+     *     // ... data to create a DinnerNudgeLog
+     *   }
+     * })
+     * 
+     */
+    create<T extends DinnerNudgeLogCreateArgs>(args: SelectSubset<T, DinnerNudgeLogCreateArgs<ExtArgs>>): Prisma__DinnerNudgeLogClient<$Result.GetResult<Prisma.$DinnerNudgeLogPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many DinnerNudgeLogs.
+     * @param {DinnerNudgeLogCreateManyArgs} args - Arguments to create many DinnerNudgeLogs.
+     * @example
+     * // Create many DinnerNudgeLogs
+     * const dinnerNudgeLog = await prisma.dinnerNudgeLog.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends DinnerNudgeLogCreateManyArgs>(args?: SelectSubset<T, DinnerNudgeLogCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many DinnerNudgeLogs and returns the data saved in the database.
+     * @param {DinnerNudgeLogCreateManyAndReturnArgs} args - Arguments to create many DinnerNudgeLogs.
+     * @example
+     * // Create many DinnerNudgeLogs
+     * const dinnerNudgeLog = await prisma.dinnerNudgeLog.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many DinnerNudgeLogs and only return the `date`
+     * const dinnerNudgeLogWithDateOnly = await prisma.dinnerNudgeLog.createManyAndReturn({
+     *   select: { date: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends DinnerNudgeLogCreateManyAndReturnArgs>(args?: SelectSubset<T, DinnerNudgeLogCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DinnerNudgeLogPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a DinnerNudgeLog.
+     * @param {DinnerNudgeLogDeleteArgs} args - Arguments to delete one DinnerNudgeLog.
+     * @example
+     * // Delete one DinnerNudgeLog
+     * const DinnerNudgeLog = await prisma.dinnerNudgeLog.delete({
+     *   where: {
+     *     // ... filter to delete one DinnerNudgeLog
+     *   }
+     * })
+     * 
+     */
+    delete<T extends DinnerNudgeLogDeleteArgs>(args: SelectSubset<T, DinnerNudgeLogDeleteArgs<ExtArgs>>): Prisma__DinnerNudgeLogClient<$Result.GetResult<Prisma.$DinnerNudgeLogPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one DinnerNudgeLog.
+     * @param {DinnerNudgeLogUpdateArgs} args - Arguments to update one DinnerNudgeLog.
+     * @example
+     * // Update one DinnerNudgeLog
+     * const dinnerNudgeLog = await prisma.dinnerNudgeLog.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends DinnerNudgeLogUpdateArgs>(args: SelectSubset<T, DinnerNudgeLogUpdateArgs<ExtArgs>>): Prisma__DinnerNudgeLogClient<$Result.GetResult<Prisma.$DinnerNudgeLogPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more DinnerNudgeLogs.
+     * @param {DinnerNudgeLogDeleteManyArgs} args - Arguments to filter DinnerNudgeLogs to delete.
+     * @example
+     * // Delete a few DinnerNudgeLogs
+     * const { count } = await prisma.dinnerNudgeLog.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends DinnerNudgeLogDeleteManyArgs>(args?: SelectSubset<T, DinnerNudgeLogDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more DinnerNudgeLogs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DinnerNudgeLogUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many DinnerNudgeLogs
+     * const dinnerNudgeLog = await prisma.dinnerNudgeLog.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends DinnerNudgeLogUpdateManyArgs>(args: SelectSubset<T, DinnerNudgeLogUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more DinnerNudgeLogs and returns the data updated in the database.
+     * @param {DinnerNudgeLogUpdateManyAndReturnArgs} args - Arguments to update many DinnerNudgeLogs.
+     * @example
+     * // Update many DinnerNudgeLogs
+     * const dinnerNudgeLog = await prisma.dinnerNudgeLog.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more DinnerNudgeLogs and only return the `date`
+     * const dinnerNudgeLogWithDateOnly = await prisma.dinnerNudgeLog.updateManyAndReturn({
+     *   select: { date: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends DinnerNudgeLogUpdateManyAndReturnArgs>(args: SelectSubset<T, DinnerNudgeLogUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$DinnerNudgeLogPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one DinnerNudgeLog.
+     * @param {DinnerNudgeLogUpsertArgs} args - Arguments to update or create a DinnerNudgeLog.
+     * @example
+     * // Update or create a DinnerNudgeLog
+     * const dinnerNudgeLog = await prisma.dinnerNudgeLog.upsert({
+     *   create: {
+     *     // ... data to create a DinnerNudgeLog
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the DinnerNudgeLog we want to update
+     *   }
+     * })
+     */
+    upsert<T extends DinnerNudgeLogUpsertArgs>(args: SelectSubset<T, DinnerNudgeLogUpsertArgs<ExtArgs>>): Prisma__DinnerNudgeLogClient<$Result.GetResult<Prisma.$DinnerNudgeLogPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of DinnerNudgeLogs.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DinnerNudgeLogCountArgs} args - Arguments to filter DinnerNudgeLogs to count.
+     * @example
+     * // Count the number of DinnerNudgeLogs
+     * const count = await prisma.dinnerNudgeLog.count({
+     *   where: {
+     *     // ... the filter for the DinnerNudgeLogs we want to count
+     *   }
+     * })
+    **/
+    count<T extends DinnerNudgeLogCountArgs>(
+      args?: Subset<T, DinnerNudgeLogCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], DinnerNudgeLogCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a DinnerNudgeLog.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DinnerNudgeLogAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends DinnerNudgeLogAggregateArgs>(args: Subset<T, DinnerNudgeLogAggregateArgs>): Prisma.PrismaPromise<GetDinnerNudgeLogAggregateType<T>>
+
+    /**
+     * Group by DinnerNudgeLog.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {DinnerNudgeLogGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends DinnerNudgeLogGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: DinnerNudgeLogGroupByArgs['orderBy'] }
+        : { orderBy?: DinnerNudgeLogGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, DinnerNudgeLogGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetDinnerNudgeLogGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the DinnerNudgeLog model
+   */
+  readonly fields: DinnerNudgeLogFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for DinnerNudgeLog.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__DinnerNudgeLogClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    meal<T extends PlannedMealDefaultArgs<ExtArgs> = {}>(args?: Subset<T, PlannedMealDefaultArgs<ExtArgs>>): Prisma__PlannedMealClient<$Result.GetResult<Prisma.$PlannedMealPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the DinnerNudgeLog model
+   */
+  interface DinnerNudgeLogFieldRefs {
+    readonly date: FieldRef<"DinnerNudgeLog", 'DateTime'>
+    readonly audience: FieldRef<"DinnerNudgeLog", 'String'>
+    readonly mealId: FieldRef<"DinnerNudgeLog", 'String'>
+    readonly firedAt: FieldRef<"DinnerNudgeLog", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * DinnerNudgeLog findUnique
+   */
+  export type DinnerNudgeLogFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DinnerNudgeLog
+     */
+    select?: DinnerNudgeLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DinnerNudgeLog
+     */
+    omit?: DinnerNudgeLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DinnerNudgeLogInclude<ExtArgs> | null
+    /**
+     * Filter, which DinnerNudgeLog to fetch.
+     */
+    where: DinnerNudgeLogWhereUniqueInput
+  }
+
+  /**
+   * DinnerNudgeLog findUniqueOrThrow
+   */
+  export type DinnerNudgeLogFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DinnerNudgeLog
+     */
+    select?: DinnerNudgeLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DinnerNudgeLog
+     */
+    omit?: DinnerNudgeLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DinnerNudgeLogInclude<ExtArgs> | null
+    /**
+     * Filter, which DinnerNudgeLog to fetch.
+     */
+    where: DinnerNudgeLogWhereUniqueInput
+  }
+
+  /**
+   * DinnerNudgeLog findFirst
+   */
+  export type DinnerNudgeLogFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DinnerNudgeLog
+     */
+    select?: DinnerNudgeLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DinnerNudgeLog
+     */
+    omit?: DinnerNudgeLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DinnerNudgeLogInclude<ExtArgs> | null
+    /**
+     * Filter, which DinnerNudgeLog to fetch.
+     */
+    where?: DinnerNudgeLogWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DinnerNudgeLogs to fetch.
+     */
+    orderBy?: DinnerNudgeLogOrderByWithRelationInput | DinnerNudgeLogOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for DinnerNudgeLogs.
+     */
+    cursor?: DinnerNudgeLogWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DinnerNudgeLogs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DinnerNudgeLogs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of DinnerNudgeLogs.
+     */
+    distinct?: DinnerNudgeLogScalarFieldEnum | DinnerNudgeLogScalarFieldEnum[]
+  }
+
+  /**
+   * DinnerNudgeLog findFirstOrThrow
+   */
+  export type DinnerNudgeLogFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DinnerNudgeLog
+     */
+    select?: DinnerNudgeLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DinnerNudgeLog
+     */
+    omit?: DinnerNudgeLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DinnerNudgeLogInclude<ExtArgs> | null
+    /**
+     * Filter, which DinnerNudgeLog to fetch.
+     */
+    where?: DinnerNudgeLogWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DinnerNudgeLogs to fetch.
+     */
+    orderBy?: DinnerNudgeLogOrderByWithRelationInput | DinnerNudgeLogOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for DinnerNudgeLogs.
+     */
+    cursor?: DinnerNudgeLogWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DinnerNudgeLogs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DinnerNudgeLogs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of DinnerNudgeLogs.
+     */
+    distinct?: DinnerNudgeLogScalarFieldEnum | DinnerNudgeLogScalarFieldEnum[]
+  }
+
+  /**
+   * DinnerNudgeLog findMany
+   */
+  export type DinnerNudgeLogFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DinnerNudgeLog
+     */
+    select?: DinnerNudgeLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DinnerNudgeLog
+     */
+    omit?: DinnerNudgeLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DinnerNudgeLogInclude<ExtArgs> | null
+    /**
+     * Filter, which DinnerNudgeLogs to fetch.
+     */
+    where?: DinnerNudgeLogWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of DinnerNudgeLogs to fetch.
+     */
+    orderBy?: DinnerNudgeLogOrderByWithRelationInput | DinnerNudgeLogOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing DinnerNudgeLogs.
+     */
+    cursor?: DinnerNudgeLogWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` DinnerNudgeLogs from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` DinnerNudgeLogs.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of DinnerNudgeLogs.
+     */
+    distinct?: DinnerNudgeLogScalarFieldEnum | DinnerNudgeLogScalarFieldEnum[]
+  }
+
+  /**
+   * DinnerNudgeLog create
+   */
+  export type DinnerNudgeLogCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DinnerNudgeLog
+     */
+    select?: DinnerNudgeLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DinnerNudgeLog
+     */
+    omit?: DinnerNudgeLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DinnerNudgeLogInclude<ExtArgs> | null
+    /**
+     * The data needed to create a DinnerNudgeLog.
+     */
+    data: XOR<DinnerNudgeLogCreateInput, DinnerNudgeLogUncheckedCreateInput>
+  }
+
+  /**
+   * DinnerNudgeLog createMany
+   */
+  export type DinnerNudgeLogCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many DinnerNudgeLogs.
+     */
+    data: DinnerNudgeLogCreateManyInput | DinnerNudgeLogCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * DinnerNudgeLog createManyAndReturn
+   */
+  export type DinnerNudgeLogCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DinnerNudgeLog
+     */
+    select?: DinnerNudgeLogSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the DinnerNudgeLog
+     */
+    omit?: DinnerNudgeLogOmit<ExtArgs> | null
+    /**
+     * The data used to create many DinnerNudgeLogs.
+     */
+    data: DinnerNudgeLogCreateManyInput | DinnerNudgeLogCreateManyInput[]
+    skipDuplicates?: boolean
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DinnerNudgeLogIncludeCreateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * DinnerNudgeLog update
+   */
+  export type DinnerNudgeLogUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DinnerNudgeLog
+     */
+    select?: DinnerNudgeLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DinnerNudgeLog
+     */
+    omit?: DinnerNudgeLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DinnerNudgeLogInclude<ExtArgs> | null
+    /**
+     * The data needed to update a DinnerNudgeLog.
+     */
+    data: XOR<DinnerNudgeLogUpdateInput, DinnerNudgeLogUncheckedUpdateInput>
+    /**
+     * Choose, which DinnerNudgeLog to update.
+     */
+    where: DinnerNudgeLogWhereUniqueInput
+  }
+
+  /**
+   * DinnerNudgeLog updateMany
+   */
+  export type DinnerNudgeLogUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update DinnerNudgeLogs.
+     */
+    data: XOR<DinnerNudgeLogUpdateManyMutationInput, DinnerNudgeLogUncheckedUpdateManyInput>
+    /**
+     * Filter which DinnerNudgeLogs to update
+     */
+    where?: DinnerNudgeLogWhereInput
+    /**
+     * Limit how many DinnerNudgeLogs to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * DinnerNudgeLog updateManyAndReturn
+   */
+  export type DinnerNudgeLogUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DinnerNudgeLog
+     */
+    select?: DinnerNudgeLogSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the DinnerNudgeLog
+     */
+    omit?: DinnerNudgeLogOmit<ExtArgs> | null
+    /**
+     * The data used to update DinnerNudgeLogs.
+     */
+    data: XOR<DinnerNudgeLogUpdateManyMutationInput, DinnerNudgeLogUncheckedUpdateManyInput>
+    /**
+     * Filter which DinnerNudgeLogs to update
+     */
+    where?: DinnerNudgeLogWhereInput
+    /**
+     * Limit how many DinnerNudgeLogs to update.
+     */
+    limit?: number
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DinnerNudgeLogIncludeUpdateManyAndReturn<ExtArgs> | null
+  }
+
+  /**
+   * DinnerNudgeLog upsert
+   */
+  export type DinnerNudgeLogUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DinnerNudgeLog
+     */
+    select?: DinnerNudgeLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DinnerNudgeLog
+     */
+    omit?: DinnerNudgeLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DinnerNudgeLogInclude<ExtArgs> | null
+    /**
+     * The filter to search for the DinnerNudgeLog to update in case it exists.
+     */
+    where: DinnerNudgeLogWhereUniqueInput
+    /**
+     * In case the DinnerNudgeLog found by the `where` argument doesn't exist, create a new DinnerNudgeLog with this data.
+     */
+    create: XOR<DinnerNudgeLogCreateInput, DinnerNudgeLogUncheckedCreateInput>
+    /**
+     * In case the DinnerNudgeLog was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<DinnerNudgeLogUpdateInput, DinnerNudgeLogUncheckedUpdateInput>
+  }
+
+  /**
+   * DinnerNudgeLog delete
+   */
+  export type DinnerNudgeLogDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DinnerNudgeLog
+     */
+    select?: DinnerNudgeLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DinnerNudgeLog
+     */
+    omit?: DinnerNudgeLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DinnerNudgeLogInclude<ExtArgs> | null
+    /**
+     * Filter which DinnerNudgeLog to delete.
+     */
+    where: DinnerNudgeLogWhereUniqueInput
+  }
+
+  /**
+   * DinnerNudgeLog deleteMany
+   */
+  export type DinnerNudgeLogDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which DinnerNudgeLogs to delete
+     */
+    where?: DinnerNudgeLogWhereInput
+    /**
+     * Limit how many DinnerNudgeLogs to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * DinnerNudgeLog without action
+   */
+  export type DinnerNudgeLogDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the DinnerNudgeLog
+     */
+    select?: DinnerNudgeLogSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the DinnerNudgeLog
+     */
+    omit?: DinnerNudgeLogOmit<ExtArgs> | null
+    /**
+     * Choose, which related nodes to fetch as well
+     */
+    include?: DinnerNudgeLogInclude<ExtArgs> | null
   }
 
 
@@ -2001,6 +3247,16 @@ export namespace Prisma {
   };
 
   export type PlannedMealScalarFieldEnum = (typeof PlannedMealScalarFieldEnum)[keyof typeof PlannedMealScalarFieldEnum]
+
+
+  export const DinnerNudgeLogScalarFieldEnum: {
+    date: 'date',
+    audience: 'audience',
+    mealId: 'mealId',
+    firedAt: 'firedAt'
+  };
+
+  export type DinnerNudgeLogScalarFieldEnum = (typeof DinnerNudgeLogScalarFieldEnum)[keyof typeof DinnerNudgeLogScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -2094,6 +3350,7 @@ export namespace Prisma {
     createdBy?: UuidFilter<"PlannedMeal"> | string
     createdAt?: DateTimeFilter<"PlannedMeal"> | Date | string
     updatedAt?: DateTimeFilter<"PlannedMeal"> | Date | string
+    nudges?: DinnerNudgeLogListRelationFilter
   }
 
   export type PlannedMealOrderByWithRelationInput = {
@@ -2110,6 +3367,7 @@ export namespace Prisma {
     createdBy?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
+    nudges?: DinnerNudgeLogOrderByRelationAggregateInput
   }
 
   export type PlannedMealWhereUniqueInput = Prisma.AtLeast<{
@@ -2130,6 +3388,7 @@ export namespace Prisma {
     createdBy?: UuidFilter<"PlannedMeal"> | string
     createdAt?: DateTimeFilter<"PlannedMeal"> | Date | string
     updatedAt?: DateTimeFilter<"PlannedMeal"> | Date | string
+    nudges?: DinnerNudgeLogListRelationFilter
   }, "id" | "date_slot">
 
   export type PlannedMealOrderByWithAggregationInput = {
@@ -2170,6 +3429,57 @@ export namespace Prisma {
     updatedAt?: DateTimeWithAggregatesFilter<"PlannedMeal"> | Date | string
   }
 
+  export type DinnerNudgeLogWhereInput = {
+    AND?: DinnerNudgeLogWhereInput | DinnerNudgeLogWhereInput[]
+    OR?: DinnerNudgeLogWhereInput[]
+    NOT?: DinnerNudgeLogWhereInput | DinnerNudgeLogWhereInput[]
+    date?: DateTimeFilter<"DinnerNudgeLog"> | Date | string
+    audience?: StringFilter<"DinnerNudgeLog"> | string
+    mealId?: UuidFilter<"DinnerNudgeLog"> | string
+    firedAt?: DateTimeFilter<"DinnerNudgeLog"> | Date | string
+    meal?: XOR<PlannedMealScalarRelationFilter, PlannedMealWhereInput>
+  }
+
+  export type DinnerNudgeLogOrderByWithRelationInput = {
+    date?: SortOrder
+    audience?: SortOrder
+    mealId?: SortOrder
+    firedAt?: SortOrder
+    meal?: PlannedMealOrderByWithRelationInput
+  }
+
+  export type DinnerNudgeLogWhereUniqueInput = Prisma.AtLeast<{
+    date_audience?: DinnerNudgeLogDateAudienceCompoundUniqueInput
+    AND?: DinnerNudgeLogWhereInput | DinnerNudgeLogWhereInput[]
+    OR?: DinnerNudgeLogWhereInput[]
+    NOT?: DinnerNudgeLogWhereInput | DinnerNudgeLogWhereInput[]
+    date?: DateTimeFilter<"DinnerNudgeLog"> | Date | string
+    audience?: StringFilter<"DinnerNudgeLog"> | string
+    mealId?: UuidFilter<"DinnerNudgeLog"> | string
+    firedAt?: DateTimeFilter<"DinnerNudgeLog"> | Date | string
+    meal?: XOR<PlannedMealScalarRelationFilter, PlannedMealWhereInput>
+  }, "date_audience">
+
+  export type DinnerNudgeLogOrderByWithAggregationInput = {
+    date?: SortOrder
+    audience?: SortOrder
+    mealId?: SortOrder
+    firedAt?: SortOrder
+    _count?: DinnerNudgeLogCountOrderByAggregateInput
+    _max?: DinnerNudgeLogMaxOrderByAggregateInput
+    _min?: DinnerNudgeLogMinOrderByAggregateInput
+  }
+
+  export type DinnerNudgeLogScalarWhereWithAggregatesInput = {
+    AND?: DinnerNudgeLogScalarWhereWithAggregatesInput | DinnerNudgeLogScalarWhereWithAggregatesInput[]
+    OR?: DinnerNudgeLogScalarWhereWithAggregatesInput[]
+    NOT?: DinnerNudgeLogScalarWhereWithAggregatesInput | DinnerNudgeLogScalarWhereWithAggregatesInput[]
+    date?: DateTimeWithAggregatesFilter<"DinnerNudgeLog"> | Date | string
+    audience?: StringWithAggregatesFilter<"DinnerNudgeLog"> | string
+    mealId?: UuidWithAggregatesFilter<"DinnerNudgeLog"> | string
+    firedAt?: DateTimeWithAggregatesFilter<"DinnerNudgeLog"> | Date | string
+  }
+
   export type PlannedMealCreateInput = {
     id?: string
     date: Date | string
@@ -2184,6 +3494,7 @@ export namespace Prisma {
     createdBy: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    nudges?: DinnerNudgeLogCreateNestedManyWithoutMealInput
   }
 
   export type PlannedMealUncheckedCreateInput = {
@@ -2200,6 +3511,7 @@ export namespace Prisma {
     createdBy: string
     createdAt?: Date | string
     updatedAt?: Date | string
+    nudges?: DinnerNudgeLogUncheckedCreateNestedManyWithoutMealInput
   }
 
   export type PlannedMealUpdateInput = {
@@ -2216,6 +3528,7 @@ export namespace Prisma {
     createdBy?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    nudges?: DinnerNudgeLogUpdateManyWithoutMealNestedInput
   }
 
   export type PlannedMealUncheckedUpdateInput = {
@@ -2232,6 +3545,7 @@ export namespace Prisma {
     createdBy?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    nudges?: DinnerNudgeLogUncheckedUpdateManyWithoutMealNestedInput
   }
 
   export type PlannedMealCreateManyInput = {
@@ -2280,6 +3594,54 @@ export namespace Prisma {
     createdBy?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DinnerNudgeLogCreateInput = {
+    date: Date | string
+    audience: string
+    firedAt?: Date | string
+    meal: PlannedMealCreateNestedOneWithoutNudgesInput
+  }
+
+  export type DinnerNudgeLogUncheckedCreateInput = {
+    date: Date | string
+    audience: string
+    mealId: string
+    firedAt?: Date | string
+  }
+
+  export type DinnerNudgeLogUpdateInput = {
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    audience?: StringFieldUpdateOperationsInput | string
+    firedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    meal?: PlannedMealUpdateOneRequiredWithoutNudgesNestedInput
+  }
+
+  export type DinnerNudgeLogUncheckedUpdateInput = {
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    audience?: StringFieldUpdateOperationsInput | string
+    mealId?: StringFieldUpdateOperationsInput | string
+    firedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DinnerNudgeLogCreateManyInput = {
+    date: Date | string
+    audience: string
+    mealId: string
+    firedAt?: Date | string
+  }
+
+  export type DinnerNudgeLogUpdateManyMutationInput = {
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    audience?: StringFieldUpdateOperationsInput | string
+    firedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DinnerNudgeLogUncheckedUpdateManyInput = {
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    audience?: StringFieldUpdateOperationsInput | string
+    mealId?: StringFieldUpdateOperationsInput | string
+    firedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type UuidFilter<$PrismaModel = never> = {
@@ -2347,9 +3709,19 @@ export namespace Prisma {
     not?: NestedUuidNullableFilter<$PrismaModel> | string | null
   }
 
+  export type DinnerNudgeLogListRelationFilter = {
+    every?: DinnerNudgeLogWhereInput
+    some?: DinnerNudgeLogWhereInput
+    none?: DinnerNudgeLogWhereInput
+  }
+
   export type SortOrderInput = {
     sort: SortOrder
     nulls?: NullsOrder
+  }
+
+  export type DinnerNudgeLogOrderByRelationAggregateInput = {
+    _count?: SortOrder
   }
 
   export type PlannedMealDateSlotCompoundUniqueInput = {
@@ -2485,6 +3857,51 @@ export namespace Prisma {
     _max?: NestedStringNullableFilter<$PrismaModel>
   }
 
+  export type PlannedMealScalarRelationFilter = {
+    is?: PlannedMealWhereInput
+    isNot?: PlannedMealWhereInput
+  }
+
+  export type DinnerNudgeLogDateAudienceCompoundUniqueInput = {
+    date: Date | string
+    audience: string
+  }
+
+  export type DinnerNudgeLogCountOrderByAggregateInput = {
+    date?: SortOrder
+    audience?: SortOrder
+    mealId?: SortOrder
+    firedAt?: SortOrder
+  }
+
+  export type DinnerNudgeLogMaxOrderByAggregateInput = {
+    date?: SortOrder
+    audience?: SortOrder
+    mealId?: SortOrder
+    firedAt?: SortOrder
+  }
+
+  export type DinnerNudgeLogMinOrderByAggregateInput = {
+    date?: SortOrder
+    audience?: SortOrder
+    mealId?: SortOrder
+    firedAt?: SortOrder
+  }
+
+  export type DinnerNudgeLogCreateNestedManyWithoutMealInput = {
+    create?: XOR<DinnerNudgeLogCreateWithoutMealInput, DinnerNudgeLogUncheckedCreateWithoutMealInput> | DinnerNudgeLogCreateWithoutMealInput[] | DinnerNudgeLogUncheckedCreateWithoutMealInput[]
+    connectOrCreate?: DinnerNudgeLogCreateOrConnectWithoutMealInput | DinnerNudgeLogCreateOrConnectWithoutMealInput[]
+    createMany?: DinnerNudgeLogCreateManyMealInputEnvelope
+    connect?: DinnerNudgeLogWhereUniqueInput | DinnerNudgeLogWhereUniqueInput[]
+  }
+
+  export type DinnerNudgeLogUncheckedCreateNestedManyWithoutMealInput = {
+    create?: XOR<DinnerNudgeLogCreateWithoutMealInput, DinnerNudgeLogUncheckedCreateWithoutMealInput> | DinnerNudgeLogCreateWithoutMealInput[] | DinnerNudgeLogUncheckedCreateWithoutMealInput[]
+    connectOrCreate?: DinnerNudgeLogCreateOrConnectWithoutMealInput | DinnerNudgeLogCreateOrConnectWithoutMealInput[]
+    createMany?: DinnerNudgeLogCreateManyMealInputEnvelope
+    connect?: DinnerNudgeLogWhereUniqueInput | DinnerNudgeLogWhereUniqueInput[]
+  }
+
   export type StringFieldUpdateOperationsInput = {
     set?: string
   }
@@ -2495,6 +3912,48 @@ export namespace Prisma {
 
   export type NullableStringFieldUpdateOperationsInput = {
     set?: string | null
+  }
+
+  export type DinnerNudgeLogUpdateManyWithoutMealNestedInput = {
+    create?: XOR<DinnerNudgeLogCreateWithoutMealInput, DinnerNudgeLogUncheckedCreateWithoutMealInput> | DinnerNudgeLogCreateWithoutMealInput[] | DinnerNudgeLogUncheckedCreateWithoutMealInput[]
+    connectOrCreate?: DinnerNudgeLogCreateOrConnectWithoutMealInput | DinnerNudgeLogCreateOrConnectWithoutMealInput[]
+    upsert?: DinnerNudgeLogUpsertWithWhereUniqueWithoutMealInput | DinnerNudgeLogUpsertWithWhereUniqueWithoutMealInput[]
+    createMany?: DinnerNudgeLogCreateManyMealInputEnvelope
+    set?: DinnerNudgeLogWhereUniqueInput | DinnerNudgeLogWhereUniqueInput[]
+    disconnect?: DinnerNudgeLogWhereUniqueInput | DinnerNudgeLogWhereUniqueInput[]
+    delete?: DinnerNudgeLogWhereUniqueInput | DinnerNudgeLogWhereUniqueInput[]
+    connect?: DinnerNudgeLogWhereUniqueInput | DinnerNudgeLogWhereUniqueInput[]
+    update?: DinnerNudgeLogUpdateWithWhereUniqueWithoutMealInput | DinnerNudgeLogUpdateWithWhereUniqueWithoutMealInput[]
+    updateMany?: DinnerNudgeLogUpdateManyWithWhereWithoutMealInput | DinnerNudgeLogUpdateManyWithWhereWithoutMealInput[]
+    deleteMany?: DinnerNudgeLogScalarWhereInput | DinnerNudgeLogScalarWhereInput[]
+  }
+
+  export type DinnerNudgeLogUncheckedUpdateManyWithoutMealNestedInput = {
+    create?: XOR<DinnerNudgeLogCreateWithoutMealInput, DinnerNudgeLogUncheckedCreateWithoutMealInput> | DinnerNudgeLogCreateWithoutMealInput[] | DinnerNudgeLogUncheckedCreateWithoutMealInput[]
+    connectOrCreate?: DinnerNudgeLogCreateOrConnectWithoutMealInput | DinnerNudgeLogCreateOrConnectWithoutMealInput[]
+    upsert?: DinnerNudgeLogUpsertWithWhereUniqueWithoutMealInput | DinnerNudgeLogUpsertWithWhereUniqueWithoutMealInput[]
+    createMany?: DinnerNudgeLogCreateManyMealInputEnvelope
+    set?: DinnerNudgeLogWhereUniqueInput | DinnerNudgeLogWhereUniqueInput[]
+    disconnect?: DinnerNudgeLogWhereUniqueInput | DinnerNudgeLogWhereUniqueInput[]
+    delete?: DinnerNudgeLogWhereUniqueInput | DinnerNudgeLogWhereUniqueInput[]
+    connect?: DinnerNudgeLogWhereUniqueInput | DinnerNudgeLogWhereUniqueInput[]
+    update?: DinnerNudgeLogUpdateWithWhereUniqueWithoutMealInput | DinnerNudgeLogUpdateWithWhereUniqueWithoutMealInput[]
+    updateMany?: DinnerNudgeLogUpdateManyWithWhereWithoutMealInput | DinnerNudgeLogUpdateManyWithWhereWithoutMealInput[]
+    deleteMany?: DinnerNudgeLogScalarWhereInput | DinnerNudgeLogScalarWhereInput[]
+  }
+
+  export type PlannedMealCreateNestedOneWithoutNudgesInput = {
+    create?: XOR<PlannedMealCreateWithoutNudgesInput, PlannedMealUncheckedCreateWithoutNudgesInput>
+    connectOrCreate?: PlannedMealCreateOrConnectWithoutNudgesInput
+    connect?: PlannedMealWhereUniqueInput
+  }
+
+  export type PlannedMealUpdateOneRequiredWithoutNudgesNestedInput = {
+    create?: XOR<PlannedMealCreateWithoutNudgesInput, PlannedMealUncheckedCreateWithoutNudgesInput>
+    connectOrCreate?: PlannedMealCreateOrConnectWithoutNudgesInput
+    upsert?: PlannedMealUpsertWithoutNudgesInput
+    connect?: PlannedMealWhereUniqueInput
+    update?: XOR<XOR<PlannedMealUpdateToOneWithWhereWithoutNudgesInput, PlannedMealUpdateWithoutNudgesInput>, PlannedMealUncheckedUpdateWithoutNudgesInput>
   }
 
   export type NestedUuidFilter<$PrismaModel = never> = {
@@ -2654,6 +4113,158 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedStringNullableFilter<$PrismaModel>
     _max?: NestedStringNullableFilter<$PrismaModel>
+  }
+
+  export type DinnerNudgeLogCreateWithoutMealInput = {
+    date: Date | string
+    audience: string
+    firedAt?: Date | string
+  }
+
+  export type DinnerNudgeLogUncheckedCreateWithoutMealInput = {
+    date: Date | string
+    audience: string
+    firedAt?: Date | string
+  }
+
+  export type DinnerNudgeLogCreateOrConnectWithoutMealInput = {
+    where: DinnerNudgeLogWhereUniqueInput
+    create: XOR<DinnerNudgeLogCreateWithoutMealInput, DinnerNudgeLogUncheckedCreateWithoutMealInput>
+  }
+
+  export type DinnerNudgeLogCreateManyMealInputEnvelope = {
+    data: DinnerNudgeLogCreateManyMealInput | DinnerNudgeLogCreateManyMealInput[]
+    skipDuplicates?: boolean
+  }
+
+  export type DinnerNudgeLogUpsertWithWhereUniqueWithoutMealInput = {
+    where: DinnerNudgeLogWhereUniqueInput
+    update: XOR<DinnerNudgeLogUpdateWithoutMealInput, DinnerNudgeLogUncheckedUpdateWithoutMealInput>
+    create: XOR<DinnerNudgeLogCreateWithoutMealInput, DinnerNudgeLogUncheckedCreateWithoutMealInput>
+  }
+
+  export type DinnerNudgeLogUpdateWithWhereUniqueWithoutMealInput = {
+    where: DinnerNudgeLogWhereUniqueInput
+    data: XOR<DinnerNudgeLogUpdateWithoutMealInput, DinnerNudgeLogUncheckedUpdateWithoutMealInput>
+  }
+
+  export type DinnerNudgeLogUpdateManyWithWhereWithoutMealInput = {
+    where: DinnerNudgeLogScalarWhereInput
+    data: XOR<DinnerNudgeLogUpdateManyMutationInput, DinnerNudgeLogUncheckedUpdateManyWithoutMealInput>
+  }
+
+  export type DinnerNudgeLogScalarWhereInput = {
+    AND?: DinnerNudgeLogScalarWhereInput | DinnerNudgeLogScalarWhereInput[]
+    OR?: DinnerNudgeLogScalarWhereInput[]
+    NOT?: DinnerNudgeLogScalarWhereInput | DinnerNudgeLogScalarWhereInput[]
+    date?: DateTimeFilter<"DinnerNudgeLog"> | Date | string
+    audience?: StringFilter<"DinnerNudgeLog"> | string
+    mealId?: UuidFilter<"DinnerNudgeLog"> | string
+    firedAt?: DateTimeFilter<"DinnerNudgeLog"> | Date | string
+  }
+
+  export type PlannedMealCreateWithoutNudgesInput = {
+    id?: string
+    date: Date | string
+    slot?: string
+    title: string
+    sides?: string | null
+    kind?: string
+    ownerId?: string | null
+    notes?: string | null
+    tryBite?: string | null
+    needs?: string | null
+    createdBy: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PlannedMealUncheckedCreateWithoutNudgesInput = {
+    id?: string
+    date: Date | string
+    slot?: string
+    title: string
+    sides?: string | null
+    kind?: string
+    ownerId?: string | null
+    notes?: string | null
+    tryBite?: string | null
+    needs?: string | null
+    createdBy: string
+    createdAt?: Date | string
+    updatedAt?: Date | string
+  }
+
+  export type PlannedMealCreateOrConnectWithoutNudgesInput = {
+    where: PlannedMealWhereUniqueInput
+    create: XOR<PlannedMealCreateWithoutNudgesInput, PlannedMealUncheckedCreateWithoutNudgesInput>
+  }
+
+  export type PlannedMealUpsertWithoutNudgesInput = {
+    update: XOR<PlannedMealUpdateWithoutNudgesInput, PlannedMealUncheckedUpdateWithoutNudgesInput>
+    create: XOR<PlannedMealCreateWithoutNudgesInput, PlannedMealUncheckedCreateWithoutNudgesInput>
+    where?: PlannedMealWhereInput
+  }
+
+  export type PlannedMealUpdateToOneWithWhereWithoutNudgesInput = {
+    where?: PlannedMealWhereInput
+    data: XOR<PlannedMealUpdateWithoutNudgesInput, PlannedMealUncheckedUpdateWithoutNudgesInput>
+  }
+
+  export type PlannedMealUpdateWithoutNudgesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    slot?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    sides?: NullableStringFieldUpdateOperationsInput | string | null
+    kind?: StringFieldUpdateOperationsInput | string
+    ownerId?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    tryBite?: NullableStringFieldUpdateOperationsInput | string | null
+    needs?: NullableStringFieldUpdateOperationsInput | string | null
+    createdBy?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type PlannedMealUncheckedUpdateWithoutNudgesInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    slot?: StringFieldUpdateOperationsInput | string
+    title?: StringFieldUpdateOperationsInput | string
+    sides?: NullableStringFieldUpdateOperationsInput | string | null
+    kind?: StringFieldUpdateOperationsInput | string
+    ownerId?: NullableStringFieldUpdateOperationsInput | string | null
+    notes?: NullableStringFieldUpdateOperationsInput | string | null
+    tryBite?: NullableStringFieldUpdateOperationsInput | string | null
+    needs?: NullableStringFieldUpdateOperationsInput | string | null
+    createdBy?: StringFieldUpdateOperationsInput | string
+    createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DinnerNudgeLogCreateManyMealInput = {
+    date: Date | string
+    audience: string
+    firedAt?: Date | string
+  }
+
+  export type DinnerNudgeLogUpdateWithoutMealInput = {
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    audience?: StringFieldUpdateOperationsInput | string
+    firedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DinnerNudgeLogUncheckedUpdateWithoutMealInput = {
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    audience?: StringFieldUpdateOperationsInput | string
+    firedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type DinnerNudgeLogUncheckedUpdateManyWithoutMealInput = {
+    date?: DateTimeFieldUpdateOperationsInput | Date | string
+    audience?: StringFieldUpdateOperationsInput | string
+    firedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
 
