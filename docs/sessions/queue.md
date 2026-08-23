@@ -102,29 +102,16 @@ _Depends on: M5/6._
 
 ---
 
-### Watchdog: deploy-quiescence window
-
-**Type:** infra (small, **now urgent — 2 for 2 on recent deploys**) ·
-**Kickoff:** `kickoffs/infra-watchdog-quiescence.md`
-A minute-cadence health check can't tell "SSD gone" from "containers
-restarting". PR #119's deploy tripped it and the Pi rebooted under a deploy
-that had already succeeded; **PR #120 (2026-08-22) was worse** — the reboot
-landed mid-`api` recreate, killed the runner (deploy shows "canceled"), and
-left prod down ~15 min until the watchdog's own `compose up -d` loop finished
-the rollout. Teach the watchdog to stand down while a deploy is in flight
-(touch-file from deploy.yml, or a longer unhealthy grace before the reboot
-path). See `logs/2026-08-20-fix-auto-bug-116-118.md` §Deploy and
-`logs/2026-08-22-design-dev-olive-primary.md` §Deploy incident.
-_Depends on: none._
-
 ### Prod storage off USB: NVMe HAT for the Pi 5
 
 **Type:** infra (small, needs a purchase) · **Kickoff:** _to be written_
-The 2026-08-20 outage was the USB enclosure again (UAS hang → xHCI controller
-death; `logs/2026-08-20-infra-ssd-outage-selfheal.md`). Mitigations are live
-(UAS quirk, watchdog + external dead-man ping), but the durable fix is an NVMe
-HAT on the Pi 5's PCIe port: buy HAT + NVMe drive, rsync the storage roots
-(runbook Part C9 pattern), swap fstab, retire the enclosure. _Depends on: none._
+**Downgraded 2026-08-22 — an upgrade now, not a rescue.** The USB path was blamed
+for the enclosure hang and months of slowness; it was a bad cable, and the same
+disk now does 256 MB/s sequential / 17.6 MB/s at 4k
+(`logs/2026-08-22-infra-watchdog-quiescence.md`). The HAT is still the tidier
+end state — buy HAT + NVMe drive, rsync the storage roots (runbook Part C9
+pattern), swap fstab, retire the enclosure — but nothing depends on it.
+_Depends on: none._
 
 ### Retire the Pi 3B: second-copy backup puller
 
@@ -236,6 +223,12 @@ suite mirroring chores/calendar. _Depends on: none._
 ## Recently Completed
 
 > Two-line index; full detail in the linked log.
+
+- **2026-08-22 — Infra: watchdog deploy-quiescence + the cable (PR #121).** Watchdog
+  stands down during deploys and needs a sustained failure to reboot; verified live
+  on a **1m01s** deploy with a silent journal. Root cause of six weeks of instability
+  turned out to be a bad USB cable — same disk went 8 → 256 MB/s.
+  See `logs/2026-08-22-infra-watchdog-quiescence.md`.
 
 - **2026-08-22 — Design+dev: the Vireo commit — olive primary (ADR 065, PR
   #120).** Primary/ring terracotta → deep olive; clay neutrals → oat; icon set

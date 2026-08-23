@@ -573,14 +573,25 @@ family-os-postgres-1 psql -U familyos -d <target-db>` — verified
     `sudo install -m 755 scripts/vireo-watchdog.sh /usr/local/sbin/vireo-watchdog.sh`.
     Same for `docker-compose.prod.yml`: the Pi's copy at `/opt/family-os/` is
     hand-synced, the deploy job only rewrites `TAG=` in `.env`.
-  - **The UAS quirk cost ~40× of the disk (measured 2026-08-22).** `dd … iflag=direct`
-    on `/dev/sda`: **318 kB/s at 4k**, 542 kB/s at 64k, 18 MB/s at 1M — against
-    **15 MB/s at 4k for the SD card**, on a SuperSpeed (5 Gbps) link. Forcing
-    usb-storage BOT removed command queuing, so every I/O is a serialized round
-    trip (~13 ms). Deploy wall-clock confirms it: a steady 250–340 s from 2026-07-31
-    through 2026-08-14, then 550 s / 686 s / 622 s after the Pi 5 move and the quirk.
-    Every symptom above — the fsync, the 25-minute boot, multi-second API responses
-    — is downstream of this. **The NVMe HAT is the fix, not a code change.**
+  - **It was the USB cable (2026-08-22).** Everything above — the "enclosure UAS
+    hang", the 92 s fsync, the 25-minute boots, multi-second API responses — traces
+    to one bad cable that negotiated 5 Gbps and could not carry it. Same disk, same
+    enclosure, same quirk, `dd … iflag=direct` on `/dev/sda`:
+
+    | block | old cable | new cable |
+    | ----- | --------- | --------- |
+    | 4k    | 318 kB/s  | 17.6 MB/s |
+    | 64k   | 542 kB/s  | 229 MB/s  |
+    | 1M    | 8.1 MB/s  | 256 MB/s  |
+
+    Deploys went 6–11 min → **1m01s**; the api container 10 min → 12 s to serve.
+    **Diagnosing this class of fault:** `lsusb -t`. A drive on a 480M bus while
+    physically in a blue port means the cable's SuperSpeed conductors are missing or
+    broken — the 5000M side of the _same_ controller shows up empty. Erratic
+    throughput (3–7× swings between identical `dd` runs) is a cable, not a driver
+    mode; a driver-mode difference is reproducible. The UAS quirk was blamed first
+    and is innocent — it stays, since it costs nothing measurable at these speeds.
+
   - The durable fix is **off USB entirely**: NVMe HAT on the Pi 5's PCIe port —
     queued.
 

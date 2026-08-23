@@ -20,13 +20,14 @@ before it reads anything else, and it is size-capped — see
 - **Active stories:** none in flight; **beacon track queued** — custom build due
   at the December visit. `product-design-beacon.md`.
 - **Deployment:** 🟢 live at `https://vireohome.app` — Pi 5 (192.168.0.42);
-  auto-deploy + Tailscale + restic→R2 intact; **SSD watchdog + external
-  dead-man ping live 2026-08-20** (USB outage; NVMe HAT queued). Runbook Part F.
-- **Last session:** 2026-08-22 — the Vireo commit: olive primary + oat neutrals
-  (ADR 065, PR #120); local dir now `~/Develop/vireo`.
-  `logs/2026-08-22-design-dev-olive-primary.md`.
+  auto-deploy + Tailscale + restic→R2 + watchdog intact. **A bad USB cable was
+  the cause of the 2026-08-20 "enclosure" outage and all the slowness** — disk now
+  256 MB/s, deploys 1 min. Runbook Part F.
+- **Last session:** 2026-08-22 — watchdog stands down during deploys, needs a
+  sustained failure to reboot (PR #121); found the cable.
+  `logs/2026-08-22-infra-watchdog-quiescence.md`.
 - **What's next and everything outstanding:** `docs/sessions/queue.md` — the one
-  index. **Watchdog deploy-quiescence now urgent** — rebooted mid-deploy on #120.
+  index. NVMe HAT downgraded to an upgrade; M4.5/3 is the next real session.
 - **Owed in-app:** `deployed` flips for the three #116–118 reports (ids in the
   queue's Recently Completed entry).
 
