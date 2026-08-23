@@ -57,8 +57,13 @@ async function fireNudge(
 ): Promise<void> {
   try {
     await mealPrisma.dinnerNudgeLog.create({ data: { date, audience, mealId: meal.id } })
-  } catch {
+  } catch (err) {
     // Unique-violation on the (date, audience) PK — already fired today. Skip.
+    console.error('[meals] nudge claim already exists, skipping (expected on a re-tick)', {
+      date,
+      audience,
+      err,
+    })
     return
   }
   try {
