@@ -143,6 +143,34 @@ exports.Prisma.DinnerNudgeLogScalarFieldEnum = {
   firedAt: 'firedAt'
 };
 
+exports.Prisma.GroceryItemScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  category: 'category',
+  quantity: 'quantity',
+  status: 'status',
+  sourceType: 'sourceType',
+  sourceId: 'sourceId',
+  addedBy: 'addedBy',
+  addedAt: 'addedAt',
+  gotBy: 'gotBy',
+  gotAt: 'gotAt'
+};
+
+exports.Prisma.StapleScalarFieldEnum = {
+  id: 'id',
+  name: 'name',
+  category: 'category',
+  active: 'active'
+};
+
+exports.Prisma.GroceryAisleOverrideScalarFieldEnum = {
+  id: 'id',
+  normalizedName: 'normalizedName',
+  category: 'category',
+  updatedAt: 'updatedAt'
+};
+
 exports.Prisma.SortOrder = {
   asc: 'asc',
   desc: 'desc'
@@ -161,7 +189,10 @@ exports.Prisma.NullsOrder = {
 
 exports.Prisma.ModelName = {
   PlannedMeal: 'PlannedMeal',
-  DinnerNudgeLog: 'DinnerNudgeLog'
+  DinnerNudgeLog: 'DinnerNudgeLog',
+  GroceryItem: 'GroceryItem',
+  Staple: 'Staple',
+  GroceryAisleOverride: 'GroceryAisleOverride'
 };
 
 /**

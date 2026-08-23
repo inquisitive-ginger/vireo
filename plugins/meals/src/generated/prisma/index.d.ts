@@ -23,6 +23,21 @@ export type PlannedMeal = $Result.DefaultSelection<Prisma.$PlannedMealPayload>
  * 
  */
 export type DinnerNudgeLog = $Result.DefaultSelection<Prisma.$DinnerNudgeLogPayload>
+/**
+ * Model GroceryItem
+ * 
+ */
+export type GroceryItem = $Result.DefaultSelection<Prisma.$GroceryItemPayload>
+/**
+ * Model Staple
+ * 
+ */
+export type Staple = $Result.DefaultSelection<Prisma.$StaplePayload>
+/**
+ * Model GroceryAisleOverride
+ * 
+ */
+export type GroceryAisleOverride = $Result.DefaultSelection<Prisma.$GroceryAisleOverridePayload>
 
 /**
  * ##  Prisma Client ʲˢ
@@ -164,6 +179,36 @@ export class PrismaClient<
     * ```
     */
   get dinnerNudgeLog(): Prisma.DinnerNudgeLogDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.groceryItem`: Exposes CRUD operations for the **GroceryItem** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more GroceryItems
+    * const groceryItems = await prisma.groceryItem.findMany()
+    * ```
+    */
+  get groceryItem(): Prisma.GroceryItemDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.staple`: Exposes CRUD operations for the **Staple** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more Staples
+    * const staples = await prisma.staple.findMany()
+    * ```
+    */
+  get staple(): Prisma.StapleDelegate<ExtArgs, ClientOptions>;
+
+  /**
+   * `prisma.groceryAisleOverride`: Exposes CRUD operations for the **GroceryAisleOverride** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more GroceryAisleOverrides
+    * const groceryAisleOverrides = await prisma.groceryAisleOverride.findMany()
+    * ```
+    */
+  get groceryAisleOverride(): Prisma.GroceryAisleOverrideDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -599,7 +644,10 @@ export namespace Prisma {
 
   export const ModelName: {
     PlannedMeal: 'PlannedMeal',
-    DinnerNudgeLog: 'DinnerNudgeLog'
+    DinnerNudgeLog: 'DinnerNudgeLog',
+    GroceryItem: 'GroceryItem',
+    Staple: 'Staple',
+    GroceryAisleOverride: 'GroceryAisleOverride'
   };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
@@ -615,7 +663,7 @@ export namespace Prisma {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: "plannedMeal" | "dinnerNudgeLog"
+      modelProps: "plannedMeal" | "dinnerNudgeLog" | "groceryItem" | "staple" | "groceryAisleOverride"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -767,6 +815,228 @@ export namespace Prisma {
           }
         }
       }
+      GroceryItem: {
+        payload: Prisma.$GroceryItemPayload<ExtArgs>
+        fields: Prisma.GroceryItemFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.GroceryItemFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GroceryItemPayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.GroceryItemFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GroceryItemPayload>
+          }
+          findFirst: {
+            args: Prisma.GroceryItemFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GroceryItemPayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.GroceryItemFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GroceryItemPayload>
+          }
+          findMany: {
+            args: Prisma.GroceryItemFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GroceryItemPayload>[]
+          }
+          create: {
+            args: Prisma.GroceryItemCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GroceryItemPayload>
+          }
+          createMany: {
+            args: Prisma.GroceryItemCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.GroceryItemCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GroceryItemPayload>[]
+          }
+          delete: {
+            args: Prisma.GroceryItemDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GroceryItemPayload>
+          }
+          update: {
+            args: Prisma.GroceryItemUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GroceryItemPayload>
+          }
+          deleteMany: {
+            args: Prisma.GroceryItemDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.GroceryItemUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.GroceryItemUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GroceryItemPayload>[]
+          }
+          upsert: {
+            args: Prisma.GroceryItemUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GroceryItemPayload>
+          }
+          aggregate: {
+            args: Prisma.GroceryItemAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateGroceryItem>
+          }
+          groupBy: {
+            args: Prisma.GroceryItemGroupByArgs<ExtArgs>
+            result: $Utils.Optional<GroceryItemGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.GroceryItemCountArgs<ExtArgs>
+            result: $Utils.Optional<GroceryItemCountAggregateOutputType> | number
+          }
+        }
+      }
+      Staple: {
+        payload: Prisma.$StaplePayload<ExtArgs>
+        fields: Prisma.StapleFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.StapleFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$StaplePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.StapleFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$StaplePayload>
+          }
+          findFirst: {
+            args: Prisma.StapleFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$StaplePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.StapleFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$StaplePayload>
+          }
+          findMany: {
+            args: Prisma.StapleFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$StaplePayload>[]
+          }
+          create: {
+            args: Prisma.StapleCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$StaplePayload>
+          }
+          createMany: {
+            args: Prisma.StapleCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.StapleCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$StaplePayload>[]
+          }
+          delete: {
+            args: Prisma.StapleDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$StaplePayload>
+          }
+          update: {
+            args: Prisma.StapleUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$StaplePayload>
+          }
+          deleteMany: {
+            args: Prisma.StapleDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.StapleUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.StapleUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$StaplePayload>[]
+          }
+          upsert: {
+            args: Prisma.StapleUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$StaplePayload>
+          }
+          aggregate: {
+            args: Prisma.StapleAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateStaple>
+          }
+          groupBy: {
+            args: Prisma.StapleGroupByArgs<ExtArgs>
+            result: $Utils.Optional<StapleGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.StapleCountArgs<ExtArgs>
+            result: $Utils.Optional<StapleCountAggregateOutputType> | number
+          }
+        }
+      }
+      GroceryAisleOverride: {
+        payload: Prisma.$GroceryAisleOverridePayload<ExtArgs>
+        fields: Prisma.GroceryAisleOverrideFieldRefs
+        operations: {
+          findUnique: {
+            args: Prisma.GroceryAisleOverrideFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GroceryAisleOverridePayload> | null
+          }
+          findUniqueOrThrow: {
+            args: Prisma.GroceryAisleOverrideFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GroceryAisleOverridePayload>
+          }
+          findFirst: {
+            args: Prisma.GroceryAisleOverrideFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GroceryAisleOverridePayload> | null
+          }
+          findFirstOrThrow: {
+            args: Prisma.GroceryAisleOverrideFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GroceryAisleOverridePayload>
+          }
+          findMany: {
+            args: Prisma.GroceryAisleOverrideFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GroceryAisleOverridePayload>[]
+          }
+          create: {
+            args: Prisma.GroceryAisleOverrideCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GroceryAisleOverridePayload>
+          }
+          createMany: {
+            args: Prisma.GroceryAisleOverrideCreateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          createManyAndReturn: {
+            args: Prisma.GroceryAisleOverrideCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GroceryAisleOverridePayload>[]
+          }
+          delete: {
+            args: Prisma.GroceryAisleOverrideDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GroceryAisleOverridePayload>
+          }
+          update: {
+            args: Prisma.GroceryAisleOverrideUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GroceryAisleOverridePayload>
+          }
+          deleteMany: {
+            args: Prisma.GroceryAisleOverrideDeleteManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateMany: {
+            args: Prisma.GroceryAisleOverrideUpdateManyArgs<ExtArgs>
+            result: BatchPayload
+          }
+          updateManyAndReturn: {
+            args: Prisma.GroceryAisleOverrideUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GroceryAisleOverridePayload>[]
+          }
+          upsert: {
+            args: Prisma.GroceryAisleOverrideUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$GroceryAisleOverridePayload>
+          }
+          aggregate: {
+            args: Prisma.GroceryAisleOverrideAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateGroceryAisleOverride>
+          }
+          groupBy: {
+            args: Prisma.GroceryAisleOverrideGroupByArgs<ExtArgs>
+            result: $Utils.Optional<GroceryAisleOverrideGroupByOutputType>[]
+          }
+          count: {
+            args: Prisma.GroceryAisleOverrideCountArgs<ExtArgs>
+            result: $Utils.Optional<GroceryAisleOverrideCountAggregateOutputType> | number
+          }
+        }
+      }
     }
   } & {
     other: {
@@ -877,6 +1147,9 @@ export namespace Prisma {
   export type GlobalOmitConfig = {
     plannedMeal?: PlannedMealOmit
     dinnerNudgeLog?: DinnerNudgeLogOmit
+    groceryItem?: GroceryItemOmit
+    staple?: StapleOmit
+    groceryAisleOverride?: GroceryAisleOverrideOmit
   }
 
   /* Types for Logging */
@@ -3049,6 +3322,3058 @@ export namespace Prisma {
 
 
   /**
+   * Model GroceryItem
+   */
+
+  export type AggregateGroceryItem = {
+    _count: GroceryItemCountAggregateOutputType | null
+    _min: GroceryItemMinAggregateOutputType | null
+    _max: GroceryItemMaxAggregateOutputType | null
+  }
+
+  export type GroceryItemMinAggregateOutputType = {
+    id: string | null
+    name: string | null
+    category: string | null
+    quantity: string | null
+    status: string | null
+    sourceType: string | null
+    sourceId: string | null
+    addedBy: string | null
+    addedAt: Date | null
+    gotBy: string | null
+    gotAt: Date | null
+  }
+
+  export type GroceryItemMaxAggregateOutputType = {
+    id: string | null
+    name: string | null
+    category: string | null
+    quantity: string | null
+    status: string | null
+    sourceType: string | null
+    sourceId: string | null
+    addedBy: string | null
+    addedAt: Date | null
+    gotBy: string | null
+    gotAt: Date | null
+  }
+
+  export type GroceryItemCountAggregateOutputType = {
+    id: number
+    name: number
+    category: number
+    quantity: number
+    status: number
+    sourceType: number
+    sourceId: number
+    addedBy: number
+    addedAt: number
+    gotBy: number
+    gotAt: number
+    _all: number
+  }
+
+
+  export type GroceryItemMinAggregateInputType = {
+    id?: true
+    name?: true
+    category?: true
+    quantity?: true
+    status?: true
+    sourceType?: true
+    sourceId?: true
+    addedBy?: true
+    addedAt?: true
+    gotBy?: true
+    gotAt?: true
+  }
+
+  export type GroceryItemMaxAggregateInputType = {
+    id?: true
+    name?: true
+    category?: true
+    quantity?: true
+    status?: true
+    sourceType?: true
+    sourceId?: true
+    addedBy?: true
+    addedAt?: true
+    gotBy?: true
+    gotAt?: true
+  }
+
+  export type GroceryItemCountAggregateInputType = {
+    id?: true
+    name?: true
+    category?: true
+    quantity?: true
+    status?: true
+    sourceType?: true
+    sourceId?: true
+    addedBy?: true
+    addedAt?: true
+    gotBy?: true
+    gotAt?: true
+    _all?: true
+  }
+
+  export type GroceryItemAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which GroceryItem to aggregate.
+     */
+    where?: GroceryItemWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of GroceryItems to fetch.
+     */
+    orderBy?: GroceryItemOrderByWithRelationInput | GroceryItemOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: GroceryItemWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` GroceryItems from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` GroceryItems.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned GroceryItems
+    **/
+    _count?: true | GroceryItemCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: GroceryItemMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: GroceryItemMaxAggregateInputType
+  }
+
+  export type GetGroceryItemAggregateType<T extends GroceryItemAggregateArgs> = {
+        [P in keyof T & keyof AggregateGroceryItem]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateGroceryItem[P]>
+      : GetScalarType<T[P], AggregateGroceryItem[P]>
+  }
+
+
+
+
+  export type GroceryItemGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: GroceryItemWhereInput
+    orderBy?: GroceryItemOrderByWithAggregationInput | GroceryItemOrderByWithAggregationInput[]
+    by: GroceryItemScalarFieldEnum[] | GroceryItemScalarFieldEnum
+    having?: GroceryItemScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: GroceryItemCountAggregateInputType | true
+    _min?: GroceryItemMinAggregateInputType
+    _max?: GroceryItemMaxAggregateInputType
+  }
+
+  export type GroceryItemGroupByOutputType = {
+    id: string
+    name: string
+    category: string
+    quantity: string | null
+    status: string
+    sourceType: string
+    sourceId: string | null
+    addedBy: string
+    addedAt: Date
+    gotBy: string | null
+    gotAt: Date | null
+    _count: GroceryItemCountAggregateOutputType | null
+    _min: GroceryItemMinAggregateOutputType | null
+    _max: GroceryItemMaxAggregateOutputType | null
+  }
+
+  type GetGroceryItemGroupByPayload<T extends GroceryItemGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<GroceryItemGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof GroceryItemGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], GroceryItemGroupByOutputType[P]>
+            : GetScalarType<T[P], GroceryItemGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type GroceryItemSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    name?: boolean
+    category?: boolean
+    quantity?: boolean
+    status?: boolean
+    sourceType?: boolean
+    sourceId?: boolean
+    addedBy?: boolean
+    addedAt?: boolean
+    gotBy?: boolean
+    gotAt?: boolean
+  }, ExtArgs["result"]["groceryItem"]>
+
+  export type GroceryItemSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    name?: boolean
+    category?: boolean
+    quantity?: boolean
+    status?: boolean
+    sourceType?: boolean
+    sourceId?: boolean
+    addedBy?: boolean
+    addedAt?: boolean
+    gotBy?: boolean
+    gotAt?: boolean
+  }, ExtArgs["result"]["groceryItem"]>
+
+  export type GroceryItemSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    name?: boolean
+    category?: boolean
+    quantity?: boolean
+    status?: boolean
+    sourceType?: boolean
+    sourceId?: boolean
+    addedBy?: boolean
+    addedAt?: boolean
+    gotBy?: boolean
+    gotAt?: boolean
+  }, ExtArgs["result"]["groceryItem"]>
+
+  export type GroceryItemSelectScalar = {
+    id?: boolean
+    name?: boolean
+    category?: boolean
+    quantity?: boolean
+    status?: boolean
+    sourceType?: boolean
+    sourceId?: boolean
+    addedBy?: boolean
+    addedAt?: boolean
+    gotBy?: boolean
+    gotAt?: boolean
+  }
+
+  export type GroceryItemOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "category" | "quantity" | "status" | "sourceType" | "sourceId" | "addedBy" | "addedAt" | "gotBy" | "gotAt", ExtArgs["result"]["groceryItem"]>
+
+  export type $GroceryItemPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "GroceryItem"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      name: string
+      category: string
+      quantity: string | null
+      status: string
+      sourceType: string
+      sourceId: string | null
+      addedBy: string
+      addedAt: Date
+      gotBy: string | null
+      gotAt: Date | null
+    }, ExtArgs["result"]["groceryItem"]>
+    composites: {}
+  }
+
+  type GroceryItemGetPayload<S extends boolean | null | undefined | GroceryItemDefaultArgs> = $Result.GetResult<Prisma.$GroceryItemPayload, S>
+
+  type GroceryItemCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<GroceryItemFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: GroceryItemCountAggregateInputType | true
+    }
+
+  export interface GroceryItemDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['GroceryItem'], meta: { name: 'GroceryItem' } }
+    /**
+     * Find zero or one GroceryItem that matches the filter.
+     * @param {GroceryItemFindUniqueArgs} args - Arguments to find a GroceryItem
+     * @example
+     * // Get one GroceryItem
+     * const groceryItem = await prisma.groceryItem.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends GroceryItemFindUniqueArgs>(args: SelectSubset<T, GroceryItemFindUniqueArgs<ExtArgs>>): Prisma__GroceryItemClient<$Result.GetResult<Prisma.$GroceryItemPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one GroceryItem that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {GroceryItemFindUniqueOrThrowArgs} args - Arguments to find a GroceryItem
+     * @example
+     * // Get one GroceryItem
+     * const groceryItem = await prisma.groceryItem.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends GroceryItemFindUniqueOrThrowArgs>(args: SelectSubset<T, GroceryItemFindUniqueOrThrowArgs<ExtArgs>>): Prisma__GroceryItemClient<$Result.GetResult<Prisma.$GroceryItemPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first GroceryItem that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GroceryItemFindFirstArgs} args - Arguments to find a GroceryItem
+     * @example
+     * // Get one GroceryItem
+     * const groceryItem = await prisma.groceryItem.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends GroceryItemFindFirstArgs>(args?: SelectSubset<T, GroceryItemFindFirstArgs<ExtArgs>>): Prisma__GroceryItemClient<$Result.GetResult<Prisma.$GroceryItemPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first GroceryItem that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GroceryItemFindFirstOrThrowArgs} args - Arguments to find a GroceryItem
+     * @example
+     * // Get one GroceryItem
+     * const groceryItem = await prisma.groceryItem.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends GroceryItemFindFirstOrThrowArgs>(args?: SelectSubset<T, GroceryItemFindFirstOrThrowArgs<ExtArgs>>): Prisma__GroceryItemClient<$Result.GetResult<Prisma.$GroceryItemPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more GroceryItems that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GroceryItemFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all GroceryItems
+     * const groceryItems = await prisma.groceryItem.findMany()
+     * 
+     * // Get first 10 GroceryItems
+     * const groceryItems = await prisma.groceryItem.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const groceryItemWithIdOnly = await prisma.groceryItem.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends GroceryItemFindManyArgs>(args?: SelectSubset<T, GroceryItemFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GroceryItemPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a GroceryItem.
+     * @param {GroceryItemCreateArgs} args - Arguments to create a GroceryItem.
+     * @example
+     * // Create one GroceryItem
+     * const GroceryItem = await prisma.groceryItem.create({
+     *   data: {
+     *     // ... data to create a GroceryItem
+     *   }
+     * })
+     * 
+     */
+    create<T extends GroceryItemCreateArgs>(args: SelectSubset<T, GroceryItemCreateArgs<ExtArgs>>): Prisma__GroceryItemClient<$Result.GetResult<Prisma.$GroceryItemPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many GroceryItems.
+     * @param {GroceryItemCreateManyArgs} args - Arguments to create many GroceryItems.
+     * @example
+     * // Create many GroceryItems
+     * const groceryItem = await prisma.groceryItem.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends GroceryItemCreateManyArgs>(args?: SelectSubset<T, GroceryItemCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many GroceryItems and returns the data saved in the database.
+     * @param {GroceryItemCreateManyAndReturnArgs} args - Arguments to create many GroceryItems.
+     * @example
+     * // Create many GroceryItems
+     * const groceryItem = await prisma.groceryItem.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many GroceryItems and only return the `id`
+     * const groceryItemWithIdOnly = await prisma.groceryItem.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends GroceryItemCreateManyAndReturnArgs>(args?: SelectSubset<T, GroceryItemCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GroceryItemPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a GroceryItem.
+     * @param {GroceryItemDeleteArgs} args - Arguments to delete one GroceryItem.
+     * @example
+     * // Delete one GroceryItem
+     * const GroceryItem = await prisma.groceryItem.delete({
+     *   where: {
+     *     // ... filter to delete one GroceryItem
+     *   }
+     * })
+     * 
+     */
+    delete<T extends GroceryItemDeleteArgs>(args: SelectSubset<T, GroceryItemDeleteArgs<ExtArgs>>): Prisma__GroceryItemClient<$Result.GetResult<Prisma.$GroceryItemPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one GroceryItem.
+     * @param {GroceryItemUpdateArgs} args - Arguments to update one GroceryItem.
+     * @example
+     * // Update one GroceryItem
+     * const groceryItem = await prisma.groceryItem.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends GroceryItemUpdateArgs>(args: SelectSubset<T, GroceryItemUpdateArgs<ExtArgs>>): Prisma__GroceryItemClient<$Result.GetResult<Prisma.$GroceryItemPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more GroceryItems.
+     * @param {GroceryItemDeleteManyArgs} args - Arguments to filter GroceryItems to delete.
+     * @example
+     * // Delete a few GroceryItems
+     * const { count } = await prisma.groceryItem.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends GroceryItemDeleteManyArgs>(args?: SelectSubset<T, GroceryItemDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more GroceryItems.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GroceryItemUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many GroceryItems
+     * const groceryItem = await prisma.groceryItem.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends GroceryItemUpdateManyArgs>(args: SelectSubset<T, GroceryItemUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more GroceryItems and returns the data updated in the database.
+     * @param {GroceryItemUpdateManyAndReturnArgs} args - Arguments to update many GroceryItems.
+     * @example
+     * // Update many GroceryItems
+     * const groceryItem = await prisma.groceryItem.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more GroceryItems and only return the `id`
+     * const groceryItemWithIdOnly = await prisma.groceryItem.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends GroceryItemUpdateManyAndReturnArgs>(args: SelectSubset<T, GroceryItemUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GroceryItemPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one GroceryItem.
+     * @param {GroceryItemUpsertArgs} args - Arguments to update or create a GroceryItem.
+     * @example
+     * // Update or create a GroceryItem
+     * const groceryItem = await prisma.groceryItem.upsert({
+     *   create: {
+     *     // ... data to create a GroceryItem
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the GroceryItem we want to update
+     *   }
+     * })
+     */
+    upsert<T extends GroceryItemUpsertArgs>(args: SelectSubset<T, GroceryItemUpsertArgs<ExtArgs>>): Prisma__GroceryItemClient<$Result.GetResult<Prisma.$GroceryItemPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of GroceryItems.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GroceryItemCountArgs} args - Arguments to filter GroceryItems to count.
+     * @example
+     * // Count the number of GroceryItems
+     * const count = await prisma.groceryItem.count({
+     *   where: {
+     *     // ... the filter for the GroceryItems we want to count
+     *   }
+     * })
+    **/
+    count<T extends GroceryItemCountArgs>(
+      args?: Subset<T, GroceryItemCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], GroceryItemCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a GroceryItem.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GroceryItemAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends GroceryItemAggregateArgs>(args: Subset<T, GroceryItemAggregateArgs>): Prisma.PrismaPromise<GetGroceryItemAggregateType<T>>
+
+    /**
+     * Group by GroceryItem.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GroceryItemGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends GroceryItemGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: GroceryItemGroupByArgs['orderBy'] }
+        : { orderBy?: GroceryItemGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, GroceryItemGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetGroceryItemGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the GroceryItem model
+   */
+  readonly fields: GroceryItemFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for GroceryItem.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__GroceryItemClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the GroceryItem model
+   */
+  interface GroceryItemFieldRefs {
+    readonly id: FieldRef<"GroceryItem", 'String'>
+    readonly name: FieldRef<"GroceryItem", 'String'>
+    readonly category: FieldRef<"GroceryItem", 'String'>
+    readonly quantity: FieldRef<"GroceryItem", 'String'>
+    readonly status: FieldRef<"GroceryItem", 'String'>
+    readonly sourceType: FieldRef<"GroceryItem", 'String'>
+    readonly sourceId: FieldRef<"GroceryItem", 'String'>
+    readonly addedBy: FieldRef<"GroceryItem", 'String'>
+    readonly addedAt: FieldRef<"GroceryItem", 'DateTime'>
+    readonly gotBy: FieldRef<"GroceryItem", 'String'>
+    readonly gotAt: FieldRef<"GroceryItem", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * GroceryItem findUnique
+   */
+  export type GroceryItemFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GroceryItem
+     */
+    select?: GroceryItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GroceryItem
+     */
+    omit?: GroceryItemOmit<ExtArgs> | null
+    /**
+     * Filter, which GroceryItem to fetch.
+     */
+    where: GroceryItemWhereUniqueInput
+  }
+
+  /**
+   * GroceryItem findUniqueOrThrow
+   */
+  export type GroceryItemFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GroceryItem
+     */
+    select?: GroceryItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GroceryItem
+     */
+    omit?: GroceryItemOmit<ExtArgs> | null
+    /**
+     * Filter, which GroceryItem to fetch.
+     */
+    where: GroceryItemWhereUniqueInput
+  }
+
+  /**
+   * GroceryItem findFirst
+   */
+  export type GroceryItemFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GroceryItem
+     */
+    select?: GroceryItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GroceryItem
+     */
+    omit?: GroceryItemOmit<ExtArgs> | null
+    /**
+     * Filter, which GroceryItem to fetch.
+     */
+    where?: GroceryItemWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of GroceryItems to fetch.
+     */
+    orderBy?: GroceryItemOrderByWithRelationInput | GroceryItemOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for GroceryItems.
+     */
+    cursor?: GroceryItemWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` GroceryItems from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` GroceryItems.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of GroceryItems.
+     */
+    distinct?: GroceryItemScalarFieldEnum | GroceryItemScalarFieldEnum[]
+  }
+
+  /**
+   * GroceryItem findFirstOrThrow
+   */
+  export type GroceryItemFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GroceryItem
+     */
+    select?: GroceryItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GroceryItem
+     */
+    omit?: GroceryItemOmit<ExtArgs> | null
+    /**
+     * Filter, which GroceryItem to fetch.
+     */
+    where?: GroceryItemWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of GroceryItems to fetch.
+     */
+    orderBy?: GroceryItemOrderByWithRelationInput | GroceryItemOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for GroceryItems.
+     */
+    cursor?: GroceryItemWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` GroceryItems from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` GroceryItems.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of GroceryItems.
+     */
+    distinct?: GroceryItemScalarFieldEnum | GroceryItemScalarFieldEnum[]
+  }
+
+  /**
+   * GroceryItem findMany
+   */
+  export type GroceryItemFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GroceryItem
+     */
+    select?: GroceryItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GroceryItem
+     */
+    omit?: GroceryItemOmit<ExtArgs> | null
+    /**
+     * Filter, which GroceryItems to fetch.
+     */
+    where?: GroceryItemWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of GroceryItems to fetch.
+     */
+    orderBy?: GroceryItemOrderByWithRelationInput | GroceryItemOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing GroceryItems.
+     */
+    cursor?: GroceryItemWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` GroceryItems from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` GroceryItems.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of GroceryItems.
+     */
+    distinct?: GroceryItemScalarFieldEnum | GroceryItemScalarFieldEnum[]
+  }
+
+  /**
+   * GroceryItem create
+   */
+  export type GroceryItemCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GroceryItem
+     */
+    select?: GroceryItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GroceryItem
+     */
+    omit?: GroceryItemOmit<ExtArgs> | null
+    /**
+     * The data needed to create a GroceryItem.
+     */
+    data: XOR<GroceryItemCreateInput, GroceryItemUncheckedCreateInput>
+  }
+
+  /**
+   * GroceryItem createMany
+   */
+  export type GroceryItemCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many GroceryItems.
+     */
+    data: GroceryItemCreateManyInput | GroceryItemCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * GroceryItem createManyAndReturn
+   */
+  export type GroceryItemCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GroceryItem
+     */
+    select?: GroceryItemSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the GroceryItem
+     */
+    omit?: GroceryItemOmit<ExtArgs> | null
+    /**
+     * The data used to create many GroceryItems.
+     */
+    data: GroceryItemCreateManyInput | GroceryItemCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * GroceryItem update
+   */
+  export type GroceryItemUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GroceryItem
+     */
+    select?: GroceryItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GroceryItem
+     */
+    omit?: GroceryItemOmit<ExtArgs> | null
+    /**
+     * The data needed to update a GroceryItem.
+     */
+    data: XOR<GroceryItemUpdateInput, GroceryItemUncheckedUpdateInput>
+    /**
+     * Choose, which GroceryItem to update.
+     */
+    where: GroceryItemWhereUniqueInput
+  }
+
+  /**
+   * GroceryItem updateMany
+   */
+  export type GroceryItemUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update GroceryItems.
+     */
+    data: XOR<GroceryItemUpdateManyMutationInput, GroceryItemUncheckedUpdateManyInput>
+    /**
+     * Filter which GroceryItems to update
+     */
+    where?: GroceryItemWhereInput
+    /**
+     * Limit how many GroceryItems to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * GroceryItem updateManyAndReturn
+   */
+  export type GroceryItemUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GroceryItem
+     */
+    select?: GroceryItemSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the GroceryItem
+     */
+    omit?: GroceryItemOmit<ExtArgs> | null
+    /**
+     * The data used to update GroceryItems.
+     */
+    data: XOR<GroceryItemUpdateManyMutationInput, GroceryItemUncheckedUpdateManyInput>
+    /**
+     * Filter which GroceryItems to update
+     */
+    where?: GroceryItemWhereInput
+    /**
+     * Limit how many GroceryItems to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * GroceryItem upsert
+   */
+  export type GroceryItemUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GroceryItem
+     */
+    select?: GroceryItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GroceryItem
+     */
+    omit?: GroceryItemOmit<ExtArgs> | null
+    /**
+     * The filter to search for the GroceryItem to update in case it exists.
+     */
+    where: GroceryItemWhereUniqueInput
+    /**
+     * In case the GroceryItem found by the `where` argument doesn't exist, create a new GroceryItem with this data.
+     */
+    create: XOR<GroceryItemCreateInput, GroceryItemUncheckedCreateInput>
+    /**
+     * In case the GroceryItem was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<GroceryItemUpdateInput, GroceryItemUncheckedUpdateInput>
+  }
+
+  /**
+   * GroceryItem delete
+   */
+  export type GroceryItemDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GroceryItem
+     */
+    select?: GroceryItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GroceryItem
+     */
+    omit?: GroceryItemOmit<ExtArgs> | null
+    /**
+     * Filter which GroceryItem to delete.
+     */
+    where: GroceryItemWhereUniqueInput
+  }
+
+  /**
+   * GroceryItem deleteMany
+   */
+  export type GroceryItemDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which GroceryItems to delete
+     */
+    where?: GroceryItemWhereInput
+    /**
+     * Limit how many GroceryItems to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * GroceryItem without action
+   */
+  export type GroceryItemDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GroceryItem
+     */
+    select?: GroceryItemSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GroceryItem
+     */
+    omit?: GroceryItemOmit<ExtArgs> | null
+  }
+
+
+  /**
+   * Model Staple
+   */
+
+  export type AggregateStaple = {
+    _count: StapleCountAggregateOutputType | null
+    _min: StapleMinAggregateOutputType | null
+    _max: StapleMaxAggregateOutputType | null
+  }
+
+  export type StapleMinAggregateOutputType = {
+    id: string | null
+    name: string | null
+    category: string | null
+    active: boolean | null
+  }
+
+  export type StapleMaxAggregateOutputType = {
+    id: string | null
+    name: string | null
+    category: string | null
+    active: boolean | null
+  }
+
+  export type StapleCountAggregateOutputType = {
+    id: number
+    name: number
+    category: number
+    active: number
+    _all: number
+  }
+
+
+  export type StapleMinAggregateInputType = {
+    id?: true
+    name?: true
+    category?: true
+    active?: true
+  }
+
+  export type StapleMaxAggregateInputType = {
+    id?: true
+    name?: true
+    category?: true
+    active?: true
+  }
+
+  export type StapleCountAggregateInputType = {
+    id?: true
+    name?: true
+    category?: true
+    active?: true
+    _all?: true
+  }
+
+  export type StapleAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Staple to aggregate.
+     */
+    where?: StapleWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Staples to fetch.
+     */
+    orderBy?: StapleOrderByWithRelationInput | StapleOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: StapleWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Staples from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Staples.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned Staples
+    **/
+    _count?: true | StapleCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: StapleMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: StapleMaxAggregateInputType
+  }
+
+  export type GetStapleAggregateType<T extends StapleAggregateArgs> = {
+        [P in keyof T & keyof AggregateStaple]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateStaple[P]>
+      : GetScalarType<T[P], AggregateStaple[P]>
+  }
+
+
+
+
+  export type StapleGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: StapleWhereInput
+    orderBy?: StapleOrderByWithAggregationInput | StapleOrderByWithAggregationInput[]
+    by: StapleScalarFieldEnum[] | StapleScalarFieldEnum
+    having?: StapleScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: StapleCountAggregateInputType | true
+    _min?: StapleMinAggregateInputType
+    _max?: StapleMaxAggregateInputType
+  }
+
+  export type StapleGroupByOutputType = {
+    id: string
+    name: string
+    category: string
+    active: boolean
+    _count: StapleCountAggregateOutputType | null
+    _min: StapleMinAggregateOutputType | null
+    _max: StapleMaxAggregateOutputType | null
+  }
+
+  type GetStapleGroupByPayload<T extends StapleGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<StapleGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof StapleGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], StapleGroupByOutputType[P]>
+            : GetScalarType<T[P], StapleGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type StapleSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    name?: boolean
+    category?: boolean
+    active?: boolean
+  }, ExtArgs["result"]["staple"]>
+
+  export type StapleSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    name?: boolean
+    category?: boolean
+    active?: boolean
+  }, ExtArgs["result"]["staple"]>
+
+  export type StapleSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    name?: boolean
+    category?: boolean
+    active?: boolean
+  }, ExtArgs["result"]["staple"]>
+
+  export type StapleSelectScalar = {
+    id?: boolean
+    name?: boolean
+    category?: boolean
+    active?: boolean
+  }
+
+  export type StapleOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "category" | "active", ExtArgs["result"]["staple"]>
+
+  export type $StaplePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "Staple"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      name: string
+      category: string
+      active: boolean
+    }, ExtArgs["result"]["staple"]>
+    composites: {}
+  }
+
+  type StapleGetPayload<S extends boolean | null | undefined | StapleDefaultArgs> = $Result.GetResult<Prisma.$StaplePayload, S>
+
+  type StapleCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<StapleFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: StapleCountAggregateInputType | true
+    }
+
+  export interface StapleDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['Staple'], meta: { name: 'Staple' } }
+    /**
+     * Find zero or one Staple that matches the filter.
+     * @param {StapleFindUniqueArgs} args - Arguments to find a Staple
+     * @example
+     * // Get one Staple
+     * const staple = await prisma.staple.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends StapleFindUniqueArgs>(args: SelectSubset<T, StapleFindUniqueArgs<ExtArgs>>): Prisma__StapleClient<$Result.GetResult<Prisma.$StaplePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one Staple that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {StapleFindUniqueOrThrowArgs} args - Arguments to find a Staple
+     * @example
+     * // Get one Staple
+     * const staple = await prisma.staple.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends StapleFindUniqueOrThrowArgs>(args: SelectSubset<T, StapleFindUniqueOrThrowArgs<ExtArgs>>): Prisma__StapleClient<$Result.GetResult<Prisma.$StaplePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Staple that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {StapleFindFirstArgs} args - Arguments to find a Staple
+     * @example
+     * // Get one Staple
+     * const staple = await prisma.staple.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends StapleFindFirstArgs>(args?: SelectSubset<T, StapleFindFirstArgs<ExtArgs>>): Prisma__StapleClient<$Result.GetResult<Prisma.$StaplePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first Staple that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {StapleFindFirstOrThrowArgs} args - Arguments to find a Staple
+     * @example
+     * // Get one Staple
+     * const staple = await prisma.staple.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends StapleFindFirstOrThrowArgs>(args?: SelectSubset<T, StapleFindFirstOrThrowArgs<ExtArgs>>): Prisma__StapleClient<$Result.GetResult<Prisma.$StaplePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more Staples that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {StapleFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all Staples
+     * const staples = await prisma.staple.findMany()
+     * 
+     * // Get first 10 Staples
+     * const staples = await prisma.staple.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const stapleWithIdOnly = await prisma.staple.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends StapleFindManyArgs>(args?: SelectSubset<T, StapleFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$StaplePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a Staple.
+     * @param {StapleCreateArgs} args - Arguments to create a Staple.
+     * @example
+     * // Create one Staple
+     * const Staple = await prisma.staple.create({
+     *   data: {
+     *     // ... data to create a Staple
+     *   }
+     * })
+     * 
+     */
+    create<T extends StapleCreateArgs>(args: SelectSubset<T, StapleCreateArgs<ExtArgs>>): Prisma__StapleClient<$Result.GetResult<Prisma.$StaplePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many Staples.
+     * @param {StapleCreateManyArgs} args - Arguments to create many Staples.
+     * @example
+     * // Create many Staples
+     * const staple = await prisma.staple.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends StapleCreateManyArgs>(args?: SelectSubset<T, StapleCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many Staples and returns the data saved in the database.
+     * @param {StapleCreateManyAndReturnArgs} args - Arguments to create many Staples.
+     * @example
+     * // Create many Staples
+     * const staple = await prisma.staple.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many Staples and only return the `id`
+     * const stapleWithIdOnly = await prisma.staple.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends StapleCreateManyAndReturnArgs>(args?: SelectSubset<T, StapleCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$StaplePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a Staple.
+     * @param {StapleDeleteArgs} args - Arguments to delete one Staple.
+     * @example
+     * // Delete one Staple
+     * const Staple = await prisma.staple.delete({
+     *   where: {
+     *     // ... filter to delete one Staple
+     *   }
+     * })
+     * 
+     */
+    delete<T extends StapleDeleteArgs>(args: SelectSubset<T, StapleDeleteArgs<ExtArgs>>): Prisma__StapleClient<$Result.GetResult<Prisma.$StaplePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one Staple.
+     * @param {StapleUpdateArgs} args - Arguments to update one Staple.
+     * @example
+     * // Update one Staple
+     * const staple = await prisma.staple.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends StapleUpdateArgs>(args: SelectSubset<T, StapleUpdateArgs<ExtArgs>>): Prisma__StapleClient<$Result.GetResult<Prisma.$StaplePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more Staples.
+     * @param {StapleDeleteManyArgs} args - Arguments to filter Staples to delete.
+     * @example
+     * // Delete a few Staples
+     * const { count } = await prisma.staple.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends StapleDeleteManyArgs>(args?: SelectSubset<T, StapleDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Staples.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {StapleUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many Staples
+     * const staple = await prisma.staple.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends StapleUpdateManyArgs>(args: SelectSubset<T, StapleUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more Staples and returns the data updated in the database.
+     * @param {StapleUpdateManyAndReturnArgs} args - Arguments to update many Staples.
+     * @example
+     * // Update many Staples
+     * const staple = await prisma.staple.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more Staples and only return the `id`
+     * const stapleWithIdOnly = await prisma.staple.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends StapleUpdateManyAndReturnArgs>(args: SelectSubset<T, StapleUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$StaplePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one Staple.
+     * @param {StapleUpsertArgs} args - Arguments to update or create a Staple.
+     * @example
+     * // Update or create a Staple
+     * const staple = await prisma.staple.upsert({
+     *   create: {
+     *     // ... data to create a Staple
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the Staple we want to update
+     *   }
+     * })
+     */
+    upsert<T extends StapleUpsertArgs>(args: SelectSubset<T, StapleUpsertArgs<ExtArgs>>): Prisma__StapleClient<$Result.GetResult<Prisma.$StaplePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of Staples.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {StapleCountArgs} args - Arguments to filter Staples to count.
+     * @example
+     * // Count the number of Staples
+     * const count = await prisma.staple.count({
+     *   where: {
+     *     // ... the filter for the Staples we want to count
+     *   }
+     * })
+    **/
+    count<T extends StapleCountArgs>(
+      args?: Subset<T, StapleCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], StapleCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a Staple.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {StapleAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends StapleAggregateArgs>(args: Subset<T, StapleAggregateArgs>): Prisma.PrismaPromise<GetStapleAggregateType<T>>
+
+    /**
+     * Group by Staple.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {StapleGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends StapleGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: StapleGroupByArgs['orderBy'] }
+        : { orderBy?: StapleGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, StapleGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetStapleGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the Staple model
+   */
+  readonly fields: StapleFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for Staple.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__StapleClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the Staple model
+   */
+  interface StapleFieldRefs {
+    readonly id: FieldRef<"Staple", 'String'>
+    readonly name: FieldRef<"Staple", 'String'>
+    readonly category: FieldRef<"Staple", 'String'>
+    readonly active: FieldRef<"Staple", 'Boolean'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * Staple findUnique
+   */
+  export type StapleFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Staple
+     */
+    select?: StapleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Staple
+     */
+    omit?: StapleOmit<ExtArgs> | null
+    /**
+     * Filter, which Staple to fetch.
+     */
+    where: StapleWhereUniqueInput
+  }
+
+  /**
+   * Staple findUniqueOrThrow
+   */
+  export type StapleFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Staple
+     */
+    select?: StapleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Staple
+     */
+    omit?: StapleOmit<ExtArgs> | null
+    /**
+     * Filter, which Staple to fetch.
+     */
+    where: StapleWhereUniqueInput
+  }
+
+  /**
+   * Staple findFirst
+   */
+  export type StapleFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Staple
+     */
+    select?: StapleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Staple
+     */
+    omit?: StapleOmit<ExtArgs> | null
+    /**
+     * Filter, which Staple to fetch.
+     */
+    where?: StapleWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Staples to fetch.
+     */
+    orderBy?: StapleOrderByWithRelationInput | StapleOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Staples.
+     */
+    cursor?: StapleWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Staples from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Staples.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Staples.
+     */
+    distinct?: StapleScalarFieldEnum | StapleScalarFieldEnum[]
+  }
+
+  /**
+   * Staple findFirstOrThrow
+   */
+  export type StapleFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Staple
+     */
+    select?: StapleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Staple
+     */
+    omit?: StapleOmit<ExtArgs> | null
+    /**
+     * Filter, which Staple to fetch.
+     */
+    where?: StapleWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Staples to fetch.
+     */
+    orderBy?: StapleOrderByWithRelationInput | StapleOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for Staples.
+     */
+    cursor?: StapleWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Staples from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Staples.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Staples.
+     */
+    distinct?: StapleScalarFieldEnum | StapleScalarFieldEnum[]
+  }
+
+  /**
+   * Staple findMany
+   */
+  export type StapleFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Staple
+     */
+    select?: StapleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Staple
+     */
+    omit?: StapleOmit<ExtArgs> | null
+    /**
+     * Filter, which Staples to fetch.
+     */
+    where?: StapleWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of Staples to fetch.
+     */
+    orderBy?: StapleOrderByWithRelationInput | StapleOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing Staples.
+     */
+    cursor?: StapleWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` Staples from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` Staples.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of Staples.
+     */
+    distinct?: StapleScalarFieldEnum | StapleScalarFieldEnum[]
+  }
+
+  /**
+   * Staple create
+   */
+  export type StapleCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Staple
+     */
+    select?: StapleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Staple
+     */
+    omit?: StapleOmit<ExtArgs> | null
+    /**
+     * The data needed to create a Staple.
+     */
+    data: XOR<StapleCreateInput, StapleUncheckedCreateInput>
+  }
+
+  /**
+   * Staple createMany
+   */
+  export type StapleCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many Staples.
+     */
+    data: StapleCreateManyInput | StapleCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Staple createManyAndReturn
+   */
+  export type StapleCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Staple
+     */
+    select?: StapleSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Staple
+     */
+    omit?: StapleOmit<ExtArgs> | null
+    /**
+     * The data used to create many Staples.
+     */
+    data: StapleCreateManyInput | StapleCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * Staple update
+   */
+  export type StapleUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Staple
+     */
+    select?: StapleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Staple
+     */
+    omit?: StapleOmit<ExtArgs> | null
+    /**
+     * The data needed to update a Staple.
+     */
+    data: XOR<StapleUpdateInput, StapleUncheckedUpdateInput>
+    /**
+     * Choose, which Staple to update.
+     */
+    where: StapleWhereUniqueInput
+  }
+
+  /**
+   * Staple updateMany
+   */
+  export type StapleUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update Staples.
+     */
+    data: XOR<StapleUpdateManyMutationInput, StapleUncheckedUpdateManyInput>
+    /**
+     * Filter which Staples to update
+     */
+    where?: StapleWhereInput
+    /**
+     * Limit how many Staples to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Staple updateManyAndReturn
+   */
+  export type StapleUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Staple
+     */
+    select?: StapleSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the Staple
+     */
+    omit?: StapleOmit<ExtArgs> | null
+    /**
+     * The data used to update Staples.
+     */
+    data: XOR<StapleUpdateManyMutationInput, StapleUncheckedUpdateManyInput>
+    /**
+     * Filter which Staples to update
+     */
+    where?: StapleWhereInput
+    /**
+     * Limit how many Staples to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * Staple upsert
+   */
+  export type StapleUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Staple
+     */
+    select?: StapleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Staple
+     */
+    omit?: StapleOmit<ExtArgs> | null
+    /**
+     * The filter to search for the Staple to update in case it exists.
+     */
+    where: StapleWhereUniqueInput
+    /**
+     * In case the Staple found by the `where` argument doesn't exist, create a new Staple with this data.
+     */
+    create: XOR<StapleCreateInput, StapleUncheckedCreateInput>
+    /**
+     * In case the Staple was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<StapleUpdateInput, StapleUncheckedUpdateInput>
+  }
+
+  /**
+   * Staple delete
+   */
+  export type StapleDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Staple
+     */
+    select?: StapleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Staple
+     */
+    omit?: StapleOmit<ExtArgs> | null
+    /**
+     * Filter which Staple to delete.
+     */
+    where: StapleWhereUniqueInput
+  }
+
+  /**
+   * Staple deleteMany
+   */
+  export type StapleDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which Staples to delete
+     */
+    where?: StapleWhereInput
+    /**
+     * Limit how many Staples to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * Staple without action
+   */
+  export type StapleDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the Staple
+     */
+    select?: StapleSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the Staple
+     */
+    omit?: StapleOmit<ExtArgs> | null
+  }
+
+
+  /**
+   * Model GroceryAisleOverride
+   */
+
+  export type AggregateGroceryAisleOverride = {
+    _count: GroceryAisleOverrideCountAggregateOutputType | null
+    _min: GroceryAisleOverrideMinAggregateOutputType | null
+    _max: GroceryAisleOverrideMaxAggregateOutputType | null
+  }
+
+  export type GroceryAisleOverrideMinAggregateOutputType = {
+    id: string | null
+    normalizedName: string | null
+    category: string | null
+    updatedAt: Date | null
+  }
+
+  export type GroceryAisleOverrideMaxAggregateOutputType = {
+    id: string | null
+    normalizedName: string | null
+    category: string | null
+    updatedAt: Date | null
+  }
+
+  export type GroceryAisleOverrideCountAggregateOutputType = {
+    id: number
+    normalizedName: number
+    category: number
+    updatedAt: number
+    _all: number
+  }
+
+
+  export type GroceryAisleOverrideMinAggregateInputType = {
+    id?: true
+    normalizedName?: true
+    category?: true
+    updatedAt?: true
+  }
+
+  export type GroceryAisleOverrideMaxAggregateInputType = {
+    id?: true
+    normalizedName?: true
+    category?: true
+    updatedAt?: true
+  }
+
+  export type GroceryAisleOverrideCountAggregateInputType = {
+    id?: true
+    normalizedName?: true
+    category?: true
+    updatedAt?: true
+    _all?: true
+  }
+
+  export type GroceryAisleOverrideAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which GroceryAisleOverride to aggregate.
+     */
+    where?: GroceryAisleOverrideWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of GroceryAisleOverrides to fetch.
+     */
+    orderBy?: GroceryAisleOverrideOrderByWithRelationInput | GroceryAisleOverrideOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the start position
+     */
+    cursor?: GroceryAisleOverrideWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` GroceryAisleOverrides from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` GroceryAisleOverrides.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Count returned GroceryAisleOverrides
+    **/
+    _count?: true | GroceryAisleOverrideCountAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the minimum value
+    **/
+    _min?: GroceryAisleOverrideMinAggregateInputType
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
+     * 
+     * Select which fields to find the maximum value
+    **/
+    _max?: GroceryAisleOverrideMaxAggregateInputType
+  }
+
+  export type GetGroceryAisleOverrideAggregateType<T extends GroceryAisleOverrideAggregateArgs> = {
+        [P in keyof T & keyof AggregateGroceryAisleOverride]: P extends '_count' | 'count'
+      ? T[P] extends true
+        ? number
+        : GetScalarType<T[P], AggregateGroceryAisleOverride[P]>
+      : GetScalarType<T[P], AggregateGroceryAisleOverride[P]>
+  }
+
+
+
+
+  export type GroceryAisleOverrideGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: GroceryAisleOverrideWhereInput
+    orderBy?: GroceryAisleOverrideOrderByWithAggregationInput | GroceryAisleOverrideOrderByWithAggregationInput[]
+    by: GroceryAisleOverrideScalarFieldEnum[] | GroceryAisleOverrideScalarFieldEnum
+    having?: GroceryAisleOverrideScalarWhereWithAggregatesInput
+    take?: number
+    skip?: number
+    _count?: GroceryAisleOverrideCountAggregateInputType | true
+    _min?: GroceryAisleOverrideMinAggregateInputType
+    _max?: GroceryAisleOverrideMaxAggregateInputType
+  }
+
+  export type GroceryAisleOverrideGroupByOutputType = {
+    id: string
+    normalizedName: string
+    category: string
+    updatedAt: Date
+    _count: GroceryAisleOverrideCountAggregateOutputType | null
+    _min: GroceryAisleOverrideMinAggregateOutputType | null
+    _max: GroceryAisleOverrideMaxAggregateOutputType | null
+  }
+
+  type GetGroceryAisleOverrideGroupByPayload<T extends GroceryAisleOverrideGroupByArgs> = Prisma.PrismaPromise<
+    Array<
+      PickEnumerable<GroceryAisleOverrideGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof GroceryAisleOverrideGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], GroceryAisleOverrideGroupByOutputType[P]>
+            : GetScalarType<T[P], GroceryAisleOverrideGroupByOutputType[P]>
+        }
+      >
+    >
+
+
+  export type GroceryAisleOverrideSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    normalizedName?: boolean
+    category?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["groceryAisleOverride"]>
+
+  export type GroceryAisleOverrideSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    normalizedName?: boolean
+    category?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["groceryAisleOverride"]>
+
+  export type GroceryAisleOverrideSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    normalizedName?: boolean
+    category?: boolean
+    updatedAt?: boolean
+  }, ExtArgs["result"]["groceryAisleOverride"]>
+
+  export type GroceryAisleOverrideSelectScalar = {
+    id?: boolean
+    normalizedName?: boolean
+    category?: boolean
+    updatedAt?: boolean
+  }
+
+  export type GroceryAisleOverrideOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "normalizedName" | "category" | "updatedAt", ExtArgs["result"]["groceryAisleOverride"]>
+
+  export type $GroceryAisleOverridePayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "GroceryAisleOverride"
+    objects: {}
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      normalizedName: string
+      category: string
+      updatedAt: Date
+    }, ExtArgs["result"]["groceryAisleOverride"]>
+    composites: {}
+  }
+
+  type GroceryAisleOverrideGetPayload<S extends boolean | null | undefined | GroceryAisleOverrideDefaultArgs> = $Result.GetResult<Prisma.$GroceryAisleOverridePayload, S>
+
+  type GroceryAisleOverrideCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<GroceryAisleOverrideFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: GroceryAisleOverrideCountAggregateInputType | true
+    }
+
+  export interface GroceryAisleOverrideDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['GroceryAisleOverride'], meta: { name: 'GroceryAisleOverride' } }
+    /**
+     * Find zero or one GroceryAisleOverride that matches the filter.
+     * @param {GroceryAisleOverrideFindUniqueArgs} args - Arguments to find a GroceryAisleOverride
+     * @example
+     * // Get one GroceryAisleOverride
+     * const groceryAisleOverride = await prisma.groceryAisleOverride.findUnique({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUnique<T extends GroceryAisleOverrideFindUniqueArgs>(args: SelectSubset<T, GroceryAisleOverrideFindUniqueArgs<ExtArgs>>): Prisma__GroceryAisleOverrideClient<$Result.GetResult<Prisma.$GroceryAisleOverridePayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find one GroceryAisleOverride that matches the filter or throw an error with `error.code='P2025'`
+     * if no matches were found.
+     * @param {GroceryAisleOverrideFindUniqueOrThrowArgs} args - Arguments to find a GroceryAisleOverride
+     * @example
+     * // Get one GroceryAisleOverride
+     * const groceryAisleOverride = await prisma.groceryAisleOverride.findUniqueOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findUniqueOrThrow<T extends GroceryAisleOverrideFindUniqueOrThrowArgs>(args: SelectSubset<T, GroceryAisleOverrideFindUniqueOrThrowArgs<ExtArgs>>): Prisma__GroceryAisleOverrideClient<$Result.GetResult<Prisma.$GroceryAisleOverridePayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first GroceryAisleOverride that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GroceryAisleOverrideFindFirstArgs} args - Arguments to find a GroceryAisleOverride
+     * @example
+     * // Get one GroceryAisleOverride
+     * const groceryAisleOverride = await prisma.groceryAisleOverride.findFirst({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirst<T extends GroceryAisleOverrideFindFirstArgs>(args?: SelectSubset<T, GroceryAisleOverrideFindFirstArgs<ExtArgs>>): Prisma__GroceryAisleOverrideClient<$Result.GetResult<Prisma.$GroceryAisleOverridePayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find the first GroceryAisleOverride that matches the filter or
+     * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GroceryAisleOverrideFindFirstOrThrowArgs} args - Arguments to find a GroceryAisleOverride
+     * @example
+     * // Get one GroceryAisleOverride
+     * const groceryAisleOverride = await prisma.groceryAisleOverride.findFirstOrThrow({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     */
+    findFirstOrThrow<T extends GroceryAisleOverrideFindFirstOrThrowArgs>(args?: SelectSubset<T, GroceryAisleOverrideFindFirstOrThrowArgs<ExtArgs>>): Prisma__GroceryAisleOverrideClient<$Result.GetResult<Prisma.$GroceryAisleOverridePayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Find zero or more GroceryAisleOverrides that matches the filter.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GroceryAisleOverrideFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @example
+     * // Get all GroceryAisleOverrides
+     * const groceryAisleOverrides = await prisma.groceryAisleOverride.findMany()
+     * 
+     * // Get first 10 GroceryAisleOverrides
+     * const groceryAisleOverrides = await prisma.groceryAisleOverride.findMany({ take: 10 })
+     * 
+     * // Only select the `id`
+     * const groceryAisleOverrideWithIdOnly = await prisma.groceryAisleOverride.findMany({ select: { id: true } })
+     * 
+     */
+    findMany<T extends GroceryAisleOverrideFindManyArgs>(args?: SelectSubset<T, GroceryAisleOverrideFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GroceryAisleOverridePayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
+
+    /**
+     * Create a GroceryAisleOverride.
+     * @param {GroceryAisleOverrideCreateArgs} args - Arguments to create a GroceryAisleOverride.
+     * @example
+     * // Create one GroceryAisleOverride
+     * const GroceryAisleOverride = await prisma.groceryAisleOverride.create({
+     *   data: {
+     *     // ... data to create a GroceryAisleOverride
+     *   }
+     * })
+     * 
+     */
+    create<T extends GroceryAisleOverrideCreateArgs>(args: SelectSubset<T, GroceryAisleOverrideCreateArgs<ExtArgs>>): Prisma__GroceryAisleOverrideClient<$Result.GetResult<Prisma.$GroceryAisleOverridePayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Create many GroceryAisleOverrides.
+     * @param {GroceryAisleOverrideCreateManyArgs} args - Arguments to create many GroceryAisleOverrides.
+     * @example
+     * // Create many GroceryAisleOverrides
+     * const groceryAisleOverride = await prisma.groceryAisleOverride.createMany({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     *     
+     */
+    createMany<T extends GroceryAisleOverrideCreateManyArgs>(args?: SelectSubset<T, GroceryAisleOverrideCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Create many GroceryAisleOverrides and returns the data saved in the database.
+     * @param {GroceryAisleOverrideCreateManyAndReturnArgs} args - Arguments to create many GroceryAisleOverrides.
+     * @example
+     * // Create many GroceryAisleOverrides
+     * const groceryAisleOverride = await prisma.groceryAisleOverride.createManyAndReturn({
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Create many GroceryAisleOverrides and only return the `id`
+     * const groceryAisleOverrideWithIdOnly = await prisma.groceryAisleOverride.createManyAndReturn({
+     *   select: { id: true },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    createManyAndReturn<T extends GroceryAisleOverrideCreateManyAndReturnArgs>(args?: SelectSubset<T, GroceryAisleOverrideCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GroceryAisleOverridePayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Delete a GroceryAisleOverride.
+     * @param {GroceryAisleOverrideDeleteArgs} args - Arguments to delete one GroceryAisleOverride.
+     * @example
+     * // Delete one GroceryAisleOverride
+     * const GroceryAisleOverride = await prisma.groceryAisleOverride.delete({
+     *   where: {
+     *     // ... filter to delete one GroceryAisleOverride
+     *   }
+     * })
+     * 
+     */
+    delete<T extends GroceryAisleOverrideDeleteArgs>(args: SelectSubset<T, GroceryAisleOverrideDeleteArgs<ExtArgs>>): Prisma__GroceryAisleOverrideClient<$Result.GetResult<Prisma.$GroceryAisleOverridePayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Update one GroceryAisleOverride.
+     * @param {GroceryAisleOverrideUpdateArgs} args - Arguments to update one GroceryAisleOverride.
+     * @example
+     * // Update one GroceryAisleOverride
+     * const groceryAisleOverride = await prisma.groceryAisleOverride.update({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    update<T extends GroceryAisleOverrideUpdateArgs>(args: SelectSubset<T, GroceryAisleOverrideUpdateArgs<ExtArgs>>): Prisma__GroceryAisleOverrideClient<$Result.GetResult<Prisma.$GroceryAisleOverridePayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+    /**
+     * Delete zero or more GroceryAisleOverrides.
+     * @param {GroceryAisleOverrideDeleteManyArgs} args - Arguments to filter GroceryAisleOverrides to delete.
+     * @example
+     * // Delete a few GroceryAisleOverrides
+     * const { count } = await prisma.groceryAisleOverride.deleteMany({
+     *   where: {
+     *     // ... provide filter here
+     *   }
+     * })
+     * 
+     */
+    deleteMany<T extends GroceryAisleOverrideDeleteManyArgs>(args?: SelectSubset<T, GroceryAisleOverrideDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more GroceryAisleOverrides.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GroceryAisleOverrideUpdateManyArgs} args - Arguments to update one or more rows.
+     * @example
+     * // Update many GroceryAisleOverrides
+     * const groceryAisleOverride = await prisma.groceryAisleOverride.updateMany({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: {
+     *     // ... provide data here
+     *   }
+     * })
+     * 
+     */
+    updateMany<T extends GroceryAisleOverrideUpdateManyArgs>(args: SelectSubset<T, GroceryAisleOverrideUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
+
+    /**
+     * Update zero or more GroceryAisleOverrides and returns the data updated in the database.
+     * @param {GroceryAisleOverrideUpdateManyAndReturnArgs} args - Arguments to update many GroceryAisleOverrides.
+     * @example
+     * // Update many GroceryAisleOverrides
+     * const groceryAisleOverride = await prisma.groceryAisleOverride.updateManyAndReturn({
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * 
+     * // Update zero or more GroceryAisleOverrides and only return the `id`
+     * const groceryAisleOverrideWithIdOnly = await prisma.groceryAisleOverride.updateManyAndReturn({
+     *   select: { id: true },
+     *   where: {
+     *     // ... provide filter here
+     *   },
+     *   data: [
+     *     // ... provide data here
+     *   ]
+     * })
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * 
+     */
+    updateManyAndReturn<T extends GroceryAisleOverrideUpdateManyAndReturnArgs>(args: SelectSubset<T, GroceryAisleOverrideUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$GroceryAisleOverridePayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
+
+    /**
+     * Create or update one GroceryAisleOverride.
+     * @param {GroceryAisleOverrideUpsertArgs} args - Arguments to update or create a GroceryAisleOverride.
+     * @example
+     * // Update or create a GroceryAisleOverride
+     * const groceryAisleOverride = await prisma.groceryAisleOverride.upsert({
+     *   create: {
+     *     // ... data to create a GroceryAisleOverride
+     *   },
+     *   update: {
+     *     // ... in case it already exists, update
+     *   },
+     *   where: {
+     *     // ... the filter for the GroceryAisleOverride we want to update
+     *   }
+     * })
+     */
+    upsert<T extends GroceryAisleOverrideUpsertArgs>(args: SelectSubset<T, GroceryAisleOverrideUpsertArgs<ExtArgs>>): Prisma__GroceryAisleOverrideClient<$Result.GetResult<Prisma.$GroceryAisleOverridePayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
+
+    /**
+     * Count the number of GroceryAisleOverrides.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GroceryAisleOverrideCountArgs} args - Arguments to filter GroceryAisleOverrides to count.
+     * @example
+     * // Count the number of GroceryAisleOverrides
+     * const count = await prisma.groceryAisleOverride.count({
+     *   where: {
+     *     // ... the filter for the GroceryAisleOverrides we want to count
+     *   }
+     * })
+    **/
+    count<T extends GroceryAisleOverrideCountArgs>(
+      args?: Subset<T, GroceryAisleOverrideCountArgs>,
+    ): Prisma.PrismaPromise<
+      T extends $Utils.Record<'select', any>
+        ? T['select'] extends true
+          ? number
+          : GetScalarType<T['select'], GroceryAisleOverrideCountAggregateOutputType>
+        : number
+    >
+
+    /**
+     * Allows you to perform aggregations operations on a GroceryAisleOverride.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GroceryAisleOverrideAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @example
+     * // Ordered by age ascending
+     * // Where email contains prisma.io
+     * // Limited to the 10 users
+     * const aggregations = await prisma.user.aggregate({
+     *   _avg: {
+     *     age: true,
+     *   },
+     *   where: {
+     *     email: {
+     *       contains: "prisma.io",
+     *     },
+     *   },
+     *   orderBy: {
+     *     age: "asc",
+     *   },
+     *   take: 10,
+     * })
+    **/
+    aggregate<T extends GroceryAisleOverrideAggregateArgs>(args: Subset<T, GroceryAisleOverrideAggregateArgs>): Prisma.PrismaPromise<GetGroceryAisleOverrideAggregateType<T>>
+
+    /**
+     * Group by GroceryAisleOverride.
+     * Note, that providing `undefined` is treated as the value not being there.
+     * Read more here: https://pris.ly/d/null-undefined
+     * @param {GroceryAisleOverrideGroupByArgs} args - Group by arguments.
+     * @example
+     * // Group by city, order by createdAt, get count
+     * const result = await prisma.user.groupBy({
+     *   by: ['city', 'createdAt'],
+     *   orderBy: {
+     *     createdAt: true
+     *   },
+     *   _count: {
+     *     _all: true
+     *   },
+     * })
+     * 
+    **/
+    groupBy<
+      T extends GroceryAisleOverrideGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
+      OrderByArg extends True extends HasSelectOrTake
+        ? { orderBy: GroceryAisleOverrideGroupByArgs['orderBy'] }
+        : { orderBy?: GroceryAisleOverrideGroupByArgs['orderBy'] },
+      OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
+      ByFields extends MaybeTupleToUnion<T['by']>,
+      ByValid extends Has<ByFields, OrderFields>,
+      HavingFields extends GetHavingFields<T['having']>,
+      HavingValid extends Has<ByFields, HavingFields>,
+      ByEmpty extends T['by'] extends never[] ? True : False,
+      InputErrors extends ByEmpty extends True
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, GroceryAisleOverrideGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetGroceryAisleOverrideGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the GroceryAisleOverride model
+   */
+  readonly fields: GroceryAisleOverrideFieldRefs;
+  }
+
+  /**
+   * The delegate class that acts as a "Promise-like" for GroceryAisleOverride.
+   * Why is this prefixed with `Prisma__`?
+   * Because we want to prevent naming conflicts as mentioned in
+   * https://github.com/prisma/prisma-client-js/issues/707
+   */
+  export interface Prisma__GroceryAisleOverrideClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    /**
+     * Attaches callbacks for the resolution and/or rejection of the Promise.
+     * @param onfulfilled The callback to execute when the Promise is resolved.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of which ever callback is executed.
+     */
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
+    /**
+     * Attaches a callback for only the rejection of the Promise.
+     * @param onrejected The callback to execute when the Promise is rejected.
+     * @returns A Promise for the completion of the callback.
+     */
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
+    /**
+     * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
+     * resolved value cannot be modified from the callback.
+     * @param onfinally The callback to execute when the Promise is settled (fulfilled or rejected).
+     * @returns A Promise for the completion of the callback.
+     */
+    finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
+  }
+
+
+
+
+  /**
+   * Fields of the GroceryAisleOverride model
+   */
+  interface GroceryAisleOverrideFieldRefs {
+    readonly id: FieldRef<"GroceryAisleOverride", 'String'>
+    readonly normalizedName: FieldRef<"GroceryAisleOverride", 'String'>
+    readonly category: FieldRef<"GroceryAisleOverride", 'String'>
+    readonly updatedAt: FieldRef<"GroceryAisleOverride", 'DateTime'>
+  }
+    
+
+  // Custom InputTypes
+  /**
+   * GroceryAisleOverride findUnique
+   */
+  export type GroceryAisleOverrideFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GroceryAisleOverride
+     */
+    select?: GroceryAisleOverrideSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GroceryAisleOverride
+     */
+    omit?: GroceryAisleOverrideOmit<ExtArgs> | null
+    /**
+     * Filter, which GroceryAisleOverride to fetch.
+     */
+    where: GroceryAisleOverrideWhereUniqueInput
+  }
+
+  /**
+   * GroceryAisleOverride findUniqueOrThrow
+   */
+  export type GroceryAisleOverrideFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GroceryAisleOverride
+     */
+    select?: GroceryAisleOverrideSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GroceryAisleOverride
+     */
+    omit?: GroceryAisleOverrideOmit<ExtArgs> | null
+    /**
+     * Filter, which GroceryAisleOverride to fetch.
+     */
+    where: GroceryAisleOverrideWhereUniqueInput
+  }
+
+  /**
+   * GroceryAisleOverride findFirst
+   */
+  export type GroceryAisleOverrideFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GroceryAisleOverride
+     */
+    select?: GroceryAisleOverrideSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GroceryAisleOverride
+     */
+    omit?: GroceryAisleOverrideOmit<ExtArgs> | null
+    /**
+     * Filter, which GroceryAisleOverride to fetch.
+     */
+    where?: GroceryAisleOverrideWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of GroceryAisleOverrides to fetch.
+     */
+    orderBy?: GroceryAisleOverrideOrderByWithRelationInput | GroceryAisleOverrideOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for GroceryAisleOverrides.
+     */
+    cursor?: GroceryAisleOverrideWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` GroceryAisleOverrides from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` GroceryAisleOverrides.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of GroceryAisleOverrides.
+     */
+    distinct?: GroceryAisleOverrideScalarFieldEnum | GroceryAisleOverrideScalarFieldEnum[]
+  }
+
+  /**
+   * GroceryAisleOverride findFirstOrThrow
+   */
+  export type GroceryAisleOverrideFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GroceryAisleOverride
+     */
+    select?: GroceryAisleOverrideSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GroceryAisleOverride
+     */
+    omit?: GroceryAisleOverrideOmit<ExtArgs> | null
+    /**
+     * Filter, which GroceryAisleOverride to fetch.
+     */
+    where?: GroceryAisleOverrideWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of GroceryAisleOverrides to fetch.
+     */
+    orderBy?: GroceryAisleOverrideOrderByWithRelationInput | GroceryAisleOverrideOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for searching for GroceryAisleOverrides.
+     */
+    cursor?: GroceryAisleOverrideWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` GroceryAisleOverrides from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` GroceryAisleOverrides.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of GroceryAisleOverrides.
+     */
+    distinct?: GroceryAisleOverrideScalarFieldEnum | GroceryAisleOverrideScalarFieldEnum[]
+  }
+
+  /**
+   * GroceryAisleOverride findMany
+   */
+  export type GroceryAisleOverrideFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GroceryAisleOverride
+     */
+    select?: GroceryAisleOverrideSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GroceryAisleOverride
+     */
+    omit?: GroceryAisleOverrideOmit<ExtArgs> | null
+    /**
+     * Filter, which GroceryAisleOverrides to fetch.
+     */
+    where?: GroceryAisleOverrideWhereInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
+     * 
+     * Determine the order of GroceryAisleOverrides to fetch.
+     */
+    orderBy?: GroceryAisleOverrideOrderByWithRelationInput | GroceryAisleOverrideOrderByWithRelationInput[]
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
+     * 
+     * Sets the position for listing GroceryAisleOverrides.
+     */
+    cursor?: GroceryAisleOverrideWhereUniqueInput
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Take `±n` GroceryAisleOverrides from the position of the cursor.
+     */
+    take?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
+     * 
+     * Skip the first `n` GroceryAisleOverrides.
+     */
+    skip?: number
+    /**
+     * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
+     * 
+     * Filter by unique combinations of GroceryAisleOverrides.
+     */
+    distinct?: GroceryAisleOverrideScalarFieldEnum | GroceryAisleOverrideScalarFieldEnum[]
+  }
+
+  /**
+   * GroceryAisleOverride create
+   */
+  export type GroceryAisleOverrideCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GroceryAisleOverride
+     */
+    select?: GroceryAisleOverrideSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GroceryAisleOverride
+     */
+    omit?: GroceryAisleOverrideOmit<ExtArgs> | null
+    /**
+     * The data needed to create a GroceryAisleOverride.
+     */
+    data: XOR<GroceryAisleOverrideCreateInput, GroceryAisleOverrideUncheckedCreateInput>
+  }
+
+  /**
+   * GroceryAisleOverride createMany
+   */
+  export type GroceryAisleOverrideCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to create many GroceryAisleOverrides.
+     */
+    data: GroceryAisleOverrideCreateManyInput | GroceryAisleOverrideCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * GroceryAisleOverride createManyAndReturn
+   */
+  export type GroceryAisleOverrideCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GroceryAisleOverride
+     */
+    select?: GroceryAisleOverrideSelectCreateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the GroceryAisleOverride
+     */
+    omit?: GroceryAisleOverrideOmit<ExtArgs> | null
+    /**
+     * The data used to create many GroceryAisleOverrides.
+     */
+    data: GroceryAisleOverrideCreateManyInput | GroceryAisleOverrideCreateManyInput[]
+    skipDuplicates?: boolean
+  }
+
+  /**
+   * GroceryAisleOverride update
+   */
+  export type GroceryAisleOverrideUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GroceryAisleOverride
+     */
+    select?: GroceryAisleOverrideSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GroceryAisleOverride
+     */
+    omit?: GroceryAisleOverrideOmit<ExtArgs> | null
+    /**
+     * The data needed to update a GroceryAisleOverride.
+     */
+    data: XOR<GroceryAisleOverrideUpdateInput, GroceryAisleOverrideUncheckedUpdateInput>
+    /**
+     * Choose, which GroceryAisleOverride to update.
+     */
+    where: GroceryAisleOverrideWhereUniqueInput
+  }
+
+  /**
+   * GroceryAisleOverride updateMany
+   */
+  export type GroceryAisleOverrideUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * The data used to update GroceryAisleOverrides.
+     */
+    data: XOR<GroceryAisleOverrideUpdateManyMutationInput, GroceryAisleOverrideUncheckedUpdateManyInput>
+    /**
+     * Filter which GroceryAisleOverrides to update
+     */
+    where?: GroceryAisleOverrideWhereInput
+    /**
+     * Limit how many GroceryAisleOverrides to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * GroceryAisleOverride updateManyAndReturn
+   */
+  export type GroceryAisleOverrideUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GroceryAisleOverride
+     */
+    select?: GroceryAisleOverrideSelectUpdateManyAndReturn<ExtArgs> | null
+    /**
+     * Omit specific fields from the GroceryAisleOverride
+     */
+    omit?: GroceryAisleOverrideOmit<ExtArgs> | null
+    /**
+     * The data used to update GroceryAisleOverrides.
+     */
+    data: XOR<GroceryAisleOverrideUpdateManyMutationInput, GroceryAisleOverrideUncheckedUpdateManyInput>
+    /**
+     * Filter which GroceryAisleOverrides to update
+     */
+    where?: GroceryAisleOverrideWhereInput
+    /**
+     * Limit how many GroceryAisleOverrides to update.
+     */
+    limit?: number
+  }
+
+  /**
+   * GroceryAisleOverride upsert
+   */
+  export type GroceryAisleOverrideUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GroceryAisleOverride
+     */
+    select?: GroceryAisleOverrideSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GroceryAisleOverride
+     */
+    omit?: GroceryAisleOverrideOmit<ExtArgs> | null
+    /**
+     * The filter to search for the GroceryAisleOverride to update in case it exists.
+     */
+    where: GroceryAisleOverrideWhereUniqueInput
+    /**
+     * In case the GroceryAisleOverride found by the `where` argument doesn't exist, create a new GroceryAisleOverride with this data.
+     */
+    create: XOR<GroceryAisleOverrideCreateInput, GroceryAisleOverrideUncheckedCreateInput>
+    /**
+     * In case the GroceryAisleOverride was found with the provided `where` argument, update it with this data.
+     */
+    update: XOR<GroceryAisleOverrideUpdateInput, GroceryAisleOverrideUncheckedUpdateInput>
+  }
+
+  /**
+   * GroceryAisleOverride delete
+   */
+  export type GroceryAisleOverrideDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GroceryAisleOverride
+     */
+    select?: GroceryAisleOverrideSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GroceryAisleOverride
+     */
+    omit?: GroceryAisleOverrideOmit<ExtArgs> | null
+    /**
+     * Filter which GroceryAisleOverride to delete.
+     */
+    where: GroceryAisleOverrideWhereUniqueInput
+  }
+
+  /**
+   * GroceryAisleOverride deleteMany
+   */
+  export type GroceryAisleOverrideDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Filter which GroceryAisleOverrides to delete
+     */
+    where?: GroceryAisleOverrideWhereInput
+    /**
+     * Limit how many GroceryAisleOverrides to delete.
+     */
+    limit?: number
+  }
+
+  /**
+   * GroceryAisleOverride without action
+   */
+  export type GroceryAisleOverrideDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    /**
+     * Select specific fields to fetch from the GroceryAisleOverride
+     */
+    select?: GroceryAisleOverrideSelect<ExtArgs> | null
+    /**
+     * Omit specific fields from the GroceryAisleOverride
+     */
+    omit?: GroceryAisleOverrideOmit<ExtArgs> | null
+  }
+
+
+  /**
    * Enums
    */
 
@@ -3089,6 +6414,43 @@ export namespace Prisma {
   };
 
   export type DinnerNudgeLogScalarFieldEnum = (typeof DinnerNudgeLogScalarFieldEnum)[keyof typeof DinnerNudgeLogScalarFieldEnum]
+
+
+  export const GroceryItemScalarFieldEnum: {
+    id: 'id',
+    name: 'name',
+    category: 'category',
+    quantity: 'quantity',
+    status: 'status',
+    sourceType: 'sourceType',
+    sourceId: 'sourceId',
+    addedBy: 'addedBy',
+    addedAt: 'addedAt',
+    gotBy: 'gotBy',
+    gotAt: 'gotAt'
+  };
+
+  export type GroceryItemScalarFieldEnum = (typeof GroceryItemScalarFieldEnum)[keyof typeof GroceryItemScalarFieldEnum]
+
+
+  export const StapleScalarFieldEnum: {
+    id: 'id',
+    name: 'name',
+    category: 'category',
+    active: 'active'
+  };
+
+  export type StapleScalarFieldEnum = (typeof StapleScalarFieldEnum)[keyof typeof StapleScalarFieldEnum]
+
+
+  export const GroceryAisleOverrideScalarFieldEnum: {
+    id: 'id',
+    normalizedName: 'normalizedName',
+    category: 'category',
+    updatedAt: 'updatedAt'
+  };
+
+  export type GroceryAisleOverrideScalarFieldEnum = (typeof GroceryAisleOverrideScalarFieldEnum)[keyof typeof GroceryAisleOverrideScalarFieldEnum]
 
 
   export const SortOrder: {
@@ -3145,6 +6507,13 @@ export namespace Prisma {
    * Reference to a field of type 'DateTime[]'
    */
   export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'Boolean'
+   */
+  export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
     
 
 
@@ -3306,6 +6675,182 @@ export namespace Prisma {
     firedAt?: DateTimeWithAggregatesFilter<"DinnerNudgeLog"> | Date | string
   }
 
+  export type GroceryItemWhereInput = {
+    AND?: GroceryItemWhereInput | GroceryItemWhereInput[]
+    OR?: GroceryItemWhereInput[]
+    NOT?: GroceryItemWhereInput | GroceryItemWhereInput[]
+    id?: UuidFilter<"GroceryItem"> | string
+    name?: StringFilter<"GroceryItem"> | string
+    category?: StringFilter<"GroceryItem"> | string
+    quantity?: StringNullableFilter<"GroceryItem"> | string | null
+    status?: StringFilter<"GroceryItem"> | string
+    sourceType?: StringFilter<"GroceryItem"> | string
+    sourceId?: StringNullableFilter<"GroceryItem"> | string | null
+    addedBy?: UuidFilter<"GroceryItem"> | string
+    addedAt?: DateTimeFilter<"GroceryItem"> | Date | string
+    gotBy?: UuidNullableFilter<"GroceryItem"> | string | null
+    gotAt?: DateTimeNullableFilter<"GroceryItem"> | Date | string | null
+  }
+
+  export type GroceryItemOrderByWithRelationInput = {
+    id?: SortOrder
+    name?: SortOrder
+    category?: SortOrder
+    quantity?: SortOrderInput | SortOrder
+    status?: SortOrder
+    sourceType?: SortOrder
+    sourceId?: SortOrderInput | SortOrder
+    addedBy?: SortOrder
+    addedAt?: SortOrder
+    gotBy?: SortOrderInput | SortOrder
+    gotAt?: SortOrderInput | SortOrder
+  }
+
+  export type GroceryItemWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: GroceryItemWhereInput | GroceryItemWhereInput[]
+    OR?: GroceryItemWhereInput[]
+    NOT?: GroceryItemWhereInput | GroceryItemWhereInput[]
+    name?: StringFilter<"GroceryItem"> | string
+    category?: StringFilter<"GroceryItem"> | string
+    quantity?: StringNullableFilter<"GroceryItem"> | string | null
+    status?: StringFilter<"GroceryItem"> | string
+    sourceType?: StringFilter<"GroceryItem"> | string
+    sourceId?: StringNullableFilter<"GroceryItem"> | string | null
+    addedBy?: UuidFilter<"GroceryItem"> | string
+    addedAt?: DateTimeFilter<"GroceryItem"> | Date | string
+    gotBy?: UuidNullableFilter<"GroceryItem"> | string | null
+    gotAt?: DateTimeNullableFilter<"GroceryItem"> | Date | string | null
+  }, "id">
+
+  export type GroceryItemOrderByWithAggregationInput = {
+    id?: SortOrder
+    name?: SortOrder
+    category?: SortOrder
+    quantity?: SortOrderInput | SortOrder
+    status?: SortOrder
+    sourceType?: SortOrder
+    sourceId?: SortOrderInput | SortOrder
+    addedBy?: SortOrder
+    addedAt?: SortOrder
+    gotBy?: SortOrderInput | SortOrder
+    gotAt?: SortOrderInput | SortOrder
+    _count?: GroceryItemCountOrderByAggregateInput
+    _max?: GroceryItemMaxOrderByAggregateInput
+    _min?: GroceryItemMinOrderByAggregateInput
+  }
+
+  export type GroceryItemScalarWhereWithAggregatesInput = {
+    AND?: GroceryItemScalarWhereWithAggregatesInput | GroceryItemScalarWhereWithAggregatesInput[]
+    OR?: GroceryItemScalarWhereWithAggregatesInput[]
+    NOT?: GroceryItemScalarWhereWithAggregatesInput | GroceryItemScalarWhereWithAggregatesInput[]
+    id?: UuidWithAggregatesFilter<"GroceryItem"> | string
+    name?: StringWithAggregatesFilter<"GroceryItem"> | string
+    category?: StringWithAggregatesFilter<"GroceryItem"> | string
+    quantity?: StringNullableWithAggregatesFilter<"GroceryItem"> | string | null
+    status?: StringWithAggregatesFilter<"GroceryItem"> | string
+    sourceType?: StringWithAggregatesFilter<"GroceryItem"> | string
+    sourceId?: StringNullableWithAggregatesFilter<"GroceryItem"> | string | null
+    addedBy?: UuidWithAggregatesFilter<"GroceryItem"> | string
+    addedAt?: DateTimeWithAggregatesFilter<"GroceryItem"> | Date | string
+    gotBy?: UuidNullableWithAggregatesFilter<"GroceryItem"> | string | null
+    gotAt?: DateTimeNullableWithAggregatesFilter<"GroceryItem"> | Date | string | null
+  }
+
+  export type StapleWhereInput = {
+    AND?: StapleWhereInput | StapleWhereInput[]
+    OR?: StapleWhereInput[]
+    NOT?: StapleWhereInput | StapleWhereInput[]
+    id?: UuidFilter<"Staple"> | string
+    name?: StringFilter<"Staple"> | string
+    category?: StringFilter<"Staple"> | string
+    active?: BoolFilter<"Staple"> | boolean
+  }
+
+  export type StapleOrderByWithRelationInput = {
+    id?: SortOrder
+    name?: SortOrder
+    category?: SortOrder
+    active?: SortOrder
+  }
+
+  export type StapleWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: StapleWhereInput | StapleWhereInput[]
+    OR?: StapleWhereInput[]
+    NOT?: StapleWhereInput | StapleWhereInput[]
+    name?: StringFilter<"Staple"> | string
+    category?: StringFilter<"Staple"> | string
+    active?: BoolFilter<"Staple"> | boolean
+  }, "id">
+
+  export type StapleOrderByWithAggregationInput = {
+    id?: SortOrder
+    name?: SortOrder
+    category?: SortOrder
+    active?: SortOrder
+    _count?: StapleCountOrderByAggregateInput
+    _max?: StapleMaxOrderByAggregateInput
+    _min?: StapleMinOrderByAggregateInput
+  }
+
+  export type StapleScalarWhereWithAggregatesInput = {
+    AND?: StapleScalarWhereWithAggregatesInput | StapleScalarWhereWithAggregatesInput[]
+    OR?: StapleScalarWhereWithAggregatesInput[]
+    NOT?: StapleScalarWhereWithAggregatesInput | StapleScalarWhereWithAggregatesInput[]
+    id?: UuidWithAggregatesFilter<"Staple"> | string
+    name?: StringWithAggregatesFilter<"Staple"> | string
+    category?: StringWithAggregatesFilter<"Staple"> | string
+    active?: BoolWithAggregatesFilter<"Staple"> | boolean
+  }
+
+  export type GroceryAisleOverrideWhereInput = {
+    AND?: GroceryAisleOverrideWhereInput | GroceryAisleOverrideWhereInput[]
+    OR?: GroceryAisleOverrideWhereInput[]
+    NOT?: GroceryAisleOverrideWhereInput | GroceryAisleOverrideWhereInput[]
+    id?: UuidFilter<"GroceryAisleOverride"> | string
+    normalizedName?: StringFilter<"GroceryAisleOverride"> | string
+    category?: StringFilter<"GroceryAisleOverride"> | string
+    updatedAt?: DateTimeFilter<"GroceryAisleOverride"> | Date | string
+  }
+
+  export type GroceryAisleOverrideOrderByWithRelationInput = {
+    id?: SortOrder
+    normalizedName?: SortOrder
+    category?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type GroceryAisleOverrideWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    normalizedName?: string
+    AND?: GroceryAisleOverrideWhereInput | GroceryAisleOverrideWhereInput[]
+    OR?: GroceryAisleOverrideWhereInput[]
+    NOT?: GroceryAisleOverrideWhereInput | GroceryAisleOverrideWhereInput[]
+    category?: StringFilter<"GroceryAisleOverride"> | string
+    updatedAt?: DateTimeFilter<"GroceryAisleOverride"> | Date | string
+  }, "id" | "normalizedName">
+
+  export type GroceryAisleOverrideOrderByWithAggregationInput = {
+    id?: SortOrder
+    normalizedName?: SortOrder
+    category?: SortOrder
+    updatedAt?: SortOrder
+    _count?: GroceryAisleOverrideCountOrderByAggregateInput
+    _max?: GroceryAisleOverrideMaxOrderByAggregateInput
+    _min?: GroceryAisleOverrideMinOrderByAggregateInput
+  }
+
+  export type GroceryAisleOverrideScalarWhereWithAggregatesInput = {
+    AND?: GroceryAisleOverrideScalarWhereWithAggregatesInput | GroceryAisleOverrideScalarWhereWithAggregatesInput[]
+    OR?: GroceryAisleOverrideScalarWhereWithAggregatesInput[]
+    NOT?: GroceryAisleOverrideScalarWhereWithAggregatesInput | GroceryAisleOverrideScalarWhereWithAggregatesInput[]
+    id?: UuidWithAggregatesFilter<"GroceryAisleOverride"> | string
+    normalizedName?: StringWithAggregatesFilter<"GroceryAisleOverride"> | string
+    category?: StringWithAggregatesFilter<"GroceryAisleOverride"> | string
+    updatedAt?: DateTimeWithAggregatesFilter<"GroceryAisleOverride"> | Date | string
+  }
+
   export type PlannedMealCreateInput = {
     id?: string
     date: Date | string
@@ -3465,6 +7010,202 @@ export namespace Prisma {
     audience?: StringFieldUpdateOperationsInput | string
     mealId?: StringFieldUpdateOperationsInput | string
     firedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type GroceryItemCreateInput = {
+    id?: string
+    name: string
+    category: string
+    quantity?: string | null
+    status?: string
+    sourceType: string
+    sourceId?: string | null
+    addedBy: string
+    addedAt?: Date | string
+    gotBy?: string | null
+    gotAt?: Date | string | null
+  }
+
+  export type GroceryItemUncheckedCreateInput = {
+    id?: string
+    name: string
+    category: string
+    quantity?: string | null
+    status?: string
+    sourceType: string
+    sourceId?: string | null
+    addedBy: string
+    addedAt?: Date | string
+    gotBy?: string | null
+    gotAt?: Date | string | null
+  }
+
+  export type GroceryItemUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
+    quantity?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    sourceType?: StringFieldUpdateOperationsInput | string
+    sourceId?: NullableStringFieldUpdateOperationsInput | string | null
+    addedBy?: StringFieldUpdateOperationsInput | string
+    addedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    gotBy?: NullableStringFieldUpdateOperationsInput | string | null
+    gotAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type GroceryItemUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
+    quantity?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    sourceType?: StringFieldUpdateOperationsInput | string
+    sourceId?: NullableStringFieldUpdateOperationsInput | string | null
+    addedBy?: StringFieldUpdateOperationsInput | string
+    addedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    gotBy?: NullableStringFieldUpdateOperationsInput | string | null
+    gotAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type GroceryItemCreateManyInput = {
+    id?: string
+    name: string
+    category: string
+    quantity?: string | null
+    status?: string
+    sourceType: string
+    sourceId?: string | null
+    addedBy: string
+    addedAt?: Date | string
+    gotBy?: string | null
+    gotAt?: Date | string | null
+  }
+
+  export type GroceryItemUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
+    quantity?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    sourceType?: StringFieldUpdateOperationsInput | string
+    sourceId?: NullableStringFieldUpdateOperationsInput | string | null
+    addedBy?: StringFieldUpdateOperationsInput | string
+    addedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    gotBy?: NullableStringFieldUpdateOperationsInput | string | null
+    gotAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type GroceryItemUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
+    quantity?: NullableStringFieldUpdateOperationsInput | string | null
+    status?: StringFieldUpdateOperationsInput | string
+    sourceType?: StringFieldUpdateOperationsInput | string
+    sourceId?: NullableStringFieldUpdateOperationsInput | string | null
+    addedBy?: StringFieldUpdateOperationsInput | string
+    addedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+    gotBy?: NullableStringFieldUpdateOperationsInput | string | null
+    gotAt?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
+  }
+
+  export type StapleCreateInput = {
+    id?: string
+    name: string
+    category: string
+    active?: boolean
+  }
+
+  export type StapleUncheckedCreateInput = {
+    id?: string
+    name: string
+    category: string
+    active?: boolean
+  }
+
+  export type StapleUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
+    active?: BoolFieldUpdateOperationsInput | boolean
+  }
+
+  export type StapleUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
+    active?: BoolFieldUpdateOperationsInput | boolean
+  }
+
+  export type StapleCreateManyInput = {
+    id?: string
+    name: string
+    category: string
+    active?: boolean
+  }
+
+  export type StapleUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
+    active?: BoolFieldUpdateOperationsInput | boolean
+  }
+
+  export type StapleUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    name?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
+    active?: BoolFieldUpdateOperationsInput | boolean
+  }
+
+  export type GroceryAisleOverrideCreateInput = {
+    id?: string
+    normalizedName: string
+    category: string
+    updatedAt?: Date | string
+  }
+
+  export type GroceryAisleOverrideUncheckedCreateInput = {
+    id?: string
+    normalizedName: string
+    category: string
+    updatedAt?: Date | string
+  }
+
+  export type GroceryAisleOverrideUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    normalizedName?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type GroceryAisleOverrideUncheckedUpdateInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    normalizedName?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type GroceryAisleOverrideCreateManyInput = {
+    id?: string
+    normalizedName: string
+    category: string
+    updatedAt?: Date | string
+  }
+
+  export type GroceryAisleOverrideUpdateManyMutationInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    normalizedName?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
+  }
+
+  export type GroceryAisleOverrideUncheckedUpdateManyInput = {
+    id?: StringFieldUpdateOperationsInput | string
+    normalizedName?: StringFieldUpdateOperationsInput | string
+    category?: StringFieldUpdateOperationsInput | string
+    updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
   export type UuidFilter<$PrismaModel = never> = {
@@ -3696,6 +7437,128 @@ export namespace Prisma {
     firedAt?: SortOrder
   }
 
+  export type DateTimeNullableFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+  }
+
+  export type GroceryItemCountOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    category?: SortOrder
+    quantity?: SortOrder
+    status?: SortOrder
+    sourceType?: SortOrder
+    sourceId?: SortOrder
+    addedBy?: SortOrder
+    addedAt?: SortOrder
+    gotBy?: SortOrder
+    gotAt?: SortOrder
+  }
+
+  export type GroceryItemMaxOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    category?: SortOrder
+    quantity?: SortOrder
+    status?: SortOrder
+    sourceType?: SortOrder
+    sourceId?: SortOrder
+    addedBy?: SortOrder
+    addedAt?: SortOrder
+    gotBy?: SortOrder
+    gotAt?: SortOrder
+  }
+
+  export type GroceryItemMinOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    category?: SortOrder
+    quantity?: SortOrder
+    status?: SortOrder
+    sourceType?: SortOrder
+    sourceId?: SortOrder
+    addedBy?: SortOrder
+    addedAt?: SortOrder
+    gotBy?: SortOrder
+    gotAt?: SortOrder
+  }
+
+  export type DateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>
+  }
+
+  export type BoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
+  export type StapleCountOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    category?: SortOrder
+    active?: SortOrder
+  }
+
+  export type StapleMaxOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    category?: SortOrder
+    active?: SortOrder
+  }
+
+  export type StapleMinOrderByAggregateInput = {
+    id?: SortOrder
+    name?: SortOrder
+    category?: SortOrder
+    active?: SortOrder
+  }
+
+  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
+  }
+
+  export type GroceryAisleOverrideCountOrderByAggregateInput = {
+    id?: SortOrder
+    normalizedName?: SortOrder
+    category?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type GroceryAisleOverrideMaxOrderByAggregateInput = {
+    id?: SortOrder
+    normalizedName?: SortOrder
+    category?: SortOrder
+    updatedAt?: SortOrder
+  }
+
+  export type GroceryAisleOverrideMinOrderByAggregateInput = {
+    id?: SortOrder
+    normalizedName?: SortOrder
+    category?: SortOrder
+    updatedAt?: SortOrder
+  }
+
   export type StringFieldUpdateOperationsInput = {
     set?: string
   }
@@ -3706,6 +7569,14 @@ export namespace Prisma {
 
   export type NullableStringFieldUpdateOperationsInput = {
     set?: string | null
+  }
+
+  export type NullableDateTimeFieldUpdateOperationsInput = {
+    set?: Date | string | null
+  }
+
+  export type BoolFieldUpdateOperationsInput = {
+    set?: boolean
   }
 
   export type NestedUuidFilter<$PrismaModel = never> = {
@@ -3865,6 +7736,44 @@ export namespace Prisma {
     _count?: NestedIntNullableFilter<$PrismaModel>
     _min?: NestedStringNullableFilter<$PrismaModel>
     _max?: NestedStringNullableFilter<$PrismaModel>
+  }
+
+  export type NestedDateTimeNullableFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableFilter<$PrismaModel> | Date | string | null
+  }
+
+  export type NestedDateTimeNullableWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: Date | string | DateTimeFieldRefInput<$PrismaModel> | null
+    in?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    notIn?: Date[] | string[] | ListDateTimeFieldRefInput<$PrismaModel> | null
+    lt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    lte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gt?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    gte?: Date | string | DateTimeFieldRefInput<$PrismaModel>
+    not?: NestedDateTimeNullableWithAggregatesFilter<$PrismaModel> | Date | string | null
+    _count?: NestedIntNullableFilter<$PrismaModel>
+    _min?: NestedDateTimeNullableFilter<$PrismaModel>
+    _max?: NestedDateTimeNullableFilter<$PrismaModel>
+  }
+
+  export type NestedBoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
+  export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
   }
 
 
