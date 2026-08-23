@@ -21,11 +21,6 @@ export function GroceriesPage() {
   const queryClient = useQueryClient()
   const [flashItemId, setFlashItemId] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
-  // "Leave it" or a correction both retire the one-time prompt for this item
-  // (AC4) — client-side is enough here, since either action changes what the
-  // next fetch renders (a new category, in the correction case) or simply
-  // never needs to be asked again this session (the dismiss case).
-  const [dismissedCorrectionIds, setDismissedCorrectionIds] = useState<Set<string>>(new Set())
 
   const canAdd = id !== FAMILY_PROFILE_ID
   const canCorrect = tier >= 4
@@ -137,10 +132,6 @@ export function GroceriesPage() {
       onAdd={(name) => addItem.mutateAsync(name).then(() => {})}
       onTapStaple={(staple: Staple) => addItem.mutate(staple.name)}
       onCorrect={(item, category) => correctAisle.mutate({ item, category })}
-      onDismissCorrection={(item) =>
-        setDismissedCorrectionIds((prev) => new Set(prev).add(item.id))
-      }
-      dismissedCorrectionIds={dismissedCorrectionIds}
     />
   )
 }

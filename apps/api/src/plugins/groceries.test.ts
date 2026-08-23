@@ -134,6 +134,20 @@ describe('POST /api/groceries', () => {
     const res = await addItem(parentCookie, { name: 'Milk' })
     expect(res.json().category).toBe('Pantry')
   })
+
+  it('hasOverride is false for a fresh dictionary or Other filing', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    expect((await addItem(cookie, { name: 'Milk' })).json().hasOverride).toBe(false)
+    expect((await addItem(cookie, { name: 'Flibbertigibbet' })).json().hasOverride).toBe(false)
+  })
+
+  it('hasOverride is true once a per-family override exists for the name', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    await mealPrisma.groceryAisleOverride.create({
+      data: { normalizedName: 'milk', category: 'Pantry' },
+    })
+    expect((await addItem(cookie, { name: 'Milk' })).json().hasOverride).toBe(true)
+  })
 })
 
 // ─── GET /api/groceries ────────────────────────────────────────────────────────
@@ -181,6 +195,30 @@ describe('POST /api/groceries/:id/aisle', () => {
 
     const nextAdd = (await addItem(cookie, { name: 'kombucha' })).json()
     expect(nextAdd.category).toBe('Pantry')
+    expect(nextAdd.hasOverride).toBe(true)
+  })
+
+  it('"Leave it" (category: Other) teaches an override too, retiring the one-time prompt', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const created = (await addItem(cookie, { name: 'Paper towels' })).json()
+    expect(created.category).toBe('Other')
+    expect(created.hasOverride).toBe(false)
+
+    const left = await app.inject({
+      method: 'POST',
+      url: `/api/groceries/${created.id}/aisle`,
+      headers: { cookie },
+      payload: { category: 'Other' },
+    })
+    expect(left.statusCode).toBe(200)
+    expect(left.json().category).toBe('Other')
+    expect(left.json().hasOverride).toBe(true)
+
+    // A fresh fetch of the same item — not just the mutation's own response —
+    // still reports hasOverride, which is what actually keeps the prompt gone.
+    const list = await app.inject({ method: 'GET', url: '/api/groceries', headers: { cookie } })
+    const refetched = list.json().items.find((i: { id: string }) => i.id === created.id)
+    expect(refetched.hasOverride).toBe(true)
   })
 
   it('rejects a category outside the fixed aisle list with 400', async () => {

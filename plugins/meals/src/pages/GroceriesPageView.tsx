@@ -19,16 +19,17 @@ export interface GroceriesPageViewProps {
   flashItemId: string | null
   /** A brief, user-facing line for the last failed add/correct — the "no
       blind catch" rule (CLAUDE.md): a family member on the fridge tablet gets
-      no devtools, so a failed mutation must say so, not vanish. */
+      no devtools, so a failed mutation must say so, not vanish. Rendered next
+      to the add bar on both layouts — where the user's eyes already are right
+      after a failed attempt, not the page header, which is off-screen once
+      the list has scrolled. */
   errorMessage: string | null
   onAdd: (name: string) => Promise<void>
   onTapStaple: (staple: Staple) => void
+  /** `category` is one of the real aisles, or `Other` — "Leave it" (below)
+      calls this with `Other`, which teaches the override that makes the
+      one-time prompt (AC4) actually stay gone (see `item.hasOverride`). */
   onCorrect: (item: GroceryItem, category: string) => void
-  /** "Leave it in Other" — the other half of AC4's ONE-TIME chip row: a
-      genuinely miscellaneous item (paper towels, batteries) must have a way
-      to dismiss the prompt, or it wraps the row forever. */
-  onDismissCorrection: (item: GroceryItem) => void
-  dismissedCorrectionIds: ReadonlySet<string>
 }
 
 const CORRECTABLE_AISLES = AISLES.filter((a) => a !== 'Other')
@@ -48,8 +49,6 @@ export function GroceriesPageView({
   onAdd,
   onTapStaple,
   onCorrect,
-  onDismissCorrection,
-  dismissedCorrectionIds,
 }: GroceriesPageViewProps) {
   const groups = useMemo(() => {
     const byAisle = new Map<string, GroceryItem[]>()
@@ -64,11 +63,16 @@ export function GroceriesPageView({
   return (
     <PageContainer width="list">
       <h1 className="text-page-title text-foreground">Groceries</h1>
-      {errorMessage && <p className="text-sm-token mt-1 text-destructive">{errorMessage}</p>}
 
       {canAdd && (
         <div className="hidden md:block">
-          <AddBar staples={staples} onAdd={onAdd} onTapStaple={onTapStaple} layout="wide" />
+          <AddBar
+            staples={staples}
+            errorMessage={errorMessage}
+            onAdd={onAdd}
+            onTapStaple={onTapStaple}
+            layout="wide"
+          />
         </div>
       )}
 
@@ -93,11 +97,11 @@ export function GroceriesPageView({
                   key={item.id}
                   item={item}
                   flash={item.id === flashItemId}
-                  showCorrection={
-                    canCorrect && item.category === 'Other' && !dismissedCorrectionIds.has(item.id)
-                  }
+                  // hasOverride comes from the server, not component state —
+                  // "one-time" (AC4) has to survive a reload of the fridge
+                  // tablet, not just last until the tab closes.
+                  showCorrection={canCorrect && item.category === 'Other' && !item.hasOverride}
                   onCorrect={onCorrect}
-                  onDismissCorrection={onDismissCorrection}
                 />
               ))}
             </section>
@@ -109,7 +113,13 @@ export function GroceriesPageView({
         // `fixed`, not `sticky` — a short list doesn't fill the viewport, and
         // the thumb zone (AC3) has to hold regardless of list length.
         <div className="fixed inset-x-0 bottom-[calc(var(--spacing-tab-bar)+env(safe-area-inset-bottom))] z-20 border-t border-border bg-background pt-2 pb-2 md:hidden">
-          <AddBar staples={staples} onAdd={onAdd} onTapStaple={onTapStaple} layout="narrow" />
+          <AddBar
+            staples={staples}
+            errorMessage={errorMessage}
+            onAdd={onAdd}
+            onTapStaple={onTapStaple}
+            layout="narrow"
+          />
         </div>
       )}
     </PageContainer>
@@ -121,13 +131,11 @@ function GroceryRow({
   flash,
   showCorrection,
   onCorrect,
-  onDismissCorrection,
 }: {
   item: GroceryItem
   flash: boolean
   showCorrection: boolean
   onCorrect: (item: GroceryItem, category: string) => void
-  onDismissCorrection: (item: GroceryItem) => void
 }) {
   return (
     <ListRow
@@ -164,7 +172,7 @@ function GroceryRow({
             ))}
             <button
               type="button"
-              onClick={() => onDismissCorrection(item)}
+              onClick={() => onCorrect(item, 'Other')}
               className="text-xs-body text-muted-foreground underline-offset-2 hover:underline"
             >
               Leave it
@@ -178,11 +186,13 @@ function GroceryRow({
 
 function AddBar({
   staples,
+  errorMessage,
   onAdd,
   onTapStaple,
   layout,
 }: {
   staples: Staple[]
+  errorMessage: string | null
   onAdd: (name: string) => Promise<void>
   onTapStaple: (staple: Staple) => void
   layout: 'wide' | 'narrow'
@@ -197,7 +207,7 @@ function AddBar({
       setValue('')
     } catch {
       // The container already logged and surfaced the failure (errorMessage
-      // above) — keeping the typed text here is the recovery: a family
+      // below) — keeping the typed text here is the recovery: a family
       // member shouldn't have to retype "chicken thighs" after a blip.
     }
   }
@@ -241,11 +251,16 @@ function AddBar({
     </div>
   )
 
+  const error = errorMessage && <p className="text-sm-token text-destructive">{errorMessage}</p>
+
   if (layout === 'wide') {
     return (
-      <div className="flex items-center gap-4 border-b border-border pb-4">
-        <div className="max-w-xs flex-1">{bar}</div>
-        {chipStrip}
+      <div className="flex flex-col gap-2 border-b border-border pb-4">
+        <div className="flex items-center gap-4">
+          <div className="max-w-xs flex-1">{bar}</div>
+          {chipStrip}
+        </div>
+        {error}
       </div>
     )
   }
@@ -254,6 +269,7 @@ function AddBar({
     <div className="flex flex-col gap-2 px-4">
       {chipStrip}
       {bar}
+      {error}
     </div>
   )
 }

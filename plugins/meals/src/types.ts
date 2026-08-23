@@ -45,6 +45,11 @@ export interface GroceryItem {
   sourceId: string | null
   addedBy: string
   note: string | null
+  /** A family-wide override already exists for this item's normalized name —
+      the "Which aisle?" correction prompt is one-time (AC4) and must not
+      resurface once triaged, including a "Leave it" dismissal (which teaches
+      an override of `Other`). */
+  hasOverride: boolean
 }
 
 export interface GroceriesResponse {

@@ -41,7 +41,7 @@ function noteFor(
   return adder ? `${adder.name} added these` : null
 }
 
-function serializeItem(item: GroceryItemRow, note: string | null) {
+function serializeItem(item: GroceryItemRow, note: string | null, hasOverride: boolean) {
   return {
     id: item.id,
     name: item.name,
@@ -52,6 +52,12 @@ function serializeItem(item: GroceryItemRow, note: string | null) {
     sourceId: item.sourceId,
     addedBy: item.addedBy,
     note,
+    // A family-wide override already exists for this name — the "Which
+    // aisle?" prompt is genuinely one-time (AC4): it must not resurface for
+    // an item that was already triaged, including "Leave it" (which teaches
+    // an override of `Other` — see the aisle route). Client-visible so the
+    // prompt's one-time-ness survives a reload, not just component state.
+    hasOverride,
   }
 }
 
@@ -72,6 +78,14 @@ async function serializeItems(items: GroceryItemRow[]) {
     : []
   const profileById = new Map(adders.map((p) => [p.id, p]))
 
+  const normalizedNames = [...new Set(items.map((i) => normalizeItemName(i.name)))]
+  const overrides = normalizedNames.length
+    ? await mealPrisma.groceryAisleOverride.findMany({
+        where: { normalizedName: { in: normalizedNames } },
+      })
+    : []
+  const overriddenNames = new Set(overrides.map((o) => o.normalizedName))
+
   return items
     .slice()
     .sort((a, b) => {
@@ -79,7 +93,13 @@ async function serializeItems(items: GroceryItemRow[]) {
       if (byAisle !== 0) return byAisle
       return a.addedAt.getTime() - b.addedAt.getTime()
     })
-    .map((item) => serializeItem(item, noteFor(item, mealsById, profileById)))
+    .map((item) =>
+      serializeItem(
+        item,
+        noteFor(item, mealsById, profileById),
+        overriddenNames.has(normalizeItemName(item.name))
+      )
+    )
 }
 
 const groceriesPlugin: FastifyPluginAsync = async (fastify) => {

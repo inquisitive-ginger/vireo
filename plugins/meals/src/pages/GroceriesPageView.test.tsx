@@ -14,6 +14,7 @@ function item(overrides: Partial<GroceryItem> = {}): GroceryItem {
     sourceId: null,
     addedBy: 'profile-1',
     note: null,
+    hasOverride: false,
     ...overrides,
   }
 }
@@ -35,8 +36,6 @@ function renderView(props: Partial<Parameters<typeof GroceriesPageView>[0]> = {}
       onAdd={vi.fn().mockResolvedValue(undefined)}
       onTapStaple={vi.fn()}
       onCorrect={vi.fn()}
-      onDismissCorrection={vi.fn()}
-      dismissedCorrectionIds={new Set()}
       {...props}
     />
   )
@@ -67,9 +66,19 @@ describe('GroceriesPageView', () => {
     expect(screen.getByText(/Nothing on the list/)).toBeInTheDocument()
   })
 
-  it('shows the last error inline — no silent failure', () => {
+  it('shows the last error next to the add bar — not the page header, which scrolls off on a long list', () => {
     renderView({ errorMessage: "Couldn't add that — try again." })
-    expect(screen.getByText("Couldn't add that — try again.")).toBeInTheDocument()
+    // Both the wide and narrow add bars render in the DOM (the split is a
+    // CSS breakpoint jsdom doesn't see), so the message appears twice — once
+    // per add bar, each sharing that add bar's own container with its input
+    // (never the page header's, which scrolls off a long list).
+    const messages = screen.getAllByText("Couldn't add that — try again.")
+    const inputs = screen.getAllByPlaceholderText('Add to the list…')
+    expect(messages).toHaveLength(inputs.length)
+    for (const message of messages) {
+      const shared = message.closest('div')
+      expect(shared?.querySelector('input[placeholder="Add to the list…"]')).toBeTruthy()
+    }
   })
 
   it('adds an item by typing and pressing Enter', async () => {
@@ -129,20 +138,18 @@ describe('GroceriesPageView', () => {
     expect(onCorrect).toHaveBeenCalledWith(other, 'Produce')
   })
 
-  it('"Leave it" dismisses the correction prompt without refiling', () => {
+  it('"Leave it" teaches an Other override instead of picking an aisle', () => {
     const onCorrect = vi.fn()
-    const onDismissCorrection = vi.fn()
     const other = item({ name: 'Paper towels', category: 'Other' })
-    renderView({ items: [other], onCorrect, onDismissCorrection })
+    renderView({ items: [other], onCorrect })
 
     fireEvent.click(screen.getByRole('button', { name: 'Leave it' }))
-    expect(onDismissCorrection).toHaveBeenCalledWith(other)
-    expect(onCorrect).not.toHaveBeenCalled()
+    expect(onCorrect).toHaveBeenCalledWith(other, 'Other')
   })
 
-  it('a dismissed item shows no correction row', () => {
-    const other = item({ id: 'other-1', category: 'Other' })
-    renderView({ items: [other], dismissedCorrectionIds: new Set(['other-1']) })
+  it('an item with a server-taught override (dismissed or corrected before) shows no correction row — survives a reload', () => {
+    const other = item({ id: 'other-1', category: 'Other', hasOverride: true })
+    renderView({ items: [other] })
     expect(screen.queryByText('Which aisle?')).not.toBeInTheDocument()
   })
 
