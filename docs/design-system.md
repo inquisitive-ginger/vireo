@@ -1638,7 +1638,7 @@ thumb-friendly, 1 tap to any pinned destination.
 ```
 
 - **Tab height:** 56px minimum touch target
-- **Active tab:** icon on a `bg-primary/13` pill + label in `--primary` semibold — colour alone cannot separate olive from the muted ink (ADR 065)
+- **Active tab:** icon **and label together** on a `bg-primary/13` `rounded-panel` wash, label in `--primary` semibold — colour alone cannot separate olive from the muted ink (ADR 065). Same recipe as the sidebar's active row; the wash never covers the icon alone (#123, 2026-08-23).
 - **Inactive tab:** icon + label in `--muted-foreground`
 - **Tier filtering:** plugin tabs are filtered at the tab level using the same `minTier` convention as the sidebar.
 - **Overflow:** the **More** tab opens a bottom `Sheet` listing the remaining tier-visible modules, and shows active state when an overflowed route is current; when everything fits in 5 tabs, no More tab renders. Pinning is registry order in `plugins.json`; the tab-pinning management UI is deferred to M9 (marketplace).

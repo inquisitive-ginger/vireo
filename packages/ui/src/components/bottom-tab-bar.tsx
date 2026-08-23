@@ -36,20 +36,22 @@ function TabItem({
       onClick={onClick}
       aria-current={active ? 'page' : undefined}
       className={cn(
-        'flex-1 flex flex-col items-center justify-center gap-0.5 min-h-tab-bar cursor-pointer transition-colors duration-[var(--duration-fast)]',
+        'flex-1 flex flex-col items-center justify-center min-h-tab-bar cursor-pointer transition-colors duration-[var(--duration-fast)]',
         active ? 'text-primary' : 'text-muted-foreground'
       )}
     >
       <span
         className={cn(
-          'grid h-6 place-items-center rounded-full px-4 transition-colors duration-[var(--duration-fast)]',
+          'flex flex-col items-center gap-0.5 rounded-panel px-3 py-1 transition-colors duration-[var(--duration-fast)]',
           active && 'bg-primary/13'
         )}
       >
         {icon}
-      </span>
-      <span className={cn('text-xs-token leading-none', active ? 'font-semibold' : 'font-medium')}>
-        {label}
+        <span
+          className={cn('text-xs-token leading-none', active ? 'font-semibold' : 'font-medium')}
+        >
+          {label}
+        </span>
       </span>
     </button>
   )
