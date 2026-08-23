@@ -98,7 +98,7 @@ export function MonthGrid({
                   <div className="flex h-5 items-center justify-between">
                     <span
                       className={cn(
-                        'flex h-6 w-6 items-center justify-center rounded-full text-sm-token',
+                        'flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-sm-token',
                         isToday
                           ? 'bg-primary font-semibold text-primary-foreground'
                           : 'text-muted-foreground',
