@@ -48,3 +48,50 @@ model DinnerNudgeLog {
   @@map("dinner_nudge_log")
   @@schema("meals")
 }
+
+// source_id is text, not a FK — a meal push (source_type 'meal') stores the
+// planned_meal id, itself a uuid in the SAME schema, but a plain uuid column
+// would forbid a future source that isn't one (spec.md leaves it open).
+// category is the aisle, assigned by the dictionary on add or a per-family
+// override going forward (grocery-filing.ts) — never redesigned per-row.
+model GroceryItem {
+  id         String    @id @default(uuid()) @db.Uuid
+  name       String
+  category   String
+  quantity   String?
+  status     String    @default("needed")
+  sourceType String    @map("source_type")
+  sourceId   String?   @map("source_id")
+  addedBy    String    @map("added_by") @db.Uuid
+  addedAt    DateTime  @default(now()) @map("added_at") @db.Timestamptz(6)
+  gotBy      String?   @map("got_by") @db.Uuid
+  gotAt      DateTime? @map("got_at") @db.Timestamptz(6)
+
+  @@map("grocery_items")
+  @@schema("meals")
+}
+
+model Staple {
+  id       String  @id @default(uuid()) @db.Uuid
+  name     String
+  category String
+  active   Boolean @default(true)
+
+  @@map("staples")
+  @@schema("meals")
+}
+
+// The "one small table" design.md calls for corrections to teach (§M5/6) — not
+// in spec.md's schema block, which predates the M5/1 design session that
+// settled per-family filing corrections. Keyed by the same normalizeItemName()
+// shape the dictionary and needs-push dedupe use, so a correction on "Snap
+// Peas" also refiles "snap peas," on the next add.
+model GroceryAisleOverride {
+  id             String   @id @default(uuid()) @db.Uuid
+  normalizedName String   @unique @map("normalized_name")
+  category       String
+  updatedAt      DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+
+  @@map("grocery_aisle_overrides")
+  @@schema("meals")
+}

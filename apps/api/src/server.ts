@@ -14,6 +14,7 @@ import choresPlugin from './plugins/chores'
 import calendarPlugin from './plugins/calendar'
 import rewardsPlugin from './plugins/rewards'
 import mealsPlugin from './plugins/meals'
+import groceriesPlugin from './plugins/groceries'
 import devPlugin from './plugins/dev'
 
 export async function buildServer() {
@@ -46,6 +47,7 @@ export async function buildServer() {
       await api.register(calendarPlugin)
       await api.register(rewardsPlugin)
       await api.register(mealsPlugin)
+      await api.register(groceriesPlugin)
 
       api.get('/health', async () => ({ status: 'ok' }))
 

@@ -54,6 +54,7 @@ function renderView(props: Partial<Parameters<typeof MealsPageView>[0]> = {}) {
       needCount={2}
       canManage
       canClaim
+      canPushNeeds
       onPrevWeek={vi.fn()}
       onNextWeek={vi.fn()}
       onThisWeek={vi.fn()}
@@ -61,6 +62,7 @@ function renderView(props: Partial<Parameters<typeof MealsPageView>[0]> = {}) {
       onEdit={vi.fn()}
       onClaim={vi.fn()}
       onRemove={vi.fn()}
+      onPushNeeds={vi.fn()}
       {...props}
     />
   )
@@ -145,6 +147,27 @@ describe('MealsPageView', () => {
       canManage: false,
     })
     expect(screen.getByText(/Dad cooked/)).toBeInTheDocument()
+  })
+
+  it('offers a "N things needed" text link when the meal needs items, and reports the meal', () => {
+    const onPushNeeds = vi.fn()
+    const needy = meal({ needs: 'chicken thighs, broccoli' })
+    renderView({ days: weekOf({ '2026-08-13': needy }), canManage: false, onPushNeeds })
+    screen.getByRole('button', { name: '2 things needed' }).click()
+    expect(onPushNeeds).toHaveBeenCalledWith(needy)
+  })
+
+  it('has no needs-push link when the meal needs nothing', () => {
+    renderView({ days: weekOf({ '2026-08-13': meal({ needs: null }) }) })
+    expect(screen.queryByText(/things? needed/)).not.toBeInTheDocument()
+  })
+
+  it('hides the needs-push link for the unattended family dashboard', () => {
+    renderView({
+      days: weekOf({ '2026-08-13': meal({ needs: 'chicken thighs' }) }),
+      canPushNeeds: false,
+    })
+    expect(screen.queryByText(/things? needed/)).not.toBeInTheDocument()
   })
 
   it('never claims for a viewer below tier 3', () => {

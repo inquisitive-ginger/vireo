@@ -14,6 +14,7 @@ type Actions =
   | 'reopen'
   | 'decide'
   | 'punch'
+  | 'check'
   | 'manage'
 type Subjects =
   | 'platform.Profile'
@@ -31,6 +32,7 @@ type Subjects =
   | 'rewards.PunchCard'
   | 'rewards.Grant'
   | 'meals.PlannedMeal'
+  | 'meals.GroceryItem'
   | 'all'
 
 export type AppAbility = PrismaAbility<[Actions, Subjects]>
@@ -93,17 +95,27 @@ export function createAbility(profile: Profile, overrides: PermissionOverride[])
     // Claiming an unclaimed dinner (spec.md: tier 3+). `update` is the capability;
     // the route narrows it to claim-only — full edits stay behind `manage`.
     can('update', 'meals.PlannedMeal')
+    can('view', 'meals.GroceryItem')
+    can('create', 'meals.GroceryItem')
+    can('check', 'meals.GroceryItem')
   } else if (profile.tier >= 2) {
     can('view', 'platform.Plugin')
     can('create', 'family-feed.Post')
     can('view', 'chores.Task')
     can('view', 'calendar.Event')
     can('view', 'meals.PlannedMeal')
+    can('view', 'meals.GroceryItem')
+    can('create', 'meals.GroceryItem')
+    can('check', 'meals.GroceryItem')
   } else {
     can('view', 'platform.Plugin')
     can('view', 'chores.Task')
     can('view', 'calendar.Event')
     can('view', 'meals.PlannedMeal')
+    // Tier 1+ adds to the grocery list (spec.md §Permissions) — deliberate,
+    // low-stakes participation; checking items off stays tier 2+.
+    can('view', 'meals.GroceryItem')
+    can('create', 'meals.GroceryItem')
   }
 
   for (const override of overrides) {

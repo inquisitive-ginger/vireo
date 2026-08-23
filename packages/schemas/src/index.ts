@@ -225,6 +225,51 @@ export const MealInputSchema = z.object({
 
 export type MealInput = z.infer<typeof MealInputSchema>
 
+// ─── Groceries (M5/6) ──────────────────────────────────────────────────────────
+
+/** The fixed walk order (design.md §M5/6, restated §M5/7) — never re-sorted per
+    family. The canonical list: `grocery-filing.ts`'s dictionary and a
+    correction's `category` both resolve to one of these. */
+export const GROCERY_AISLES = [
+  'Produce',
+  'Bakery',
+  'Meat',
+  'Dairy',
+  'Pantry',
+  'Frozen',
+  'Other',
+] as const
+export type GroceryAisle = (typeof GROCERY_AISLES)[number]
+
+export const GroceryAisleSchema = z.enum(GROCERY_AISLES)
+
+// category is never client-set on create — the server files it (dictionary or
+// override) so the needs push, which creates items with no UI in the loop at
+// all, gets the exact same filing a manual add does (kickoff decision: file at
+// POST time, one source of truth).
+export const GroceryItemCreateSchema = z.object({
+  name: z.string().trim().min(1, 'name is required').max(120),
+  quantity: OptionalText,
+})
+
+export type GroceryItemCreateInput = z.infer<typeof GroceryItemCreateSchema>
+
+// A correction (the "Which aisle?" chip row, AC4/AC5): re-files this item and
+// teaches a per-family override for the next add of the same normalized name.
+export const GroceryAisleCorrectionSchema = z.object({
+  category: GroceryAisleSchema,
+})
+
+export type GroceryAisleCorrectionInput = z.infer<typeof GroceryAisleCorrectionSchema>
+
+// The week page's "N things needed" text link (AC7): comma-splits the meal's
+// `needs` free text into items, each noted with its meal.
+export const GroceryPushNeedsSchema = z.object({
+  mealId: UuidSchema,
+})
+
+export type GroceryPushNeedsInput = z.infer<typeof GroceryPushNeedsSchema>
+
 // ─── Bug reports ──────────────────────────────────────────────────────────────
 
 /** The lifecycle a report moves through (ADR 046). `deployed` is the only status the

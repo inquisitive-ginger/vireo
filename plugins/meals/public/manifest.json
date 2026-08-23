@@ -3,10 +3,10 @@
   "version": "0.0.1",
   "remoteEntry": "http://localhost:3015/assets/remoteEntry.js",
   "exposes": ["./Plugin", "./widgets/Tonight"],
-  "routes": ["/meals"],
+  "routes": ["/meals", "/groceries"],
   "schema": "meals",
   "events": {
-    "publishes": ["meals.dinner.planned", "meals.dinner.claimed"],
+    "publishes": ["meals.dinner.planned", "meals.dinner.claimed", "meals.grocery.added"],
     "subscribes": []
   },
   "widgets": [

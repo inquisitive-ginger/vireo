@@ -178,6 +178,26 @@ export const PERMISSION_REGISTRY = {
     action: 'update',
     subject: 'meals.PlannedMeal',
   },
+  'meals.grocery.view': {
+    label: 'View the grocery list',
+    module: 'meals',
+    action: 'view',
+    subject: 'meals.GroceryItem',
+  },
+  // Kids adding to the grocery list is deliberate (spec.md §Permissions) —
+  // low-stakes participation for tier 1–2, and it closes the try-bite loop.
+  'meals.grocery.add': {
+    label: 'Add to the grocery list',
+    module: 'meals',
+    action: 'create',
+    subject: 'meals.GroceryItem',
+  },
+  'meals.grocery.check': {
+    label: 'Check items off the grocery list',
+    module: 'meals',
+    action: 'check',
+    subject: 'meals.GroceryItem',
+  },
 } as const
 
 export type PermissionString = keyof typeof PERMISSION_REGISTRY

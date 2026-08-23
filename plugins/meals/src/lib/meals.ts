@@ -80,3 +80,9 @@ export function needsCookLabel(count: number): string {
   if (count === 0) return "every day's covered"
   return count === 1 ? '1 day needs a cook' : `${count} days need a cook`
 }
+
+/** The week page's needs-push text link (design.md §M5/2, lands with M5/6):
+    "3 things needed" — never rendered at 0 (the row simply has no link). */
+export function needsPushLabel(count: number): string {
+  return count === 1 ? '1 thing needed' : `${count} things needed`
+}

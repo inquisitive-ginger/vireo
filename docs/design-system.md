@@ -123,10 +123,12 @@ All tokens are defined as CSS utilities in `packages/ui/src/styles.css` and are 
 | `xs`            | `text-xs-token`      | 10  | 600    | 1.4         | 0        | DM Sans                    |
 | `xs-body`       | `text-xs-body`       | 11  | 400    | 1.4         | 0        | DM Sans                    |
 | `section-label` | `text-section-label` | 11  | 700    | 1.4         | 0.1em    | DM Sans · always uppercase |
+| `aisle-head`    | `text-aisle-head`    | 13  | 700    | 1.4         | 0        | DM Sans                    |
 | `sm`            | `text-sm-token`      | 13  | 400    | 1.5         | 0        | DM Sans                    |
 | `base`          | `text-base-token`    | 14  | 400    | 1.5         | 0        | DM Sans                    |
 | `prose-sm`      | `text-prose-sm`      | 15  | 400    | 1.5         | 0        | **Lora**                   |
 | `card-title`    | `text-card-title`    | 16  | 600    | 1.3         | 0        | DM Sans                    |
+| `list-title`    | `text-list-title`    | 17  | 500    | 1.3         | 0        | DM Sans                    |
 | `body`          | `text-body`          | 18  | 400    | 1.6         | 0        | DM Sans                    |
 | `prose`         | `text-prose`         | 18  | 400    | 1.65        | 0        | **Lora**                   |
 | `heading`       | `text-heading`       | 20  | 600    | 1.2         | −0.01em  | DM Sans                    |
@@ -138,6 +140,8 @@ All tokens are defined as CSS utilities in `packages/ui/src/styles.css` and are 
 **Usage notes:**
 
 - `xs-body` — smallest regular-weight text: placeholder/error-card descriptions, tier pills, meta captions (added 2026-07-10 audit — the settled placeholder/error anatomies specified 11px/400 with no token to express it)
+- `list-title` — `ListRow`'s name line (added M5/6 — grocery list)
+- `aisle-head` — `ListRow` group headers (added M5/6 — grocery list aisle heads)
 - `section-label` — `--muted-foreground` by default; `--accent` when naming a module surface (widget identity headers, feed day markers); uppercase is baked into the utility
 - `prose` — user-authored content only (feed posts, notes, messages). The family's own words get the warmth of the display face; text _about_ the UI never does. Same 18px viewing-distance floor as `body`
 - `prose-sm` — the family voice at 15px for **dense** contexts (multi-post feed widget rows) where 18px crowds. Same Lora face; use `prose` on roomy surfaces (feed page, across-room banner). Not for UI chrome
@@ -1080,6 +1084,46 @@ use `--radius-panel` / `--radius-hero` — see [Spacing](#spacing).
 >
 > - `px-4 py-3`. `FeedPostCard`'s three variants map to chrome: `note` →
 >   `card`/`article`, `widget` → `bare`, `plain` → returns its inner layout directly.
+
+### The scanned-list primitive — `ListRow`
+
+**Settled** — ADR 063 (M5/1 Meals & Groceries design, 2026-08-11).
+
+`@family-os/ui` gains a second row primitive alongside `ItemCard`: **`<ListRow>`**
+— hairline-separated (`border-b border-border`, no per-row border/shadow/radius),
+`min-h-14` (56px), a leading control slot, whole-row activation. Its first
+consumer is the grocery list (`ListRow`) against the meals week plan
+(`ItemCard`), which is also the rule:
+
+> **Cards** when items are independent objects with several actions.
+> **Rows** when items are a set you scan and act on one way.
+
+Forty bordered `ItemCard`s was the density failure an external critique of the
+M5/1 gate caught — five items fit a phone screen against a ~30-item real
+grocery list, and floating cards are the wrong metaphor for entries that must
+cohere under an aisle heading. `ItemCard` is unchanged; **do not** reach for
+`chrome="bare"` on a dense list instead of `ListRow` — bare removes chrome but
+keeps the card's contract (spine, trailing, per-row semantics) and doesn't
+model group membership or a leading slot.
+
+| Prop            | Values        | Default | Role                                                                                                                                                                        |
+| --------------- | ------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `leading`       | `ReactNode`   | —       | The row's leading control. `ListRow` renders it but doesn't define it — the primitive stays agnostic so a later interactive fill (a check ring) needs no prop-shape change. |
+| `dimmed`        | boolean       | `false` | Opacity dim, no status colour — the primitive carries no semantic of its own                                                                                                |
+| `onActivate`    | `() => void`  | —       | Whole-row tap target, ported from `ItemCard`                                                                                                                                |
+| `activateLabel` | `string`      | —       | Accessible name for the tap target                                                                                                                                          |
+| `as`            | `ElementType` | `div`   | Wrapper tag                                                                                                                                                                 |
+
+Type: the name line is `text-list-title` (17px/500) — one step up from
+`ItemCard`'s `text-card-title` (16px/600) but lighter-weight, since a scanned
+row states its name rather than leading its own object. A group header (an
+aisle head) is `text-aisle-head` (13px/700). The content column is the
+caller's `children`, same contract as `ItemCard`: bring your own `min-w-0
+flex-1` wrapper.
+
+`ListRow` carries no identity chrome by default — grocery rows in particular
+render **no spine, no avatar** (ADR 064): the person who added an item, or
+whose meal it's for, is a fact in the note line, not a colour.
 
 ### View switches — `SegmentedControl`
 

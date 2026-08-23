@@ -10,7 +10,7 @@ import {
   resolveHue,
 } from '@family-os/ui'
 import type { MealMember, PlannedMeal } from '../types'
-import { isCovered, kindVerb, needsCookLabel } from '../lib/meals'
+import { isCovered, kindVerb, needsCookLabel, needsCount, needsPushLabel } from '../lib/meals'
 
 export interface WeekDay {
   key: string
@@ -30,6 +30,9 @@ export interface MealsPageViewProps {
   needCount: number | null
   canManage: boolean
   canClaim: boolean
+  /** Grocery add capability (everyone but the unattended family dashboard) —
+      the needs-push link's gate, same baseline as `meals.grocery.add`. */
+  canPushNeeds: boolean
   onPrevWeek: () => void
   onNextWeek: () => void
   onThisWeek: () => void
@@ -37,6 +40,7 @@ export interface MealsPageViewProps {
   onEdit: (day: WeekDay) => void
   onClaim: (meal: PlannedMeal) => void
   onRemove: (meal: PlannedMeal) => void
+  onPushNeeds: (meal: PlannedMeal) => void
 }
 
 const DOW = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
@@ -58,6 +62,7 @@ export function MealsPageView({
   needCount,
   canManage,
   canClaim,
+  canPushNeeds,
   onPrevWeek,
   onNextWeek,
   onThisWeek,
@@ -65,6 +70,7 @@ export function MealsPageView({
   onEdit,
   onClaim,
   onRemove,
+  onPushNeeds,
 }: MealsPageViewProps) {
   return (
     <PageContainer width="list">
@@ -114,10 +120,12 @@ export function MealsPageView({
             membersById={membersById}
             canManage={canManage}
             canClaim={canClaim}
+            canPushNeeds={canPushNeeds}
             onPlan={onPlan}
             onEdit={onEdit}
             onClaim={onClaim}
             onRemove={onRemove}
+            onPushNeeds={onPushNeeds}
           />
         ))}
       </div>
@@ -133,10 +141,12 @@ function DayRow({
   membersById,
   canManage,
   canClaim,
+  canPushNeeds,
   onPlan,
   onEdit,
   onClaim,
   onRemove,
+  onPushNeeds,
 }: {
   day: WeekDay
   isToday: boolean
@@ -145,10 +155,12 @@ function DayRow({
   membersById: Map<string, MealMember>
   canManage: boolean
   canClaim: boolean
+  canPushNeeds: boolean
   onPlan: (day: WeekDay) => void
   onEdit: (day: WeekDay) => void
   onClaim: (meal: PlannedMeal) => void
   onRemove: (meal: PlannedMeal) => void
+  onPushNeeds: (meal: PlannedMeal) => void
 }) {
   const meal = day.meal
   const owner = meal?.ownerId ? membersById.get(meal.ownerId) : undefined
@@ -163,8 +175,23 @@ function DayRow({
       ? 'transparent'
       : 'var(--border)'
 
+  const needed = needsCount(meal)
+
   const trailing = isPast ? undefined : meal ? (
     <>
+      {/* "3 things needed" — a text link, never a bordered button (design.md
+          §M5/2, lands with M5/6). Same gate as adding to the list: everyone
+          but the unattended family dashboard. */}
+      {needed > 0 && canPushNeeds && (
+        <Button
+          variant="ghost"
+          size="sm"
+          className="text-primary hover:text-primary"
+          onClick={() => onPushNeeds(meal)}
+        >
+          {needsPushLabel(needed)}
+        </Button>
+      )}
       {!isCovered(meal) && canClaim && (
         <Button variant="outline" size="sm" onClick={() => onClaim(meal)}>
           I've got it

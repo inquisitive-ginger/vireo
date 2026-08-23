@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { ItemCard } from './item-card'
+import { ListRow } from './list-row'
 import { RowActions } from './row-actions'
 import { MemberGroupHeader } from './member-group-header'
 
@@ -42,6 +43,57 @@ describe('ItemCard — onActivate', () => {
       </ItemCard>
     )
     expect(screen.queryByRole('button')).not.toBeInTheDocument()
+  })
+})
+
+describe('ListRow', () => {
+  it('renders the leading slot and content', () => {
+    render(
+      <ListRow leading={<span data-testid="leading">●</span>}>
+        <div>Milk</div>
+      </ListRow>
+    )
+    expect(screen.getByTestId('leading')).toBeInTheDocument()
+    expect(screen.getByText('Milk')).toBeInTheDocument()
+  })
+
+  it('renders no leading slot when omitted', () => {
+    const { container } = render(
+      <ListRow>
+        <div>Milk</div>
+      </ListRow>
+    )
+    // Only the content div — no wrapper for an absent leading slot.
+    expect(container.querySelectorAll('div')).toHaveLength(2)
+  })
+
+  it('makes the row a tap target via onActivate', () => {
+    const onActivate = vi.fn()
+    render(
+      <ListRow onActivate={onActivate} activateLabel="Open “Milk”">
+        <div>Milk</div>
+      </ListRow>
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Open “Milk”' }))
+    expect(onActivate).toHaveBeenCalledOnce()
+  })
+
+  it('renders no tap target when not activatable', () => {
+    render(
+      <ListRow>
+        <div>Milk</div>
+      </ListRow>
+    )
+    expect(screen.queryByRole('button')).not.toBeInTheDocument()
+  })
+
+  it('dims via opacity, not a status colour on the primitive', () => {
+    render(
+      <ListRow dimmed>
+        <div>Eggs</div>
+      </ListRow>
+    )
+    expect(screen.getByText('Eggs').parentElement?.className).toMatch(/opacity-/)
   })
 })
 

@@ -29,3 +29,35 @@ export interface MealMember {
 }
 
 export type WidgetSize = 'compact' | 'standard' | 'large'
+
+export type GroceryStatus = 'needed' | 'got'
+export type GrocerySourceType = 'manual' | 'meal' | 'staple'
+
+/** Serialized `grocery_items` row — `note` is computed server-side (provenance
+    is one grammar, design.md §M5/6), never stored raw. */
+export interface GroceryItem {
+  id: string
+  name: string
+  category: string
+  quantity: string | null
+  status: GroceryStatus
+  sourceType: GrocerySourceType
+  sourceId: string | null
+  addedBy: string
+  note: string | null
+}
+
+export interface GroceriesResponse {
+  items: GroceryItem[]
+}
+
+export interface Staple {
+  id: string
+  name: string
+  category: string
+  active: boolean
+}
+
+export interface StaplesResponse {
+  staples: Staple[]
+}

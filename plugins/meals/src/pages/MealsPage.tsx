@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Loader2 } from 'lucide-react'
 import {
   FAMILY_PROFILE_ID,
@@ -18,6 +19,7 @@ import { MealsPageView, type WeekDay } from './MealsPageView'
 export function MealsPage() {
   const { id, tier } = useAuth()
   const queryClient = useQueryClient()
+  const navigate = useNavigate()
   const [offset, setOffset] = useState(0)
   const [drawer, setDrawer] = useState<{ open: boolean; day: WeekDay | null }>({
     open: false,
@@ -29,6 +31,7 @@ export function MealsPage() {
 
   const canManage = tier >= 4
   const canClaim = tier >= 3 && id !== FAMILY_PROFILE_ID
+  const canPushNeeds = id !== FAMILY_PROFILE_ID
 
   const now = new Date()
   const start = weekStart(now, offset)
@@ -122,6 +125,24 @@ export function MealsPage() {
     onSuccess: () => void invalidate(),
   })
 
+  // Pushes the meal's `needs` onto the grocery list (AC7), then hands off to
+  // /groceries — the list is where the family confirms the push landed.
+  const pushNeeds = useMutation({
+    mutationFn: (meal: PlannedMeal) =>
+      fetch('/api/groceries/push-needs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mealId: meal.id }),
+      }).then((r) => {
+        if (!r.ok) throw new Error(String(r.status))
+        return r.json()
+      }),
+    onSuccess: () => {
+      void queryClient.invalidateQueries({ queryKey: ['meals/groceries'] })
+      navigate('/groceries')
+    },
+  })
+
   const removeMeal = useMutation({
     mutationFn: (meal: PlannedMeal) =>
       fetch(`/api/meals/plan/${meal.id}`, { method: 'DELETE' }).then((r) => {
@@ -171,6 +192,7 @@ export function MealsPage() {
         }
         canManage={canManage}
         canClaim={canClaim}
+        canPushNeeds={canPushNeeds}
         onPrevWeek={() => setOffset((o) => o - 1)}
         onNextWeek={() => setOffset((o) => o + 1)}
         onThisWeek={() => setOffset(0)}
@@ -178,6 +200,7 @@ export function MealsPage() {
         onEdit={(day) => setDrawer({ open: true, day })}
         onClaim={(meal) => claimMeal.mutate(meal)}
         onRemove={(meal) => setRemoveTarget(meal)}
+        onPushNeeds={(meal) => pushNeeds.mutate(meal)}
       />
       {removeTarget && (
         <ConfirmDialog
