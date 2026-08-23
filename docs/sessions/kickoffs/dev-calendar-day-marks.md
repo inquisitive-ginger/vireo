@@ -13,8 +13,9 @@
 
 ## Pre-session checklist
 
-- [ ] Read `CLAUDE.md`, **ADR 050** (the whole contract), **ADR 044** (never
-      hue-only), `docs/modules/meals/design.md` §M5/4 (the exact render)
+- [ ] Read `CLAUDE.md`, **ADR 050** (the whole contract), **ADR 066** (the
+      visibility gate — settled, not yours to reopen), **ADR 044** (never hue-only),
+      `docs/modules/meals/design.md` §M5/4 (the exact render)
 - [ ] Read `apps/api/src/plugins/calendar.ts` `GET /calendar/events` (range shape,
       permission check) and `packages/platform/src/server.ts` (what a registry would
       sit beside)
@@ -33,7 +34,8 @@ agenda day header — with `plugins/calendar` knowing nothing about meals.
 ## Acceptance criteria
 
 1. A range query returns at most **one mark per provider per day**; a month cell
-   renders at most **two**, capped in code before a second provider exists.
+   renders at most **two** — capped **after** permission filtering (ADR 066), so a
+   caller never loses a mark they can see to one they cannot.
 2. `meals` registers a provider; `plugins/calendar` never imports
    `@family-os/plugin-meals` and `meals` never writes `calendar.events`.
 3. **Month cell:** 16px identity-**tint** disc carrying the owner's initial
@@ -48,6 +50,13 @@ agenda day header — with `plugins/calendar` knowing nothing about meals.
 
 ## Constraints coming in
 
+- **Visibility is settled — ADR 066.** Two gates, conjunctively:
+  `calendar.event.view` gates the surface (the range endpoint 403s exactly as
+  `GET /calendar/events` does), and each provider's own `(action, subject)` gates
+  its own marks. Registration is `{ name, action, subject, fetch }` — the subject is
+  **required** (`meals` registers `view meals.PlannedMeal`), no permissive default. The aggregator filters **server-side before
+  calling `fetch`**, which settles decision 1 in favour of server-side fan-out; a
+  client-side gate is not an option.
 - ADR 050 is settled and **small**: no start time, no duration, no overlap, no spans,
   no reminders, no positioning. Anything wanting one of those is an event.
 - The second consumer is **M7 School** ("no school Monday"). Design the registration
@@ -64,16 +73,10 @@ agenda day header — with `plugins/calendar` knowing nothing about meals.
 
 ## Decisions to make
 
-1. **Where the registry lives.** Server-side fan-out (`packages/platform` holds the
-   provider registry, one `GET /calendar/day-marks?from=&to=` aggregates) vs. the
-   calendar client querying each plugin's own endpoint. _Recommended: server-side_ —
-   one round trip, one cap, and School registers without a client change.
-2. **Permission model** — is a mark visible under `calendar.Event` view, or does each
-   provider gate its own marks (`meals.plan.view`)? A kid who cannot see the plan
-   should not read dinner off the month grid by accident.
-3. **The cap tie-break** — which two marks win when a third provider lands. Fix the
+1. **The cap tie-break** — which two marks win when a third provider lands. Fix the
    rule now (registration order is the cheap honest answer).
-4. **Payload shape** — `{ date, ownerId?, glyph, label }` per ADR 050; decide whether
+2. **Payload shape** — `{ date, ownerId?, glyph, label }` per ADR 050, plus the
+   `action`/`subject` ADR 066 requires at registration; decide whether
    the glyph is an icon name resolved by the shell's `ICON_MAP` or a provider-supplied
    node, and how the initial is derived when `ownerId` is a profile the client
    already has.

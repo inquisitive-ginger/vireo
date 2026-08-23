@@ -45,5 +45,9 @@ six bullets go to `CLAUDE.md`.
   raise a cap.
 - A **Recently Completed** entry is the headline decision plus a pointer. Never
   the summary.
+- A decision that crosses a permission boundary or changes the dependency graph
+  does not belong in a kickoff's decision list. Escalate it to `architect` before
+  the session, or state it as a constraint. Sessions decide implementations, not
+  who can see what.
 - Your final message is a return value, not a report. Shortest thing that lets
   the caller act.
