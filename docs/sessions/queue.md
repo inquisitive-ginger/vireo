@@ -76,22 +76,22 @@ small reward → reset). `meals` knows nothing about cards. _Depends on: M5/2, M
 ### M5/6 — Dev: the grocery list, reworked on PR #127 · **run this next**
 
 **Type:** development · **Kickoff:** `kickoffs/dev-grocery-list.md`
-Design gate closed 2026-08-23 — the contract is
-`artifacts/2026-08-23-grocery-list-handoff.md`, permissions are ADR 067. Rework above
-the data layer: index of lists → per-list view, a list reference on `grocery_items`,
-the `tier >= 4` gate at `GroceriesPage.tsx:26` → `ability.can`. `ListRow` unchanged.
-_Depends on: nothing — #127 is open and waits on this._
+Rework above the data layer, **amending #127** rather than opening a PR: index of lists
+→ per-list view, a new migration giving `grocery_items` a list reference, ADR 067's
+registry key, and `GroceriesPage.tsx:26`'s `tier >= 4` → `ability.can`. `ListRow` unchanged.
+_Contract: [handoff](artifacts/2026-08-23-grocery-list-handoff.md) · ADR 067. Depends on:
+nothing — #127 is open and waits on this._
 
 ### M5/7 — Dev: Shop Context, Sync + Offline, the Wall
 
 **Type:** development · **Kickoff:** `kickoffs/dev-grocery-shop-offline.md`
 Whole-row checks, cleared-aisle collapse, progress track, "Sam got it" sync between
-shoppers, the three-column wall view + presence line — and **offline**. The SW is
-network-first for `/api`, so today the list fails in the exact place it is used; the
-SW has bitten twice — treat the offline half as its own reviewable chunk. **Check wall
-column re-flow on the physical fridge before closing.** _Reads: `design.md` §M5/7,
-`apps/shell/public/sw.js`, `logs/2026-07-19-dev-sw-cache-strategy.md`._
-_Depends on: M5/6 (PR #127)._
+shoppers, the wall's presence line — and **offline**. The SW is network-first for
+`/api`, so today the list fails in the exact place it is used; it has bitten twice —
+treat the offline half as its own reviewable chunk. **Amended 2026-08-23:** the M5/6
+gate killed the three-column wall and the note line, so ACs 4 and 5 were rewritten.
+_Reads: `design.md` §M5/7, `apps/shell/public/sw.js`,
+`logs/2026-07-19-dev-sw-cache-strategy.md`. Depends on: M5/6 (PR #127)._
 
 ---
 

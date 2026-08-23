@@ -33,12 +33,13 @@ the wall, (B) offline. B is the one that can take the shell down.
 cart`, tap to reopen. Individual checked items still never vanish.
 3. **Progress is structure:** `2 in the cart · 8 to go` + a filled track under the page
    title, on every surface.
-4. **Partner sync renders as text** (ADR 064): a row the other shopper checked reads
-   `Sam got it` in the note line — no avatar, no spine, no identity chrome.
-5. **The wall** (fridge iPad, ~1060px content): aisles as three balanced columns, whole
-   list visible without scrolling, groups never split (`break-inside: avoid`). Header
-   carries **"Sam is at the store right now"** with a green pulse dot, derived from
-   check activity — **no new tables**. Add bar moves to the top with staples beside it.
+4. **Partner sync renders as text** (ADR 064) — never identity chrome. **The M5/6 gate
+   cut the note line this was going to render on**; pick the surface, and check whether
+   `GroceryItem.note` still exists, before designing it.
+5. **The wall** (fridge iPad, ~1060px content): the M5/6 gate settled **no columns** —
+   the wall is the phone's index → drill-in at larger type. What is left here is the
+   header's **"Sam is at the store right now"** with a green pulse dot, derived from
+   check activity — **no new tables**.
 6. **Offline:** the list renders, checks apply optimistically and replay when signal
    returns, and a quiet pill sits under the title — `Offline — checks will sync`. Not a
    banner, not amber; offline is expected, not exceptional.
@@ -54,8 +55,8 @@ cart`, tap to reopen. Individual checked items still never vanish.
   narrow, explicit, and justified in the log — do not flip the default.
 - No blind `catch {}` on a replay path: a check that silently failed to sync is a
   person standing in an aisle with wrong information.
-- **Check column re-flow after add/clear on the physical fridge before closing** —
-  M5/1 accepted the re-flow pending exactly that check.
+- **The wall's layout is settled, not open** — `artifacts/2026-08-23-grocery-list-handoff.md`.
+  M5/1's column re-flow question died with the columns.
 - **Parallel run:** wave 2, alongside M5/5. You own `apps/shell/public/sw.js` and the
   grocery surfaces; you share `apps/api/src/plugins/meals.ts` and
   `plugins/meals/prisma/` with M5/5 — rebase and `prisma generate` before merging.
@@ -75,12 +76,13 @@ cart`, tap to reopen. Individual checked items still never vanish.
    active. The stream is exactly what is missing when offline.
 5. **Presence window** — how recent a check makes someone "at the store right now",
    and when the line disappears.
-6. **Column balance** — CSS multi-column with `break-inside: avoid`, or an explicit
-   three-way partition that keeps the columns even.
+6. **What the wall adds over the phone** beyond type size, given the gate's "no
+   separate layout" — plausibly only presence and the progress track.
 
 ## Outputs (required before closing)
 
-- [ ] Design gate for the wall + shop surfaces: playground → sign-off → Storybook
+- [ ] Design gate for the shop surfaces (check, collapse, progress, presence) —
+      playground → sign-off → Storybook. The wall's structure is **not** reopened.
 - [ ] Live-app review **in the store conditions that matter**: phone with the network
       throttled to offline, checks applied, signal restored, checks landed; then the
       real fridge tablet for the wall
