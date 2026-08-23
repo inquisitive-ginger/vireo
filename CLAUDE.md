@@ -23,13 +23,13 @@ before it reads anything else, and it is size-capped — see
   auto-deploy + Tailscale + restic→R2 + watchdog intact. **A bad USB cable was
   the cause of the 2026-08-20 "enclosure" outage and all the slowness** — disk now
   256 MB/s, deploys 1 min. Runbook Part F.
-- **Last session:** 2026-08-22 — new app icon set (PR #122), a vireo family in a
-  lit birdhouse; Android badge square fixed. **e2e unrun, unseen on a phone.**
-  `logs/2026-08-22-design-dev-brand-icon-set.md`.
+- **Last session:** 2026-08-23 — auto-bug #123 fixed (PR #126): the mobile nav's
+  active wash now covers icon **and** label at `rounded-panel`, matching the sidebar.
+  `logs/2026-08-23-dev-mobile-nav-tab-wash.md`.
 - **What's next and everything outstanding:** `docs/sessions/queue.md` — the one
   index. M4.5/3 or M5 wave 1 next; NVMe HAT is an upgrade, not a rescue.
-- **Owed in-app:** `deployed` flips for the three #116–118 reports (ids in the
-  queue's Recently Completed entry).
+- **Owed in-app:** `deployed` flips for #116–118 **and #123** (`f6423b36…`) — the
+  only status that notifies the reporter. Needs a prod session cookie.
 
 ---
 

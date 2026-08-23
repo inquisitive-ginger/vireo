@@ -238,6 +238,9 @@ suite mirroring chores/calendar. _Depends on: none._
 > start. `docs/sessions/logs/` is date-ordered and holds the record — that
 > directory listing is the changelog. Do not restore entries pruned from here.
 
+- **2026-08-23 — Fix: mobile nav active-tab wash** (auto-bug #123, PR #126) — one
+  active-nav recipe with the sidebar. **Owed:** `deployed` flip for `f6423b36…`.
+  _[log](logs/2026-08-23-dev-mobile-nav-tab-wash.md)_
 - **2026-08-22 — Design+dev: the app icon set** (PR #122) — a vireo family in a
   lit birdhouse, generated then traced to vector; Android's blank-square badge
   fixed. **e2e unrun; unseen on a real phone.**
@@ -267,8 +270,6 @@ suite mirroring chores/calendar. _Depends on: none._
   _[log](logs/2026-08-13-dev-meals-week-plan-tonight.md)_
 - **2026-08-11 — Design: Meals & Groceries** (M5/1, ADR 063/064); spec at
   `docs/modules/meals/design.md`. _[log](logs/2026-08-11-design-meals-groceries.md)_
-- **2026-08-08 — Design: Companion gear + asset library** (M4.5/2) — 20 bodies,
-  15 gear, 4 parked. _[log](logs/2026-08-08-design-companion-gear-assets.md)_
 
 Everything before 2026-08-07 (M0 through M4, deployment Parts A–F): see
 `docs/sessions/logs/` and `docs/roadmap.md`.
