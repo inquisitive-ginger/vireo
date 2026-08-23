@@ -64,7 +64,13 @@ export function MonthGrid({
               const more = cell.events.length - visible.length
               const isToday = isSameDay(cell.date, today)
               const isPast = dayDiff(today, cell.date) < 0 // before today → dim-events
-              const dayMarks = marksByDate.get(localDateKey(cell.date)) ?? []
+              // Today-forward only (live review, round 2): "who had dinner last
+              // Tuesday" is noise on a forward-looking view. A RENDER-level
+              // filter, deliberately — the provider still returns the whole
+              // range (ADR 050; M7 School wants that range intact), the
+              // aggregator/cap/registration shape are untouched. The month cell
+              // just declines to paint what it gets for a day that's passed.
+              const dayMarks = isPast ? [] : (marksByDate.get(localDateKey(cell.date)) ?? [])
               // `role="button"` is children-presentational and an author aria-label
               // wins the accessible-name computation over any descendant text — an
               // sr-only span inside this cell would never reach assistive tech
@@ -90,31 +96,34 @@ export function MonthGrid({
                     !cell.inMonth && 'bg-muted/30'
                   )}
                 >
-                  {/* date number left, day marks right, on the SAME row (live
-                      review: marks were lost in the chip flow) — a designated
-                      slot, not another chip. The date span's size/position is
-                      untouched by whether marks exist; the marks group is a
-                      sibling, not a wrapper around it. */}
+                  {/* Date number and day mark left-packed and adjacent (live
+                      review round 2 — not the far-edge `justify-between` pairing
+                      this had before). Left-packing does NOT create more width;
+                      it only relocates the same slack — the date span keeps its
+                      shrink-0 from the prior round so IT never deforms under
+                      pressure. Quick-add stays pushed to the far right via the
+                      outer justify-between, unrelated to this ask. */}
                   <div className="flex h-5 items-center justify-between">
-                    <span
-                      className={cn(
-                        'flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-sm-token',
-                        isToday
-                          ? 'bg-primary font-semibold text-primary-foreground'
-                          : 'text-muted-foreground',
-                        !cell.inMonth && 'opacity-50',
-                        isPast && !isToday && 'opacity-40'
-                      )}
-                    >
-                      {cell.date.getDate()}
-                    </span>
                     <div className="flex items-center gap-1">
+                      <span
+                        className={cn(
+                          'flex h-6 w-6 shrink-0 items-center justify-center rounded-full text-sm-token',
+                          isToday
+                            ? 'bg-primary font-semibold text-primary-foreground'
+                            : 'text-muted-foreground',
+                          !cell.inMonth && 'opacity-50',
+                          isPast && !isToday && 'opacity-40'
+                        )}
+                      >
+                        {cell.date.getDate()}
+                      </span>
                       {dayMarks.length > 0 && (
                         // Two marks (ADR 050's cap) fit side by side without
                         // crowding the date number — how a THIRD-provider's
                         // world stacks/reveals is explicitly deferred, not
-                        // decided here.
-                        <div className={cn('flex items-center gap-1.5', isPast && 'opacity-60')}>
+                        // decided here. No isPast dim here: a past cell has no
+                        // marks to dim (today-forward filter, above).
+                        <div className="flex items-center gap-1.5">
                           {dayMarks.map((mark) => {
                             const owner = mark.ownerId ? membersById.get(mark.ownerId) : undefined
                             const Glyph = DAY_MARK_GLYPHS[mark.glyph]
@@ -133,22 +142,22 @@ export function MonthGrid({
                           })}
                         </div>
                       )}
-                      {onQuickAdd && (
-                        // Hover-only quick-add (hover-capable devices); revealed on
-                        // cell hover or keyboard focus. Hidden entirely on touch.
-                        <button
-                          type="button"
-                          aria-label={`Add event on ${cell.date.toDateString()}`}
-                          onClick={(e) => {
-                            e.stopPropagation()
-                            onQuickAdd(cell.date)
-                          }}
-                          className="hidden size-6 items-center justify-center rounded-full text-muted-foreground opacity-0 transition-opacity hover:bg-muted hover:text-foreground focus-visible:opacity-100 group-hover:opacity-100 [@media(hover:hover)]:flex"
-                        >
-                          <Plus className="h-4 w-4" />
-                        </button>
-                      )}
                     </div>
+                    {onQuickAdd && (
+                      // Hover-only quick-add (hover-capable devices); revealed on
+                      // cell hover or keyboard focus. Hidden entirely on touch.
+                      <button
+                        type="button"
+                        aria-label={`Add event on ${cell.date.toDateString()}`}
+                        onClick={(e) => {
+                          e.stopPropagation()
+                          onQuickAdd(cell.date)
+                        }}
+                        className="hidden size-6 items-center justify-center rounded-full text-muted-foreground opacity-0 transition-opacity hover:bg-muted hover:text-foreground focus-visible:opacity-100 group-hover:opacity-100 [@media(hover:hover)]:flex"
+                      >
+                        <Plus className="h-4 w-4" />
+                      </button>
+                    )}
                   </div>
                   {/* reserved space: gap below the number + the span band */}
                   <div style={{ height: NUM_GAP + spanBandH }} />
