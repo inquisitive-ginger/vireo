@@ -34,4 +34,4 @@ decision to make an AC pass.
 ## Output
 
 A branch, a PR, and at most ten lines back: what shipped, AC status, what needs
-the user's eyes. The PR body carries the why. The log is `pm`'s job, not yours.
+the user's eyes. The PR body carries the why. The log is `planner`'s job, not yours.

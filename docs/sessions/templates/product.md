@@ -4,6 +4,14 @@
 > to `docs/sessions/kickoffs/[session-name].md`. The session itself executes the
 > kickoff — it doesn't fill out the template live.
 
+A product session produces one module spec and the session plan inside it. It
+runs in one of two modes; say which at the top of the kickoff.
+
+- **Origination** — nothing on the roadmap yet. The session invents the thing,
+  gates the forks, and closes by writing the roadmap entry.
+- **Breakdown** — the roadmap entry exists. The session turns it into a module
+  spec and a sequenced session plan.
+
 ---
 
 ## Pre-session checklist
@@ -18,117 +26,122 @@
 
 ## Session scope
 
-_One sentence: which milestone is this session breaking into stories?_
+_One sentence: which milestone is this session breaking into sessions — or, when
+originating, what is the thing and who is it for?_
 
-## Done definition (from roadmap)
+## Done definition
 
-_Copy the "Done when:" line verbatim from `docs/roadmap.md` for this milestone.
-Every story defined here should be traceable to this definition._
+_Breakdown: copy the "Done when:" line verbatim from `docs/roadmap.md`.
+Origination: this session writes it. Every session in the plan should be
+traceable to it._
 
 ## Constraints coming in
 
-_List ADRs or prior decisions that bound story scope.
-These are things a story must not contradict._
+_ADRs and prior decisions that bound scope. Things the spec must not contradict.
+Cite by number; don't restate them._
+
+## Forks to gate
+
+_The decisions that change what gets built. Each one goes to the user through
+`AskUserQuestion` — 2–4 options, with the trade-off that separates them. A fork
+resolved without the user is the failure mode of this session type._
 
 ## Open questions to resolve
 
-_List flagged questions from prior session logs that are in scope for this milestone.
-Each must be answered (or explicitly deferred with a reason) before this session closes._
-
-## Stories to define
-
-_List the stories in the order they'll be specced. Resolve dependencies first.
-This list can grow during the session — add stories as they emerge._
+_Flagged questions from prior logs that are in scope. Each is answered, or
+explicitly deferred with a reason, before the session closes._
 
 ---
 
 ## During the session
 
-### Story format
+### The module spec
 
-Each story spec is written to
-`docs/modules/[module]/stories/[story-slug].md`
-before moving to the next story.
+Everything the session decides goes to `docs/modules/[module]/spec.md` — one
+file, not a file per story. (`stories/*.md` is the M0–M4 pattern; `meals` and
+`companion` are the current shape.) Sections:
 
 ```markdown
-# Story: [Story Name]
+# [Module Name] — Module Spec (M[N])
 
-**Module:** [module-name]
-**Status:** ⬜ Not Started
+## What it is
 
-## User story
+One paragraph. The problem in the house, not the feature list.
 
-As a [role], I can [capability] so that [outcome].
+## M[N] scope (MVP)
 
-## Scope
+Bulleted. Each bullet becomes a session or part of one.
 
-**In:** what this story covers
-**Out:** what's explicitly excluded
+## Explicitly deferred
 
-## Acceptance criteria
+What a reader will look for and not find, and why it's out.
 
-1. [Testable, observable condition]
-2. ...
+## Session plan
 
-## Dependencies
+Numbered, in run order. Per session: one-sentence scope, dependencies,
+and whether it can run in parallel with its neighbours.
 
-- [other story name, if any — or "none"]
+## Boundaries already settled
 
-## Notes
+ADRs by number — do not re-litigate (rule 4). One line each on what it binds.
 
-_Any implementation constraints, open questions, or context the next
-session needs._
+## Done when
+
+The milestone's done definition.
 ```
 
 ### Process
 
-For each story:
+For each session in the plan:
 
-1. Write the user story in one sentence — if it needs "and," split it
-2. Define scope: explicit in, explicit out
-3. Write numbered, testable acceptance criteria — each criterion must be
-   verifiable without knowing the implementation
-4. Mark dependencies on other stories in this milestone
-5. Write the spec file, then move on
+1. State its scope in one sentence — if it needs "and," split it
+2. Name explicit in and out
+3. Write acceptance criteria that are verifiable without knowing the
+   implementation
+4. Mark dependencies, and say what it shares files with if the wave runs parallel
+5. Move on — depth belongs in the kickoff `planner` writes later, not here
 
-**If a story reveals an unsettled architectural question:** log it as an
-open question and move on — do not improvise architecture inside a product
-session. Flag it for the next architecture session.
+**If a session reveals an unsettled architectural question:** log it as an open
+question and move on — do not improvise architecture inside a product session.
+Escalate it to `architect`. Same for anything crossing a permission boundary.
 
-**If a story can't be stated in one sentence without "and":** split it
-before writing the spec. A story that can't be split belongs in a future
-milestone.
+**If a session can't be stated in one sentence without "and":** split it. One
+that can't be split belongs in a later milestone.
 
 ---
 
 ## Outputs (required before closing)
 
-- [ ] Story specs written to `docs/modules/[module]/stories/[story-slug].md`
+- [ ] `docs/modules/[module]/spec.md` written, in the shape above
+- [ ] `docs/roadmap.md` entry written (origination) or its `Done when:` confirmed
+      still accurate (breakdown)
 - [ ] `docs/modules/[module]/progress.md` created or updated
 
-  Progress board format:
-
   ```markdown
-  # [Module Name] — M[N] Stories
+  # [Module Name] — Progress
 
-  | Story                               | Status         | Notes |
-  | ----------------------------------- | -------------- | ----- |
-  | [Story Name](stories/story-slug.md) | ⬜ Not Started |       |
+  ## M[N] — [Name] · 🔄 In Progress
+
+  > **Milestone done when:** [the done definition]
+
+  | Story  | Status         | Notes |
+  | ------ | -------------- | ----- |
+  | [Name] | ⬜ Not Started |       |
   ```
 
   Statuses: ⬜ Not Started · 🔄 In Progress · ✅ Done · 🔙 Sent Back
 
-- [ ] `docs/sessions/queue.md` updated — add any newly-identified follow-on sessions. Any
-      **Recently Completed** entry is **at most 2–3 concise lines + a pointer to the session
-      log**; the log holds the full detail. Trim, don't paste
-- [ ] Session log committed to `docs/sessions/logs/YYYY-MM-DD-product-[milestone].md`
-- [ ] `CLAUDE.md` current status updated
+- [ ] `docs/sessions/queue.md` — the milestone added under **Up Next** with a
+      pointer to the spec. Kickoffs are `planner`'s job, not this session's
+- [ ] Session log committed to `docs/sessions/logs/YYYY-MM-DD-product-[name].md`
+- [ ] `CLAUDE.md` Current Status updated
 
 ## Session log format
 
 ```
 ## What was decided
-## Stories defined
+## Forks gated (each with the argument that settled it)
+## Sessions defined
 ## Open questions raised
 ## What the next session needs to know
 ```
