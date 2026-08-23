@@ -270,6 +270,14 @@ export const GroceryPushNeedsSchema = z.object({
 
 export type GroceryPushNeedsInput = z.infer<typeof GroceryPushNeedsSchema>
 
+// A runtime list (ADR 067: creating one is tier 4). Permanent lists are
+// seeded, not created through this route.
+export const GroceryListCreateSchema = z.object({
+  name: z.string().trim().min(1, 'name is required').max(60),
+})
+
+export type GroceryListCreateInput = z.infer<typeof GroceryListCreateSchema>
+
 // ─── Bug reports ──────────────────────────────────────────────────────────────
 
 /** The lifecycle a report moves through (ADR 046). `deployed` is the only status the

@@ -33,6 +33,7 @@ type Subjects =
   | 'rewards.Grant'
   | 'meals.PlannedMeal'
   | 'meals.GroceryItem'
+  | 'meals.GroceryList'
   | 'all'
 
 export type AppAbility = PrismaAbility<[Actions, Subjects]>

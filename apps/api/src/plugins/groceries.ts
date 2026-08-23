@@ -12,22 +12,23 @@ import {
   GroceryItemCreateSchema,
   GroceryAisleCorrectionSchema,
   GroceryPushNeedsSchema,
+  GroceryListCreateSchema,
 } from '@family-os/schemas'
 
 // Own file, not appended to meals.ts (kickoff constraint) — M5/3 is touching
 // meals.ts's planned-meal routes in the same wave.
 
 type GroceryItemRow = Awaited<ReturnType<typeof mealPrisma.groceryItem.create>>
+type GroceryListRow = Awaited<ReturnType<typeof mealPrisma.groceryList.create>>
 
 function weekdayLabel(date: Date): string {
   return date.toLocaleDateString('en-US', { weekday: 'long', timeZone: 'UTC' })
 }
 
-/** Provenance is the note line, one grammar (design.md §M5/6): "for Sunday's
-    rigatoni" (needs push) or "Emma added these" (manual or staple-tap) — never
-    a chip in the name line, never identity chrome (ADR 064). Computed at
-    serialize time from `sourceType`/`sourceId`/`addedBy` — nothing is stored
-    beyond spec.md's own columns. */
+/** `note` is computed server-side, never stored raw — "for Sunday's rigatoni"
+    (needs push) or "Emma added these" (manual/staple). Nothing in the client
+    renders it since the M5/6 gate cut the note line, but the computation
+    stays: M5/7's partner sync ("Sam got it") is expected to want it back. */
 function noteFor(
   item: GroceryItemRow,
   mealsById: Map<string, { title: string; date: Date }>,
@@ -52,6 +53,7 @@ function serializeItem(item: GroceryItemRow, note: string | null, hasOverride: b
     sourceId: item.sourceId,
     addedBy: item.addedBy,
     note,
+    listId: item.listId,
     // A family-wide override already exists for this name — the "Which
     // aisle?" prompt is genuinely one-time (AC4): it must not resurface for
     // an item that was already triaged, including "Leave it" (which teaches
@@ -102,14 +104,90 @@ async function serializeItems(items: GroceryItemRow[]) {
     )
 }
 
+function serializeList(list: GroceryListRow, itemCount: number) {
+  return {
+    id: list.id,
+    name: list.name,
+    kind: list.kind,
+    groupByAisle: list.groupByAisle,
+    itemCount,
+  }
+}
+
+/** The list a server-driven push (needs, staples-at-rest) lands on when no
+    person is choosing a destination — the first permanent list by
+    `sortOrder` ("Grocery Store"), the same list the M5/6 migration backfilled
+    every pre-existing item onto. */
+async function defaultListId(): Promise<string> {
+  const list = await mealPrisma.groceryList.findFirst({
+    where: { kind: 'permanent' },
+    orderBy: { sortOrder: 'asc' },
+  })
+  if (!list) throw new Error('No permanent grocery list seeded')
+  return list.id
+}
+
 const groceriesPlugin: FastifyPluginAsync = async (fastify) => {
-  fastify.get('/groceries', async (request, reply) => {
+  // GET /groceries/lists — the index (design gate 2026-08-23): permanent
+  // lists always show, dim at zero; a runtime list shows only while it holds
+  // items — it disappears by emptying, never by a delete action (ADR 067).
+  fastify.get('/groceries/lists', async (request, reply) => {
     if (!request.ability.can('view', 'meals.GroceryItem')) {
       return reply.status(403).send({ error: 'Permission denied' })
     }
 
-    const items = await mealPrisma.groceryItem.findMany()
-    return { items: await serializeItems(items) }
+    const lists = await mealPrisma.groceryList.findMany({
+      orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
+    })
+    const counts = await mealPrisma.groceryItem.groupBy({
+      by: ['listId'],
+      _count: { _all: true },
+    })
+    const countByList = new Map(counts.map((c) => [c.listId, c._count._all]))
+
+    const visible = lists.filter((l) => l.kind === 'permanent' || (countByList.get(l.id) ?? 0) > 0)
+    return { lists: visible.map((l) => serializeList(l, countByList.get(l.id) ?? 0)) }
+  })
+
+  // POST /groceries/lists — creating a list is tier 4 (ADR 067): it commits
+  // the household to a trip, unlike adding an item to one already planned.
+  fastify.post('/groceries/lists', async (request, reply) => {
+    if (!request.ability.can('create', 'meals.GroceryList')) {
+      return reply.status(403).send({ error: 'Permission denied' })
+    }
+    if (request.profile.id === FAMILY_PROFILE_ID) {
+      return reply.status(403).send({ error: 'Switch to your own profile to create a list' })
+    }
+
+    const parsed = GroceryListCreateSchema.safeParse(request.body ?? {})
+    if (!parsed.success) {
+      return reply.status(400).send({ error: parsed.error.flatten() })
+    }
+
+    const maxSortOrder = await mealPrisma.groceryList.aggregate({ _max: { sortOrder: true } })
+    const list = await mealPrisma.groceryList.create({
+      data: {
+        name: parsed.data.name,
+        kind: 'runtime',
+        createdBy: request.profile.id,
+        sortOrder: (maxSortOrder._max.sortOrder ?? 0) + 1,
+      },
+    })
+    return reply.status(201).send(serializeList(list, 0))
+  })
+
+  // GET /groceries/lists/:id — the per-list view (drill-in).
+  fastify.get('/groceries/lists/:id', async (request, reply) => {
+    if (!request.ability.can('view', 'meals.GroceryItem')) {
+      return reply.status(403).send({ error: 'Permission denied' })
+    }
+
+    const { id } = request.params as { id: string }
+    const list = await mealPrisma.groceryList.findUnique({ where: { id } })
+    if (!list) return reply.status(404).send({ error: 'List not found' })
+
+    const items = await mealPrisma.groceryItem.findMany({ where: { listId: id } })
+    return { list: serializeList(list, items.length), items: await serializeItems(items) }
   })
 
   fastify.get('/groceries/staples', async (request, reply) => {
@@ -124,11 +202,12 @@ const groceriesPlugin: FastifyPluginAsync = async (fastify) => {
     return { staples }
   })
 
-  // POST /groceries — items file themselves (design.md §M5/6): the shipped
-  // dictionary assigns `category`, a per-family override (from a prior
-  // correction) wins over it. One source of truth — the needs push below
-  // uses the exact same filing.
-  fastify.post('/groceries', async (request, reply) => {
+  // POST /groceries/lists/:id/items — items file themselves (design.md
+  // §M5/6): the shipped dictionary assigns `category`, a per-family override
+  // (from a prior correction) wins over it. Inside a list the destination is
+  // implied (handoff spec "Adding") — the id in the URL IS the destination.
+  // One filing source of truth — the needs push below uses the exact same call.
+  fastify.post('/groceries/lists/:id/items', async (request, reply) => {
     if (!request.ability.can('create', 'meals.GroceryItem')) {
       return reply.status(403).send({ error: 'Permission denied' })
     }
@@ -137,6 +216,10 @@ const groceriesPlugin: FastifyPluginAsync = async (fastify) => {
     if (request.profile.id === FAMILY_PROFILE_ID) {
       return reply.status(403).send({ error: 'Switch to your own profile to add to the list' })
     }
+
+    const { id: listId } = request.params as { id: string }
+    const list = await mealPrisma.groceryList.findUnique({ where: { id: listId } })
+    if (!list) return reply.status(404).send({ error: 'List not found' })
 
     const parsed = GroceryItemCreateSchema.safeParse(request.body ?? {})
     if (!parsed.success) {
@@ -156,6 +239,7 @@ const groceriesPlugin: FastifyPluginAsync = async (fastify) => {
         status: 'needed',
         sourceType: 'manual',
         addedBy: request.profile.id,
+        listId,
       },
     })
 
@@ -173,9 +257,9 @@ const groceriesPlugin: FastifyPluginAsync = async (fastify) => {
   // POST /groceries/:id/aisle — the "Which aisle?" correction (AC4/AC5):
   // re-files this item AND teaches a per-family override, keyed by the same
   // normalized name, so the next add of "snap peas" files itself correctly.
-  // Gated on `manage`, not `create` — this doesn't just fix one row, it
-  // rewrites how every future add of the name files itself for the whole
-  // household (spec.md §Permissions: "tier 4 manages").
+  // Gated on `manage`, not `create` (ADR 067) — this doesn't just fix one
+  // row, it rewrites how every future add of the name files itself for the
+  // whole household.
   fastify.post('/groceries/:id/aisle', async (request, reply) => {
     if (!request.ability.can('manage', 'meals.GroceryItem')) {
       return reply.status(403).send({ error: 'Permission denied' })
@@ -205,10 +289,12 @@ const groceriesPlugin: FastifyPluginAsync = async (fastify) => {
     return serialized
   })
 
-  // POST /groceries/push-needs — the week page's "N things needed" text link
-  // (AC7): comma-splits the meal's `needs` free text into items, each noted
-  // with its meal. Dedupe by normalized name against OPEN items (skip);
-  // re-adding an existing CHECKED item unchecks it rather than duplicating.
+  // POST /groceries/push-needs — the week page's "N things needed" text link:
+  // comma-splits the meal's `needs` free text into plain items on the default
+  // list (handoff spec: needs-pushed items arrive as plain items — AC6/AC7's
+  // "noted with its meal" is superseded, the note line is gone). Dedupe by
+  // normalized name against OPEN items on THAT list (skip); re-adding an
+  // existing CHECKED item on that list unchecks it rather than duplicating.
   fastify.post('/groceries/push-needs', async (request, reply) => {
     if (!request.ability.can('create', 'meals.GroceryItem')) {
       return reply.status(403).send({ error: 'Permission denied' })
@@ -225,15 +311,17 @@ const groceriesPlugin: FastifyPluginAsync = async (fastify) => {
     const meal = await mealPrisma.plannedMeal.findUnique({ where: { id: parsed.data.mealId } })
     if (!meal) return reply.status(404).send({ error: 'Meal not found' })
 
+    const listId = await defaultListId()
+
     const names = (meal.needs ?? '')
       .split(',')
       .map((n) => n.trim())
       .filter((n) => n.length > 0)
     if (names.length === 0) {
-      return { items: [] }
+      return { items: [], listId }
     }
 
-    const existing = await mealPrisma.groceryItem.findMany()
+    const existing = await mealPrisma.groceryItem.findMany({ where: { listId } })
     const existingByName = new Map<string, GroceryItemRow>()
     // Prefer an OPEN match over a checked one when both normalize equal — an
     // open item is the one dedupe should skip against.
@@ -274,6 +362,7 @@ const groceriesPlugin: FastifyPluginAsync = async (fastify) => {
           sourceType: 'meal',
           sourceId: meal.id,
           addedBy: request.profile.id,
+          listId,
         },
       })
       touched.push(created)
@@ -286,7 +375,7 @@ const groceriesPlugin: FastifyPluginAsync = async (fastify) => {
       })
     }
 
-    return { items: await serializeItems(touched) }
+    return { items: await serializeItems(touched), listId }
   })
 }
 

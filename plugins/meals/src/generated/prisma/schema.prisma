@@ -55,19 +55,43 @@ model DinnerNudgeLog {
 // category is the aisle, assigned by the dictionary on add or a per-family
 // override going forward (grocery-filing.ts) — never redesigned per-row.
 model GroceryItem {
-  id         String    @id @default(uuid()) @db.Uuid
+  id         String      @id @default(uuid()) @db.Uuid
   name       String
   category   String
   quantity   String?
-  status     String    @default("needed")
-  sourceType String    @map("source_type")
-  sourceId   String?   @map("source_id")
-  addedBy    String    @map("added_by") @db.Uuid
-  addedAt    DateTime  @default(now()) @map("added_at") @db.Timestamptz(6)
-  gotBy      String?   @map("got_by") @db.Uuid
-  gotAt      DateTime? @map("got_at") @db.Timestamptz(6)
+  status     String      @default("needed")
+  sourceType String      @map("source_type")
+  sourceId   String?     @map("source_id")
+  addedBy    String      @map("added_by") @db.Uuid
+  addedAt    DateTime    @default(now()) @map("added_at") @db.Timestamptz(6)
+  gotBy      String?     @map("got_by") @db.Uuid
+  gotAt      DateTime?   @map("got_at") @db.Timestamptz(6)
+  listId     String      @map("list_id") @db.Uuid
+  list       GroceryList @relation(fields: [listId], references: [id])
 
   @@map("grocery_items")
+  @@schema("meals")
+}
+
+// A list is its own row, never a column on the item (ADR 067, design gate
+// 2026-08-23) — each store is its own list, home is an index of lists. `kind`
+// distinguishes the two seeded permanent lists (always visible, dim at zero)
+// from a tier-4-created runtime one (appears only while it holds items —
+// disappears by emptying, never by a delete action). `groupByAisle` is a
+// property of the LIST, not of the app: a non-food list (not built here, but
+// not precluded — handoff spec "What this invalidates") has none.
+model GroceryList {
+  id           String   @id @default(uuid()) @db.Uuid
+  name         String
+  kind         String // 'permanent' | 'runtime'
+  groupByAisle Boolean  @default(true) @map("group_by_aisle")
+  sortOrder    Int      @default(0) @map("sort_order")
+  createdBy    String?  @map("created_by") @db.Uuid // null for the seeded permanent lists
+  createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+
+  items GroceryItem[]
+
+  @@map("grocery_lists")
   @@schema("meals")
 }
 

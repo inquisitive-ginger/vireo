@@ -38,17 +38,33 @@ async function getCookieForProfile(profileId: string): Promise<string> {
   return getCookie(res)
 }
 
+async function defaultListId(): Promise<string> {
+  const list = await mealPrisma.groceryList.findFirstOrThrow({
+    where: { kind: 'permanent' },
+    orderBy: { sortOrder: 'asc' },
+  })
+  return list.id
+}
+
 async function clearGroceries() {
   await mealPrisma.groceryItem.deleteMany({})
   await mealPrisma.groceryAisleOverride.deleteMany({})
+  // Permanent lists are seeded once by the migration and stay put; only
+  // runtime lists (created by tests) are torn down between them.
+  await mealPrisma.groceryList.deleteMany({ where: { kind: 'runtime' } })
 }
 
 async function clearMeals() {
   await mealPrisma.plannedMeal.deleteMany({})
 }
 
-async function addItem(cookie: string, payload: Record<string, unknown>) {
-  return app.inject({ method: 'POST', url: '/api/groceries', headers: { cookie }, payload })
+async function addItem(cookie: string, listId: string, payload: Record<string, unknown>) {
+  return app.inject({
+    method: 'POST',
+    url: `/api/groceries/lists/${listId}/items`,
+    headers: { cookie },
+    payload,
+  })
 }
 
 beforeAll(async () => {
@@ -94,74 +110,125 @@ beforeEach(async () => {
   await clearMeals()
 })
 
-// ─── POST /api/groceries ───────────────────────────────────────────────────────
+// ─── GET /api/groceries/lists ──────────────────────────────────────────────────
 
-describe('POST /api/groceries', () => {
-  it('creates an item and files it by the dictionary — tier 1 may add', async () => {
+describe('GET /api/groceries/lists', () => {
+  it('shows the seeded permanent lists even with no items — dim at zero, never hidden', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const res = await app.inject({
+      method: 'GET',
+      url: '/api/groceries/lists',
+      headers: { cookie },
+    })
+    expect(res.statusCode).toBe(200)
+    const { lists } = res.json()
+    const names = lists.map((l: { name: string }) => l.name)
+    expect(names).toEqual(expect.arrayContaining(['Grocery Store', 'Costco']))
+    for (const list of lists) {
+      expect(list.kind).toBe('permanent')
+      expect(list.itemCount).toBe(0)
+    }
+  })
+
+  it('hides a runtime list until it holds an item, then shows it', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const created = await app.inject({
+      method: 'POST',
+      url: '/api/groceries/lists',
+      headers: { cookie },
+      payload: { name: 'Home Depot' },
+    })
+    const runtimeId = created.json().id
+
+    const beforeItem = await app.inject({
+      method: 'GET',
+      url: '/api/groceries/lists',
+      headers: { cookie },
+    })
+    expect(beforeItem.json().lists.map((l: { id: string }) => l.id)).not.toContain(runtimeId)
+
+    await addItem(cookie, runtimeId, { name: 'Lumber' })
+
+    const afterItem = await app.inject({
+      method: 'GET',
+      url: '/api/groceries/lists',
+      headers: { cookie },
+    })
+    const shown = afterItem.json().lists.find((l: { id: string }) => l.id === runtimeId)
+    expect(shown).toBeTruthy()
+    expect(shown.itemCount).toBe(1)
+  })
+
+  it('a tier-1 profile may view', async () => {
     const cookie = await getCookieForProfile(KID_ID)
-    const res = await addItem(cookie, { name: 'Milk' })
+    const res = await app.inject({
+      method: 'GET',
+      url: '/api/groceries/lists',
+      headers: { cookie },
+    })
+    expect(res.statusCode).toBe(200)
+  })
+})
+
+// ─── POST /api/groceries/lists ─────────────────────────────────────────────────
+
+describe('POST /api/groceries/lists', () => {
+  it('a tier-4 profile creates a runtime list', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/groceries/lists',
+      headers: { cookie },
+      payload: { name: 'Trader Joe’s' },
+    })
     expect(res.statusCode).toBe(201)
     const body = res.json()
-    expect(body.name).toBe('Milk')
-    expect(body.category).toBe('Dairy')
-    expect(body.status).toBe('needed')
-    expect(body.sourceType).toBe('manual')
+    expect(body.name).toBe('Trader Joe’s')
+    expect(body.kind).toBe('runtime')
+    expect(body.itemCount).toBe(0)
   })
 
-  it('files an unknown word into Other', async () => {
-    const cookie = await getCookieForProfile(PARENT_ID)
-    const res = await addItem(cookie, { name: 'Flibbertigibbet' })
-    expect(res.json().category).toBe('Other')
-  })
-
-  it('notes manual attribution as "<name> added these"', async () => {
-    const cookie = await getCookieForProfile(KID2_ID)
-    const res = await addItem(cookie, { name: 'Snap peas' })
-    expect(res.json().note).toBe('Emma added these')
+  it('rejects a tier-3 profile — creating a list is tier 4 (ADR 067)', async () => {
+    const cookie = await getCookieForProfile(TEEN_ID)
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/groceries/lists',
+      headers: { cookie },
+      payload: { name: 'Costco run' },
+    })
+    expect(res.statusCode).toBe(403)
   })
 
   it('rejects a missing name with 400', async () => {
     const cookie = await getCookieForProfile(PARENT_ID)
-    const res = await addItem(cookie, {})
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/groceries/lists',
+      headers: { cookie },
+      payload: {},
+    })
     expect(res.statusCode).toBe(400)
-  })
-
-  it('an override files ahead of the dictionary', async () => {
-    const parentCookie = await getCookieForProfile(PARENT_ID)
-    await mealPrisma.groceryAisleOverride.create({
-      data: { normalizedName: 'milk', category: 'Pantry' },
-    })
-    const res = await addItem(parentCookie, { name: 'Milk' })
-    expect(res.json().category).toBe('Pantry')
-  })
-
-  it('hasOverride is false for a fresh dictionary or Other filing', async () => {
-    const cookie = await getCookieForProfile(PARENT_ID)
-    expect((await addItem(cookie, { name: 'Milk' })).json().hasOverride).toBe(false)
-    expect((await addItem(cookie, { name: 'Flibbertigibbet' })).json().hasOverride).toBe(false)
-  })
-
-  it('hasOverride is true once a per-family override exists for the name', async () => {
-    const cookie = await getCookieForProfile(PARENT_ID)
-    await mealPrisma.groceryAisleOverride.create({
-      data: { normalizedName: 'milk', category: 'Pantry' },
-    })
-    expect((await addItem(cookie, { name: 'Milk' })).json().hasOverride).toBe(true)
   })
 })
 
-// ─── GET /api/groceries ────────────────────────────────────────────────────────
+// ─── GET /api/groceries/lists/:id ──────────────────────────────────────────────
 
-describe('GET /api/groceries', () => {
-  it('returns items sorted by the fixed aisle walk order', async () => {
+describe('GET /api/groceries/lists/:id', () => {
+  it('returns the list and its items, sorted by the fixed aisle walk order', async () => {
     const cookie = await getCookieForProfile(PARENT_ID)
-    await addItem(cookie, { name: 'Rice' }) // Pantry
-    await addItem(cookie, { name: 'Chicken thighs' }) // Meat
-    await addItem(cookie, { name: 'Apples' }) // Produce
+    const listId = await defaultListId()
+    await addItem(cookie, listId, { name: 'Rice' }) // Pantry
+    await addItem(cookie, listId, { name: 'Chicken thighs' }) // Meat
+    await addItem(cookie, listId, { name: 'Apples' }) // Produce
 
-    const res = await app.inject({ method: 'GET', url: '/api/groceries', headers: { cookie } })
+    const res = await app.inject({
+      method: 'GET',
+      url: `/api/groceries/lists/${listId}`,
+      headers: { cookie },
+    })
     expect(res.statusCode).toBe(200)
-    const { items } = res.json()
+    const { list, items } = res.json()
+    expect(list.id).toBe(listId)
     expect(items.map((i: { category: string }) => i.category)).toEqual([
       'Produce',
       'Meat',
@@ -169,10 +236,93 @@ describe('GET /api/groceries', () => {
     ])
   })
 
-  it('a tier-1 profile may view', async () => {
+  it('404s an unknown list', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const res = await app.inject({
+      method: 'GET',
+      url: '/api/groceries/lists/00000000-0000-0000-0000-000000000099',
+      headers: { cookie },
+    })
+    expect(res.statusCode).toBe(404)
+  })
+})
+
+// ─── POST /api/groceries/lists/:id/items ───────────────────────────────────────
+
+describe('POST /api/groceries/lists/:id/items', () => {
+  it('creates an item on the given list and files it by the dictionary — tier 1 may add', async () => {
     const cookie = await getCookieForProfile(KID_ID)
-    const res = await app.inject({ method: 'GET', url: '/api/groceries', headers: { cookie } })
-    expect(res.statusCode).toBe(200)
+    const listId = await defaultListId()
+    const res = await addItem(cookie, listId, { name: 'Milk' })
+    expect(res.statusCode).toBe(201)
+    const body = res.json()
+    expect(body.name).toBe('Milk')
+    expect(body.category).toBe('Dairy')
+    expect(body.status).toBe('needed')
+    expect(body.sourceType).toBe('manual')
+    expect(body.listId).toBe(listId)
+  })
+
+  it('files an unknown word into Other', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const listId = await defaultListId()
+    const res = await addItem(cookie, listId, { name: 'Flibbertigibbet' })
+    expect(res.json().category).toBe('Other')
+  })
+
+  it('notes manual attribution as "<name> added these" — computed, unused by the client', async () => {
+    const cookie = await getCookieForProfile(KID2_ID)
+    const listId = await defaultListId()
+    const res = await addItem(cookie, listId, { name: 'Snap peas' })
+    expect(res.json().note).toBe('Emma added these')
+  })
+
+  it('rejects a missing name with 400', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const listId = await defaultListId()
+    const res = await addItem(cookie, listId, {})
+    expect(res.statusCode).toBe(400)
+  })
+
+  it('404s an unknown list', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const res = await addItem(cookie, '00000000-0000-0000-0000-000000000099', { name: 'Milk' })
+    expect(res.statusCode).toBe(404)
+  })
+
+  it('an override files ahead of the dictionary', async () => {
+    const parentCookie = await getCookieForProfile(PARENT_ID)
+    const listId = await defaultListId()
+    await mealPrisma.groceryAisleOverride.create({
+      data: { normalizedName: 'milk', category: 'Pantry' },
+    })
+    const res = await addItem(parentCookie, listId, { name: 'Milk' })
+    expect(res.json().category).toBe('Pantry')
+  })
+
+  it('hasOverride is true once a per-family override exists for the name', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const listId = await defaultListId()
+    await mealPrisma.groceryAisleOverride.create({
+      data: { normalizedName: 'milk', category: 'Pantry' },
+    })
+    expect((await addItem(cookie, listId, { name: 'Milk' })).json().hasOverride).toBe(true)
+  })
+
+  it('two different lists keep separate items — a Costco add never lands on Grocery Store', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const groceryStoreId = await defaultListId()
+    const costco = await mealPrisma.groceryList.findFirstOrThrow({ where: { name: 'Costco' } })
+
+    await addItem(cookie, groceryStoreId, { name: 'Milk' })
+    await addItem(cookie, costco.id, { name: 'Paper towels' })
+
+    const groceryStoreView = await app.inject({
+      method: 'GET',
+      url: `/api/groceries/lists/${groceryStoreId}`,
+      headers: { cookie },
+    })
+    expect(groceryStoreView.json().items.map((i: { name: string }) => i.name)).toEqual(['Milk'])
   })
 })
 
@@ -181,7 +331,8 @@ describe('GET /api/groceries', () => {
 describe('POST /api/groceries/:id/aisle', () => {
   it('re-files the item and teaches an override for the next add', async () => {
     const cookie = await getCookieForProfile(PARENT_ID)
-    const created = (await addItem(cookie, { name: 'Kombucha' })).json()
+    const listId = await defaultListId()
+    const created = (await addItem(cookie, listId, { name: 'Kombucha' })).json()
     expect(created.category).toBe('Other')
 
     const corrected = await app.inject({
@@ -193,14 +344,15 @@ describe('POST /api/groceries/:id/aisle', () => {
     expect(corrected.statusCode).toBe(200)
     expect(corrected.json().category).toBe('Pantry')
 
-    const nextAdd = (await addItem(cookie, { name: 'kombucha' })).json()
+    const nextAdd = (await addItem(cookie, listId, { name: 'kombucha' })).json()
     expect(nextAdd.category).toBe('Pantry')
     expect(nextAdd.hasOverride).toBe(true)
   })
 
   it('"Leave it" (category: Other) teaches an override too, retiring the one-time prompt', async () => {
     const cookie = await getCookieForProfile(PARENT_ID)
-    const created = (await addItem(cookie, { name: 'Paper towels' })).json()
+    const listId = await defaultListId()
+    const created = (await addItem(cookie, listId, { name: 'Paper towels' })).json()
     expect(created.category).toBe('Other')
     expect(created.hasOverride).toBe(false)
 
@@ -216,14 +368,19 @@ describe('POST /api/groceries/:id/aisle', () => {
 
     // A fresh fetch of the same item — not just the mutation's own response —
     // still reports hasOverride, which is what actually keeps the prompt gone.
-    const list = await app.inject({ method: 'GET', url: '/api/groceries', headers: { cookie } })
+    const list = await app.inject({
+      method: 'GET',
+      url: `/api/groceries/lists/${listId}`,
+      headers: { cookie },
+    })
     const refetched = list.json().items.find((i: { id: string }) => i.id === created.id)
     expect(refetched.hasOverride).toBe(true)
   })
 
   it('rejects a category outside the fixed aisle list with 400', async () => {
     const cookie = await getCookieForProfile(PARENT_ID)
-    const created = (await addItem(cookie, { name: 'Kombucha' })).json()
+    const listId = await defaultListId()
+    const created = (await addItem(cookie, listId, { name: 'Kombucha' })).json()
     const res = await app.inject({
       method: 'POST',
       url: `/api/groceries/${created.id}/aisle`,
@@ -244,9 +401,10 @@ describe('POST /api/groceries/:id/aisle', () => {
     expect(res.statusCode).toBe(404)
   })
 
-  it('returns 403 for a tier-3 profile — teaching a family-wide override is tier 4 (manage)', async () => {
+  it('returns 403 for a tier-3 profile — the gate is ability.can(manage), not a tier read (ADR 067)', async () => {
     const parentCookie = await getCookieForProfile(PARENT_ID)
-    const created = (await addItem(parentCookie, { name: 'Kombucha' })).json()
+    const listId = await defaultListId()
+    const created = (await addItem(parentCookie, listId, { name: 'Kombucha' })).json()
 
     const cookie = await getCookieForProfile(TEEN_ID)
     const res = await app.inject({
@@ -273,9 +431,10 @@ describe('POST /api/groceries/push-needs', () => {
     ).json()
   }
 
-  it('comma-splits needs into items noted with their meal', async () => {
+  it('comma-splits needs into plain items on the default list — no note-line provenance', async () => {
     const cookie = await getCookieForProfile(PARENT_ID)
     const meal = await planMealWithNeeds(cookie, 'chicken thighs, broccoli')
+    const listId = await defaultListId()
 
     const res = await app.inject({
       method: 'POST',
@@ -284,19 +443,21 @@ describe('POST /api/groceries/push-needs', () => {
       payload: { mealId: meal.id },
     })
     expect(res.statusCode).toBe(200)
-    const { items } = res.json()
+    const { items, listId: returnedListId } = res.json()
+    expect(returnedListId).toBe(listId)
     expect(items).toHaveLength(2)
     const names = items.map((i: { name: string }) => i.name).sort()
     expect(names).toEqual(['broccoli', 'chicken thighs'])
     for (const item of items) {
-      expect(item.note).toMatch(/^for \w+'s Rigatoni$/)
       expect(item.sourceType).toBe('meal')
+      expect(item.listId).toBe(listId)
     }
   })
 
-  it('dedupes by normalized name against an open item', async () => {
+  it('dedupes by normalized name against an open item on the same list', async () => {
     const cookie = await getCookieForProfile(PARENT_ID)
-    await addItem(cookie, { name: 'Broccoli' })
+    const listId = await defaultListId()
+    await addItem(cookie, listId, { name: 'Broccoli' })
     const meal = await planMealWithNeeds(cookie, 'broccoli')
 
     const res = await app.inject({
@@ -309,6 +470,23 @@ describe('POST /api/groceries/push-needs', () => {
 
     const all = await mealPrisma.groceryItem.findMany()
     expect(all).toHaveLength(1) // no duplicate created
+  })
+
+  it('does not dedupe against the same name on a DIFFERENT list', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const costco = await mealPrisma.groceryList.findFirstOrThrow({ where: { name: 'Costco' } })
+    await addItem(cookie, costco.id, { name: 'Broccoli' })
+    const meal = await planMealWithNeeds(cookie, 'broccoli')
+
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/groceries/push-needs',
+      headers: { cookie },
+      payload: { mealId: meal.id },
+    })
+    // The Costco broccoli doesn't block the default-list push — it's a
+    // different trip.
+    expect(res.json().items).toHaveLength(1)
   })
 
   it('dedupes a repeated name WITHIN the same push, not just against pre-existing items', async () => {
@@ -329,7 +507,8 @@ describe('POST /api/groceries/push-needs', () => {
 
   it('re-adding an existing checked item unchecks it', async () => {
     const cookie = await getCookieForProfile(PARENT_ID)
-    const created = (await addItem(cookie, { name: 'Broccoli' })).json()
+    const listId = await defaultListId()
+    const created = (await addItem(cookie, listId, { name: 'Broccoli' })).json()
     await mealPrisma.groceryItem.update({
       where: { id: created.id },
       data: { status: 'got', gotBy: PARENT_ID, gotAt: new Date() },
@@ -378,6 +557,11 @@ describe('groceries permission registry', () => {
       module: 'meals',
       action: 'check',
       subject: 'meals.GroceryItem',
+    })
+    expect(PERMISSION_REGISTRY['meals.grocery-list.create']).toMatchObject({
+      module: 'meals',
+      action: 'create',
+      subject: 'meals.GroceryList',
     })
   })
 })

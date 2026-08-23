@@ -1,38 +1,45 @@
 import { useEffect, useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import { Loader2 } from 'lucide-react'
 import {
   FAMILY_PROFILE_ID,
   useAuth,
   useMutation,
+  usePermissions,
   useQuery,
   useQueryClient,
 } from '@family-os/platform'
 import { ErrorCard } from '@family-os/ui'
-import type { GroceriesResponse, GroceryItem, Staple, StaplesResponse } from '../types'
-import { GroceriesPageView } from './GroceriesPageView'
+import type { GroceryItem, GroceryListResponse, Staple, StaplesResponse } from '../types'
+import { GroceryListPageView } from './GroceryListPageView'
 
 // How long the just-added row holds its primary-tint flash (design.md §M5/6:
 // "did my add land?"). Long enough to register, short enough to still read as
 // a pulse rather than a persistent status.
 const FLASH_MS = 1400
 
-export function GroceriesPage() {
-  const { id, tier } = useAuth()
+export function GroceryListPage({ listId }: { listId: string }) {
+  const { id } = useAuth()
+  const ability = usePermissions()
+  const navigate = useNavigate()
   const queryClient = useQueryClient()
   const [flashItemId, setFlashItemId] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
   const canAdd = id !== FAMILY_PROFILE_ID
-  const canCorrect = tier >= 4
+  // The gate is `ability.can`, not a raw tier read (ADR 067) — a `tier >= 4`
+  // comparison is a TierGate, a structural ceiling a parent's own override
+  // can't reach; teaching a correction is exactly what overrides are for.
+  const canCorrect = ability.can('manage', 'meals.GroceryItem')
 
-  // Shares the 'meals/groceries' key prefix with anything else that reads the
-  // list (ADR 013) — one invalidation refreshes every consumer.
-  const itemsQuery = useQuery<GroceriesResponse>({
-    queryKey: ['meals/groceries', id],
+  // Shares the 'meals/groceries' key prefix with the index (ADR 013) — one
+  // invalidation refreshes both.
+  const listQuery = useQuery<GroceryListResponse>({
+    queryKey: ['meals/groceries', 'lists', listId],
     queryFn: () =>
-      fetch('/api/groceries').then((r) => {
+      fetch(`/api/groceries/lists/${listId}`).then((r) => {
         if (!r.ok) throw new Error(String(r.status))
-        return r.json() as Promise<GroceriesResponse>
+        return r.json() as Promise<GroceryListResponse>
       }),
     retry: 1,
   })
@@ -58,7 +65,7 @@ export function GroceriesPage() {
 
   const addItem = useMutation({
     mutationFn: (name: string) =>
-      fetch('/api/groceries', {
+      fetch(`/api/groceries/lists/${listId}/items`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name }),
@@ -99,7 +106,7 @@ export function GroceriesPage() {
     },
   })
 
-  if (itemsQuery.isLoading || staplesQuery.isLoading) {
+  if (listQuery.isLoading || staplesQuery.isLoading) {
     return (
       <div className="flex h-64 items-center justify-center">
         <Loader2 className="size-5 animate-spin text-muted-foreground" />
@@ -107,13 +114,13 @@ export function GroceriesPage() {
     )
   }
 
-  if (itemsQuery.isError || staplesQuery.isError) {
+  if (listQuery.isError || staplesQuery.isError) {
     return (
       <div className="p-6">
         <ErrorCard
           moduleName="Groceries"
           onRetry={() => {
-            void itemsQuery.refetch()
+            void listQuery.refetch()
             void staplesQuery.refetch()
           }}
         />
@@ -121,14 +128,18 @@ export function GroceriesPage() {
     )
   }
 
+  if (!listQuery.data) return null
+
   return (
-    <GroceriesPageView
-      items={itemsQuery.data?.items ?? []}
+    <GroceryListPageView
+      list={listQuery.data.list}
+      items={listQuery.data.items}
       staples={staplesQuery.data?.staples ?? []}
       canAdd={canAdd}
       canCorrect={canCorrect}
       flashItemId={flashItemId}
       errorMessage={errorMessage}
+      onBack={() => navigate('/groceries')}
       onAdd={(name) => addItem.mutateAsync(name).then(() => {})}
       onTapStaple={(staple: Staple) => addItem.mutate(staple.name)}
       onCorrect={(item, category) => correctAisle.mutate({ item, category })}

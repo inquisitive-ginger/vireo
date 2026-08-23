@@ -126,8 +126,9 @@ export function MealsPage() {
     onSuccess: () => void invalidate(),
   })
 
-  // Pushes the meal's `needs` onto the grocery list (AC7), then hands off to
-  // /groceries — the list is where the family confirms the push landed.
+  // Pushes the meal's `needs` onto the default grocery list, then hands off
+  // to it — the list is where the family confirms the push landed (items
+  // arrive plain now, no meal note — handoff spec "Amendments this gate makes").
   const pushNeeds = useMutation({
     mutationFn: (meal: PlannedMeal) =>
       fetch('/api/groceries/push-needs', {
@@ -136,12 +137,12 @@ export function MealsPage() {
         body: JSON.stringify({ mealId: meal.id }),
       }).then((r) => {
         if (!r.ok) throw new Error(String(r.status))
-        return r.json()
+        return r.json() as Promise<{ listId: string }>
       }),
-    onSuccess: () => {
+    onSuccess: ({ listId }) => {
       setPushNeedsError(null)
       void queryClient.invalidateQueries({ queryKey: ['meals/groceries'] })
-      navigate('/groceries')
+      navigate(`/groceries/${listId}`)
     },
     // No blind catch (CLAUDE.md): the link otherwise does nothing on failure
     // — no navigation, no row, no sign the tap registered at all.

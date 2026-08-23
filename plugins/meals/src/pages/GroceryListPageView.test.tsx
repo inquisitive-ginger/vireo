@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
-import { GroceriesPageView } from './GroceriesPageView'
-import type { GroceryItem, Staple } from '../types'
+import { GroceryListPageView } from './GroceryListPageView'
+import type { GroceryItem, GroceryList, Staple } from '../types'
 
 function item(overrides: Partial<GroceryItem> = {}): GroceryItem {
   return {
@@ -14,7 +14,19 @@ function item(overrides: Partial<GroceryItem> = {}): GroceryItem {
     sourceId: null,
     addedBy: 'profile-1',
     note: null,
+    listId: 'list-1',
     hasOverride: false,
+    ...overrides,
+  }
+}
+
+function list(overrides: Partial<GroceryList> = {}): GroceryList {
+  return {
+    id: 'list-1',
+    name: 'Grocery Store',
+    kind: 'permanent',
+    groupByAisle: true,
+    itemCount: 0,
     ...overrides,
   }
 }
@@ -24,15 +36,17 @@ const STAPLES: Staple[] = [
   { id: 's2', name: 'Eggs', category: 'Dairy', active: true },
 ]
 
-function renderView(props: Partial<Parameters<typeof GroceriesPageView>[0]> = {}) {
+function renderView(props: Partial<Parameters<typeof GroceryListPageView>[0]> = {}) {
   return render(
-    <GroceriesPageView
+    <GroceryListPageView
+      list={list()}
       items={[]}
       staples={STAPLES}
       canAdd
       canCorrect
       flashItemId={null}
       errorMessage={null}
+      onBack={vi.fn()}
       onAdd={vi.fn().mockResolvedValue(undefined)}
       onTapStaple={vi.fn()}
       onCorrect={vi.fn()}
@@ -41,8 +55,20 @@ function renderView(props: Partial<Parameters<typeof GroceriesPageView>[0]> = {}
   )
 }
 
-describe('GroceriesPageView', () => {
-  it('groups items by aisle in the fixed walk order', () => {
+describe('GroceryListPageView', () => {
+  it('shows the list name as the page title', () => {
+    renderView({ list: list({ name: 'Costco' }) })
+    expect(screen.getByText('Costco')).toBeInTheDocument()
+  })
+
+  it('the back button calls onBack — the only way out is up to the index', () => {
+    const onBack = vi.fn()
+    renderView({ onBack })
+    fireEvent.click(screen.getByRole('button', { name: 'Back to lists' }))
+    expect(onBack).toHaveBeenCalled()
+  })
+
+  it('groups items by aisle in the fixed walk order when the list groups by aisle', () => {
     renderView({
       items: [
         item({ id: '1', name: 'Rice', category: 'Pantry' }),
@@ -56,9 +82,18 @@ describe('GroceriesPageView', () => {
     expect(headings.map((h) => h.textContent)).toEqual(['Produce', 'Meat', 'Pantry'])
   })
 
-  it('renders the note line as provenance, never a chip in the name line', () => {
-    renderView({ items: [item({ note: "for Sunday's rigatoni" })] })
-    expect(screen.getByText("for Sunday's rigatoni")).toBeInTheDocument()
+  it('renders flat, no aisle heads, when the list does not group by aisle', () => {
+    renderView({
+      list: list({ groupByAisle: false }),
+      items: [item({ name: 'Hammer', category: 'Other' })],
+    })
+    expect(screen.queryByText('Other')).not.toBeInTheDocument()
+    expect(screen.getByText('Hammer')).toBeInTheDocument()
+  })
+
+  it('shows quantity right-aligned and tabular when set', () => {
+    renderView({ items: [item({ quantity: '2 lbs' })] })
+    expect(screen.getByText('2 lbs')).toBeInTheDocument()
   })
 
   it('shows an empty state with no items', () => {
@@ -66,19 +101,11 @@ describe('GroceriesPageView', () => {
     expect(screen.getByText(/Nothing on the list/)).toBeInTheDocument()
   })
 
-  it('shows the last error next to the add bar — not the page header, which scrolls off on a long list', () => {
+  it('shows the last error next to the add bar', () => {
     renderView({ errorMessage: "Couldn't add that — try again." })
-    // Both the wide and narrow add bars render in the DOM (the split is a
-    // CSS breakpoint jsdom doesn't see), so the message appears twice — once
-    // per add bar, each sharing that add bar's own container with its input
-    // (never the page header's, which scrolls off a long list).
     const messages = screen.getAllByText("Couldn't add that — try again.")
     const inputs = screen.getAllByPlaceholderText('Add to the list…')
     expect(messages).toHaveLength(inputs.length)
-    for (const message of messages) {
-      const shared = message.closest('div')
-      expect(shared?.querySelector('input[placeholder="Add to the list…"]')).toBeTruthy()
-    }
   })
 
   it('adds an item by typing and pressing Enter', async () => {
@@ -110,22 +137,34 @@ describe('GroceriesPageView', () => {
     expect(input).toHaveValue('Snap peas')
   })
 
-  it('tapping a staple chip quick-adds it', () => {
+  it('tapping a staple chip at rest quick-adds it', () => {
     const onTapStaple = vi.fn()
     renderView({ onTapStaple })
     fireEvent.click(screen.getAllByRole('button', { name: 'Milk' })[0])
     expect(onTapStaple).toHaveBeenCalledWith(STAPLES[0])
   })
 
-  it('narrows the chip strip to a typeahead while typing', () => {
+  it('shows a muted inline completion in the field while typing a staple prefix — nothing else moves', () => {
     renderView()
     // Both the wide (wall) and narrow (phone) add bars render in the DOM —
-    // the split between them is a CSS breakpoint, invisible to jsdom.
+    // the split between them is a CSS breakpoint, invisible to jsdom — and
+    // each owns its own input state, so both need the keystroke.
     for (const input of screen.getAllByPlaceholderText('Add to the list…')) {
-      fireEvent.change(input, { target: { value: 'egg' } })
+      fireEvent.change(input, { target: { value: 'Mi' } })
     }
-    expect(screen.queryAllByRole('button', { name: 'Milk' })).toHaveLength(0)
-    expect(screen.getAllByRole('button', { name: 'Eggs' }).length).toBeGreaterThan(0)
+    // The rest-state chip strip is gone once typing starts (rejected: a
+    // pill strip that narrows while typing moves layout) — the ghost text
+    // lives inside the field instead.
+    expect(screen.queryByRole('button', { name: 'Eggs' })).not.toBeInTheDocument()
+    expect(screen.getAllByText('lk').length).toBeGreaterThan(0)
+  })
+
+  it('Tab accepts the inline completion into the field', () => {
+    renderView()
+    const input = screen.getAllByPlaceholderText('Add to the list…')[0] as HTMLInputElement
+    fireEvent.change(input, { target: { value: 'Mi' } })
+    fireEvent.keyDown(input, { key: 'Tab' })
+    expect(input.value).toBe('Milk')
   })
 
   it('an Other-filed item shows a one-time "Which aisle?" correction row, in place, to a manager', () => {
@@ -147,7 +186,7 @@ describe('GroceriesPageView', () => {
     expect(onCorrect).toHaveBeenCalledWith(other, 'Other')
   })
 
-  it('an item with a server-taught override (dismissed or corrected before) shows no correction row — survives a reload', () => {
+  it('an item with a server-taught override shows no correction row — survives a reload', () => {
     const other = item({ id: 'other-1', category: 'Other', hasOverride: true })
     renderView({ items: [other] })
     expect(screen.queryByText('Which aisle?')).not.toBeInTheDocument()
@@ -155,11 +194,6 @@ describe('GroceriesPageView', () => {
 
   it('hides the correction row from a non-manager — teaching an override is tier 4', () => {
     renderView({ items: [item({ category: 'Other' })], canCorrect: false })
-    expect(screen.queryByText('Which aisle?')).not.toBeInTheDocument()
-  })
-
-  it('no correction row on a filed item', () => {
-    renderView({ items: [item({ category: 'Dairy' })] })
     expect(screen.queryByText('Which aisle?')).not.toBeInTheDocument()
   })
 

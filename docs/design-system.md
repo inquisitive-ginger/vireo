@@ -1,9 +1,10 @@
 # Design System
 
-> Last updated: 2026-08-20 — **ADR 063** (ListRow), **ADR 064** (identity-hue
-> trigger narrowed).
+> Last updated: 2026-08-23 — **ADR 067** (grocery list rework: each store its
+> own list, `ListRow` outcome replaced).
 >
-> Prior: 2026-07-28 — ADR 057, daily time-window recurrence
+> Prior: 2026-08-20 — ADR 063 (ListRow), ADR 064 (identity-hue trigger
+> narrowed); 2026-07-28 — ADR 057, daily time-window recurrence
 > ([Daily time-window series](#daily-time-window-series--a-condition-with-a-clock-settled--2026-07-28));
 > 2026-07-24 — ADR 054, currency named Pritchett Bucks
 > ([Currency marks](#currency-marks)); 2026-07-22 — ADR 051, gold and coin to
@@ -1087,7 +1088,9 @@ use `--radius-panel` / `--radius-hero` — see [Spacing](#spacing).
 
 ### The scanned-list primitive — `ListRow`
 
-**Settled** — ADR 063 (M5/1 Meals & Groceries design, 2026-08-11).
+**Settled** — ADR 063 (M5/1 Meals & Groceries design, 2026-08-11). **Grocery
+outcome replaced** by the M5/6 gate (2026-08-23, ADR 067) — this entry
+reflects the gate, not the M5/1 exploration.
 
 `@family-os/ui` gains a second row primitive alongside `ItemCard`: **`<ListRow>`**
 — hairline-separated (`border-b border-border`, no per-row border/shadow/radius),
@@ -1119,11 +1122,27 @@ Type: the name line is `text-list-title` (17px/500) — one step up from
 row states its name rather than leading its own object. A group header (an
 aisle head) is `text-aisle-head` (13px/700). The content column is the
 caller's `children`, same contract as `ItemCard`: bring your own `min-w-0
-flex-1` wrapper.
+flex-1` wrapper. `ListRow` itself needed **no change** for the M5/6 gate —
+its generic `leading` slot was ADR 063's open question, and the gate's answer
+(a static check ring, whole-row checking deferred to M5/7) fits it as-is.
+
+**Groceries: each store is its own list (ADR 067).** Home is an index of
+lists (`ItemCard` rows, tap enters one full-screen); a permanent list
+(Grocery Store, Costco) stays visible and dims at zero, a runtime one shows
+only while it holds items. Inside a list the destination is implied — no
+store picker — and aisle grouping is a **property of the list**
+(`groupByAisle`), not of the app: a non-food list renders flat. Row content
+is name plus quantity, **right-aligned and tabular** (`font-variant-numeric:
+tabular-nums`) when set — **no note line**. Typing uses inline ghost
+completion in the field itself (muted remainder text, `Tab`/`ArrowRight` to
+accept) rather than a suggestion strip that moves while typing; a static
+staple chip strip still shows at rest (empty field).
 
 `ListRow` carries no identity chrome by default — grocery rows in particular
 render **no spine, no avatar** (ADR 064): the person who added an item, or
-whose meal it's for, is a fact in the note line, not a colour.
+whose meal it's for, was rendered as a note-line fact through M5/6's build;
+the gate cut that surface (no consumer currently renders `GroceryItem.note`,
+though the field still computes server-side for M5/7).
 
 ### View switches — `SegmentedControl`
 

@@ -198,6 +198,16 @@ export const PERMISSION_REGISTRY = {
     action: 'check',
     subject: 'meals.GroceryItem',
   },
+  // A list is its own subject (ADR 067) — creating one commits the household
+  // to a trip, unlike adding an item to one already planned. Baseline tier 4
+  // via `manage all`; reading a list is not separately gated (view
+  // meals.GroceryItem covers it).
+  'meals.grocery-list.create': {
+    label: 'Create a shopping list',
+    module: 'meals',
+    action: 'create',
+    subject: 'meals.GroceryList',
+  },
 } as const
 
 export type PermissionString = keyof typeof PERMISSION_REGISTRY
