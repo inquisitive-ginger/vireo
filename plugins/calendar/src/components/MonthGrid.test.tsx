@@ -208,5 +208,30 @@ describe('MonthGrid', () => {
       const cell = screen.getByLabelText(/Zoe's got dinner/)
       expect(cell.getAttribute('aria-label')).toContain("Teddy's got dinner")
     })
+
+    it('sits in the date row, opposite the date number — never inside the chip list (live review: it was getting lost among events)', () => {
+      const cell = renderCellWithMark()
+      // The date row is `.justify-between` — date number left, marks (+
+      // quick-add) right. The chip column is the separate `.flex-col` sibling
+      // below it; a mark is a different kind of object and must never land there.
+      const dateRow = cell.querySelector('.justify-between')
+      expect(dateRow?.querySelector('.lucide-utensils')).toBeInTheDocument()
+
+      const chipColumn = cell.querySelector('.flex-col')
+      expect(chipColumn?.querySelector('.lucide-utensils')).not.toBeInTheDocument()
+    })
+
+    function renderCellWithMark(): HTMLElement {
+      render(
+        <MonthGrid
+          weeks={layoutMonth([], 2026, 5)}
+          membersById={members}
+          today={new Date(2026, 5, 22)}
+          onDrillDay={vi.fn()}
+          marksByDate={new Map([[dayKey, [mark]]])}
+        />
+      )
+      return screen.getByLabelText(/Zoe's got dinner/)
+    }
   })
 })

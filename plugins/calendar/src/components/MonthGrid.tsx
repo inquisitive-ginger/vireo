@@ -90,7 +90,11 @@ export function MonthGrid({
                     !cell.inMonth && 'bg-muted/30'
                   )}
                 >
-                  {/* date number — today gets the filled primary circle */}
+                  {/* date number left, day marks right, on the SAME row (live
+                      review: marks were lost in the chip flow) — a designated
+                      slot, not another chip. The date span's size/position is
+                      untouched by whether marks exist; the marks group is a
+                      sibling, not a wrapper around it. */}
                   <div className="flex h-5 items-center justify-between">
                     <span
                       className={cn(
@@ -104,46 +108,54 @@ export function MonthGrid({
                     >
                       {cell.date.getDate()}
                     </span>
-                    {onQuickAdd && (
-                      // Hover-only quick-add (hover-capable devices); revealed on
-                      // cell hover or keyboard focus. Hidden entirely on touch.
-                      <button
-                        type="button"
-                        aria-label={`Add event on ${cell.date.toDateString()}`}
-                        onClick={(e) => {
-                          e.stopPropagation()
-                          onQuickAdd(cell.date)
-                        }}
-                        className="hidden size-6 items-center justify-center rounded-full text-muted-foreground opacity-0 transition-opacity hover:bg-muted hover:text-foreground focus-visible:opacity-100 group-hover:opacity-100 [@media(hover:hover)]:flex"
-                      >
-                        <Plus className="h-4 w-4" />
-                      </button>
-                    )}
+                    <div className="flex items-center gap-1">
+                      {dayMarks.length > 0 && (
+                        // Two marks (ADR 050's cap) fit side by side without
+                        // crowding the date number — how a THIRD-provider's
+                        // world stacks/reveals is explicitly deferred, not
+                        // decided here.
+                        <div className={cn('flex items-center gap-1.5', isPast && 'opacity-60')}>
+                          {dayMarks.map((mark) => {
+                            const owner = mark.ownerId ? membersById.get(mark.ownerId) : undefined
+                            const Glyph = DAY_MARK_GLYPHS[mark.glyph]
+                            return (
+                              <div
+                                key={`${mark.ownerId ?? ''}-${mark.glyph}`}
+                                className="flex items-center gap-[3px]"
+                                title={mark.label}
+                              >
+                                {owner && <DayMarkOwnerDot member={owner} />}
+                                {Glyph && (
+                                  <Glyph aria-hidden className="h-3 w-3 shrink-0 opacity-75" />
+                                )}
+                              </div>
+                            )
+                          })}
+                        </div>
+                      )}
+                      {onQuickAdd && (
+                        // Hover-only quick-add (hover-capable devices); revealed on
+                        // cell hover or keyboard focus. Hidden entirely on touch.
+                        <button
+                          type="button"
+                          aria-label={`Add event on ${cell.date.toDateString()}`}
+                          onClick={(e) => {
+                            e.stopPropagation()
+                            onQuickAdd(cell.date)
+                          }}
+                          className="hidden size-6 items-center justify-center rounded-full text-muted-foreground opacity-0 transition-opacity hover:bg-muted hover:text-foreground focus-visible:opacity-100 group-hover:opacity-100 [@media(hover:hover)]:flex"
+                        >
+                          <Plus className="h-4 w-4" />
+                        </button>
+                      )}
+                    </div>
                   </div>
                   {/* reserved space: gap below the number + the span band */}
                   <div style={{ height: NUM_GAP + spanBandH }} />
-                  {/* single-day chips — past days recede */}
+                  {/* single-day chips — past days recede. Marks never interleave
+                      here and never count toward "+N more" — that count is
+                      events-only. */}
                   <div className={cn('flex flex-col gap-0.5', isPast && 'opacity-60')}>
-                    {dayMarks.length > 0 && (
-                      <div className="flex items-center gap-1.5">
-                        {dayMarks.map((mark) => {
-                          const owner = mark.ownerId ? membersById.get(mark.ownerId) : undefined
-                          const Glyph = DAY_MARK_GLYPHS[mark.glyph]
-                          return (
-                            <div
-                              key={`${mark.ownerId ?? ''}-${mark.glyph}`}
-                              className="flex items-center gap-[3px]"
-                              title={mark.label}
-                            >
-                              {owner && <DayMarkOwnerDot member={owner} />}
-                              {Glyph && (
-                                <Glyph aria-hidden className="h-3 w-3 shrink-0 opacity-75" />
-                              )}
-                            </div>
-                          )
-                        })}
-                      </div>
-                    )}
                     {visible.map((event) => (
                       <EventChip key={event.id} event={event} membersById={membersById} />
                     ))}
