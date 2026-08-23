@@ -177,5 +177,11 @@ describe('meals nudge tick', () => {
     // "Today" is still DAY_ONLY in this tick — nothing planned for it any more.
     await runMealsNudgeTick(bus, atHour(16, 10))
     expect(await notifCount(DAD_ID)).toBe(1) // no second nudge for the vacated day
+
+    // The discriminating step: tick on the meal's *new* date. A `mealId`-keyed
+    // ledger would still see this meal's tier4 claim as already spent; the
+    // date-keyed ledger has a free key for Aug 2 and fires fresh.
+    await runMealsNudgeTick(bus, new Date(2026, 7, 2, 16, 0, 0))
+    expect(await notifCount(DAD_ID)).toBe(2)
   })
 })

@@ -25,7 +25,6 @@ model PlannedMeal {
   createdBy  String   @map("created_by") @db.Uuid
   createdAt  DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
   updatedAt  DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
-  nudges     DinnerNudgeLog[]
 
   @@unique([date, slot])
   @@map("planned_meals")
@@ -33,15 +32,17 @@ model PlannedMeal {
 }
 
 // ADR 045's shape, dual of calendar.reminder_log: a sparse past-only ledger keyed
-// by the day being nudged (not the meal row) — editing a meal's date must not
-// carry its old day's claim forward to the new day. `meal_id` is kept for
-// cascade-delete only, not part of the PK.
+// by the day being nudged, not the meal row — its lifetime must track the day,
+// not any one meal. `meal_id` is a plain uuid (owner_id/created_by precedent
+// above), not an FK: a cascade-on-delete here would let re-planning a deleted
+// day's dinner re-fire a nudge that already went out, and a PATCH that moves a
+// meal to a new date would leave the row pointing at a meal no longer on that
+// date. The 30-day prune reclaims stale rows instead.
 model DinnerNudgeLog {
-  date     DateTime    @db.Date
+  date     DateTime @db.Date
   audience String
-  mealId   String      @map("meal_id") @db.Uuid
-  firedAt  DateTime    @default(now()) @map("fired_at") @db.Timestamptz(6)
-  meal     PlannedMeal @relation(fields: [mealId], references: [id], onDelete: Cascade)
+  mealId   String   @map("meal_id") @db.Uuid
+  firedAt  DateTime @default(now()) @map("fired_at") @db.Timestamptz(6)
 
   @@id([date, audience])
   @@map("dinner_nudge_log")

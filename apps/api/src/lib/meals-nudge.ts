@@ -72,7 +72,13 @@ async function fireNudge(
     })
     await mealPrisma.dinnerNudgeLog
       .delete({ where: { date_audience: { date, audience } } })
-      .catch(() => {})
+      .catch((releaseErr) =>
+        console.error('[meals] failed to release nudge claim after dispatch failure', {
+          date,
+          audience,
+          releaseErr,
+        })
+      )
   }
 }
 
@@ -82,17 +88,17 @@ async function fireNudge(
  *  Exported for tests (driven with a mocked `now`). */
 export async function runMealsNudgeTick(eventBus: EventBus, now = new Date()): Promise<void> {
   const hour = now.getHours()
-  if (hour < ESCALATION_HOUR || hour >= DINNER_DONE_HOUR) return
-
-  const date = todayDateOnly(now)
-  const meal = await mealPrisma.plannedMeal.findFirst({ where: { date, slot: 'dinner' } })
-  if (!meal) return // AC2: no meal at all nudges nobody
-
-  if (meal.ownerId) {
-    await fireNudge(eventBus, meal, date, 'owner')
-  } else if (!isCovered(meal)) {
-    // AC2: isCovered() days (going out, ownerless takeout) nudge nobody.
-    await fireNudge(eventBus, meal, date, 'tier4')
+  if (hour >= ESCALATION_HOUR && hour < DINNER_DONE_HOUR) {
+    const date = todayDateOnly(now)
+    const meal = await mealPrisma.plannedMeal.findFirst({ where: { date, slot: 'dinner' } })
+    if (meal) {
+      if (meal.ownerId) {
+        await fireNudge(eventBus, meal, date, 'owner')
+      } else if (!isCovered(meal)) {
+        // AC2: isCovered() days (going out, ownerless takeout) nudge nobody.
+        await fireNudge(eventBus, meal, date, 'tier4')
+      }
+    } // else AC2: no meal at all nudges nobody
   }
 
   await mealPrisma.dinnerNudgeLog.deleteMany({
