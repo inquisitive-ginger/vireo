@@ -1,6 +1,6 @@
 import { useRef, useState } from 'react'
-import { Plus } from 'lucide-react'
-import { Button, Chip, Input, cn } from '@family-os/ui'
+import { ChevronDown, Plus } from 'lucide-react'
+import { Button, Chip, Input, Popover, PopoverContent, PopoverTrigger, cn } from '@family-os/ui'
 import type { Staple } from '../types'
 
 export interface GroceryListOption {
@@ -106,8 +106,10 @@ export function GroceryAddBar({
   )
 
   // Staples at rest only (handoff spec rejects a strip that narrows while
-  // typing — that's what ghost completion replaces).
-  const chipStrip = value === '' && staples.length > 0 && (
+  // typing — that's what ghost completion replaces). The index composer never
+  // renders this: a staple is a shortcut for a store you're already in, and
+  // on the index no store is implied yet (`listPicker` is index-only).
+  const chipStrip = !listPicker && value === '' && staples.length > 0 && (
     <div className={cn('flex flex-wrap gap-1.5', layout === 'wide' ? 'max-w-md' : '')}>
       {staples.map((staple) => (
         <Chip key={staple.id} selected={false} onClick={() => onTapStaple(staple)}>
@@ -117,24 +119,46 @@ export function GroceryAddBar({
     </div>
   )
 
+  // A compact trigger, not a row of chips — the index's subject is the list
+  // of lists, and a full picker row above the composer is the proportion bug
+  // this replaces (see GroceriesIndexPageView). One h-9 control matches the
+  // field it sits beside.
+  const selectedList = listPicker?.options.find((o) => o.id === listPicker.selectedId)
   const picker = listPicker && (
-    <div className="flex flex-wrap items-center gap-1.5">
-      <span className="text-xs-body text-muted-foreground">Add to</span>
-      {listPicker.options.map((option) => (
-        <Chip
-          key={option.id}
-          selected={option.id === listPicker.selectedId}
-          onClick={() => listPicker.onSelect(option.id)}
-          selectedClassName="border-primary bg-primary/10 text-primary"
+    <Popover>
+      <PopoverTrigger asChild>
+        <button
+          type="button"
+          aria-label="Choose which list to add to"
+          className="flex h-9 shrink-0 items-center gap-1 rounded-md border border-input bg-background px-2.5 text-sm-token max-w-36"
         >
-          {option.name}
-        </Chip>
-      ))}
-    </div>
+          <span className="truncate">{selectedList?.name ?? 'Add to…'}</span>
+          <ChevronDown className="size-3.5 shrink-0 text-muted-foreground" aria-hidden />
+        </button>
+      </PopoverTrigger>
+      <PopoverContent align="start" className="w-44 p-1">
+        {listPicker.options.map((option) => (
+          <button
+            key={option.id}
+            type="button"
+            onClick={() => listPicker.onSelect(option.id)}
+            className={cn(
+              'block w-full rounded-md px-2.5 py-1.5 text-left text-sm-token',
+              option.id === listPicker.selectedId
+                ? 'bg-primary/10 text-primary font-medium'
+                : 'hover:bg-secondary/70'
+            )}
+          >
+            {option.name}
+          </button>
+        ))}
+      </PopoverContent>
+    </Popover>
   )
 
   const bar = (
     <div className="flex items-center gap-2">
+      {picker}
       {nameField}
       <Button
         type="button"
@@ -153,9 +177,8 @@ export function GroceryAddBar({
   if (layout === 'wide') {
     return (
       <div className="flex flex-col gap-2 border-b border-border pb-4">
-        {picker}
         <div className="flex items-center gap-4">
-          <div className="max-w-xs flex-1">{bar}</div>
+          <div className="max-w-sm flex-1">{bar}</div>
           {chipStrip}
         </div>
         {error}
@@ -165,7 +188,6 @@ export function GroceryAddBar({
 
   return (
     <div className="flex flex-col gap-2 px-4">
-      {picker}
       {chipStrip}
       {bar}
       {error}

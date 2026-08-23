@@ -70,7 +70,10 @@ describe('GroceriesIndexPageView', () => {
 
   it('shows the "Add to" list picker only on the index', () => {
     renderView({ lists: [list(), list({ id: 'list-2', name: 'Costco' })] })
-    expect(screen.getAllByText('Add to').length).toBeGreaterThan(0)
+    // A compact trigger, not a row of chips (see GroceryAddBar) — it names
+    // the currently-selected list until opened.
+    const [trigger] = screen.getAllByRole('button', { name: 'Choose which list to add to' })
+    fireEvent.click(trigger)
     expect(screen.getAllByRole('button', { name: 'Costco' }).length).toBeGreaterThan(0)
   })
 
@@ -80,6 +83,8 @@ describe('GroceriesIndexPageView', () => {
       lists: [list(), list({ id: 'list-2', name: 'Costco' })],
       onSelectAddTarget,
     })
+    const [trigger] = screen.getAllByRole('button', { name: 'Choose which list to add to' })
+    fireEvent.click(trigger)
     fireEvent.click(screen.getAllByRole('button', { name: 'Costco' })[0])
     expect(onSelectAddTarget).toHaveBeenCalledWith('list-2')
   })
@@ -92,7 +97,7 @@ describe('GroceriesIndexPageView', () => {
   it('a tier-4 viewer can create a list', async () => {
     const onCreateList = vi.fn().mockResolvedValue(undefined)
     renderView({ canCreateList: true, onCreateList })
-    fireEvent.click(screen.getByText('New list'))
+    fireEvent.click(screen.getByRole('button', { name: 'Create a new list' }))
     const input = screen.getByLabelText('New list name')
     fireEvent.change(input, { target: { value: 'Home Depot' } })
     fireEvent.click(screen.getByRole('button', { name: 'Create' }))
