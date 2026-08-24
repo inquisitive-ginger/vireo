@@ -75,6 +75,28 @@ and supersedes design.md's "provenance is one grammar: the note line" for
 groceries. The week page's `N things needed` link still creates the items; it
 just doesn't mark them. Do not quietly reintroduce the note.
 
+## Amendment — the index, 2026-08-23 (later same day)
+
+This gate designed the **row** and settled per-store lists as a consequence, in
+prose. It never designed the index those lists live on, and two build passes each
+returned the old composer with an index bolted under it. The index was gated
+separately (`2026-08-23-grocery-index-diverge.html`) and decided:
+
+- **Option B — the index captures.** Lists lead the page and are its subject; every
+  list row carries its own add affordance, so an item can be filed to any list
+  without opening it. Rejected: A (pure index, a tap before every add) and C (home
+  is the last-used list, index demoted to a switcher sheet).
+- **The staple chip strip is cut from both surfaces**, superseding `design.md`'s
+  "staples at rest" line for both grocery surfaces.
+- **Ghost completion sources from previous entries** — the distinct item names this
+  family has added before, across all its lists, most recent first. It matches a fixed
+  staple seed today (`GroceryAddBar.tsx:60`); that seed becomes the history's initial
+  contents so completion works on day one, and `Staple` leaves the UI entirely. This
+  amends the gate's "Typing" row, which named the mechanism but not the source.
+
+**`2026-08-23-grocery-list-devready.html` is the visual of record** — every decision
+above plus this amendment, drawn. Read it with this spec; it is the newer of the two.
+
 ## Open — not for the dev session to decide
 
 1. **Permissions → one ADR, via `architect`.** Tier 4 creating lists needs a new

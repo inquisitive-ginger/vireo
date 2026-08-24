@@ -5,10 +5,11 @@
 
 ## Pre-session checklist
 
-- [ ] Read `CLAUDE.md`, then **`artifacts/2026-08-23-grocery-list-handoff.md` (the
-      contract) and `artifacts/2026-08-23-grocery-list-diverge.html` (the visual
-      reference) — both**. Its rejected directions are why; read them first. The
-      index of lists is the subject of that page; the composer is secondary.
+- [ ] Read `CLAUDE.md`, then **`artifacts/2026-08-23-grocery-list-devready.html`
+      (every decision, drawn — the visual of record) and
+      `artifacts/2026-08-23-grocery-list-handoff.md` (the contract, incl. its index
+      amendment) — both**. Its §4 "Do not reintroduce" and §7 self-check are the
+      two that caught the earlier passes.
 - [ ] **ADR 067** (list = its own subject, tier 4 to create), **063** (`ListRow`),
       **064** (no identity chrome on groceries), **018** (registry; a tier read is not
       a gate)
@@ -33,40 +34,30 @@ The PR body still says "provenance is the note line"; update it before closing.
 
 ## What changes
 
-1. **The page becomes two surfaces.** An index of lists (tap enters one full-screen)
-   plus a per-list view. Permanent lists stay visible and dim at zero; runtime lists
-   appear only while they hold items. Inside a list the destination is implied — no
-   store picker; only the index needs `Add to…`. Same on the wall, larger type, **no
-   columns**.
+1. **The page becomes two surfaces.** An index of lists plus a per-list view.
+   **Index = option B:** lists lead the page, and each list row carries its own add
+   affordance — an item reaches any list without opening it. Permanent lists stay
+   visible and dim at zero; runtime lists appear only while they hold items. Inside a
+   list the destination is implied — no store picker. The **staple chip strip is cut
+   from both surfaces** (staples stay as the completion dictionary). Wall = the same
+   two surfaces, larger type, **no columns**.
 2. **`grocery_items` needs a list reference** — a list table plus `list_id`, in a
    **new** migration; the branch's `20260822120000` is applied in dev DBs, so editing it
    breaks replay. Seed the permanent lists like `20260822120100_seed_staples`, backfill
    existing rows onto one, then `NOT NULL`. `familyos_test` rejects `migrate deploy`
    (P3009) — hand-apply the SQL there.
-3. **The gate at `GroceriesPage.tsx:26`.** `const canCorrect = tier >= 4` becomes
-   `ability.can('manage', 'meals.GroceryItem')` — the tier is right, the mechanism is a
-   `TierGate` overrides cannot reach (ADR 018/067). The correction **route** is already
-   correct (`groceries.ts:180`); this is client-side only.
-4. **ADR 067's registry key**, in `packages/platform/src/types.ts`:
-   `meals.grocery-list.create` ("Create a shopping list"), subject `meals.GroceryList`,
-   action `create`; add that subject to `ability.ts`'s `Subjects` union. Tier 4 reaches
-   it via `manage all` — no tier branch changes. The create-list route gates on it and
-   **does not exist yet**. Reading is not separately gated (`view meals.GroceryItem`).
-5. **`ListRow` itself needs no change.** Its generic `leading` slot was ADR 063's open
-   question and the gate kept the answer. Quantity goes in `children` beside the
-   `min-w-0 flex-1` wrapper. **Do not redesign the primitive.** Its `design-system.md`
-   entry is replaced by the gate's outcome ("a fact in the note line" is the false part).
-
-## Decisions this session makes
-
-- **How the drill-in is addressed.** The shell registers manifest routes exactly
-  (`main.tsx:125`), so `/groceries/:id` hits the shell catch-all and renders nothing.
-  Declare `/groceries/*` in the manifest, or keep the drill-in in component state.
-- **Whether `GroceryItem.note` survives** the note line's removal. M5/7's "Sam got it"
-  assumes it; the gate cut the surface it rendered on.
+3. **Already done on the branch, verify not rebuild:** the `ability.can` correction
+   gate (ADR 067), the `meals.grocery-list.create` key + `meals.GroceryList` subject,
+   the `/groceries/*` manifest route, and `GroceryItem.note` kept for M5/7. `ListRow`
+   is unchanged and stays that way — its `design-system.md` entry is replaced by the
+   gate's outcome ("a fact in the note line" is the false part).
 
 ## Constraints coming in
 
+- **Ghost completion sources from previous entries** — the distinct item names this
+  family has added before, across all its lists, most recent first. Not a fixed staple
+  seed. The seeded staples become that history's initial contents so completion works
+  on day one; the separate `Staple` concept leaves the UI entirely.
 - **Needs-pushed items arrive as plain items**, so `design.md`'s **AC6 and AC7 are
   superseded**: the week page's `N things needed` link still comma-splits `needs` into
   items, it just does not mark them with their meal. Do not reintroduce the note.

@@ -1,0 +1,574 @@
+<title>Grocery Index Diverge</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@400;500;600;700&display=swap">
+
+<style>
+  /* Tokens read verbatim from packages/ui/src/styles.css (M5/6 branch). */
+  :root {
+    --background: oklch(0.985 0.008 100);
+    --foreground: oklch(0.18 0.03 100);
+    --primary: oklch(0.5 0.11 122);
+    --primary-foreground: oklch(0.99 0.005 100);
+    --muted: oklch(0.93 0.016 100);
+    --muted-foreground: oklch(0.52 0.035 100);
+    --accent: oklch(0.47 0.07 185);
+    --border: oklch(0.88 0.02 100);
+    --card: oklch(0.999 0.004 100);
+    --surface-sunken: oklch(0.955 0.006 100);
+    --success: oklch(0.44 0.1 148);
+    --warning: oklch(0.69 0.12 78);
+
+    --page-bg: oklch(0.955 0.004 230);
+    --page-fg: oklch(0.22 0.02 240);
+    --page-muted: oklch(0.48 0.02 240);
+    --page-rule: oklch(0.87 0.01 240);
+    --page-chip: oklch(0.91 0.012 240);
+
+    --font-display: 'Lora', Georgia, 'Times New Roman', serif;
+    --font-ui: 'DM Sans', 'Helvetica Neue', Arial, sans-serif;
+    --radius-card: 0.5rem;
+    --radius-panel: 0.75rem;
+    --spacing-row-touch: 64px;
+    --spacing-tab-bar: 56px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --background: oklch(0.15 0.018 105);
+      --foreground: oklch(0.92 0.012 100);
+      --primary: oklch(0.62 0.11 122);
+      --primary-foreground: oklch(0.14 0.02 105);
+      --muted: oklch(0.2 0.014 105);
+      --muted-foreground: oklch(0.56 0.02 100);
+      --accent: oklch(0.56 0.08 185);
+      --border: oklch(0.3 0.018 105);
+      --card: oklch(0.21 0.018 105);
+      --surface-sunken: oklch(0.175 0.008 105);
+      --success: oklch(0.57 0.1 148);
+      --warning: oklch(0.75 0.11 78);
+      --page-bg: oklch(0.17 0.012 240);
+      --page-fg: oklch(0.9 0.012 240);
+      --page-muted: oklch(0.62 0.018 240);
+      --page-rule: oklch(0.3 0.014 240);
+      --page-chip: oklch(0.24 0.014 240);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --background: oklch(0.15 0.018 105);
+    --foreground: oklch(0.92 0.012 100);
+    --primary: oklch(0.62 0.11 122);
+    --primary-foreground: oklch(0.14 0.02 105);
+    --muted: oklch(0.2 0.014 105);
+    --muted-foreground: oklch(0.56 0.02 100);
+    --accent: oklch(0.56 0.08 185);
+    --border: oklch(0.3 0.018 105);
+    --card: oklch(0.21 0.018 105);
+    --surface-sunken: oklch(0.175 0.008 105);
+    --success: oklch(0.57 0.1 148);
+    --warning: oklch(0.75 0.11 78);
+    --page-bg: oklch(0.17 0.012 240);
+    --page-fg: oklch(0.9 0.012 240);
+    --page-muted: oklch(0.62 0.018 240);
+    --page-rule: oklch(0.3 0.014 240);
+    --page-chip: oklch(0.24 0.014 240);
+  }
+
+  * { box-sizing: border-box; }
+
+  body {
+    margin: 0;
+    padding: 32px 20px 80px;
+    background: var(--page-bg);
+    color: var(--page-fg);
+    font-family: var(--font-ui);
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap { max-width: 1180px; margin: 0 auto; }
+
+  h1 {
+    font-family: var(--font-display);
+    font-size: 30px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    margin: 0 0 6px;
+  }
+
+  h2 {
+    font-family: var(--font-display);
+    font-size: 23px;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    margin: 56px 0 4px;
+    padding-top: 24px;
+    border-top: 1px solid var(--page-rule);
+  }
+
+  .lede { color: var(--page-muted); max-width: 62ch; margin: 0 0 4px; }
+  .kicker {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--page-muted); margin: 0 0 10px;
+  }
+
+  .axis {
+    margin: 22px 0 0;
+    padding: 18px 20px;
+    background: var(--page-chip);
+    border-radius: var(--radius-panel);
+    max-width: 74ch;
+  }
+  .axis p { margin: 0; }
+  .axis .q {
+    font-family: var(--font-display);
+    font-size: 19px;
+    line-height: 1.35;
+    margin: 0 0 8px;
+  }
+  .axis .sub { color: var(--page-muted); font-size: 14px; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: 32px 28px;
+    margin-top: 26px;
+    align-items: start;
+  }
+
+  .opt > header { margin-bottom: 14px; min-height: 96px; }
+  .opt h3 {
+    font-family: var(--font-ui);
+    font-size: 16px; font-weight: 700;
+    margin: 0 0 4px;
+  }
+  .opt h3 span { color: var(--page-muted); font-weight: 500; }
+  .opt .note { font-size: 13.5px; color: var(--page-muted); margin: 0; line-height: 1.5; }
+  .opt .cost { font-size: 13px; margin: 8px 0 0; color: var(--page-fg); }
+  .opt .cost b { font-weight: 600; }
+
+  /* ---- phone frame ---- */
+  .phone {
+    width: 320px;
+    height: 580px;
+    background: var(--background);
+    border: 1px solid var(--page-rule);
+    border-radius: 22px;
+    overflow: hidden;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 1px 2px oklch(0 0 0 / 0.06), 0 8px 24px oklch(0 0 0 / 0.06);
+  }
+  .phone .status {
+    height: 34px; flex: 0 0 34px;
+    background: var(--muted);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 600; color: var(--foreground);
+    border-bottom: 1px solid var(--border);
+  }
+  .phone .body {
+    flex: 1 1 auto; overflow: hidden; padding: 16px 14px 0;
+    display: flex; flex-direction: column;
+  }
+  .phone .tabs {
+    flex: 0 0 var(--spacing-tab-bar);
+    border-top: 1px solid var(--border);
+    background: var(--background);
+    display: grid; grid-template-columns: repeat(5, 1fr);
+    align-items: center; text-align: center;
+    font-size: 9.5px; color: var(--muted-foreground);
+  }
+  .phone .tabs span:nth-child(4) { color: var(--primary); font-weight: 600; }
+
+  .ptitle {
+    font-family: var(--font-display);
+    font-size: 26px; font-weight: 600; letter-spacing: -0.02em;
+    line-height: 1.2; color: var(--foreground);
+    margin: 0 0 14px;
+  }
+
+  /* ---- app primitives ---- */
+  .card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    min-height: var(--spacing-row-touch);
+    display: flex; align-items: center; gap: 10px;
+    padding: 0 14px;
+    margin-bottom: 8px;
+  }
+  .card .name {
+    font-size: 17px; font-weight: 500; line-height: 1.3;
+    color: var(--foreground);
+    flex: 1 1 auto; min-width: 0;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+  }
+  .card .meta { font-size: 13px; color: var(--muted-foreground); flex: 0 0 auto; }
+  .card .chev { color: var(--muted-foreground); flex: 0 0 auto; }
+  .card.dim { opacity: 0.55; }
+  .card.ghost {
+    background: transparent;
+    border-style: dashed;
+    color: var(--muted-foreground);
+  }
+  .card.ghost .name { color: var(--muted-foreground); font-weight: 500; }
+
+  .rowline {
+    display: flex; align-items: center; gap: 10px;
+    min-height: 44px; padding: 0 2px;
+    border-bottom: 1px solid var(--border);
+    font-size: 17px; font-weight: 500; color: var(--foreground);
+  }
+  .rowline .ring {
+    width: 19px; height: 19px; border-radius: 999px;
+    border: 1.5px solid var(--border); flex: 0 0 auto;
+  }
+  .rowline .qty {
+    margin-left: auto; font-size: 13px; color: var(--muted-foreground);
+    font-variant-numeric: tabular-nums;
+  }
+  .aisle {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--muted-foreground);
+    margin: 14px 0 6px;
+  }
+  .aisle:first-child { margin-top: 2px; }
+
+  .composer {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 0 10px;
+  }
+  .composer .field {
+    flex: 1 1 auto; height: 42px;
+    border: 1px solid var(--border); border-radius: var(--radius-card);
+    background: var(--card);
+    display: flex; align-items: center; padding: 0 12px;
+    font-size: 14px; color: var(--muted-foreground);
+  }
+  .composer .plus {
+    flex: 0 0 auto; width: 42px; height: 42px;
+    border-radius: var(--radius-card);
+    background: var(--primary); color: var(--primary-foreground);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 20px; line-height: 1;
+  }
+  .pinned {
+    margin-top: auto;
+    border-top: 1px solid var(--border);
+    margin-left: -14px; margin-right: -14px;
+    padding: 0 14px;
+    background: var(--background);
+  }
+
+  .switcher {
+    display: inline-flex; align-items: center; gap: 7px;
+    height: 38px; padding: 0 12px;
+    border-radius: 999px;
+    background: var(--muted);
+    font-size: 15px; font-weight: 600; color: var(--foreground);
+  }
+  .switcher .count {
+    font-size: 12px; font-weight: 500; color: var(--muted-foreground);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .sheet {
+    position: absolute; inset: auto 0 0 0;
+    background: var(--card);
+    border-top: 1px solid var(--border);
+    border-radius: var(--radius-panel) var(--radius-panel) 0 0;
+    padding: 10px 14px 16px;
+    box-shadow: 0 -8px 28px oklch(0 0 0 / 0.10);
+  }
+  .sheet .grab {
+    width: 34px; height: 4px; border-radius: 999px;
+    background: var(--border); margin: 2px auto 12px;
+  }
+  .sheet .sname {
+    display: flex; align-items: center; min-height: 46px;
+    font-size: 16px; font-weight: 500; color: var(--foreground);
+    border-bottom: 1px solid var(--border);
+  }
+  .sheet .sname:last-child { border-bottom: 0; }
+  .sheet .sname .meta { margin-left: auto; font-size: 13px; color: var(--muted-foreground); }
+  .sheet .sname.on { color: var(--primary); font-weight: 600; }
+
+  .stack .peek {
+    font-size: 13.5px; color: var(--muted-foreground);
+    padding: 2px 0 0 2px; line-height: 1.55;
+  }
+  .stackcard {
+    background: var(--card);
+    border: 1px solid var(--border);
+    border-radius: var(--radius-card);
+    padding: 12px 14px 11px;
+    margin-bottom: 8px;
+  }
+  .stackcard .top { display: flex; align-items: center; gap: 10px; }
+  .stackcard .name { font-size: 17px; font-weight: 500; color: var(--foreground); }
+  .stackcard .meta { margin-left: auto; font-size: 13px; color: var(--muted-foreground); }
+  .stackcard.dim { opacity: 0.55; }
+
+  .inlineadd {
+    display: flex; align-items: center; gap: 8px;
+    margin-top: 10px; padding-top: 10px;
+    border-top: 1px solid var(--border);
+    font-size: 13.5px; color: var(--muted-foreground);
+  }
+  .inlineadd .mini {
+    width: 22px; height: 22px; border-radius: var(--radius-card);
+    background: var(--muted); color: var(--muted-foreground);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 15px; line-height: 1; flex: 0 0 auto;
+  }
+
+  .ask { margin-top: 20px; max-width: 74ch; }
+  .ask ol { padding-left: 20px; margin: 12px 0 0; }
+  .ask li { margin-bottom: 10px; }
+  .ask b { font-weight: 600; }
+
+  .callout {
+    margin: 22px 0 0; padding: 16px 18px;
+    border-left: 3px solid var(--warning);
+    background: var(--page-chip);
+    border-radius: 0 var(--radius-card) var(--radius-card) 0;
+    max-width: 74ch; font-size: 14px;
+  }
+  .callout p { margin: 0; }
+  .callout p + p { margin-top: 8px; }
+
+  @media (max-width: 700px) {
+    body { padding: 22px 14px 60px; }
+    .grid { grid-template-columns: 1fr; gap: 34px; }
+    .opt > header { min-height: 0; }
+    .phone { width: 100%; max-width: 340px; }
+  }
+</style>
+
+<div class="wrap">
+
+  <p class="kicker">M5/6 · Design · 2026-08-23</p>
+  <h1>The grocery index</h1>
+  <p class="lede">
+    The gate on 2026-08-23 designed the <em>row</em> — what it carries, what happens
+    while you type, whether the wall gets columns. It settled per-store lists as a
+    consequence of that work, in prose, and never drew the surface those lists live on.
+    Two build passes have now produced the same page: the old composer with an index
+    bolted under it. That is not a build failure. There was nothing to build from.
+  </p>
+
+  <div class="axis">
+    <p class="q">Does the home surface route, or capture?</p>
+    <p class="sub">
+      Every option below answers that differently, and the answer decides everything
+      else — where the composer lives, whether an index is a page at all, and what the
+      switcher has to be. Two permanent lists plus the occasional runtime one means
+      this page is usually <b>two to four rows</b>. That is the constraint the options
+      are arguing with.
+    </p>
+  </div>
+
+  <h2>The four</h2>
+  <p class="lede">Phone at 390px — the surface that decides. Real tokens, real type scale.</p>
+
+  <div class="grid">
+
+    <!-- A -->
+    <section class="opt">
+      <header>
+        <h3>A · Pure index <span>— routing only</span></h3>
+        <p class="note">
+          Home is the lists and nothing else. Adding happens inside a list, where the
+          destination is already implied. The structure is the whole page.
+        </p>
+        <p class="cost"><b>Costs:</b> a tap before every add — the most frequent action on the module.</p>
+      </header>
+      <div class="phone">
+        <div class="status">Vireo</div>
+        <div class="body">
+          <p class="ptitle">Groceries</p>
+          <div class="card">
+            <span class="name">Grocery Store</span>
+            <span class="meta">10 items</span>
+            <span class="chev">›</span>
+          </div>
+          <div class="card">
+            <span class="name">Costco</span>
+            <span class="meta">2 items</span>
+            <span class="chev">›</span>
+          </div>
+          <div class="card dim">
+            <span class="name">Target</span>
+            <span class="meta">Empty</span>
+            <span class="chev">›</span>
+          </div>
+          <div class="card ghost">
+            <span class="name">+ New list</span>
+          </div>
+        </div>
+        <div class="tabs"><span>Home</span><span>Calendar</span><span>Chores</span><span>Meals</span><span>More</span></div>
+      </div>
+    </section>
+
+    <!-- B -->
+    <section class="opt">
+      <header>
+        <h3>B · Index with per-row capture <span>— route, then capture</span></h3>
+        <p class="note">
+          The lists still lead. Each row carries its own quiet add affordance, so
+          "batteries → Costco" never opens Costco. One composer per destination
+          instead of one composer plus a destination picker.
+        </p>
+        <p class="cost"><b>Costs:</b> a taller row, and a second place adding can happen.</p>
+      </header>
+      <div class="phone">
+        <div class="status">Vireo</div>
+        <div class="body stack">
+          <p class="ptitle">Groceries</p>
+          <div class="stackcard">
+            <div class="top">
+              <span class="name">Grocery Store</span>
+              <span class="meta">10 items ›</span>
+            </div>
+            <div class="inlineadd"><span class="mini">+</span> Add to Grocery Store…</div>
+          </div>
+          <div class="stackcard">
+            <div class="top">
+              <span class="name">Costco</span>
+              <span class="meta">2 items ›</span>
+            </div>
+            <div class="inlineadd"><span class="mini">+</span> Add to Costco…</div>
+          </div>
+          <div class="stackcard dim">
+            <div class="top">
+              <span class="name">Target</span>
+              <span class="meta">Empty ›</span>
+            </div>
+          </div>
+          <div class="card ghost" style="margin-top:2px">
+            <span class="name">+ New list</span>
+          </div>
+        </div>
+        <div class="tabs"><span>Home</span><span>Calendar</span><span>Chores</span><span>Meals</span><span>More</span></div>
+      </div>
+    </section>
+
+    <!-- C -->
+    <section class="opt">
+      <header>
+        <h3>C · No index page <span>— capture first</span></h3>
+        <p class="note">
+          Home <em>is</em> a list — the one you used last. The other lists live behind
+          the title, which is a switcher, not a label. The index becomes a sheet you
+          visit to change stores or make one, not a page you land on.
+        </p>
+        <p class="cost"><b>Costs:</b> the set of lists is no longer visible at a glance; the wall loses its overview.</p>
+      </header>
+      <div class="phone">
+        <div class="status">Vireo</div>
+        <div class="body">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+            <span class="switcher">Grocery Store <span class="count">10</span> ⌄</span>
+          </div>
+          <p class="aisle">Produce</p>
+          <div class="rowline"><span class="ring"></span> Bananas</div>
+          <div class="rowline"><span class="ring"></span> Spinach <span class="qty">2</span></div>
+          <p class="aisle">Dairy</p>
+          <div class="rowline"><span class="ring"></span> Milk</div>
+          <div class="rowline"><span class="ring"></span> Butter</div>
+          <p class="aisle">Pantry</p>
+          <div class="rowline"><span class="ring"></span> Rice</div>
+          <div class="pinned">
+            <div class="composer">
+              <span class="field">Add to the list…</span>
+              <span class="plus">+</span>
+            </div>
+          </div>
+        </div>
+        <div class="tabs"><span>Home</span><span>Calendar</span><span>Chores</span><span>Meals</span><span>More</span></div>
+      </div>
+    </section>
+
+    <!-- D -->
+    <section class="opt">
+      <header>
+        <h3>D · C's switcher, opened <span>— what the index becomes</span></h3>
+        <p class="note">
+          Not a fifth option — this is C's sheet, drawn so the trade is honest. If C
+          wins, <em>this</em> is where lists are seen together, created, and switched.
+          Judge C on this as much as on the page behind it.
+        </p>
+        <p class="cost"><b>Read it as:</b> the index, demoted from a page to a two-second visit.</p>
+      </header>
+      <div class="phone">
+        <div class="status">Vireo</div>
+        <div class="body">
+          <div style="display:flex;align-items:center;gap:8px;margin-bottom:14px">
+            <span class="switcher">Grocery Store <span class="count">10</span> ⌄</span>
+          </div>
+          <p class="aisle">Produce</p>
+          <div class="rowline"><span class="ring"></span> Bananas</div>
+          <div class="rowline"><span class="ring"></span> Spinach <span class="qty">2</span></div>
+          <p class="aisle">Dairy</p>
+          <div class="rowline"><span class="ring"></span> Milk</div>
+        </div>
+        <div class="sheet">
+          <div class="grab"></div>
+          <div class="sname on">Grocery Store <span class="meta">10 items</span></div>
+          <div class="sname">Costco <span class="meta">2 items</span></div>
+          <div class="sname" style="opacity:.55">Target <span class="meta">Empty</span></div>
+          <div class="sname" style="color:var(--muted-foreground)">+ New list</div>
+        </div>
+        <div class="tabs"><span>Home</span><span>Calendar</span><span>Chores</span><span>Meals</span><span>More</span></div>
+      </div>
+    </section>
+
+  </div>
+
+  <h2>What the last two passes actually shipped</h2>
+  <p class="lede">
+    For comparison, not as an option. Both are A with a composer stapled on — pass one
+    put it above the lists with a ten-chip staple strip, pass two moved it below and
+    cut the strip. Neither is a position on the axis above, because the axis was never
+    put to anyone.
+  </p>
+
+  <div class="callout">
+    <p>
+      <b>The switcher is the tell.</b> Pass two shrank the store picker to a small
+      dropdown beside the field. That is the right instinct under option A — the
+      picker is vestigial there, since a list you are standing in implies its own
+      destination — and the wrong shape under C, where the switcher is the primary
+      navigation of the whole module and should be the largest thing on the page.
+    </p>
+    <p>
+      A picker sized like a form control means the surface has not decided what it is.
+    </p>
+  </div>
+
+  <h2>What I need from you</h2>
+  <div class="ask">
+    <ol>
+      <li><b>A, B, or C.</b> They do not compose — each answers the axis differently.</li>
+      <li>
+        <b>If C:</b> does the wall tablet follow it, or does the wall stay an index?
+        The gate settled "same index → drill-in as the phone," which C dissolves.
+      </li>
+      <li>
+        <b>Staples.</b> The last pass cut the ten-chip strip from the index on its own
+        judgement. Under A and B it has nowhere to live; under C it sits with the
+        composer. Confirm cut, or confirm it belongs inside a list only.
+      </li>
+    </ol>
+    <p style="margin-top:16px;color:var(--page-muted);font-size:14px">
+      Then I compose the final dev-ready artifact — this decision plus the row, typing,
+      and wall decisions already settled — as the single visual the build reads
+      alongside the spec.
+    </p>
+  </div>
+
+</div>
