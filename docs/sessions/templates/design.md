@@ -61,6 +61,9 @@ write an ADR** rather than burying it in the design doc.
 
 - [ ] `docs/design-system.md` updated with decisions from this session; **Last updated** header updated to today's date
 - [ ] Record in `docs/sessions/artifacts/` — screenshots of the options considered, losers included, and which won and why
+- [ ] **`design-critic` pass on the artifact before it is handed off** — render it,
+      fix the hierarchy defects, report what was flagged but not touched. An artifact
+      goes to a build session critiqued, not first-draft.
 - [ ] **Handoff wording** — the spec is the contract and the artifact is the
       visual reference; the build session reads **both**. Never write "build from
       this, not the exploration" — name the rejected options as rejected instead.

@@ -30,7 +30,10 @@ read the exploration anyway; what that clause is protecting against is building 
 Before you report, render your surface and put it beside the artifact. If it
 doesn't read as the same design, you are not done — fix it or say plainly which
 way you diverged and why. That comparison is yours, not the user's; a proportion
-error that reaches the live-app review is one you should have caught.
+error that reaches the live-app review is one you should have caught. When the
+surface is new or substantially reshaped, hand the rendering to `design-critic`
+before you report — it judges hierarchy against a rendering, which is the failure
+mode a passing test suite cannot see.
 
 ## Where you stop
 
