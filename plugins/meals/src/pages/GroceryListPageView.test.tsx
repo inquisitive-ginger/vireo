@@ -148,6 +148,26 @@ describe('GroceryListPageView', () => {
     expect(screen.getByText('lk')).toBeInTheDocument()
   })
 
+  it('tapping the remainder accepts it — the only accept a phone keyboard has', () => {
+    renderView()
+    const input = screen.getByPlaceholderText('Add to the list…') as HTMLInputElement
+    fireEvent.change(input, { target: { value: 'Mi' } })
+
+    // Assert the VALUE changes, not that the control rendered: the button
+    // existed and was untappable until the overlay was lifted above the input,
+    // and "it is in the document" could not tell the difference.
+    fireEvent.click(screen.getByRole('button', { name: 'Accept Milk' }))
+    expect(input.value).toBe('Milk')
+  })
+
+  it('the remainder sits above the input, or the tap never reaches it', () => {
+    renderView()
+    fireEvent.change(screen.getByPlaceholderText('Add to the list…'), { target: { value: 'Mi' } })
+    const accept = screen.getByRole('button', { name: 'Accept Milk' })
+    expect(accept).toHaveClass('pointer-events-auto')
+    expect(accept.parentElement).toHaveClass('z-10')
+  })
+
   it('the composer box is on the wrapper, so the ghost is not painted over', () => {
     // The overlay is a sibling UNDER the input; an opaque background on the
     // input itself hides the remainder while leaving it in the DOM — which is

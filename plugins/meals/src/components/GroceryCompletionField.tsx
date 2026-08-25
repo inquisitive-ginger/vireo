@@ -86,18 +86,39 @@ export function GroceryCompletionField({
     >
       {remainder && (
         <div
-          aria-hidden
           className={cn(
             // A geometric twin of the input, borders included — `Input` carries a
             // 1px border inside its box, so an overlay without one starts the
             // remainder 1px left of the typed text it has to continue.
-            'text-base-token pointer-events-none absolute inset-0 flex h-11 items-center overflow-hidden border border-transparent',
+            // `z-10` because the input comes later in the DOM and would other-
+            // wise win hit-testing over the remainder, which is now a control.
+            'text-base-token pointer-events-none absolute inset-0 z-10 flex h-11 items-center overflow-hidden border border-transparent',
             SHAPING,
             padding
           )}
         >
-          <span className={cn('invisible whitespace-pre', SHAPING)}>{value}</span>
-          <span className={cn('whitespace-pre text-muted-foreground', SHAPING)}>{remainder}</span>
+          <span aria-hidden className={cn('invisible whitespace-pre', SHAPING)}>
+            {value}
+          </span>
+          {/* The remainder is the accept control — `Tab` and `ArrowRight` don't
+              exist on a phone keyboard, and the thing you are looking at is the
+              thing you touch. `pr-10` buys a real target when the remainder is
+              one character ("mil" → "k" measures 47x44); the overlay is
+              overflow-hidden and nothing follows, so it costs no layout, at
+              rest or in flight. `onMouseDown` preventDefault keeps the field
+              focused so typing continues straight after a tap. */}
+          <button
+            type="button"
+            aria-label={`Accept ${match?.name ?? ''}`}
+            onMouseDown={(e) => e.preventDefault()}
+            onClick={() => match && setValue(match.name)}
+            className={cn(
+              'pointer-events-auto flex h-11 items-center pr-10 whitespace-pre text-muted-foreground',
+              SHAPING
+            )}
+          >
+            {remainder}
+          </button>
         </div>
       )}
       <Input
