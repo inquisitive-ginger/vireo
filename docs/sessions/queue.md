@@ -79,7 +79,9 @@ small reward → reset). `meals` knows nothing about cards. _Depends on: M5/2, M
 Rework above the data layer, **amending #127** rather than opening a PR: index of lists
 → per-list view, a new migration giving `grocery_items` a list reference, ADR 067's
 registry key, and `GroceriesPage.tsx:26`'s `tier >= 4` → `ability.can`. `ListRow` unchanged.
-_Contract: [handoff](artifacts/2026-08-23-grocery-list-handoff.md) · ADR 067. Depends on:
+_Contract: [dev-ready visual](artifacts/2026-08-23-grocery-list-devready.html) —
+read it first, it is newer than the spec and carries the index decision —
+plus [handoff](artifacts/2026-08-23-grocery-list-handoff.md) · ADR 067. Depends on:
 nothing — #127 is open and waits on this._
 
 ### M5/7 — Dev: Shop Context, Sync + Offline, the Wall

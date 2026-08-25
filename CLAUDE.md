@@ -23,9 +23,9 @@ before it reads anything else, and it is size-capped — see
   auto-deploy + Tailscale + restic→R2 + watchdog intact. **A bad USB cable was
   the cause of the 2026-08-20 "enclosure" outage and all the slowness** — disk now
   256 MB/s, deploys 1 min. Runbook Part F.
-- **Last session:** 2026-08-23 — M5/6 design gate. **Each store is its own list**;
-  aisle grouping survives inside one. `grocery_items` owes a list reference (ADR 067).
-  `logs/2026-08-23-design-grocery-list-listrow.md`.
+- **Last session:** 2026-08-23 — critiqued the M5/6 dev-ready artifact and made it a
+  lane (`design-critic`). Rendering caught a flex `gap` drawing the exact hole the
+  spec forbids. `logs/2026-08-23-design-grocery-list-critique.md`.
 - **What's next and everything outstanding:** `docs/sessions/queue.md` — the one
   index. M4.5/3 or the M5/6 design gate next; NVMe HAT is an upgrade, not a rescue.
 - **Owed in-app:** nothing — every row in `platform.bug_reports` is `deployed`
