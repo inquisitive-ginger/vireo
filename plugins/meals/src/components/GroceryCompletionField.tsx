@@ -3,6 +3,15 @@ import { Plus } from 'lucide-react'
 import { Button, Input, cn } from '@family-os/ui'
 import type { GroceryEntry } from '../types'
 
+/* The overlay splits one word across two spans, so the kern pair straddling
+   the join is never applied — but the same word, once accepted into the input,
+   is a single run and IS kerned, so the remainder sits up to half a pixel off
+   where the finished word will put it ("chicken breast" is the bad case; most
+   pairs are 0). Shaping off on all three nodes makes the mirror, the ghost and
+   the typed text measure identically. Scoped here, not on the `Input`
+   primitive: no other field in the app is mirrored. */
+const SHAPING = '[font-kerning:none] [font-variant-ligatures:none]'
+
 export interface GroceryCompletionFieldProps {
   /** Most-recent-first, from `GET /groceries/entries`. */
   entries: GroceryEntry[]
@@ -72,11 +81,12 @@ export function GroceryCompletionField({
             // 1px border inside its box, so an overlay without one starts the
             // remainder 1px left of the typed text it has to continue.
             'text-base-token pointer-events-none absolute inset-0 flex h-11 items-center overflow-hidden border border-transparent',
+            SHAPING,
             padding
           )}
         >
-          <span className="invisible whitespace-pre">{value}</span>
-          <span className="whitespace-pre text-muted-foreground">{remainder}</span>
+          <span className={cn('invisible whitespace-pre', SHAPING)}>{value}</span>
+          <span className={cn('whitespace-pre text-muted-foreground', SHAPING)}>{remainder}</span>
         </div>
       )}
       <Input
@@ -103,6 +113,7 @@ export function GroceryCompletionField({
         aria-label={ariaLabel}
         className={cn(
           'relative h-11',
+          SHAPING,
           boxed
             ? 'rounded-card border-border bg-card'
             : 'border-transparent bg-transparent px-0 shadow-none focus-visible:ring-0'
