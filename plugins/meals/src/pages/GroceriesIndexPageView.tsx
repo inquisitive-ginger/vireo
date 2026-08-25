@@ -11,7 +11,9 @@ export interface GroceriesIndexPageViewProps {
       unlike adding to one already planned. Tiers 1–3 never see the row; it is
       not rendered disabled. */
   canCreateList: boolean
-  errorMessage: string | null
+  /** The list an add just failed on, and what to say — the message belongs to
+      that card's composer, not to the page. */
+  addError: { listId: string; message: string } | null
   createListError: string | null
   onOpenList: (list: GroceryList) => void
   onAdd: (list: GroceryList, name: string) => Promise<void>
@@ -27,7 +29,7 @@ export function GroceriesIndexPageView({
   entries,
   canAdd,
   canCreateList,
-  errorMessage,
+  addError,
   createListError,
   onOpenList,
   onAdd,
@@ -53,62 +55,61 @@ export function GroceriesIndexPageView({
     <PageContainer width="list">
       <h1 className="text-page-title text-foreground">Groceries</h1>
 
-      {lists.length === 0 ? (
-        <p className="text-base-token mt-6 text-muted-foreground">No lists yet.</p>
-      ) : (
-        <div className="mt-5 flex flex-col gap-2">
-          {lists.map((list) => (
-            <GroceryListCard
-              key={list.id}
-              list={list}
-              entries={entries}
-              canAdd={canAdd}
-              onOpen={() => onOpenList(list)}
-              onAdd={(name) => onAdd(list, name)}
-            />
+      <div className="mt-5 flex flex-col gap-2">
+        {lists.length === 0 && (
+          <p className="text-base-token text-muted-foreground">No lists yet.</p>
+        )}
+        {lists.map((list) => (
+          <GroceryListCard
+            key={list.id}
+            list={list}
+            entries={entries}
+            canAdd={canAdd}
+            errorMessage={addError?.listId === list.id ? addError.message : null}
+            onOpen={() => onOpenList(list)}
+            onAdd={(name) => onAdd(list, name)}
+          />
+        ))}
+
+        {canCreateList &&
+          (creating ? (
+            <>
+              <ItemCard align="center" className="py-0 shadow-none">
+                <Input
+                  value={newListName}
+                  onChange={(e) => setNewListName(e.target.value)}
+                  onKeyDown={(e) => {
+                    if (e.key === 'Enter') void submitNewList()
+                    if (e.key === 'Escape') setCreating(false)
+                  }}
+                  onBlur={() => {
+                    if (!newListName.trim()) setCreating(false)
+                  }}
+                  placeholder="List name…"
+                  aria-label="New list name"
+                  autoFocus
+                  className="text-base-token h-13 flex-1 border-transparent bg-transparent px-0 shadow-none focus-visible:ring-0"
+                />
+              </ItemCard>
+              <p className="text-xs-body px-1 text-muted-foreground">
+                Enter to create · Esc to cancel
+              </p>
+            </>
+          ) : (
+            <ItemCard
+              align="center"
+              className="min-h-13 border-dashed bg-transparent py-0 text-muted-foreground shadow-none"
+              onActivate={() => setCreating(true)}
+              activateLabel="Create a new list"
+            >
+              <span className="text-base-token min-w-0 flex-1">+ New list</span>
+            </ItemCard>
           ))}
 
-          {canCreateList &&
-            (creating ? (
-              <>
-                <ItemCard align="center" className="py-0 shadow-none">
-                  <Input
-                    value={newListName}
-                    onChange={(e) => setNewListName(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') void submitNewList()
-                      if (e.key === 'Escape') setCreating(false)
-                    }}
-                    onBlur={() => {
-                      if (!newListName.trim()) setCreating(false)
-                    }}
-                    placeholder="List name…"
-                    aria-label="New list name"
-                    autoFocus
-                    className="text-base-token h-13 flex-1 border-transparent bg-transparent px-0 shadow-none focus-visible:ring-0"
-                  />
-                </ItemCard>
-                <p className="text-xs-body px-1 text-muted-foreground">
-                  Enter to create · Esc to cancel
-                </p>
-              </>
-            ) : (
-              <ItemCard
-                align="center"
-                className="min-h-13 border-dashed bg-transparent py-0 text-muted-foreground shadow-none"
-                onActivate={() => setCreating(true)}
-                activateLabel="Create a new list"
-              >
-                <span className="text-base-token min-w-0 flex-1">+ New list</span>
-              </ItemCard>
-            ))}
-
-          {createListError && (
-            <p className="text-sm-token px-1 text-destructive">{createListError}</p>
-          )}
-          {errorMessage && <p className="text-sm-token px-1 text-destructive">{errorMessage}</p>}
-        </div>
-      )}
+        {createListError && (
+          <p className="text-sm-token px-1 text-destructive">{createListError}</p>
+        )}
+      </div>
     </PageContainer>
   )
 }

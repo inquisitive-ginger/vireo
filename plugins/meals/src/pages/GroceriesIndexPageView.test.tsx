@@ -26,7 +26,7 @@ function renderView(props: Partial<Parameters<typeof GroceriesIndexPageView>[0]>
       entries={ENTRIES}
       canAdd
       canCreateList={false}
-      errorMessage={null}
+      addError={null}
       createListError={null}
       onOpenList={vi.fn()}
       onAdd={vi.fn().mockResolvedValue(undefined)}
@@ -117,8 +117,21 @@ describe('GroceriesIndexPageView', () => {
     await waitFor(() => expect(onCreateList).toHaveBeenCalledWith('Home Depot'))
   })
 
-  it('shows "No lists yet" when there are none', () => {
-    renderView({ lists: [] })
+  it('shows "No lists yet" when there are none, and still offers the create row', () => {
+    renderView({ lists: [], canCreateList: true })
     expect(screen.getByText('No lists yet.')).toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Create a new list' })).toBeInTheDocument()
+  })
+
+  it('an add failure names the card whose composer failed, not the page', () => {
+    const costco = list({ id: 'list-2', name: 'Costco' })
+    renderView({
+      lists: [list(), costco],
+      addError: { listId: 'list-2', message: "Couldn't add that — try again." },
+    })
+    const message = screen.getByText("Couldn't add that — try again.")
+    expect(message.closest('[class*="rounded-card"]')).toContainElement(
+      screen.getByRole('button', { name: 'Add to Costco…' })
+    )
   })
 })

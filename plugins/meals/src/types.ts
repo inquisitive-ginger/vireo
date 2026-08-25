@@ -31,7 +31,7 @@ export interface MealMember {
 export type WidgetSize = 'compact' | 'standard' | 'large'
 
 export type GroceryStatus = 'needed' | 'got'
-export type GrocerySourceType = 'manual' | 'meal' | 'staple'
+export type GrocerySourceType = 'manual' | 'meal'
 
 /** Serialized `grocery_items` row — `note` is computed server-side, never
     stored raw. Nothing renders it since the M5/6 gate cut the note line

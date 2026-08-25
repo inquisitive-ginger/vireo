@@ -18,10 +18,13 @@ export function GroceriesIndexPage() {
   const ability = usePermissions()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const [errorMessage, setErrorMessage] = useState<string | null>(null)
+  const [addError, setAddError] = useState<{ listId: string; message: string } | null>(null)
   const [createListError, setCreateListError] = useState<string | null>(null)
 
-  const canAdd = id !== FAMILY_PROFILE_ID
+  // `ability.can`, not a tier baseline (ADR 018) — `meals.grocery.add` is a
+  // revocable key, and a kid whose parent revoked it must not be shown a field
+  // that 403s. The family dashboard is separate: it has nobody to attribute to.
+  const canAdd = id !== FAMILY_PROFILE_ID && ability.can('create', 'meals.GroceryItem')
   const canCreateList = ability.can('create', 'meals.GroceryList')
 
   // Shares the 'meals/groceries' key prefix with the per-list view (ADR 013)
@@ -63,14 +66,15 @@ export function GroceriesIndexPage() {
         return r.json()
       }),
     onSuccess: () => {
-      setErrorMessage(null)
+      setAddError(null)
       void invalidate()
     },
     // No blind catch (CLAUDE.md): logged for whoever's watching the console,
-    // and surfaced in the page — a kid on the fridge tablet has no devtools.
-    onError: (err) => {
+    // and surfaced on the card whose composer failed — a kid on the fridge
+    // tablet has no devtools, and every list has its own composer now.
+    onError: (err, { listId }) => {
       console.error('[groceries] add failed', err)
-      setErrorMessage("Couldn't add that — try again.")
+      setAddError({ listId, message: "Couldn't add that — try again." })
     },
   })
 
@@ -122,7 +126,7 @@ export function GroceriesIndexPage() {
       entries={entriesQuery.data?.entries ?? []}
       canAdd={canAdd}
       canCreateList={canCreateList}
-      errorMessage={errorMessage}
+      addError={addError}
       createListError={createListError}
       onOpenList={(list) => navigate(`/groceries/${list.id}`)}
       onAdd={(list, name) => addItem.mutateAsync({ listId: list.id, name }).then(() => {})}

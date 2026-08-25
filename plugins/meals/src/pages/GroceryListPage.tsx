@@ -26,7 +26,8 @@ export function GroceryListPage({ listId }: { listId: string }) {
   const [flashItemId, setFlashItemId] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
-  const canAdd = id !== FAMILY_PROFILE_ID
+  // `ability.can`, not a tier baseline (ADR 018) — see GroceriesIndexPage.
+  const canAdd = id !== FAMILY_PROFILE_ID && ability.can('create', 'meals.GroceryItem')
   // The gate is `ability.can`, not a raw tier read (ADR 067) — a `tier >= 4`
   // comparison is a TierGate, a structural ceiling a parent's own override
   // can't reach; teaching a correction is exactly what overrides are for.

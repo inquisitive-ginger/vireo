@@ -5,6 +5,7 @@ import {
   FAMILY_PROFILE_ID,
   useAuth,
   useMutation,
+  usePermissions,
   useQuery,
   useQueryClient,
 } from '@family-os/platform'
@@ -18,6 +19,7 @@ import { MealsPageView, type WeekDay } from './MealsPageView'
 
 export function MealsPage() {
   const { id, tier } = useAuth()
+  const ability = usePermissions()
   const queryClient = useQueryClient()
   const navigate = useNavigate()
   const [offset, setOffset] = useState(0)
@@ -32,7 +34,9 @@ export function MealsPage() {
 
   const canManage = tier >= 4
   const canClaim = tier >= 3 && id !== FAMILY_PROFILE_ID
-  const canPushNeeds = id !== FAMILY_PROFILE_ID
+  // Pushing a meal's needs IS a grocery add, so it asks the same revocable
+  // ability the grocery pages do (ADR 018), not a tier baseline.
+  const canPushNeeds = id !== FAMILY_PROFILE_ID && ability.can('create', 'meals.GroceryItem')
 
   const now = new Date()
   const start = weekStart(now, offset)

@@ -133,15 +133,24 @@ async function defaultListId(): Promise<string> {
 
 /** Teaches the completion dictionary what was just added. Newest spelling of a
     name wins, so a family that starts writing "Chicken thighs" stops being
-    offered "chicken thighs" a year later. */
+    offered "chicken thighs" a year later.
+
+    The item is already committed by the time this runs, so a failure here must
+    not become the add's failure — two people adding the same brand-new name at
+    once race the upsert, and a 500 would tell one of them to retry an add that
+    already landed. Logged, never surfaced: the cost is one missed completion. */
 async function remember(name: string) {
   const normalizedName = normalizeItemName(name)
   if (!normalizedName) return
-  await mealPrisma.groceryEntry.upsert({
-    where: { normalizedName },
-    update: { name, lastAddedAt: new Date() },
-    create: { normalizedName, name },
-  })
+  try {
+    await mealPrisma.groceryEntry.upsert({
+      where: { normalizedName },
+      update: { name, lastAddedAt: new Date() },
+      create: { normalizedName, name },
+    })
+  } catch (err) {
+    console.error('[groceries] could not remember %s', normalizedName, err)
+  }
 }
 
 const groceriesPlugin: FastifyPluginAsync = async (fastify) => {

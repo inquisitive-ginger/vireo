@@ -8,6 +8,10 @@ export interface GroceryListCardProps {
   list: GroceryList
   entries: GroceryEntry[]
   canAdd: boolean
+  /** The last failed add to THIS list. Option B gives every list its own
+      composer, so the failure has to name its own card — a single message at
+      the foot of the index sits under the wrong list, or under `+ New list`. */
+  errorMessage: string | null
   onOpen: () => void
   onAdd: (name: string) => Promise<void>
 }
@@ -23,7 +27,14 @@ function countLabel(itemCount: number): string {
    option B, the whole point of the index. `ItemCard` owns the skeleton and the
    whole-card tap target; the add region lifts above that overlay the same way
    `trailing` does, so it takes its own taps. */
-export function GroceryListCard({ list, entries, canAdd, onOpen, onAdd }: GroceryListCardProps) {
+export function GroceryListCard({
+  list,
+  entries,
+  canAdd,
+  errorMessage,
+  onOpen,
+  onAdd,
+}: GroceryListCardProps) {
   const [capturing, setCapturing] = useState(false)
 
   return (
@@ -68,6 +79,7 @@ export function GroceryListCard({ list, entries, canAdd, onOpen, onAdd }: Grocer
               <span className="truncate">Add to {list.name}…</span>
             </button>
           )}
+          {errorMessage && <p className="text-sm-token pb-2 text-destructive">{errorMessage}</p>}
         </div>
       )}
     </ItemCard>
