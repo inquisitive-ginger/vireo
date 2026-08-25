@@ -142,16 +142,6 @@
   line-height: 1.3;
 }
 
-/* A ListRow group header (aisle heads) — bold at `sm-token`'s size, so the
-   header reads as a rule over the rows it governs rather than a bigger line
-   of the same text. */
-@utility text-aisle-head {
-  font-family: var(--font-ui);
-  font-size: 13px;
-  font-weight: 700;
-  line-height: 1.4;
-}
-
 @utility text-body {
   font-family: var(--font-ui);
   font-size: 18px;

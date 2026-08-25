@@ -18,6 +18,10 @@ import {
 // Own file, not appended to meals.ts (kickoff constraint) — M5/3 is touching
 // meals.ts's planned-meal routes in the same wave.
 
+// The completion field only ever matches a prefix against this; a house is
+// nowhere near it, and it keeps an unbounded table off the wire.
+const ENTRY_LIMIT = 500
+
 type GroceryItemRow = Awaited<ReturnType<typeof mealPrisma.groceryItem.create>>
 type GroceryListRow = Awaited<ReturnType<typeof mealPrisma.groceryList.create>>
 
@@ -114,8 +118,8 @@ function serializeList(list: GroceryListRow, itemCount: number) {
   }
 }
 
-/** The list a server-driven push (needs, staples-at-rest) lands on when no
-    person is choosing a destination — the first permanent list by
+/** The list a server-driven push (a meal's needs) lands on when no person is
+    choosing a destination — the first permanent list by
     `sortOrder` ("Grocery Store"), the same list the M5/6 migration backfilled
     every pre-existing item onto. */
 async function defaultListId(): Promise<string> {
@@ -125,6 +129,19 @@ async function defaultListId(): Promise<string> {
   })
   if (!list) throw new Error('No permanent grocery list seeded')
   return list.id
+}
+
+/** Teaches the completion dictionary what was just added. Newest spelling of a
+    name wins, so a family that starts writing "Chicken thighs" stops being
+    offered "chicken thighs" a year later. */
+async function remember(name: string) {
+  const normalizedName = normalizeItemName(name)
+  if (!normalizedName) return
+  await mealPrisma.groceryEntry.upsert({
+    where: { normalizedName },
+    update: { name, lastAddedAt: new Date() },
+    create: { normalizedName, name },
+  })
 }
 
 const groceriesPlugin: FastifyPluginAsync = async (fastify) => {
@@ -190,16 +207,20 @@ const groceriesPlugin: FastifyPluginAsync = async (fastify) => {
     return { list: serializeList(list, items.length), items: await serializeItems(items) }
   })
 
-  fastify.get('/groceries/staples', async (request, reply) => {
+  // GET /groceries/entries — the ghost completion's dictionary (design gate
+  // amendment 2026-08-23): what this family has added before, across every
+  // list, most recent first. Not a fixed staple list — the seeded starter set
+  // is just this table's initial contents.
+  fastify.get('/groceries/entries', async (request, reply) => {
     if (!request.ability.can('view', 'meals.GroceryItem')) {
       return reply.status(403).send({ error: 'Permission denied' })
     }
 
-    const staples = await mealPrisma.staple.findMany({
-      where: { active: true },
-      orderBy: { name: 'asc' },
+    const entries = await mealPrisma.groceryEntry.findMany({
+      orderBy: { lastAddedAt: 'desc' },
+      take: ENTRY_LIMIT,
     })
-    return { staples }
+    return { entries: entries.map((e) => ({ normalizedName: e.normalizedName, name: e.name })) }
   })
 
   // POST /groceries/lists/:id/items — items file themselves (design.md
@@ -242,6 +263,8 @@ const groceriesPlugin: FastifyPluginAsync = async (fastify) => {
         listId,
       },
     })
+
+    await remember(item.name)
 
     fastify.eventBus.emit('meals.grocery.added', {
       itemId: item.id,
@@ -367,6 +390,7 @@ const groceriesPlugin: FastifyPluginAsync = async (fastify) => {
       })
       touched.push(created)
       existingByName.set(key, created) // a same-batch repeat of this name dedupes against it too
+      await remember(created.name)
       fastify.eventBus.emit('meals.grocery.added', {
         itemId: created.id,
         name: created.name,

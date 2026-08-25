@@ -80,7 +80,7 @@ export const AisleGroup: Story = {
   render: () => (
     <div className="max-w-sm">
       <div className="flex items-baseline justify-between border-b border-border pb-1.5">
-        <span className="text-aisle-head text-foreground">Dairy</span>
+        <span className="text-section-label text-muted-foreground">Dairy</span>
         <span className="text-sm-token text-muted-foreground">2 left</span>
       </div>
       <ListRow leading={<Ring />}>

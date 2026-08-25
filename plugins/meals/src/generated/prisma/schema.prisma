@@ -95,13 +95,19 @@ model GroceryList {
   @@schema("meals")
 }
 
-model Staple {
-  id       String  @id @default(uuid()) @db.Uuid
-  name     String
-  category String
-  active   Boolean @default(true)
+// What this family has added before — the ghost completion's dictionary (design
+// gate amendment 2026-08-23, which cut the fixed staple list and the chip strip
+// with it). Its own table rather than a DISTINCT over grocery_items: completion
+// has to survive a list being emptied, and it ships seeded so the field guesses
+// on day one. Keyed by the same normalizeItemName() shape as the aisle
+// overrides, so "Snap Peas" and "snap peas," are one entry.
+model GroceryEntry {
+  id             String   @id @default(uuid()) @db.Uuid
+  normalizedName String   @unique @map("normalized_name")
+  name           String
+  lastAddedAt    DateTime @default(now()) @map("last_added_at") @db.Timestamptz(6)
 
-  @@map("staples")
+  @@map("grocery_entries")
   @@schema("meals")
 }
 

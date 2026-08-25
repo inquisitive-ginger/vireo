@@ -17,6 +17,7 @@ const twMerge = extendTailwindMerge({
         'text-sm-token',
         'text-base-token',
         'text-card-title',
+        'text-list-title',
         'text-body',
         'text-prose',
         'text-heading',

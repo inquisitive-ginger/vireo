@@ -124,7 +124,6 @@ All tokens are defined as CSS utilities in `packages/ui/src/styles.css` and are 
 | `xs`            | `text-xs-token`      | 10  | 600    | 1.4         | 0        | DM Sans                    |
 | `xs-body`       | `text-xs-body`       | 11  | 400    | 1.4         | 0        | DM Sans                    |
 | `section-label` | `text-section-label` | 11  | 700    | 1.4         | 0.1em    | DM Sans · always uppercase |
-| `aisle-head`    | `text-aisle-head`    | 13  | 700    | 1.4         | 0        | DM Sans                    |
 | `sm`            | `text-sm-token`      | 13  | 400    | 1.5         | 0        | DM Sans                    |
 | `base`          | `text-base-token`    | 14  | 400    | 1.5         | 0        | DM Sans                    |
 | `prose-sm`      | `text-prose-sm`      | 15  | 400    | 1.5         | 0        | **Lora**                   |
@@ -142,7 +141,6 @@ All tokens are defined as CSS utilities in `packages/ui/src/styles.css` and are 
 
 - `xs-body` — smallest regular-weight text: placeholder/error-card descriptions, tier pills, meta captions (added 2026-07-10 audit — the settled placeholder/error anatomies specified 11px/400 with no token to express it)
 - `list-title` — `ListRow`'s name line (added M5/6 — grocery list)
-- `aisle-head` — `ListRow` group headers (added M5/6 — grocery list aisle heads)
 - `section-label` — `--muted-foreground` by default; `--accent` when naming a module surface (widget identity headers, feed day markers); uppercase is baked into the utility
 - `prose` — user-authored content only (feed posts, notes, messages). The family's own words get the warmth of the display face; text _about_ the UI never does. Same 18px viewing-distance floor as `body`
 - `prose-sm` — the family voice at 15px for **dense** contexts (multi-post feed widget rows) where 18px crowds. Same Lora face; use `prose` on roomy surfaces (feed page, across-room banner). Not for UI chrome
@@ -1120,7 +1118,7 @@ model group membership or a leading slot.
 Type: the name line is `text-list-title` (17px/500) — one step up from
 `ItemCard`'s `text-card-title` (16px/600) but lighter-weight, since a scanned
 row states its name rather than leading its own object. A group header (an
-aisle head) is `text-aisle-head` (13px/700). The content column is the
+aisle head) is `text-section-label`, muted. The content column is the
 caller's `children`, same contract as `ItemCard`: bring your own `min-w-0
 flex-1` wrapper. `ListRow` itself needed **no change** for the M5/6 gate —
 its generic `leading` slot was ADR 063's open question, and the gate's answer
@@ -1135,8 +1133,10 @@ store picker — and aisle grouping is a **property of the list**
 is name plus quantity, **right-aligned and tabular** (`font-variant-numeric:
 tabular-nums`) when set — **no note line**. Typing uses inline ghost
 completion in the field itself (muted remainder text, `Tab`/`ArrowRight` to
-accept) rather than a suggestion strip that moves while typing; a static
-staple chip strip still shows at rest (empty field).
+accept) rather than a suggestion strip that moves while typing. The match
+comes from **what this family has added before** (`meals.grocery_entries`,
+most recent first), not a fixed staple list — the staple chip strip is cut
+from both grocery surfaces.
 
 `ListRow` carries no identity chrome by default — grocery rows in particular
 render **no spine, no avatar** (ADR 064): the person who added an item, or

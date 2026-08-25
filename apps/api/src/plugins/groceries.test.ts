@@ -52,6 +52,11 @@ async function clearGroceries() {
   // Permanent lists are seeded once by the migration and stay put; only
   // runtime lists (created by tests) are torn down between them.
   await mealPrisma.groceryList.deleteMany({ where: { kind: 'runtime' } })
+  // Same for the completion dictionary: the migration's starter set is dated
+  // 2000-01-01, anything a test taught it carries a real timestamp.
+  await mealPrisma.groceryEntry.deleteMany({
+    where: { lastAddedAt: { gt: new Date('2001-01-01T00:00:00Z') } },
+  })
 }
 
 async function clearMeals() {
@@ -327,6 +332,68 @@ describe('POST /api/groceries/lists/:id/items', () => {
 })
 
 // ─── POST /api/groceries/:id/aisle ─────────────────────────────────────────────
+
+describe('GET /api/groceries/entries', () => {
+  it('ships seeded, so completion guesses on day one', async () => {
+    const cookie = await getCookieForProfile(KID_ID)
+    const res = await app.inject({
+      method: 'GET',
+      url: '/api/groceries/entries',
+      headers: { cookie },
+    })
+
+    expect(res.statusCode).toBe(200)
+    const names = res.json().entries.map((e: { name: string }) => e.name)
+    expect(names).toContain('Butter')
+  })
+
+  it('an add teaches the dictionary, and the newest add leads', async () => {
+    const cookie = await getCookieForProfile(KID_ID)
+    const listId = await defaultListId()
+    await addItem(cookie, listId, { name: 'Sriracha' })
+    await addItem(cookie, listId, { name: 'Kombucha' })
+
+    const res = await app.inject({
+      method: 'GET',
+      url: '/api/groceries/entries',
+      headers: { cookie },
+    })
+    const names = res.json().entries.map((e: { name: string }) => e.name)
+    expect(names.slice(0, 2)).toEqual(['Kombucha', 'Sriracha'])
+  })
+
+  it('one entry per normalized name — re-adding a name does not duplicate it', async () => {
+    const cookie = await getCookieForProfile(KID_ID)
+    const listId = await defaultListId()
+    await addItem(cookie, listId, { name: 'Snap peas' })
+    await addItem(cookie, listId, { name: 'Snap Peas,' })
+
+    const res = await app.inject({
+      method: 'GET',
+      url: '/api/groceries/entries',
+      headers: { cookie },
+    })
+    const entries = res.json().entries as { normalizedName: string; name: string }[]
+    const matches = entries.filter((e) => e.normalizedName === 'snap peas')
+    // The newest spelling wins, so the field stops offering the older one.
+    expect(matches).toEqual([{ normalizedName: 'snap peas', name: 'Snap Peas,' }])
+  })
+
+  it('survives the list being emptied — history is not a DISTINCT over items', async () => {
+    const cookie = await getCookieForProfile(KID_ID)
+    const listId = await defaultListId()
+    await addItem(cookie, listId, { name: 'Kombucha' })
+    await mealPrisma.groceryItem.deleteMany({})
+
+    const res = await app.inject({
+      method: 'GET',
+      url: '/api/groceries/entries',
+      headers: { cookie },
+    })
+    const names = res.json().entries.map((e: { name: string }) => e.name)
+    expect(names).toContain('Kombucha')
+  })
+})
 
 describe('POST /api/groceries/:id/aisle', () => {
   it('re-files the item and teaches an override for the next add', async () => {

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { GroceriesIndexPageView } from './GroceriesIndexPageView'
-import type { GroceryList, Staple } from '../types'
+import type { GroceryEntry, GroceryList } from '../types'
 
 function list(overrides: Partial<GroceryList> = {}): GroceryList {
   return {
@@ -14,22 +14,22 @@ function list(overrides: Partial<GroceryList> = {}): GroceryList {
   }
 }
 
-const STAPLES: Staple[] = [{ id: 's1', name: 'Milk', category: 'Dairy', active: true }]
+const ENTRIES: GroceryEntry[] = [
+  { normalizedName: 'butter', name: 'Butter' },
+  { normalizedName: 'eggs', name: 'Eggs' },
+]
 
 function renderView(props: Partial<Parameters<typeof GroceriesIndexPageView>[0]> = {}) {
   return render(
     <GroceriesIndexPageView
       lists={[list()]}
-      staples={STAPLES}
+      entries={ENTRIES}
       canAdd
       canCreateList={false}
-      addListTargetId="list-1"
       errorMessage={null}
       createListError={null}
-      onSelectAddTarget={vi.fn()}
       onOpenList={vi.fn()}
       onAdd={vi.fn().mockResolvedValue(undefined)}
-      onTapStaple={vi.fn()}
       onCreateList={vi.fn().mockResolvedValue(undefined)}
       {...props}
     />
@@ -59,54 +59,62 @@ describe('GroceriesIndexPageView', () => {
     expect(onOpenList).toHaveBeenCalledWith(costco)
   })
 
-  it('adds an item to the currently-selected "Add to" list', async () => {
-    const onAdd = vi.fn().mockResolvedValue(undefined)
-    renderView({ onAdd })
-    const input = screen.getAllByPlaceholderText('Add to the list…')[0]
-    fireEvent.change(input, { target: { value: 'Snap peas' } })
-    fireEvent.keyDown(input, { key: 'Enter' })
-    await waitFor(() => expect(onAdd).toHaveBeenCalledWith('Snap peas'))
-  })
-
-  it('shows the "Add to" list picker only on the index', () => {
+  it('renders nothing above the lists — no page-level composer, no chip strip', () => {
     renderView({ lists: [list(), list({ id: 'list-2', name: 'Costco' })] })
-    // A compact trigger, not a row of chips (see GroceryAddBar) — it names
-    // the currently-selected list until opened.
-    const [trigger] = screen.getAllByRole('button', { name: 'Choose which list to add to' })
-    fireEvent.click(trigger)
-    expect(screen.getAllByRole('button', { name: 'Costco' }).length).toBeGreaterThan(0)
+    expect(screen.queryByPlaceholderText('Add to the list…')).not.toBeInTheDocument()
+    expect(
+      screen.queryByRole('button', { name: 'Choose which list to add to' })
+    ).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Butter' })).not.toBeInTheDocument()
   })
 
-  it('switching the "Add to" target calls onSelectAddTarget', () => {
-    const onSelectAddTarget = vi.fn()
-    renderView({
-      lists: [list(), list({ id: 'list-2', name: 'Costco' })],
-      onSelectAddTarget,
-    })
-    const [trigger] = screen.getAllByRole('button', { name: 'Choose which list to add to' })
-    fireEvent.click(trigger)
-    fireEvent.click(screen.getAllByRole('button', { name: 'Costco' })[0])
-    expect(onSelectAddTarget).toHaveBeenCalledWith('list-2')
+  it('every list row carries its own add affordance — an item reaches any list from home', async () => {
+    const onAdd = vi.fn().mockResolvedValue(undefined)
+    const costco = list({ id: 'list-2', name: 'Costco' })
+    renderView({ lists: [list(), costco], onAdd })
+
+    fireEvent.click(screen.getByRole('button', { name: 'Add to Costco…' }))
+    const input = screen.getByLabelText('Add to Costco')
+    fireEvent.change(input, { target: { value: 'Paper towels' } })
+    fireEvent.keyDown(input, { key: 'Enter' })
+
+    await waitFor(() => expect(onAdd).toHaveBeenCalledWith(costco, 'Paper towels'))
+  })
+
+  it('the add row completes from previous entries, in the field', () => {
+    renderView()
+    fireEvent.click(screen.getByRole('button', { name: 'Add to Grocery Store…' }))
+    const input = screen.getByLabelText('Add to Grocery Store')
+    fireEvent.change(input, { target: { value: 'But' } })
+    expect(screen.getByText('ter')).toBeInTheDocument()
+  })
+
+  it('Escape collapses a capturing row back to its at-rest shape', () => {
+    renderView()
+    fireEvent.click(screen.getByRole('button', { name: 'Add to Grocery Store…' }))
+    fireEvent.keyDown(screen.getByLabelText('Add to Grocery Store'), { key: 'Escape' })
+    expect(screen.getByRole('button', { name: 'Add to Grocery Store…' })).toBeInTheDocument()
+  })
+
+  it('hides the per-row add affordance when the viewer cannot add', () => {
+    renderView({ canAdd: false })
+    expect(screen.queryByRole('button', { name: 'Add to Grocery Store…' })).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'Open Grocery Store' })).toBeInTheDocument()
   })
 
   it('hides the "New list" affordance from a non-tier-4 viewer', () => {
     renderView({ canCreateList: false })
-    expect(screen.queryByText('New list')).not.toBeInTheDocument()
+    expect(screen.queryByText('+ New list')).not.toBeInTheDocument()
   })
 
-  it('a tier-4 viewer can create a list', async () => {
+  it('a tier-4 viewer creates a list in the ghost row itself', async () => {
     const onCreateList = vi.fn().mockResolvedValue(undefined)
     renderView({ canCreateList: true, onCreateList })
     fireEvent.click(screen.getByRole('button', { name: 'Create a new list' }))
     const input = screen.getByLabelText('New list name')
     fireEvent.change(input, { target: { value: 'Home Depot' } })
-    fireEvent.click(screen.getByRole('button', { name: 'Create' }))
+    fireEvent.keyDown(input, { key: 'Enter' })
     await waitFor(() => expect(onCreateList).toHaveBeenCalledWith('Home Depot'))
-  })
-
-  it('hides the add bar when the viewer cannot add', () => {
-    renderView({ canAdd: false })
-    expect(screen.queryByPlaceholderText('Add to the list…')).not.toBeInTheDocument()
   })
 
   it('shows "No lists yet" when there are none', () => {

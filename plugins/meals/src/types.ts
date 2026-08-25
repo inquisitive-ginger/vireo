@@ -78,13 +78,14 @@ export interface GroceryListResponse {
   items: GroceryItem[]
 }
 
-export interface Staple {
-  id: string
+/** One previously-added item name — the ghost completion's dictionary (design
+    gate amendment 2026-08-23). Ordered most-recent-first by the API; the field
+    prefix-matches `name` and never renders a list of these. */
+export interface GroceryEntry {
+  normalizedName: string
   name: string
-  category: string
-  active: boolean
 }
 
-export interface StaplesResponse {
-  staples: Staple[]
+export interface GroceryEntriesResponse {
+  entries: GroceryEntry[]
 }

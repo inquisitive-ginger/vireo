@@ -1,4 +1,4 @@
-import { useEffect, useState } from 'react'
+import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Loader2 } from 'lucide-react'
 import {
@@ -10,7 +10,7 @@ import {
   useQueryClient,
 } from '@family-os/platform'
 import { ErrorCard } from '@family-os/ui'
-import type { GroceryList, GroceryListsResponse, Staple, StaplesResponse } from '../types'
+import type { GroceryEntriesResponse, GroceryList, GroceryListsResponse } from '../types'
 import { GroceriesIndexPageView } from './GroceriesIndexPageView'
 
 export function GroceriesIndexPage() {
@@ -18,7 +18,6 @@ export function GroceriesIndexPage() {
   const ability = usePermissions()
   const navigate = useNavigate()
   const queryClient = useQueryClient()
-  const [addListTargetId, setAddListTargetId] = useState<string>('')
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
   const [createListError, setCreateListError] = useState<string | null>(null)
 
@@ -37,25 +36,19 @@ export function GroceriesIndexPage() {
     retry: 1,
   })
 
-  const staplesQuery = useQuery<StaplesResponse>({
-    queryKey: ['meals/groceries/staples'],
+  // The ghost completion's dictionary — what this family has added before, on
+  // the same key prefix so an add refreshes it too (design gate amendment).
+  const entriesQuery = useQuery<GroceryEntriesResponse>({
+    queryKey: ['meals/groceries', 'entries'],
     queryFn: () =>
-      fetch('/api/groceries/staples').then((r) => {
+      fetch('/api/groceries/entries').then((r) => {
         if (!r.ok) throw new Error(String(r.status))
-        return r.json() as Promise<StaplesResponse>
+        return r.json() as Promise<GroceryEntriesResponse>
       }),
-    staleTime: 300_000,
     retry: 1,
   })
 
   const lists = listsQuery.data?.lists ?? []
-  const firstListId = listsQuery.data?.lists[0]?.id
-
-  // The add-to target defaults to the first (permanent) list once the index
-  // loads, and never drops back to '' once a real list has been picked.
-  useEffect(() => {
-    if (!addListTargetId && firstListId) setAddListTargetId(firstListId)
-  }, [addListTargetId, firstListId])
 
   const invalidate = () => queryClient.invalidateQueries({ queryKey: ['meals/groceries'] })
 
@@ -91,9 +84,8 @@ export function GroceriesIndexPage() {
         if (!r.ok) throw new Error(String(r.status))
         return r.json() as Promise<GroceryList>
       }),
-    onSuccess: (list) => {
+    onSuccess: () => {
       setCreateListError(null)
-      setAddListTargetId(list.id)
       void invalidate()
     },
     onError: (err) => {
@@ -102,7 +94,7 @@ export function GroceriesIndexPage() {
     },
   })
 
-  if (listsQuery.isLoading || staplesQuery.isLoading) {
+  if (listsQuery.isLoading || entriesQuery.isLoading) {
     return (
       <div className="flex h-64 items-center justify-center">
         <Loader2 className="size-5 animate-spin text-muted-foreground" />
@@ -110,14 +102,14 @@ export function GroceriesIndexPage() {
     )
   }
 
-  if (listsQuery.isError || staplesQuery.isError) {
+  if (listsQuery.isError || entriesQuery.isError) {
     return (
       <div className="p-6">
         <ErrorCard
           moduleName="Groceries"
           onRetry={() => {
             void listsQuery.refetch()
-            void staplesQuery.refetch()
+            void entriesQuery.refetch()
           }}
         />
       </div>
@@ -127,18 +119,13 @@ export function GroceriesIndexPage() {
   return (
     <GroceriesIndexPageView
       lists={lists}
-      staples={staplesQuery.data?.staples ?? []}
+      entries={entriesQuery.data?.entries ?? []}
       canAdd={canAdd}
       canCreateList={canCreateList}
-      addListTargetId={addListTargetId}
       errorMessage={errorMessage}
       createListError={createListError}
-      onSelectAddTarget={setAddListTargetId}
       onOpenList={(list) => navigate(`/groceries/${list.id}`)}
-      onAdd={(name) => addItem.mutateAsync({ listId: addListTargetId, name }).then(() => {})}
-      onTapStaple={(staple: Staple) =>
-        addItem.mutate({ listId: addListTargetId, name: staple.name })
-      }
+      onAdd={(list, name) => addItem.mutateAsync({ listId: list.id, name }).then(() => {})}
       onCreateList={(name) => createList.mutateAsync(name).then(() => {})}
     />
   )

@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import { GroceryListPageView } from './GroceryListPageView'
-import type { GroceryItem, GroceryList, Staple } from '../types'
+import type { GroceryEntry, GroceryItem, GroceryList } from '../types'
 
 function item(overrides: Partial<GroceryItem> = {}): GroceryItem {
   return {
@@ -31,9 +31,10 @@ function list(overrides: Partial<GroceryList> = {}): GroceryList {
   }
 }
 
-const STAPLES: Staple[] = [
-  { id: 's1', name: 'Milk', category: 'Dairy', active: true },
-  { id: 's2', name: 'Eggs', category: 'Dairy', active: true },
+// Most recent first — what this family has added before, not a staple list.
+const ENTRIES: GroceryEntry[] = [
+  { normalizedName: 'milk', name: 'Milk' },
+  { normalizedName: 'eggs', name: 'Eggs' },
 ]
 
 function renderView(props: Partial<Parameters<typeof GroceryListPageView>[0]> = {}) {
@@ -41,14 +42,13 @@ function renderView(props: Partial<Parameters<typeof GroceryListPageView>[0]> = 
     <GroceryListPageView
       list={list()}
       items={[]}
-      staples={STAPLES}
+      entries={ENTRIES}
       canAdd
       canCorrect
       flashItemId={null}
       errorMessage={null}
       onBack={vi.fn()}
       onAdd={vi.fn().mockResolvedValue(undefined)}
-      onTapStaple={vi.fn()}
       onCorrect={vi.fn()}
       {...props}
     />
@@ -61,10 +61,10 @@ describe('GroceryListPageView', () => {
     expect(screen.getByText('Costco')).toBeInTheDocument()
   })
 
-  it('the back button calls onBack — the only way out is up to the index', () => {
+  it('the back link calls onBack — the only way out is up to the index', () => {
     const onBack = vi.fn()
     renderView({ onBack })
-    fireEvent.click(screen.getByRole('button', { name: 'Back to lists' }))
+    fireEvent.click(screen.getByRole('button', { name: '‹ Groceries' }))
     expect(onBack).toHaveBeenCalled()
   })
 
@@ -77,7 +77,7 @@ describe('GroceryListPageView', () => {
       ],
     })
     const headings = screen.getAllByText(/Produce|Bakery|Meat|Dairy|Pantry|Frozen|Other/, {
-      selector: 'span.text-aisle-head',
+      selector: 'div.text-section-label',
     })
     expect(headings.map((h) => h.textContent)).toEqual(['Produce', 'Meat', 'Pantry'])
   })
@@ -101,17 +101,15 @@ describe('GroceryListPageView', () => {
     expect(screen.getByText(/Nothing on the list/)).toBeInTheDocument()
   })
 
-  it('shows the last error next to the add bar', () => {
+  it('shows the last error next to the composer', () => {
     renderView({ errorMessage: "Couldn't add that — try again." })
-    const messages = screen.getAllByText("Couldn't add that — try again.")
-    const inputs = screen.getAllByPlaceholderText('Add to the list…')
-    expect(messages).toHaveLength(inputs.length)
+    expect(screen.getByText("Couldn't add that — try again.")).toBeInTheDocument()
   })
 
   it('adds an item by typing and pressing Enter', async () => {
     const onAdd = vi.fn().mockResolvedValue(undefined)
     renderView({ onAdd })
-    const input = screen.getAllByPlaceholderText('Add to the list…')[0]
+    const input = screen.getByPlaceholderText('Add to the list…')
     fireEvent.change(input, { target: { value: 'Snap peas' } })
     fireEvent.keyDown(input, { key: 'Enter' })
     await waitFor(() => expect(onAdd).toHaveBeenCalledWith('Snap peas'))
@@ -120,9 +118,9 @@ describe('GroceryListPageView', () => {
   it('adds an item via the Add button and clears the input on success', async () => {
     const onAdd = vi.fn().mockResolvedValue(undefined)
     renderView({ onAdd })
-    const input = screen.getAllByPlaceholderText('Add to the list…')[0]
+    const input = screen.getByPlaceholderText('Add to the list…')
     fireEvent.change(input, { target: { value: 'Snap peas' } })
-    fireEvent.click(screen.getAllByRole('button', { name: 'Add' })[0])
+    fireEvent.click(screen.getByRole('button', { name: 'Add' }))
     expect(onAdd).toHaveBeenCalledWith('Snap peas')
     await waitFor(() => expect(input).toHaveValue(''))
   })
@@ -130,38 +128,29 @@ describe('GroceryListPageView', () => {
   it('keeps the typed text when the add fails — no retyping after a blip', async () => {
     const onAdd = vi.fn().mockRejectedValue(new Error('500'))
     renderView({ onAdd })
-    const input = screen.getAllByPlaceholderText('Add to the list…')[0]
+    const input = screen.getByPlaceholderText('Add to the list…')
     fireEvent.change(input, { target: { value: 'Snap peas' } })
-    fireEvent.click(screen.getAllByRole('button', { name: 'Add' })[0])
+    fireEvent.click(screen.getByRole('button', { name: 'Add' }))
     await waitFor(() => expect(onAdd).toHaveBeenCalled())
     expect(input).toHaveValue('Snap peas')
   })
 
-  it('tapping a staple chip at rest quick-adds it', () => {
-    const onTapStaple = vi.fn()
-    renderView({ onTapStaple })
-    fireEvent.click(screen.getAllByRole('button', { name: 'Milk' })[0])
-    expect(onTapStaple).toHaveBeenCalledWith(STAPLES[0])
+  it('renders no staple chip strip — the gate cut it from both surfaces', () => {
+    renderView()
+    expect(screen.queryByRole('button', { name: 'Milk' })).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Eggs' })).not.toBeInTheDocument()
   })
 
-  it('shows a muted inline completion in the field while typing a staple prefix — nothing else moves', () => {
+  it('shows a muted inline completion in the field while typing — nothing else moves', () => {
     renderView()
-    // Both the wide (wall) and narrow (phone) add bars render in the DOM —
-    // the split between them is a CSS breakpoint, invisible to jsdom — and
-    // each owns its own input state, so both need the keystroke.
-    for (const input of screen.getAllByPlaceholderText('Add to the list…')) {
-      fireEvent.change(input, { target: { value: 'Mi' } })
-    }
-    // The rest-state chip strip is gone once typing starts (rejected: a
-    // pill strip that narrows while typing moves layout) — the ghost text
-    // lives inside the field instead.
-    expect(screen.queryByRole('button', { name: 'Eggs' })).not.toBeInTheDocument()
-    expect(screen.getAllByText('lk').length).toBeGreaterThan(0)
+    const input = screen.getByPlaceholderText('Add to the list…')
+    fireEvent.change(input, { target: { value: 'Mi' } })
+    expect(screen.getByText('lk')).toBeInTheDocument()
   })
 
   it('Tab accepts the inline completion into the field', () => {
     renderView()
-    const input = screen.getAllByPlaceholderText('Add to the list…')[0] as HTMLInputElement
+    const input = screen.getByPlaceholderText('Add to the list…') as HTMLInputElement
     fireEvent.change(input, { target: { value: 'Mi' } })
     fireEvent.keyDown(input, { key: 'Tab' })
     expect(input.value).toBe('Milk')
@@ -197,13 +186,22 @@ describe('GroceryListPageView', () => {
     expect(screen.queryByText('Which aisle?')).not.toBeInTheDocument()
   })
 
+  it('a checked item dims, strikes through, and holds its position', () => {
+    renderView({
+      items: [item({ id: 'a', name: 'Milk', status: 'got' }), item({ id: 'b', name: 'Butter' })],
+    })
+    const names = screen.getAllByText(/Milk|Butter/, { selector: '.text-list-title' })
+    expect(names.map((n) => n.textContent)).toEqual(['Milk', 'Butter'])
+    expect(screen.getByText('Milk', { selector: '.text-list-title' })).toHaveClass('line-through')
+  })
+
   it('flashes the just-added row', () => {
     renderView({ items: [item({ id: 'new-1' })], flashItemId: 'new-1' })
     const name = screen.getByText('Milk', { selector: '.text-list-title' })
     expect(name.closest('.bg-primary\\/13')).toBeTruthy()
   })
 
-  it('hides the add bar when the viewer cannot add', () => {
+  it('hides the composer when the viewer cannot add', () => {
     renderView({ canAdd: false })
     expect(screen.queryByPlaceholderText('Add to the list…')).not.toBeInTheDocument()
   })

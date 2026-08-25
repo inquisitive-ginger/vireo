@@ -168,11 +168,11 @@ exports.Prisma.GroceryListScalarFieldEnum = {
   createdAt: 'createdAt'
 };
 
-exports.Prisma.StapleScalarFieldEnum = {
+exports.Prisma.GroceryEntryScalarFieldEnum = {
   id: 'id',
+  normalizedName: 'normalizedName',
   name: 'name',
-  category: 'category',
-  active: 'active'
+  lastAddedAt: 'lastAddedAt'
 };
 
 exports.Prisma.GroceryAisleOverrideScalarFieldEnum = {
@@ -203,7 +203,7 @@ exports.Prisma.ModelName = {
   DinnerNudgeLog: 'DinnerNudgeLog',
   GroceryItem: 'GroceryItem',
   GroceryList: 'GroceryList',
-  Staple: 'Staple',
+  GroceryEntry: 'GroceryEntry',
   GroceryAisleOverride: 'GroceryAisleOverride'
 };
 

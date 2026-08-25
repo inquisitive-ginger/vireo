@@ -10,7 +10,7 @@ import {
   useQueryClient,
 } from '@family-os/platform'
 import { ErrorCard } from '@family-os/ui'
-import type { GroceryItem, GroceryListResponse, Staple, StaplesResponse } from '../types'
+import type { GroceryEntriesResponse, GroceryItem, GroceryListResponse } from '../types'
 import { GroceryListPageView } from './GroceryListPageView'
 
 // How long the just-added row holds its primary-tint flash (design.md §M5/6:
@@ -44,14 +44,15 @@ export function GroceryListPage({ listId }: { listId: string }) {
     retry: 1,
   })
 
-  const staplesQuery = useQuery<StaplesResponse>({
-    queryKey: ['meals/groceries/staples'],
+  // The ghost completion's dictionary — what this family has added before, on
+  // the same key prefix so an add refreshes it too (design gate amendment).
+  const entriesQuery = useQuery<GroceryEntriesResponse>({
+    queryKey: ['meals/groceries', 'entries'],
     queryFn: () =>
-      fetch('/api/groceries/staples').then((r) => {
+      fetch('/api/groceries/entries').then((r) => {
         if (!r.ok) throw new Error(String(r.status))
-        return r.json() as Promise<StaplesResponse>
+        return r.json() as Promise<GroceryEntriesResponse>
       }),
-    staleTime: 300_000,
     retry: 1,
   })
 
@@ -106,7 +107,7 @@ export function GroceryListPage({ listId }: { listId: string }) {
     },
   })
 
-  if (listQuery.isLoading || staplesQuery.isLoading) {
+  if (listQuery.isLoading || entriesQuery.isLoading) {
     return (
       <div className="flex h-64 items-center justify-center">
         <Loader2 className="size-5 animate-spin text-muted-foreground" />
@@ -114,14 +115,14 @@ export function GroceryListPage({ listId }: { listId: string }) {
     )
   }
 
-  if (listQuery.isError || staplesQuery.isError) {
+  if (listQuery.isError || entriesQuery.isError) {
     return (
       <div className="p-6">
         <ErrorCard
           moduleName="Groceries"
           onRetry={() => {
             void listQuery.refetch()
-            void staplesQuery.refetch()
+            void entriesQuery.refetch()
           }}
         />
       </div>
@@ -134,14 +135,13 @@ export function GroceryListPage({ listId }: { listId: string }) {
     <GroceryListPageView
       list={listQuery.data.list}
       items={listQuery.data.items}
-      staples={staplesQuery.data?.staples ?? []}
+      entries={entriesQuery.data?.entries ?? []}
       canAdd={canAdd}
       canCorrect={canCorrect}
       flashItemId={flashItemId}
       errorMessage={errorMessage}
       onBack={() => navigate('/groceries')}
       onAdd={(name) => addItem.mutateAsync(name).then(() => {})}
-      onTapStaple={(staple: Staple) => addItem.mutate(staple.name)}
       onCorrect={(item, category) => correctAisle.mutate({ item, category })}
     />
   )
