@@ -60,7 +60,7 @@ export function GroceryListCard({ list, entries, canAdd, onOpen, onAdd }: Grocer
             <button
               type="button"
               onClick={() => setCapturing(true)}
-              className="text-base-token flex h-11 w-full items-center gap-2.5 text-left text-muted-foreground"
+              className="text-base-token flex h-11 w-full items-center gap-2.5 rounded-card text-left text-muted-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset focus-visible:outline-none"
             >
               <span className="flex size-6 shrink-0 items-center justify-center rounded-card bg-muted">
                 <Plus className="size-3.5" aria-hidden />

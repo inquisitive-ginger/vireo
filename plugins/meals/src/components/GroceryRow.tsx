@@ -41,7 +41,11 @@ export function GroceryRow({
         className={cn(
           'min-h-11 transition-colors duration-[var(--duration-slow)]',
           got && 'opacity-[0.46]',
-          flash && 'bg-primary/13'
+          flash && 'bg-primary/13',
+          // The band below is about THIS row, so the row does not close itself —
+          // fenced off by the same hairline that divides unrelated items, the
+          // question reads as one more row of the list.
+          showCorrection && 'border-b-0'
         )}
       >
         <div className="flex min-w-0 flex-1 items-baseline justify-between gap-2">
@@ -59,14 +63,14 @@ export function GroceryRow({
       {/* Directly beneath the row it is about, so nothing above it moves
           (AC4) — a band of its own, not a second line inside the row. */}
       {showCorrection && (
-        <div className="flex flex-wrap items-center gap-1.5 border-b border-border py-2">
-          <span className="text-xs-body text-muted-foreground">Which aisle?</span>
+        <div className="flex flex-wrap items-center gap-1.5 border-b border-border pt-0.5 pb-2.5">
+          <span className="text-sm-token text-muted-foreground">Which aisle?</span>
           {CORRECTABLE_AISLES.map((aisle) => (
             <Chip
               key={aisle}
               selected={false}
               onClick={() => onCorrect(item, aisle)}
-              className="px-2.5 py-0.5 text-xs-body"
+              className="px-3 py-1"
             >
               {aisle}
             </Chip>
@@ -74,7 +78,7 @@ export function GroceryRow({
           <Chip
             selected={false}
             onClick={() => onCorrect(item, 'Other')}
-            className="border-dashed px-2.5 py-0.5 text-xs-body text-muted-foreground"
+            className="border-dashed px-3 py-1 text-muted-foreground"
           >
             Leave it
           </Chip>

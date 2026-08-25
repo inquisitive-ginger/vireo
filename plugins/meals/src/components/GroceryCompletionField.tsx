@@ -68,7 +68,10 @@ export function GroceryCompletionField({
         <div
           aria-hidden
           className={cn(
-            'text-base-token pointer-events-none absolute inset-0 flex h-11 items-center overflow-hidden',
+            // A geometric twin of the input, borders included — `Input` carries a
+            // 1px border inside its box, so an overlay without one starts the
+            // remainder 1px left of the typed text it has to continue.
+            'text-base-token pointer-events-none absolute inset-0 flex h-11 items-center overflow-hidden border border-transparent',
             padding
           )}
         >

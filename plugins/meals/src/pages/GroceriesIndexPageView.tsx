@@ -71,7 +71,7 @@ export function GroceriesIndexPageView({
           {canCreateList &&
             (creating ? (
               <>
-                <ItemCard align="center" className="py-0">
+                <ItemCard align="center" className="py-0 shadow-none">
                   <Input
                     value={newListName}
                     onChange={(e) => setNewListName(e.target.value)}
@@ -85,7 +85,7 @@ export function GroceriesIndexPageView({
                     placeholder="List name…"
                     aria-label="New list name"
                     autoFocus
-                    className="text-list-title h-13 flex-1 border-transparent bg-transparent px-0 shadow-none focus-visible:ring-0"
+                    className="text-base-token h-13 flex-1 border-transparent bg-transparent px-0 shadow-none focus-visible:ring-0"
                   />
                 </ItemCard>
                 <p className="text-xs-body px-1 text-muted-foreground">
@@ -99,7 +99,7 @@ export function GroceriesIndexPageView({
                 onActivate={() => setCreating(true)}
                 activateLabel="Create a new list"
               >
-                <span className="text-list-title min-w-0 flex-1">+ New list</span>
+                <span className="text-base-token min-w-0 flex-1">+ New list</span>
               </ItemCard>
             ))}
 

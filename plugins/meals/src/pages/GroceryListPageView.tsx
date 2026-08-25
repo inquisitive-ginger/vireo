@@ -70,7 +70,7 @@ export function GroceryListPageView({
       <button
         type="button"
         onClick={onBack}
-        className="text-sm-token -ml-1 px-1 text-muted-foreground hover:text-foreground"
+        className="text-sm-token -ml-1 rounded-card px-1 text-muted-foreground hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
       >
         ‹ Groceries
       </button>
