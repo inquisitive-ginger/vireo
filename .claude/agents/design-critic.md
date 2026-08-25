@@ -57,6 +57,14 @@ worst defect class is **a mockup that contradicts its own spec** — on M5/6 a
 `gap: 9px` split typed text from its ghost remainder, rendering the exact hole the
 spec's typing rule forbids. A reader would have built the hole.
 
+**Never model a run of text as a flex container.** Typed text plus its ghost
+remainder is one string; making it `display: flex` turns each fragment into a
+separate item, and they drift — first apart (a `gap` opening a hole), then off a
+shared baseline (`align-items: center` centring boxes instead of aligning
+baselines). Both happened on M5/6, the second one introduced by the fix for the
+first. Inline layout is the model; a caret is an `inline-block` with
+`vertical-align: text-bottom`.
+
 Also check: frames that don't share a baseline, focus rings, `prefers-reduced-motion`,
 and whether any motion on the page earns its place by demonstrating a behaviour the
 document is arguing for.

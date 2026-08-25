@@ -286,10 +286,15 @@
   }
   .lcard .add.live { color: var(--foreground); }
   .lcard .add.live .mini { background: var(--primary); color: var(--primary-foreground); }
-  .typing { display: inline-flex; align-items: center; min-width: 0; }
+  /* One continuous text run — NOT a flex container. Flex made the typed text and
+     its ghost remainder separate items, which is how they drifted off a shared
+     baseline. The spec's whole claim is that this reads as one string. */
+  .typing { min-width: 0; white-space: pre; }
   .ghosttext { color: var(--muted-foreground); }
   .caret {
+    display: inline-block; width: 0; height: 1em;
     border-left: 1.5px solid var(--foreground); margin-left: 1px;
+    vertical-align: text-bottom;
     animation: blink 1.1s steps(1, end) infinite;
   }
   @keyframes blink { 0%, 48% { opacity: 1 } 52%, 100% { opacity: 0 } }
@@ -718,7 +723,7 @@
                 <div class="rowline"><span class="ring"></span><span class="nm">Rice</span><span class="qty">2 lb</span></div>
                 <div class="pinned">
                   <div class="composer">
-                    <span class="field typed">chick<span class="caret"></span><span class="ghosttext">en breast</span></span>
+                    <span class="field typed"><span class="typing">chick<span class="caret"></span><span class="ghosttext">en breast</span></span></span>
                     <span class="plus">+</span>
                   </div>
                 </div>
