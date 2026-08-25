@@ -88,9 +88,15 @@ export function GroceriesIndexPage() {
         if (!r.ok) throw new Error(String(r.status))
         return r.json() as Promise<GroceryList>
       }),
-    onSuccess: () => {
+    // Straight into the new list. A runtime list is only visible while it holds
+    // items (design gate), so a freshly-created one is filtered off the index
+    // the instant it is made — leaving the creator on a page their new list is
+    // not on, with no way to put the first thing in it. Landing inside it keeps
+    // that rule intact and still ends somewhere usable.
+    onSuccess: (list) => {
       setCreateListError(null)
       void invalidate()
+      navigate(`/groceries/${list.id}`)
     },
     onError: (err) => {
       console.error('[groceries] list creation failed', err)

@@ -71,8 +71,19 @@ export function GroceryCompletionField({
   const boxed = variant === 'field'
   const padding = boxed ? 'px-3' : 'px-0'
 
+  // The box lives on the WRAPPER, never on the input: the overlay is a sibling
+  // painted underneath, so an opaque `bg-card` on the input hides the ghost
+  // outright — which is exactly what shipped, and why in-list completion looked
+  // dead while the DOM said it was there. The input stays transparent and only
+  // its glyphs paint above the overlay.
   const field = (
-    <div className="relative min-w-0 flex-1">
+    <div
+      className={cn(
+        'relative min-w-0 flex-1',
+        boxed &&
+          'rounded-card border border-border bg-card focus-within:ring-2 focus-within:ring-ring'
+      )}
+    >
       {remainder && (
         <div
           aria-hidden
@@ -112,11 +123,9 @@ export function GroceryCompletionField({
         placeholder={placeholder}
         aria-label={ariaLabel}
         className={cn(
-          'relative h-11',
+          'relative h-11 border-transparent bg-transparent shadow-none focus-visible:ring-0',
           SHAPING,
-          boxed
-            ? 'rounded-card border-border bg-card'
-            : 'border-transparent bg-transparent px-0 shadow-none focus-visible:ring-0'
+          boxed ? 'rounded-card' : 'px-0'
         )}
       />
     </div>

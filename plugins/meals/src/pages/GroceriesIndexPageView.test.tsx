@@ -117,6 +117,14 @@ describe('GroceriesIndexPageView', () => {
     await waitFor(() => expect(onCreateList).toHaveBeenCalledWith('Home Depot'))
   })
 
+  it('a runtime list at zero items is not on the index — the container drills into it', () => {
+    // The view never renders a list the API did not send; the "created and
+    // then invisible" trap this guards against is fixed in GroceriesIndexPage,
+    // which navigates into the new list on success.
+    renderView({ lists: [list()] })
+    expect(screen.queryByText('Home Depot')).not.toBeInTheDocument()
+  })
+
   it('shows "No lists yet" when there are none, and still offers the create row', () => {
     renderView({ lists: [], canCreateList: true })
     expect(screen.getByText('No lists yet.')).toBeInTheDocument()

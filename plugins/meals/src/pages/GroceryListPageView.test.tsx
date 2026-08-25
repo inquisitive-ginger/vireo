@@ -148,6 +148,16 @@ describe('GroceryListPageView', () => {
     expect(screen.getByText('lk')).toBeInTheDocument()
   })
 
+  it('the composer box is on the wrapper, so the ghost is not painted over', () => {
+    // The overlay is a sibling UNDER the input; an opaque background on the
+    // input itself hides the remainder while leaving it in the DOM — which is
+    // how a working-looking test suite shipped an invisible completion.
+    renderView()
+    const input = screen.getByPlaceholderText('Add to the list…')
+    expect(input).toHaveClass('bg-transparent')
+    expect(input.parentElement).toHaveClass('bg-card')
+  })
+
   it('Tab accepts the inline completion into the field', () => {
     renderView()
     const input = screen.getByPlaceholderText('Add to the list…') as HTMLInputElement
@@ -193,6 +203,12 @@ describe('GroceryListPageView', () => {
     const names = screen.getAllByText(/Milk|Butter/, { selector: '.text-list-title' })
     expect(names.map((n) => n.textContent)).toEqual(['Milk', 'Butter'])
     expect(screen.getByText('Milk', { selector: '.text-list-title' })).toHaveClass('line-through')
+  })
+
+  it('the last row draws no hairline — the composer already closes the list', () => {
+    renderView({ items: [item({ id: 'a', name: 'Rice' }), item({ id: 'b', name: 'Butter' })] })
+    const last = screen.getByText('Butter', { selector: '.text-list-title' }).closest('.min-h-11')
+    expect(last).toHaveClass('border-b-0')
   })
 
   it('flashes the just-added row', () => {

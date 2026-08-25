@@ -18,11 +18,15 @@ export function GroceryRow({
   item,
   flash,
   showCorrection,
+  isLast,
   onCorrect,
 }: {
   item: GroceryItem
   flash: boolean
   showCorrection: boolean
+  /** Last thing in the list — it draws no hairline of its own, because the
+      composer's own rule is already closing the list one gap below it. */
+  isLast: boolean
   onCorrect: (item: GroceryItem, category: string) => void
 }) {
   const got = item.status === 'got'
@@ -35,7 +39,10 @@ export function GroceryRow({
               <Check className="size-3" aria-hidden />
             </span>
           ) : (
-            <span className="size-5 shrink-0 rounded-full border-2 border-border" aria-hidden />
+            // Hairline weight, not a control's: checking lands in M5/7, and a
+            // 2px ring reads as a checkbox a family member can tap and won't
+            // get an answer from. Matches the artifact's own 1.5px ring.
+            <span className="size-5 shrink-0 rounded-full border border-border" aria-hidden />
           )
         }
         className={cn(
@@ -45,7 +52,7 @@ export function GroceryRow({
           // The band below is about THIS row, so the row does not close itself —
           // fenced off by the same hairline that divides unrelated items, the
           // question reads as one more row of the list.
-          showCorrection && 'border-b-0'
+          (showCorrection || isLast) && 'border-b-0'
         )}
       >
         <div className="flex min-w-0 flex-1 items-baseline justify-between gap-2">
@@ -63,7 +70,12 @@ export function GroceryRow({
       {/* Directly beneath the row it is about, so nothing above it moves
           (AC4) — a band of its own, not a second line inside the row. */}
       {showCorrection && (
-        <div className="flex flex-wrap items-center gap-1.5 border-b border-border pt-0.5 pb-2.5">
+        <div
+          className={cn(
+            'flex flex-wrap items-center gap-1.5 border-b border-border pt-0.5 pb-2.5',
+            isLast && 'border-b-0'
+          )}
+        >
           <span className="text-sm-token text-muted-foreground">Which aisle?</span>
           {CORRECTABLE_AISLES.map((aisle) => (
             <Chip

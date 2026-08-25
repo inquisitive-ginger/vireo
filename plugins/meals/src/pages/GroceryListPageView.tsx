@@ -84,18 +84,19 @@ export function GroceryListPageView({
         // Bottom padding clears the composer, which is fixed above the tab bar
         // on the phone and sticky at the column's foot everywhere else.
         <div className="mt-4 flex flex-col pb-32 md:pb-4">
-          {groups.map(([aisle, aisleItems]) => (
+          {groups.map(([aisle, aisleItems], groupIndex) => (
             <section key={aisle ?? 'flat'}>
               {aisle && (
                 <div className="text-section-label sticky top-0 z-10 bg-background pt-4 pb-1.5 text-muted-foreground">
                   {aisle}
                 </div>
               )}
-              {aisleItems.map((item) => (
+              {aisleItems.map((item, itemIndex) => (
                 <GroceryRow
                   key={item.id}
                   item={item}
                   flash={item.id === flashItemId}
+                  isLast={groupIndex === groups.length - 1 && itemIndex === aisleItems.length - 1}
                   // hasOverride comes from the server, not component state —
                   // "one-time" (AC4) has to survive a reload of the fridge
                   // tablet, not just last until the tab closes.
