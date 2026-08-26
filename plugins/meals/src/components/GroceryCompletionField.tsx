@@ -56,6 +56,13 @@ export function GroceryCompletionField({
       : undefined
   const remainder = match ? match.name.slice(value.length) : ''
 
+  // Accept keeps the person's own casing and appends only the tail. Taking
+  // `match.name` wholesale re-cased what they had already typed — "chick"
+  // became "Chicken", and the wider capital shifted every letter after it, so
+  // the word visibly jumped at the moment of accepting. The entries table
+  // already treats the newest spelling as canonical, so their casing wins.
+  const accepted = value + remainder
+
   const submit = async () => {
     const name = value.trim()
     if (!name) return
@@ -111,7 +118,7 @@ export function GroceryCompletionField({
             type="button"
             aria-label={`Accept ${match?.name ?? ''}`}
             onMouseDown={(e) => e.preventDefault()}
-            onClick={() => match && setValue(match.name)}
+            onClick={() => match && setValue(accepted)}
             className={cn(
               'pointer-events-auto flex h-11 items-center pr-10 whitespace-pre text-muted-foreground',
               SHAPING
@@ -131,7 +138,7 @@ export function GroceryCompletionField({
             const atEnd = el.selectionStart === value.length && el.selectionEnd === value.length
             if (match && atEnd) {
               e.preventDefault()
-              setValue(match.name)
+              setValue(accepted)
             }
             return
           }

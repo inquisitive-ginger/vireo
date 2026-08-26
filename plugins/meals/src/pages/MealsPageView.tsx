@@ -84,8 +84,8 @@ export function MealsPageView({
           never moves when the title's width changes with the month name. The
           reset label diverges from calendar's "Today" deliberately: the
           surface's unit is the week. */}
-      <div className="flex items-start justify-between gap-3">
-        <div>
+      <div className="flex flex-col gap-2 sm:flex-row sm:items-start sm:justify-between sm:gap-3">
+        <div className="min-w-0">
           <h1 className="text-page-title text-foreground">{weekTitle}</h1>
           {needCount !== null && (
             <p
@@ -104,7 +104,12 @@ export function MealsPageView({
             <p className="text-sm-token mt-1 text-destructive">{pushNeedsError}</p>
           )}
         </div>
-        <div className="flex shrink-0 items-center gap-1">
+        {/* Below `sm` the four controls are 252px against a ~358px row, which
+            left the title 94px and wrapped both it and the needs line. The
+            cluster drops to its own line there rather than any control being
+            shrunk or hidden — still right-aligned, chevrons still outermost
+            and still under the thumb. */}
+        <div className="-mr-2 flex shrink-0 items-center gap-1 self-end sm:mr-0 sm:self-auto">
           {/* The list's only standing entry point besides mutating a push — a
               second nav item is off the table (ADR 032: one per plugin). */}
           <Button variant="ghost" size="sm" asChild>

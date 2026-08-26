@@ -170,6 +170,16 @@ describe('GroceryListPageView', () => {
     expect(accept.parentElement).toHaveClass('z-10')
   })
 
+  it('accepting keeps what the person typed — their letters are never rewritten', () => {
+    renderView({ entries: [{ normalizedName: 'chicken breast', name: 'Chicken breast' }] })
+    const input = screen.getByPlaceholderText('Add to the list…') as HTMLInputElement
+    fireEvent.change(input, { target: { value: 'chick' } })
+    fireEvent.keyDown(input, { key: 'Tab' })
+    // Not "Chicken breast": the wider capital shifted every letter after it,
+    // so the word jumped at the moment of accepting.
+    expect(input.value).toBe('chicken breast')
+  })
+
   it('the composer box is on the wrapper, so the ghost is not painted over', () => {
     // The overlay is a sibling UNDER the input; an opaque background on the
     // input itself hides the remainder while leaving it in the DOM — which is
