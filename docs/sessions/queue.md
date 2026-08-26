@@ -95,6 +95,15 @@ gate killed the three-column wall and the note line, so ACs 4 and 5 were rewritt
 _Reads: `design.md` §M5/7, `apps/shell/public/sw.js`,
 `logs/2026-07-19-dev-sw-cache-strategy.md`. Depends on: M5/6 (PR #127)._
 
+### Groceries' home, and an index-count animation
+
+**Type:** product + design, then a small design+dev · **Kickoffs:** _to be written_
+Two things the M5/6 review raised. Groceries sits under `meals` because that is where
+it was born — a list of lists anticipating Home Depot (ADR 067) may not belong under
+dinner planning; the crowded meals header is a symptom, fixed in #127. Separately,
+adding from the index moves a count with no motion, so the signal the add hit the
+right list is easy to miss. _Raised 2026-08-26, M5/6 live review._
+
 ---
 
 ### Prod storage off USB: NVMe HAT for the Pi 5
