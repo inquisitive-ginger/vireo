@@ -239,7 +239,9 @@ describe('GroceryListPageView', () => {
 
   it('the last row draws no hairline — the composer already closes the list', () => {
     renderView({ items: [item({ id: 'a', name: 'Rice' }), item({ id: 'b', name: 'Butter' })] })
-    const last = screen.getByText('Butter', { selector: '.text-list-title' }).closest('.min-h-11')
+    // Anchored on the activation target's own parent, not on a height class —
+    // the row's height belongs to `ListRow` now (ADR 068) and is not a handle.
+    const last = screen.getByRole('button', { name: 'Check off Butter' }).parentElement
     expect(last).toHaveClass('border-b-0')
   })
 
@@ -269,7 +271,7 @@ describe('GroceryListPageView', () => {
     const other = item({ name: 'Kombucha', category: 'Other' })
     renderView({ items: [other] })
     const chip = screen.getByRole('button', { name: 'Produce' })
-    const row = screen.getByRole('button', { name: 'Check off Kombucha' }).closest('.min-h-11')
+    const row = screen.getByRole('button', { name: 'Check off Kombucha' }).parentElement
     expect(row).not.toContainElement(chip)
   })
 

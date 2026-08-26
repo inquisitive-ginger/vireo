@@ -53,7 +53,11 @@
   --radius-hero: 1rem;
 
   --spacing-touch: 48px; /* minimum touch target */
-  --spacing-row-touch: 64px; /* minimum interactive card/list-item height */
+  /* Two floors, one per row primitive (ADR 068) — you pick a primitive, never a
+     number, and only the primitive reads these. "Row" was the ambiguous word:
+     it named the card floor while a row primitive existed with a smaller one. */
+  --spacing-card-touch: 64px; /* ItemCard, when interactive */
+  --spacing-list-touch: 56px; /* ListRow, unconditionally */
   --spacing-tab-bar: 56px; /* mobile bottom tab bar */
   --spacing-top-bar: 52px; /* mobile brand top bar */
   --spacing-sidebar: 220px; /* tablet sidebar — expanded, label-beside (ADR 022/031) */

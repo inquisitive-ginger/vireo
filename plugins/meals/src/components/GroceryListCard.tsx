@@ -47,7 +47,7 @@ export function GroceryListCard({
       activateLabel={`Open ${list.name}`}
       className="flex-col gap-0 py-0"
     >
-      <div className="flex min-h-row-touch items-center gap-2.5">
+      <div className="min-h-card-touch flex items-center gap-2.5">
         <span className="text-list-title min-w-0 flex-1 truncate text-foreground">{list.name}</span>
         <span className="text-sm-token shrink-0 text-muted-foreground">
           {countLabel(list.itemCount)}

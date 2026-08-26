@@ -87,6 +87,36 @@ describe('ListRow', () => {
     expect(screen.queryByRole('button')).not.toBeInTheDocument()
   })
 
+  it('keeps its own height floor — a caller cannot shrink the row (ADR 068)', () => {
+    // The floor moved here because `GroceryRow` had it at 44px, under the
+    // house's own control minimum, on a surface where every row is a target.
+    const { container } = render(
+      <ListRow className="min-h-11" leading={<span>x</span>}>
+        <div>Milk</div>
+      </ListRow>
+    )
+    const row = container.firstElementChild as HTMLElement
+    expect(row.className).toContain('min-h-[var(--spacing-list-touch)]')
+    // Load-bearing: the arbitrary form is what tailwind-merge recognises as a
+    // `min-h`, so the caller's class is DROPPED rather than left to fight it
+    // out in CSS source order. A named utility would leave both.
+    expect(row.className).not.toContain('min-h-11')
+  })
+
+  it('insets the tap target so neighbouring rows do not touch (ADR 068)', () => {
+    render(
+      <ListRow onActivate={vi.fn()} activateLabel="Check off Milk">
+        <div>Milk</div>
+      </ListRow>
+    )
+    // 4px of dead band at each edge — 8px between two adjacent targets. A tap
+    // that lands there does nothing, which beats toggling the wrong row.
+    const target = screen.getByRole('button', { name: 'Check off Milk' })
+    expect(target.className).toContain('inset-x-0')
+    expect(target.className).toContain('inset-y-1')
+    expect(target.className).not.toContain('inset-0')
+  })
+
   it('dims via opacity, not a status colour on the primitive', () => {
     render(
       <ListRow dimmed>

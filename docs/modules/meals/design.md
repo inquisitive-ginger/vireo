@@ -171,8 +171,9 @@ veggies` (accent at 12% wash, accent ink). No gold — gold is XP/reward only.
 > (the row flashes primary-tint in place, in its aisle). What shop mode was —
 > big targets, dim-in-place, offline — is how the list always behaves.
 
-- **Rows are `ListRow`** (ADR 063): hairline-separated, 56px min, leading 26px
-  check ring, name 17px, note line 13px muted. No cards — forty bordered cards
+- **Rows are `ListRow`** (ADR 063): hairline-separated, leading check ring, name
+  17px, note line 13px muted. Height is the primitive's, never restated here
+  (ADR 068). No cards — forty bordered cards
   was the density failure the critique caught.
 - **Aisle heads govern their group:** 13px bold + count (`2 left`), full-width
   hairline under, sticky within scroll contexts.

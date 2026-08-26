@@ -13,8 +13,10 @@ const CORRECTABLE_AISLES = AISLES.filter((a) => a !== 'Other')
 
    The whole row is the check target (design.md §M5/7 "whole-row tap toggles",
    pulled into M5/6): `ListRow`'s own `onActivate`, so there is exactly one
-   control per row and the target is the full 44px band rather than a 20px
-   ring. The ring stays a marker in `leading` — making it a second button would
+   control per row and the target is the whole row rather than a 20px ring.
+   The row's height is the primitive's to set (ADR 068) — this file used to
+   override it to 44px, under the house's own control minimum, on the one
+   surface where every row is a target and the reader is one-handed. The ring stays a marker in `leading` — making it a second button would
    nest two controls that do the same thing. The correction band is a sibling
    OUTSIDE the row, so its chips never fall under the check target.
 
@@ -58,7 +60,7 @@ export function GroceryRow({
           )
         }
         className={cn(
-          'min-h-11 transition-colors duration-[var(--duration-slow)]',
+          'transition-colors duration-[var(--duration-slow)]',
           got && 'opacity-[0.46]',
           flash && 'bg-primary/13',
           // The band below is about THIS row, so the row does not close itself —

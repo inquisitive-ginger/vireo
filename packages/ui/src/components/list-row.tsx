@@ -44,10 +44,16 @@ export function ListRow({
   return (
     <Tag
       className={cn(
-        'relative flex min-h-14 items-center gap-3 border-b border-border',
+        'relative flex items-center gap-3 border-b border-border',
         dimmed && 'opacity-[0.66]',
         onActivate && 'cursor-pointer',
-        className
+        className,
+        // After `className` on purpose (ADR 068): the primitive owns its floor
+        // and tailwind-merge drops a consumer's competing `min-h-*` rather than
+        // honouring it. The arbitrary form is load-bearing — the named utility
+        // isn't recognised as a `min-h`, so both classes survive and the winner
+        // falls to CSS source order.
+        'min-h-[var(--spacing-list-touch)]'
       )}
       style={style}
     >
@@ -56,7 +62,12 @@ export function ListRow({
           type="button"
           onClick={onActivate}
           aria-label={activateLabel}
-          className="absolute inset-0 z-10 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset focus-visible:outline-none"
+          // 4px dead band top and bottom, so neighbouring targets are 8px
+          // apart (ADR 068). A tap in the band does nothing, which is the
+          // point: a no-op costs one tap, a mis-toggle corrupts the list
+          // someone is reading in a shop. The hairline does not move — it is
+          // the row's own border, not the target's edge.
+          className="absolute inset-x-0 inset-y-1 z-10 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset focus-visible:outline-none"
         />
       )}
       {leading !== undefined && (

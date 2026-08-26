@@ -570,16 +570,17 @@ grid (2026-07-10 decision a).
 
 Defined in `packages/ui/src/styles.css` (`@theme`).
 
-| Token                 | Value | Utility                     | Role                                            |
-| --------------------- | ----- | --------------------------- | ----------------------------------------------- |
-| `--spacing-touch`     | 48px  | `min-h-touch`/`min-w-touch` | Minimum touch target                            |
-| `--spacing-row-touch` | 64px  | `min-h-row-touch`           | Minimum interactive card/list-item height       |
-| `--spacing-tab-bar`   | 56px  | `h-tab-bar`, safe-area calc | Mobile bottom tab bar + anything anchored to it |
-| `--spacing-top-bar`   | 52px  | `min-h-top-bar`             | Mobile brand top bar                            |
-| `--spacing-sidebar`   | 220px | `w-sidebar`                 | Tablet sidebar (ADR 022)                        |
-| `--spacing-meter`     | 6px   | `h-meter`                   | Progress-meter bar height                       |
-| `--container-content` | 680px | `max-w-content`             | Single-column content pages                     |
-| `--container-drawer`  | 440px | `md:w-drawer`               | Side-drawer width                               |
+| Token                  | Value | Utility                          | Role                                                   |
+| ---------------------- | ----- | -------------------------------- | ------------------------------------------------------ |
+| `--spacing-touch`      | 48px  | `min-h-touch`/`min-w-touch`      | Minimum touch target                                   |
+| `--spacing-card-touch` | 64px  | `min-h-card-touch`               | `ItemCard`'s floor, applied when interactive (ADR 068) |
+| `--spacing-list-touch` | 56px  | (primitive only, arbitrary form) | `ListRow`'s floor, applied unconditionally (ADR 068)   |
+| `--spacing-tab-bar`    | 56px  | `h-tab-bar`, safe-area calc      | Mobile bottom tab bar + anything anchored to it        |
+| `--spacing-top-bar`    | 52px  | `min-h-top-bar`                  | Mobile brand top bar                                   |
+| `--spacing-sidebar`    | 220px | `w-sidebar`                      | Tablet sidebar (ADR 022)                               |
+| `--spacing-meter`      | 6px   | `h-meter`                        | Progress-meter bar height                              |
+| `--container-content`  | 680px | `max-w-content`                  | Single-column content pages                            |
+| `--container-drawer`   | 440px | `md:w-drawer`                    | Side-drawer width                                      |
 
 ### Radius family
 
@@ -635,8 +636,14 @@ See [Tablet Nav Layout](#tablet-nav-layout) and [Widget Composition System](#wid
 define the final composition surface — that is the widget system,
 designed in M1. See ADR 011.
 
-**Touch targets:** All interactive elements minimum 48px. Cards and
-list items minimum 64px tall.
+**Touch targets:** All interactive elements minimum 48px. Row height belongs to
+the primitive, not to the caller (ADR 068): `ItemCard` is 64px
+(`--spacing-card-touch`, when interactive), `ListRow` is 56px
+(`--spacing-list-touch`, always). You pick a primitive by ADR 063's rule and it
+brings its own floor — a number written in a consumer, a story spec, or an AC is
+a copy, and copies drift. Adjacent activation targets keep ≥8px of dead space
+between them; `ListRow`'s overlay is `inset-y-1` for that reason, which leaves a
+48px live target on a 56px row.
 
 **Viewing distance:** Primary readable content minimum 18px. Status
 counts and key values minimum 20px. This is the **across-the-room** floor of the
@@ -1092,7 +1099,9 @@ reflects the gate, not the M5/1 exploration.
 
 `@family-os/ui` gains a second row primitive alongside `ItemCard`: **`<ListRow>`**
 — hairline-separated (`border-b border-border`, no per-row border/shadow/radius),
-`min-h-14` (56px), a leading control slot, whole-row activation. Its first
+`--spacing-list-touch` (56px) applied by the primitive itself and not lowerable
+by a caller (ADR 068), a leading control slot, whole-row activation on an
+`inset-y-1` target. Its first
 consumer is the grocery list (`ListRow`) against the meals week plan
 (`ItemCard`), which is also the rule:
 
