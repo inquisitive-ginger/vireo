@@ -45,11 +45,13 @@ function renderView(props: Partial<Parameters<typeof GroceryListPageView>[0]> = 
       entries={ENTRIES}
       canAdd
       canCorrect
+      canCheck
       flashItemId={null}
       errorMessage={null}
       onBack={vi.fn()}
       onAdd={vi.fn().mockResolvedValue(undefined)}
       onCorrect={vi.fn()}
+      onToggleCheck={vi.fn()}
       {...props}
     />
   )
@@ -229,6 +231,36 @@ describe('GroceryListPageView', () => {
     renderView({ items: [item({ id: 'a', name: 'Rice' }), item({ id: 'b', name: 'Butter' })] })
     const last = screen.getByText('Butter', { selector: '.text-list-title' }).closest('.min-h-11')
     expect(last).toHaveClass('border-b-0')
+  })
+
+  it('tapping a row checks it off — whole-row target, not the ring', () => {
+    const onToggleCheck = vi.fn()
+    const milk = item({ name: 'Milk' })
+    renderView({ items: [milk], onToggleCheck })
+    fireEvent.click(screen.getByRole('button', { name: 'Check off Milk' }))
+    expect(onToggleCheck).toHaveBeenCalledWith(milk)
+  })
+
+  it('tapping a checked row unchecks it — a mis-tap is undoable', () => {
+    const onToggleCheck = vi.fn()
+    const milk = item({ name: 'Milk', status: 'got' })
+    renderView({ items: [milk], onToggleCheck })
+    fireEvent.click(screen.getByRole('button', { name: 'Uncheck Milk' }))
+    expect(onToggleCheck).toHaveBeenCalledWith(milk)
+  })
+
+  it('a tier-1 viewer gets no check target — adding is theirs, checking is not', () => {
+    renderView({ items: [item({ name: 'Milk' })], canCheck: false })
+    expect(screen.queryByRole('button', { name: /Check off|Uncheck/ })).not.toBeInTheDocument()
+    expect(screen.getByText('Milk')).toBeInTheDocument()
+  })
+
+  it('the correction chips sit outside the check target — they never collide', () => {
+    const other = item({ name: 'Kombucha', category: 'Other' })
+    renderView({ items: [other] })
+    const chip = screen.getByRole('button', { name: 'Produce' })
+    const row = screen.getByRole('button', { name: 'Check off Kombucha' }).closest('.min-h-11')
+    expect(row).not.toContainElement(chip)
   })
 
   it('flashes the just-added row', () => {

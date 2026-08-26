@@ -13,6 +13,7 @@ import {
   GroceryAisleCorrectionSchema,
   GroceryPushNeedsSchema,
   GroceryListCreateSchema,
+  GroceryCheckSchema,
 } from '@family-os/schemas'
 
 // Own file, not appended to meals.ts (kickoff constraint) — M5/3 is touching
@@ -316,6 +317,47 @@ const groceriesPlugin: FastifyPluginAsync = async (fastify) => {
         create: { normalizedName, category },
       }),
     ])
+
+    const [serialized] = await serializeItems([item])
+    return serialized
+  })
+
+  // POST /groceries/:id/check — whole-row check, pulled into M5/6 (design.md
+  // gives it to M5/7; a list you cannot tick off reads as broken to the person
+  // holding the phone). Gated on `check`, its own action: adding is tier 1+ so
+  // a kid can ask for cereal, but marking the aisle walked is tier 2+. The gate
+  // is `ability.can`, never a tier read (ADR 067) — `meals.grocery.check` is a
+  // grantable key and a raw comparison is a ceiling an override can't reach.
+  fastify.post('/groceries/:id/check', async (request, reply) => {
+    if (!request.ability.can('check', 'meals.GroceryItem')) {
+      return reply.status(403).send({ error: 'Permission denied' })
+    }
+    // `got_by` is @db.Uuid and the household dashboard's id is not a uuid —
+    // the same trap `added_by` sets on the add route, and the same answer.
+    if (request.profile.id === FAMILY_PROFILE_ID) {
+      return reply.status(403).send({ error: 'Switch to your own profile to check things off' })
+    }
+
+    const { id } = request.params as { id: string }
+    const existing = await mealPrisma.groceryItem.findUnique({ where: { id } })
+    if (!existing) return reply.status(404).send({ error: 'Item not found' })
+
+    const parsed = GroceryCheckSchema.safeParse(request.body ?? {})
+    if (!parsed.success) {
+      return reply.status(400).send({ error: parsed.error.flatten() })
+    }
+    const { status } = parsed.data
+
+    // Unchecking clears the attribution rather than keeping a stale "Sam got
+    // it" on a row nobody has got — the push-needs re-add path (below) clears
+    // the same two columns, and the two must not disagree.
+    const item = await mealPrisma.groceryItem.update({
+      where: { id },
+      data:
+        status === 'got'
+          ? { status, gotBy: request.profile.id, gotAt: new Date() }
+          : { status, gotBy: null, gotAt: null },
+    })
 
     const [serialized] = await serializeItems([item])
     return serialized

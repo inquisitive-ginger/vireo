@@ -270,6 +270,16 @@ export const GroceryPushNeedsSchema = z.object({
 
 export type GroceryPushNeedsInput = z.infer<typeof GroceryPushNeedsSchema>
 
+// Checking an item off (M5/7's "whole-row tap toggles", pulled into M5/6). The
+// body names the TARGET state rather than a toggle verb, so the route is
+// idempotent: two phones in the same aisle tapping the same row settle on the
+// same answer instead of racing each other into opposite states.
+export const GroceryCheckSchema = z.object({
+  status: z.enum(['needed', 'got']),
+})
+
+export type GroceryCheckInput = z.infer<typeof GroceryCheckSchema>
+
 // A runtime list (ADR 067: creating one is tier 4). Permanent lists are
 // seeded, not created through this route.
 export const GroceryListCreateSchema = z.object({

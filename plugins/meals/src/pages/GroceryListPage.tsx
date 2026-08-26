@@ -10,7 +10,12 @@ import {
   useQueryClient,
 } from '@family-os/platform'
 import { ErrorCard } from '@family-os/ui'
-import type { GroceryEntriesResponse, GroceryItem, GroceryListResponse } from '../types'
+import type {
+  GroceryEntriesResponse,
+  GroceryItem,
+  GroceryListResponse,
+  GroceryStatus,
+} from '../types'
 import { GroceryListPageView } from './GroceryListPageView'
 
 // How long the just-added row holds its primary-tint flash (design.md §M5/6:
@@ -26,17 +31,23 @@ export function GroceryListPage({ listId }: { listId: string }) {
   const [flashItemId, setFlashItemId] = useState<string | null>(null)
   const [errorMessage, setErrorMessage] = useState<string | null>(null)
 
+  const listKey = ['meals/groceries', 'lists', listId]
+
   // `ability.can`, not a tier baseline (ADR 018) — see GroceriesIndexPage.
   const canAdd = id !== FAMILY_PROFILE_ID && ability.can('create', 'meals.GroceryItem')
   // The gate is `ability.can`, not a raw tier read (ADR 067) — a `tier >= 4`
   // comparison is a TierGate, a structural ceiling a parent's own override
   // can't reach; teaching a correction is exactly what overrides are for.
   const canCorrect = ability.can('manage', 'meals.GroceryItem')
+  // Adding is tier 1+ so a kid can ask for cereal; marking the aisle walked is
+  // its own action, tier 2+ (spec.md §Permissions), and asked of the ability
+  // rather than the tier so an override can reach it.
+  const canCheck = id !== FAMILY_PROFILE_ID && ability.can('check', 'meals.GroceryItem')
 
   // Shares the 'meals/groceries' key prefix with the index (ADR 013) — one
   // invalidation refreshes both.
   const listQuery = useQuery<GroceryListResponse>({
-    queryKey: ['meals/groceries', 'lists', listId],
+    queryKey: listKey,
     queryFn: () =>
       fetch(`/api/groceries/lists/${listId}`).then((r) => {
         if (!r.ok) throw new Error(String(r.status))
@@ -86,6 +97,40 @@ export function GroceryListPage({ listId }: { listId: string }) {
       console.error('[groceries] add failed', err)
       setErrorMessage("Couldn't add that — try again.")
     },
+  })
+
+  // Optimistic: a check has to land under the thumb in an aisle, not after a
+  // round trip on a phone with two bars. On failure the row goes back and the
+  // page says so — a check that silently didn't save is a person standing in
+  // front of the shelf with wrong information.
+  const toggleCheck = useMutation({
+    mutationFn: ({ item, status }: { item: GroceryItem; status: GroceryStatus }) =>
+      fetch(`/api/groceries/${item.id}/check`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      }).then((r) => {
+        if (!r.ok) throw new Error(String(r.status))
+        return r.json() as Promise<GroceryItem>
+      }),
+    onMutate: async ({ item, status }) => {
+      await queryClient.cancelQueries({ queryKey: listKey })
+      const previous = queryClient.getQueryData<GroceryListResponse>(listKey)
+      queryClient.setQueryData<GroceryListResponse>(listKey, (old) =>
+        old
+          ? { ...old, items: old.items.map((i) => (i.id === item.id ? { ...i, status } : i)) }
+          : old
+      )
+      return { previous }
+    },
+    onError: (err, _vars, context) => {
+      console.error('[groceries] check failed', err)
+      if (context?.previous) queryClient.setQueryData(listKey, context.previous)
+      setErrorMessage("Couldn't save that — try again.")
+    },
+    onSuccess: () => setErrorMessage(null),
+    // The shared prefix, so the page and any widget refresh together (ADR 013).
+    onSettled: () => void invalidate(),
   })
 
   const correctAisle = useMutation({
@@ -139,11 +184,15 @@ export function GroceryListPage({ listId }: { listId: string }) {
       entries={entriesQuery.data?.entries ?? []}
       canAdd={canAdd}
       canCorrect={canCorrect}
+      canCheck={canCheck}
       flashItemId={flashItemId}
       errorMessage={errorMessage}
       onBack={() => navigate('/groceries')}
       onAdd={(name) => addItem.mutateAsync(name).then(() => {})}
       onCorrect={(item, category) => correctAisle.mutate({ item, category })}
+      onToggleCheck={(item) =>
+        toggleCheck.mutate({ item, status: item.status === 'got' ? 'needed' : 'got' })
+      }
     />
   )
 }

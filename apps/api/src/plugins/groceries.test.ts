@@ -486,6 +486,134 @@ describe('POST /api/groceries/:id/aisle', () => {
 
 // ─── POST /api/groceries/push-needs ────────────────────────────────────────────
 
+describe('POST /api/groceries/:id/check', () => {
+  async function anItem(cookie: string, name = 'Milk') {
+    const res = await addItem(cookie, await defaultListId(), { name })
+    return res.json() as { id: string; status: string }
+  }
+
+  it('checks an item off and records who and when', async () => {
+    const cookie = await getCookieForProfile(KID2_ID)
+    const item = await anItem(cookie)
+
+    const res = await app.inject({
+      method: 'POST',
+      url: `/api/groceries/${item.id}/check`,
+      headers: { cookie },
+      payload: { status: 'got' },
+    })
+
+    expect(res.statusCode).toBe(200)
+    expect(res.json().status).toBe('got')
+    const row = await mealPrisma.groceryItem.findUniqueOrThrow({ where: { id: item.id } })
+    expect(row.gotBy).toBe(KID2_ID)
+    expect(row.gotAt).not.toBeNull()
+  })
+
+  it('unchecks, and clears the attribution — a mis-tap is undoable', async () => {
+    const cookie = await getCookieForProfile(KID2_ID)
+    const item = await anItem(cookie)
+    const check = (status: string) =>
+      app.inject({
+        method: 'POST',
+        url: `/api/groceries/${item.id}/check`,
+        headers: { cookie },
+        payload: { status },
+      })
+
+    await check('got')
+    const res = await check('needed')
+
+    expect(res.statusCode).toBe(200)
+    expect(res.json().status).toBe('needed')
+    const row = await mealPrisma.groceryItem.findUniqueOrThrow({ where: { id: item.id } })
+    // Left set, a stale "Sam got it" would outlive the getting — and the
+    // push-needs re-add path clears the same two columns.
+    expect(row.gotBy).toBeNull()
+    expect(row.gotAt).toBeNull()
+  })
+
+  it('names the target state, so a repeat is idempotent — two phones, one aisle', async () => {
+    const cookie = await getCookieForProfile(KID2_ID)
+    const item = await anItem(cookie)
+    const check = () =>
+      app.inject({
+        method: 'POST',
+        url: `/api/groceries/${item.id}/check`,
+        headers: { cookie },
+        payload: { status: 'got' },
+      })
+
+    await check()
+    const res = await check()
+    expect(res.json().status).toBe('got')
+  })
+
+  it('returns 403 for a tier-1 profile — adding is theirs, checking is not', async () => {
+    const adder = await getCookieForProfile(KID2_ID)
+    const item = await anItem(adder)
+    const kid = await getCookieForProfile(KID_ID)
+
+    const res = await app.inject({
+      method: 'POST',
+      url: `/api/groceries/${item.id}/check`,
+      headers: { cookie: kid },
+      payload: { status: 'got' },
+    })
+
+    expect(res.statusCode).toBe(403)
+  })
+
+  it('rejects a status outside the two with 400', async () => {
+    const cookie = await getCookieForProfile(KID2_ID)
+    const item = await anItem(cookie)
+
+    const res = await app.inject({
+      method: 'POST',
+      url: `/api/groceries/${item.id}/check`,
+      headers: { cookie },
+      payload: { status: 'bagged' },
+    })
+
+    expect(res.statusCode).toBe(400)
+  })
+
+  it('404s an unknown item', async () => {
+    const cookie = await getCookieForProfile(KID2_ID)
+    const res = await app.inject({
+      method: 'POST',
+      url: '/api/groceries/00000000-0000-0000-0000-0000000000ff/check',
+      headers: { cookie },
+      payload: { status: 'got' },
+    })
+    expect(res.statusCode).toBe(404)
+  })
+
+  it('a checked item holds its position in the aisle walk order', async () => {
+    const cookie = await getCookieForProfile(KID2_ID)
+    const listId = await defaultListId()
+    await addItem(cookie, listId, { name: 'Bananas' })
+    const milk = (await addItem(cookie, listId, { name: 'Milk' })).json() as { id: string }
+    await addItem(cookie, listId, { name: 'Rice' })
+
+    await app.inject({
+      method: 'POST',
+      url: `/api/groceries/${milk.id}/check`,
+      headers: { cookie },
+      payload: { status: 'got' },
+    })
+
+    const res = await app.inject({
+      method: 'GET',
+      url: `/api/groceries/lists/${listId}`,
+      headers: { cookie },
+    })
+    const names = res.json().items.map((i: { name: string }) => i.name)
+    // Produce → Dairy → Pantry, unchanged by the check: no bottom group.
+    expect(names).toEqual(['Bananas', 'Milk', 'Rice'])
+  })
+})
+
 describe('POST /api/groceries/push-needs', () => {
   async function planMealWithNeeds(cookie: string, needs: string) {
     return (

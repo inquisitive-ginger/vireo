@@ -14,6 +14,9 @@ export interface GroceryListPageViewProps {
       gates the "Which aisle?" correction, which teaches a family-wide
       override, not just this row. */
   canCorrect: boolean
+  /** Checking is its own action, tier 2+ (`meals.grocery.check`) — a tier-1
+      viewer can add to the list but not mark the aisle walked. */
+  canCheck: boolean
   /** The just-added item — flashes primary-tint in place, in its aisle, the
       answer to "did my add land?" (design.md §M5/6). */
   flashItemId: string | null
@@ -21,6 +24,7 @@ export interface GroceryListPageViewProps {
   onBack: () => void
   onAdd: (name: string) => Promise<void>
   onCorrect: (item: GroceryItem, category: string) => void
+  onToggleCheck: (item: GroceryItem) => void
 }
 
 /* Inside a list the destination is implied — no store picker, no "Add to…"
@@ -33,11 +37,13 @@ export function GroceryListPageView({
   entries,
   canAdd,
   canCorrect,
+  canCheck,
   flashItemId,
   errorMessage,
   onBack,
   onAdd,
   onCorrect,
+  onToggleCheck,
 }: GroceryListPageViewProps) {
   const groups = useMemo(() => {
     if (!list.groupByAisle) return [[null, items] as const]
@@ -101,7 +107,9 @@ export function GroceryListPageView({
                   // "one-time" (AC4) has to survive a reload of the fridge
                   // tablet, not just last until the tab closes.
                   showCorrection={canCorrect && item.category === 'Other' && !item.hasOverride}
+                  canCheck={canCheck}
                   onCorrect={onCorrect}
+                  onToggleCheck={onToggleCheck}
                 />
               ))}
             </section>
