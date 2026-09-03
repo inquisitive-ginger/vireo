@@ -101,6 +101,17 @@ function todayEvent() {
   }
 }
 
+// A plain single-day event at noon on `day`.
+function eventOn(day: Date) {
+  return {
+    ...todayEvent(),
+    id: 'on-day',
+    seriesId: 'on-day',
+    title: 'Dentist',
+    startsAt: new Date(day.getFullYear(), day.getMonth(), day.getDate(), 12, 0).toISOString(),
+  }
+}
+
 function renderPage(tier = 4) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   const profile = { id: 'me', name: 'Parent', tier } as Profile
@@ -155,6 +166,57 @@ describe('CalendarPage', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Next' }))
     // A new range → a new query key → a fetch with a different `from`.
     await waitFor(() => expect(eventFroms.some((f) => f !== firstFrom)).toBe(true))
+  })
+
+  describe('the chrome Add-event CTA seeds the day on screen', () => {
+    // The DatePicker trigger's label — `format(value, 'EEE, MMM d, yyyy')`.
+    const triggerLabel = (d: Date) =>
+      d.toLocaleDateString('en-US', {
+        weekday: 'short',
+        month: 'short',
+        day: 'numeric',
+        year: 'numeric',
+      })
+
+    it('uses the drilled-in day, not today', async () => {
+      const now = new Date()
+      // A day in the visible month that is never today, so a stale "today"
+      // default can't pass by accident.
+      const target = new Date(now.getFullYear(), now.getMonth(), now.getDate() === 15 ? 16 : 15)
+      vi.stubGlobal('fetch', mockFetch([eventOn(target)]))
+      renderPage(4)
+      await waitFor(() => expect(screen.getByText('Sun')).toBeInTheDocument())
+
+      fireEvent.click(screen.getByRole('button', { name: `View ${target.toDateString()}` }))
+      fireEvent.click(await screen.findByRole('button', { name: 'Add event' }))
+
+      expect(await screen.findByRole('heading', { name: 'Add event' })).toBeInTheDocument()
+      expect(screen.getByText(triggerLabel(target))).toBeInTheDocument()
+    })
+
+    it('uses the first of a month you have stepped away to', async () => {
+      vi.stubGlobal('fetch', mockFetch([]))
+      renderPage(4)
+      await waitFor(() => expect(screen.getByText('Sun')).toBeInTheDocument())
+
+      fireEvent.click(screen.getByRole('button', { name: 'Next' }))
+      fireEvent.click(screen.getByRole('button', { name: 'Add event' }))
+
+      const now = new Date()
+      const firstOfNext = new Date(now.getFullYear(), now.getMonth() + 1, 1)
+      expect(await screen.findByRole('heading', { name: 'Add event' })).toBeInTheDocument()
+      expect(screen.getByText(triggerLabel(firstOfNext))).toBeInTheDocument()
+    })
+
+    it('still defaults to today on the current month', async () => {
+      vi.stubGlobal('fetch', mockFetch([]))
+      renderPage(4)
+      await waitFor(() => expect(screen.getByText('Sun')).toBeInTheDocument())
+
+      fireEvent.click(screen.getByRole('button', { name: 'Add event' }))
+      expect(await screen.findByRole('heading', { name: 'Add event' })).toBeInTheDocument()
+      expect(screen.getByText(triggerLabel(new Date()))).toBeInTheDocument()
+    })
   })
 
   describe('activities lens (tablet)', () => {

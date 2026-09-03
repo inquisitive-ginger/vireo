@@ -30,6 +30,7 @@ import {
   agendaRange,
   buildWeek,
   dayTitle,
+  isSameDay,
   layoutMonth,
   monthTitle,
   rangeFor,
@@ -288,6 +289,20 @@ export function CalendarPage() {
     setView('day')
   }
 
+  // The chrome's "Add event" seeds the day on screen. Today is only the right
+  // default when today is what you're looking at — from a drilled-in day, or a
+  // week/month you've stepped away to, it is not.
+  const headerAddDate = useMemo((): Date | null => {
+    if (view === 'day') return cursor
+    if (view === 'week') {
+      const week = buildWeek(cursor)
+      return week.some((d) => isSameDay(d, today)) ? null : week[0]
+    }
+    const onThisMonth =
+      cursor.getFullYear() === today.getFullYear() && cursor.getMonth() === today.getMonth()
+    return onThisMonth ? null : new Date(cursor.getFullYear(), cursor.getMonth(), 1)
+  }, [view, cursor, today])
+
   const isLoading = eventsQuery.isLoading || profilesQuery.isLoading
 
   const errorCard = (
@@ -411,7 +426,7 @@ export function CalendarPage() {
             onChange={setView}
           />
           {canManage && (
-            <Button size="sm" onClick={() => openCreate(null)}>
+            <Button size="sm" onClick={() => openCreate(headerAddDate)}>
               <Plus className="mr-1 h-4 w-4" /> Add event
             </Button>
           )}
