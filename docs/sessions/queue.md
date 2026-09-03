@@ -206,6 +206,11 @@ suite mirroring chores/calendar. _Depends on: none._
 
 ### Tooling / tech debt
 
+- **Pin `name: family-os` in `docker-compose.yml`** — with no `name:`, compose
+  derives the project from the directory, so since the `family-os` → `vireo` rename
+  a plain `docker compose up` builds an **empty** `vireo_postgres_data` volume and
+  the API boots against a blank dev DB. Workaround: `COMPOSE_PROJECT_NAME=family-os`.
+  _Hit 2026-09-02 — `logs/2026-09-02-dev-calendar-add-event-date.md`._
 - **Validation audit — align routes to shared Zod schemas** — every API route that
   hand-rolls body validation moves onto a `@family-os/schemas` schema
   (`safeParse` → 400 flatten). The known offender (`chores` tasks) was migrated in
@@ -237,6 +242,9 @@ suite mirroring chores/calendar. _Depends on: none._
 > start. `docs/sessions/logs/` is date-ordered and holds the record — that
 > directory listing is the changelog. Do not restore entries pruned from here.
 
+- **2026-09-02 — Fix: calendar "Add event" date prefill** (auto-bug #128, PR #130) —
+  the chrome CTA passed a null prefill while the three per-day affordances passed
+  theirs. _[log](logs/2026-09-02-dev-calendar-add-event-date.md)_
 - **2026-09-02 — Infra: the Pi's LAN address, pinned** — a reboot moved the Pi to
   `.43` while DNS and the Tailscale /32 still said `.42`; router reservation owed.
   _[log](logs/2026-09-02-infra-pi-static-ip.md)_
@@ -257,13 +265,6 @@ suite mirroring chores/calendar. _Depends on: none._
   lit birdhouse, generated then traced to vector; Android's blank-square badge
   fixed. **e2e unrun; unseen on a real phone.**
   _[log](logs/2026-08-22-design-dev-brand-icon-set.md)_
-- **2026-08-22 — Infra: session roles as agents; doc budgets widened** (ADR 066) —
-  five `.claude/agents/`; correctness routes to `reviewer`; queue pruned 32.5→14.7 KB;
-  all five M5 kickoffs written. _[log](logs/2026-08-22-infra-agent-delegation.md)_
-- **2026-08-22 — Infra: watchdog deploy-quiescence + the bad USB cable** (PR #121).
-  _[log](logs/2026-08-22-infra-watchdog-quiescence.md)_
-- **2026-08-22 — Design+dev: the Vireo commit, olive primary** (ADR 065, PR #120).
-  _[log](logs/2026-08-22-design-dev-olive-primary.md)_
 
-Everything before 2026-08-07 (M0 through M4, deployment Parts A–F): see
+Everything before 2026-08-22 (M0 through M4, deployment Parts A–F): see
 `docs/sessions/logs/` and `docs/roadmap.md`.

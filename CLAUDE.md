@@ -22,13 +22,13 @@ before it reads anything else, and it is size-capped — see
 - **Deployment:** 🟢 live at `https://vireohome.app` — Pi 5 (192.168.0.42, pinned
   in NetworkManager 2026-09-02; eth0 `88:a2:9e:d4:e7:33`, router reservation still
   owed); auto-deploy + Tailscale + restic→R2 + watchdog intact. Runbook Part F/G.
-- **Last session:** 2026-09-02 — the "outage" was a lost DHCP lease: the Pi rebooted
-  onto .43 while DNS and the Tailscale /32 still said .42. Pinned .42; app was up
-  throughout. `logs/2026-09-02-infra-pi-static-ip.md`.
+- **Last session:** 2026-09-02 — auto-bug #128 (PR #130): the calendar chrome's "Add
+  event" passed a null date prefill, so it always said today; it now seeds the day
+  on screen. `logs/2026-09-02-dev-calendar-add-event-date.md`.
 - **What's next and everything outstanding:** `docs/sessions/queue.md` — the one
   index. M4.5/3 or the M5/6 design gate next; NVMe HAT is an upgrade, not a rescue.
-- **Owed in-app:** nothing — every row in `platform.bug_reports` is `deployed`
-  (verified 2026-08-23 over ssh). Check the table, not this bullet.
+- **Owed in-app:** report `2b882a8c` (#128) is `triaged` and owed the `deployed`
+  flip — needs a tier-4 PIN session, so only Zach can do it. Check the table.
 
 ---
 
