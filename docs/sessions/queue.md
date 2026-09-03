@@ -237,6 +237,9 @@ suite mirroring chores/calendar. _Depends on: none._
 > start. `docs/sessions/logs/` is date-ordered and holds the record — that
 > directory listing is the changelog. Do not restore entries pruned from here.
 
+- **2026-09-02 — Infra: the Pi's LAN address, pinned** — a reboot moved the Pi to
+  `.43` while DNS and the Tailscale /32 still said `.42`; router reservation owed.
+  _[log](logs/2026-09-02-infra-pi-static-ip.md)_
 - **2026-08-23 — Design: the grocery list gate** (M5/6, ADR 067) — each store is its
   own list, index → drill-in, no note line; `ListRow` survives unchanged. Contract:
   _[handoff](artifacts/2026-08-23-grocery-list-handoff.md)_
@@ -261,10 +264,6 @@ suite mirroring chores/calendar. _Depends on: none._
   _[log](logs/2026-08-22-infra-watchdog-quiescence.md)_
 - **2026-08-22 — Design+dev: the Vireo commit, olive primary** (ADR 065, PR #120).
   _[log](logs/2026-08-22-design-dev-olive-primary.md)_
-- **2026-08-13 — Dev: Week Plan + Tonight's Dinner** (M5/2, PR #105) — meals ships.
-  _[log](logs/2026-08-13-dev-meals-week-plan-tonight.md)_
-- **2026-08-11 — Design: Meals & Groceries** (M5/1, ADR 063/064); spec at
-  `docs/modules/meals/design.md`. _[log](logs/2026-08-11-design-meals-groceries.md)_
 
 Everything before 2026-08-07 (M0 through M4, deployment Parts A–F): see
 `docs/sessions/logs/` and `docs/roadmap.md`.

@@ -19,13 +19,12 @@ before it reads anything else, and it is size-capped — see
   PRs #124/#125** — the 16:00 dinner nudge and calendar day marks (ADR 050/066).
 - **Active stories:** **M5/6 is PR #127, design gate closed 2026-08-23** — per-store
   lists, rework above the data layer. Beacon due at the December visit.
-- **Deployment:** 🟢 live at `https://vireohome.app` — Pi 5 (192.168.0.42);
-  auto-deploy + Tailscale + restic→R2 + watchdog intact. **A bad USB cable was
-  the cause of the 2026-08-20 "enclosure" outage and all the slowness** — disk now
-  256 MB/s, deploys 1 min. Runbook Part F.
-- **Last session:** 2026-08-23 — critiqued the M5/6 dev-ready artifact and made it a
-  lane (`design-critic`). Rendering caught a flex `gap` drawing the exact hole the
-  spec forbids. `logs/2026-08-23-design-grocery-list-critique.md`.
+- **Deployment:** 🟢 live at `https://vireohome.app` — Pi 5 (192.168.0.42, pinned
+  in NetworkManager 2026-09-02; eth0 `88:a2:9e:d4:e7:33`, router reservation still
+  owed); auto-deploy + Tailscale + restic→R2 + watchdog intact. Runbook Part F/G.
+- **Last session:** 2026-09-02 — the "outage" was a lost DHCP lease: the Pi rebooted
+  onto .43 while DNS and the Tailscale /32 still said .42. Pinned .42; app was up
+  throughout. `logs/2026-09-02-infra-pi-static-ip.md`.
 - **What's next and everything outstanding:** `docs/sessions/queue.md` — the one
   index. M4.5/3 or the M5/6 design gate next; NVMe HAT is an upgrade, not a rescue.
 - **Owed in-app:** nothing — every row in `platform.bug_reports` is `deployed`

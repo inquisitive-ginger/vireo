@@ -271,7 +271,8 @@ volumes:
    a 3B whose USB-boot OTP bit is unverified, boot from the card and move both
    storage roots to the SSD instead — see Part C9.
 3. **Static LAN address:** give the Pi a DHCP reservation on your router so its
-   IP never moves.
+   IP never moves. **This host has no working reservation** — its address is
+   pinned in NetworkManager instead; see Part G, "The address is load-bearing".
 4. **Install Docker:**
    ```bash
    curl -fsSL https://get.docker.com | sh
@@ -617,6 +618,29 @@ fridge:    no Tailscale client at all, pure LAN
 
 The Pi advertises **only `192.168.0.42/32`**, not the whole `/24`. A tailnet
 device gets a route to the app and to nothing else on the home network.
+
+#### The address is load-bearing
+
+`192.168.0.42` is hard-wired in three places that do not learn from each other:
+public DNS, the advertised `/32` above, and ADR 060's exposure argument. If the
+Pi's address moves, the LAN breaks and off-LAN access breaks with it — which is
+exactly what a 2026-09-02 reboot did (`logs/2026-09-02-infra-pi-static-ip.md`).
+
+It is now pinned on the Pi, not at the router:
+
+```bash
+sudo nmcli con mod "Wired connection 1" \
+  ipv4.method manual ipv4.addresses 192.168.0.42/24 \
+  ipv4.gateway 192.168.0.1 ipv4.dns "192.168.0.1 205.171.2.65"
+sudo nmcli con up "Wired connection 1"      # drops the link — run it detached
+```
+
+Changing a live host's address over its own ssh session will strand it. Apply via
+`systemd-run --on-active=2` with a rollback unit armed
+(`--on-active=300` back to `ipv4.method auto`), verify, then cancel the rollback.
+
+**Still add the router reservation for `88:a2:9e:d4:e7:33`.** The static survives
+reboots; only the reservation stops the router leasing `.42` to something else.
 
 **The fridge iPad is NOT enrolled** — it stays pure LAN.
 
