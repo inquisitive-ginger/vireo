@@ -33,8 +33,8 @@ groceries that happen to be its first content (ADR 069 §2).
 ## Boundary rules (ADR 069)
 
 1. `shopping` owns the `shopping` Postgres schema. `meals` owns `meals`.
-2. Subjects are `shopping.List` and `shopping.Item`. Keys are
-   `shopping.list.create`, `shopping.item.add`, `shopping.item.manage`.
+2. Subjects are `shopping.List` and `shopping.Item`. The keys are the six in
+   §Permissions namespace below (ADR 071 completed the set).
 3. `meals` does not import `shopping`'s Prisma client, and `shopping` does not
    read `planned_meals`. Needs-pushing is a contract (ADR 050 precedent).
 4. Aisle filing — the dictionary, `fileAisle`, `normalizeItemName`, and the
@@ -42,15 +42,30 @@ groceries that happen to be its first content (ADR 069 §2).
 
 ## Permissions namespace
 
+The complete key set (ADR 071). Nothing outside this table is gated:
+
 | Key                    | Subject / action       | Baseline | Grantable |
 | ---------------------- | ---------------------- | -------- | --------- |
 | `shopping.list.create` | `create shopping.List` | Tier 4   | Yes       |
+| `shopping.item.view`   | `view shopping.Item`   | Tier 1   | Yes       |
 | `shopping.item.add`    | `create shopping.Item` | Tier 1   | Yes       |
+| `shopping.item.check`  | `check shopping.Item`  | Tier 2   | Yes       |
+| `shopping.item.file`   | `file shopping.Item`   | Tier 4   | Yes       |
 | `shopping.item.manage` | `manage shopping.Item` | Tier 4   | Yes       |
 
-Reading a list is not separately gated — `view shopping.Item` covers the index
-(ADR 067, namespace updated by 069). Gates are `ability.can`, never a `tier >=`
-read: a raw tier comparison is a structural ceiling the override system cannot
+**Checking off is `check`, and unchecking is the same key** (ADR 071) — a toggle,
+not a one-way door, so the person who mis-taps in an aisle can undo it there.
+Tier 2 keeps the youngest adder off it while leaving the partner shopper and the
+kid sent down an aisle able to work.
+
+**The aisle correction is `file`, not `manage`** (ADR 071). The tier is unchanged
+from ADR 067/069 — it writes a family-wide override that refiles every future add
+of that name — but it is its own action so that granting it to a shopping teen does
+not also grant delete and rename.
+
+Reading is `shopping.item.view` and covers the list itself — there is no separate
+list-read key (ADR 067, namespace updated by 069, enumerated by 071). Gates are
+`ability.can`, never a `tier >=` read: a raw tier comparison is a structural ceiling the override system cannot
 reach (ADR 018), and a parent handing a shopping teen the correction is exactly
 what overrides are for.
 

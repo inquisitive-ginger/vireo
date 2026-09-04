@@ -50,19 +50,25 @@ meter, and two shoppers seeing each other's checks. **Offline is M5.5/6 — not 
 9. `pnpm typecheck` + `pnpm test` clean — route tests via `fastify.inject()`, RTL over
    check/undo/collapse, the conflict rule unit-tested.
 
-## The blocking question this session owns
+## The permission keys — settled, use them
 
-**There is no permission key for checking an item off.** `spec.md`'s table and ADR 069 §3
-carry three keys — `shopping.list.create` (4), `shopping.item.add` (1+),
-`shopping.item.manage` (4). Under those as written, checking falls under
-`manage shopping.Item` = **tier 4**, which stops a tier-2/3 partner shopper from checking
-anything in an aisle and breaks AC5. The closed branch had a distinct `check` action granted
-at **tier 2+** (`packages/platform/src/ability.ts` on `dev/meals-grocery-list`), added after
-ADR 067 and never carried into the ADRs.
+**ADR 071** closed the gap this session was going to hit: under `spec.md`'s original three
+keys, checking fell to `manage shopping.Item` = tier 4 and AC5 was unbuildable. Settled:
 
-**This is a namespace decision, not an implementation detail. Flag it and get it settled —
-do not improvise a key.** Adding a subject/action pair is an ADR-level change (ADR 018);
-raise it before writing the gate.
+- **`shopping.item.check`, baseline tier 2, grantable.** The check ring and the whole-row
+  tap gate on `ability.can('check', 'shopping.Item')`.
+- **Unchecking is the same key** — one gate for both directions. No `uncheck` action, no
+  `checkedById` row condition; a mis-tap is undone by whoever is standing in the aisle.
+- **`shopping.item.file`** (tier 4) is the aisle correction, split out of `manage` — if you
+  touch `POST /:id/aisle`, gate on `file`, not `manage`.
+
+Never a `tier >=` read (ADR 018). M5.5/2 lands the registry and ability rules; if a key or
+grant is missing when you arrive, add it to match ADR 071's table rather than re-deciding it.
+
+**Left open, and yours to settle:** `spec.md`'s events namespace lists `shopping.item.checked`
+and nothing for the reverse. Decide whether an uncheck emits an event — a second event, the
+same event carrying state, or nothing — and write the answer into `spec.md`. Do not leave it
+to whoever reads the bus next.
 
 ## Constraints
 
