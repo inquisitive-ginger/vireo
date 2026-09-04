@@ -92,16 +92,20 @@ type FileItemInput = {
   sourceLabel?: string | null
 }
 
-/** The one place a name becomes a row. Override → dictionary → Other, remember
-    the spelling, announce it. A producer's push and a hand-typed add both come
-    through here, so a pushed item cannot end up filed by a second, drifting copy
-    of the rule — and a mis-filed push is correctable by the same `file` action
-    that corrects a mis-filed manual add. */
-async function fileItem(bus: EventBus, input: FileItemInput): Promise<ItemRow> {
-  const normalizedName = normalizeItemName(input.name)
-  const override = await shoppingPrisma.aisleOverride.findUnique({ where: { normalizedName } })
+/** The client, or a transaction's view of it — a batch of writes runs inside
+    `$transaction` and must not reach around it to the singleton. */
+type ItemWriter = Pick<typeof shoppingPrisma, 'item' | 'aisleOverride'>
 
-  const item = await shoppingPrisma.item.create({
+/** The one place a name becomes a row: override → dictionary → Other. A
+    producer's push and a hand-typed add both come through here, so a pushed item
+    cannot end up filed by a second, drifting copy of the rule — and a mis-filed
+    push is correctable by the same `file` action that corrects a mis-filed
+    manual add. */
+async function createItem(db: ItemWriter, input: FileItemInput): Promise<ItemRow> {
+  const normalizedName = normalizeItemName(input.name)
+  const override = await db.aisleOverride.findUnique({ where: { normalizedName } })
+
+  return db.item.create({
     data: {
       name: input.name,
       quantity: input.quantity ?? null,
@@ -114,7 +118,13 @@ async function fileItem(bus: EventBus, input: FileItemInput): Promise<ItemRow> {
       listId: input.listId,
     },
   })
+}
 
+/** What happens once the row is COMMITTED, never before: a rolled-back batch
+    that had already announced itself would leave every widget invalidating
+    against rows that no longer exist, and would teach the entry table a spelling
+    from a write that did not survive. */
+async function announceItem(bus: EventBus, item: ItemRow) {
   await remember(item.name)
 
   // One event name for every add, whoever caused it — a wall add is told apart
@@ -127,7 +137,11 @@ async function fileItem(bus: EventBus, input: FileItemInput): Promise<ItemRow> {
     addedBy: item.addedBy,
     sourceType: item.sourceType,
   })
+}
 
+async function fileItem(bus: EventBus, input: FileItemInput): Promise<ItemRow> {
+  const item = await createItem(shoppingPrisma, input)
+  await announceItem(bus, item)
   return item
 }
 
@@ -153,39 +167,48 @@ async function fileNeeds(bus: EventBus, payload: unknown): Promise<NeedsPushResu
   })
   if (!list) throw new Error('no permanent list to file needs onto')
 
-  // Dedupe on the normalized name — the same key the dictionary and the
-  // overrides use, so "Snap Peas" and "snap peas," are one thing. An OPEN row
-  // beats a checked one when both normalize equal: the open row is what a
-  // repeat push should skip against.
-  const existing = await shoppingPrisma.item.findMany({ where: { listId: list.id } })
-  const byName = new Map<string, ItemRow>()
-  for (const item of existing) {
-    const key = normalizeItemName(item.name)
-    const current = byName.get(key)
-    if (!current || (current.status === 'got' && item.status === 'needed')) byName.set(key, item)
-  }
-
-  let filed = 0
-  let alreadyOn = 0
-  for (const name of names) {
-    const key = normalizeItemName(name)
-    const match = byName.get(key)
-
-    if (match?.status === 'needed') {
-      alreadyOn += 1
-      continue
+  // All of it or none of it. A push is one gesture: filing three of five and
+  // then failing would tell the person it did not land while two rows sat on
+  // the list, and their retry would report "3 sent · 2 already on it" for a
+  // push they were told had failed.
+  const { created, filed, alreadyOn } = await shoppingPrisma.$transaction(async (tx) => {
+    // Dedupe on the normalized name — the same key the dictionary and the
+    // overrides use, so "Snap Peas" and "snap peas," are one thing. An OPEN row
+    // beats a checked one when both normalize equal: the open row is what a
+    // repeat push should skip against.
+    const existing = await tx.item.findMany({ where: { listId: list.id } })
+    const byName = new Map<string, ItemRow>()
+    for (const item of existing) {
+      const key = normalizeItemName(item.name)
+      const current = byName.get(key)
+      if (!current || (current.status === 'got' && item.status === 'needed')) byName.set(key, item)
     }
 
-    // Pushing a meal that needs something already bought puts the row back
-    // rather than duplicating it (salvaged from PR #127). Nothing can reach
-    // 'got' until M5.5/4 ships checking; the branch is here so dedupe does not
-    // have to change shape when it does.
-    const item = match
-      ? await shoppingPrisma.item.update({
+    const created: ItemRow[] = []
+    let filed = 0
+    let alreadyOn = 0
+
+    for (const name of names) {
+      const key = normalizeItemName(name)
+      const match = byName.get(key)
+
+      if (match?.status === 'needed') {
+        alreadyOn += 1
+        continue
+      }
+
+      // Pushing a meal that needs something already bought puts the row back
+      // rather than duplicating it (salvaged from PR #127). Nothing can reach
+      // 'got' until M5.5/4 ships checking; the branch is here so dedupe does not
+      // have to change shape when it does.
+      let item: ItemRow
+      if (match) {
+        item = await tx.item.update({
           where: { id: match.id },
           data: { status: 'needed', gotBy: null, gotAt: null, sourceLabel: note },
         })
-      : await fileItem(bus, {
+      } else {
+        item = await createItem(tx, {
           listId: list.id,
           name,
           addedBy: requestedBy,
@@ -193,12 +216,20 @@ async function fileNeeds(bus: EventBus, payload: unknown): Promise<NeedsPushResu
           sourceId,
           sourceLabel: note,
         })
+        created.push(item)
+      }
 
-    // A repeat of the same name inside one push dedupes against what it just
-    // wrote, not just against what was already there.
-    byName.set(key, item)
-    filed += 1
-  }
+      // A repeat of the same name inside one push dedupes against what it just
+      // wrote, not just against what was already there.
+      byName.set(key, item)
+      filed += 1
+    }
+
+    return { created, filed, alreadyOn }
+  })
+
+  // After the commit, never inside it.
+  for (const item of created) await announceItem(bus, item)
 
   return { listId: list.id, listName: list.name, filed, alreadyOn }
 }

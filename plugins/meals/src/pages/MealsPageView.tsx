@@ -33,12 +33,15 @@ export interface MealsPageViewProps {
   /** The needs-push link's gate — `shopping.item.add`, the same key the shopping
       surface asks (ADR 018/071). */
   canPushNeeds: boolean
-  /** What the last push said back, carried by `mealId` to the row that was
-      tapped — the outcome of a row-scoped action states itself on the row it
-      changed, not under the page title where it names no meal and can sit a
-      screen away from the finger. `failed` turns it destructive and leaves the
-      link in place: the link is the retry. */
-  pushNote: { mealId: string; text: string; failed: boolean } | null
+  /** What the last row-scoped action said back, carried by `mealId` to the row
+      that was tapped — the outcome states itself on the row it changed, not
+      under the page title where it names no meal and can sit a screen away from
+      the finger. `failed` turns it destructive and leaves the affordance in
+      place: the affordance is the retry. */
+  rowNote: { mealId: string; text: string; failed: boolean } | null
+  /** The meal whose push is in flight, if any — its link goes inert so a second
+      tap cannot file the same needs twice. */
+  pushPendingMealId: string | null
   onPrevWeek: () => void
   onNextWeek: () => void
   onThisWeek: () => void
@@ -69,7 +72,8 @@ export function MealsPageView({
   canManage,
   canClaim,
   canPushNeeds,
-  pushNote,
+  rowNote,
+  pushPendingMealId,
   onPrevWeek,
   onNextWeek,
   onThisWeek,
@@ -128,7 +132,8 @@ export function MealsPageView({
             canManage={canManage}
             canClaim={canClaim}
             canPushNeeds={canPushNeeds}
-            note={day.meal && pushNote?.mealId === day.meal.id ? pushNote : null}
+            note={day.meal && rowNote?.mealId === day.meal.id ? rowNote : null}
+            pushPending={day.meal != null && pushPendingMealId === day.meal.id}
             onPlan={onPlan}
             onEdit={onEdit}
             onClaim={onClaim}
@@ -174,7 +179,15 @@ function RecipeLink({ url, title }: { url: string; title: string }) {
    a phone entirely. `shrink-0` here too, so the verb and try bite truncate
    around the affordance instead of clipping it, and `z-20` to clear ItemCard's
    activate overlay — without it the row's tap-to-edit swallows the push. */
-function NeedsPushLink({ count, onPush }: { count: number; onPush: () => void }) {
+function NeedsPushLink({
+  count,
+  pending,
+  onPush,
+}: {
+  count: number
+  pending: boolean
+  onPush: () => void
+}) {
   return (
     // One flex item, so the pair wraps together. The separator only earns its
     // place while the link sits INLINE after the verb — on the wrapped line it
@@ -183,12 +196,17 @@ function NeedsPushLink({ count, onPush }: { count: number; onPush: () => void })
       <span aria-hidden className="text-sm-token hidden text-muted-foreground sm:inline">
         ·
       </span>
+      {/* Inert while its own push is in flight. Nothing on the row changes
+          between the tap and the answer, so a second tap is what a phone user
+          does — and `mutate()` does not coalesce, so both would file. */}
       <button
         type="button"
         onClick={onPush}
-        className="text-sm-token relative z-20 shrink-0 cursor-pointer font-medium text-primary hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+        disabled={pending}
+        aria-busy={pending}
+        className="text-sm-token relative z-20 shrink-0 cursor-pointer font-medium text-primary hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none disabled:cursor-default disabled:opacity-[0.66] disabled:hover:no-underline"
       >
-        {needsPushLabel(count)}
+        {pending ? 'Sending…' : needsPushLabel(count)}
       </button>
     </span>
   )
@@ -204,6 +222,7 @@ function DayRow({
   canClaim,
   canPushNeeds,
   note,
+  pushPending,
   onPlan,
   onEdit,
   onClaim,
@@ -219,6 +238,7 @@ function DayRow({
   canClaim: boolean
   canPushNeeds: boolean
   note: { text: string; failed: boolean } | null
+  pushPending: boolean
   onPlan: (day: WeekDay) => void
   onEdit: (day: WeekDay) => void
   onClaim: (meal: PlannedMeal) => void
@@ -339,7 +359,11 @@ function DayRow({
               {/* Both hidden on past days with the rest of the row's affordances
                   — behind today the page only records (design.md §M5/2). */}
               {needed > 0 && canPushNeeds && !isPast && (
-                <NeedsPushLink count={needed} onPush={() => onPushNeeds(meal)} />
+                <NeedsPushLink
+                  count={needed}
+                  pending={pushPending}
+                  onPush={() => onPushNeeds(meal)}
+                />
               )}
               {meal.recipeUrl && !isPast && <RecipeLink url={meal.recipeUrl} title={meal.title} />}
             </div>

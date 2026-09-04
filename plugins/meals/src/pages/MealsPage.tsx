@@ -28,10 +28,9 @@ export function MealsPage() {
   // Set → the remove-confirm dialog is open for this meal (RowActions only
   // reports intent; the host confirms — the chores pattern).
   const [removeTarget, setRemoveTarget] = useState<PlannedMeal | null>(null)
-  // What the last push said back, tagged with the meal it belongs to so the row
-  // that was tapped is what states it. Cleared on the next tap and whenever the
-  // plan changes underneath it.
-  const [pushNote, setPushNote] = useState<{
+  // The outcome of the last row-scoped action, tagged with the meal it belongs
+  // to so the row that was tapped is what states it.
+  const [rowNote, setRowNote] = useState<{
     mealId: string
     text: string
     failed: boolean
@@ -99,10 +98,11 @@ export function MealsPage() {
   // claim/plan/remove here has to invalidate BOTH: `meals/plan` refreshes this
   // page and the Tonight widget, `calendar/day-marks` is what makes the month
   // grid + agenda mark itself update without a reload (M5/4 AC6).
-  const invalidate = () => {
-    // An edited/claimed/removed meal makes its push note stale — the note
-    // describes needs that may no longer be the row's.
-    setPushNote(null)
+  // `changedId` clears the note only on the meal that actually changed. Clearing
+  // unconditionally wiped Thursday's "2 things sent to Grocery" the moment
+  // somebody claimed Friday.
+  const invalidate = (changedId?: string) => {
+    setRowNote((note) => (note && note.mealId === changedId ? null : note))
     queryClient.invalidateQueries({ queryKey: ['meals/plan'] })
     queryClient.invalidateQueries({ queryKey: ['calendar/day-marks'] })
   }
@@ -124,8 +124,8 @@ export function MealsPage() {
         return r.json() as Promise<PlannedMeal>
       })
     },
-    onSuccess: () => {
-      void invalidate()
+    onSuccess: (meal) => {
+      void invalidate(meal.id)
       setDrawer({ open: false, day: null })
     },
   })
@@ -136,7 +136,15 @@ export function MealsPage() {
         if (!r.ok) throw new Error(String(r.status))
         return r.json() as Promise<PlannedMeal>
       }),
-    onSuccess: () => void invalidate(),
+    onSuccess: (meal) => void invalidate(meal.id),
+    // The claim route still refuses the family profile by id — `owner_id` is
+    // `@db.Uuid` and cannot hold 'family' (deferred backlog: the platform-wide
+    // uuid mismatch). The ability says yes and the route says no, so the refusal
+    // has to reach the person who tapped rather than the console alone.
+    onError: (err, meal) => {
+      console.error('[meals] claim failed', err)
+      setRowNote({ mealId: meal.id, text: "Couldn't claim that one — try again.", failed: true })
+    },
   })
 
   // The producer's half of the needs-push contract. What comes back is the
@@ -154,14 +162,14 @@ export function MealsPage() {
         return r.json() as Promise<NeedsPushResult>
       }),
     onSuccess: (result, meal) => {
-      setPushNote({ mealId: meal.id, text: needsPushOutcome(result), failed: false })
+      setRowNote({ mealId: meal.id, text: needsPushOutcome(result), failed: false })
       // The rows land in shopping's schema, so shopping's queries are what go
       // stale — one prefix refreshes its page and the M5.5/5 widget together.
       void queryClient.invalidateQueries({ queryKey: ['shopping/list'] })
     },
     onError: (err, meal) => {
       console.error('[meals] needs push failed', err)
-      setPushNote({
+      setRowNote({
         mealId: meal.id,
         text: "Couldn't send that to the list — try again.",
         failed: true,
@@ -174,8 +182,8 @@ export function MealsPage() {
       fetch(`/api/meals/plan/${meal.id}`, { method: 'DELETE' }).then((r) => {
         if (!r.ok) throw new Error(String(r.status))
       }),
-    onSuccess: () => {
-      void invalidate()
+    onSuccess: (_data, meal) => {
+      void invalidate(meal.id)
       setRemoveTarget(null)
     },
   })
@@ -219,7 +227,8 @@ export function MealsPage() {
         canManage={canManage}
         canClaim={canClaim}
         canPushNeeds={canPushNeeds}
-        pushNote={pushNote}
+        rowNote={rowNote}
+        pushPendingMealId={pushNeeds.isPending ? (pushNeeds.variables?.id ?? null) : null}
         onPrevWeek={() => setOffset((o) => o - 1)}
         onNextWeek={() => setOffset((o) => o + 1)}
         onThisWeek={() => setOffset(0)}
@@ -227,7 +236,7 @@ export function MealsPage() {
         onEdit={(day) => setDrawer({ open: true, day })}
         onClaim={(meal) => claimMeal.mutate(meal)}
         onPushNeeds={(meal) => {
-          setPushNote(null)
+          setRowNote(null)
           pushNeeds.mutate(meal)
         }}
         onRemove={(meal) => setRemoveTarget(meal)}

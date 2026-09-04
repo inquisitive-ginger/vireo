@@ -389,6 +389,23 @@ describe('POST /api/meals/push-needs', () => {
     expect(res.statusCode).toBe(400)
   })
 
+  it('still reports the filing result when another plugin also subscribes', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const mealId = await plannedWithNeeds(cookie, 'chicken thighs')
+    const off = app.eventBus.on('meals.needs.pushed', () => ({ logged: true }))
+
+    const res = await push(cookie, { mealId })
+    off()
+
+    expect(res.json()).toMatchObject({ filed: 1, listName: 'Grocery' })
+    // NOTE: this proves tolerance, not the pick. Handlers run in registration
+    // order and `shopping` registers at boot, so a co-subscriber added here is
+    // always second and the route would pass even on a `!= null` match. The
+    // case that actually needs the shape check — a co-subscriber registered
+    // FIRST — is not reachable through the bus's API, so the guarantee rests on
+    // the predicate in `meals.ts` rather than on this test.
+  })
+
   it('never writes a shopping row itself — the rows carry the consumer\u2019s filing', async () => {
     const cookie = await getCookieForProfile(PARENT_ID)
     const mealId = await plannedWithNeeds(cookie, 'chicken thighs')

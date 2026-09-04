@@ -57,7 +57,8 @@ function renderView(props: Partial<Parameters<typeof MealsPageView>[0]> = {}) {
       canManage
       canClaim
       canPushNeeds
-      pushNote={null}
+      rowNote={null}
+      pushPendingMealId={null}
       onPrevWeek={vi.fn()}
       onPushNeeds={vi.fn()}
       onNextWeek={vi.fn()}
@@ -208,7 +209,7 @@ describe('MealsPageView', () => {
     const other = meal({ id: 'meal-tue', date: '2026-08-11', title: 'Tacos', needs: 'tortillas' })
     renderView({
       days: weekOf({ '2026-08-11': other, '2026-08-13': pushed }),
-      pushNote: { mealId: 'meal-thu', text: '2 things sent to Grocery', failed: false },
+      rowNote: { mealId: 'meal-thu', text: '2 things sent to Grocery', failed: false },
     })
 
     const note = screen.getByRole('status')
@@ -222,7 +223,7 @@ describe('MealsPageView', () => {
     const pushed = meal({ needs: 'chicken thighs, snap peas' })
     renderView({
       days: weekOf({ '2026-08-13': pushed }),
-      pushNote: { mealId: pushed.id, text: "Couldn't send that to the list", failed: true },
+      rowNote: { mealId: pushed.id, text: "Couldn't send that to the list", failed: true },
     })
 
     const note = screen.getByRole('status')
@@ -234,8 +235,34 @@ describe('MealsPageView', () => {
   it('says nothing on a row whose meal was not the one pushed', () => {
     renderView({
       days: weekOf({ '2026-08-13': meal({ needs: 'chicken thighs' }) }),
-      pushNote: { mealId: 'some-other-meal', text: '1 thing sent to Grocery', failed: false },
+      rowNote: { mealId: 'some-other-meal', text: '1 thing sent to Grocery', failed: false },
     })
     expect(screen.queryByRole('status')).not.toBeInTheDocument()
+  })
+
+  it('goes inert while its own push is in flight — a second tap would file twice', () => {
+    const onPushNeeds = vi.fn()
+    const withNeeds = meal({ needs: 'chicken thighs' })
+    renderView({
+      days: weekOf({ '2026-08-13': withNeeds }),
+      pushPendingMealId: withNeeds.id,
+      onPushNeeds,
+    })
+
+    const link = screen.getByRole('button', { name: 'Sending…' })
+    expect(link).toBeDisabled()
+    fireEvent.click(link)
+    expect(onPushNeeds).not.toHaveBeenCalled()
+  })
+
+  it('leaves every OTHER row tappable while one push is in flight', () => {
+    const pushing = meal({ id: 'm-thu', needs: 'chicken thighs' })
+    const other = meal({ id: 'm-tue', date: '2026-08-11', needs: 'tortillas' })
+    renderView({
+      days: weekOf({ '2026-08-13': pushing, '2026-08-11': other }),
+      pushPendingMealId: pushing.id,
+    })
+
+    expect(screen.getByRole('button', { name: '1 thing needed' })).toBeEnabled()
   })
 })

@@ -498,6 +498,27 @@ describe('meals.needs.pushed', () => {
     expect(entry?.name).toBe('Chicken Thighs')
   })
 
+  it('writes nothing and announces nothing when the push is refused', async () => {
+    const seen: unknown[] = []
+    const off = app.eventBus.on('shopping.item.added', (p) => seen.push(p))
+    await expect(pushNeeds([], { names: ['ok'], note: '' })).rejects.toThrow(/malformed/)
+    off()
+
+    expect(await shoppingPrisma.item.count()).toBe(0)
+    expect(seen).toHaveLength(0)
+  })
+
+  it('announces each row only after the batch commits', async () => {
+    // The events carry ids, so every one of them must name a row that survived.
+    const seen: { itemId: string }[] = []
+    const off = app.eventBus.on('shopping.item.added', (p) => seen.push(p as { itemId: string }))
+    await pushNeeds(['chicken thighs', 'snap peas'])
+    off()
+
+    const stored = await shoppingPrisma.item.findMany()
+    expect(seen.map((e) => e.itemId).sort()).toEqual(stored.map((i) => i.id).sort())
+  })
+
   it('rejects a malformed payload instead of writing a half-understood row', async () => {
     await expect(pushNeeds([], { names: ['ok'], note: '' })).rejects.toThrow(/malformed/)
     expect(await shoppingPrisma.item.count()).toBe(0)

@@ -241,7 +241,14 @@ const mealsPlugin: FastifyPluginAsync = async (fastify) => {
 
     // Nothing filed them. Saying "sent" here would be the exact lie the contract
     // exists to prevent, so it reads as the failure it is.
-    const result = results.find((r): r is NeedsPushResult => r != null)
+    //
+    // Matched on SHAPE, not on non-null: any plugin may subscribe to this event,
+    // and a second subscriber that returns something of its own would otherwise
+    // be handed back to the week page as the filing result — rendering
+    // "undefined things sent to undefined" if it registered first.
+    const isResult = (r: unknown): r is NeedsPushResult =>
+      typeof r === 'object' && r !== null && 'filed' in r && 'listName' in r
+    const result = results.find(isResult)
     if (!result) {
       request.log.error('[meals] nothing consumed meals.needs.pushed')
       return reply.status(503).send({ error: 'The shopping list is not listening right now' })
