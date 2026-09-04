@@ -120,7 +120,20 @@ describe('CaptureWidgetView — fitting its slot', () => {
   })
 
   it('does not claim there is more when everything already fits', () => {
-    renderView({ items: [item('1', 'milk')] })
+    renderView({ items: [item('1', 'milk')], openCount: 1 })
     expect(screen.queryByText(/more$/)).not.toBeInTheDocument()
+  })
+
+  /* The remainder counts off the house, not off the read: `/shopping/recent`
+     caps at 12, so a tile clamped to 4 rows out of a 19-item house must not say
+     "+2 more" beside a header that says 19. */
+  it('counts the remainder against the open count, not the capped read', () => {
+    renderView({
+      items: Array.from({ length: 6 }, (_, i) => item(String(i), `thing ${i}`)),
+      openCount: 19,
+    })
+    // The stub fits one row, so 18 of the 19 the house is waiting on are unseen
+    // — never 5, which is all the capped read happened to carry.
+    expect(screen.getByText('+18 more')).toBeInTheDocument()
   })
 })

@@ -60,7 +60,10 @@ export function WallPageView({
         trailing={<HoldToSpeak />}
       />
 
-      <div className="min-h-8 pt-3">
+      {/* Tall enough for the line it reserves — `pt-3` + one `text-body` line is
+          41px, so a 32px reserve let the first keystroke shove `Just added` and
+          every chip down 9px, and Enter shove them back. */}
+      <div className="min-h-11 pt-3">
         {addError ? (
           <p role="alert" className="text-body px-1 text-error">
             Couldn&rsquo;t add &ldquo;{addError}&rdquo; &mdash; it is not on the list. Try again.
@@ -88,7 +91,7 @@ export function WallPageView({
             justAdded.map((chip) => (
               <span
                 key={chip.id}
-                className="text-body rounded-full border border-border bg-secondary px-4.5 py-2 text-secondary-foreground"
+                className="text-body rounded-full border-2 border-border px-4.5 py-2 text-foreground"
               >
                 {chip.name}
               </span>

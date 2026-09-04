@@ -37,7 +37,7 @@ export function CaptureWidgetView({
   addError,
   canAdd,
 }: CaptureWidgetViewProps) {
-  const { boxRef, listRef, shown, hiddenCount, measuring } = useFitRows(items, MORE_RESERVE)
+  const { boxRef, listRef, shown, measuring } = useFitRows(items, MORE_RESERVE)
   // While composing, the echo takes the line — the filing is the one thing worth
   // reading between typing and Enter, on every surface the field appears on.
   const note = addError
@@ -64,7 +64,11 @@ export function CaptureWidgetView({
 
       <CaptureField
         size="inline"
-        className="mt-3 shrink-0 shadow-none"
+        // A `--card` field on a `--card` slot is the same value as its own
+        // parent, so a raised shadow has nothing to lift off: unfocused, the
+        // field is a hairline rectangle and the rows below it carry the tile.
+        // The recess is the one rung that reads in both themes (ADR 040).
+        className="mt-3 shrink-0 bg-surface-sunken shadow-[var(--shadow-inset)]"
         // A widget is a surface you did not navigate to (ADR 070) — nothing was
         // covered up to put this here, so the field is live on arrival.
         autoFocus
@@ -84,7 +88,10 @@ export function CaptureWidgetView({
       {/* The measured box: `min-h-0 flex-1` is what gives `useFitRows` a height
           to clamp against. Without the height-constrained flex child it measures
           zero and the tile crops instead of fitting (auto-bug #116). */}
-      <div ref={boxRef} data-fit-box className="mt-1 min-h-0 flex-1 overflow-hidden">
+      {/* A 4px seam under an input reads as an autocomplete menu, not as the
+          tile's content — but the recess is what separates the two, so the gap
+          only has to stop them touching and must not spend a whole row. */}
+      <div ref={boxRef} data-fit-box className="mt-2 min-h-0 flex-1 overflow-hidden">
         {error ? (
           <p className="text-sm-token px-1 pt-1 text-muted-foreground">
             Couldn&rsquo;t load the list.
@@ -113,12 +120,16 @@ export function CaptureWidgetView({
                 )}
               </ListRow>
             ))}
-          {/* A remainder with nothing above it is not a remainder — in a slot
-              too short for even one whole row the header's own count is already
-              the true number, and "+6 more" beside no rows reads as a broken
-              tile. */}
-          {!measuring && hiddenCount > 0 && shown.length > 0 && (
-            <div className="text-sm-token pt-2 text-muted-foreground">+{hiddenCount} more</div>
+          {/* The remainder is counted off the HOUSE, not off the read: the recent
+              endpoint caps at 12, so `items.length - shown.length` says "+2 more"
+              on a tile whose own header says 19. Two counts of one thing that
+              disagree read as a broken tile. A remainder with nothing above it is
+              not a remainder either — in a slot too short for even one whole row
+              the header's count is already the true number. */}
+          {!measuring && shown.length > 0 && openCount > shown.length && (
+            <div className="text-sm-token pt-2 text-muted-foreground">
+              +{openCount - shown.length} more
+            </div>
           )}
         </div>
       </div>

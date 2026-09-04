@@ -1,4 +1,4 @@
-import { useRef, useState, type FormEvent, type ReactNode } from 'react'
+import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { Plus } from 'lucide-react'
 import { cn } from '../lib/utils'
 
@@ -58,6 +58,24 @@ export function CaptureField({
   const [value, setValue] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
 
+  // Focus imperatively, NOT with the `autoFocus` prop. React 19 renders that as
+  // the DOM attribute, which browsers honour only while parsing the document —
+  // so it does nothing for anything mounted later, which is every one of this
+  // primitive's autofocusing surfaces: both the wall and the Home widget arrive
+  // inside a lazily loaded federated remote.
+  //
+  // ONCE, and not before the field can take it: an ambient surface mounts
+  // disabled while its first read is in flight (it does not know its
+  // destination yet), and focusing a disabled input is a silent no-op. So this
+  // waits for `disabled` to clear — and then never fires again, because a
+  // permission changing under someone mid-word must not yank the caret back.
+  const claimedFocus = useRef(false)
+  useEffect(() => {
+    if (!autoFocus || disabled || claimedFocus.current) return
+    claimedFocus.current = true
+    inputRef.current?.focus()
+  }, [autoFocus, disabled])
+
   function change(next: string) {
     setValue(next)
     onValueChange?.(next)
@@ -96,7 +114,6 @@ export function CaptureField({
         placeholder={placeholder}
         aria-label={label}
         disabled={disabled}
-        autoFocus={autoFocus}
         autoComplete="off"
         enterKeyHint="done"
         className={cn(
