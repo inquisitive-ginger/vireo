@@ -214,6 +214,9 @@ Stand up an RTL suite mirroring chores/calendar. See also the Deferred CI-glob g
 > recent first, nothing older than the current milestone's start. `docs/sessions/logs/` is
 > date-ordered and holds the record. Do not restore entries pruned from here.
 
+- **2026-09-04 — Fix: the up-next widget's day labels lead their events** (auto-bug #135, PR #137) —
+  the stacked anatomy #117 built for the narrow slot is now the only one, and `DayHeading` is
+  shared with the mobile agenda. _[log](logs/2026-09-04-dev-calendar-day-headings.md)_
 - **2026-09-04 — Dev: shop context, shopper sync, the aisle correction** (M5.5/4, PR #136) —
   ADR 064 amended: per-row attribution is rendered in neither direction. Ships with the nav item
   and widget **disabled**, one revertable commit. _[log](logs/2026-09-04-dev-shopping-shop-context.md)_

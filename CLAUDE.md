@@ -23,9 +23,9 @@ before it reads anything else, and it is size-capped — see
 - **Deployment:** 🟢 live at `https://vireohome.app` — Pi 5 (192.168.0.42, pinned
   in NetworkManager 2026-09-02; eth0 `88:a2:9e:d4:e7:33`, router reservation still
   owed); auto-deploy + Tailscale + restic→R2 + watchdog intact. Runbook Part F/G.
-- **Last session:** 2026-09-04 — the capture surface, the widget, shopper sync and the
-  aisle correction (PRs #134/#136). ADR 070 amended (nothing autofocuses), 073 written,
-  064 narrowed. `logs/2026-09-04-dev-shopping-{capture-surfaces,shop-context}.md`.
+- **Last session:** 2026-09-04 — auto-bug #135 (PR #137): the up-next widget's day labels
+  lead their events, and `DayHeading` is shared with the mobile agenda.
+  `logs/2026-09-04-dev-calendar-day-headings.md`.
 - **What's next and everything outstanding:** `docs/sessions/queue.md` — the one
   index. M5.5/6 (offline) or M4.5/3 next.
 
