@@ -194,8 +194,14 @@ export function ShoppingPageView({
                 {showAisles && (
                   <div
                     className={cn(
-                      'text-section-label pb-1.5 text-muted-foreground',
-                      i === 0 ? 'pt-2.5' : 'pt-4.5'
+                      // A section label binds to what is BELOW it, so the gap
+                      // above stays the larger of the two. Both were tight
+                      // enough to read as crowding between 56px rows (live
+                      // review, 2026-09-04). `section-label` specifies no block
+                      // spacing at all, so these numbers are local — the written
+                      // rule is queued separately.
+                      'text-section-label pb-2 text-muted-foreground',
+                      i === 0 ? 'pt-4' : 'pt-7'
                     )}
                   >
                     {group.aisle}

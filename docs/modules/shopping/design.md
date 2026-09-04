@@ -146,11 +146,10 @@ was:
   has no dedicated capture view to return to. Its list already carries a capture field
   at the top, which is all it needs (Zach, 2026-09-04).
 
-The revealed state used to be component state that reset on reload, on the reasoning
-that the next person walking up to a kitchen screen is adding rather than reading. With
-a route the URL wins instead: a tablet left on the list stays on the list. That is the
-cost of an addressable, back-navigable list view, and it is the right trade — but it is
-a change, not an oversight.
+**The URL wins, and that is a decision** (Zach, 2026-09-04). An earlier build kept the
+list in component state that reset on reload, so a kitchen screen returned to capture on
+its own. Asked directly whether to keep that behaviour, he chose to leave it: a tablet
+left on the list stays on the list. Nothing resets it on idle.
 
 **Why one route and not a second surface.** It was built once as its own route
 (`/shopping/wall`) and rejected on sight: nothing linked to it, so the first question
