@@ -134,6 +134,13 @@ source change rebuilds the `pnpm install` layer, so a Pi deploy takes ~6 min —
 of change took the API down 2026-07-21); no `pnpm fetch` + `--offline`.
 _`docs/deployment.md` E2/E3, `logs/2026-07-21-infra-deploy-hardening.md`. Depends on: none._
 
+### Docs: ten ADRs are over the 6000-byte cap
+
+**Type:** docs · **Kickoff:** _to be written_
+Rewrite concise — same arguments, fewer words; never cut reasoning, never raise the cap
+(Zach, 2026-09-04). 042 (9704), 044, 043, 031, 035, 046, 041, 022, 040, 057. Grandfathered:
+the check reads only changed files.
+
 ### Platform: family-feed test addendum
 
 **Type:** development (test addendum) · **Kickoff:** _to be written_
