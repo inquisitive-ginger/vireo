@@ -53,7 +53,13 @@ export function CaptureWidgetView({
       <WidgetHeader
         icon={ShoppingCart}
         label="Shopping"
-        trailing={<span className="text-sm-token text-muted-foreground">{openCount}</span>}
+        // Blank rather than 0 until the read lands: the count is a claim about
+        // the house and must not be made before the answer is in.
+        trailing={
+          <span className="text-sm-token text-muted-foreground">
+            {loading || error ? '' : openCount}
+          </span>
+        }
       />
 
       <CaptureField
@@ -107,7 +113,11 @@ export function CaptureWidgetView({
                 )}
               </ListRow>
             ))}
-          {!measuring && hiddenCount > 0 && (
+          {/* A remainder with nothing above it is not a remainder — in a slot
+              too short for even one whole row the header's own count is already
+              the true number, and "+6 more" beside no rows reads as a broken
+              tile. */}
+          {!measuring && hiddenCount > 0 && shown.length > 0 && (
             <div className="text-sm-token pt-2 text-muted-foreground">+{hiddenCount} more</div>
           )}
         </div>

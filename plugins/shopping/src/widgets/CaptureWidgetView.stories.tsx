@@ -52,11 +52,9 @@ const meta: Meta<typeof CaptureWidgetView> = {
 export default meta
 type Story = StoryObj<typeof CaptureWidgetView>
 
-/* The 2×1 slot it ships in — one or two whole rows and the remainder stated. */
-export const Standard: Story = {}
-
-/* A taller slot fits more rows without any variant knowing how many. */
-export const Tall: Story = {
+/* The 2×2 slot it ships in — `ListRow`'s 56px floor means a 2×1 fits the field
+   and no whole row at all, which is a shopping tile showing no shopping. */
+export const Standard: Story = {
   decorators: [
     (Story) => (
       <div className="h-[376px] w-[380px] rounded-panel border border-border bg-card">
@@ -65,6 +63,11 @@ export const Tall: Story = {
     ),
   ],
 }
+
+/* The short end of the range, where the clamp has to earn its keep: whole rows
+   only, and the header's own count rather than a remainder with nothing above
+   it. */
+export const Short: Story = {}
 
 export const Composing: Story = { args: { draftAisle: 'Pantry' } }
 

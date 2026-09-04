@@ -29,10 +29,14 @@ export interface CaptureFieldProps {
   className?: string
 }
 
-const SIZE: Record<CaptureFieldSize, { box: string; icon: number }> = {
-  inline: { box: 'h-touch gap-2 pl-3', icon: 18 },
-  hero: { box: 'h-14 gap-2.5 pl-3.5', icon: 22 },
-  wall: { box: 'h-19 gap-3 pl-5', icon: 26 },
+/* `text` scales with the surface, not with the box: what you are typing IS the
+   primary content, and on the wall the distance rule wants a key value at
+   `heading`, not at the 18px floor (design-system.md §Type scale). Inline and
+   hero are both read close up, where `body` is right. */
+const SIZE: Record<CaptureFieldSize, { box: string; text: string; icon: number }> = {
+  inline: { box: 'h-touch gap-2 pl-3', text: 'text-body', icon: 18 },
+  hero: { box: 'h-14 gap-2.5 pl-3.5', text: 'text-body', icon: 22 },
+  wall: { box: 'h-19 gap-3 pl-5', text: 'text-heading', icon: 26 },
 }
 
 /* The catch half of the capture taxonomy (ADR 070): one line, always open,
@@ -95,7 +99,10 @@ export function CaptureField({
         autoFocus={autoFocus}
         autoComplete="off"
         enterKeyHint="done"
-        className="text-body min-w-0 flex-1 bg-transparent text-foreground outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+        className={cn(
+          SIZE[size].text,
+          'min-w-0 flex-1 bg-transparent text-foreground outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50'
+        )}
       />
       {trailing !== undefined && <div className="flex shrink-0 items-center">{trailing}</div>}
     </form>

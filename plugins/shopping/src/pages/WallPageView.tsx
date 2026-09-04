@@ -4,8 +4,9 @@ import type { ShoppingList } from '../types'
 
 export interface WallPageViewProps {
   /** The last few things that landed, anywhere. Names only — never who added
-      them (ADR 072 §4, withdrawn 2026-09-04). */
-  justAdded: string[]
+      them (ADR 072 §4, withdrawn 2026-09-04). Ids because a house adds milk
+      twice in a week and two chips must not collide. */
+  justAdded: { id: string; name: string }[]
   lists: ShoppingList[]
   openCount: number
   loading: boolean
@@ -82,14 +83,14 @@ export function WallPageView({
           {loading ? (
             <Loader2 className="size-6 animate-spin text-muted-foreground" aria-label="Loading" />
           ) : justAdded.length === 0 ? (
-            <span className="text-body text-muted-foreground">Nothing yet today.</span>
+            <span className="text-body text-muted-foreground">Nothing yet.</span>
           ) : (
-            justAdded.map((name) => (
+            justAdded.map((chip) => (
               <span
-                key={name}
+                key={chip.id}
                 className="text-body rounded-full border border-border bg-secondary px-4.5 py-2 text-secondary-foreground"
               >
-                {name}
+                {chip.name}
               </span>
             ))
           )}
@@ -99,11 +100,16 @@ export function WallPageView({
       {/* The one way off this surface, and the only place the wall says how much
           is waiting — a count is not a list, so it stays a sentence. */}
       <div className="mt-auto flex flex-wrap items-center justify-between gap-3 border-t border-border pt-6">
+        {/* Never `0 things waiting` before the read lands — a count is a claim
+            about the house, and the wall is read from across the room by someone
+            who will not look twice. */}
         <span className="text-body text-muted-foreground">
-          {[
-            `${openCount} thing${openCount === 1 ? '' : 's'} waiting`,
-            ...lists.map((l) => `${l.name} ${l.itemCount}`),
-          ].join(' · ')}
+          {loading
+            ? '\u00a0'
+            : [
+                `${openCount} thing${openCount === 1 ? '' : 's'} waiting`,
+                ...lists.map((l) => `${l.name} ${l.itemCount}`),
+              ].join(' · ')}
         </span>
         <button
           type="button"

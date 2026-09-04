@@ -23,7 +23,9 @@ export function WallPage() {
 
   return (
     <WallPageView
-      justAdded={(capture.data?.items ?? []).slice(0, JUST_ADDED).map((i) => i.name)}
+      justAdded={(capture.data?.items ?? [])
+        .slice(0, JUST_ADDED)
+        .map((i) => ({ id: i.id, name: i.name }))}
       lists={capture.data?.lists ?? []}
       openCount={capture.openCount}
       loading={capture.loading}

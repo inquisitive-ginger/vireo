@@ -4,7 +4,11 @@ import { WallPageView, type WallPageViewProps } from './WallPageView'
 
 function renderView(over: Partial<WallPageViewProps> = {}) {
   const props: WallPageViewProps = {
-    justAdded: ['snap peas', 'tortillas', 'milk'],
+    justAdded: [
+      { id: '1', name: 'snap peas' },
+      { id: '2', name: 'tortillas' },
+      { id: '3', name: 'milk' },
+    ],
     lists: [
       { id: 'grocery', name: 'Grocery', kind: 'permanent', groupByAisle: true, itemCount: 14 },
       { id: 'costco', name: 'Costco', kind: 'permanent', groupByAisle: false, itemCount: 3 },
@@ -48,7 +52,7 @@ describe('WallPageView', () => {
   })
 
   it('names what was just added, never who added it', () => {
-    renderView({ justAdded: ['snap peas'] })
+    renderView({ justAdded: [{ id: '1', name: 'snap peas' }] })
     expect(screen.getByText('snap peas')).toBeInTheDocument()
     expect(screen.queryByText(/Emma|the house|added by/i)).not.toBeInTheDocument()
   })

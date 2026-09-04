@@ -17,7 +17,12 @@ const meta: Meta<typeof WallPageView> = {
     ),
   ],
   args: {
-    justAdded: ['snap peas', 'tortillas', 'milk', 'wood screws'],
+    justAdded: [
+      { id: '1', name: 'snap peas' },
+      { id: '2', name: 'tortillas' },
+      { id: '3', name: 'milk' },
+      { id: '4', name: 'wood screws' },
+    ],
     lists: [
       { id: 'grocery', name: 'Grocery', kind: 'permanent', groupByAisle: true, itemCount: 14 },
       { id: 'costco', name: 'Costco', kind: 'permanent', groupByAisle: false, itemCount: 3 },
