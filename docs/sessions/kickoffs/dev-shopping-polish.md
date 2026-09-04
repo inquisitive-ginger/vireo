@@ -14,7 +14,13 @@ family** — the plugin is fully working and reachable only by typed URL today.
 
 - [ ] **The design session's log and its artifact in `docs/sessions/artifacts/`** — both. The
       decision set is the contract; the artifact is where the proportion lives. It is an input,
-      not an appendix
+      not an appendix. Named, because the directory now holds several shopping files:
+      `artifacts/2026-09-04-shopping-polish-critique.md` (the contract — Decided, Rejected, the
+      SH-01…SH-14 items, and four open questions, one of which blocks SH-09) and
+      `artifacts/2026-09-04-shopping-polish-critique.html` (the visual reference — its
+      `Exploration` view holds six panels at real dimensions, each closing with a spec block of
+      thresholds, timings and tokens). **Where a spec block and an acceptance criterion in the
+      `.md` disagree, the spec block is the later thinking.**
 - [ ] `CLAUDE.md` — the **Standing Engineering Conventions**, all of them
 - [ ] `docs/modules/shopping/design.md`, especially §Anatomy and §"One surface, two layouts"
 - [ ] `logs/2026-09-04-dev-shopping-shop-context.md` + `-capture-surfaces.md` — the two build
@@ -28,9 +34,14 @@ family** — the plugin is fully working and reachable only by typed URL today.
    decision changed a shared token, the change is applied and **verified on the surfaces that
    share it** — the check ring is `--border` on `--background`, so `CompletionToggle` and every
    chores surface move with it. Review chores live too; it is the blast radius, not a side effect.
-2. **The colliding `14`s are told apart** as the design session settled it. The title strip is
-   cumulative across destinations, the meter is per-list, and today both print `14` — two correct
-   numbers reading as one number used two ways.
+2. **One counting scheme ships** (SH-10/SH-11). The design session did not tell the two numbers
+   apart — it **deleted** the cumulative cross-list count from the title strip, because nobody
+   acts on a total across lists. What remains counts one thing, "what's left": the pill is
+   remaining on that list, and the sticky bar reads `{list} · {n} left` — the same figure, so
+   they cannot disagree. The sticky bar also picks up the list name, which design.md specified
+   and the build dropped. **`design.md` §Anatomy item 1 is amended in this PR**; it specifies the
+   cumulative count deliberately, and a doc left describing it is how the next session restores
+   it. Check the widget and the Home tile, which print the same counts, and the singular case.
 3. **A failed add survives a later success.** `setAddError(null)` on success
    (`lib/use-ambient-capture.ts:73`, and the copies at `pages/ShoppingPage.tsx:193/357`) means
    "milk" failing then "eggs" succeeding erases the record that milk was lost. Build the

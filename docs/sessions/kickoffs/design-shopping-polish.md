@@ -46,11 +46,17 @@ whole surface, judge it, and let the known items take their place in what you fi
 
 **Three more, placed here because each is a judgement about what a rendered surface says:**
 
-3. **The colliding `14`s.** The title strip is **cumulative across every destination**; the
-   meter is **per-list**; in today's data both print `14`, so two correct numbers read as one
-   number used two ways. Neither is wrong — they are indistinguishable **by coincidence**, which
-   is worse than a wrong number because nobody thinks to check. Fix by labelling, placement or
-   scope; deleting one is a last resort (design.md §Anatomy 1 says why the cumulative one exists).
+3. **The colliding `14`s — ANSWERED 2026-09-04, see SH-10.** As posed: the title strip is
+   **cumulative across every destination**, the meter is **per-list**, and in the data of the day
+   both printed `14`, so two correct numbers read as one number used two ways — indistinguishable
+   **by coincidence**, which is worse than a wrong number because nobody thinks to check. The
+   critique found the coincidence had since drifted into open contradiction: on Costco the pill
+   printed `2` and the meter `1 of 3` on one screen, same list, two schemes.
+   **Zach took the last resort deliberately.** The cumulative cross-list count is deleted — it
+   answers a question nobody acts on — leaving one scheme, "what's left", counted identically by
+   the pill and the sticky bar so they cannot disagree. This overrules "deleting one is a last
+   resort" above, and **amends design.md §Anatomy item 1**, which specifies that count.
+   Decision set: `artifacts/2026-09-04-shopping-polish-critique.md`.
 4. **A failed add is erased by the next success.** "milk" fails, "eggs" succeeds, and the record
    that milk was lost is gone. Decide whether failures **queue or replace**, and what the strip
    looks like holding two. The wide capture layout is the one surface designed for four words in

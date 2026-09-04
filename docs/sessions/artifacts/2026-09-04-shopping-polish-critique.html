@@ -1,0 +1,1353 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<!-- Snapshot of the published critique artifact, 2026-09-04. Self-contained:
+     Vireo tokens are inlined from packages/ui/src/styles.css at that date, so this
+     is a record of what was decided against, not a live view of the design system.
+     Fonts load from Google; the fallback stacks carry it offline. -->
+<style>
+  :root { color-scheme: light dark; }
+  body { margin: 0; font: 14px/1.5 system-ui, sans-serif; background: #faf9f5; }
+  img { max-width: 100%; }
+  [hidden] { display: none !important; }
+</style>
+<title>Vireo Shopping Critique</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,500;0,600;1,400&family=DM+Sans:wght@400;500;600;700&family=DM+Mono:wght@400;500&display=swap">
+<style>
+  /* ── Vireo tokens, lifted from packages/ui/src/styles.css ───────────────── */
+  :root {
+    --font-display: 'Lora', Georgia, 'Times New Roman', serif;
+    --font-ui: 'DM Sans', 'Helvetica Neue', Arial, sans-serif;
+    --font-mono: 'DM Mono', ui-monospace, SFMono-Regular, Menlo, monospace;
+
+    --background: oklch(0.985 0.008 100);
+    --foreground: oklch(0.18 0.03 100);
+    --primary: oklch(0.5 0.11 122);
+    --primary-foreground: oklch(0.99 0 0);
+    --secondary: oklch(0.93 0.02 100);
+    --muted: oklch(0.93 0.016 100);
+    --muted-foreground: oklch(0.52 0.035 100);
+    --accent: oklch(0.47 0.07 185);
+    --border: oklch(0.88 0.02 100);
+    --card: oklch(0.999 0.004 100);
+    --surface-sunken: oklch(0.955 0.006 100);
+    --shadow-inset: inset 0 2px 4px -1px oklch(0.35 0.05 100 / 0.06), inset 0 -1px 0 0 oklch(1 0 0 / 0.5);
+    --shadow-raised: 0 2px 6px oklch(0.35 0.05 100 / 0.07), 0 10px 28px oklch(0.35 0.05 100 / 0.12);
+    --error: oklch(0.5 0.17 12);
+    --warning: oklch(0.69 0.12 78);
+    --success: oklch(0.44 0.1 148);
+
+    --radius-panel: 0.75rem;
+    --radius-card: 0.5rem;
+    --container-list: 840px;
+    --spacing-list-touch: 56px;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --background: oklch(0.15 0.018 105);
+      --foreground: oklch(0.92 0.012 100);
+      --primary: oklch(0.62 0.11 122);
+      --secondary: oklch(0.22 0.016 105);
+      --muted: oklch(0.2 0.014 105);
+      --muted-foreground: oklch(0.56 0.02 100);
+      --accent: oklch(0.56 0.08 185);
+      --border: oklch(0.3 0.018 105);
+      --card: oklch(0.21 0.018 105);
+      --surface-sunken: oklch(0.175 0.008 105);
+      --shadow-inset: inset 0 2px 4px -1px oklch(0 0 0 / 0.4), inset 0 -1px 0 0 oklch(1 0 0 / 0.04);
+      --shadow-raised: 0 2px 6px oklch(0 0 0 / 0.35), 0 10px 28px oklch(0 0 0 / 0.45);
+      --error: oklch(0.62 0.17 12);
+      --warning: oklch(0.75 0.11 78);
+      --success: oklch(0.57 0.1 148);
+    }
+  }
+  :root[data-theme="dark"] {
+    --background: oklch(0.15 0.018 105);
+    --foreground: oklch(0.92 0.012 100);
+    --primary: oklch(0.62 0.11 122);
+    --secondary: oklch(0.22 0.016 105);
+    --muted: oklch(0.2 0.014 105);
+    --muted-foreground: oklch(0.56 0.02 100);
+    --accent: oklch(0.56 0.08 185);
+    --border: oklch(0.3 0.018 105);
+    --card: oklch(0.21 0.018 105);
+    --surface-sunken: oklch(0.175 0.008 105);
+    --shadow-inset: inset 0 2px 4px -1px oklch(0 0 0 / 0.4), inset 0 -1px 0 0 oklch(1 0 0 / 0.04);
+    --shadow-raised: 0 2px 6px oklch(0 0 0 / 0.35), 0 10px 28px oklch(0 0 0 / 0.45);
+    --error: oklch(0.62 0.17 12);
+    --warning: oklch(0.75 0.11 78);
+    --success: oklch(0.57 0.1 148);
+  }
+
+  /* ── Base ───────────────────────────────────────────────────────────────── */
+  * { box-sizing: border-box; }
+  body {
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-ui);
+    font-size: 16px;
+    line-height: 1.5;
+    margin: 0;
+    padding: 0 1rem 6rem;
+  }
+  .wrap { max-width: var(--container-list); margin: 0 auto; }
+
+  /* Type scale — the app's own utilities, transcribed */
+  .t-page-title { font-family: var(--font-display); font-size: 26px; font-weight: 600; line-height: 1.2; letter-spacing: -0.02em; }
+  .t-display-lg { font-family: var(--font-display); font-size: 29px; font-weight: 600; line-height: 1.2; letter-spacing: -0.01em; }
+  .t-display-xl { font-family: var(--font-display); font-size: 36px; font-weight: 400; line-height: 1.15; letter-spacing: -0.01em; }
+  .t-heading { font-size: 20px; font-weight: 600; line-height: 1.2; letter-spacing: -0.01em; }
+  .t-card-title { font-size: 16px; font-weight: 600; line-height: 1.3; }
+  .t-body { font-size: 18px; font-weight: 400; line-height: 1.6; }
+  .t-base { font-size: 14px; line-height: 1.5; }
+  .t-sm { font-size: 13px; line-height: 1.5; }
+  .t-label {
+    font-size: 11px; font-weight: 700; line-height: 1.4;
+    letter-spacing: 0.1em; text-transform: uppercase;
+  }
+  .muted { color: var(--muted-foreground); }
+  h1, h2, h3 { margin: 0; text-wrap: balance; }
+  p { margin: 0; }
+  code, .mono { font-family: var(--font-mono); font-size: 0.88em; }
+
+  /* ── Masthead ───────────────────────────────────────────────────────────── */
+  header.mast { padding: 3rem 0 1.25rem; display: flex; flex-direction: column; gap: 0.85rem; }
+  .eyebrow { display: flex; align-items: baseline; justify-content: space-between; gap: 1rem; flex-wrap: wrap; }
+  .lede { font-size: 18px; line-height: 1.6; max-width: 62ch; color: var(--muted-foreground); }
+  .lede strong { color: var(--foreground); font-weight: 500; }
+
+  .runbar {
+    display: flex; flex-wrap: wrap; gap: 0 1.5rem;
+    padding: 0.85rem 1rem; margin-top: 0.35rem;
+    background: var(--surface-sunken); box-shadow: var(--shadow-inset);
+    border-radius: var(--radius-panel);
+  }
+  .runbar div { display: flex; gap: 0.4rem; align-items: baseline; }
+  .runbar dt { color: var(--muted-foreground); }
+  .runbar dd { margin: 0; font-weight: 500; }
+
+  /* ── View switch — the app's destination pills ──────────────────────────── */
+  .switch {
+    position: sticky; top: 0; z-index: 30;
+    display: flex; gap: 0.6rem; flex-wrap: wrap;
+    padding: 0.85rem 0 0.9rem;
+    background: var(--background);
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 1.75rem;
+  }
+  .pill {
+    font-family: var(--font-ui); font-size: 15px;
+    display: inline-flex; align-items: center; gap: 0.5rem;
+    padding: 0.5rem 1rem; min-height: 44px;
+    border: 2px solid var(--border); border-radius: 999px;
+    background: transparent; color: var(--foreground);
+    cursor: pointer; transition: background-color 150ms, border-color 150ms;
+  }
+  .pill:hover { background: color-mix(in oklab, var(--secondary) 70%, transparent); }
+  .pill[aria-pressed="true"] {
+    border-color: var(--primary); color: var(--primary); font-weight: 600;
+    background: color-mix(in oklab, var(--primary) 13%, transparent);
+  }
+  .pill .n { font-variant-numeric: tabular-nums; opacity: 0.8; font-weight: 400; }
+  .pill:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+
+  /* ── Sections ───────────────────────────────────────────────────────────── */
+  section { margin-bottom: 3rem; }
+  .sec-head {
+    display: flex; align-items: baseline; justify-content: space-between;
+    gap: 1rem; padding-bottom: 0.6rem; margin-bottom: 0.25rem;
+  }
+  .sec-head .t-label { color: var(--muted-foreground); }
+  .sec-note { max-width: 64ch; margin-bottom: 1.1rem; }
+
+  /* ── Findings: hairline rows, the way the surface itself is built ───────── */
+  .rows { display: flex; flex-direction: column; }
+  .row {
+    display: grid; grid-template-columns: 3.6rem 1fr; gap: 0 0.9rem;
+    padding: 1.15rem 0; border-top: 1px solid var(--border);
+    min-height: var(--spacing-list-touch);
+  }
+  .rows .row:last-child { border-bottom: 1px solid var(--border); }
+  .row-id {
+    font-family: var(--font-mono); font-size: 12px; font-weight: 500;
+    color: var(--muted-foreground); padding-top: 0.2rem; letter-spacing: 0.02em;
+  }
+  .row-main { display: flex; flex-direction: column; gap: 0.5rem; min-width: 0; }
+  .row-title { display: flex; align-items: baseline; gap: 0.65rem; flex-wrap: wrap; }
+  .row p { max-width: 68ch; }
+
+  .sev {
+    font-size: 10px; font-weight: 700; letter-spacing: 0.08em; text-transform: uppercase;
+    padding: 0.15rem 0.5rem; border-radius: var(--radius-card);
+    white-space: nowrap; flex-shrink: 0;
+  }
+  .sev-blocker { color: var(--error); background: color-mix(in oklab, var(--error) 12%, transparent); }
+  .sev-fix     { color: var(--warning); background: color-mix(in oklab, var(--warning) 18%, transparent); }
+  .sev-polish  { color: var(--muted-foreground); background: var(--muted); }
+
+  .saw {
+    border-left: 2px solid var(--border); padding: 0.1rem 0 0.1rem 0.85rem;
+    color: var(--muted-foreground); font-size: 14px; line-height: 1.55; max-width: 66ch;
+  }
+  .saw b { color: var(--foreground); font-weight: 500; }
+
+  /* ── The direction block ────────────────────────────────────────────────── */
+  .thesis {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius-panel); box-shadow: var(--shadow-raised);
+    padding: 1.75rem; display: flex; flex-direction: column; gap: 1.1rem;
+  }
+  .thesis blockquote {
+    margin: 0; font-family: var(--font-display); font-size: 24px;
+    line-height: 1.35; font-weight: 500; text-wrap: balance;
+  }
+  .moves { display: grid; gap: 1rem; grid-template-columns: repeat(auto-fit, minmax(220px, 1fr)); }
+  .move { display: flex; flex-direction: column; gap: 0.35rem; }
+  .move .t-label { color: var(--primary); }
+  .move p { font-size: 14px; line-height: 1.55; color: var(--muted-foreground); }
+
+  /* ── Planner view ───────────────────────────────────────────────────────── */
+  .item {
+    border-top: 1px solid var(--border); padding: 1.4rem 0;
+    display: flex; flex-direction: column; gap: 0.8rem;
+  }
+  .items .item:last-child { border-bottom: 1px solid var(--border); }
+  .item-head { display: flex; align-items: baseline; gap: 0.7rem; flex-wrap: wrap; }
+  .item-head .mono { color: var(--muted-foreground); font-weight: 500; }
+  .meta { display: grid; gap: 0.45rem 1rem; grid-template-columns: 7.5rem 1fr; font-size: 13.5px; }
+  .meta dt { color: var(--muted-foreground); font-weight: 500; }
+  .meta dd { margin: 0; min-width: 0; overflow-wrap: anywhere; }
+  .meta code { background: var(--muted); padding: 0.1rem 0.32rem; border-radius: 4px; }
+  ul.ac { margin: 0; padding-left: 1.1rem; display: flex; flex-direction: column; gap: 0.3rem; font-size: 14px; }
+  ul.ac li::marker { color: var(--primary); }
+
+  .callout {
+    border-radius: var(--radius-panel); padding: 1rem 1.15rem;
+    background: var(--surface-sunken); box-shadow: var(--shadow-inset);
+    font-size: 14px; line-height: 1.6; max-width: 70ch;
+  }
+  .callout .t-label { display: block; margin-bottom: 0.3rem; color: var(--muted-foreground); }
+
+  @media (max-width: 560px) {
+    .row { grid-template-columns: 1fr; gap: 0.4rem; }
+    .row-id { padding-top: 0; }
+    .meta { grid-template-columns: 1fr; gap: 0.1rem 0; }
+    .meta dd { margin-bottom: 0.5rem; }
+  }
+  @media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+
+  /* ── Exploration: mockups drawn at Vireo's real dimensions ──────────────── */
+  .panel { margin-bottom: 3.25rem; }
+  .panel-head { display: flex; flex-direction: column; gap: 0.5rem; margin-bottom: 1.25rem; }
+  .panel-head .kicker { display: flex; align-items: baseline; gap: 0.7rem; flex-wrap: wrap; }
+  .panel-head .kicker .mono { font-size: 12px; font-weight: 500; color: var(--primary); letter-spacing: 0.04em; }
+  .panel-head p { max-width: 68ch; font-size: 15px; line-height: 1.6; color: var(--muted-foreground); }
+  .panel-head p b { color: var(--foreground); font-weight: 500; }
+
+  .stage { display: flex; gap: 1.5rem; flex-wrap: wrap; align-items: flex-start; }
+  .plate { display: flex; flex-direction: column; gap: 0.55rem; min-width: 0; }
+  .plate > figcaption {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted-foreground); display: flex; align-items: center; gap: 0.45rem;
+  }
+  .plate > figcaption::before {
+    content: ""; width: 7px; height: 7px; border-radius: 2px; background: var(--muted-foreground); flex: none;
+  }
+  .plate.is-now > figcaption::before { background: var(--error); }
+  .plate.is-next > figcaption::before { background: var(--primary); }
+  .plate.is-next > figcaption { color: var(--primary); }
+
+  /* the device: real 375px content width, app background */
+  .screen {
+    width: 375px; max-width: 100%;
+    background: var(--background);
+    border: 1px solid var(--border); border-radius: var(--radius-panel);
+    box-shadow: var(--shadow-raised); overflow: hidden;
+    font-family: var(--font-ui);
+  }
+  .screen-pad { padding: 1rem; }
+
+  /* a Vireo ListRow, to spec: 56px floor, hairline, 24px leading ring */
+  .vrow {
+    display: flex; align-items: center; gap: 0.75rem;
+    min-height: 56px; padding: 0 0 0 0.25rem;
+    border-bottom: 1px solid var(--border); position: relative; background: var(--background);
+  }
+  .vrow:last-child { border-bottom: 0; }
+  .vring {
+    width: 24px; height: 24px; border-radius: 999px; border: 2px solid var(--border);
+    flex: none; display: grid; place-items: center;
+  }
+  .vring.on { border-color: var(--primary); background: var(--primary); }
+  .vring.on::after {
+    content: ""; width: 10px; height: 6px; margin-top: -2px;
+    border-left: 3px solid var(--primary-foreground); border-bottom: 3px solid var(--primary-foreground);
+    transform: rotate(-45deg);
+  }
+  .vname { font-size: 16px; font-weight: 600; line-height: 1.3; }
+  .vnote { font-size: 13px; color: var(--muted-foreground); line-height: 1.5; }
+  .vrow.done .vname { text-decoration: line-through; }
+  .vrow.done { opacity: 0.66; }
+  .vbody { display: flex; flex-direction: column; gap: 1px; min-width: 0; flex: 1; }
+
+  .vaisle {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.1em; text-transform: uppercase;
+    color: var(--muted-foreground); padding: 1.1rem 0 0.4rem;
+  }
+  .vtitle { font-family: var(--font-display); font-size: 26px; font-weight: 600; letter-spacing: -0.02em; }
+
+  /* the trailing control being removed */
+  .vtrail {
+    width: 44px; height: 44px; flex: none; display: grid; place-items: center;
+    color: var(--muted-foreground); border-radius: var(--radius-card);
+  }
+  .vtrail svg { width: 14px; height: 14px; }
+
+  /* swipe reveal */
+  .swipe-track { position: relative; overflow: hidden; border-bottom: 1px solid var(--border); }
+  .swipe-under {
+    position: absolute; inset: 0; display: flex; justify-content: flex-end; align-items: stretch;
+  }
+  .swipe-under span {
+    display: flex; align-items: center; justify-content: center; gap: 0.4rem;
+    width: 96px; background: var(--primary); color: var(--primary-foreground);
+    font-size: 13px; font-weight: 600;
+  }
+  .swipe-over { position: relative; transform: translateX(-96px); border-bottom: 0; background: var(--background); }
+  .swipe-under.lead { justify-content: flex-start; }
+  .swipe-under.lead span { background: var(--error); width: 112px; }
+  .swipe-over.trail { transform: translateX(112px); }
+
+  /* row sheet */
+  .sheet {
+    border: 1px solid var(--border); border-radius: var(--radius-panel);
+    background: var(--card); box-shadow: var(--shadow-raised); overflow: hidden; margin-top: 0.5rem;
+  }
+  .sheet-head {
+    padding: 0.7rem 0.9rem; border-bottom: 1px solid var(--border);
+    display: flex; flex-direction: column; gap: 0.1rem;
+  }
+  .sheet-head b { font-size: 15px; font-weight: 600; }
+  .sheet-head span { font-size: 12px; color: var(--muted-foreground); }
+  .sheet-act {
+    display: flex; align-items: center; gap: 0.65rem; min-height: 48px; padding: 0 0.9rem;
+    font-size: 15px; border-bottom: 1px solid var(--border);
+  }
+  .sheet-act:last-child { border-bottom: 0; }
+  .sheet-act .k { margin-left: auto; font-size: 11px; color: var(--muted-foreground); font-family: var(--font-mono); }
+  .sheet-act.danger { color: var(--error); font-weight: 500; }
+  .dot { width: 16px; flex: none; display: grid; place-items: center; color: var(--muted-foreground); }
+  .dot svg { width: 15px; height: 15px; }
+  .sheet-act.danger .dot { color: var(--error); }
+
+  /* capture field + chips */
+  .vfield {
+    display: flex; align-items: center; gap: 0.6rem; height: 56px; padding: 0 0.85rem;
+    border: 1px solid var(--border); border-radius: var(--radius-panel);
+    background: var(--card); box-shadow: var(--shadow-raised);
+    font-size: 18px; color: var(--muted-foreground);
+  }
+  .vfield.typing { border-color: var(--primary); box-shadow: 0 0 0 1px var(--primary), var(--shadow-raised); color: var(--foreground); font-weight: 500; }
+  .vecho { font-size: 13px; color: var(--muted-foreground); padding: 0.55rem 0.25rem; min-height: 40px; line-height: 1.5; }
+  .vecho b { color: var(--foreground); font-weight: 600; }
+  .vecho .warn { color: var(--warning); font-weight: 600; }
+  .vchips { display: flex; flex-wrap: wrap; gap: 0.45rem; }
+  .vchip {
+    display: inline-flex; align-items: center; gap: 0.4rem;
+    border: 1px solid var(--border); border-radius: 999px;
+    padding: 0.35rem 0.7rem; font-size: 14px; background: var(--background);
+  }
+  .vchip .sub { color: var(--muted-foreground); font-size: 12px; }
+  .vchip .x { color: var(--muted-foreground); font-size: 15px; line-height: 1; }
+
+  /* pills + meter inside mockups */
+  .vpills { display: flex; gap: 0.45rem; }
+  .vpill {
+    border: 2px solid var(--border); border-radius: 999px; padding: 0.3rem 0.75rem;
+    font-size: 13px; white-space: nowrap;
+  }
+  .vpill.on { border-color: var(--primary); color: var(--primary); font-weight: 600; background: color-mix(in oklab, var(--primary) 13%, transparent); }
+  .vmeter-num { font-size: 20px; font-weight: 600; letter-spacing: -0.01em; }
+  .vmeter-num .qual { font-size: 13px; font-weight: 400; color: var(--muted-foreground); letter-spacing: 0; }
+  .vbar { height: 6px; border-radius: 3px; background: var(--muted); overflow: hidden; margin-top: 0.4rem; }
+  .vbar i { display: block; height: 100%; background: var(--primary); }
+  .vcount { font-size: 13px; color: var(--muted-foreground); }
+
+  /* annotation markers */
+  .mark {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 18px; height: 18px; border-radius: 999px; flex: none;
+    background: var(--accent); color: var(--primary-foreground);
+    font-size: 10px; font-weight: 700; font-family: var(--font-ui);
+  }
+  .notes { display: flex; flex-direction: column; gap: 0.55rem; max-width: 34ch; padding-top: 1.4rem; }
+  .note-line { display: flex; gap: 0.55rem; font-size: 13.5px; line-height: 1.5; color: var(--muted-foreground); }
+  .note-line b { color: var(--foreground); font-weight: 500; }
+
+  .spec {
+    margin-top: 1.1rem; padding: 0.8rem 1rem;
+    border-left: 2px solid var(--primary); background: var(--surface-sunken);
+    border-radius: 0 var(--radius-card) var(--radius-card) 0;
+    font-size: 13px; line-height: 1.65; max-width: 76ch;
+  }
+  .spec .t-label { display: block; color: var(--muted-foreground); margin-bottom: 0.25rem; }
+  .spec code { background: color-mix(in oklab, var(--muted) 60%, transparent); padding: 0.05rem 0.3rem; border-radius: 4px; }
+
+  @media (max-width: 560px) {
+    .screen { width: 100%; }
+    .notes { padding-top: 0.25rem; max-width: none; }
+  }
+</style>
+
+</head>
+<body>
+<div class="wrap">
+
+  <header class="mast">
+    <div class="eyebrow">
+      <span class="t-label muted">Vireo · M5.5 Shopping · live design critique</span>
+      <span class="t-label muted">4 Sep 2026</span>
+    </div>
+    <h1 class="t-display-xl">The list you cannot take anything off</h1>
+    <p class="lede">
+      Capture is fast and the walk order works. The gap is everywhere <em>after</em> the add:
+      <strong>a shopper on a phone has exactly one verb</strong> — got / not got — and every other thing
+      a person needs to do to a row is either stranded on the tablet, gated to a parent, or absent
+      from the product entirely. Below: what I saw running the real app, then the direction, then the
+      work broken out for the polish session.
+    </p>
+    <dl class="runbar t-sm">
+      <div><dt>Routes</dt><dd class="mono">/shopping · /shopping/lists</dd></div>
+      <div><dt>Viewports</dt><dd class="mono">768×1024 · 375×812</dd></div>
+      <div><dt>Profiles</dt><dd>Family (T1) · Zoë (T3)</dd></div>
+      <div><dt>Data</dt><dd>restored to starting state</dd></div>
+    </dl>
+  </header>
+
+  <nav class="switch" aria-label="Views">
+    <button class="pill" id="btn-zach" aria-pressed="true">For you <span class="n">14</span></button>
+    <button class="pill" id="btn-expl" aria-pressed="false">Exploration <span class="n">6</span></button>
+    <button class="pill" id="btn-plan" aria-pressed="false">For the planner <span class="n">14</span></button>
+  </nav>
+
+  <!-- ══════════════════════════ VIEW: ZACH ══════════════════════════ -->
+  <div id="view-zach">
+
+    <section>
+      <div class="sec-head"><h2 class="t-label">The direction</h2></div>
+      <div class="thesis">
+        <blockquote>The row keeps one tap. Its two edges carry everything else — right for the full set, left for the one verb you actually reach for.</blockquote>
+        <p class="t-base muted" style="max-width:66ch">
+          Right now the row is a switch with a second button bolted to it, and the verbs that
+          didn't fit — remove, rename, take back — went somewhere else or nowhere. That's the
+          thing to fix, and it doesn't need a mode, an index, or a drill-in. Three moves:
+        </p>
+        <div class="moves">
+          <div class="move">
+            <span class="t-label">Two edges, one row</span>
+            <p>Drag left (revealing the right edge) for the full permitted set: Remove · Move to aisle · Rename · Note. Drag right (revealing the left edge) for remove alone, the verb worth a shortcut. Long-press and <span class="mono">Shift+F10</span> both reach the full set. The permanent trailing icon comes off every row.</p>
+          </div>
+          <div class="move">
+            <span class="t-label">The add gets out of the way</span>
+            <p>Capture's job is to catch the word and be ready for the next one — so it stops narrating aisles it can't let you fix, and says only the one thing you can act on in that second: <em>Already on Grocery. Take it back?</em> Filing is real work, but it's list-view work, done once before you walk in.</p>
+          </div>
+          <div class="move">
+            <span class="t-label">Give the walk an ending</span>
+            <p>The check is the most-repeated act in the product and it's the least rewarding one: a faint ring flips, silently. It should feel like putting something in a cart — and clearing the last aisle should say so, without taking away the field or the aisles you might still open.</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section>
+      <div class="sec-head">
+        <h2 class="t-label">What's missing</h2>
+        <span class="t-sm muted">7 findings</span>
+      </div>
+      <p class="sec-note t-base muted">The functional gaps, in the order they'd bite a real family.</p>
+
+      <div class="rows">
+
+        <article class="row">
+          <div class="row-id">SH-01</div>
+          <div class="row-main">
+            <div class="row-title"><h3 class="t-card-title">Nothing can be removed from the list — by anyone</h3><span class="sev sev-blocker">Blocker</span></div>
+            <p class="t-base">Not on the phone, not on the tablet, not as a parent. There is no delete on a row at any tier. The server has had the endpoint since M5.5/2 and no screen has ever called it.</p>
+            <p class="saw"><b>Seen:</b> I added <span class="mono">milk</span> and <span class="mono">paper towels</span>, then went looking for a way to take either off the list itself. As Family (T1) and as Zoë (T3) there is no control on a row but the check ring. In source, <span class="mono">DELETE /shopping/items/:id</span> exists, is gated to tier 4, and has zero client callers — so even you can't press it.</p>
+          </div>
+        </article>
+
+        <article class="row">
+          <div class="row-id">SH-02</div>
+          <div class="row-main">
+            <div class="row-title"><h3 class="t-card-title">The one undo that exists is stranded on the tablet</h3><span class="sev sev-blocker">Blocker</span></div>
+            <p class="t-base">ADR 073 gives every tier fifteen minutes to take back their own add. That affordance renders only on the <em>Just added</em> chips, and those only exist on the wide capture layout. A phone is always in list mode — so the surface most adds come from is the one surface that can never undo one.</p>
+            <p class="saw"><b>Seen:</b> to undo my two test adds I had to leave the phone layout, go to the tablet view, and click the × on a chip. The x never appears at 375px because the strip itself doesn't.</p>
+          </div>
+        </article>
+
+        <article class="row">
+          <div class="row-id">SH-03</div>
+          <div class="row-main">
+            <div class="row-title"><h3 class="t-card-title">Duplicates are accepted silently, then separated</h3><span class="sev sev-blocker">Blocker</span></div>
+            <p class="t-base">Adding something already on the list makes a second row, filed by add-time, so the twin doesn't even land next to its original. This is the exact failure mode of a shared list — two people add milk, the shopper buys two.</p>
+            <p class="saw"><b>Seen:</b> with <span class="mono">milk</span> already in Dairy I typed <span class="mono">milk</span> again. No warning, count went 16 → 17, and Dairy rendered <span class="mono">milk · greek yogurt · butter · milk</span> — the duplicate three rows below the original, one of them struck through after I checked the first. Separately, <span class="mono">paper towels</span> is now on both Grocery and Costco and neither screen mentions the other.</p>
+          </div>
+        </article>
+
+        <article class="row">
+          <div class="row-id">SH-04</div>
+          <div class="row-main">
+            <div class="row-title"><h3 class="t-card-title">Non-food has no aisle, so "Other" is a second list</h3><span class="sev sev-fix">Should fix</span></div>
+            <p class="t-base">There are seven aisles and all seven are food: Produce, Bakery, Meat, Dairy, Pantry, Frozen, Other. Every paper good, cleaner, toiletry, battery and bin bag in a normal grocery run lands in Other — which sits at the end of a walk order it was never part of. The premise of the surface is "a list already in walk order"; for a quarter of a real list it isn't.</p>
+            <p class="saw"><b>Seen:</b> typing <span class="mono">paper towels</span> printed <em>files under <b>Other</b></em>. In the seeded list, Other already held 3 of 17 items.</p>
+          </div>
+        </article>
+
+        <article class="row">
+          <div class="row-id">SH-05</div>
+          <div class="row-main">
+            <div class="row-title"><h3 class="t-card-title">Only a parent can fix a misfile — and parents aren't the ones making them</h3><span class="sev sev-fix">Should fix</span></div>
+            <p class="t-base">The aisle correction is <span class="mono">file</span>, tier 4. Kids and the kitchen wall can put things in Other all week and can't move one. The correction teaches a family-wide override, which is a fair reason to price it — but the person standing in front of the wrong aisle is the one who can't act.</p>
+            <p class="saw"><b>Seen:</b> as Zoë (T3) the control is absent from every row, not disabled — no hint the aisle is even changeable.</p>
+          </div>
+        </article>
+
+        <article class="row">
+          <div class="row-id">SH-06</div>
+          <div class="row-main">
+            <div class="row-title"><h3 class="t-card-title">Nothing can be edited — a typo is permanent</h3><span class="sev sev-fix">Should fix</span></div>
+            <p class="t-base">No rename, no quantity, no note from any screen. Combined with SH-01, a mistyped row is immortal.</p>
+            <p class="saw"><b>Seen:</b> the seeded list carries <span class="mono">mikk</span> twice. Nobody in the family can fix or remove either one.</p>
+          </div>
+        </article>
+
+        <article class="row">
+          <div class="row-id">SH-07</div>
+          <div class="row-main">
+            <div class="row-title"><h3 class="t-card-title">The shop has no ending</h3><span class="sev sev-polish">Polish</span></div>
+            <p class="t-base">There's a state for an empty list and a state for a cleared aisle, but none for a finished trip. Check the last item and you're left on a screen of collapsed grey summary rows and a full progress bar — the shape of an empty page, not the feeling of a finished one.</p>
+            <p class="saw"><b>Seen:</b> cleared Produce collapsed correctly to <em>Produce · 5 in the cart</em>. There is no all-clear branch in the view source — only the zero-items empty state.</p>
+          </div>
+        </article>
+
+      </div>
+    </section>
+
+    <section>
+      <div class="sec-head">
+        <h2 class="t-label">The row, and its clutter</h2>
+        <span class="t-sm muted">2 findings</span>
+      </div>
+      <div class="rows">
+
+        <article class="row">
+          <div class="row-id">SH-08</div>
+          <div class="row-main">
+            <div class="row-title"><h3 class="t-card-title">A permanent control for a once-a-month act</h3><span class="sev sev-fix">Should fix</span></div>
+            <p class="t-base">Your instinct is right, and the design system agrees with you: ADR 063 chose <span class="mono">ListRow</span> precisely because these are "a set you scan and act on <em>one</em> way." A second per-row button contradicts the reason the primitive was picked. It also inverts priority — the correction glyph is more visible than the check ring you press thirty times a trip.</p>
+            <p class="saw"><b>In source:</b> the trailing button is <span class="mono">h-11 w-11</span> — 44px, under the 48px <span class="mono">--spacing-touch</span> floor — wrapping a 14px <span class="mono">FolderInput</span> glyph whose meaning isn't guessable. It renders on every row, for tier 4, always.</p>
+          </div>
+        </article>
+
+        <article class="row">
+          <div class="row-id">SH-09</div>
+          <div class="row-main">
+            <div class="row-title"><h3 class="t-card-title">Two edges, and the first gesture the app has ever had</h3><span class="sev sev-fix">Should fix</span></div>
+            <p class="t-base">Settled direction: right edge opens the full permitted set, left edge is a shortcut to remove. That's a good split — it puts the verb you reach for ninety percent of the time one motion away without hardwiring a gesture to the only destructive act. Two things it costs, both worth paying: there is no touch-gesture handling anywhere in the plugin today, so this is new interaction vocabulary for Vireo and belongs in <span class="mono">@family-os/ui</span> beside <span class="mono">ListRow</span>; and the quick remove needs an undo rather than a confirm, because a confirm dialog on the fast path defeats the reason it's the fast path.</p>
+            <p class="saw"><b>Constraint:</b> ADR 068 gives the row 48px live and 8px dead; a horizontal gesture must not eat the vertical tap that is still the row's primary action. <b>And:</b> removal is a hard delete on both paths (ADR 073 §4) — so "undo" means re-creating the row with a new id and a reset retract clock. See E1 for the two ways to spend that.</p>
+          </div>
+        </article>
+
+      </div>
+    </section>
+
+    <section>
+      <div class="sec-head">
+        <h2 class="t-label">Numbers and hierarchy</h2>
+        <span class="t-sm muted">3 findings</span>
+      </div>
+      <div class="rows">
+
+        <article class="row">
+          <div class="row-id">SH-10</div>
+          <div class="row-main">
+            <div class="row-title"><h3 class="t-card-title">Three counting schemes on one screen, two of them contradicting</h3><span class="sev sev-blocker">Blocker</span></div>
+            <p class="t-base">The queue already has the "colliding 14s" as a coincidence problem. It's worse than that: the pill counts what's <em>left</em>, the meter counts what's <em>done out of the total</em>, and the title counts what's left <em>across all lists</em>. On Costco that renders as a flat contradiction.</p>
+            <p class="saw"><b>Seen, simultaneously, on one 375px screen:</b> <span class="mono">13 things to get</span> · pill <span class="mono">Costco 2</span> · meter <span class="mono">1 of 3</span>. Two of those numbers describe the same list and disagree. <b>Resolution (yours, and better than mine):</b> the cross-list total answers a question nobody asks, so it goes — leaving one number, "what's left", counted the same way by the pill and the meter. See E5.</p>
+          </div>
+        </article>
+
+        <article class="row">
+          <div class="row-id">SH-11</div>
+          <div class="row-main">
+            <div class="row-title"><h3 class="t-card-title">The sticky status line drops the list name</h3><span class="sev sev-fix">Should fix</span></div>
+            <p class="t-base">design.md specifies the in-shop line as <span class="mono">Grocery · 6 of 14</span> plus the destination chip. What ships is <span class="mono">6 of 17</span> alone. Scroll two rows and the pills are gone, so mid-shop nothing on screen says which list you're standing in — with two lists live, that's the one fact the sticky bar exists to hold.</p>
+            <p class="saw"><b>Seen:</b> sticky bar at <span class="mono">top-0</span>, <span class="mono">text-heading</span>/20px, list name absent.</p>
+          </div>
+        </article>
+
+        <article class="row">
+          <div class="row-id">SH-12</div>
+          <div class="row-main">
+            <div class="row-title"><h3 class="t-card-title">The first check shoves the list down</h3><span class="sev sev-polish">Polish</span></div>
+            <p class="t-base">The meter is correctly hidden at zero — but its arrival pushes every row down by its own height, once, at the exact moment your finger is moving to the next row. Reserve the space, or grow the meter in from zero height.</p>
+            <p class="saw"><b>Seen:</b> ~58px downward shift of the whole list on the first check of a trip.</p>
+          </div>
+        </article>
+
+      </div>
+    </section>
+
+    <section>
+      <div class="sec-head">
+        <h2 class="t-label">Capture, and joy</h2>
+        <span class="t-sm muted">2 findings</span>
+      </div>
+      <div class="rows">
+
+        <article class="row">
+          <div class="row-id">SH-13</div>
+          <div class="row-main">
+            <div class="row-title"><h3 class="t-card-title">Capture is narrating a fact nobody can act on</h3><span class="sev sev-fix">Should fix</span></div>
+            <p class="t-base">The filing echo states an aisle before the commit so a misfile is caught by the person who caused it — except the person who caused it usually can't fix it (SH-05), and by your own account the aisle isn't a decision anyone makes at capture time. It's decided once, in the list, before a trip. So the echo spends the one line under the field on information that arrives too early to be useful and too gated to be actionable. Reclaim that line for the collision notice, which is the thing you <em>can</em> act on in that second.</p>
+            <p class="saw"><b>Worth knowing:</b> this reverses design.md §Anatomy item 3 and touches ADR 070's amendment, which explicitly preserves the filing echo. It's your call to make, but it's a doc amendment, not a polish tweak — the ADR should be updated in the same PR. <b>Also:</b> the chips are a hand-rolled <span class="mono">&lt;span&gt;</span>, not the <span class="mono">Chip</span> primitive the pills beside them use, so their focus and hover states don't match.</p>
+          </div>
+        </article>
+
+        <article class="row">
+          <div class="row-id">SH-14</div>
+          <div class="row-main">
+            <div class="row-title"><h3 class="t-card-title">The wall is mostly empty, and the check is unrewarded</h3><span class="sev sev-polish">Polish</span></div>
+            <p class="t-base">Two joy gaps at opposite ends. On the tablet capture screen, roughly half the height below the chips is blank — a room-facing surface with nothing to look at between adds. And the single most repeated gesture in the product, the check, is a silent ring flip with no weight to it.</p>
+            <p class="saw"><b>Measured:</b> tablet capture — content ends ~440px, footer at ~944px of 1024. Phone list — first row at 428px of 812, four of twelve rows visible on arrival.</p>
+          </div>
+        </article>
+
+      </div>
+    </section>
+
+    <section>
+      <div class="sec-head"><h2 class="t-label">Deliberately not reported</h2></div>
+      <div class="callout">
+        <span class="t-label">Already yours</span>
+        Voice and the hidden nav item, per your brief. Already in the polish queue and not re-litigated here:
+        the check ring's 1.29:1 contrast (it is the root of SH-08's priority inversion, so the two fixes meet),
+        the 2×2 Home tile's dashboard cost, the add-error strip erasing a previous failure, and
+        <span class="mono">section-label</span>'s missing block-spacing rule. Settled and untouched:
+        no modes, no list index, no per-row attribution (ADR 064), nothing autofocuses (ADR 070).
+      </div>
+    </section>
+
+    <section>
+      <div class="sec-head"><h2 class="t-label">How this was run</h2></div>
+      <div class="callout">
+        <span class="t-label">Caveat worth knowing</span>
+        I don't enter authentication PINs, so the tier-4 pass didn't happen live — I audited as Family (tier 1)
+        and Zoë (tier 3), and everything tier-4-only (the aisle-correction button's size, glyph and placement;
+        the unreachable delete endpoint) is read from source rather than seen on screen. Worth a two-minute
+        look yourself before the polish session, since SH-08 is about how that button feels in place.
+        Test data was added and then fully reverted — two adds retracted, six checks undone, profile returned to The Pritchetts.
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ══════════════════════════ VIEW: EXPLORATION ══════════════════════════ -->
+  <div id="view-expl" hidden>
+
+    <section>
+      <div class="sec-head"><h2 class="t-label">What you're looking at</h2></div>
+      <div class="callout" style="margin-bottom:2.5rem">
+        <span class="t-label">Read me first</span>
+        Six panels, each drawn at Vireo's real dimensions — 375px wide, 56px rows, 24px rings,
+        the actual type scale and tokens — so what you see is close to what would ship rather than
+        a diagram of it. Red-dotted plates are <b>today</b>, green-dotted are <b>proposed</b>.
+        Every panel closes with a spec block the planner can lift directly.
+        These are drawings, not decisions: they exist to make the trade-offs arguable.
+      </div>
+
+      <!-- ─────────────── E1 ─────────────── -->
+      <div class="panel">
+        <div class="panel-head">
+          <div class="kicker">
+            <h3 class="t-heading">One edge, every verb</h3>
+            <span class="mono">SH-09 · unblocks 01 / 06 / 08</span>
+          </div>
+          <p>The keystone, now with two edges. Drag <b>left</b> and the right edge offers the full set,
+          filtered by what this person may do to <b>this</b> row. Drag <b>right</b> and the left edge offers
+          remove alone — the verb that earns a shortcut. The row itself never grows a control, which is how
+          the trailing button in E2 comes off. Vertical tap stays the check, untouched.</p>
+        </div>
+
+        <div class="stage">
+          <figure class="plate is-next">
+            <figcaption>1 · left edge · quick remove</figcaption>
+            <div class="screen"><div class="screen-pad">
+              <div class="vaisle" style="padding-top:0">Other</div>
+              <div class="swipe-track">
+                <div class="swipe-under lead"><span>Remove</span></div>
+                <div class="vrow swipe-over trail"><div class="vring"></div><div class="vbody"><span class="vname">mikk</span></div></div>
+              </div>
+              <div class="vrow"><div class="vring"></div><div class="vbody"><span class="vname">paper towels</span></div></div>
+              <div class="vecho" style="padding-top:1rem">Revealed, not fired. One tap on the red confirms — no dialog, no round trip to a menu.</div>
+            </div></div>
+          </figure>
+
+          <figure class="plate is-next">
+            <figcaption>2 · right edge · everything</figcaption>
+            <div class="screen"><div class="screen-pad">
+              <div class="vaisle" style="padding-top:0">Dairy</div>
+              <div class="vrow"><div class="vring"></div><div class="vbody"><span class="vname">greek yogurt</span></div></div>
+              <div class="swipe-track">
+                <div class="swipe-under"><span>Edit</span></div>
+                <div class="vrow swipe-over"><div class="vring"></div><div class="vbody"><span class="vname">butter</span></div></div>
+              </div>
+              <div class="vrow"><div class="vring"></div><div class="vbody"><span class="vname">milk</span><span class="vnote">for Thursday</span></div></div>
+            </div></div>
+          </figure>
+
+          <figure class="plate is-next">
+            <figcaption>3 · the sheet, tier 4</figcaption>
+            <div class="screen"><div class="screen-pad">
+              <div class="vaisle" style="padding-top:0">Dairy</div>
+              <div class="vrow" style="opacity:.4"><div class="vring"></div><div class="vbody"><span class="vname">greek yogurt</span></div></div>
+              <div class="sheet">
+                <div class="sheet-head"><b>butter</b><span>Dairy · added 2 days ago</span></div>
+                <div class="sheet-act"><span class="dot"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8h8M7 5l3 3-3 3M13 3v10"/></svg></span>Move to another aisle<span class="k">file</span></div>
+                <div class="sheet-act"><span class="dot"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M11.5 2.5l2 2L6 12H4v-2z"/></svg></span>Rename<span class="k">manage</span></div>
+                <div class="sheet-act"><span class="dot"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3h10v7H7l-3 3v-3H3z"/></svg></span>Add a note<span class="k">manage</span></div>
+                <div class="sheet-act danger"><span class="dot"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h10M6 4V3h4v1M5 4l.6 9h4.8L11 4"/></svg></span>Remove from the list<span class="k">manage</span></div>
+              </div>
+            </div></div>
+          </figure>
+
+          <figure class="plate is-next">
+            <figcaption>4 · same sheet, tier 1</figcaption>
+            <div class="screen"><div class="screen-pad">
+              <div class="vaisle" style="padding-top:0">Other</div>
+              <div class="vrow" style="opacity:.4"><div class="vring"></div><div class="vbody"><span class="vname">mikk</span></div></div>
+              <div class="sheet">
+                <div class="sheet-head"><b>paper towels</b><span>you added this 4 minutes ago</span></div>
+                <div class="sheet-act danger"><span class="dot"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 4h10M6 4V3h4v1M5 4l.6 9h4.8L11 4"/></svg></span>Take it back<span class="k">retract</span></div>
+              </div>
+              <div class="vecho" style="padding-top:.9rem">A row nobody may act on has no gesture at all — neither edge moves.</div>
+            </div></div>
+          </figure>
+
+          <div class="notes">
+            <div class="note-line"><span class="mark">1</span><span>Both edges are the <b>same permission check</b>. If remove isn't permitted on this row, the left edge doesn't move — it never reveals a button that will fail.</span></div>
+            <div class="note-line"><span class="mark">2</span><span>Left edge <b>reveals</b>, it doesn't fire. One drag plus one tap, no dialog. A full-swipe-to-delete variant is faster and is the other option — see the spec for what it costs.</span></div>
+            <div class="note-line"><span class="mark">3</span><span>Verbs run <b>least to most destructive</b>, remove last and in <span class="mono">--error</span>. The keys on the right are for you, not shipping.</span></div>
+            <div class="note-line"><span class="mark">4</span><span>One verb still gets a sheet on the right edge — consistency beats the saved tap, and it's one code path. The shortcut is the left edge's whole job.</span></div>
+          </div>
+        </div>
+
+        <div class="spec">
+          <span class="t-label">Spec</span>
+          Left edge (drag right): reveal <code>112px</code>, threshold <code>56px</code>, snap back below it; the revealed control is <code>Remove</code> or <code>Take it back</code> depending on which permission granted it, and fires on tap.
+          Right edge (drag left): reveal <code>96px</code>, threshold <code>96px</code> or 40% of row width, whichever is smaller; opens the sheet on release.
+          Only one row is open at a time; a new drag or a scroll closes the last.
+          Axis lock on the first <code>8px</code> — horizontal claims the gesture, vertical hands it to scroll.
+          The activation overlay (<code>inset-y-[3.5px]</code>, ADR 068) keeps working while the row is offset, and a drag never fires the check.
+          Keyboard: <code>Shift+F10</code> / context-menu key opens the sheet, Escape closes and restores focus. Pointer: long-press <code>500ms</code>, right-click on desktop. There is no keyboard shortcut for the quick path — it's a shortcut, not a second API.
+          Zero permitted verbs → no gesture is bound on either edge.
+          All motion behind <code>prefers-reduced-motion</code>.
+          <br><br>
+          <b>The undo question, which needs your answer before this ships.</b> Removal is a hard delete on both paths (ADR 073 §4 — no <code>retracted</code> status, no soft delete), so there is nothing to restore. Two ways to spend that:
+          <b>(a) reveal-then-tap</b>, drawn above — one extra tap, no undo needed, no data question;
+          <b>(b) full-swipe fires immediately</b> plus <code>Removed · Undo</code> in the report slot for ~5s, where Undo re-creates the row with a <em>new</em> id and a reset <code>added_at</code>. (b) is faster and is what Mail-style gestures train people to expect; it also means an undo silently changes the row's identity, which matters to the retract clock and to anything holding the old id. Recommend (a) for this session and (b) as a follow-up once quantity lands and rows have a merge story.
+        </div>
+      </div>
+
+      <!-- ─────────────── E2 ─────────────── -->
+      <div class="panel">
+        <div class="panel-head">
+          <div class="kicker">
+            <h3 class="t-heading">The row loses its second control</h3>
+            <span class="mono">SH-08</span>
+          </div>
+          <p>Same twelve rows, same walk order. The difference is what the eye has to skip past on
+          every one of them. On the left, the rarest act in the product owns permanent chrome and
+          out-contrasts the ring you press thirty times a trip.</p>
+        </div>
+
+        <div class="stage">
+          <figure class="plate is-now">
+            <figcaption>Today · tier 4</figcaption>
+            <div class="screen"><div class="screen-pad">
+              <div class="vaisle" style="padding-top:0">Produce</div>
+              <div class="vrow"><div class="vring"></div><div class="vbody"><span class="vname">snap peas</span></div><span class="vtrail"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8h8M7 5l3 3-3 3M13 3v10"/></svg></span></div>
+              <div class="vrow"><div class="vring"></div><div class="vbody"><span class="vname">bananas</span></div><span class="vtrail"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8h8M7 5l3 3-3 3M13 3v10"/></svg></span></div>
+              <div class="vrow"><div class="vring"></div><div class="vbody"><span class="vname">cilantro</span></div><span class="vtrail"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8h8M7 5l3 3-3 3M13 3v10"/></svg></span></div>
+              <div class="vrow"><div class="vring"></div><div class="vbody"><span class="vname">broccoli</span><span class="vnote">for Friday</span></div><span class="vtrail"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M2 8h8M7 5l3 3-3 3M13 3v10"/></svg></span></div>
+            </div></div>
+          </figure>
+
+          <figure class="plate is-next">
+            <figcaption>Proposed · every tier</figcaption>
+            <div class="screen"><div class="screen-pad">
+              <div class="vaisle" style="padding-top:0">Produce</div>
+              <div class="vrow"><div class="vring"></div><div class="vbody"><span class="vname">snap peas</span></div></div>
+              <div class="vrow"><div class="vring"></div><div class="vbody"><span class="vname">bananas</span></div></div>
+              <div class="vrow"><div class="vring"></div><div class="vbody"><span class="vname">cilantro</span></div></div>
+              <div class="vrow"><div class="vring"></div><div class="vbody"><span class="vname">broccoli</span><span class="vnote">for Friday</span></div></div>
+            </div></div>
+          </figure>
+
+          <div class="notes">
+            <div class="note-line"><span class="mark">1</span><span>The button is <b>44×44</b> — under the 48px <span class="mono">--spacing-touch</span> floor, and the only control in the module that is.</span></div>
+            <div class="note-line"><span class="mark">2</span><span>Its 14px glyph reads at roughly <b>4.0:1</b> while the ring beside it sits at <b>1.29:1</b>. The rare control is three times more visible than the constant one.</span></div>
+            <div class="note-line"><span class="mark">3</span><span>ADR 063 chose <span class="mono">ListRow</span> because these are "a set you scan and act on one way." The right side is that sentence, drawn.</span></div>
+            <div class="note-line"><span class="mark">4</span><span>Fixing the ring's contrast is already in your queue — do it <b>with</b> this, or the right-hand column still has the faintest thing on screen as its primary target.</span></div>
+          </div>
+        </div>
+
+        <div class="spec">
+          <span class="t-label">Spec</span>
+          Delete <code>AisleCorrection</code>'s trailing mount at <code>ShoppingPageView.tsx:425</code>; the component itself moves behind the sheet's "Move to another aisle" and keeps its family-wide-override warning copy verbatim.
+          Row chrome after this change is exactly: leading ring, <code>card-title</code> name, optional <code>sm</code> note. Nothing else, at any tier.
+          No touch target below <code>--spacing-touch</code> (48px) survives anywhere in the plugin.
+        </div>
+      </div>
+
+      <!-- ─────────────── E3 ─────────────── -->
+      <div class="panel">
+        <div class="panel-head">
+          <div class="kicker">
+            <h3 class="t-heading">Capture stops talking about aisles</h3>
+            <span class="mono">SH-13 · reverses design.md §Anatomy 3</span>
+          </div>
+          <p>Your call, and I think it's the right one: filing is a list-view job done once before a
+          trip, not a fact worth a line under the field every time someone types a word. The echo's
+          original justification was that a misfile gets caught by whoever caused it — but the people
+          doing most of the capturing can't correct an aisle at all (SH-05), so the line has been
+          reporting a problem to an audience that can't fix it. The chip goes back to being a name
+          and a way to undo it.</p>
+        </div>
+
+        <div class="stage">
+          <figure class="plate is-now">
+            <figcaption>Today</figcaption>
+            <div class="screen"><div class="screen-pad">
+              <div class="vfield typing">paper towels</div>
+              <div class="vecho">Enter to add · files under <b>Other</b></div>
+              <div class="vaisle" style="padding-top:0">Just added</div>
+              <div class="vchips">
+                <span class="vchip">broccoli</span>
+                <span class="vchip">mikk</span>
+                <span class="vchip">mikk</span>
+                <span class="vchip">yellow onion</span>
+              </div>
+            </div></div>
+          </figure>
+
+          <figure class="plate is-next">
+            <figcaption>Proposed</figcaption>
+            <div class="screen"><div class="screen-pad">
+              <div class="vfield typing">paper towels</div>
+              <div class="vecho">Enter to add</div>
+              <div class="vaisle" style="padding-top:0">Just added</div>
+              <div class="vchips">
+                <span class="vchip">broccoli <span class="x">×</span></span>
+                <span class="vchip">mikk <span class="x">×</span></span>
+                <span class="vchip">mikk <span class="x">×</span></span>
+                <span class="vchip">yellow onion <span class="x">×</span></span>
+              </div>
+            </div></div>
+          </figure>
+
+          <div class="notes">
+            <div class="note-line"><span class="mark">1</span><span>The echo keeps its <b>reserved height</b> either way — it's what stops the first keystroke shoving the layout, and it's where E4's collision line lands.</span></div>
+            <div class="note-line"><span class="mark">2</span><span>On the right every chip carries an <span class="mono">×</span>, because on the wall every one of them <em>is</em> yours (ADR 072 §3). The ragged strip I flagged is really a phone-only artifact — worth checking it doesn't read as arbitrary there.</span></div>
+            <div class="note-line"><span class="mark">3</span><span>Dropping the echo removes the only place the aisle vocabulary is visible before a trip. That makes <b>SH-04</b> harder to notice and more important to fix — nobody will see <span class="mono">Other</span> filling up until they're standing in the shop.</span></div>
+            <div class="note-line"><span class="mark">4</span><span>Chips stay hand-rolled <span class="mono">&lt;span&gt;</span>s today; moving them onto <span class="mono">Chip</span> is the small, unrelated win in this panel.</span></div>
+          </div>
+        </div>
+
+        <div class="spec">
+          <span class="t-label">Spec</span>
+          Remove the aisle clause from the echo in all three surfaces — <code>ShoppingPageView.tsx:228</code>, <code>ShoppingCaptureHero.tsx:103</code>, <code>CaptureWidgetView.tsx:49</code> — and the <code>draftAisle</code> plumbing behind them (<code>onDraftChange</code>, <code>use-ambient-capture.ts</code>). Keep the slot and its <code>min-h-10</code> reserve.
+          <b>Amend design.md §Anatomy item 3 and ADR 070's 2026-09-04 amendment in the same PR</b>, since both name the filing echo as preserved — leaving the docs describing a line that no longer exists is how the next session re-adds it.
+          Chips rebuild on <code>Chip</code> (<code>ShoppingCaptureHero.tsx:122–141</code>), keep <code>aria-label="Take back {name}"</code>, and take eligibility from the server's <code>canRetract</code>, never from position in the strip (ADR 073 §2).
+          No hue, no avatar, no adder name on any chip (ADR 072 §3, ADR 064).
+          <br><br>
+          <b>Open, and it changes what "filing" means:</b> "reorganize the aisles in the list view" could be moving items into the right aisle, or reordering the aisles themselves to match a store's walk. The second is currently recorded as a named non-goal (<code>aisle-dictionary.ts</code>: "Per-family reorder is a named non-goal") and would make walk order a property of the list rather than of the app — a bigger change than it sounds, and a product story. Worth answering before SH-05 gets designed.
+        </div>
+      </div>
+
+      <!-- ─────────────── E4 ─────────────── -->
+      <div class="panel">
+        <div class="panel-head">
+          <div class="kicker">
+            <h3 class="t-heading">The collision is caught where it happens</h3>
+            <span class="mono">SH-03</span>
+          </div>
+          <p>Cut to your wording. The notice is the fact; the verb is the only thing to do about it.
+          Nothing about where it filed, nothing about it having been added anyway — the row is
+          visibly there, so saying so is a sentence the reader has to parse and can't use.</p>
+        </div>
+
+        <div class="stage">
+          <figure class="plate is-now">
+            <figcaption>Today</figcaption>
+            <div class="screen"><div class="screen-pad">
+              <div class="vfield">Type it, or say it</div>
+              <div class="vecho">&nbsp;</div>
+              <div class="vaisle" style="padding-top:0">Dairy</div>
+              <div class="vrow"><div class="vring"></div><div class="vbody"><span class="vname">milk</span></div></div>
+              <div class="vrow"><div class="vring"></div><div class="vbody"><span class="vname">greek yogurt</span></div></div>
+              <div class="vrow"><div class="vring"></div><div class="vbody"><span class="vname">butter</span></div></div>
+              <div class="vrow"><div class="vring"></div><div class="vbody"><span class="vname">milk</span></div></div>
+            </div></div>
+          </figure>
+
+          <figure class="plate is-next">
+            <figcaption>Proposed</figcaption>
+            <div class="screen"><div class="screen-pad">
+              <div class="vfield">Type it, or say it</div>
+              <div class="vecho"><span class="warn">Already on Grocery.</span> <b style="border-bottom:1px solid currentColor">Take it back?</b></div>
+              <div class="vaisle" style="padding-top:0">Dairy</div>
+              <div class="vrow"><div class="vring"></div><div class="vbody"><span class="vname">milk</span></div></div>
+              <div class="vrow"><div class="vring"></div><div class="vbody"><span class="vname">greek yogurt</span></div></div>
+              <div class="vrow"><div class="vring"></div><div class="vbody"><span class="vname">butter</span></div></div>
+              <div class="vrow"><div class="vring"></div><div class="vbody"><span class="vname">milk</span></div></div>
+            </div></div>
+          </figure>
+
+          <div class="notes">
+            <div class="note-line"><span class="mark">1</span><span>Both screens still show <b>two milks</b>. Deliberate — the notice stops the silence, it does not solve the duplicate.</span></div>
+            <div class="note-line"><span class="mark">2</span><span><b>Take it back</b> removes the add that just happened, never the row that was already there. Worth stating plainly for the planner, since on a shared list those are two different people's rows.</span></div>
+            <div class="note-line"><span class="mark">3</span><span>Match key is <span class="mono">normalizeItemName</span>, which already exists — so <span class="mono">Milk,</span> and <span class="mono">milk</span> collide, and <span class="mono">mikk</span> correctly does not.</span></div>
+            <div class="note-line"><span class="mark">4</span><span>Unchecked rows only. Re-adding something already in the cart is a real second-trip item, not a mistake.</span></div>
+          </div>
+        </div>
+
+        <div class="spec">
+          <span class="t-label">Spec</span>
+          Copy, verbatim: <code>Already on Grocery.</code> as the notice, <code>Take it back?</code> as the action, list name interpolated.
+          Lives in the existing <code>min-h-10</code> report slot; must not resize it or steal focus, and never blocks — ADR 070's field clears and stays ready.
+          Resolve against queue item 4 (a failed add erased by the next success) before building; both write to this one slot and the ordering rule has to be decided once.
+          The action targets the just-created item's id and is the same retract call as the chip <code>×</code>; it is absent if that add is not retract-eligible.
+          Server returns the collision alongside the created item so the client needs no second read.
+          <br><br>
+          <b>On quantity — agreed, punt it, with one decision made now.</b> A dedicated session is right; it touches the schema, the meals push, and the check semantics (is <code>milk ×2</code> one check or two?). But decide <em>now</em> whether a duplicate add will eventually <b>merge into the existing row</b> or <b>stay a second row carrying a count</b>, because that determines whether this notice is a stopgap that gets deleted or the permanent behaviour for the "no, genuinely two separate things" case. If it's merge, this notice is temporary and shouldn't grow features. If it's a count, this notice is where the count gets offered later, and the slot should be built with room for a second action.
+        </div>
+      </div>
+
+      <!-- ─────────────── E5 ─────────────── -->
+      <div class="panel">
+        <div class="panel-head">
+          <div class="kicker">
+            <h3 class="t-heading">One number: what's left</h3>
+            <span class="mono">SH-10 · SH-11 · reverses design.md §Anatomy 1</span>
+          </div>
+          <p>The left screen is real — I read it off Costco at 375px. Three numbers, two of them
+          describing the same list with different arithmetic. Your version is better than the one I
+          drew: the cross-list total answers a question nobody asks, so deleting it beats labelling it.
+          What's left is <b>the pill at rest</b> ("20 on Grocery, time to go") and <b>the bar in the shop</b>
+          ("8 left"), counted the same way, so they can never disagree.</p>
+        </div>
+
+        <div class="stage">
+          <figure class="plate is-now">
+            <figcaption>Today · scrolled, mid-shop</figcaption>
+            <div class="screen"><div class="screen-pad">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;gap:1rem">
+                <span class="vtitle">Shopping</span><span class="vcount">13 things to get</span>
+              </div>
+              <div class="vpills" style="margin-top:.9rem"><span class="vpill">Grocery 11</span><span class="vpill on">Costco 2</span></div>
+              <div style="margin-top:1.1rem">
+                <div class="vmeter-num">1 of 3</div>
+                <div class="vbar"><i style="width:33%"></i></div>
+              </div>
+              <div class="vrow" style="margin-top:.6rem"><div class="vring on"></div><div class="vbody"><span class="vname" style="text-decoration:line-through;opacity:.66">almond butter</span></div></div>
+              <div class="vrow"><div class="vring"></div><div class="vbody"><span class="vname">paper towels</span></div></div>
+              <div class="vrow"><div class="vring"></div><div class="vbody"><span class="vname">rotisserie chicken</span></div></div>
+            </div></div>
+          </figure>
+
+          <figure class="plate is-next">
+            <figcaption>Proposed</figcaption>
+            <div class="screen"><div class="screen-pad">
+              <div style="display:flex;justify-content:space-between;align-items:baseline;gap:1rem">
+                <span class="vtitle">Shopping</span>
+              </div>
+              <div class="vpills" style="margin-top:.9rem"><span class="vpill">Grocery 11</span><span class="vpill on">Costco 2</span></div>
+              <div style="margin-top:1.1rem">
+                <div class="vmeter-num">Costco · 2 <span class="qual">left</span></div>
+                <div class="vbar"><i style="width:33%"></i></div>
+              </div>
+              <div class="vrow" style="margin-top:.6rem"><div class="vring on"></div><div class="vbody"><span class="vname" style="text-decoration:line-through;opacity:.66">almond butter</span></div></div>
+              <div class="vrow"><div class="vring"></div><div class="vbody"><span class="vname">paper towels</span></div></div>
+              <div class="vrow"><div class="vring"></div><div class="vbody"><span class="vname">rotisserie chicken</span></div></div>
+            </div></div>
+          </figure>
+
+          <div class="notes">
+            <div class="note-line"><span class="mark">1</span><span>Left: <b>13</b> across all lists, <b>2</b> left here, <b>1 of 3</b> done here. The pill and the bar both describe Costco and disagree — 2 versus 3.</span></div>
+            <div class="note-line"><span class="mark">2</span><span>Right: the pill says <b>2</b>, the bar says <b>2</b>. Same number, same arithmetic, no reconciliation for anyone to do.</span></div>
+            <div class="note-line"><span class="mark">3</span><span>The bar still fills toward done, so the progress is visible without a second number naming it. Figure and bar disagreeing in <em>direction</em> is fine; disagreeing in <em>value</em> was the bug.</span></div>
+            <div class="note-line"><span class="mark">4</span><span>The sticky bar picks up the list name, which design.md specified and the build dropped. Scroll two rows today and nothing says which list you're in.</span></div>
+          </div>
+        </div>
+
+        <div class="spec">
+          <span class="t-label">Spec</span>
+          Delete the cumulative count strip entirely (<code>ShoppingPageView.tsx</code> ~184). <b>Amend design.md §Anatomy item 1 in the same PR</b> — it specifies that count, and specifies it as cumulative on purpose, so the doc has to record the reversal or the next session restores it.
+          Pill stays <em>remaining on that list</em>: at rest it equals the list length, which is the "20 items, time to go" read; in a shop it is the same number the bar reports.
+          Sticky bar: <code>{list} · {n} left</code>, figure at <code>text-heading</code>, list name and <code>left</code> at <code>sm</code> so progress still reads first. Bar geometry unchanged — <code>--primary</code> on <code>--muted</code>, <code>--spacing-meter</code> 6px, fill = <code>got / total</code>. No <code>--accent</code> near it (ADR 031).
+          Still gated on <code>got &gt; 0</code> (ADR 043) and still reserves its height from first paint (SH-12, same element, same sitting).
+          Singular case: <code>1 left</code>, not <code>1 lefts</code> — and check what the widget and the Home tile print, since they read the same counts.
+        </div>
+      </div>
+
+      <!-- ─────────────── E6 ─────────────── -->
+      <div class="panel">
+        <div class="panel-head">
+          <div class="kicker">
+            <h3 class="t-heading">The walk gets an ending</h3>
+            <span class="mono">SH-07 · SH-14</span>
+          </div>
+          <p>Clear the last item today and the screen you're left holding is a stack of grey summary
+          rows and a full bar — structurally identical to an empty page. This is the cheapest joy in
+          the product and the only moment in a shop that is unambiguously good news.</p>
+        </div>
+
+        <div class="stage">
+          <figure class="plate is-now">
+            <figcaption>Today · last item checked</figcaption>
+            <div class="screen"><div class="screen-pad">
+              <div class="vmeter-num">17 of 17</div>
+              <div class="vbar" style="margin-bottom:.9rem"><i style="width:100%"></i></div>
+              <div class="vrow" style="min-height:48px"><div class="vbody"><span class="vnote" style="text-transform:uppercase;letter-spacing:.1em;font-weight:700;font-size:11px">Produce</span></div><span class="vnote">5 in the cart</span></div>
+              <div class="vrow" style="min-height:48px"><div class="vbody"><span class="vnote" style="text-transform:uppercase;letter-spacing:.1em;font-weight:700;font-size:11px">Bakery</span></div><span class="vnote">1 in the cart</span></div>
+              <div class="vrow" style="min-height:48px"><div class="vbody"><span class="vnote" style="text-transform:uppercase;letter-spacing:.1em;font-weight:700;font-size:11px">Meat</span></div><span class="vnote">2 in the cart</span></div>
+              <div class="vrow" style="min-height:48px"><div class="vbody"><span class="vnote" style="text-transform:uppercase;letter-spacing:.1em;font-weight:700;font-size:11px">Dairy</span></div><span class="vnote">4 in the cart</span></div>
+              <div class="vrow" style="min-height:48px"><div class="vbody"><span class="vnote" style="text-transform:uppercase;letter-spacing:.1em;font-weight:700;font-size:11px">Pantry</span></div><span class="vnote">2 in the cart</span></div>
+              <div class="vrow" style="min-height:48px"><div class="vbody"><span class="vnote" style="text-transform:uppercase;letter-spacing:.1em;font-weight:700;font-size:11px">Other</span></div><span class="vnote">3 in the cart</span></div>
+            </div></div>
+          </figure>
+
+          <figure class="plate is-next">
+            <figcaption>Proposed</figcaption>
+            <div class="screen"><div class="screen-pad">
+              <div class="vfield" style="margin-bottom:.75rem">Add to Grocery</div>
+              <div style="padding:1.25rem 0 1.25rem;display:flex;flex-direction:column;gap:.5rem;align-items:flex-start">
+                <div class="vring on" style="width:40px;height:40px;border-width:3px"></div>
+                <span class="vtitle" style="font-size:29px">That's everything.</span>
+                <span class="vcount" style="font-size:15px">17 things, six aisles, Grocery is clear.</span>
+              </div>
+              <div class="vrow" style="min-height:48px"><div class="vbody"><span class="vnote" style="text-transform:uppercase;letter-spacing:.1em;font-weight:700;font-size:11px">Produce ⌄</span></div><span class="vnote">5 in the cart</span></div>
+              <div class="vrow" style="min-height:48px"><div class="vbody"><span class="vnote" style="text-transform:uppercase;letter-spacing:.1em;font-weight:700;font-size:11px">Bakery ⌄</span></div><span class="vnote">1 in the cart</span></div>
+              <div class="vrow" style="min-height:48px"><div class="vbody"><span class="vnote" style="text-transform:uppercase;letter-spacing:.1em;font-weight:700;font-size:11px">Meat ⌄</span></div><span class="vnote">2 in the cart</span></div>
+            </div></div>
+          </figure>
+
+          <div class="notes">
+            <div class="note-line"><span class="mark">1</span><span>The field stays. Remembering one more thing at the register is exactly when you're looking at this screen, and the add drops the list straight back out of the cleared state.</span></div>
+            <div class="note-line"><span class="mark">2</span><span>Every aisle still toggles open and every row still unchecks — the summaries are the same interactive rows, just sitting under the message instead of above nothing. ADR 071 §2 requires the uncheck stay reachable by the person standing in the aisle.</span></div>
+            <div class="note-line"><span class="mark">3</span><span>The ring is the product's own mark — the thing you pressed seventeen times, once at size. No new iconography, no confetti.</span></div>
+            <div class="note-line"><span class="mark">4</span><span>Copy is specific: the count, the aisles, the list name. <span class="mono">Nice work!</span> is the version that ages badly.</span></div>
+          </div>
+        </div>
+
+        <div class="spec">
+          <span class="t-label">Spec</span>
+          Branch on <code>needed === 0 &amp;&amp; total &gt; 0</code>, distinct from the existing zero-items empty state (<code>Nothing on {list} yet.</code>).
+          The block <em>replaces the meter</em> and nothing else — capture field, destination pills, aisle summaries and their disclosure all stay mounted and interactive. At 100% the comparison has no work left to do, which is ADR 043's rule arriving at the other end.
+          Adding an item from this state, or unchecking any row, returns the list to its normal shape in the same render — no separate dismissal, no state to get stuck in.
+          Per-list, not per-family: clearing Grocery says nothing about Costco, and the pills keep their own counts.
+          Check-off motion: ring fill <code>--duration-fast</code>, scale <code>1 → 1.08 → 1</code>, no bounce, cancelled under <code>prefers-reduced-motion</code>.
+        </div>
+      </div>
+
+      <div class="callout">
+        <span class="t-label">Open questions, ranked by what they block</span>
+        <b>1. Reveal-then-tap or full-swipe-plus-undo</b> (E1) — blocks SH-09, which blocks three other items. Needs an answer first.
+        <b>2. Merge or count</b> (E4) — doesn't block the collision notice, but decides whether that notice is a stopgap or permanent.
+        <b>3. What "reorganize the aisles" means</b> (E3) — moving items between aisles, or reordering the aisles themselves; the second is a recorded non-goal and a product story.
+        <b>4. Household as one aisle or several</b> (SH-04), and <b>who may correct an aisle</b> (SH-05) — both product calls, both now more urgent because dropping the echo removes the only pre-trip warning that filing went wrong.
+        <br><br>
+        Nothing here proposes a mode, a list index, a drill-in, per-row attribution, or autofocus; those are settled and stay settled.
+        Two things here <em>do</em> reverse settled decisions — the filing echo (E3) and the cumulative count (E5) — and both need their docs amended in the same PR, or the next session will restore them.
+      </div>
+    </section>
+
+  </div>
+
+  <!-- ══════════════════════════ VIEW: PLANNER ══════════════════════════ -->
+  <div id="view-plan" hidden>
+
+    <section>
+      <div class="sec-head"><h2 class="t-label">Brief for the planner agent</h2></div>
+      <div class="callout" style="margin-bottom:1.5rem">
+        <span class="t-label">Framing</span>
+        Findings from a live critique of M5.5 shopping at 768×1024 and 375×812, audited as tier 1 and tier 3.
+        Tier-4-only surfaces are source-read, not observed — flagged per item. Severity: <b>Blocker</b> = the
+        product is unusable-as-specified without it; <b>Should fix</b> = ships wrong today; <b>Polish</b> = quality.
+        SH-01/02/03 form one story and should not be split across sessions.
+        Nothing here proposes a mode, a list index, a drill-in, per-row attribution, or autofocus — all settled
+        (ADR 064, 070, design.md). Items that change <em>what the surface does</em> rather than how it behaves
+        are marked <b>product story</b> and should be queued, not built in polish.
+        <br><br>
+        <b>The Exploration view is part of this handoff.</b> Six panels drawn at real dimensions, each closing
+        with a spec block (thresholds, timings, tokens, file anchors) that is the visual half of the items below:
+        E1 → SH-09, E2 → SH-08, E3 → SH-13, E4 → SH-03, E5 → SH-10/11, E6 → SH-07/14. Where a spec block and an
+        acceptance criterion disagree, the spec block is the more recent thinking.
+        <br><br>
+        <b>Revised 4 Sep after review with Zach.</b> Six directions changed and these supersede the first pass:
+        the row gets <em>two</em> edges, not one (SH-09); capture stops naming aisles at all rather than carrying them onto the chip (SH-13);
+        the collision notice is two clauses, not four (SH-03); the cumulative cross-list count is deleted rather than relabelled (SH-10);
+        the cleared-list state keeps the field and the aisle toggles live (SH-07); quantity is punted to its own design session (SH-03).
+        <b>Two of these reverse recorded decisions</b> — the filing echo (design.md §Anatomy 3, ADR 070 amendment) and the cumulative
+        count (design.md §Anatomy 1). Both docs must be amended in the same PR, or the next session reads the spec and puts them back.
+      </div>
+
+      <div class="items">
+
+        <article class="item">
+          <div class="item-head"><span class="mono">SH-01</span><h3 class="t-card-title">Row removal, permission-filtered</h3><span class="sev sev-blocker">Blocker</span></div>
+          <dl class="meta">
+            <dt>Evidence</dt><dd>No delete affordance on any row at any tier, either route, both viewports. <code>DELETE /shopping/items/:id</code> (<code>apps/api/src/plugins/shopping.ts:436</code>, gated <code>can('manage','shopping.Item')</code>) has zero client callers.</dd>
+            <dt>Touches</dt><dd><code>plugins/shopping/src/pages/ShoppingPageView.tsx</code> (<code>Row</code> ~417–455, <code>ShoppingPageViewProps</code> 24–74), <code>ShoppingPage.tsx</code> (new mutation beside <code>retractItem</code> ~287)</dd>
+            <dt>Constraints</dt><dd>ADR 073 §5 — a removal emits <code>shopping.item.removed</code> with <code>reason: 'managed' | 'retracted'</code>; the managed path currently emits and the client must invalidate on it. ADR 018 — gate on <code>ability.can</code>, never a tier number.</dd>
+            <dt>Depends on</dt><dd>SH-09 (the affordance it lands in)</dd>
+          </dl>
+          <ul class="ac">
+            <li>A row exposes remove when <code>can('manage','shopping.Item')</code> OR the item's <code>canRetract</code> is true; both paths hit their own endpoint.</li>
+            <li>The two verbs read differently to the user: taking back your own recent add vs. removing something from the list.</li>
+            <li>A 403 at the retract boundary renders its message rather than being swallowed (ADR 073 §2) — reuse the existing "too old to take back" branch at <code>ShoppingPage.tsx:305–309</code>.</li>
+            <li>Removal is reachable at 375px, which is the whole point.</li>
+          </ul>
+        </article>
+
+        <article class="item">
+          <div class="item-head"><span class="mono">SH-02</span><h3 class="t-card-title">Retract reaches the phone</h3><span class="sev sev-blocker">Blocker</span></div>
+          <dl class="meta">
+            <dt>Evidence</dt><dd><code>ShoppingPage.tsx:60</code> — <code>capturing = wide &amp;&amp; !onListsRoute</code>; <code>onRetract</code> is passed only into <code>ShoppingCaptureHero</code> (<code>ShoppingPageView.tsx:155</code>). Narrow is always list mode, so tier-1–3's own 15-minute undo has no surface below 768px.</dd>
+            <dt>Touches</dt><dd>Same as SH-01; <code>ShoppingCaptureHero.tsx:122–141</code> for parity</dd>
+            <dt>Constraints</dt><dd>ADR 073 §2 — eligibility is <code>added_at</code> + ownership checked server-side, <b>never</b> "still in the Just added strip". Do not derive the affordance from list position.</dd>
+          </dl>
+          <ul class="ac">
+            <li>An item with <code>canRetract: true</code> offers take-back from the list row on the narrow layout.</li>
+            <li>Eligibility comes from the server payload, not from a client-side clock or an index.</li>
+            <li>Wall behaviour preserved: at W2 everyone shares <code>added_by: 'family'</code> and retracts anything the wall added in-window (ADR 073 §3).</li>
+          </ul>
+        </article>
+
+        <article class="item">
+          <div class="item-head"><span class="mono">SH-03</span><h3 class="t-card-title">Duplicate detection at the add</h3><span class="sev sev-blocker">Blocker</span></div>
+          <dl class="meta">
+            <dt>Evidence</dt><dd>Adding <code>milk</code> to a list already holding <code>milk</code> created a second row; Dairy rendered <code>milk · greek yogurt · butter · milk</code>. Count 16 → 17, no warning. <code>paper towels</code> now sits on Grocery and Costco with no cross-reference.</dd>
+            <dt>Touches</dt><dd><code>apps/api/src/plugins/shopping.ts</code> POST items (~405); <code>normalizeItemName</code> already exists in <code>plugins/shopping/src/lib/aisle-dictionary.ts</code> and is the right key</dd>
+            <dt>Constraints</dt><dd>ADR 070 — the field clears and stays; a slow round trip must not hold the next word, so the collision cannot be a blocking modal. The echo/report slot under the field is the place for it.</dd>
+            <dt>Note</dt><dd><b>Product story</b> if the answer is a quantity model (<code>milk ×2</code>); polish-session-sized if the answer is a non-blocking notice plus the existing remove.</dd>
+          </dl>
+          <ul class="ac">
+            <li>An add whose <code>normalizeItemName</code> matches an <em>unchecked</em> row on the same list renders <code>Already on Grocery.</code> plus an actionable <code>Take it back?</code> in the report slot. The add still completes — never silently dropped, never blocked.</li>
+            <li>The action removes the item just created, not the pre-existing row; on a shared list those belong to different people.</li>
+            <li>No mention of aisle, and no "added anyway" clause — the row is visibly there.</li>
+            <li>Does not steal focus, does not resize the slot, and does not replace an add error already showing (resolve against queue item 4 first — same slot).</li>
+            <li>Cross-list collision is out of scope; record as follow-up.</li>
+            <li><b>Decide before building:</b> whether duplicates eventually merge or carry a count. Quantity itself is punted to its own design session, but that one answer says whether this notice is temporary.</li>
+          </ul>
+        </article>
+
+        <article class="item">
+          <div class="item-head"><span class="mono">SH-04</span><h3 class="t-card-title">A Household aisle</h3><span class="sev sev-fix">Should fix</span> <span class="mono t-sm">product story</span></div>
+          <dl class="meta">
+            <dt>Evidence</dt><dd><code>SHOPPING_AISLES</code> (<code>packages/schemas/src/index.ts:248</code>) is seven food aisles. <code>paper towels</code> → <code>Other</code>, confirmed live via the filing echo. Other held 3 of 17 seeded items.</dd>
+            <dt>Touches</dt><dd><code>packages/schemas/src/index.ts</code> (enum + walk order), <code>plugins/shopping/src/lib/aisle-dictionary.ts</code> (~200 keywords, no household terms), a Prisma migration for existing rows</dd>
+            <dt>Constraints</dt><dd>ADR 069 — walk order is a property of the list. Enum order <em>is</em> walk order today (<code>aisleSortIndex</code>), so inserting a value reorders every existing list; decide placement deliberately.</dd>
+            <dt>Note</dt><dd>Changing the aisle vocabulary is a product decision, not a polish edit. Queue it; do not slip it into the polish PR.</dd>
+          </dl>
+          <ul class="ac">
+            <li>Decision recorded on whether Household is one aisle or several (paper / cleaning / personal care).</li>
+            <li>Dictionary gains household keywords; existing <code>Other</code> rows are migrated or deliberately left.</li>
+            <li><code>Other</code> returns to being a rare fallback, which is what the surface's walk-order premise assumes.</li>
+          </ul>
+        </article>
+
+        <article class="item">
+          <div class="item-head"><span class="mono">SH-05</span><h3 class="t-card-title">Who may correct an aisle</h3><span class="sev sev-fix">Should fix</span> <span class="mono t-sm">product story</span></div>
+          <dl class="meta">
+            <dt>Evidence</dt><dd><code>canFile = ability.can('file','shopping.Item')</code> (<code>ShoppingPage.tsx:95</code>) gates the trailing control at <code>ShoppingPageView.tsx:425</code>; tier 3 sees no control and no hint.</dd>
+            <dt>Constraints</dt><dd>ADR 071 §3 — <code>file</code> is tier 4 <em>because</em> a correction teaches a family-wide override. That reasoning is sound and should not be widened by loosening a component check. This is the same shape ADR 073 solved for retract: if the answer is "let a kid fix their own row without teaching the dictionary", that is a new key, not a relaxed one.</dd>
+          </dl>
+          <ul class="ac">
+            <li>Decision recorded: keep tier 4, or split "move this row" (cheap) from "teach the family" (tier 4).</li>
+            <li>If kept as-is, lower tiers get an honest read-only signal that the aisle exists and who can change it — absence currently reads as "aisles aren't a thing".</li>
+          </ul>
+        </article>
+
+        <article class="item">
+          <div class="item-head"><span class="mono">SH-06</span><h3 class="t-card-title">Rename a row</h3><span class="sev sev-fix">Should fix</span></div>
+          <dl class="meta">
+            <dt>Evidence</dt><dd>No rename path in the plugin; no PATCH endpoint for <code>name</code>. Seeded list carries <code>mikk</code> twice, uncorrectable and (per SH-01) unremovable.</dd>
+            <dt>Constraints</dt><dd>Renaming touches the <code>Entry</code> name dictionary the same way retract does (ADR 073 §4 leaves that asymmetry open and explicitly says not to patch it inline). Rename should not teach the dictionary.</dd>
+            <dt>Depends on</dt><dd>SH-09</dd>
+          </dl>
+          <ul class="ac">
+            <li>Rename lives in the row sheet, gated on <code>manage</code> plus the owner-and-recent condition, matching removal.</li>
+            <li>Renaming does not re-file the aisle silently — or if it does, the echo says so.</li>
+          </ul>
+        </article>
+
+        <article class="item">
+          <div class="item-head"><span class="mono">SH-07</span><h3 class="t-card-title">A cleared-list state</h3><span class="sev sev-polish">Polish</span></div>
+          <dl class="meta">
+            <dt>Evidence</dt><dd>Empty states exist for zero items (<code>Nothing on {list} yet.</code>) and cleared aisles (<code>Produce · 5 in the cart</code>). No branch exists for "every row checked".</dd>
+            <dt>Touches</dt><dd><code>ShoppingPageView.tsx</code> <code>ItemList</code> ~288+</dd>
+            <dt>Constraints</dt><dd>ADR 043 — "a meter is a comparison; at zero it must not render". The mirror case (at 100%) is the moment worth marking. Uncheck must stay reachable from the cleared state (ADR 071 §2).</dd>
+          </dl>
+          <ul class="ac">
+            <li>A finished list reads as finished rather than as a stack of grey summary rows.</li>
+            <li>The block replaces the meter and <em>nothing else</em>: the capture field, the destination pills, and every aisle summary stay mounted and interactive.</li>
+            <li>Adding an item from this state, or unchecking any row, returns the list to its normal shape in the same render — no dismissal, no stuck state.</li>
+            <li>Per-list: clearing Grocery says nothing about Costco.</li>
+          </ul>
+        </article>
+
+        <article class="item">
+          <div class="item-head"><span class="mono">SH-08</span><h3 class="t-card-title">Remove the permanent trailing control</h3><span class="sev sev-fix">Should fix</span></div>
+          <dl class="meta">
+            <dt>Evidence</dt><dd><code>AisleCorrection</code> (<code>ShoppingPageView.tsx:480–525</code>): <code>h-11 w-11</code> = 44px, below the 48px <code>--spacing-touch</code> floor, wrapping a <code>size-3.5</code> (14px) <code>FolderInput</code>. Renders on every row for tier 4.</dd>
+            <dt>Constraints</dt><dd>ADR 063 — <code>ListRow</code> was chosen because these items are "a set you scan and act on one way"; a permanent second control is the tension that ADR names, and ADR 063 rejects <code>ItemCard</code> here on density grounds, so the resolution is fewer controls, not a different primitive. Pairs with the queued check-ring contrast decision: today the rare control out-contrasts the constant one.</dd>
+            <dt>Depends on</dt><dd>SH-09</dd>
+          </dl>
+          <ul class="ac">
+            <li>The row's only permanent chrome is the leading ring plus name/note.</li>
+            <li>Aisle correction moves into the row sheet; no touch target below 48px survives.</li>
+          </ul>
+        </article>
+
+        <article class="item">
+          <div class="item-head"><span class="mono">SH-09</span><h3 class="t-card-title">One row-edit affordance — the keystone</h3><span class="sev sev-fix">Should fix</span></div>
+          <dl class="meta">
+            <dt>Evidence</dt><dd>Zero gesture handling exists in the plugin — <code>onTouch*</code>, <code>onPointer*</code>, <code>onContextMenu</code>, long-press all return no hits. This introduces an interaction vocabulary Vireo does not yet have, so it belongs in <code>@family-os/ui</code> beside <code>ListRow</code>, not inside the shopping plugin.</dd>
+            <dt>Touches</dt><dd><code>packages/ui/src/components/list-row.tsx</code> (new optional actions slot), <code>ShoppingPageView.tsx</code> <code>Row</code></dd>
+            <dt>Constraints</dt><dd>ADR 068 §3 — the row is 48px live / 8px dead, and <code>ListRow</code> emits its own floor after <code>className</code>; a gesture layer must not carve a hole in the activation overlay (the ring already shipped one such bug in M5.5/4). ADR 063 — the leading slot stays inert; whole-row tap stays the check.</dd>
+            <dt>Blocks</dt><dd>SH-01, SH-06, SH-08</dd>
+          </dl>
+          <ul class="ac">
+            <li><b>Two edges.</b> Drag left reveals the right edge and opens the permission-filtered sheet; drag right reveals the left edge and offers remove alone. Long-press and <code>Shift+F10</code> reach the sheet; there is no keyboard route to the shortcut.</li>
+            <li>The sheet's contents are permission-filtered per item; one permitted verb still gets a sheet. Zero permitted verbs binds no gesture on either edge — the left edge must never reveal a button that will 403.</li>
+            <li>A horizontal drag never fires the check; a vertical scroll never opens either edge; only one row is open at a time.</li>
+            <li><b>Blocked on Zach's answer:</b> reveal-then-tap (drawn, recommended) vs full-swipe-fires-plus-undo. Removal is a hard delete on both paths (ADR 073 §4), so undo means re-creating the row with a new id and a reset <code>added_at</code> — do not build the undo variant without that being explicitly chosen.</li>
+            <li><code>prefers-reduced-motion</code> honoured. Geometry in E1's spec block.</li>
+          </ul>
+        </article>
+
+        <article class="item">
+          <div class="item-head"><span class="mono">SH-10</span><h3 class="t-card-title">One counting scheme</h3><span class="sev sev-blocker">Blocker</span></div>
+          <dl class="meta">
+            <dt>Evidence</dt><dd>Observed together on one 375px screen: title <code>13 things to get</code> (remaining, cumulative across lists), pill <code>Costco 2</code> (remaining, this list), meter <code>1 of 3</code> (got of total, this list). The pill and the meter describe one list and disagree.</dd>
+            <dt>Touches</dt><dd><code>ShoppingPageView.tsx</code> — count strip (~184), destination chips (125–143), meter (244–275)</dd>
+            <dt>Constraints</dt><dd>design.md §Anatomy item 1 specifies the cumulative title count deliberately. <b>Zach has reversed that</b> — the cross-list total answers a question nobody asks. Amend design.md in the same PR. Supersedes the queue's "colliding 14s" entry, which framed this as coincidence.</dd>
+          </dl>
+          <ul class="ac">
+            <li>The cumulative title count is deleted; the pills carry the numbers.</li>
+            <li>One scheme, "what's left": pill = remaining on that list, sticky bar = <code>{list} · {n} left</code> — the same figure, so they cannot disagree. The bar's fill still shows progress.</li>
+            <li>At rest the pill equals the list length, which is the "20 on Grocery, time to go" read that motivated the change.</li>
+            <li>Widget and Home tile print the same counts — check both.</li>
+            <li>Singular case reads <code>1 left</code>.</li>
+          </ul>
+        </article>
+
+        <article class="item">
+          <div class="item-head"><span class="mono">SH-11</span><h3 class="t-card-title">The sticky line carries the list</h3><span class="sev sev-fix">Should fix</span></div>
+          <dl class="meta">
+            <dt>Evidence</dt><dd>Sticky bar is <code>sticky top-0 z-30 bg-background</code> rendering <code>6 of 17</code> at <code>text-heading</code>. design.md specifies <code>Grocery · 6 of 14</code> plus the destination chip. Pills scroll away, so the list identity leaves the screen entirely.</dd>
+            <dt>Touches</dt><dd><code>ShoppingPageView.tsx</code> ~244–275</dd>
+            <dt>Constraints</dt><dd>ADR 031 — active state is <code>--primary</code>; <code>--accent</code> is module identity and must not appear on a navigation-ish chip.</dd>
+          </dl>
+          <ul class="ac">
+            <li>The stuck bar names the list being shopped: <code>{list} · {n} left</code>.</li>
+            <li>Build with SH-10 — same element, same sitting, and SH-10 changes what this bar counts.</li>
+          </ul>
+        </article>
+
+        <article class="item">
+          <div class="item-head"><span class="mono">SH-12</span><h3 class="t-card-title">No layout shift on first check</h3><span class="sev sev-polish">Polish</span></div>
+          <dl class="meta">
+            <dt>Evidence</dt><dd>Meter is gated on <code>got &gt; 0</code> (correct, ADR 043); its first render pushes the list down ~58px mid-interaction.</dd>
+            <dt>Constraints</dt><dd>Do not render a zero-state meter — reserve space or animate height from 0.</dd>
+          </dl>
+          <ul class="ac"><li>The row under the user's finger does not move when the first item is checked.</li></ul>
+        </article>
+
+        <article class="item">
+          <div class="item-head"><span class="mono">SH-13</span><h3 class="t-card-title">Capture stops narrating aisles</h3><span class="sev sev-fix">Should fix</span></div>
+          <dl class="meta">
+            <dt>Evidence</dt><dd>Echo reads <code>Enter to add · files under Other</code> while composing, then vanishes on submit. The aisle is not a capture-time decision — it is list-view work done once before a trip — and the tiers doing most of the capturing cannot correct it anyway (SH-05). Chips are a hand-rolled <code>&lt;span&gt;</code> + <code>&lt;button&gt;</code> (<code>ShoppingCaptureHero.tsx:122–141</code>) rather than <code>Chip</code>.</dd>
+            <dt>Touches</dt><dd>Echo copy at <code>ShoppingPageView.tsx:228</code>, <code>ShoppingCaptureHero.tsx:103</code>, <code>CaptureWidgetView.tsx:49</code>; <code>draftAisle</code> / <code>onDraftChange</code> plumbing; <code>use-ambient-capture.ts</code></dd>
+            <dt>Constraints</dt><dd><b>Reverses design.md §Anatomy item 3 and ADR 070's 2026-09-04 amendment</b>, both of which name the filing echo as preserved. Amend both in the same PR. Keep the slot and its <code>min-h-10</code> reserve — SH-03's notice lands there and the reserve is what stops the first keystroke shoving the layout.</dd>
+          </dl>
+          <ul class="ac">
+            <li>The echo states <code>Enter to add</code> and nothing about aisles, on all three capture surfaces.</li>
+            <li>The <code>draftAisle</code> plumbing is removed rather than left computing an unused value.</li>
+            <li>Chips use <code>Chip</code> so focus, hover and disabled match the pills beside them; eligibility still comes from the server's <code>canRetract</code>, never from strip position (ADR 073 §2).</li>
+            <li>Wall parity: <code>added_by</code> is <code>'family'</code> for everyone at W2 — no rendered attribution, no hue, no fallback to <code>resolveHue</code> (ADR 072 §3).</li>
+            <li>design.md and ADR 070 updated in the same PR.</li>
+          </ul>
+        </article>
+
+        <article class="item">
+          <div class="item-head"><span class="mono">SH-14</span><h3 class="t-card-title">The check earns its animation; the wall earns its space</h3><span class="sev sev-polish">Polish</span></div>
+          <dl class="meta">
+            <dt>Evidence</dt><dd>Tablet capture: content ends ~440px, footer at ~944px of 1024 — roughly half the surface blank. Phone list: first row at 428px of 812, 4 of 12 rows visible on arrival. The check is a silent border/fill swap.</dd>
+            <dt>Constraints</dt><dd>ADR 040 — <code>--surface-sunken</code> and <code>--shadow-inset</code> are paired, card-interior only, and are <b>not</b> a hover or active state; do not reach for the recess to fill the wall. ADR 070 amendment — nothing may claim focus on a screen nobody walked up to, so whatever fills the space must not be interactive-by-default. Anything that changes <em>what the wall shows</em> is a <b>product story</b> (design.md marks the whole-house glance as deliberately not designed).</dd>
+          </dl>
+          <ul class="ac">
+            <li>Checking an item has a motion response proportionate to being the product's most repeated act, honouring <code>prefers-reduced-motion</code>.</li>
+            <li>Phone: the chrome above the first row is reviewed against the four-rows-visible measurement; any reduction preserves the field being live on arrival.</li>
+            <li>Wall: space is either given to something specified in a product story or deliberately left, recorded either way.</li>
+          </ul>
+        </article>
+
+      </div>
+    </section>
+
+    <section>
+      <div class="sec-head"><h2 class="t-label">Sequencing</h2></div>
+      <div class="callout">
+        <span class="t-label">Suggested order</span>
+        <b>SH-09</b> first — it is the container three other items land in.
+        Then <b>SH-01 → SH-02 → SH-08 → SH-06</b> as one story: removal, phone parity, the button comes off, rename rides along.
+        <b>SH-10 + SH-11</b> together, one element, one sitting.
+        <b>SH-12, SH-13, SH-14</b> are independent polish.
+        <b>SH-03, SH-04, SH-05</b> are product decisions — queue them, don't build them here.
+        The nav-item revert (<code>e4052b0</code>) stays last, so the family's first sight of Shopping is the polished one.
+      </div>
+    </section>
+
+  </div>
+
+</div>
+
+<script>
+  (function () {
+    var views = [
+      { btn: 'btn-zach', view: 'view-zach' },
+      { btn: 'btn-expl', view: 'view-expl' },
+      { btn: 'btn-plan', view: 'view-plan' }
+    ];
+    function show(active) {
+      views.forEach(function (v) {
+        var on = v.btn === active;
+        document.getElementById(v.view).hidden = !on;
+        document.getElementById(v.btn).setAttribute('aria-pressed', String(on));
+      });
+      window.scrollTo({ top: 0, behavior: 'auto' });
+    }
+    views.forEach(function (v) {
+      document.getElementById(v.btn).addEventListener('click', function () { show(v.btn); });
+    });
+  })();
+</script>
+
+</body>
+</html>
