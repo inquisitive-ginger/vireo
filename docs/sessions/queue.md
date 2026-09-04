@@ -15,16 +15,16 @@
 
 > **M4.5 — Companion is the active milestone** (M4.5/3 next). M5 runs alongside: /2 shipped
 > 2026-08-13, /3 and /4 on 2026-08-23; **groceries left M5 on 2026-09-03** and is now
-> **M5.5 — Shopping** (ADR 069), resequenced into five dev sessions. Part F offsite backups
+> **M5.5 — Shopping** (ADR 069), whose /2 and /3 shipped 2026-09-04. Part F offsite backups
 > went live 2026-08-16, so the remaining infra items are improvements, not risks.
 
 ### Beacon — Product+Design: paired friend lamps (deadline: the friends' December visit)
 
 **Type:** product + design · **Kickoff:** `kickoffs/product-design-beacon.md`
-**4× LuvLink Infinity lamps covered the goodbye** (the friends moved ~2026-08-05). The custom
-build — 4 paired Pi Zero 2 W beacons, tap → glow + voice drops, relayed through the Pi as a
-`beacon` plugin — is gifted in person at the **December visit**, voice the headline upgrade.
-_Log: `logs/2026-07-29-product-beacon-concept.md`._
+LuvLink lamps covered the goodbye; the custom build — 4 paired Pi Zero 2 W beacons, tap → glow
+
+- voice, a `beacon` plugin — is gifted at the December visit.
+  _`logs/2026-07-29-product-beacon-concept.md`._
 
 ### M4.5 — Companion: five sessions, strictly sequenced
 
@@ -57,42 +57,25 @@ _`logs/2026-09-03-product-shopping-boundary.md`._
 
 ---
 
-### M5.5 — Shopping: five sessions (split out of M5 by ADR 069, 2026-09-03)
+### M5.5 — Shopping: /2 and /3 shipped 2026-09-04; /4, /5, /6 remain
 
 **PR #127 closed unmerged**; the two 2026-08-23 artifacts are banner-marked SUPERSEDED —
 build from `docs/modules/shopping/design.md` **and its artifact**, never from #127.
-**Resequenced 2026-09-03** so each session is one demoable PR: offline is its own (the SW is
-network-first for `/api`, bitten twice) and the wall+widget theirs.
 _`docs/modules/shopping/{spec,salvage}.md` · ADR 069, 070, 071, 072._
 
-### M5.5/2 — Dev: the plugin split + the capture surface · **owes live review + merge**
+### M5.5/4 — Dev: shop context + shopper sync **+ the aisle correction UI** — _next_
 
-**Kickoff:** `kickoffs/dev-shopping-split-capture.md` · dev · _depends on M5.5/1 ✅_
-Scaffolds `shopping` (four of five registration points — WIDGET_META is /5's), moves the four
-tables, renamespaces subjects, lands `ListRow`+ADR 068, `CaptureField` and S1/S2.
-**Built and green on `dev/shopping-split-capture` 2026-09-03 — unmerged and not yet
-live-reviewed; /3–/6 all wait on the merge.** ADR 071 + 072 landed against it.
-
-### M5.5/3 — Dev: the needs-push contract
-
-**Kickoff:** `kickoffs/dev-shopping-needs-push.md` · dev · _depends on /2_
-`meals` publishes, `shopping` consumes (ADR 050 precedent); meals stops writing shopping rows.
-May pick up the `MealsPage.tsx:35` TierGate.
-
-### M5.5/4 — Dev: shop context + shopper sync **+ the aisle correction UI**
-
-**Kickoff:** `kickoffs/dev-shopping-shop-context.md` · dev · _depends on /2_
+**Kickoff:** `kickoffs/dev-shopping-shop-context.md` · dev · _depends on /2 ✅ — ready._
 Frame S3: whole-row checks, cleared-aisle collapse, progress meter, two shoppers converging.
-**Now also owns the aisle correction UI** — /2 shipped `POST /items/:id/aisle` and nothing
-reaches it, so a mis-filed item sits in `Other` forever and spec.md's family-wide override is
-dead code. Keys settled by ADR 071 (`check` tier 2, `file` tier 4); the old flag is closed.
+**Also owns the aisle correction UI** — /2 shipped `POST /items/:id/aisle` and nothing reaches
+it, so a mis-filed item sits in `Other` forever. Keys settled by ADR 071 (`check` 2, `file` 4).
 
 ### M5.5/5 — Dev: the wall and the Home widget
 
-**Kickoff:** `kickoffs/dev-shopping-capture-surfaces.md` · dev · _depends on /2_
+**Kickoff:** `kickoffs/dev-shopping-capture-surfaces.md` · dev · _depends on /2 ✅ — ready._
 Frame W2 (the wall only takes things in; voice slot reserved) plus the zero-navigation
-widget, which lands the **fifth** registration point. The wall adds as the house (ADR 072).
-**Owes the `section-label` distance decision** into design-system.md — see its cap, above.
+widget, which lands the **fifth** registration point. The wall adds as the house (ADR 072) but
+renders **no adder** — §3/§4 withdrawn 2026-09-04. **Owes the `section-label` decision.**
 
 ### M5.5/6 — Dev: offline
 
@@ -102,36 +85,32 @@ The list renders and checks replay with no signal, without staling the shell or 
 ### Docs: get `design-system.md` back under its cap — **blocks M5.5/5**
 
 **Type:** docs (small) · **Kickoff:** _to be written_
-The file is **~170 bytes under its 120 KB cap**, so the next line anyone adds fails CI — and
-M5.5/5 owes it the wall's `section-label` distance decision (design.md §W2). Move, never
-raise: `Rewards surfaces` (5.6 KB) and `Currency marks` (4.3 KB) are single-module and belong
-in a new `docs/modules/rewards/design.md`. _Depends on: none._
+**~170 bytes under its 120 KB cap**, so the next line added fails CI — and M5.5/5 owes it the
+wall's `section-label` distance decision. Move `Rewards surfaces` (5.6 KB) + `Currency marks`
+(4.3 KB) to a new `docs/modules/rewards/design.md`. _Depends on: none._
 
 ---
 
 ### Prod storage off USB: NVMe HAT for the Pi 5
 
 **Type:** infra (small, needs a purchase) · **Kickoff:** _to be written_
-**Downgraded 2026-08-22 — an upgrade, not a rescue**: the slowness was a bad cable, and
-the same USB disk now does 256 MB/s sequential. Buy HAT + NVMe drive, rsync the storage
-roots (runbook Part C9), swap fstab, retire the enclosure — nothing depends on it.
+**An upgrade, not a rescue** (2026-08-22) — the slowness was a bad cable. Buy HAT + drive,
+rsync the storage roots (runbook Part C9), swap fstab, retire the enclosure.
 _`logs/2026-08-22-infra-watchdog-quiescence.md`. Depends on: none._
 
 ### Retire the Pi 3B: second-copy backup puller
 
 **Type:** infra (small) · **Kickoff:** _to be written_
-Part F shipped 2026-08-16 (restic → R2, restore-tested). Wipe the 3B's stale
-docker/tailscale/runner state, then give it a weekly `restic copy` second-copy pull of the
-R2 repo; also owed, live-test the backup failure hook.
+Wipe the 3B's stale docker/tailscale/runner state, then give it a weekly `restic copy` pull of
+the R2 repo. Also owed: live-test the backup failure hook.
 _`logs/2026-08-16-infra-offsite-backups.md`. Depends on: none._
 
 ### Deployment: shrink the api image
 
 **Type:** infra/tooling · **Kickoff:** _to be written_
-All that's left of deploy hardening. The api image is **2.09 GB** (web is 150 MB) and every
-source change rebuilds the `pnpm install` layer, so a Pi deploy takes ~6 min — split
-`node_modules` off the source layer. **Boot-test against a real DB in CI first** (this class
-of change took the API down 2026-07-21); no `pnpm fetch` + `--offline`.
+The api image is **2.09 GB** and every source change rebuilds the `pnpm install` layer (~6 min
+Pi deploy) — split `node_modules` off the source layer. **Boot-test against a real DB in CI
+first** (this class of change took the API down 2026-07-21); no `pnpm fetch` + `--offline`.
 _`docs/deployment.md` E2/E3, `logs/2026-07-21-infra-deploy-hardening.md`. Depends on: none._
 
 ### Docs: ten ADRs are over the 6000-byte cap
@@ -144,9 +123,8 @@ the check reads only changed files.
 ### Platform: family-feed test addendum
 
 **Type:** development (test addendum) · **Kickoff:** _to be written_
-`family-feed` has a `test` script and **zero test files** — silently "passing" its whole
-life, the condition chores was in before ADR 043. Stand up an RTL suite mirroring
-chores/calendar — and note the CI gap in Deferred: no `plugins/*` suite runs in CI at all.
+`family-feed` has a `test` script and **zero test files** — silently "passing" its whole life.
+Stand up an RTL suite mirroring chores/calendar. See also the Deferred CI-glob gap.
 
 ---
 
@@ -237,6 +215,13 @@ chores/calendar — and note the CI gap in Deferred: no `plugins/*` suite runs i
 > recent first, nothing older than the current milestone's start. `docs/sessions/logs/` is
 > date-ordered and holds the record. Do not restore entries pruned from here.
 
+- **2026-09-04 — Dev: the plugin split + the capture surface** (M5.5/2, PR #132) — `shopping`
+  is its own plugin and schema; ADR 071 (`check` at tier 2) and 072 (profile columns are text)
+  came out of the build, and the live review cut rendered attribution.
+  _[log](logs/2026-09-04-dev-shopping-split-capture.md)_
+- **2026-09-04 — Dev: the needs-push contract** (M5.5/3, PR #133) — `meals.needs.pushed` over
+  the bus with a new `emitAndAwait` so a failed push reports; `source_label` carries the
+  producer's words. _[log](logs/2026-09-04-dev-shopping-needs-push.md)_
 - **2026-09-03 — Dev: a recipe link on a planned meal** (auto-bug #129, PR #131) — a
   `recipe_url` column and nothing more; the artifact ledgers the recipe-bank features
   refused. _[log](logs/2026-09-03-dev-meals-recipe-url.md)_

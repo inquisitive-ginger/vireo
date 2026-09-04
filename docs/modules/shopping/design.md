@@ -79,8 +79,8 @@ is physically good at is the moment you are holding the empty carton.
 - `What do we need?` at `display-xl`, a 76 px `CaptureField` below it (autofocused), and
   a **Hold to speak** affordance in the trailing slot. **Voice is not M5.5 scope** — the
   slot is reserved so it is not bolted on later.
-- **Just added** — the last few items as chips with who added them. A short memory, not
-  a list.
+- **Just added** — the last few items as chips. **What** was added, never who
+  (§Anatomy 5; ADR 072 §3/§4 withdrawn). A short memory, not a list.
 - A count strip (`19 things waiting · Grocery 14 · Costco 3 · Hardware 2`) and one
   `See the lists` link out. No checking, no aisles, no shopping.
 
