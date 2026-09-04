@@ -48,6 +48,15 @@ export const DEFAULT_LAYOUTS: Record<string, LayoutDefault[]> = {
     { widgetId: 'chores.today-summary', x: 2, y: 0, w: 2, h: 1, prominence: 'card' },
     { widgetId: 'meals.tonight', x: 2, y: 1, w: 2, h: 1, prominence: 'quiet' },
     { widgetId: 'family-feed.feed', x: 2, y: 2, w: 2, h: 1, prominence: 'quiet' },
+    /* Shopping capture (M5.5/5) — the zero-navigation add, which is the whole
+       Keep comparison (design.md §"Adding from anywhere in the house"). `quiet`
+       and last in the column: it is a doing surface, not one of the "what needs
+       me" answers the rungs above it carry, and it stays useful at whatever
+       height a 2×1 deals it because `useFitRows` states the remainder rather
+       than cropping. NOTE — this grows the grid by a row on every layout, which
+       is the first composition change since the elevation ladder; the placement
+       is the live review's to confirm. */
+    { widgetId: 'shopping.capture', x: 2, y: 3, w: 2, h: 1, prominence: 'quiet' },
   ],
   /* Teens — the same kid grid, one register down: no feature (a teen's surface
      declines to shout, same as the parent's), so the wallet leads by position, not
@@ -58,6 +67,7 @@ export const DEFAULT_LAYOUTS: Record<string, LayoutDefault[]> = {
     { widgetId: 'chores.today-summary', x: 2, y: 0, w: 2, h: 1, prominence: 'card' },
     { widgetId: 'meals.tonight', x: 2, y: 1, w: 2, h: 1, prominence: 'quiet' },
     { widgetId: 'family-feed.feed', x: 2, y: 2, w: 2, h: 1, prominence: 'quiet' },
+    { widgetId: 'shopping.capture', x: 2, y: 3, w: 2, h: 1, prominence: 'quiet' },
   ],
   /* Parents / the family pseudo-profile — NO feature (ADR 039, amended). A parent
      (or the unattended fridge tablet, sitting on the family profile) triages, and
@@ -79,6 +89,7 @@ export const DEFAULT_LAYOUTS: Record<string, LayoutDefault[]> = {
     { widgetId: 'meals.tonight', x: 2, y: 0, w: 2, h: 2, prominence: 'card' },
     { widgetId: 'chores.today-summary', x: 2, y: 2, w: 2, h: 1, prominence: 'card' },
     { widgetId: 'family-feed.feed', x: 2, y: 3, w: 2, h: 1, prominence: 'quiet' },
+    { widgetId: 'shopping.capture', x: 2, y: 4, w: 2, h: 1, prominence: 'quiet' },
   ],
 }
 

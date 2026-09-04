@@ -234,6 +234,11 @@ async function fileNeeds(bus: EventBus, payload: unknown): Promise<NeedsPushResu
   return { listId: list.id, listName: list.name, filed, alreadyOn }
 }
 
+/** How far back the ambient surfaces remember. The wall shows the few that fit
+    one row of chips; the widget shows as many whole rows as its slot has room
+    for, which on the tallest slot is under a dozen. */
+const RECENT_LIMIT = 12
+
 const shoppingPlugin: FastifyPluginAsync = async (fastify) => {
   // GET /shopping/lists — the destination strip, not an index you land on
   // (design.md): permanent lists always show and dim at zero; a runtime list
@@ -256,6 +261,47 @@ const shoppingPlugin: FastifyPluginAsync = async (fastify) => {
 
     const visible = lists.filter((l) => l.kind === 'permanent' || (countByList.get(l.id) ?? 0) > 0)
     return { lists: visible.map((l) => serializeList(l, countByList.get(l.id) ?? 0)) }
+  })
+
+  // GET /shopping/recent — the two ambient surfaces' one read (design.md §W2,
+  // §"Adding from anywhere"). The wall's "Just added" and the Home widget's rows
+  // are both "what landed lately, anywhere" — the destination strip's counts sit
+  // beside them on both, so they travel together rather than as two round trips
+  // a fridge tablet on flaky wifi has to make. Newest first, `needed` only: the
+  // wall is a short memory of what is still waiting, not an audit trail.
+  fastify.get('/shopping/recent', async (request, reply) => {
+    if (!request.ability.can('view', 'shopping.Item')) {
+      return reply.status(403).send({ error: 'Permission denied' })
+    }
+
+    const lists = await shoppingPrisma.list.findMany({
+      orderBy: [{ sortOrder: 'asc' }, { createdAt: 'asc' }],
+    })
+    const items = await shoppingPrisma.item.findMany({
+      where: { status: 'needed' },
+      orderBy: { addedAt: 'desc' },
+      take: RECENT_LIMIT,
+    })
+    const counts = await shoppingPrisma.item.groupBy({
+      by: ['listId'],
+      where: { status: 'needed' },
+      _count: { _all: true },
+    })
+    const countByList = new Map(counts.map((c) => [c.listId, c._count._all]))
+    const nameById = new Map(lists.map((l) => [l.id, l.name]))
+    // The echo has to be true wherever the field lives, not only on the route,
+    // so the corrections travel here for the same reason they travel with a list.
+    const overrides = await shoppingPrisma.aisleOverride.findMany()
+
+    const visible = lists.filter((l) => l.kind === 'permanent' || (countByList.get(l.id) ?? 0) > 0)
+    return {
+      lists: visible.map((l) => serializeList(l, countByList.get(l.id) ?? 0)),
+      items: items.map((item) => ({
+        ...serializeItem(item),
+        listName: nameById.get(item.listId) ?? '',
+      })),
+      overrides: Object.fromEntries(overrides.map((o) => [o.normalizedName, o.category])),
+    }
   })
 
   // POST /shopping/lists — creating a list is tier 4 (ADR 067/069): it commits

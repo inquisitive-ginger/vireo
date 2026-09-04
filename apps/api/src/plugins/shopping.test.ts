@@ -317,6 +317,82 @@ describe('GET /api/shopping/lists/:id', () => {
   })
 })
 
+// ─── GET /api/shopping/recent ─────────────────────────────────────────────────
+
+describe('GET /api/shopping/recent', () => {
+  it('returns newest first across every list, not walk order', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const listId = await groceryListId()
+    await addItem(cookie, listId, { name: 'bananas' }) // Produce, first in the walk
+    await addItem(cookie, listId, { name: 'milk' })
+    await addItem(cookie, listId, { name: 'ice cream' })
+
+    const res = await app.inject({
+      method: 'GET',
+      url: '/api/shopping/recent',
+      headers: { cookie },
+    })
+    expect(res.json().items.map((i: { name: string }) => i.name)).toEqual([
+      'ice cream',
+      'milk',
+      'bananas',
+    ])
+  })
+
+  it("names each row's destination, since the wall and the widget span every list", async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    await addItem(cookie, await groceryListId(), { name: 'milk' })
+
+    const res = await app.inject({
+      method: 'GET',
+      url: '/api/shopping/recent',
+      headers: { cookie },
+    })
+    expect(res.json().items[0]).toMatchObject({ name: 'milk', listName: 'Grocery' })
+  })
+
+  it("carries the counts the wall's strip reads, so it is one round trip", async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const listId = await groceryListId()
+    await addItem(cookie, listId, { name: 'milk' })
+    await addItem(cookie, listId, { name: 'bananas' })
+
+    const res = await app.inject({
+      method: 'GET',
+      url: '/api/shopping/recent',
+      headers: { cookie },
+    })
+    const grocery = res.json().lists.find((l: { id: string }) => l.id === listId)
+    expect(grocery).toMatchObject({ name: 'Grocery', itemCount: 2 })
+  })
+
+  it('forgets what is already in the cart — it is what is waiting, not an audit trail', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const listId = await groceryListId()
+    const item = await addItem(cookie, listId, { name: 'milk' })
+    await shoppingPrisma.item.update({ where: { id: item.json().id }, data: { status: 'got' } })
+
+    const res = await app.inject({
+      method: 'GET',
+      url: '/api/shopping/recent',
+      headers: { cookie },
+    })
+    expect(res.json().items).toHaveLength(0)
+  })
+
+  it('never puts who-added on the wire here either', async () => {
+    const cookie = await getCookieForProfile(FAMILY_PROFILE_ID)
+    await addItem(cookie, await groceryListId(), { name: 'oat milk' })
+
+    const res = await app.inject({
+      method: 'GET',
+      url: '/api/shopping/recent',
+      headers: { cookie },
+    })
+    expect(res.json().items[0]).not.toHaveProperty('addedBy')
+  })
+})
+
 // ─── POST /api/shopping/items/:id/aisle ───────────────────────────────────────
 
 describe('POST /api/shopping/items/:id/aisle', () => {

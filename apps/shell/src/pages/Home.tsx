@@ -1,6 +1,14 @@
 import { type ReactNode, useCallback, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Loader2, Users, ClipboardList, CalendarDays, Wallet, Utensils } from 'lucide-react'
+import {
+  Loader2,
+  Users,
+  ClipboardList,
+  CalendarDays,
+  Wallet,
+  Utensils,
+  ShoppingCart,
+} from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { WidgetGrid, PlaceholderCard, PageContainer } from '@family-os/ui'
 import type { WidgetLayoutItem } from '@family-os/ui'
@@ -36,6 +44,11 @@ const WIDGET_META: Record<string, WidgetMeta> = {
     moduleName: 'Meals',
     description: "What's for dinner, who's got it, and tonight's try bite.",
     icon: Utensils,
+  },
+  shopping: {
+    moduleName: 'Shopping',
+    description: 'Add to the list without leaving the dashboard, and what is waiting.',
+    icon: ShoppingCart,
   },
 }
 

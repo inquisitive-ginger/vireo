@@ -35,3 +35,18 @@ export interface ListResponse {
       reads so it states the aisle the server will actually pick. */
   overrides: Record<string, string>
 }
+
+/** A row on an ambient surface — the wall's `Just added`, the widget's list.
+    Both span every destination, so each row names the list it landed on; the
+    page's rows do not, because the page is already showing one list. */
+export interface RecentItem extends ShoppingItem {
+  listName: string
+}
+
+export interface RecentResponse {
+  lists: ShoppingList[]
+  items: RecentItem[]
+  /** Same corrections the page's read carries — the filing echo has to be true
+      wherever the field lives, not only on the route. */
+  overrides: Record<string, string>
+}

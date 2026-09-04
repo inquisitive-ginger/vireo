@@ -18,6 +18,7 @@ const widgetLoaders: Record<string, () => Promise<{ default: ComponentType }>> =
   calendar: () => import('calendar/widgets/UpNext'),
   rewards: () => import('rewards/widgets/Wallet'),
   meals: () => import('meals/widgets/Tonight'),
+  shopping: () => import('shopping/widgets/Capture'),
 }
 
 const pluginCache = new Map<string, LazyExoticComponent<ComponentType>>()
