@@ -120,6 +120,15 @@ Rewrite concise — same arguments, fewer words; never cut reasoning, never rais
 (Zach, 2026-09-04). 042 (9704), 044, 043, 031, 035, 046, 041, 022, 040, 057. Grandfathered:
 the check reads only changed files.
 
+### Docs: `section-label` has no block-spacing rule
+
+**Type:** design-system · **Kickoff:** _to be written_
+The token sets size, weight, tracking and colour and says nothing about the space around
+it, so four call sites hand-roll four answers: `ui/widget-header.tsx` (none),
+`family-feed/FeedPage.tsx` and `meals/TonightView.tsx` (`mb-1.5`), `shopping/ShoppingPageView.tsx`
+(`pt-7`/`pt-4`/`pb-2`). Survey the four, decide what the token owns vs the surface. Found in
+M5.5/5 (2026-09-04).
+
 ### Platform: family-feed test addendum
 
 **Type:** development (test addendum) · **Kickoff:** _to be written_
