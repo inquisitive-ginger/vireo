@@ -4,6 +4,7 @@ import { buildServer } from '../server'
 import { prisma } from '@family-os/platform/server'
 import { PERMISSION_REGISTRY } from '@family-os/platform/server'
 import { mealPrisma } from '@family-os/plugin-meals/db'
+import { shoppingPrisma } from '@family-os/plugin-shopping/db'
 
 import type { LightMyRequestResponse } from 'fastify'
 import bcrypt from 'bcryptjs'
@@ -281,6 +282,121 @@ describe('DELETE /api/meals/plan/:id', () => {
       headers: { cookie },
     })
     expect(again.statusCode).toBe(404)
+  })
+})
+
+// ─── POST /api/meals/push-needs — the contract, producer side (ADR 069 §4) ────
+
+describe('POST /api/meals/push-needs', () => {
+  async function plannedWithNeeds(cookie: string, needs: string | null) {
+    const res = await planMeal(cookie, {
+      date: '2026-08-13',
+      title: 'Tacos',
+      kind: 'cooked',
+      ownerId: null,
+      needs,
+    })
+    return res.json().id as string
+  }
+
+  function push(cookie: string, body: Record<string, unknown>) {
+    return app.inject({
+      method: 'POST',
+      url: '/api/meals/push-needs',
+      headers: { cookie },
+      payload: body,
+    })
+  }
+
+  beforeEach(async () => {
+    await shoppingPrisma.item.deleteMany({})
+    await shoppingPrisma.entry.deleteMany({})
+    await shoppingPrisma.aisleOverride.deleteMany({})
+  })
+
+  it('publishes the meal\u2019s needs and reports the consumer\u2019s counts', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const mealId = await plannedWithNeeds(cookie, 'chicken thighs, snap peas')
+
+    const res = await push(cookie, { mealId })
+
+    expect(res.statusCode).toBe(200)
+    expect(res.json()).toMatchObject({ filed: 2, alreadyOn: 0, listName: 'Grocery' })
+  })
+
+  it('sends the words the note line needs — the producer owes them (ADR 069 §3)', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const mealId = await plannedWithNeeds(cookie, 'chicken thighs')
+
+    await push(cookie, { mealId })
+
+    const item = await shoppingPrisma.item.findFirst({ where: { sourceType: 'meal' } })
+    // 2026-08-13 is a Thursday.
+    expect(item?.sourceLabel).toBe('for Thursday')
+  })
+
+  it('reports what actually landed, not what was sent — dedupe makes them differ', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const mealId = await plannedWithNeeds(cookie, 'chicken thighs, snap peas')
+
+    await push(cookie, { mealId })
+    const second = await push(cookie, { mealId })
+
+    expect(second.json()).toMatchObject({ filed: 0, alreadyOn: 2 })
+  })
+
+  it('lets a tier-1 kid push — pushing IS an add, and adding is tier 1 (ADR 071)', async () => {
+    const parent = await getCookieForProfile(PARENT_ID)
+    const mealId = await plannedWithNeeds(parent, 'cereal')
+
+    const res = await push(await getCookieForProfile(KID_ID), { mealId })
+
+    expect(res.statusCode).toBe(200)
+  })
+
+  it('refuses on a revoked shopping.item.add, by ability rather than a tier read', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const mealId = await plannedWithNeeds(cookie, 'cereal')
+    await prisma.permissionOverride.create({
+      data: { profileId: TEEN_ID, action: 'create', subject: 'shopping.Item', type: 'revoke' },
+    })
+
+    const res = await push(await getCookieForProfile(TEEN_ID), { mealId })
+    await prisma.permissionOverride.deleteMany({ where: { profileId: TEEN_ID } })
+
+    expect(res.statusCode).toBe(403)
+    expect(await shoppingPrisma.item.count()).toBe(0)
+  })
+
+  it('404s on an unknown meal', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const res = await push(cookie, { mealId: '00000000-0000-4000-8000-000000000000' })
+    expect(res.statusCode).toBe(404)
+  })
+
+  it('400s on a body that is not a meal id', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const res = await push(cookie, { mealId: 'tacos' })
+    expect(res.statusCode).toBe(400)
+  })
+
+  it('400s a meal with nothing listed rather than reporting an empty success', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const mealId = await plannedWithNeeds(cookie, null)
+
+    const res = await push(cookie, { mealId })
+
+    expect(res.statusCode).toBe(400)
+  })
+
+  it('never writes a shopping row itself — the rows carry the consumer\u2019s filing', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const mealId = await plannedWithNeeds(cookie, 'chicken thighs')
+
+    await push(cookie, { mealId })
+
+    const item = await shoppingPrisma.item.findFirst()
+    expect(item).toMatchObject({ category: 'Meat', sourceType: 'meal', sourceId: mealId })
   })
 })
 
