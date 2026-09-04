@@ -7,22 +7,22 @@
 ## Pre-session reads
 
 - [ ] `CLAUDE.md` — **Standing Engineering Conventions**, all of them
-- [ ] `docs/modules/shopping/spec.md` + **`design.md` §"In a shop"**
+- [ ] `docs/modules/shopping/spec.md` (**§Scope on filing**) + **`design.md` §"In a shop"**
 - [ ] **`docs/sessions/artifacts/2026-09-03-shopping-surface-explorations.html`**, read _with_
       design.md. **Frame S3 — "in the aisle"** is this session's surface. The artifact is an
       input, not an appendix; the compacted status line, the meter and the collapsed-aisle
       row are drawn there, and the proportion lives in the drawing.
-- [ ] ADRs **064** (sync renders as **text**, never identity chrome), **063**/**068**
-      (`ListRow`, the 48-live/8-dead target band), **018**, **013**, **012**, **022**
-- [ ] `docs/modules/shopping/salvage.md` — the `:id/check` route row **and the closing
-      section**, which names the permission gap this session owns
+- [ ] ADRs **064** (sync renders as **text**), **063**/**068** (`ListRow`, the 48-live/8-dead
+      band), **071** (the six keys), **018**, **013**, **012**, **022**
+- [ ] `docs/modules/shopping/salvage.md` — the `:id/check` and `:id/aisle` route rows
 - [ ] `logs/2026-09-03-design-shopping-surface.md`
 - [ ] Worktree: copy `.env` in or `turbo dev` dies at `node: ../../.env: not found`
 
 ## Scope
 
 Make the same screen survive a shop: whole-row checks, cleared-aisle collapse, the progress
-meter, and two shoppers seeing each other's checks. **Offline is M5.5/6 — not here.**
+meter, two shoppers seeing each other's checks — **and the aisle correction, which has a
+route and no UI.** **Offline is M5.5/6 — not here.**
 
 ## Acceptance criteria
 
@@ -47,28 +47,27 @@ meter, and two shoppers seeing each other's checks. **Offline is M5.5/6 — not 
    invalidation refreshes the page and (later) the widget.
 8. **No blind `catch {}`.** A check that failed to reach the server is a person standing in
    an aisle holding wrong information — `console.error` the reason **and** surface it.
-9. `pnpm typecheck` + `pnpm test` clean — route tests via `fastify.inject()`, RTL over
-   check/undo/collapse, the conflict rule unit-tested.
+9. **The aisle correction gets a UI.** M5.5/2 shipped `POST /shopping/items/:id/aisle` with
+   nothing reaching it, so an item filed to `Other` stays there forever and the override table
+   is dead code — against `spec.md` §Scope, where a correction teaches a family-wide override.
+   Put it on the row (a `RowActions` entry into the aisle list), gated on
+   `ability.can('file', 'shopping.Item')` so it is simply absent below tier 4, and prove the
+   override refiles the **next** add of that name. More frame than a row action over a list of
+   aisles is a design question — send it back, don't invent a surface.
+10. `pnpm typecheck` + `pnpm test` clean — route tests via `fastify.inject()`, RTL over
+    check/undo/collapse and the correction, the conflict rule unit-tested.
 
 ## The permission keys — settled, use them
 
-**ADR 071** closed the gap this session was going to hit: under `spec.md`'s original three
-keys, checking fell to `manage shopping.Item` = tier 4 and AC5 was unbuildable. Settled:
+**ADR 071** closed the gap this session was going to hit. Read its table; the two keys here
+are **`check`** (tier 2 — the ring and the whole-row tap, and the same key unchecks) and
+**`file`** (tier 4 — AC9's correction). No `uncheck` action, no `checkedById` row condition,
+never a `tier >=` read (ADR 018). M5.5/2 lands the registry; a missing key gets added to
+match ADR 071's table, not re-decided.
 
-- **`shopping.item.check`, baseline tier 2, grantable.** The check ring and the whole-row
-  tap gate on `ability.can('check', 'shopping.Item')`.
-- **Unchecking is the same key** — one gate for both directions. No `uncheck` action, no
-  `checkedById` row condition; a mis-tap is undone by whoever is standing in the aisle.
-- **`shopping.item.file`** (tier 4) is the aisle correction, split out of `manage` — if you
-  touch `POST /:id/aisle`, gate on `file`, not `manage`.
-
-Never a `tier >=` read (ADR 018). M5.5/2 lands the registry and ability rules; if a key or
-grant is missing when you arrive, add it to match ADR 071's table rather than re-deciding it.
-
-**Left open, and yours to settle:** `spec.md`'s events namespace lists `shopping.item.checked`
-and nothing for the reverse. Decide whether an uncheck emits an event — a second event, the
-same event carrying state, or nothing — and write the answer into `spec.md`. Do not leave it
-to whoever reads the bus next.
+**Left open, and yours to settle:** `spec.md` lists `shopping.item.checked` and nothing for
+the reverse. Decide whether an uncheck emits an event — a second event, the same event
+carrying state, or nothing — and write the answer into `spec.md`.
 
 ## Constraints
 
@@ -84,7 +83,7 @@ to whoever reads the bus next.
 
 ## Outputs
 
-- [ ] **Live-app review in the real shell with the user before any close-out task** — on a
-      phone viewport, scrolled into shop posture, with a second client checking rows
+- [ ] **Live-app review in the real shell with the user before any close-out task** — a phone
+      viewport in shop posture, a second client checking rows, and one item refiled
 - [ ] Standing-conventions pass · `pnpm typecheck` + `pnpm test` clean
 - [ ] `progress.md` → ✅ · session log (record the transport + conflict rule) · PR · delete this kickoff
