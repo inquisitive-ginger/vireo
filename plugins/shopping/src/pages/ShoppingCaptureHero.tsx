@@ -1,16 +1,19 @@
 import { ChevronRight, Loader2, Mic, X } from 'lucide-react'
 import type { ReactNode } from 'react'
-import { CaptureField } from '@family-os/ui'
+import { CaptureField, cn } from '@family-os/ui'
 
 export interface ShoppingCaptureHeroProps {
   /** The last few things that landed, anywhere. Names only — never who added
       them (ADR 072 §4, withdrawn 2026-09-04). Ids because a house adds milk
       twice in a week and two chips must not collide. */
-  justAdded: { id: string; name: string }[]
-  /** Taking back a typo you made two seconds ago. Undefined when this profile
-      cannot remove — `manage` is tier 4 while adding is tier 1 (ADR 071), so the
-      person who made the typo may not be the one who can undo it. */
-  onRemove?: (id: string) => void
+  justAdded: { id: string; name: string; canRetract: boolean }[]
+  /** Taking back a typo you made two seconds ago (ADR 073, tier 1). Undefined
+      when the profile lacks the key at all; per-CHIP eligibility is the server's
+      `canRetract`, which folds in both "yours" and the fifteen-minute window. */
+  onRetract?: (id: string, name: string) => void
+  /** A retract the server refused — most often the window closing between
+      fetches, which is expected and must be shown rather than swallowed. */
+  retractError: string | null
   /** The destination pills. Rendered here rather than built here so ONE strip
       serves both layouts — it is the same control, in the same component, just
       placed differently. */
@@ -40,7 +43,8 @@ export interface ShoppingCaptureHeroProps {
    (design-system.md §Type scale). */
 export function ShoppingCaptureHero({
   justAdded,
-  onRemove,
+  onRetract,
+  retractError,
   destinations,
   openCount,
   onShowLists,
@@ -104,6 +108,11 @@ export function ShoppingCaptureHero({
 
       <div className="mt-7">
         <div className="text-section-label-lg text-muted-foreground">Just added</div>
+        {retractError && (
+          <p role="alert" className="text-body px-1 pt-2 text-error">
+            {retractError}
+          </p>
+        )}
         <div className="flex flex-wrap gap-2.5 pt-3">
           {loading ? (
             <Loader2 className="size-6 animate-spin text-muted-foreground" aria-label="Loading" />
@@ -113,14 +122,17 @@ export function ShoppingCaptureHero({
             justAdded.map((chip) => (
               <span
                 key={chip.id}
-                className="text-body flex items-center gap-2 rounded-full border-2 border-border py-2 pl-4.5 pr-2 text-foreground"
+                className={cn(
+                  'text-body flex items-center gap-2 rounded-full border-2 border-border py-2 pl-4.5 text-foreground',
+                  onRetract && chip.canRetract ? 'pr-2' : 'pr-4.5'
+                )}
               >
                 {chip.name}
-                {onRemove && (
+                {onRetract && chip.canRetract && (
                   <button
                     type="button"
-                    onClick={() => onRemove(chip.id)}
-                    aria-label={`Remove ${chip.name}`}
+                    onClick={() => onRetract(chip.id, chip.name)}
+                    aria-label={`Take back ${chip.name}`}
                     className="flex size-7 cursor-pointer items-center justify-center rounded-full text-muted-foreground hover:bg-secondary hover:text-foreground"
                   >
                     <X size={18} aria-hidden />

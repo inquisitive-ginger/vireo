@@ -13,6 +13,7 @@ const item = (id: string, name: string, category: string, note?: string): Shoppi
   listId: 'grocery',
   addedAt: '2026-09-03T12:00:00.000Z',
   note: note ?? null,
+  canRetract: true,
 })
 
 const meta: Meta<typeof ShoppingPageView> = {
@@ -60,7 +61,8 @@ const meta: Meta<typeof ShoppingPageView> = {
     justAdded: [],
     totalOpenCount: 19,
     onShowLists: () => {},
-    onRemove: () => {},
+    onRetract: () => {},
+    retractError: null,
   },
 }
 export default meta
@@ -117,10 +119,10 @@ export const Wide: Story = {
   args: {
     layout: 'capture',
     justAdded: [
-      { id: 'r1', name: 'snap peas' },
-      { id: 'r2', name: 'tortillas' },
-      { id: 'r3', name: 'milk' },
-      { id: 'r4', name: 'wood screws' },
+      { id: 'r1', name: 'snap peas', canRetract: true },
+      { id: 'r2', name: 'tortillas', canRetract: true },
+      { id: 'r3', name: 'milk', canRetract: true },
+      { id: 'r4', name: 'wood screws', canRetract: true },
     ],
   },
 }

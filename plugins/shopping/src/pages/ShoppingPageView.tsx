@@ -34,7 +34,7 @@ export interface ShoppingPageViewProps {
       §"The no-mode principle is scoped to narrow"). */
   layout: 'capture' | 'list'
   /** Wide only — the hero's short memory of what landed, anywhere. */
-  justAdded: { id: string; name: string }[]
+  justAdded: { id: string; name: string; canRetract: boolean }[]
   /** Wide only — everything waiting across every destination. */
   totalOpenCount: number
   /** `capture` only — swaps to the list at its own URL. */
@@ -42,9 +42,10 @@ export interface ShoppingPageViewProps {
   /** The way back, offered ONLY on the wide list view. Undefined on a phone,
       which has no dedicated capture view to return to. */
   onBackToCapture?: () => void
-  /** Taking back a just-added typo. Undefined when this profile cannot remove —
-      `manage` is tier 4 while adding is tier 1 (ADR 071). */
-  onRemove?: (id: string) => void
+  /** Taking back your own recent add (ADR 073, tier 1). Undefined when the
+      profile lacks the key; per-row eligibility is the server's `canRetract`. */
+  onRetract?: (id: string, name: string) => void
+  retractError: string | null
 }
 
 /* The /shopping surface (design.md §Anatomy, artifact frames S1/S2). The capture
@@ -69,7 +70,8 @@ export function ShoppingPageView({
   totalOpenCount,
   onShowLists,
   onBackToCapture,
-  onRemove,
+  onRetract,
+  retractError,
 }: ShoppingPageViewProps) {
   const selected = lists.find((l) => l.id === selectedListId)
   const destination = selected?.name ?? 'the list'
@@ -114,7 +116,8 @@ export function ShoppingPageView({
         <ShoppingCaptureHero
           justAdded={justAdded}
           openCount={totalOpenCount}
-          onRemove={onRemove}
+          onRetract={onRetract}
+          retractError={retractError}
           destinations={destinations}
           onShowLists={onShowLists}
           loading={loading}

@@ -19,10 +19,10 @@ const meta: Meta<typeof ShoppingCaptureHero> = {
   ],
   args: {
     justAdded: [
-      { id: '1', name: 'snap peas' },
-      { id: '2', name: 'tortillas' },
-      { id: '3', name: 'milk' },
-      { id: '4', name: 'wood screws' },
+      { id: '1', name: 'snap peas', canRetract: true },
+      { id: '2', name: 'tortillas', canRetract: true },
+      { id: '3', name: 'milk', canRetract: false },
+      { id: '4', name: 'wood screws', canRetract: false },
     ],
     openCount: 19,
     destinations: (
@@ -35,7 +35,8 @@ const meta: Meta<typeof ShoppingCaptureHero> = {
         </span>
       </div>
     ),
-    onRemove: () => {},
+    onRetract: () => {},
+    retractError: null,
     onShowLists: () => {},
     loading: false,
     destination: 'Grocery',
@@ -66,6 +67,18 @@ export const AddFailed: Story = { args: { addError: 'oat milk' } }
    closes the wall's field. */
 export const AddingRevoked: Story = { args: { canAdd: false } }
 
-/* A tier-1 profile — the unattended wall included — can add but not remove, so
-   the chips carry no way back (ADR 071: `manage` is tier 4). */
-export const CannotRemove: Story = { args: { onRemove: undefined } }
+/* Past the fifteen-minute window, or somebody else's adds: `canRetract` is false
+   and the chips carry no way back (ADR 073). */
+export const NothingRetractable: Story = {
+  args: {
+    justAdded: [
+      { id: '1', name: 'snap peas', canRetract: false },
+      { id: '2', name: 'tortillas', canRetract: false },
+    ],
+  },
+}
+
+/* The window closed between fetches. Expected, and shown. */
+export const RetractRefused: Story = {
+  args: { retractError: 'Too late to take back “snap peas” — it has been on the list a while.' },
+}

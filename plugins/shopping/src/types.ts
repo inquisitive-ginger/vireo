@@ -12,6 +12,11 @@ export interface ShoppingItem {
   listId: string
   addedAt: string
   note: string | null
+  /** Whether THIS reader may take the row back right now (ADR 073) — derived on
+      the server, because `added_by` never goes on the wire and the window is a
+      clock question. Goes stale between fetches by design; a tap after the
+      boundary gets a 403 the surface shows rather than swallows. */
+  canRetract: boolean
 }
 
 /** A destination. Permanent lists stay in the strip at zero; a runtime one is

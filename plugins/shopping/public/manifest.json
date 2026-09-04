@@ -6,7 +6,7 @@
   "routes": ["/shopping", "/shopping/lists"],
   "schema": "shopping",
   "events": {
-    "publishes": ["shopping.item.added", "shopping.list.created"],
+    "publishes": ["shopping.item.added", "shopping.item.removed", "shopping.list.created"],
     "subscribes": ["meals.needs.pushed"]
   },
   "widgets": [

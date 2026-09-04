@@ -17,6 +17,7 @@ const item = (id: string, name: string, listName = 'Grocery'): RecentItem => ({
   listId: 'grocery',
   addedAt: '2026-09-04T12:00:00.000Z',
   note: null,
+  canRetract: true,
 })
 
 const meta: Meta<typeof CaptureWidgetView> = {

@@ -5,13 +5,14 @@ import { ShoppingCaptureHero, type ShoppingCaptureHeroProps } from './ShoppingCa
 function renderView(over: Partial<ShoppingCaptureHeroProps> = {}) {
   const props: ShoppingCaptureHeroProps = {
     justAdded: [
-      { id: '1', name: 'snap peas' },
-      { id: '2', name: 'tortillas' },
-      { id: '3', name: 'milk' },
+      { id: '1', name: 'snap peas', canRetract: true },
+      { id: '2', name: 'tortillas', canRetract: true },
+      { id: '3', name: 'milk', canRetract: true },
     ],
     openCount: 19,
     destinations: <div>Grocery 14 · Costco 3</div>,
     onShowLists: vi.fn(),
+    retractError: null,
     loading: false,
     destination: 'Grocery',
     onAdd: vi.fn(),
@@ -48,7 +49,7 @@ describe('ShoppingCaptureHero', () => {
   })
 
   it('names what was just added, never who added it', () => {
-    renderView({ justAdded: [{ id: '1', name: 'snap peas' }] })
+    renderView({ justAdded: [{ id: '1', name: 'snap peas', canRetract: true }] })
     expect(screen.getByText('snap peas')).toBeInTheDocument()
     expect(screen.queryByText(/Emma|the house|added by/i)).not.toBeInTheDocument()
   })
@@ -65,19 +66,31 @@ describe('ShoppingCaptureHero', () => {
     expect(screen.getByText('Grocery 14 · Costco 3')).toBeInTheDocument()
   })
 
-  it('offers to take back a just-added typo, naming the thing it removes', () => {
-    const onRemove = vi.fn()
-    renderView({ justAdded: [{ id: 'a1', name: 'mikk' }], onRemove })
-    fireEvent.click(screen.getByRole('button', { name: 'Remove mikk' }))
-    expect(onRemove).toHaveBeenCalledWith('a1')
+  it('offers to take back a just-added typo, naming the thing it takes back', () => {
+    const onRetract = vi.fn()
+    renderView({ justAdded: [{ id: 'a1', name: 'mikk', canRetract: true }], onRetract })
+    fireEvent.click(screen.getByRole('button', { name: 'Take back mikk' }))
+    expect(onRetract).toHaveBeenCalledWith('a1', 'mikk')
   })
 
-  it('offers no remove when the profile cannot remove — a kid adds but cannot', () => {
-    // `manage` is tier 4 while adding is tier 1 (ADR 071), so the person who
-    // made the typo may not be the one who can undo it.
-    renderView({ justAdded: [{ id: 'a1', name: 'mikk' }], onRemove: undefined })
-    expect(screen.queryByRole('button', { name: /Remove/ })).not.toBeInTheDocument()
+  it('offers none on a row that is not yours or is past the window', () => {
+    // `canRetract` is the server's answer and folds in both (ADR 073) — the
+    // client never sees `added_by` and does not own the clock.
+    renderView({ justAdded: [{ id: 'a1', name: 'mikk', canRetract: false }], onRetract: vi.fn() })
+    expect(screen.queryByRole('button', { name: /Take back/ })).not.toBeInTheDocument()
     expect(screen.getByText('mikk')).toBeInTheDocument()
+  })
+
+  it('offers none at all when the profile lacks the key', () => {
+    renderView({ justAdded: [{ id: 'a1', name: 'mikk', canRetract: true }], onRetract: undefined })
+    expect(screen.queryByRole('button', { name: /Take back/ })).not.toBeInTheDocument()
+  })
+
+  it('SHOWS a refused retract rather than swallowing it', () => {
+    // The window closes between fetches by design, so this is an expected
+    // outcome on a screen with no devtools behind it (ADR 073 §2).
+    renderView({ retractError: 'Too late to take back “milk”.' })
+    expect(screen.getByRole('alert')).toHaveTextContent('Too late to take back')
   })
 
   it('reserves the voice slot without pretending it works', () => {

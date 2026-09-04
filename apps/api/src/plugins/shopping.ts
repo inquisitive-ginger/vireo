@@ -16,7 +16,25 @@ import type { NeedsPushResult } from '@family-os/schemas'
 type ItemRow = Awaited<ReturnType<typeof shoppingPrisma.item.create>>
 type ListRow = Awaited<ReturnType<typeof shoppingPrisma.list.create>>
 
-function serializeItem(item: ItemRow) {
+/** How long you can take back your own add (ADR 073). Fifteen minutes covers the
+    typo caught at the fridge and the "wait, we have that" on the walk back, and
+    excludes yesterday's list, which is what `manage` is for. Nothing restarts
+    it — not a check, not a re-file, not an edit. */
+const RETRACT_WINDOW_MS = 15 * 60 * 1000
+
+/** Whether THIS reader may take this row back right now (ADR 073). Derived on the
+    server and sent as a boolean rather than shipping `added_by` to the client:
+    per-row attribution never goes on the wire (live review, 2026-09-03), and the
+    window is a clock question, which the server's clock is the right one to
+    answer — a phone with a skewed clock would otherwise draw an affordance the
+    route refuses. It goes stale between fetches, which ADR 073 §2 accepts: the
+    boundary lands on the next read, and a tap after it gets a 403 the surface
+    shows. */
+function canRetract(item: ItemRow, profileId: string): boolean {
+  return item.addedBy === profileId && Date.now() - item.addedAt.getTime() <= RETRACT_WINDOW_MS
+}
+
+function serializeItem(item: ItemRow, profileId?: string) {
   return {
     id: item.id,
     name: item.name,
@@ -33,6 +51,7 @@ function serializeItem(item: ItemRow) {
     // producer and no note, which is the correct resting state — nothing is
     // invented to fill the line.
     note: item.sourceLabel,
+    canRetract: profileId === undefined ? false : canRetract(item, profileId),
   }
 }
 
@@ -40,7 +59,7 @@ function serializeItem(item: ItemRow) {
     destination with no aisles of ours (a hardware run) sorts by when things were
     added, because sorting it by our grocery aisles would impose an order its
     shopper cannot see. */
-function serializeItems(items: ItemRow[], groupByAisle: boolean) {
+function serializeItems(items: ItemRow[], groupByAisle: boolean, profileId: string) {
   return items
     .slice()
     .sort((a, b) => {
@@ -50,7 +69,7 @@ function serializeItems(items: ItemRow[], groupByAisle: boolean) {
       }
       return a.addedAt.getTime() - b.addedAt.getTime()
     })
-    .map(serializeItem)
+    .map((item) => serializeItem(item, profileId))
 }
 
 function serializeList(list: ListRow, itemCount: number) {
@@ -239,6 +258,25 @@ async function fileNeeds(bus: EventBus, payload: unknown): Promise<NeedsPushResu
     for, which on the tallest slot is under a dozen. */
 const RECENT_LIMIT = 12
 
+/** Gone is gone (ADR 073 §5): one event for one transition, whichever verb did
+    it, because a consumer drops the row identically either way and two names
+    guarantee somebody subscribes to one only. `name` rides along because the row
+    cannot be looked up after. */
+function announceRemoval(
+  bus: EventBus,
+  item: ItemRow,
+  by: string,
+  reason: 'retracted' | 'managed'
+) {
+  bus.emit('shopping.item.removed', {
+    itemId: item.id,
+    listId: item.listId,
+    name: item.name,
+    by,
+    reason,
+  })
+}
+
 const shoppingPlugin: FastifyPluginAsync = async (fastify) => {
   // GET /shopping/lists — the destination strip, not an index you land on
   // (design.md): permanent lists always show and dim at zero; a runtime list
@@ -297,7 +335,7 @@ const shoppingPlugin: FastifyPluginAsync = async (fastify) => {
     return {
       lists: visible.map((l) => serializeList(l, countByList.get(l.id) ?? 0)),
       items: items.map((item) => ({
-        ...serializeItem(item),
+        ...serializeItem(item, request.profile.id),
         listName: nameById.get(item.listId) ?? '',
       })),
       overrides: Object.fromEntries(overrides.map((o) => [o.normalizedName, o.category])),
@@ -355,7 +393,7 @@ const shoppingPlugin: FastifyPluginAsync = async (fastify) => {
     const overrides = await shoppingPrisma.aisleOverride.findMany()
     return {
       list: serializeList(list, open.length),
-      items: serializeItems(items, list.groupByAisle),
+      items: serializeItems(items, list.groupByAisle, request.profile.id),
       overrides: Object.fromEntries(overrides.map((o) => [o.normalizedName, o.category])),
     }
   })
@@ -386,7 +424,7 @@ const shoppingPlugin: FastifyPluginAsync = async (fastify) => {
       sourceType: 'manual',
     })
 
-    return reply.status(201).send(serializeItem(item))
+    return reply.status(201).send(serializeItem(item, request.profile.id))
   })
 
   // DELETE /shopping/items/:id — taking back something that should never have
@@ -404,6 +442,47 @@ const shoppingPlugin: FastifyPluginAsync = async (fastify) => {
     if (!existing) return reply.status(404).send({ error: 'Item not found' })
 
     await shoppingPrisma.item.delete({ where: { id } })
+    // This emitted nothing until ADR 073, which is a live staleness bug and not
+    // a new feature: a parent deleting a row left every other shopper's screen
+    // showing it, because invalidation is same-client and this is two clients.
+    announceRemoval(fastify.eventBus, existing, request.profile.id, 'managed')
+    return reply.status(204).send()
+  })
+
+  // POST /shopping/items/:id/retract — taking back YOUR OWN add, within fifteen
+  // minutes (ADR 073). Tier 1, because the cheapest reversible action on the
+  // surface must not sit behind the delete verb.
+  //
+  // Three checks, not one. The ability is the capability; `addedBy` is the row
+  // condition, enforced here because `ability.ts` replays an override grant as
+  // `can(action, subject)` with no conditions, so a revoke-then-regrant would
+  // otherwise return this key unscoped (ADR 073 §6). The window is time, which
+  // no ability can express.
+  fastify.post('/shopping/items/:id/retract', async (request, reply) => {
+    if (!request.ability.can('retract', 'shopping.Item')) {
+      return reply.status(403).send({ error: 'Permission denied' })
+    }
+
+    const { id } = request.params as { id: string }
+    const existing = await shoppingPrisma.item.findUnique({ where: { id } })
+    if (!existing) return reply.status(404).send({ error: 'Item not found' })
+
+    // On the wall this resolves to the house's own adds (ADR 072/073 §3):
+    // everyone at W2 is `family`, so anyone there takes back what the wall added
+    // in the window, and nothing a phone added. No special case — it falls out.
+    if (existing.addedBy !== request.profile.id) {
+      return reply.status(403).send({ error: 'Not yours to take back' })
+    }
+
+    if (Date.now() - existing.addedAt.getTime() > RETRACT_WINDOW_MS) {
+      return reply.status(403).send({ error: 'Too old to take back' })
+    }
+
+    await shoppingPrisma.item.delete({ where: { id } })
+    // Deliberately does NOT un-teach `Entry` (ADR 073 §4): `remember()`'s upsert
+    // already overwrote the prior spelling, so the add destroyed what
+    // un-teaching would restore. Accepted residue, not an oversight.
+    announceRemoval(fastify.eventBus, existing, request.profile.id, 'retracted')
     return reply.status(204).send()
   })
 
@@ -439,7 +518,7 @@ const shoppingPlugin: FastifyPluginAsync = async (fastify) => {
       }),
     ])
 
-    return serializeItem(item)
+    return serializeItem(item, request.profile.id)
   })
 
   // ─── Event subscribers ─────────────────────────────────────────────────────

@@ -53,18 +53,18 @@ export function ShoppingPage() {
   const [selectedListId, setSelectedListId] = useState<string | null>(null)
   const [draft, setDraft] = useState('')
   const [addError, setAddError] = useState<string | null>(null)
+  const [retractError, setRetractError] = useState<string | null>(null)
 
   // The house adds too (ADR 072) — the wall-mounted tablet runs as the family
   // profile and capture is its whole job. What can close the field is the
   // revocation ADR 072 §6 names as the lever: `shopping.item.add` off for one
   // profile. Ability, never a tier or an id (ADR 018).
   const canAdd = ability.can('create', 'shopping.Item')
-  // Removing is `manage`, tier 4 (ADR 071) — while adding is tier 1. So a kid,
-  // and the unattended wall, can put a typo on the list and cannot take it off.
-  // Gated honestly here rather than hidden: whether that split is right is a
-  // permission question, flagged at the M5.5/5 review, not one to answer in a
-  // component by widening the check.
-  const canRemove = ability.can('manage', 'shopping.Item')
+  // Taking back your own recent add is `retract`, tier 1 (ADR 073) — no longer
+  // the tier-4 delete verb, which left the wall unable to undo its own typos.
+  // Whether a given ROW qualifies is the server's answer (`canRetract`), since
+  // it owns the clock and `added_by` never reaches the client.
+  const canRetract = ability.can('retract', 'shopping.Item')
 
   // Profile-scoped, under one `shopping/list` prefix the M5.5/5 widget reuses,
   // so a single invalidation refreshes the page and the widget together.
@@ -132,16 +132,29 @@ export function ShoppingPage() {
     },
   })
 
-  const removeItem = useMutation({
-    mutationFn: (itemId: string) =>
-      fetch(`/api/shopping/items/${itemId}`, { method: 'DELETE' }).then((res) => {
-        if (!res.ok) throw new Error(String(res.status))
-      }),
-    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['shopping/list'] }),
-    onError: (err, itemId) => {
-      // The chip stays on screen, so the person can try again — but nobody at a
-      // fridge has devtools, so the reason still has to reach somewhere.
-      console.error('[shopping] could not remove %s', itemId, err)
+  const retractItem = useMutation({
+    mutationFn: async ({ itemId }: { itemId: string; name: string }) => {
+      const res = await fetch(`/api/shopping/items/${itemId}/retract`, { method: 'POST' })
+      if (!res.ok) {
+        // The window closes between fetches by design (ADR 073 §2), so this 403
+        // is an expected outcome, not an anomaly — and it MUST be shown. A
+        // swallowed one leaves someone tapping a control that silently does
+        // nothing, on a screen with no devtools behind it.
+        const body = (await res.json().catch(() => null)) as { error?: string } | null
+        throw new Error(body?.error ?? String(res.status))
+      }
+    },
+    onSuccess: () => {
+      setRetractError(null)
+      void queryClient.invalidateQueries({ queryKey: ['shopping/list'] })
+    },
+    onError: (err, variables) => {
+      console.error('[shopping] could not take back %s', variables.name, err)
+      setRetractError(
+        /too old/i.test(String(err))
+          ? `Too late to take back “${variables.name}” — it has been on the list a while.`
+          : `Couldn’t take back “${variables.name}”.`
+      )
     },
   })
 
@@ -207,10 +220,11 @@ export function ShoppingPage() {
       onBackToCapture={wide && onListsRoute ? () => void navigate('/shopping') : undefined}
       justAdded={(recentQuery.data?.items ?? [])
         .slice(0, JUST_ADDED)
-        .map((i) => ({ id: i.id, name: i.name }))}
+        .map((i) => ({ id: i.id, name: i.name, canRetract: i.canRetract }))}
       totalOpenCount={lists.reduce((sum, l) => sum + l.itemCount, 0)}
       onShowLists={() => void navigate('/shopping/lists')}
-      onRemove={canRemove ? (itemId) => removeItem.mutate(itemId) : undefined}
+      onRetract={canRetract ? (itemId, name) => retractItem.mutate({ itemId, name }) : undefined}
+      retractError={retractError}
     />
   )
 }

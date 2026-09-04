@@ -10,6 +10,7 @@ const item = (over: Partial<ShoppingItem> & { id: string; name: string }): Shopp
   listId: 'grocery',
   addedAt: '2026-09-03T12:00:00.000Z',
   note: null,
+  canRetract: true,
   ...over,
 })
 
@@ -26,7 +27,7 @@ function renderView(over: Partial<ShoppingPageViewProps> = {}) {
         aisle: 'Produce',
         items: [
           item({ id: '1', name: 'snap peas', note: 'for Thursday' }),
-          item({ id: '2', name: 'bananas' }),
+          item({ id: '2', name: 'bananas', canRetract: true }),
         ],
       },
       { aisle: 'Dairy', items: [item({ id: '3', name: 'milk', category: 'Dairy' })] },
@@ -41,6 +42,7 @@ function renderView(over: Partial<ShoppingPageViewProps> = {}) {
     justAdded: [],
     totalOpenCount: 3,
     onShowLists: vi.fn(),
+    retractError: null,
     ...over,
   }
   return { props, ...render(<ShoppingPageView {...props} />) }
@@ -164,7 +166,7 @@ describe('ShoppingPageView — the capture layout', () => {
   })
 
   it('names what was just added, never who', () => {
-    renderView({ layout: 'capture', justAdded: [{ id: '1', name: 'oat milk' }] })
+    renderView({ layout: 'capture', justAdded: [{ id: '1', name: 'oat milk', canRetract: true }] })
     expect(screen.getByText('oat milk')).toBeInTheDocument()
     expect(screen.queryByText(/Emma|the house|added by/i)).not.toBeInTheDocument()
   })

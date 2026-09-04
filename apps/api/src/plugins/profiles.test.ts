@@ -615,7 +615,7 @@ describe('GET /api/profiles/:id/permissions', () => {
         overrideId: string | null
       }>
     }>()
-    expect(permissions).toHaveLength(23)
+    expect(permissions).toHaveLength(24)
     expect(permissions.every((p) => p.override === null && p.overrideId === null)).toBe(true)
     // tier 1 baseline: view platform.Plugin + view chores.Task + complete
     // chores.Task (every tier can complete its own assigned task) + view
@@ -648,11 +648,13 @@ describe('GET /api/profiles/:id/permissions', () => {
     expect(permissions.find((p) => p.key === 'chores.task.create')?.inBaseline).toBe(false)
     expect(permissions.find((p) => p.key === 'calendar.event.create')?.inBaseline).toBe(false)
     // + see and add to a shopping list (M5.5 — a kid asking for cereal is the
-    // cheapest participation the house has). Checking off starts at tier 2 and
-    // creating a list, correcting the filing and managing items are all tier 4
-    // (ADR 071) — so none of those four is in a tier-1 baseline.
+    // cheapest participation the house has), and TAKE BACK YOUR OWN add for
+    // fifteen minutes (ADR 073 — the cheapest reversible action must not sit
+    // behind the delete verb). Checking off starts at tier 2 and creating a
+    // list, correcting the filing and managing items are all tier 4 (ADR 071).
     expect(permissions.find((p) => p.key === 'shopping.item.view')?.inBaseline).toBe(true)
     expect(permissions.find((p) => p.key === 'shopping.item.add')?.inBaseline).toBe(true)
+    expect(permissions.find((p) => p.key === 'shopping.item.retract')?.inBaseline).toBe(true)
     expect(permissions.find((p) => p.key === 'shopping.item.check')?.inBaseline).toBe(false)
     expect(permissions.find((p) => p.key === 'shopping.list.create')?.inBaseline).toBe(false)
     expect(permissions.find((p) => p.key === 'shopping.item.file')?.inBaseline).toBe(false)
