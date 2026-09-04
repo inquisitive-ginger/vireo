@@ -1,6 +1,7 @@
 import { ChevronDown, Loader2 } from 'lucide-react'
 import { CaptureField, Chip, ListRow, PageContainer, PageHeader, cn } from '@family-os/ui'
 import type { ShoppingItem, ShoppingList } from '../types'
+import { ShoppingCaptureHero } from './ShoppingCaptureHero'
 
 export interface AisleGroup {
   aisle: string
@@ -25,8 +26,16 @@ export interface ShoppingPageViewProps {
   /** The name that failed to land, so the word is not silently lost. */
   addError: string | null
   /** `shopping.item.add` is revoked for this profile — the one lever that closes
-      the field (ADR 072 §6). The house itself adds; the wall depends on it. */
+      the field (ADR 072 §6). The house itself adds; the wide layout needs it. */
   canAdd: boolean
+  /** Which arrangement of THIS surface to draw. Not a mode and not a route: the
+      viewport picks it, nothing on screen toggles it, and both draw the same
+      list from the same data (design.md §"One surface, two layouts"). */
+  layout: 'narrow' | 'wide'
+  /** Wide only — the hero's short memory of what landed, anywhere. */
+  justAdded: { id: string; name: string }[]
+  /** Wide only — everything waiting across every destination. */
+  totalOpenCount: number
 }
 
 /* The /shopping surface (design.md §Anatomy, artifact frames S1/S2). The capture
@@ -47,6 +56,9 @@ export function ShoppingPageView({
   draftAisle,
   addError,
   canAdd,
+  layout,
+  justAdded,
+  totalOpenCount,
 }: ShoppingPageViewProps) {
   const selected = lists.find((l) => l.id === selectedListId)
   const destination = selected?.name ?? 'the list'
@@ -56,52 +68,81 @@ export function ShoppingPageView({
   // While composing, the strip gives way to the echo (S2) — one line under the
   // field at a time, and the filing is the one worth reading at that moment.
   const composing = draftAisle !== null
+  const wide = layout === 'wide'
 
   return (
+    // `list` at BOTH widths. A list is not prose, but it is not a billboard
+    // either: unmeasured at 1280 the rows run 1232px, so a name at the left edge
+    // and its aisle at the right are a head-turn apart. The wide layout earns its
+    // presence with type size, not with span.
     <PageContainer width="list">
-      {/* The count rides the title's own baseline and the field sits 14px under
-          it (artifact S1), so the primitive's `items-start` / `mb-6` are the two
-          things overridden — not the header. */}
-      <PageHeader
-        className="mb-0 items-baseline"
-        title="Shopping"
-        action={<span className="text-sm-token text-muted-foreground">{openCount} to get</span>}
-      />
-
-      <CaptureField
-        size="hero"
-        className="mt-3.5"
-        // Deliberately NOT autofocused (ADR 070): an unrequested keyboard on a
-        // route you opened to read is hostile. The wall and the widget focus.
-        placeholder={`Add to ${destination}`}
-        label={`Add to ${destination}`}
-        disabled={!canAdd}
-        onValueChange={onDraftChange}
-        onSubmit={onAdd}
-        trailing={<DestinationChip name={destination} many={lists.length > 1} />}
-      />
-
-      {/* Everything that reports on the field sits between the field and the
-          strip. Below the strip a notice reads as a caption on the list, which
-          is not what failed. */}
-      {addError && (
-        <p role="alert" className="text-sm-token px-1 pt-2 text-error">
-          Couldn&rsquo;t add &ldquo;{addError}&rdquo; — check your connection and try again.
-        </p>
-      )}
-
-      {!canAdd && (
-        <p className="text-sm-token px-1 pt-2 text-muted-foreground">
-          Adding to the list is turned off for this profile.
-        </p>
-      )}
-
-      {composing ? (
-        <p className="text-sm-token px-1 pt-2 text-muted-foreground">
-          Enter to add · files under{' '}
-          <span className="font-medium text-foreground">{draftAisle}</span>
-        </p>
+      {wide ? (
+        <ShoppingCaptureHero
+          justAdded={justAdded}
+          openCount={totalOpenCount}
+          loading={loading}
+          destination={selected?.name ?? null}
+          onAdd={onAdd}
+          onDraftChange={onDraftChange}
+          draftAisle={draftAisle}
+          addError={addError}
+          canAdd={canAdd}
+        />
       ) : (
+        <>
+          {/* The count rides the title's own baseline and the field sits 14px
+              under it (artifact S1), so the primitive's `items-start` / `mb-6`
+              are the two things overridden — not the header. */}
+          <PageHeader
+            className="mb-0 items-baseline"
+            title="Shopping"
+            action={<span className="text-sm-token text-muted-foreground">{openCount} to get</span>}
+          />
+
+          <CaptureField
+            size="hero"
+            className="mt-3.5"
+            // Deliberately NOT autofocused (ADR 070): an unrequested keyboard on
+            // a route you opened to read is hostile. The wide layout is a screen
+            // you walked up to in order to type, so it focuses; this is not.
+            placeholder={`Add to ${destination}`}
+            label={`Add to ${destination}`}
+            disabled={!canAdd}
+            onValueChange={onDraftChange}
+            onSubmit={onAdd}
+            trailing={<DestinationChip name={destination} many={lists.length > 1} />}
+          />
+
+          {/* Everything that reports on the field sits between the field and the
+              strip. Below the strip a notice reads as a caption on the list,
+              which is not what failed. */}
+          {addError && (
+            <p role="alert" className="text-sm-token px-1 pt-2 text-error">
+              Couldn&rsquo;t add &ldquo;{addError}&rdquo; — check your connection and try again.
+            </p>
+          )}
+
+          {!canAdd && (
+            <p className="text-sm-token px-1 pt-2 text-muted-foreground">
+              Adding to the list is turned off for this profile.
+            </p>
+          )}
+
+          {composing && (
+            <p className="text-sm-token px-1 pt-2 text-muted-foreground">
+              Enter to add · files under{' '}
+              <span className="font-medium text-foreground">{draftAisle}</span>
+            </p>
+          )}
+        </>
+      )}
+
+      {/* The destination strip belongs to both layouts — it is the control that
+          swaps the list in place, and on wide it is also the only place the
+          per-list counts appear, tappable rather than restated under the hero.
+          Narrow hides it while composing: one line under the field at a time,
+          and the filing is the one worth reading at that moment. */}
+      {(wide || !composing) && (
         <div className="mt-3 flex gap-2 overflow-hidden py-0.5">
           {lists.map((list) => (
             <Chip

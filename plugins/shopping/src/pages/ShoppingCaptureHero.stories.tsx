@@ -1,13 +1,14 @@
 import type { Meta, StoryObj } from '@storybook/react'
-import { WallPageView } from './WallPageView'
+import { ShoppingCaptureHero } from './ShoppingCaptureHero'
 
-/* W2 — the wall tablet (design.md §"The wall tablet", artifact frame W2). Judge
-   it from across a room, not at this laptop: the whole surface is one input with
-   a short memory, and every label on it is a distance token. */
+/* The top block of `/shopping` at tablet width and up (design.md §"One surface,
+   two layouts", artifact frame W2). Judge it from across a room, not at this
+   laptop. In the app the aisle list renders directly beneath it — this story
+   shows the block alone. */
 
-const meta: Meta<typeof WallPageView> = {
-  title: 'Shopping/WallPageView',
-  component: WallPageView,
+const meta: Meta<typeof ShoppingCaptureHero> = {
+  title: 'Shopping/ShoppingCaptureHero',
+  component: ShoppingCaptureHero,
   parameters: { layout: 'fullscreen' },
   decorators: [
     (Story) => (
@@ -23,11 +24,6 @@ const meta: Meta<typeof WallPageView> = {
       { id: '3', name: 'milk' },
       { id: '4', name: 'wood screws' },
     ],
-    lists: [
-      { id: 'grocery', name: 'Grocery', kind: 'permanent', groupByAisle: true, itemCount: 14 },
-      { id: 'costco', name: 'Costco', kind: 'permanent', groupByAisle: false, itemCount: 3 },
-      { id: 'hardware', name: 'Hardware', kind: 'runtime', groupByAisle: false, itemCount: 2 },
-    ],
     openCount: 19,
     loading: false,
     destination: 'Grocery',
@@ -36,11 +32,10 @@ const meta: Meta<typeof WallPageView> = {
     draftAisle: null,
     addError: null,
     canAdd: true,
-    onSeeLists: () => {},
   },
 }
 export default meta
-type Story = StoryObj<typeof WallPageView>
+type Story = StoryObj<typeof ShoppingCaptureHero>
 
 export const AtRest: Story = {}
 
@@ -49,7 +44,7 @@ export const AtRest: Story = {}
 export const Composing: Story = { args: { draftAisle: 'Pantry' } }
 
 /* The short memory is empty. Not a gap — a wall nobody has walked up to today. */
-export const NothingYet: Story = { args: { justAdded: [], openCount: 0, lists: [] } }
+export const NothingYet: Story = { args: { justAdded: [], openCount: 0 } }
 
 /* The add did not land. The field cleared on Enter, so this line is the only
    thing standing between the person and a word they think they said. */

@@ -3,11 +3,10 @@ import { useAuth, useMutation, useQuery, useQueryClient } from '@family-os/platf
 import type { RecentResponse, ShoppingItem } from '../types'
 import { fileAisle, normalizeItemName } from './filing'
 
-/* The two surfaces that capture without being the /shopping route — the wall
-   (design.md §W2) and the Home widget — read and write exactly the same things,
-   so the recipe lives here once rather than being retyped either side of a
-   federation boundary. The route keeps its own container: it selects a
-   destination, which neither of these does. */
+/* The Home widget's read and write. `/shopping` has its own container because
+   it selects a destination and draws the aisle list, neither of which a widget
+   does — but both reach the same endpoint under the same key, so an add on
+   either refreshes both. */
 
 function json<T>(res: Response): Promise<T> {
   if (!res.ok) throw new Error(String(res.status))
@@ -19,11 +18,11 @@ export interface AmbientCapture {
   loading: boolean
   error: boolean
   refetch: () => void
-  /** Everything still waiting, everywhere — the wall's `19 things waiting`. */
+  /** Everything still waiting, everywhere. */
   openCount: number
   /** Where an ambient add lands: the first destination, same default the page
-      opens on. Neither surface offers a picker — the wall is the moment your
-      other hand holds the carton, and the widget is one line on a dashboard. */
+      opens on. The widget offers no picker: it is one line on a dashboard, and
+      any control before the word is a tap the notepad does not charge. */
   destination: string | null
   destinationId: string | null
   onDraftChange: (draft: string) => void
@@ -45,8 +44,8 @@ export function useAmbientCapture(canAdd: boolean): AmbientCapture {
   const [addError, setAddError] = useState<string | null>(null)
 
   // Under the page's own `shopping/list` prefix, so one invalidation from any
-  // add — here, on the route, or from the meals needs-push — refreshes the page,
-  // the wall and the widget together (ADR 013/022).
+  // add — here, on the route, or from the meals needs-push — refreshes both
+  // layouts of the page and the widget together (ADR 013/022).
   const recent = useQuery<RecentResponse>({
     queryKey: ['shopping/list', id, 'recent'],
     queryFn: () => fetch('/api/shopping/recent').then(json<RecentResponse>),

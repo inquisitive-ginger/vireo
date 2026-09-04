@@ -1,18 +1,13 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
-import { WallPageView, type WallPageViewProps } from './WallPageView'
+import { ShoppingCaptureHero, type ShoppingCaptureHeroProps } from './ShoppingCaptureHero'
 
-function renderView(over: Partial<WallPageViewProps> = {}) {
-  const props: WallPageViewProps = {
+function renderView(over: Partial<ShoppingCaptureHeroProps> = {}) {
+  const props: ShoppingCaptureHeroProps = {
     justAdded: [
       { id: '1', name: 'snap peas' },
       { id: '2', name: 'tortillas' },
       { id: '3', name: 'milk' },
-    ],
-    lists: [
-      { id: 'grocery', name: 'Grocery', kind: 'permanent', groupByAisle: true, itemCount: 14 },
-      { id: 'costco', name: 'Costco', kind: 'permanent', groupByAisle: false, itemCount: 3 },
-      { id: 'hardware', name: 'Hardware', kind: 'runtime', groupByAisle: false, itemCount: 2 },
     ],
     openCount: 19,
     loading: false,
@@ -22,13 +17,12 @@ function renderView(over: Partial<WallPageViewProps> = {}) {
     draftAisle: null,
     addError: null,
     canAdd: true,
-    onSeeLists: vi.fn(),
     ...over,
   }
-  return { props, ...render(<WallPageView {...props} />) }
+  return { props, ...render(<ShoppingCaptureHero {...props} />) }
 }
 
-describe('WallPageView', () => {
+describe('ShoppingCaptureHero', () => {
   it('asks the question and takes the keyboard — somebody walked up to it to type', () => {
     renderView()
     expect(screen.getByRole('heading', { name: 'What do we need?' })).toBeInTheDocument()
@@ -57,11 +51,12 @@ describe('WallPageView', () => {
     expect(screen.queryByText(/Emma|the house|added by/i)).not.toBeInTheDocument()
   })
 
-  it('carries the count strip across every destination', () => {
+  it('states the total waiting, and leaves the per-list split to the strip below', () => {
     renderView()
-    expect(
-      screen.getByText('19 things waiting · Grocery 14 · Costco 3 · Hardware 2')
-    ).toBeInTheDocument()
+    expect(screen.getByText('19 things waiting')).toBeInTheDocument()
+    // Restating `Grocery 14 · Costco 3` here would duplicate the destination
+    // strip, which says the same thing and is tappable.
+    expect(screen.queryByText(/Grocery 14/)).not.toBeInTheDocument()
   })
 
   it('reserves the voice slot without pretending it works', () => {
@@ -71,7 +66,9 @@ describe('WallPageView', () => {
     expect(screen.queryByRole('button', { name: /speak/i })).not.toBeInTheDocument()
   })
 
-  it('only takes things in — no checking, no aisles, no shopping', () => {
+  it('is a block on the page, not a surface — it draws no list of its own', () => {
+    // The aisle list is the page's, rendered under this by ShoppingPageView.
+    // If the hero ever grows rows, the surface has two lists.
     renderView()
     expect(screen.queryByRole('checkbox')).not.toBeInTheDocument()
     expect(screen.queryByText('Produce')).not.toBeInTheDocument()
@@ -88,9 +85,8 @@ describe('WallPageView', () => {
     expect(screen.getByText(/turned off/i)).toBeInTheDocument()
   })
 
-  it('offers exactly one way off the surface', () => {
-    const { props } = renderView()
-    fireEvent.click(screen.getByRole('button', { name: /See the lists/ }))
-    expect(props.onSeeLists).toHaveBeenCalled()
+  it('offers no way off the page, because the list is the next thing on it', () => {
+    renderView()
+    expect(screen.queryByRole('button', { name: /See the lists/ })).not.toBeInTheDocument()
   })
 })

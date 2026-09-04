@@ -36,9 +36,9 @@ export interface ListResponse {
   overrides: Record<string, string>
 }
 
-/** A row on an ambient surface — the wall's `Just added`, the widget's list.
-    Both span every destination, so each row names the list it landed on; the
-    page's rows do not, because the page is already showing one list. */
+/** A row read across every destination — the wide layout's `Just added` and
+    the Home widget's list. Both span all lists, so each row names the one it
+    landed on; the aisle list below does not, because it shows one list already. */
 export interface RecentItem extends ShoppingItem {
   listName: string
 }

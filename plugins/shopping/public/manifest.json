@@ -3,7 +3,7 @@
   "version": "0.0.1",
   "remoteEntry": "http://localhost:3016/assets/remoteEntry.js",
   "exposes": ["./Plugin", "./widgets/Capture"],
-  "routes": ["/shopping", "/shopping/wall"],
+  "routes": ["/shopping"],
   "schema": "shopping",
   "events": {
     "publishes": ["shopping.item.added", "shopping.list.created"],

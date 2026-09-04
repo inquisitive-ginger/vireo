@@ -15,7 +15,9 @@ export default function CaptureWidget() {
       items={capture.data?.items ?? []}
       openCount={capture.openCount}
       loading={capture.loading}
-      error={capture.error}
+      // A failed background refetch keeps its data; only a read with nothing
+      // behind it is an error the tile should speak about.
+      error={capture.error && !capture.data}
       destination={capture.destination}
       onAdd={capture.add}
       onDraftChange={capture.onDraftChange}

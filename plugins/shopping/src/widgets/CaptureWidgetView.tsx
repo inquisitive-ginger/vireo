@@ -9,8 +9,9 @@ export interface CaptureWidgetViewProps {
   items: RecentItem[]
   openCount: number
   loading: boolean
-  /** The read failed. `Nothing waiting` would be a false claim about the house,
-      so the tile says it does not know instead. */
+  /** The read failed AND there is nothing cached to show. A failed background
+      refetch that still holds rows is not this: the rows stay, because stale
+      rows beat a tile that contradicts itself. */
   error: boolean
   destination: string | null
   onAdd: (name: string) => void
@@ -79,11 +80,17 @@ export function CaptureWidgetView({
         onSubmit={onAdd}
       />
 
-      {note && (
-        <p role={note.role} className={cn('text-sm-token truncate px-1 pt-1.5', note.className)}>
-          {note.body}
-        </p>
-      )}
+      {/* Reserved whether or not it has a line to draw. Mounting it on the first
+          keystroke inserts ~25px, `useFitRows` re-clamps on the shrunken box,
+          and a row disappears while the user is still typing the word — then
+          comes back on Enter. Same defect the wide hero reserves `min-h-11` for. */}
+      <div className="min-h-5 shrink-0">
+        {note && (
+          <p role={note.role} className={cn('text-sm-token truncate px-1', note.className)}>
+            {note.body}
+          </p>
+        )}
+      </div>
 
       {/* The measured box: `min-h-0 flex-1` is what gives `useFitRows` a height
           to clamp against. Without the height-constrained flex child it measures
@@ -92,15 +99,13 @@ export function CaptureWidgetView({
           tile's content — but the recess is what separates the two, so the gap
           only has to stop them touching and must not spend a whole row. */}
       <div ref={boxRef} data-fit-box className="mt-2 min-h-0 flex-1 overflow-hidden">
-        {error ? (
+        {/* `error` already means "and nothing cached", so this can never sit
+            above rows: a tile saying it could not load, over four things it
+            plainly loaded, teaches the reader to trust neither. */}
+        {!loading && items.length === 0 && (
           <p className="text-sm-token px-1 pt-1 text-muted-foreground">
-            Couldn&rsquo;t load the list.
+            {error ? 'Couldn’t load the list.' : 'Nothing waiting.'}
           </p>
-        ) : (
-          !loading &&
-          items.length === 0 && (
-            <p className="text-sm-token px-1 pt-1 text-muted-foreground">Nothing waiting.</p>
-          )
         )}
         <div ref={listRef} data-fit-list className="flex flex-col">
           {!loading &&

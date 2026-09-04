@@ -71,25 +71,43 @@ The destination strip degrades. Three pills is a strip; seven is an index wearin
 costume. **If a sixth destination ever appears, that is a design question**, not a
 horizontal-scroll affordance.
 
-## The wall tablet — W2, its own surface
+## One surface, two layouts
 
-The wall **only takes things in.** Nobody shops from a wall-mounted tablet; what the wall
-is physically good at is the moment you are holding the empty carton.
+**Settled 2026-09-04, live review.** `/shopping` is a single route. Which layout it
+draws is chosen by the **viewport**, at the shell's canonical `md:` (768 px) split —
+never by the profile, and never by a control on screen.
 
-- `What do we need?` at `display-xl`, a 76 px `CaptureField` below it (autofocused), and
-  a **Hold to speak** affordance in the trailing slot. **Voice is not M5.5 scope** — the
-  slot is reserved so it is not bolted on later.
-- **Just added** — the last few items as chips. **What** was added, never who
-  (§Anatomy 5; ADR 072 §3/§4 withdrawn). A short memory, not a list.
-- A count strip (`19 things waiting · Grocery 14 · Costco 3 · Hardware 2`) and one
-  `See the lists` link out. No checking, no aisles, no shopping.
+- **Tablet and up — capture.** `What do we need?` at `display-xl`, a 76 px
+  `CaptureField` below it (**autofocused** — this is a screen you walked up to in
+  order to type), a **Hold to speak** affordance reserved in the trailing slot
+  (**voice is not M5.5 scope** — the slot is reserved, nothing implements it), a
+  **Just added** strip of the last few items as chips naming **what** was added, never
+  who (§Anatomy 5; ADR 072 §3/§4 withdrawn), and a rule stating the total
+  (`19 things waiting`). Then the same aisle list, directly beneath.
+- **Below tablet — the list.** §Anatomy exactly as shipped: compact title row,
+  56 px field, destination strip, aisle list. It does **not** autofocus.
 
-**Owed by whoever builds it:** the wall's aisle/section labels are the real
-`section-label` token — 11 px uppercase — which is unreadable at six feet while the rows
-beside them clear the 18 px across-the-room floor. The distance rule sets a floor for
-_primary content_ and is silent on structural labels. W2 mostly dodges this by having no
-aisle headers, but the `Just added` label and the count strip inherit it. Decide a
-distance variant of `section-label`, or promote those labels to `heading` on the wall.
+**Neither layout is a mode**, which is the same rule §"The answer to the axis" states
+for the field and the list. Nothing toggles: the capture block is simply the size it
+should be on a screen you stand in front of, and the list follows it down the page the
+way it does on a phone. There is no second route, no switch, and no way to be in the
+"wrong" one — resizing a window moves between them, which is also how they are
+reviewed.
+
+**Why not a separate surface.** It was built once as its own route (`/shopping/wall`)
+and rejected on sight: nothing linked to it, so the first question anyone asked was how
+to reach it, and its one exit was one-way. Branching on `FAMILY_PROFILE_ID` instead
+would have made it unreachable from any other device, and so unreviewable. The
+wall-mounted tablet is a **device** in the house — ADR 072 is about how that device's
+adds are attributed, and is unaffected — but the surface it shows has no separate
+identity and carries no separate name.
+
+**The per-destination counts are not repeated under the hero.** They live one block
+down in the destination strip, where they are tappable rather than merely stated.
+
+**The distance-label decision this surface owed is settled** (2026-09-04): structural
+labels get a distance variant, `section-label-lg`, rather than promotion to `heading` —
+see `design-system.md` §Type scale. `Just added` uses it.
 
 ## Adding from anywhere in the house
 

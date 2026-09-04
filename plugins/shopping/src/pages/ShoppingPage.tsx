@@ -2,9 +2,14 @@ import { useMemo, useState } from 'react'
 import { Loader2 } from 'lucide-react'
 import { useAuth, useMutation, usePermissions, useQuery, useQueryClient } from '@family-os/platform'
 import { ErrorCard } from '@family-os/ui'
-import type { ListResponse, ListsResponse, ShoppingItem } from '../types'
+import type { ListResponse, ListsResponse, RecentResponse, ShoppingItem } from '../types'
 import { aisleSortIndex, fileAisle, normalizeItemName } from '../lib/filing'
+import { useWideLayout } from '../lib/use-wide-layout'
 import { ShoppingPageView, type AisleGroup } from './ShoppingPageView'
+
+/** How many chips the wide layout's short memory holds. More than a row's worth
+    stops being a memory and starts being the list it sits above. */
+const JUST_ADDED = 5
 
 function json<T>(res: Response): Promise<T> {
   if (!res.ok) throw new Error(String(res.status))
@@ -27,16 +32,21 @@ function toGroups(items: ShoppingItem[], groupByAisle: boolean): AisleGroup[] {
 
 export function ShoppingPage() {
   const { id } = useAuth()
+  // ONE route, two layouts, picked by the viewport — never by the profile
+  // (settled at the 2026-09-04 live review). A tablet and up opens on capture;
+  // a phone opens on the list. Nothing on screen switches between them, so
+  // neither is a mode, and resizing a window is enough to see both.
+  const wide = useWideLayout()
   const ability = usePermissions()
   const queryClient = useQueryClient()
   const [selectedListId, setSelectedListId] = useState<string | null>(null)
   const [draft, setDraft] = useState('')
   const [addError, setAddError] = useState<string | null>(null)
 
-  // The house adds too (ADR 072) — the wall is the family profile and capture is
-  // its whole job. What can close the field is the revocation ADR 072 §6 names as
-  // the lever: `shopping.item.add` off for one profile. Ability, never a tier or
-  // an id (ADR 018).
+  // The house adds too (ADR 072) — the wall-mounted tablet runs as the family
+  // profile and capture is its whole job. What can close the field is the
+  // revocation ADR 072 §6 names as the lever: `shopping.item.add` off for one
+  // profile. Ability, never a tier or an id (ADR 018).
   const canAdd = ability.can('create', 'shopping.Item')
 
   // Profile-scoped, under one `shopping/list` prefix the M5.5/5 widget reuses,
@@ -55,6 +65,15 @@ export function ShoppingPage() {
     queryKey: ['shopping/list', id, activeListId],
     queryFn: () => fetch(`/api/shopping/lists/${activeListId}`).then(json<ListResponse>),
     enabled: activeListId !== null,
+    retry: 1,
+  })
+
+  // Wide only: what landed lately, anywhere. Same key the Home widget reads, so
+  // the two share one cache entry and one invalidation.
+  const recentQuery = useQuery<RecentResponse>({
+    queryKey: ['shopping/list', id, 'recent'],
+    queryFn: () => fetch('/api/shopping/recent').then(json<RecentResponse>),
+    enabled: wide,
     retry: 1,
   })
 
@@ -104,7 +123,15 @@ export function ShoppingPage() {
     )
   }
 
-  if (listsQuery.isError || listQuery.isError) {
+  // `&& !data`: TanStack keeps `data` and still reports `error` when a
+  // BACKGROUND refetch fails — which is exactly what every add triggers via
+  // `invalidateQueries`. Without the guard, adding milk at the fridge over a
+  // wifi blip replaces a correct list with a Retry button nobody is standing
+  // there to tap. Stale rows beat no rows; a failed refetch is not a failed read.
+  const readFailed =
+    (listsQuery.isError && !listsQuery.data) || (listQuery.isError && !listQuery.data)
+
+  if (readFailed) {
     return (
       <div className="p-6">
         <ErrorCard
@@ -145,6 +172,11 @@ export function ShoppingPage() {
       draftAisle={draftAisle}
       addError={addError}
       canAdd={canAdd}
+      layout={wide ? 'wide' : 'narrow'}
+      justAdded={(recentQuery.data?.items ?? [])
+        .slice(0, JUST_ADDED)
+        .map((i) => ({ id: i.id, name: i.name }))}
+      totalOpenCount={lists.reduce((sum, l) => sum + l.itemCount, 0)}
     />
   )
 }

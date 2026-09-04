@@ -38,6 +38,9 @@ function renderView(over: Partial<ShoppingPageViewProps> = {}) {
     draftAisle: null,
     addError: null,
     canAdd: true,
+    layout: 'narrow',
+    justAdded: [],
+    totalOpenCount: 3,
     ...over,
   }
   return { props, ...render(<ShoppingPageView {...props} />) }
@@ -122,5 +125,46 @@ describe('ShoppingPageView', () => {
   it('has no index of lists and no drill-in — a pill is a filter, not a link', () => {
     const { container } = renderView()
     expect(container.querySelector('a')).toBeNull()
+  })
+})
+
+/* The same surface at tablet width and up (design.md §"One surface, two
+   layouts"). Not a route and not a mode: the viewport picks the arrangement,
+   nothing on screen switches it, and the aisle list is the same list. */
+describe('ShoppingPageView — the wide layout', () => {
+  it('opens on capture: the question, the big field, and the keyboard', () => {
+    renderView({ layout: 'wide' })
+    expect(screen.getByRole('heading', { name: 'What do we need?' })).toBeInTheDocument()
+    expect(screen.getByLabelText('Add to Grocery')).toHaveFocus()
+  })
+
+  it('still draws the same list underneath — the wide layout is not capture-only', () => {
+    renderView({ layout: 'wide' })
+    expect(screen.getByText('snap peas')).toBeInTheDocument()
+    expect(screen.getByText('milk')).toBeInTheDocument()
+  })
+
+  it('offers nothing that switches layout — a toggle would be a mode', () => {
+    renderView({ layout: 'wide' })
+    expect(screen.queryByRole('button', { name: /See the lists|list view|switch/i })).toBeNull()
+  })
+
+  it('drops the narrow header, so the surface has one title and one field', () => {
+    renderView({ layout: 'wide' })
+    expect(screen.queryByRole('heading', { name: 'Shopping' })).not.toBeInTheDocument()
+    expect(screen.getAllByRole('textbox')).toHaveLength(1)
+  })
+
+  it('keeps the destination strip visible while composing, unlike narrow', () => {
+    // Wide has room for both; narrow trades the strip for the echo line.
+    renderView({ layout: 'wide', draftAisle: 'Pantry' })
+    expect(screen.getByRole('button', { name: /Grocery/ })).toBeInTheDocument()
+    expect(screen.getByText(/files under/)).toBeInTheDocument()
+  })
+
+  it('names what was just added, never who', () => {
+    renderView({ layout: 'wide', justAdded: [{ id: '1', name: 'oat milk' }] })
+    expect(screen.getByText('oat milk')).toBeInTheDocument()
+    expect(screen.queryByText(/Emma|the house|added by/i)).not.toBeInTheDocument()
   })
 })

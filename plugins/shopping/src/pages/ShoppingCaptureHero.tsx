@@ -1,13 +1,14 @@
-import { ChevronRight, Loader2, Mic } from 'lucide-react'
-import { CaptureField, PageContainer } from '@family-os/ui'
-import type { ShoppingList } from '../types'
+import { Loader2, Mic } from 'lucide-react'
+import { CaptureField } from '@family-os/ui'
 
-export interface WallPageViewProps {
+export interface ShoppingCaptureHeroProps {
   /** The last few things that landed, anywhere. Names only — never who added
       them (ADR 072 §4, withdrawn 2026-09-04). Ids because a house adds milk
       twice in a week and two chips must not collide. */
   justAdded: { id: string; name: string }[]
-  lists: ShoppingList[]
+  /** Everything waiting, everywhere. The per-destination split is not repeated
+      here — it lives one block down in the destination strip, where it is
+      tappable rather than merely stated. */
   openCount: number
   loading: boolean
   destination: string | null
@@ -16,20 +17,19 @@ export interface WallPageViewProps {
   draftAisle: string | null
   addError: string | null
   canAdd: boolean
-  onSeeLists: () => void
 }
 
-/* W2 (design.md §"The wall tablet", artifact frame W2). The wall ONLY takes
-   things in: no checking, no aisles, no shopping. One enormous input with a
-   short memory, read from six feet away — which is why every label here is a
-   distance token and the "Just added" strip is `section-label-lg`, not the
-   11px `section-label` the phone uses (design-system.md §Type scale).
+/* The top block of `/shopping` at tablet width and up (design.md §"The wide
+   layout", artifact frame W2). It is NOT a separate surface and it is not a
+   mode: the same route, the same data, the same list underneath — the field is
+   simply the size it should be on a screen you are standing in front of, and
+   the list follows it down the page exactly as it does on a phone.
 
-   W1 — this surface as the phone page at larger type — was drawn in the
-   artifact and rejected. Do not grow it back into a list. */
-export function WallPageView({
+   Read from across a room, so every label here is a distance token and the
+   strip label is `section-label-lg` rather than the 11px `section-label` a
+   phone uses (design-system.md §Type scale). */
+export function ShoppingCaptureHero({
   justAdded,
-  lists,
   openCount,
   loading,
   destination,
@@ -38,21 +38,22 @@ export function WallPageView({
   draftAisle,
   addError,
   canAdd,
-  onSeeLists,
-}: WallPageViewProps) {
+}: ShoppingCaptureHeroProps) {
   const composing = draftAisle !== null
 
   return (
-    <PageContainer width="full" className="flex h-full flex-col">
+    <div>
       <h1 className="text-display-xl text-foreground">What do we need?</h1>
 
       <CaptureField
         size="wall"
         className="mt-6"
-        // The one surface ADR 070 names for autofocus: somebody walked up to it
-        // in order to type, and any tap before the word loses to a notepad.
+        // Wide only (ADR 070): this is the screen someone walked up to in order
+        // to type, and any tap before the word loses to a notepad. The narrow
+        // layout does not focus — an unrequested keyboard on a route you opened
+        // to read is hostile.
         autoFocus
-        placeholder={destination ? `Type it, or say it` : 'Loading…'}
+        placeholder="Type it, or say it"
         label={destination ? `Add to ${destination}` : 'Add to the shopping list'}
         disabled={!canAdd || !destination}
         onValueChange={onDraftChange}
@@ -70,7 +71,7 @@ export function WallPageView({
           </p>
         ) : !canAdd ? (
           <p className="text-body px-1 text-muted-foreground">
-            Adding from this screen is turned off.
+            Adding to the list is turned off for this profile.
           </p>
         ) : composing ? (
           <p className="text-body px-1 text-muted-foreground">
@@ -100,37 +101,25 @@ export function WallPageView({
         </div>
       </div>
 
-      {/* The one way off this surface, and the only place the wall says how much
-          is waiting — a count is not a list, so it stays a sentence. */}
-      <div className="mt-auto flex flex-wrap items-center justify-between gap-3 border-t border-border pt-6">
+      {/* The seam between catching and shopping. It states the total and hands
+          off — no button, because the list it would send you to is the next
+          thing on the page. */}
+      <div className="mt-7 border-t border-border pt-5">
         {/* Never `0 things waiting` before the read lands — a count is a claim
-            about the house, and the wall is read from across the room by someone
-            who will not look twice. */}
+            about the house, read from across the room by someone who will not
+            look twice. */}
         <span className="text-body text-muted-foreground">
-          {loading
-            ? '\u00a0'
-            : [
-                `${openCount} thing${openCount === 1 ? '' : 's'} waiting`,
-                ...lists.map((l) => `${l.name} ${l.itemCount}`),
-              ].join(' · ')}
+          {loading ? ' ' : `${openCount} thing${openCount === 1 ? '' : 's'} waiting`}
         </span>
-        <button
-          type="button"
-          onClick={onSeeLists}
-          className="text-body flex h-touch cursor-pointer items-center gap-1.5 rounded-panel border border-border px-4 font-medium text-foreground"
-        >
-          See the lists
-          <ChevronRight size={20} aria-hidden />
-        </button>
       </div>
-    </PageContainer>
+    </div>
   )
 }
 
-/* Reserved, not implemented — voice is out of M5.5 scope (design.md §W2). The
-   slot exists so the affordance is designed into the field now rather than
-   bolted onto its edge later; it is disabled so nobody at the fridge taps it
-   and waits for something that will not happen. */
+/* Reserved, not implemented — voice is out of M5.5 scope (design.md). The slot
+   exists so the affordance is designed into the field now rather than bolted
+   onto its edge later; `aria-hidden` and no button role so nobody taps it and
+   waits for something that will not happen. */
 function HoldToSpeak() {
   return (
     <span

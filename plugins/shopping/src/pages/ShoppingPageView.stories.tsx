@@ -57,6 +57,9 @@ const meta: Meta<typeof ShoppingPageView> = {
     draftAisle: null,
     addError: null,
     canAdd: true,
+    layout: 'narrow',
+    justAdded: [],
+    totalOpenCount: 19,
   },
 }
 export default meta
@@ -106,4 +109,29 @@ export const Empty: Story = {
 
 export const AddFailed: Story = {
   args: { addError: 'tortillas' },
+}
+
+/* The SAME component at tablet width and up — one surface, two layouts, picked
+   by the viewport and never by a control (design.md). Capture is what you land
+   on; the aisle list is right underneath, reached by scrolling, exactly as it is
+   on a phone. Compare against artifact frame W2. */
+export const Wide: Story = {
+  args: {
+    layout: 'wide',
+    justAdded: [
+      { id: 'r1', name: 'snap peas' },
+      { id: 'r2', name: 'tortillas' },
+      { id: 'r3', name: 'milk' },
+      { id: 'r4', name: 'wood screws' },
+    ],
+  },
+}
+
+export const WideComposing: Story = {
+  args: { ...Wide.args, draftAisle: 'Pantry' },
+}
+
+/* Nobody has walked up to it today. The strip says so rather than sitting empty. */
+export const WideNothingYet: Story = {
+  args: { ...Wide.args, justAdded: [] },
 }
