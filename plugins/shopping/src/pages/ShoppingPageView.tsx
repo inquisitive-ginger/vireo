@@ -142,6 +142,10 @@ export function ShoppingPageView({
                     <span className="text-card-title block truncate text-foreground">
                       {item.name}
                     </span>
+                    {/* Producer words only ("for Thursday") — who added a thing
+                        is noise on a shared list (live review, 2026-09-03), so
+                        it is stored and never shown. Usually empty until the
+                        needs-push contract lands; that is correct, not a gap. */}
                     {item.note && (
                       <span className="text-sm-token block truncate text-muted-foreground">
                         {item.note}

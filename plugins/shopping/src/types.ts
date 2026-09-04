@@ -1,7 +1,8 @@
 import type { ShoppingAisle } from '@family-os/schemas'
 
-/** Serialized `shopping.items` row. `note` is the row's second line — text
-    facts only, never a hue or a face (ADR 064). */
+/** Serialized `shopping.items` row. `note` is the row's second line and carries
+    PRODUCER words only — why the row exists ("for Thursday"), never who added
+    it (live review, 2026-09-03). `addedBy` is stored but never serialized. */
 export interface ShoppingItem {
   id: string
   name: string

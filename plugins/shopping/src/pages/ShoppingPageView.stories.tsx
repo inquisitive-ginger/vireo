@@ -31,7 +31,7 @@ const meta: Meta<typeof ShoppingPageView> = {
       {
         aisle: 'Produce',
         items: [
-          item('1', 'snap peas', 'Produce', 'Emma added'),
+          item('1', 'snap peas', 'Produce', 'for Thursday'),
           item('2', 'bananas', 'Produce'),
           item('3', 'cilantro', 'Produce'),
         ],
@@ -64,6 +64,28 @@ export const AtRest: Story = {
 export const Typing: Story = {
   name: 'S2 — typing (the filing stated before the commit)',
   args: { draftAisle: 'Pantry' },
+}
+
+// A destination with no aisles of ours renders flat — one group, no headers.
+export const FlatList: Story = {
+  name: 'A list with no aisles of ours',
+  args: {
+    lists: [
+      { id: 'hardware', name: 'Hardware', kind: 'runtime', groupByAisle: false, itemCount: 3 },
+    ],
+    selectedListId: 'hardware',
+    groups: [
+      {
+        aisle: '',
+        items: [
+          item('h1', 'wood screws', 'Other'),
+          item('h2', 'painters tape', 'Other'),
+          item('h3', 'furnace filter', 'Other'),
+        ],
+      },
+    ],
+    openCount: 3,
+  },
 }
 
 export const Empty: Story = {

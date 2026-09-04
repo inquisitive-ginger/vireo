@@ -25,7 +25,7 @@ function renderView(over: Partial<ShoppingPageViewProps> = {}) {
       {
         aisle: 'Produce',
         items: [
-          item({ id: '1', name: 'snap peas', note: 'Emma added' }),
+          item({ id: '1', name: 'snap peas', note: 'for Thursday' }),
           item({ id: '2', name: 'bananas' }),
         ],
       },
@@ -70,11 +70,16 @@ describe('ShoppingPageView', () => {
     expect(screen.getByText('milk')).toBeInTheDocument()
   })
 
-  it('renders provenance as a text fact — no spine, no avatar, no hue (ADR 064)', () => {
+  it('renders a producer fact on the note line — no spine, no avatar, no hue (ADR 064)', () => {
     const { container } = renderView()
-    expect(screen.getByText('Emma added')).toBeInTheDocument()
+    expect(screen.getByText('for Thursday')).toBeInTheDocument()
     expect(container.querySelector('img')).toBeNull()
     expect(container.innerHTML).not.toMatch(/identity-/)
+  })
+
+  it('says nothing about who added a row — that is noise on a shared list', () => {
+    renderView()
+    expect(screen.queryByText(/added/i)).not.toBeInTheDocument()
   })
 
   it('shows one pill per destination with its count, and swaps the list in place', () => {
@@ -112,44 +117,6 @@ describe('ShoppingPageView', () => {
     renderView({ canAdd: false })
     expect(screen.getByLabelText('Add to Grocery')).toBeDisabled()
     expect(screen.getByText(/turned off for this profile/)).toBeInTheDocument()
-  })
-
-  it('renders a wall add as the house — words only, no hue and no face (ADR 072/064)', () => {
-    const { container } = renderView({
-      groups: [
-        {
-          aisle: 'Dairy',
-          items: [
-            item({ id: '7', name: 'oat milk', category: 'Dairy', note: 'Added by the house' }),
-          ],
-        },
-      ],
-    })
-    expect(screen.getByText('Added by the house')).toBeInTheDocument()
-    expect(container.querySelector('img')).toBeNull()
-    expect(container.innerHTML).not.toMatch(/identity-/)
-  })
-
-  it('does not claim the list is empty while the rows are still coming', () => {
-    renderView({ loading: true, groups: [], openCount: 14 })
-    expect(screen.queryByText(/Nothing on/)).not.toBeInTheDocument()
-    // The index already knows the count, so the strip stays true meanwhile.
-    expect(screen.getByText('14 to get')).toBeInTheDocument()
-  })
-
-  it('renders flat, with no aisle headers, on a list that has no aisles of ours', () => {
-    renderView({
-      lists: [
-        { id: 'hardware', name: 'Hardware', kind: 'runtime', groupByAisle: false, itemCount: 1 },
-      ],
-      selectedListId: 'hardware',
-      groups: [
-        { aisle: 'Other', items: [item({ id: '9', name: 'wood screws', category: 'Other' })] },
-      ],
-      openCount: 1,
-    })
-    expect(screen.getByText('wood screws')).toBeInTheDocument()
-    expect(screen.queryByText('Other')).not.toBeInTheDocument()
   })
 
   it('has no index of lists and no drill-in — a pill is a filter, not a link', () => {

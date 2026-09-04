@@ -1,7 +1,5 @@
 import fp from 'fastify-plugin'
 import type { FastifyPluginAsync } from 'fastify'
-import { prisma } from '@family-os/platform/server'
-import { FAMILY_PROFILE_ID } from '@family-os/platform/types'
 import { shoppingPrisma } from '@family-os/plugin-shopping/db'
 import { fileAisle, normalizeItemName, aisleSortIndex } from '@family-os/plugin-shopping/lib/filing'
 import {
@@ -13,21 +11,7 @@ import {
 type ItemRow = Awaited<ReturnType<typeof shoppingPrisma.item.create>>
 type ListRow = Awaited<ReturnType<typeof shoppingPrisma.list.create>>
 
-/** The row's second line — a text fact, never a hue or a face (ADR 064). A
-    producer-pushed item carries no meal lookup: `shopping` does not read
-    `planned_meals` (ADR 069 §3), so whoever pushes owes the words.
-
-    An add from the unattended wall is attributed to the house (ADR 072): it is a
-    place, not a person, so it gets words and never a name, a hue or a face — a
-    null `identityHue` here must not fall back to `resolveHue('Family')`, which
-    would hash the house into a real member's colour (ADR 044). */
-function noteFor(item: ItemRow, profileById: Map<string, { name: string }>): string | null {
-  if (item.addedBy === FAMILY_PROFILE_ID) return 'Added by the house'
-  const adder = profileById.get(item.addedBy)
-  return adder ? `${adder.name} added` : null
-}
-
-function serializeItem(item: ItemRow, note: string | null) {
+function serializeItem(item: ItemRow) {
   return {
     id: item.id,
     name: item.name,
@@ -36,25 +20,29 @@ function serializeItem(item: ItemRow, note: string | null) {
     status: item.status,
     listId: item.listId,
     addedAt: item.addedAt.toISOString(),
-    note,
+    // Who added a thing is noise on a shared list (live review, 2026-09-03) —
+    // `added_by` is still stored for permissions and audit, it just never
+    // renders. What survives here is WHY the row exists: a producer's words
+    // ("for Thursday"), which arrive with the needs-push contract in M5.5/3.
+    note: null as string | null,
   }
 }
 
-async function serializeItems(items: ItemRow[]) {
-  const adderIds = [...new Set(items.map((i) => i.addedBy))]
-  const adders = adderIds.length
-    ? await prisma.profile.findMany({ where: { id: { in: adderIds } } })
-    : []
-  const profileById = new Map(adders.map((p) => [p.id, p]))
-
+/** Walk order, then oldest first — but only where the list HAS a walk. A
+    destination with no aisles of ours (a hardware run) sorts by when things were
+    added, because sorting it by our grocery aisles would impose an order its
+    shopper cannot see. */
+function serializeItems(items: ItemRow[], groupByAisle: boolean) {
   return items
     .slice()
     .sort((a, b) => {
-      const byAisle = aisleSortIndex(a.category) - aisleSortIndex(b.category)
-      if (byAisle !== 0) return byAisle
+      if (groupByAisle) {
+        const byAisle = aisleSortIndex(a.category) - aisleSortIndex(b.category)
+        if (byAisle !== 0) return byAisle
+      }
       return a.addedAt.getTime() - b.addedAt.getTime()
     })
-    .map((item) => serializeItem(item, noteFor(item, profileById)))
+    .map(serializeItem)
 }
 
 function serializeList(list: ListRow, itemCount: number) {
@@ -161,7 +149,7 @@ const shoppingPlugin: FastifyPluginAsync = async (fastify) => {
     const overrides = await shoppingPrisma.aisleOverride.findMany()
     return {
       list: serializeList(list, open.length),
-      items: await serializeItems(items),
+      items: serializeItems(items, list.groupByAisle),
       overrides: Object.fromEntries(overrides.map((o) => [o.normalizedName, o.category])),
     }
   })
@@ -209,8 +197,7 @@ const shoppingPlugin: FastifyPluginAsync = async (fastify) => {
       addedBy: item.addedBy,
     })
 
-    const [serialized] = await serializeItems([item])
-    return reply.status(201).send(serialized)
+    return reply.status(201).send(serializeItem(item))
   })
 
   // POST /shopping/items/:id/aisle — a correction re-files this item AND
@@ -245,8 +232,7 @@ const shoppingPlugin: FastifyPluginAsync = async (fastify) => {
       }),
     ])
 
-    const [serialized] = await serializeItems([item])
-    return serialized
+    return serializeItem(item)
   })
 }
 

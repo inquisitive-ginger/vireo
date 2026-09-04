@@ -6,16 +6,16 @@ import type { ListResponse, ListsResponse, ShoppingItem } from '../types'
 import { aisleSortIndex, fileAisle, normalizeItemName } from '../lib/filing'
 import { ShoppingPageView, type AisleGroup } from './ShoppingPageView'
 
-// The row's second line says "just now" while the add is still the thing you
-// are looking at — the window someone is standing in an aisle watching a phone.
-const JUST_NOW_MS = 5 * 60 * 1000
-
 function json<T>(res: Response): Promise<T> {
   if (!res.ok) throw new Error(String(res.status))
   return res.json() as Promise<T>
 }
 
-function groupByAisle(items: ShoppingItem[]): AisleGroup[] {
+/** One group per aisle, in walk order. A list with no aisles of ours is ONE
+    group in the order the server sent — regrouping it by category would reorder
+    a flat list behind the shopper's back. */
+function toGroups(items: ShoppingItem[], groupByAisle: boolean): AisleGroup[] {
+  if (!groupByAisle) return items.length ? [{ aisle: '', items }] : []
   const groups: AisleGroup[] = []
   for (const item of items) {
     const last = groups[groups.length - 1]
@@ -63,21 +63,9 @@ export function ShoppingPage() {
     [listQuery.data]
   )
 
-  const now = Date.now()
   const groups = useMemo(
-    () =>
-      groupByAisle(
-        openItems.map((item) =>
-          item.note && now - new Date(item.addedAt).getTime() < JUST_NOW_MS
-            ? { ...item, note: `${item.note} · just now` }
-            : item
-        )
-      ),
-    // `now` is read once per render on purpose — the suffix is cosmetic and
-    // settles itself on the next refetch; a ticking timer would re-render the
-    // whole list every second in someone's hand.
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-    [openItems]
+    () => toGroups(openItems, selected?.groupByAisle ?? true),
+    [openItems, selected]
   )
 
   // The echo has to state the aisle the SERVER will pick, so it reads the

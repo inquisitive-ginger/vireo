@@ -68,7 +68,10 @@ ALTER TABLE "shopping"."items" ADD CONSTRAINT "items_list_id_fkey" FOREIGN KEY (
 -- The two permanent destinations the surface opens on. Permanent lists stay
 -- visible and dim at zero; a runtime one is created at tier 4 and vanishes when
 -- it empties. Sort order is the destination strip's order.
+-- Aisle grouping is a property of the LIST (live review, 2026-09-03): the walk
+-- order is real in a grocery store and meaningless in a warehouse club, so
+-- Costco renders flat.
 INSERT INTO "shopping"."lists" ("id", "name", "kind", "group_by_aisle", "sort_order")
 VALUES
   (gen_random_uuid(), 'Grocery', 'permanent', true, 0),
-  (gen_random_uuid(), 'Costco', 'permanent', true, 1);
+  (gen_random_uuid(), 'Costco', 'permanent', false, 1);

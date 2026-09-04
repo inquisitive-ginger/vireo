@@ -212,7 +212,17 @@ describe('POST /api/shopping/lists/:id/items', () => {
     const cookie = await getCookieForProfile(KID_ID)
     const res = await addItem(cookie, await groceryListId(), { name: 'snap peas' })
     expect(res.statusCode).toBe(201)
-    expect(res.json().note).toBe('Emma added')
+    // Stored for permissions and audit; never rendered (live review, 2026-09-03).
+    const stored = await shoppingPrisma.item.findUnique({ where: { id: res.json().id } })
+    expect(stored?.addedBy).toBe(KID_ID)
+    expect(res.json().note).toBeNull()
+  })
+
+  it('never puts who-added on the wire — a shared list does not answer that question', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const res = await addItem(cookie, await groceryListId(), { name: 'milk' })
+    expect(res.json()).not.toHaveProperty('addedBy')
+    expect(res.json().note).toBeNull()
   })
 
   // ADR 072. This is the assertion that stops someone reinstating a uuid column:
@@ -225,12 +235,6 @@ describe('POST /api/shopping/lists/:id/items', () => {
 
     const stored = await shoppingPrisma.item.findUnique({ where: { id: res.json().id } })
     expect(stored?.addedBy).toBe(FAMILY_PROFILE_ID)
-  })
-
-  it('attributes a wall add to the house — a place, not a person', async () => {
-    const cookie = await getCookieForProfile(FAMILY_PROFILE_ID)
-    const res = await addItem(cookie, await groceryListId(), { name: 'oat milk' })
-    expect(res.json().note).toBe('Added by the house')
   })
 
   it('emits one event for a wall add, distinguished by addedBy rather than a second name', async () => {
