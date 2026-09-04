@@ -10,6 +10,7 @@ export default defineConfig({
       filename: 'remoteEntry.js',
       exposes: {
         './Plugin': './src/Plugin.tsx',
+        './widgets/Capture': './src/widgets/CaptureWidget.tsx',
       },
       shared: {
         react: { singleton: true, requiredVersion: '^19.0.0' },

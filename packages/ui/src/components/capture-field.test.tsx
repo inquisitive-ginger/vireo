@@ -66,8 +66,48 @@ describe('CaptureField', () => {
     expect(screen.getByRole('button', { name: 'Grocery' })).toBeInTheDocument()
   })
 
-  it('does not autofocus unless the surface asks — an unrequested keyboard is a surface decision (ADR 070)', () => {
+  /* ADR 070, amended 2026-09-04: NO surface autofocuses, and there is no prop
+     to ask. The three tests below are the record of why that is not merely a
+     default — the two mechanisms cost a live-shell session to find, and both
+     are invisible to a test that mounts this component directly. */
+
+  it('never claims focus on mount — no surface autofocuses (ADR 070, amended)', () => {
     render(<CaptureField onSubmit={vi.fn()} placeholder="Add to Grocery" label="Add to Grocery" />)
+    expect(screen.getByLabelText('Add to Grocery')).not.toHaveFocus()
+  })
+
+  it("offers no way to ask for focus — the decision is not a call site's to make", () => {
+    render(
+      <CaptureField
+        onSubmit={vi.fn()}
+        placeholder="Add to Grocery"
+        label="Add to Grocery"
+        // A prop nobody may set is a trap, so there is no prop: TypeScript
+        // rejects `autoFocus` at every call site. Forced through at runtime it
+        // still does nothing, which is what this asserts. If autofocus ever
+        // returns it comes back through the ADR, not through a call site.
+        {...({ autoFocus: true } as Record<string, unknown>)}
+      />
+    )
+    expect(screen.getByLabelText('Add to Grocery')).not.toHaveFocus()
+  })
+
+  it('stays unfocused when a disabled field becomes usable', () => {
+    // The second mechanism, kept because it is the one that made the first look
+    // fixed when it was not: this field mounts DISABLED while its first read is
+    // in flight, and focusing a disabled input is a silent no-op — so an
+    // autofocus that "works" in a unit test can still focus nothing in the app.
+    const { rerender } = render(
+      <CaptureField
+        onSubmit={vi.fn()}
+        placeholder="Add to Grocery"
+        label="Add to Grocery"
+        disabled
+      />
+    )
+    rerender(
+      <CaptureField onSubmit={vi.fn()} placeholder="Add to Grocery" label="Add to Grocery" />
+    )
     expect(screen.getByLabelText('Add to Grocery')).not.toHaveFocus()
   })
 })

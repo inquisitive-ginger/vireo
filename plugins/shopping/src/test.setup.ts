@@ -19,3 +19,7 @@ window.matchMedia ??= ((query: string) => ({
   removeListener() {},
   dispatchEvent: () => false,
 })) as unknown as typeof window.matchMedia
+
+// jsdom implements no scrolling at all, so `scrollIntoView` is simply absent —
+// the wide layout calls it when `Show lists` reveals content below the fold.
+HTMLElement.prototype.scrollIntoView ??= function scrollIntoView() {}

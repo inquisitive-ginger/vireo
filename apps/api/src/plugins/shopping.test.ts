@@ -317,6 +317,153 @@ describe('GET /api/shopping/lists/:id', () => {
   })
 })
 
+// ─── DELETE /api/shopping/items/:id ───────────────────────────────────────────
+
+describe('DELETE /api/shopping/items/:id', () => {
+  it('takes the item off the list entirely — not the same as checking it off', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const item = await addItem(cookie, await groceryListId(), { name: 'mikk' })
+
+    const res = await app.inject({
+      method: 'DELETE',
+      url: `/api/shopping/items/${item.json().id}`,
+      headers: { cookie },
+    })
+    expect(res.statusCode).toBe(204)
+    expect(await shoppingPrisma.item.findUnique({ where: { id: item.json().id } })).toBeNull()
+  })
+
+  it('refuses a kid, who can add but not remove — `manage` is tier 4 (ADR 071)', async () => {
+    const parent = await getCookieForProfile(PARENT_ID)
+    const item = await addItem(parent, await groceryListId(), { name: 'snap peas' })
+
+    const kid = await getCookieForProfile(KID_ID)
+    const res = await app.inject({
+      method: 'DELETE',
+      url: `/api/shopping/items/${item.json().id}`,
+      headers: { cookie: kid },
+    })
+    expect(res.statusCode).toBe(403)
+    expect(await shoppingPrisma.item.findUnique({ where: { id: item.json().id } })).not.toBeNull()
+  })
+
+  it('refuses the unattended wall for the same reason — it adds as tier 1', async () => {
+    const parent = await getCookieForProfile(PARENT_ID)
+    const item = await addItem(parent, await groceryListId(), { name: 'oat milk' })
+
+    const family = await getCookieForProfile(FAMILY_PROFILE_ID)
+    const res = await app.inject({
+      method: 'DELETE',
+      url: `/api/shopping/items/${item.json().id}`,
+      headers: { cookie: family },
+    })
+    expect(res.statusCode).toBe(403)
+  })
+
+  it('announces the removal, which it did not before ADR 073 — a live staleness bug', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const item = await addItem(cookie, await groceryListId(), { name: 'ice cream' })
+
+    const seen: Record<string, unknown>[] = []
+    app.eventBus.on('shopping.item.removed', (p) => seen.push(p as Record<string, unknown>))
+    await app.inject({
+      method: 'DELETE',
+      url: `/api/shopping/items/${item.json().id}`,
+      headers: { cookie },
+    })
+
+    // Same event as a retract — gone is gone; `reason` is what tells them apart.
+    expect(seen).toHaveLength(1)
+    expect(seen[0]).toMatchObject({ name: 'ice cream', reason: 'managed' })
+  })
+
+  it('404s on an unknown item', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const res = await app.inject({
+      method: 'DELETE',
+      url: '/api/shopping/items/00000000-0000-4000-8000-000000000000',
+      headers: { cookie },
+    })
+    expect(res.statusCode).toBe(404)
+  })
+})
+
+// ─── GET /api/shopping/recent ─────────────────────────────────────────────────
+
+describe('GET /api/shopping/recent', () => {
+  it('returns newest first across every list, not walk order', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const listId = await groceryListId()
+    await addItem(cookie, listId, { name: 'bananas' }) // Produce, first in the walk
+    await addItem(cookie, listId, { name: 'milk' })
+    await addItem(cookie, listId, { name: 'ice cream' })
+
+    const res = await app.inject({
+      method: 'GET',
+      url: '/api/shopping/recent',
+      headers: { cookie },
+    })
+    expect(res.json().items.map((i: { name: string }) => i.name)).toEqual([
+      'ice cream',
+      'milk',
+      'bananas',
+    ])
+  })
+
+  it("names each row's destination, since the wall and the widget span every list", async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    await addItem(cookie, await groceryListId(), { name: 'milk' })
+
+    const res = await app.inject({
+      method: 'GET',
+      url: '/api/shopping/recent',
+      headers: { cookie },
+    })
+    expect(res.json().items[0]).toMatchObject({ name: 'milk', listName: 'Grocery' })
+  })
+
+  it("carries the counts the wall's strip reads, so it is one round trip", async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const listId = await groceryListId()
+    await addItem(cookie, listId, { name: 'milk' })
+    await addItem(cookie, listId, { name: 'bananas' })
+
+    const res = await app.inject({
+      method: 'GET',
+      url: '/api/shopping/recent',
+      headers: { cookie },
+    })
+    const grocery = res.json().lists.find((l: { id: string }) => l.id === listId)
+    expect(grocery).toMatchObject({ name: 'Grocery', itemCount: 2 })
+  })
+
+  it('forgets what is already in the cart — it is what is waiting, not an audit trail', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const listId = await groceryListId()
+    const item = await addItem(cookie, listId, { name: 'milk' })
+    await shoppingPrisma.item.update({ where: { id: item.json().id }, data: { status: 'got' } })
+
+    const res = await app.inject({
+      method: 'GET',
+      url: '/api/shopping/recent',
+      headers: { cookie },
+    })
+    expect(res.json().items).toHaveLength(0)
+  })
+
+  it('never puts who-added on the wire here either', async () => {
+    const cookie = await getCookieForProfile(FAMILY_PROFILE_ID)
+    await addItem(cookie, await groceryListId(), { name: 'oat milk' })
+
+    const res = await app.inject({
+      method: 'GET',
+      url: '/api/shopping/recent',
+      headers: { cookie },
+    })
+    expect(res.json().items[0]).not.toHaveProperty('addedBy')
+  })
+})
+
 // ─── POST /api/shopping/items/:id/aisle ───────────────────────────────────────
 
 describe('POST /api/shopping/items/:id/aisle', () => {
@@ -520,16 +667,111 @@ describe('meals.needs.pushed', () => {
   })
 })
 
+// ─── POST /api/shopping/items/:id/retract ─────────────────────────────────────
+
+describe('POST /api/shopping/items/:id/retract', () => {
+  async function ageItem(id: string, minutes: number) {
+    await shoppingPrisma.item.update({
+      where: { id },
+      data: { addedAt: new Date(Date.now() - minutes * 60 * 1000) },
+    })
+  }
+
+  function retract(cookie: string, id: string) {
+    return app.inject({
+      method: 'POST',
+      url: `/api/shopping/items/${id}/retract`,
+      headers: { cookie },
+    })
+  }
+
+  it('lets a kid take back their own add — tier 1, not the delete verb', async () => {
+    const cookie = await getCookieForProfile(KID_ID)
+    const item = await addItem(cookie, await groceryListId(), { name: 'mikk' })
+
+    const res = await retract(cookie, item.json().id)
+    expect(res.statusCode).toBe(204)
+    expect(await shoppingPrisma.item.findUnique({ where: { id: item.json().id } })).toBeNull()
+  })
+
+  it("refuses a sibling's add — `yours` is a row condition, not a tier", async () => {
+    const teen = await getCookieForProfile(TEEN_ID)
+    const item = await addItem(teen, await groceryListId(), { name: 'snap peas' })
+
+    const kid = await getCookieForProfile(KID_ID)
+    const res = await retract(kid, item.json().id)
+    expect(res.statusCode).toBe(403)
+    expect(await shoppingPrisma.item.findUnique({ where: { id: item.json().id } })).not.toBeNull()
+  })
+
+  // ADR 073 §3 — everyone at the wall is `family`, so scope dissolves there ON
+  // PURPOSE. Refusing it would leave the one surface never logged in as the one
+  // that can never undo.
+  it('lets anyone at the wall take back what the wall added', async () => {
+    const cookie = await getCookieForProfile(FAMILY_PROFILE_ID)
+    const item = await addItem(cookie, await groceryListId(), { name: 'oat milk' })
+
+    expect((await retract(cookie, item.json().id)).statusCode).toBe(204)
+  })
+
+  it('does not let the wall take back what a phone added', async () => {
+    const parent = await getCookieForProfile(PARENT_ID)
+    const item = await addItem(parent, await groceryListId(), { name: 'milk' })
+
+    const family = await getCookieForProfile(FAMILY_PROFILE_ID)
+    expect((await retract(family, item.json().id)).statusCode).toBe(403)
+  })
+
+  it('refuses past the window, and says which of the two refusals it is', async () => {
+    const cookie = await getCookieForProfile(KID_ID)
+    const item = await addItem(cookie, await groceryListId(), { name: 'bananas' })
+    await ageItem(item.json().id, 16)
+
+    const res = await retract(cookie, item.json().id)
+    expect(res.statusCode).toBe(403)
+    // The client has to SHOW this, so the two 403s must be distinguishable.
+    expect(res.json().error).toMatch(/too old/i)
+    expect(await shoppingPrisma.item.findUnique({ where: { id: item.json().id } })).not.toBeNull()
+  })
+
+  it('still allows it just inside the window', async () => {
+    const cookie = await getCookieForProfile(KID_ID)
+    const item = await addItem(cookie, await groceryListId(), { name: 'cilantro' })
+    await ageItem(item.json().id, 14)
+
+    expect((await retract(cookie, item.json().id)).statusCode).toBe(204)
+  })
+
+  it('emits one removal event carrying the name, since the row is gone after', async () => {
+    const cookie = await getCookieForProfile(KID_ID)
+    const item = await addItem(cookie, await groceryListId(), { name: 'tortillas' })
+
+    const seen: Record<string, unknown>[] = []
+    app.eventBus.on('shopping.item.removed', (p) => seen.push(p as Record<string, unknown>))
+    await retract(cookie, item.json().id)
+
+    expect(seen).toHaveLength(1)
+    expect(seen[0]).toMatchObject({ name: 'tortillas', by: KID_ID, reason: 'retracted' })
+  })
+
+  it('404s on an unknown item', async () => {
+    const cookie = await getCookieForProfile(KID_ID)
+    const res = await retract(cookie, '00000000-0000-4000-8000-000000000000')
+    expect(res.statusCode).toBe(404)
+  })
+})
+
 // ─── The permission namespace (ADR 069 §3, spec.md) ───────────────────────────
 
 describe('shopping permission registry', () => {
-  it('registers exactly the six keys ADR 071 completed', () => {
+  it('registers exactly the seven keys ADR 071 completed and ADR 073 extended', () => {
     expect(Object.keys(PERMISSION_REGISTRY).filter((k) => k.startsWith('shopping.'))).toEqual([
       'shopping.list.create',
       'shopping.item.view',
       'shopping.item.add',
       'shopping.item.check',
       'shopping.item.file',
+      'shopping.item.retract',
       'shopping.item.manage',
     ])
   })

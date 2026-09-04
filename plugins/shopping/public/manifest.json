@@ -2,14 +2,25 @@
   "name": "shopping",
   "version": "0.0.1",
   "remoteEntry": "http://localhost:3016/assets/remoteEntry.js",
-  "exposes": ["./Plugin"],
-  "routes": ["/shopping"],
+  "exposes": ["./Plugin", "./widgets/Capture"],
+  "routes": ["/shopping", "/shopping/lists"],
   "schema": "shopping",
   "events": {
-    "publishes": ["shopping.item.added", "shopping.list.created"],
+    "publishes": ["shopping.item.added", "shopping.item.removed", "shopping.list.created"],
     "subscribes": ["meals.needs.pushed"]
   },
-  "widgets": [],
+  "widgets": [
+    {
+      "id": "shopping.capture",
+      "displayName": "Shopping",
+      "component": "./widgets/Capture",
+      "defaultSize": "standard",
+      "supportedSizes": ["compact", "standard", "large"],
+      "minTier": 1,
+      "requiredPermission": "shopping.item.view",
+      "description": "Add to the list without leaving the dashboard, and what is waiting."
+    }
+  ],
   "navItem": {
     "label": "Shopping",
     "route": "/shopping",

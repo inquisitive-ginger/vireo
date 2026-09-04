@@ -8,8 +8,8 @@
 > Prior: 2026-08-20 — ADR 063 (ListRow), ADR 064 (identity-hue trigger narrowed); 2026-07-28 — ADR 057, daily time-window recurrence
 > ([Daily time-window series](#daily-time-window-series--a-condition-with-a-clock-settled--2026-07-28));
 > 2026-07-24 — ADR 054, currency named Pritchett Bucks
-> ([Currency marks](#currency-marks)); 2026-07-22 — ADR 051, gold and coin to
-> P-Bucks ([Currency marks](#currency-marks)); 2026-07-12 — ADR 044, hues
+> ([Currency marks](modules/rewards/design.md#currency-marks)); 2026-07-22 — ADR 051, gold and coin to
+> P-Bucks ([Currency marks](modules/rewards/design.md#currency-marks)); 2026-07-12 — ADR 044, hues
 > assigned, unique, never the sole channel
 > ([Member identity palette](#member-identity-palette)).
 
@@ -39,8 +39,7 @@ explicitly marked — do not treat absence of a spec as a free choice.
 - [Mobile Surface](#mobile-surface)
 - [Status vs identity colour](#status-vs-identity-colour)
 - [Page containers](#page-containers)
-- [Currency marks](#currency-marks)
-- [Rewards surfaces](#rewards-surfaces)
+- Rewards surfaces + currency marks → [`docs/modules/rewards/design.md`](modules/rewards/design.md)
 - [To Be Defined](#to-be-defined)
 
 ---
@@ -116,31 +115,39 @@ Major second ratio (1.125), base 16px. 11 tokens.
 
 The rule used to name **widgets** as the across-the-room category, which was too broad: a widget is a _container_, not a distance. The same `calendar.up-next` tile is read at arm's length on a parent's laptop and from six feet away on the kitchen wall — so the floor belongs to the surface it's rendered on, not the tile. At desk distance 14px `base` is the right size for an event title, and forcing 18px there costs rows without buying legibility.
 
+**Structural labels have their own floor, and it is not 18px (settled — 2026-09-04, M5.5/5).** The distance rule above floors _primary content_; it used to say nothing about the labels that name it, which is why `section-label` at 11px went to the wall tablet unreadable at six feet while the rows beside it cleared 18px. The answer is a distance variant, `section-label-lg` — **not** promotion to `heading`:
+
+- **The family is the meaning.** Uppercase, 700, 0.1em tracked, muted — that is what says _this names a group, it is not part of one_. `heading` is sentence-case content type; a label promoted to it stops reading as structure and starts competing with the surface's actual subject. On the wall, `Just added` at `heading` would sit one step under `What do we need?` and read as a second question.
+- **14px, because optical size is what the distance floor is really about.** All-caps has no descenders and no x-height gap — cap height is the whole glyph — so uppercase 700 at 0.1em reads roughly one step larger than its px suggests: 14px here carries the optical size of 18px lowercase regular. Taking labels to a literal 18px would size them level with the content they subordinate, which inverts the hierarchy the token exists to state.
+- **Where it applies:** any surface under the across-the-room rule — the wall tablet, the family pseudo-profile, an always-on ambient screen. `section-label` stays 11px everywhere you are holding or sitting at. A component does not choose between them; the **surface** does, the same way autofocus does (§Capture primitives).
+
 **This does not soften the wall tablet.** If anything it sharpens it: the family-profile surface is now the _named_ place the 18px floor applies, rather than one instance of a vaguer rule (see [Tablet — Primary Hub](#tablet--primary-hub)). A widget that renders on both surfaces should scale its type with its prominence — which is what [Widget prominence](#widget-prominence) already gives it.
 
 All tokens are defined as CSS utilities in `packages/ui/src/styles.css` and are available as Tailwind classes throughout the codebase. Use the utility name — never raw pixel values.
 
-| Token           | Utility class        | px  | Weight | Line-height | Tracking | Font                       |
-| --------------- | -------------------- | --- | ------ | ----------- | -------- | -------------------------- |
-| `xs`            | `text-xs-token`      | 10  | 600    | 1.4         | 0        | DM Sans                    |
-| `xs-body`       | `text-xs-body`       | 11  | 400    | 1.4         | 0        | DM Sans                    |
-| `section-label` | `text-section-label` | 11  | 700    | 1.4         | 0.1em    | DM Sans · always uppercase |
-| `sm`            | `text-sm-token`      | 13  | 400    | 1.5         | 0        | DM Sans                    |
-| `base`          | `text-base-token`    | 14  | 400    | 1.5         | 0        | DM Sans                    |
-| `prose-sm`      | `text-prose-sm`      | 15  | 400    | 1.5         | 0        | **Lora**                   |
-| `card-title`    | `text-card-title`    | 16  | 600    | 1.3         | 0        | DM Sans                    |
-| `body`          | `text-body`          | 18  | 400    | 1.6         | 0        | DM Sans                    |
-| `prose`         | `text-prose`         | 18  | 400    | 1.65        | 0        | **Lora**                   |
-| `heading`       | `text-heading`       | 20  | 600    | 1.2         | −0.01em  | DM Sans                    |
-| `page-title`    | `text-page-title`    | 26  | 600    | 1.2         | −0.02em  | **Lora**                   |
-| `display-lg`    | `text-display-lg`    | 29  | 600    | 1.2         | −0.01em  | **Lora**                   |
-| `metric`        | `text-metric`        | 32  | 700    | 1.0         | −0.01em  | DM Sans                    |
-| `display-xl`    | `text-display-xl`    | 36  | 400    | 1.15        | −0.01em  | **Lora**                   |
+| Token              | Utility class           | px  | Weight | Line-height | Tracking | Font                       |
+| ------------------ | ----------------------- | --- | ------ | ----------- | -------- | -------------------------- |
+| `xs`               | `text-xs-token`         | 10  | 600    | 1.4         | 0        | DM Sans                    |
+| `xs-body`          | `text-xs-body`          | 11  | 400    | 1.4         | 0        | DM Sans                    |
+| `section-label`    | `text-section-label`    | 11  | 700    | 1.4         | 0.1em    | DM Sans · always uppercase |
+| `section-label-lg` | `text-section-label-lg` | 14  | 700    | 1.4         | 0.1em    | DM Sans · always uppercase |
+| `sm`               | `text-sm-token`         | 13  | 400    | 1.5         | 0        | DM Sans                    |
+| `base`             | `text-base-token`       | 14  | 400    | 1.5         | 0        | DM Sans                    |
+| `prose-sm`         | `text-prose-sm`         | 15  | 400    | 1.5         | 0        | **Lora**                   |
+| `card-title`       | `text-card-title`       | 16  | 600    | 1.3         | 0        | DM Sans                    |
+| `body`             | `text-body`             | 18  | 400    | 1.6         | 0        | DM Sans                    |
+| `prose`            | `text-prose`            | 18  | 400    | 1.65        | 0        | **Lora**                   |
+| `heading`          | `text-heading`          | 20  | 600    | 1.2         | −0.01em  | DM Sans                    |
+| `page-title`       | `text-page-title`       | 26  | 600    | 1.2         | −0.02em  | **Lora**                   |
+| `display-lg`       | `text-display-lg`       | 29  | 600    | 1.2         | −0.01em  | **Lora**                   |
+| `metric`           | `text-metric`           | 32  | 700    | 1.0         | −0.01em  | DM Sans                    |
+| `display-xl`       | `text-display-xl`       | 36  | 400    | 1.15        | −0.01em  | **Lora**                   |
 
 **Usage notes:**
 
 - `xs-body` — smallest regular-weight text: placeholder/error-card descriptions, tier pills, meta captions (added 2026-07-10 audit — the settled placeholder/error anatomies specified 11px/400 with no token to express it)
 - `section-label` — `--muted-foreground` by default; `--accent` when naming a module surface (widget identity headers, feed day markers); uppercase is baked into the utility
+- `section-label-lg` — the same label at across-the-room distance (the wall). Same family, one size step that clears six feet; never mix the two on one surface
 - `prose` — user-authored content only (feed posts, notes, messages). The family's own words get the warmth of the display face; text _about_ the UI never does. Same 18px viewing-distance floor as `body`
 - `prose-sm` — the family voice at 15px for **dense** contexts (multi-post feed widget rows) where 18px crowds. Same Lora face; use `prose` on roomy surfaces (feed page, across-room banner). Not for UI chrome
 - `page-title` — one per route; renders in Lora
@@ -1171,10 +1178,12 @@ whole claim is speed is not a place a person is displayed.
 | Controls  | Cancel + a submit button         | Enter; no Cancel                                        |
 | Height    | `--shadow-raised` panel          | 48 px inline · 56 px as a page hero · 76 px on the wall |
 
-**Autofocus is a surface decision, not a prop default.** Focus it on an ambient surface
-someone walked up to in order to type (the wall) and inside a widget; do **not** focus it
-on a route the user navigated to, where an unrequested keyboard covers the content they
-opened it to read.
+**Nothing autofocuses** (ADR 070, amended 2026-09-04 — this replaces the earlier
+"autofocus is a surface decision" rule, whose two yes-cases both turned out to be
+no-cases). `CaptureField` has no prop to ask: a widget claiming focus scrolled a stacked
+phone dashboard 1272 px to a tile nobody asked for, and the same widget on the family
+profile made an always-on kitchen display hold the keyboard. **A screen left on in a room
+is not a screen someone walked up to.**
 
 **State the filing before the commit.** Where a capture files what it catches somewhere
 derived (shopping's aisle), say so in one `sm` line under the field while composing —
@@ -1820,7 +1829,7 @@ Gold belongs to **P-Bucks** — the currency that buys things. It renders as the
 struck brass coin — the shared `Coin` / `CoinValue` components (`@family-os/ui`)
 on the `--coin-*` tokens (light + dark) — kept well clear of error-red so a
 reward never reads as an alarm. Anatomy, brass values and the four registers:
-[Currency marks](#currency-marks).
+[Currency marks](modules/rewards/design.md#currency-marks).
 
 **Rules:**
 
@@ -1925,172 +1934,6 @@ gutter does it on a **child**, not by renegotiating the page frame.
 > stock `max-w-2xl` (672px — 8px off our token) _without_ `mx-auto`, so it silently
 > hugged the left edge while every sibling route sat centred.** None of that was
 > decided. Compose `PageContainer`; do not hand-roll `mx-auto max-w-… px-…`.
-
-## Currency marks
-
-**Settled** — ADR 051 (2026-07-22) and ADR 054 (2026-07-24).
-
-Two currencies appear on the same row (a paying chore shows both), so they are told
-apart by **metaphor**, not by shade.
-
-| Currency            | Mark                                                   | Meaning                     |
-| ------------------- | ------------------------------------------------------ | --------------------------- |
-| **Pritchett Bucks** | A struck **brass coin** bearing the P-mark + the value | Money. Goes up and down.    |
-| **XP**              | A **quiet star** + the value, in `--muted-foreground`  | A score. Only ever goes up. |
-
-### The four registers
-
-Each exists because a medium ruled the others out. Pick one by **naming it** — the
-exports in `packages/ui/src/lib/currency.ts` — never by typing two characters.
-
-| Register              | Where                                                                 |
-| --------------------- | --------------------------------------------------------------------- |
-| The struck mark       | the coin face — anywhere a value renders with its coin                |
-| **`P$`**              | compact text beside a number: chips, buttons, prose, the ledger       |
-| **`P-Bucks`**         | any sentence a person reads or **hears** — push, toasts, `aria-label` |
-| **`Pritchett Bucks`** | the wallet hero, settings, first use — where the name is taught once  |
-
-**A coin beside a value means the text is the amount alone** — `[◉] 10`, never
-`[◉] 10 P$`. The coin states the unit, and the chore row is the tightest surface in the
-app. **A value inside a sentence is the exception**: a sentence has to name what it
-counts, so the held chip reads `[◉] 10 P$ when Mom or Dad checks` and the declined chip
-reads `No P$ this time`. The coin is decorative either way, so every such chip pairs an
-`aria-hidden` rendering with an `sr-only` one spelling `P-Bucks`.
-
-**XP kept its pill shape and gave up its metal.** It held gold, the disc and the coin
-glyph from M2 — assigned when nothing was spendable and the conflict could not appear.
-A score is a fact about you; money is a thing you hold.
-
-### Coin anatomy
-
-The coin's gold is **brass, not marigold**: `hi oklch(0.95 0.09 96)` ·
-`base oklch(0.79 0.155 90)` · `deep oklch(0.55 0.125 74)` · `tint oklch(0.96 0.05 95)` ·
-`ink oklch(0.44 0.105 78)`. The old XP gold sat at hue 80 against
-`--identity-marigold`'s 78 — the same colour saying two different things.
-
-**It is ONE disc**, built from a single element:
-
-- a radial face (light at 34%/28%, deepening to the edge),
-- an outer **rim** — a conic metallic sweep masked to the outer ~9% of the same circle,
-- a **specular gloss** crossing the face,
-- a **raised relief** ring just inside the rim,
-- the **P-mark** struck at **66%** of the diameter, stroke **2.5**.
-
-Two things it is **not**, both tried and rejected on sight: a smaller disc nested inside
-a ring (the pale step between them reads as a **washer**), and radial notches (milling
-reads as a **gear** — machinery, not money). Relief holds down to 18px, so the row mark
-and the 64px celebration coin are the same object at different sizes.
-
-**The mark's weight is set by where its counters close.** The bowl's arms run y=4→12 and
-the bar crosses at y=8, so each counter is **(4 − stroke)** units tall. At a 0.66 share on
-a **16px coin every weight closes** — the mark is a **silhouette, not a letter**, which is
-what a struck coin looks like from across a kitchen. Weight is therefore decided at 26px
-and up, where **2.5 is the heaviest that still holds an open counter at 44px**. The mark
-also needs **no centring transform**: its bowl arc is a semicircle bulging right to x=18,
-so extents are 5→19 and the centre is exactly 12.
-
-**The separation from a member's identity hue is form, not colour** (ADR 044's second
-channel). A spine is a flat 4px bar; it can never be struck metal. That is what allows
-brass to sit two millimetres from a marigold-spined row without the colour meaning two
-things at once.
-
-**Rendered hierarchy check.** XP is always the larger number (1,240 vs 24) and gold puts
-the smaller one on top. That is the true reading — the small number is the one that can
-be spent — and any future currency treatment has to preserve it.
-
----
-
-## Rewards surfaces
-
-The kid surfaces are the **ticket system** (ADR 055, gated 2026-07-26 on the rework
-artifact): a redemption is a ticket — buy → own → explicit use. The wallet widget
-(M4/5c, 2026-07-26) and punch card (M4/6, 2026-08-01) are both shipped — the punch
-card's settled anatomy is [Punch card — the stamp wall](#punch-card--the-stamp-wall).
-
-### The ticket
-
-One anatomy renders the store, the pocket, and the loading skeleton (`TicketFrame`): a
-**perforated stub** (2px dashed brass) beside the body — emoji, name, **description**.
-The stub carries the **cost** in the store (coin + numeral) and the **emoji** once
-owned: it's paid for; the price is history.
-
-- **The notches are die-cut, not drawn** — a mask punches real holes through the card
-  (border, wash and all) and the shadow is a `drop-shadow` recomputed off the cut
-  silhouette, so nothing can extend past an edge at any width.
-- **Affordable = a brass-warmed border, no wash.** The two-shelf split already carries
-  affordability (only reachable tickets sit under "Get it now"), so a fill would restate
-  it; the money-warmth lives in the border, the coin, and the stub numeral. Never the
-  green success edge — affordability is a fact of the wallet, not a status of the
-  reward.
-- **Ask-first = a quiet corner seal** (`AskSeal` + "ask to use") — informational, never
-  a gate. The seal means "you'll ask when you **use** it"; buying is always allowed.
-- Out-of-reach rewards stay calm rows in full colour with quiet `N more P$` text —
-  **distance, not denial** — under "Almost there", two-up at `md:`. **No meter and no
-  pill on the shelf**: a balance-fed bar drops on every spend, taxing every goal at
-  once, and a distance is not a collectible (the chip rule). The meter survives where
-  it answers a one-time "how close?" — the nudge modal and the wallet widget's
-  next-up line.
-
-**At width, a store ticket is a unit off THE ROLL** (gated 2026-07-26 addendum): the
-live ticket keeps a fixed 430px — the tap target never stretches — and the rest of the
-row is the same ticket echoing at the perforation, dimmed in two steps, bleeding off
-the cut edge (no right border). Echoes are decoration (`aria-hidden`, no pointer); the
-phone shows none and is unchanged. Pocket tickets are already off the roll, so they
-stay single and cap at 560px; the purse caps at the roll's 430px — a purse is
-hand-sized, not a banner.
-
-The store endpoint returns the **whole catalog plus the balance** — never a pre-filtered
-affordable list. Affordability is a rendering decision, not a server one.
-
-### Two kid tabs — Store · My stuff
-
-**Store spends, My stuff owns and remembers, the history sheet explains** (sheet lands
-M4/5c). The tabs are the shared **`TabBar`** — a top-level split between peer surfaces,
-per the TabBar/SegmentedControl rule — with a `badge` option carrying the pocket's
-ready count (the parent page's Approvals tab rides the same badge). The purse is the
-store's hero — whose money, the struck coin, the metric numeral. "My stuff" holds the
-pocket (ready tickets → "Use it" / "Ask to use"; an asked ticket quiets down under a
-waiting pill) and the **stub shelf** — torn-stub chips with counts, the trophy row
-moved out of the shop. Punching happens on the Chores "Today · Punch cards" tab;
-finished cards and their outputs land in My stuff — that's why it isn't
-"My tickets".
-
-### The moments
-
-The buy confirm keeps the **before → after arithmetic** (`35 → 20 P$ left`) and says
-where the ticket goes ("It goes in your pocket"). The ask happens at **use time** and
-talks about timing, never money. **The tear is the module's one flourish** — the ticket
-splits at the perforation (480ms settle, skipped under reduced motion) and the stub
-joins the shelf. A parent's **"not now" is deliberately soft**: the ticket returns
-whole, the optional note is quoted verbatim, nothing needs an error state.
-
-### Wallet widget — adaptive, never a dead end
-
-`compact` leads with the balance and follows it with **one line that changes with
-state**: _"3 rewards you can get"_ when something is affordable, otherwise _"3 more for
-🍿 Pick the movie"_ with a meter. A bare balance is a score plate, not a wallet, and an
-always-on next-goal line tells a kid who can afford three things that they are short of a
-fourth. **The zero state decides this widget** — it is where a kid spends most of their
-time. (M4/5c adds the top-priority ticket-ready line: the thing you already have beats
-the thing you could buy.)
-
-`standard` moves the balance into the header's trailing slot and makes **what you can
-have** the body.
-
-### Punch card — the stamp wall
-
-Reworked 2026-08-02 (PR #100, built to the gated joy artifact): a **fluid 5-wide
-stamp wall** where every punch stamps the habit's own glyph at a fixed per-index
-angle, pressed into the paper (`--shadow-inset`). The next square is the **only
-dashed element** — breathing, carrying a `+`, the one tap target; **the kid punches
-their own card** (ADR 049) and the stamp lands with a 420ms slam (glyph squash,
-square dip, ink ring — reduced-motion silent). The prize lives in an always-visible
-**rail** beside the wall (picked emoji / coin disc / unpicked wash with the tab's
-only primary CTA), the countdown in the header. A full card goes **gold**
-(coin-metal border, pill, gold gift tile) and the celebration wears the same gold —
-full → won is one arc. A meter with a count was rejected: a meter is a progress bar
-for an adult, and the fridge sheet works because each square is a thing you did,
-countable by eye. Rail prize names are UI sans, never the display serif.
 
 ---
 

@@ -34,9 +34,15 @@ const WIDTH_CLASS: Record<PageWidth, string> = {
  * The padding is deliberately not a prop: one horizontal rhythm across every
  * route is the point. A surface that needs to break the gutter (a full-bleed
  * month grid) does it on its own child, not by re-negotiating the page frame.
+ *
+ * The TOP gutter varies by breakpoint for the same reason the side gutters do
+ * (`sm:pt-10`, 2026-09-04): 24px reads tight under a title on a screen you stand
+ * back from, and generous on a phone where vertical space is the scarce axis.
  */
 export function PageContainer({ width, className, children }: PageContainerProps) {
   return (
-    <div className={cn(WIDTH_CLASS[width], 'px-4 pt-6 pb-12 sm:px-6', className)}>{children}</div>
+    <div className={cn(WIDTH_CLASS[width], 'px-4 pt-6 pb-12 sm:px-6 sm:pt-10', className)}>
+      {children}
+    </div>
   )
 }

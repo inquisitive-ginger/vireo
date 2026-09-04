@@ -10,6 +10,7 @@ const item = (over: Partial<ShoppingItem> & { id: string; name: string }): Shopp
   listId: 'grocery',
   addedAt: '2026-09-03T12:00:00.000Z',
   note: null,
+  canRetract: true,
   ...over,
 })
 
@@ -26,18 +27,22 @@ function renderView(over: Partial<ShoppingPageViewProps> = {}) {
         aisle: 'Produce',
         items: [
           item({ id: '1', name: 'snap peas', note: 'for Thursday' }),
-          item({ id: '2', name: 'bananas' }),
+          item({ id: '2', name: 'bananas', canRetract: true }),
         ],
       },
       { aisle: 'Dairy', items: [item({ id: '3', name: 'milk', category: 'Dairy' })] },
     ],
     loading: false,
-    openCount: 3,
     onAdd: vi.fn(),
     onDraftChange: vi.fn(),
     draftAisle: null,
     addError: null,
     canAdd: true,
+    layout: 'list',
+    justAdded: [],
+    totalOpenCount: 3,
+    onShowLists: vi.fn(),
+    retractError: null,
     ...over,
   }
   return { props, ...render(<ShoppingPageView {...props} />) }
@@ -47,7 +52,7 @@ describe('ShoppingPageView', () => {
   it('leads with the title and a muted count strip, never a shout', () => {
     renderView()
     expect(screen.getByRole('heading', { name: 'Shopping' })).toBeInTheDocument()
-    expect(screen.getByText('3 to get')).toBeInTheDocument()
+    expect(screen.getByText('3 things to get')).toBeInTheDocument()
   })
 
   it('puts the capture field first under the title and does NOT steal the keyboard', () => {
@@ -57,7 +62,7 @@ describe('ShoppingPageView', () => {
     expect(field).not.toHaveFocus()
   })
 
-  it('names the destination on the field and in the trailing scope chip', () => {
+  it('names the destination on the field, with no second control in the slot', () => {
     renderView({ selectedListId: 'costco' })
     expect(screen.getByLabelText('Add to Costco')).toBeInTheDocument()
   })
@@ -93,11 +98,14 @@ describe('ShoppingPageView', () => {
     expect(props.onSelectList).toHaveBeenCalledWith('costco')
   })
 
-  it('states the aisle BEFORE the commit, and gives the strip over to the echo while composing', () => {
+  it('states the aisle BEFORE the commit, beside the strip that says where it lands', () => {
     renderView({ draftAisle: 'Pantry' })
     const echo = screen.getByText(/Enter to add/)
     expect(within(echo).getByText('Pantry')).toBeInTheDocument()
-    expect(screen.queryByRole('button', { name: /Costco/ })).not.toBeInTheDocument()
+    // The strip used to give way to this line. It stays now, because it carries
+    // the destination — hiding where a word lands while it is being typed is the
+    // one moment that fact matters most.
+    expect(screen.getByRole('button', { name: /Costco/ })).toBeInTheDocument()
   })
 
   it('hands the typed word back when the add fails, so it is not silently lost', () => {
@@ -122,5 +130,89 @@ describe('ShoppingPageView', () => {
   it('has no index of lists and no drill-in — a pill is a filter, not a link', () => {
     const { container } = renderView()
     expect(container.querySelector('a')).toBeNull()
+  })
+})
+
+/* The same component at tablet width and up (design.md §"One surface, two
+   layouts"): W2 relocated. Capture only, and `Show lists` swaps to the list at
+   its own URL rather than revealing it — a control that replaces a screen of
+   content behind an unchanged URL breaks the back button. */
+describe('ShoppingPageView — the capture layout', () => {
+  it('asks the question and offers the big field', () => {
+    renderView({ layout: 'capture' })
+    expect(screen.getByRole('heading', { name: 'What do we need?' })).toBeInTheDocument()
+    expect(screen.getByLabelText('Add to Grocery')).toBeInTheDocument()
+  })
+
+  it('does not take the keyboard — a kitchen screen is not one you walked up to', () => {
+    renderView({ layout: 'capture' })
+    expect(screen.getByLabelText('Add to Grocery')).not.toHaveFocus()
+  })
+
+  it('is capture ONLY — no rows and no second title, but it can still pick a list', () => {
+    renderView({ layout: 'capture' })
+    expect(screen.queryByText('snap peas')).not.toBeInTheDocument()
+    expect(screen.queryByRole('heading', { name: 'Shopping' })).not.toBeInTheDocument()
+    expect(screen.getAllByRole('textbox')).toHaveLength(1)
+    // The destinations DO belong here: without them a person at the fridge can
+    // only ever add to the default list (Zach, 2026-09-04).
+    expect(screen.getByRole('button', { name: /Costco/ })).toBeInTheDocument()
+  })
+
+  it('hands off to the list rather than drawing one', () => {
+    const { props } = renderView({ layout: 'capture' })
+    fireEvent.click(screen.getByRole('button', { name: 'Show lists' }))
+    expect(props.onShowLists).toHaveBeenCalled()
+  })
+
+  it('names what was just added, never who', () => {
+    renderView({ layout: 'capture', justAdded: [{ id: '1', name: 'oat milk', canRetract: true }] })
+    expect(screen.getByText('oat milk')).toBeInTheDocument()
+    expect(screen.queryByText(/Emma|the house|added by/i)).not.toBeInTheDocument()
+  })
+})
+
+describe('ShoppingPageView — getting back from the list', () => {
+  it('offers the way back on a tablet, where a dedicated capture view exists', () => {
+    const onBackToCapture = vi.fn()
+    renderView({ layout: 'list', onBackToCapture })
+    fireEvent.click(screen.getByRole('button', { name: /Back to adding/ }))
+    expect(onBackToCapture).toHaveBeenCalled()
+  })
+
+  it('offers none on a phone, which has no capture view to go back to', () => {
+    // Narrow already opens on the list with a field at its top, so there is
+    // nothing to return to (Zach, 2026-09-04).
+    renderView({ layout: 'list', onBackToCapture: undefined })
+    expect(screen.queryByRole('button', { name: /Back to adding/ })).not.toBeInTheDocument()
+  })
+})
+
+describe('ShoppingPageView — one control for "which list?"', () => {
+  it('does not put a second destination control in the field', () => {
+    // The chip in the trailing slot and the pill row below were two controls in
+    // similar clothes answering the same question (Zach, 2026-09-04).
+    renderView()
+    const field = screen.getByLabelText('Add to Grocery')
+    expect(within(field.closest('form')!).queryByText(/Grocery/)).not.toBeInTheDocument()
+  })
+
+  it('keeps the pills visible while composing — they say where the word lands', () => {
+    // They used to give way to the filing echo. Now they carry the destination,
+    // which must not vanish mid-word.
+    renderView({ draftAisle: 'Pantry' })
+    expect(screen.getByRole('button', { name: /Grocery/ })).toBeInTheDocument()
+    expect(screen.getByText(/files under/)).toBeInTheDocument()
+  })
+
+  it('reports the cumulative count, not the selected list', () => {
+    renderView({ totalOpenCount: 19 })
+    expect(screen.getByText('19 things to get')).toBeInTheDocument()
+    expect(screen.queryByText('3 things to get')).not.toBeInTheDocument()
+  })
+
+  it('says "1 thing to get" rather than "1 things"', () => {
+    renderView({ totalOpenCount: 1 })
+    expect(screen.getByText('1 thing to get')).toBeInTheDocument()
   })
 })

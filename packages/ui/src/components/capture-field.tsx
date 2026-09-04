@@ -21,18 +21,19 @@ export interface CaptureFieldProps {
   trailing?: ReactNode
   /** Every keystroke, so the surface can state the filing before the commit. */
   onValueChange?: (value: string) => void
-  /** A SURFACE decision, never a default (ADR 070): focus on an ambient screen
-      someone walked up to in order to type, not on a route they navigated to. */
-  autoFocus?: boolean
   size?: CaptureFieldSize
   disabled?: boolean
   className?: string
 }
 
-const SIZE: Record<CaptureFieldSize, { box: string; icon: number }> = {
-  inline: { box: 'h-touch gap-2 pl-3', icon: 18 },
-  hero: { box: 'h-14 gap-2.5 pl-3.5', icon: 22 },
-  wall: { box: 'h-19 gap-3 pl-5', icon: 26 },
+/* `text` scales with the surface, not with the box: what you are typing IS the
+   primary content, and on the wall the distance rule wants a key value at
+   `heading`, not at the 18px floor (design-system.md §Type scale). Inline and
+   hero are both read close up, where `body` is right. */
+const SIZE: Record<CaptureFieldSize, { box: string; text: string; icon: number }> = {
+  inline: { box: 'h-touch gap-2 pl-3', text: 'text-body', icon: 18 },
+  hero: { box: 'h-14 gap-2.5 pl-3.5', text: 'text-body', icon: 22 },
+  wall: { box: 'h-19 gap-3 pl-5', text: 'text-heading', icon: 26 },
 }
 
 /* The catch half of the capture taxonomy (ADR 070): one line, always open,
@@ -46,13 +47,26 @@ export function CaptureField({
   label,
   trailing,
   onValueChange,
-  autoFocus = false,
   size = 'inline',
   disabled = false,
   className,
 }: CaptureFieldProps) {
   const [value, setValue] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
+
+  /* NOTHING here claims focus, and no prop offers to (ADR 070, amended
+     2026-09-04). Both surfaces that used to — the wide `/shopping` layout and
+     the Home widget — cost more than they bought: an always-on display claiming
+     the keyboard nobody walked up to, and a stacked phone dashboard scrolling
+     1272px to a tile the reader never asked for.
+
+     Two facts underneath that are expensive to rediscover, pinned by tests in
+     capture-field.test.tsx because the next person to reach for autofocus here
+     will hit both: React renders the `autoFocus` prop as the DOM attribute,
+     which browsers honour ONLY while parsing the document — inert for anything
+     mounted later, which is every federated remote — and focusing a disabled
+     input (this field mounts disabled while its first read is in flight) is a
+     silent no-op. */
 
   function change(next: string) {
     setValue(next)
@@ -92,10 +106,12 @@ export function CaptureField({
         placeholder={placeholder}
         aria-label={label}
         disabled={disabled}
-        autoFocus={autoFocus}
         autoComplete="off"
         enterKeyHint="done"
-        className="text-body min-w-0 flex-1 bg-transparent text-foreground outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50"
+        className={cn(
+          SIZE[size].text,
+          'min-w-0 flex-1 bg-transparent text-foreground outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-50'
+        )}
       />
       {trailing !== undefined && <div className="flex shrink-0 items-center">{trailing}</div>}
     </form>

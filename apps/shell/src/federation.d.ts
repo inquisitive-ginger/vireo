@@ -67,3 +67,9 @@ declare module 'shopping/Plugin' {
   const Plugin: ComponentType
   export default Plugin
 }
+
+declare module 'shopping/widgets/Capture' {
+  import type { ComponentType } from 'react'
+  const Capture: ComponentType
+  export default Capture
+}

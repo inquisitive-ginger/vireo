@@ -225,6 +225,15 @@ export const PERMISSION_REGISTRY = {
     action: 'file',
     subject: 'shopping.Item',
   },
+  // Taking back your own add, for fifteen minutes (ADR 073). Tier 1 — the
+  // cheapest reversible action on the surface must not sit behind the delete
+  // verb, which is the fault ADR 071 fixed for checking off.
+  'shopping.item.retract': {
+    label: 'Take back something you just added',
+    module: 'shopping',
+    action: 'retract',
+    subject: 'shopping.Item',
+  },
   'shopping.item.manage': {
     label: 'Edit and remove items on a shopping list',
     module: 'shopping',

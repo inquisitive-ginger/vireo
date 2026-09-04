@@ -13,6 +13,7 @@ const item = (id: string, name: string, category: string, note?: string): Shoppi
   listId: 'grocery',
   addedAt: '2026-09-03T12:00:00.000Z',
   note: note ?? null,
+  canRetract: true,
 })
 
 const meta: Meta<typeof ShoppingPageView> = {
@@ -51,12 +52,17 @@ const meta: Meta<typeof ShoppingPageView> = {
       },
     ],
     loading: false,
-    openCount: 14,
     onAdd: () => {},
     onDraftChange: () => {},
     draftAisle: null,
     addError: null,
     canAdd: true,
+    layout: 'list',
+    justAdded: [],
+    totalOpenCount: 19,
+    onShowLists: () => {},
+    onRetract: () => {},
+    retractError: null,
   },
 }
 export default meta
@@ -89,7 +95,6 @@ export const FlatList: Story = {
         ],
       },
     ],
-    openCount: 3,
   },
 }
 
@@ -100,10 +105,39 @@ export const Empty: Story = {
       { id: 'costco', name: 'Costco', kind: 'permanent', groupByAisle: true, itemCount: 3 },
     ],
     groups: [],
-    openCount: 0,
   },
 }
 
 export const AddFailed: Story = {
   args: { addError: 'tortillas' },
+}
+
+/* The SAME component at tablet width and up — one surface, two layouts, picked
+   by the viewport (design.md). Capture fills the screen and the lists come in
+   only when asked for. Compare against artifact frame W2. */
+export const Wide: Story = {
+  args: {
+    layout: 'capture',
+    justAdded: [
+      { id: 'r1', name: 'snap peas', canRetract: true },
+      { id: 'r2', name: 'tortillas', canRetract: true },
+      { id: 'r3', name: 'milk', canRetract: true },
+      { id: 'r4', name: 'wood screws', canRetract: true },
+    ],
+  },
+}
+
+export const WideComposing: Story = {
+  args: { ...Wide.args, draftAisle: 'Pantry' },
+}
+
+/* After `Show lists` — the same list, in place, with the hero still above it so
+   the way back to capture is never off-screen. */
+export const WideListsShown: Story = {
+  args: { ...Wide.args },
+}
+
+/* Nobody has walked up to it today. The strip says so rather than sitting empty. */
+export const WideNothingYet: Story = {
+  args: { ...Wide.args, justAdded: [] },
 }

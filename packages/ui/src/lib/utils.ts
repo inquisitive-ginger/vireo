@@ -13,12 +13,15 @@ const twMerge = extendTailwindMerge({
     classGroups: {
       'font-size': [
         'text-xs-token',
+        'text-xs-body',
         'text-section-label',
+        'text-section-label-lg',
         'text-sm-token',
         'text-base-token',
         'text-card-title',
         'text-body',
         'text-prose',
+        'text-prose-sm',
         'text-heading',
         'text-page-title',
         'text-display-lg',

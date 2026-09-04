@@ -16,6 +16,7 @@ type Actions =
   | 'punch'
   | 'check'
   | 'file'
+  | 'retract'
   | 'manage'
 type Subjects =
   | 'platform.Profile'
@@ -100,6 +101,12 @@ export function createAbility(profile: Profile, overrides: PermissionOverride[])
     can('view', 'shopping.Item')
     can('create', 'shopping.Item')
     can('check', 'shopping.Item')
+    // Taking back your OWN add, for fifteen minutes (ADR 073). A distinct verb
+    // rather than a condition on `manage`: `manage` is CASL's any-action
+    // wildcard, so conditioning it would also make `check` true for these rows
+    // and hand tier 1 the checkoff ADR 071 withheld on purpose. The route checks
+    // `addedBy` and the window itself — an override grant replays unconditioned.
+    can('retract', 'shopping.Item', { addedBy: profile.id })
   } else if (profile.tier >= 2) {
     can('view', 'platform.Plugin')
     can('create', 'family-feed.Post')
@@ -111,6 +118,12 @@ export function createAbility(profile: Profile, overrides: PermissionOverride[])
     // Checking off is its own action from tier 2 up (ADR 071): the partner
     // shopper and the kid sent down an aisle are the people holding the cart.
     can('check', 'shopping.Item')
+    // Taking back your OWN add, for fifteen minutes (ADR 073). A distinct verb
+    // rather than a condition on `manage`: `manage` is CASL's any-action
+    // wildcard, so conditioning it would also make `check` true for these rows
+    // and hand tier 1 the checkoff ADR 071 withheld on purpose. The route checks
+    // `addedBy` and the window itself — an override grant replays unconditioned.
+    can('retract', 'shopping.Item', { addedBy: profile.id })
   } else {
     can('view', 'platform.Plugin')
     can('view', 'chores.Task')
@@ -122,6 +135,12 @@ export function createAbility(profile: Profile, overrides: PermissionOverride[])
     // kid who should be trusted with it is one grant away.
     can('view', 'shopping.Item')
     can('create', 'shopping.Item')
+    // Taking back your OWN add, for fifteen minutes (ADR 073). A distinct verb
+    // rather than a condition on `manage`: `manage` is CASL's any-action
+    // wildcard, so conditioning it would also make `check` true for these rows
+    // and hand tier 1 the checkoff ADR 071 withheld on purpose. The route checks
+    // `addedBy` and the window itself — an override grant replays unconditioned.
+    can('retract', 'shopping.Item', { addedBy: profile.id })
   }
 
   for (const override of overrides) {
