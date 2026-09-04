@@ -57,11 +57,10 @@ const meta: Meta<typeof ShoppingPageView> = {
     draftAisle: null,
     addError: null,
     canAdd: true,
-    layout: 'narrow',
+    layout: 'list',
     justAdded: [],
     totalOpenCount: 19,
-    showLists: true,
-    onToggleLists: () => {},
+    onShowLists: () => {},
   },
 }
 export default meta
@@ -118,8 +117,7 @@ export const AddFailed: Story = {
    only when asked for. Compare against artifact frame W2. */
 export const Wide: Story = {
   args: {
-    layout: 'wide',
-    showLists: false,
+    layout: 'capture',
     justAdded: [
       { id: 'r1', name: 'snap peas' },
       { id: 'r2', name: 'tortillas' },
@@ -136,7 +134,7 @@ export const WideComposing: Story = {
 /* After `Show lists` — the same list, in place, with the hero still above it so
    the way back to capture is never off-screen. */
 export const WideListsShown: Story = {
-  args: { ...Wide.args, showLists: true },
+  args: { ...Wide.args },
 }
 
 /* Nobody has walked up to it today. The strip says so rather than sitting empty. */

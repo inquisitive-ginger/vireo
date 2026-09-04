@@ -1,5 +1,4 @@
-import { useEffect, useRef } from 'react'
-import { ChevronDown, Loader2 } from 'lucide-react'
+import { ChevronDown, ChevronLeft, Loader2 } from 'lucide-react'
 import { CaptureField, Chip, ListRow, PageContainer, PageHeader, cn } from '@family-os/ui'
 import type { ShoppingItem, ShoppingList } from '../types'
 import { ShoppingCaptureHero } from './ShoppingCaptureHero'
@@ -34,15 +33,16 @@ export interface ShoppingPageViewProps {
       the same data. Wide DOES have capture/list modes inside it, which is what
       W2 always was; the no-mode rule is the narrow layout's (design.md
       §"The no-mode principle is scoped to narrow"). */
-  layout: 'narrow' | 'wide'
+  layout: 'capture' | 'list'
   /** Wide only — the hero's short memory of what landed, anywhere. */
   justAdded: { id: string; name: string }[]
   /** Wide only — everything waiting across every destination. */
   totalOpenCount: number
-  /** Wide only — whether `Show lists` has revealed the strip and the list.
-      Always true on narrow, where the list is simply the page. */
-  showLists: boolean
-  onToggleLists: () => void
+  /** `capture` only — swaps to the list at its own URL. */
+  onShowLists: () => void
+  /** The way back, offered ONLY on the wide list view. Undefined on a phone,
+      which has no dedicated capture view to return to. */
+  onBackToCapture?: () => void
 }
 
 /* The /shopping surface (design.md §Anatomy, artifact frames S1/S2). The capture
@@ -66,8 +66,8 @@ export function ShoppingPageView({
   layout,
   justAdded,
   totalOpenCount,
-  showLists,
-  onToggleLists,
+  onShowLists,
+  onBackToCapture,
 }: ShoppingPageViewProps) {
   const selected = lists.find((l) => l.id === selectedListId)
   const destination = selected?.name ?? 'the list'
@@ -77,17 +77,7 @@ export function ShoppingPageView({
   // While composing, the strip gives way to the echo (S2) — one line under the
   // field at a time, and the filing is the one worth reading at that moment.
   const composing = draftAisle !== null
-  const wide = layout === 'wide'
-  const revealed = useRef<HTMLDivElement>(null)
-
-  // The hero fills the screen, so what `Show lists` reveals starts below the
-  // fold: without this the control changes its own label and nothing else the
-  // reader can see. Wide only — narrow renders the list unconditionally, so
-  // nothing was revealed to scroll to.
-  useEffect(() => {
-    if (!wide || !showLists) return
-    revealed.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
-  }, [wide, showLists])
+  const capturing = layout === 'capture'
 
   return (
     // `list` at BOTH widths. A list is not prose, but it is not a billboard
@@ -95,13 +85,12 @@ export function ShoppingPageView({
     // and its aisle at the right are a head-turn apart. The wide layout earns its
     // presence with type size, not with span.
     <PageContainer width="list">
-      {wide ? (
+      {capturing ? (
         <ShoppingCaptureHero
           justAdded={justAdded}
           openCount={totalOpenCount}
           lists={lists}
-          showingLists={showLists}
-          onToggleLists={onToggleLists}
+          onShowLists={onShowLists}
           loading={loading}
           destination={selected?.name ?? null}
           onAdd={onAdd}
@@ -112,6 +101,17 @@ export function ShoppingPageView({
         />
       ) : (
         <>
+          {onBackToCapture && (
+            <button
+              type="button"
+              onClick={onBackToCapture}
+              className="text-sm-token mb-3 flex cursor-pointer items-center gap-1 font-medium text-primary"
+            >
+              <ChevronLeft size={16} aria-hidden />
+              Back to adding
+            </button>
+          )}
+
           {/* The count rides the title's own baseline and the field sits 14px
               under it (artifact S1), so the primitive's `items-start` / `mb-6`
               are the two things overridden — not the header. */}
@@ -163,8 +163,8 @@ export function ShoppingPageView({
           composing — one line under the field at a time, and the filing is the
           one worth reading at that moment. Wide shows it only once the lists
           have been asked for, because until then this surface is capture only. */}
-      {showLists && (wide || !composing) && (
-        <div ref={revealed} className="mt-3 flex gap-2 overflow-hidden py-0.5">
+      {!capturing && !composing && (
+        <div className="mt-3 flex gap-2 overflow-hidden py-0.5">
           {lists.map((list) => (
             <Chip
               key={list.id}
@@ -178,7 +178,7 @@ export function ShoppingPageView({
         </div>
       )}
 
-      {showLists && (
+      {!capturing && (
         <div className={cn('mt-1', composing && 'opacity-50')}>
           {loading ? (
             <div className="flex justify-center pt-8">

@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronUp, Loader2, Mic } from 'lucide-react'
+import { ChevronRight, Loader2, Mic } from 'lucide-react'
 import { CaptureField } from '@family-os/ui'
 import type { ShoppingList } from '../types'
 
@@ -11,10 +11,8 @@ export interface ShoppingCaptureHeroProps {
       This is the only place either appears while the lists are hidden. */
   openCount: number
   lists: ShoppingList[]
-  /** Whether the lists are currently revealed below — the control says so, and
-      says how to undo it. */
-  showingLists: boolean
-  onToggleLists: () => void
+  /** Swaps to the list, at its own URL. */
+  onShowLists: () => void
   loading: boolean
   destination: string | null
   onAdd: (name: string) => void
@@ -27,7 +25,7 @@ export interface ShoppingCaptureHeroProps {
 /* `/shopping` at tablet width and up (design.md §"One surface, two layouts",
    artifact frame W2): capture fills the screen, and the lists come in only when
    asked for. Same route, same data, no profile check — the viewport picks this,
-   and `Show lists` reveals the rest of the page in place.
+   and `Show lists` swaps to the list at `/shopping/lists`.
 
    Read from across a room, so every label here is a distance token and the strip
    label is `section-label-lg` rather than the 11px `section-label` a phone uses
@@ -36,8 +34,7 @@ export function ShoppingCaptureHero({
   justAdded,
   openCount,
   lists,
-  showingLists,
-  onToggleLists,
+  onShowLists,
   loading,
   destination,
   onAdd,
@@ -122,27 +119,20 @@ export function ShoppingCaptureHero({
             ? '\u00a0'
             : [
                 `${openCount} thing${openCount === 1 ? '' : 's'} waiting`,
-                // The per-destination split is the whole answer while the lists
-                // are hidden. Once they are shown, the strip below says the same
-                // thing and is tappable, so this stops repeating it.
-                ...(showingLists ? [] : lists.map((l) => `${l.name} ${l.itemCount}`)),
+                // The whole answer on a screen that has no list on it.
+                ...lists.map((l) => `${l.name} ${l.itemCount}`),
               ].join(' · ')}
         </span>
-        {/* The same control in the same place both ways. Getting BACK to capture
-            is the direction that matters on a screen left on in a kitchen, so it
-            is never a different button somewhere else. */}
+        {/* Swaps to the list, at its own URL. The way back is `Back to adding`
+            at the top of that view AND the browser's own back gesture — which is
+            the reason this is a route and not a piece of state. */}
         <button
           type="button"
-          onClick={onToggleLists}
-          aria-expanded={showingLists}
+          onClick={onShowLists}
           className="text-body flex h-touch cursor-pointer items-center gap-1.5 rounded-panel border border-border px-4 font-medium text-foreground"
         >
-          {showingLists ? 'Hide lists' : 'Show lists'}
-          {showingLists ? (
-            <ChevronUp size={20} aria-hidden />
-          ) : (
-            <ChevronDown size={20} aria-hidden />
-          )}
+          Show lists
+          <ChevronRight size={20} aria-hidden />
         </button>
       </div>
     </div>

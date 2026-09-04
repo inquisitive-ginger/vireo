@@ -30,8 +30,7 @@ const meta: Meta<typeof ShoppingCaptureHero> = {
       { id: 'costco', name: 'Costco', kind: 'permanent', groupByAisle: false, itemCount: 3 },
       { id: 'hardware', name: 'Hardware', kind: 'runtime', groupByAisle: false, itemCount: 2 },
     ],
-    showingLists: false,
-    onToggleLists: () => {},
+    onShowLists: () => {},
     loading: false,
     destination: 'Grocery',
     onAdd: () => {},
@@ -52,9 +51,6 @@ export const Composing: Story = { args: { draftAisle: 'Pantry' } }
 
 /* The short memory is empty. Not a gap — a wall nobody has walked up to today. */
 export const NothingYet: Story = { args: { justAdded: [], openCount: 0, lists: [] } }
-
-/* With the lists revealed below, the control states the way back. */
-export const ListsShown: Story = { args: { showingLists: true } }
 
 /* The add did not land. The field cleared on Enter, so this line is the only
    thing standing between the person and a word they think they said. */

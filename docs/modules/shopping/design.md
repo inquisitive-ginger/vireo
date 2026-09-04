@@ -89,8 +89,8 @@ never by the profile, and never by a control on screen.
   **what** was added, never who (§Anatomy 5; ADR 072 §3/§4 withdrawn), and a count
   strip carrying the total and the per-destination split
   (`19 things waiting · Grocery 14 · Costco 3 · Hardware 2`). The block fills the
-  screen. **The lists are not on it until asked for** — a `Show lists` control reveals
-  them in place, below the hero, and the same control puts them back.
+  screen. **The lists are not on it** — a `Show lists` control swaps to them at
+  `/shopping/lists`, and `Back to adding` at the top of that view swaps back.
 - **Below tablet — the list.** §Anatomy exactly as shipped: compact title row, 56 px
   field, destination strip, aisle list.
 
@@ -126,14 +126,31 @@ a screen you stand in front of to unload a grocery bag should have the field on 
 nothing else — a list sharing that screen makes the capture field one piece of furniture
 among many. That rejection is why the control exists at all.
 
-Two properties keep the control from becoming the trap the deleted `/shopping/wall`
-route was:
+**The control swaps, it does not reveal** (Zach, 2026-09-04): pressing it replaces the
+capture screen with the list rather than adding the list underneath it. That is a route,
+`/shopping/lists`, and deliberately so — replacing a whole screen of content behind an
+unchanged URL breaks the browser's back gesture, which is the first thing a reader
+reaches for on a tablet.
 
-- **The same control reverses it, in the same place.** `Show lists` becomes
-  `Hide lists`; the hero stays above the revealed list, so the way back to capture is
-  never off-screen. There is no one-way door.
-- **It does not survive a reload.** The next person walking up to a kitchen screen is
-  adding, not reading, so the surface returns to capture.
+Three things keep that route from becoming the trap the deleted `/shopping/wall` one
+was:
+
+- **Something links to it.** `Show lists` is on the capture screen. The old route had no
+  entry point at all, which is why the first question anyone asked about it was how to
+  reach it.
+- **The way back is on the list, and doubled.** `Back to adding` sits at the top of the
+  list view, and the browser's own back gesture now works because the URL changed. The
+  old route's single exit was one-way.
+- **A phone landing on it directly is fine.** Narrow renders the list at either URL, so
+  there is no state a phone can get stuck in — and no `Back to adding`, because a phone
+  has no dedicated capture view to return to. Its list already carries a capture field
+  at the top, which is all it needs (Zach, 2026-09-04).
+
+The revealed state used to be component state that reset on reload, on the reasoning
+that the next person walking up to a kitchen screen is adding rather than reading. With
+a route the URL wins instead: a tablet left on the list stays on the list. That is the
+cost of an addressable, back-navigable list view, and it is the right trade — but it is
+a change, not an oversight.
 
 **Why one route and not a second surface.** It was built once as its own route
 (`/shopping/wall`) and rejected on sight: nothing linked to it, so the first question

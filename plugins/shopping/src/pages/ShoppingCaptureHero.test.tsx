@@ -15,8 +15,7 @@ function renderView(over: Partial<ShoppingCaptureHeroProps> = {}) {
       { id: 'costco', name: 'Costco', kind: 'permanent', groupByAisle: false, itemCount: 3 },
       { id: 'hardware', name: 'Hardware', kind: 'runtime', groupByAisle: false, itemCount: 2 },
     ],
-    showingLists: false,
-    onToggleLists: vi.fn(),
+    onShowLists: vi.fn(),
     loading: false,
     destination: 'Grocery',
     onAdd: vi.fn(),
@@ -91,21 +90,10 @@ describe('ShoppingCaptureHero', () => {
     expect(screen.getByText(/turned off/i)).toBeInTheDocument()
   })
 
-  it('asks before it shows the lists, and says how to put them back', () => {
+  it('offers one way to the lists, and draws none of them itself', () => {
     const { props } = renderView()
-    const control = screen.getByRole('button', { name: 'Show lists' })
-    expect(control).toHaveAttribute('aria-expanded', 'false')
-    fireEvent.click(control)
-    expect(props.onToggleLists).toHaveBeenCalled()
-  })
-
-  it('reverses with the same control in the same place — never a one-way door', () => {
-    // The trap this avoids: a kiosk left showing the lists, with the way back to
-    // capture somewhere else or nowhere.
-    renderView({ showingLists: true })
-    expect(screen.getByRole('button', { name: 'Hide lists' })).toHaveAttribute(
-      'aria-expanded',
-      'true'
-    )
+    fireEvent.click(screen.getByRole('button', { name: 'Show lists' }))
+    expect(props.onShowLists).toHaveBeenCalled()
+    expect(screen.queryByText('Produce')).not.toBeInTheDocument()
   })
 })

@@ -38,11 +38,10 @@ function renderView(over: Partial<ShoppingPageViewProps> = {}) {
     draftAisle: null,
     addError: null,
     canAdd: true,
-    layout: 'narrow',
+    layout: 'list',
     justAdded: [],
     totalOpenCount: 3,
-    showLists: true,
-    onToggleLists: vi.fn(),
+    onShowLists: vi.fn(),
     ...over,
   }
   return { props, ...render(<ShoppingPageView {...props} />) }
@@ -130,69 +129,55 @@ describe('ShoppingPageView', () => {
   })
 })
 
-/* The same surface at tablet width and up (design.md §"One surface, two
-   layouts"): W2 relocated onto this route. Capture only until asked otherwise,
-   and the aisle list it reveals is the same list the phone scrolls to. */
-describe('ShoppingPageView — the wide layout', () => {
-  it('opens on capture: the question and the big field', () => {
-    renderView({ layout: 'wide' })
+/* The same component at tablet width and up (design.md §"One surface, two
+   layouts"): W2 relocated. Capture only, and `Show lists` swaps to the list at
+   its own URL rather than revealing it — a control that replaces a screen of
+   content behind an unchanged URL breaks the back button. */
+describe('ShoppingPageView — the capture layout', () => {
+  it('asks the question and offers the big field', () => {
+    renderView({ layout: 'capture' })
     expect(screen.getByRole('heading', { name: 'What do we need?' })).toBeInTheDocument()
     expect(screen.getByLabelText('Add to Grocery')).toBeInTheDocument()
   })
 
   it('does not take the keyboard — a kitchen screen is not one you walked up to', () => {
-    renderView({ layout: 'wide' })
+    renderView({ layout: 'capture' })
     expect(screen.getByLabelText('Add to Grocery')).not.toHaveFocus()
   })
 
-  it('is capture ONLY until the lists are asked for (Zach, 2026-09-04)', () => {
-    renderView({ layout: 'wide', showLists: false })
-    expect(screen.getByRole('heading', { name: 'What do we need?' })).toBeInTheDocument()
+  it('is capture ONLY — no rows, no destination strip, no second title', () => {
+    renderView({ layout: 'capture' })
     expect(screen.queryByText('snap peas')).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /Costco/ })).not.toBeInTheDocument()
-  })
-
-  it('renders the same list, in place, once `Show lists` is pressed', () => {
-    renderView({ layout: 'wide', showLists: true })
-    expect(screen.getByText('snap peas')).toBeInTheDocument()
-    expect(screen.getByText('milk')).toBeInTheDocument()
-    // The hero stays above it, so the way back to capture is never off-screen.
-    expect(screen.getByRole('heading', { name: 'What do we need?' })).toBeInTheDocument()
-  })
-
-  it('drops the narrow header, so the surface has one title and one field', () => {
-    renderView({ layout: 'wide' })
     expect(screen.queryByRole('heading', { name: 'Shopping' })).not.toBeInTheDocument()
     expect(screen.getAllByRole('textbox')).toHaveLength(1)
   })
 
-  it('keeps the destination strip visible while composing once lists are shown', () => {
-    // Wide has room for both; narrow trades the strip for the echo line.
-    renderView({ layout: 'wide', showLists: true, draftAisle: 'Pantry' })
-    expect(screen.getByRole('button', { name: /Grocery/ })).toBeInTheDocument()
-    expect(screen.getByText(/files under/)).toBeInTheDocument()
-  })
-
-  it('scrolls the reveal into view — a control whose effect is off-screen did nothing', () => {
-    // The hero fills the screen, so what `Show lists` reveals starts below the
-    // fold. Without this the button changes its own label and nothing else the
-    // reader can see.
-    const scrollIntoView = vi.fn()
-    HTMLElement.prototype.scrollIntoView = scrollIntoView
-    renderView({ layout: 'wide', showLists: true })
-    expect(scrollIntoView).toHaveBeenCalled()
-  })
-
-  it('does not scroll on narrow, where nothing was revealed', () => {
-    const scrollIntoView = vi.fn()
-    HTMLElement.prototype.scrollIntoView = scrollIntoView
-    renderView({ layout: 'narrow', showLists: true })
-    expect(scrollIntoView).not.toHaveBeenCalled()
+  it('hands off to the list rather than drawing one', () => {
+    const { props } = renderView({ layout: 'capture' })
+    fireEvent.click(screen.getByRole('button', { name: 'Show lists' }))
+    expect(props.onShowLists).toHaveBeenCalled()
   })
 
   it('names what was just added, never who', () => {
-    renderView({ layout: 'wide', justAdded: [{ id: '1', name: 'oat milk' }] })
+    renderView({ layout: 'capture', justAdded: [{ id: '1', name: 'oat milk' }] })
     expect(screen.getByText('oat milk')).toBeInTheDocument()
     expect(screen.queryByText(/Emma|the house|added by/i)).not.toBeInTheDocument()
+  })
+})
+
+describe('ShoppingPageView — getting back from the list', () => {
+  it('offers the way back on a tablet, where a dedicated capture view exists', () => {
+    const onBackToCapture = vi.fn()
+    renderView({ layout: 'list', onBackToCapture })
+    fireEvent.click(screen.getByRole('button', { name: /Back to adding/ }))
+    expect(onBackToCapture).toHaveBeenCalled()
+  })
+
+  it('offers none on a phone, which has no capture view to go back to', () => {
+    // Narrow already opens on the list with a field at its top, so there is
+    // nothing to return to (Zach, 2026-09-04).
+    renderView({ layout: 'list', onBackToCapture: undefined })
+    expect(screen.queryByRole('button', { name: /Back to adding/ })).not.toBeInTheDocument()
   })
 })

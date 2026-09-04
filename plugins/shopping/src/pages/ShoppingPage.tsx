@@ -1,4 +1,5 @@
 import { useMemo, useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 import { Loader2 } from 'lucide-react'
 import { useAuth, useMutation, usePermissions, useQuery, useQueryClient } from '@family-os/platform'
 import { ErrorCard } from '@family-os/ui'
@@ -32,20 +33,26 @@ function toGroups(items: ShoppingItem[], groupByAisle: boolean): AisleGroup[] {
 
 export function ShoppingPage() {
   const { id } = useAuth()
-  // ONE route, two layouts, picked by the viewport — never by the profile
-  // (settled at the 2026-09-04 live review). A tablet and up is W2 relocated:
-  // capture only, with `Show lists` bringing the lists in. A phone is the
-  // scrolling list, and the layout itself is not something anyone can switch.
+  // The viewport picks the layout — never the profile (2026-09-04 live review).
+  // A tablet and up is W2 relocated: capture only, with `Show lists` swapping to
+  // the list at its own URL. A phone is always the scrolling list, which already
+  // carries a capture field at its top — it needs no dedicated capture view and
+  // is given none.
+  //
+  // `/shopping/lists` is a ROUTE rather than component state because the control
+  // replaces a whole screen of content: swapping that behind an unchanged URL
+  // breaks the back button, which on a tablet is the gesture a reader reaches
+  // for first. A phone landing here directly gets the list it would have got at
+  // `/shopping` anyway.
   const wide = useWideLayout()
+  const navigate = useNavigate()
+  const onListsRoute = useLocation().pathname.startsWith('/shopping/lists')
+  const capturing = wide && !onListsRoute
   const ability = usePermissions()
   const queryClient = useQueryClient()
   const [selectedListId, setSelectedListId] = useState<string | null>(null)
   const [draft, setDraft] = useState('')
   const [addError, setAddError] = useState<string | null>(null)
-  // Wide only, and DELIBERATELY not persisted: the next person walking up to a
-  // screen left on in a kitchen is adding, not reading, so a reload returns to
-  // capture. Narrow ignores it — there, the list is simply the page.
-  const [listsRevealed, setListsRevealed] = useState(false)
 
   // The house adds too (ADR 072) — the wall-mounted tablet runs as the family
   // profile and capture is its whole job. What can close the field is the
@@ -77,7 +84,7 @@ export function ShoppingPage() {
   const recentQuery = useQuery<RecentResponse>({
     queryKey: ['shopping/list', id, 'recent'],
     queryFn: () => fetch('/api/shopping/recent').then(json<RecentResponse>),
-    enabled: wide,
+    enabled: capturing,
     retry: 1,
   })
 
@@ -176,13 +183,15 @@ export function ShoppingPage() {
       draftAisle={draftAisle}
       addError={addError}
       canAdd={canAdd}
-      layout={wide ? 'wide' : 'narrow'}
+      layout={capturing ? 'capture' : 'list'}
+      // Only the wide list view offers the way back; a phone has no dedicated
+      // capture view to return to (Zach, 2026-09-04).
+      onBackToCapture={wide && onListsRoute ? () => void navigate('/shopping') : undefined}
       justAdded={(recentQuery.data?.items ?? [])
         .slice(0, JUST_ADDED)
         .map((i) => ({ id: i.id, name: i.name }))}
       totalOpenCount={lists.reduce((sum, l) => sum + l.itemCount, 0)}
-      showLists={!wide || listsRevealed}
-      onToggleLists={() => setListsRevealed((v) => !v)}
+      onShowLists={() => void navigate('/shopping/lists')}
     />
   )
 }
