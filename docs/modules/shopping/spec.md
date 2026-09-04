@@ -63,6 +63,11 @@ from ADR 067/069 — it writes a family-wide override that refiles every future 
 of that name — but it is its own action so that granting it to a shopping teen does
 not also grant delete and rename.
 
+**The wall rides `shopping.item.add`** (ADR 072) — the family pseudo-profile is
+tier 1, so it already holds the key, and the wall gets no key of its own. A house
+that does not want anonymous wall adds revokes `shopping.item.add` for the
+`family` profile.
+
 Reading is `shopping.item.view` and covers the list itself — there is no separate
 list-read key (ADR 067, namespace updated by 069, enumerated by 071). Gates are
 `ability.can`, never a `tier >=` read: a raw tier comparison is a structural ceiling the override system cannot
@@ -72,6 +77,9 @@ what overrides are for.
 ## Events namespace
 
 `shopping.item.added` · `shopping.item.checked` · `shopping.list.created`
+
+**A wall add emits the same `shopping.item.added`** (ADR 072), distinguished by
+`addedBy === 'family'` in the payload rather than by a second event name.
 
 Replaces `meals.grocery.added`. Meals' needs-push is the first cross-plugin
 consumer of the contract.
