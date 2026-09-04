@@ -76,10 +76,16 @@ export function ShoppingCaptureHero({
         trailing={<HoldToSpeak />}
       />
 
-      {/* Tall enough for the line it reserves — `pt-3` + one `text-body` line is
-          41px, so a 32px reserve let the first keystroke shove `Just added` and
-          every chip down 9px, and Enter shove them back. */}
-      <div className="min-h-11 pt-3">
+      {/* Tight to the field, because these ARE the field's destination control
+          and proximity is the only thing that says so — at a larger gap they
+          read as a field and then some unrelated filters. */}
+      <div className="mt-3">{destinations}</div>
+
+      {/* Reports on the field, under the pair. Tall enough for the line it
+          reserves — `pt-2` plus one `text-body` line is 37px, and a short
+          reserve lets the first keystroke shove everything below it down and
+          Enter shove it back. */}
+      <div className="min-h-10 pt-2">
         {addError ? (
           <p role="alert" className="text-body px-1 text-error">
             Couldn&rsquo;t add &ldquo;{addError}&rdquo; &mdash; it is not on the list. Try again.
@@ -95,10 +101,6 @@ export function ShoppingCaptureHero({
           </p>
         ) : null}
       </div>
-
-      {/* Where an add lands, and the only way to reach Costco or Hardware from a
-          screen whose whole job is capture (Zach, 2026-09-04). */}
-      <div className="mt-2">{destinations}</div>
 
       <div className="mt-7">
         <div className="text-section-label-lg text-muted-foreground">Just added</div>

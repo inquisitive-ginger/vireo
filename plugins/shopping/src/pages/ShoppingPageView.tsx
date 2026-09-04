@@ -167,40 +167,35 @@ export function ShoppingPageView({
             onSubmit={onAdd}
           />
 
-          {/* Everything that reports on the field sits between the field and the
-              strip. Below the strip a notice reads as a caption on the list,
-              which is not what failed. */}
-          {addError && (
-            <p role="alert" className="text-sm-token px-1 pt-2 text-error">
-              Couldn&rsquo;t add &ldquo;{addError}&rdquo; — check your connection and try again.
-            </p>
-          )}
+          {/* Tight to the field, because it IS the field's destination control
+              and proximity is the only thing that says so. The larger gap goes
+              below the pair, separating the whole unit from the list. */}
+          <div className="mt-3">{destinations}</div>
 
-          {!canAdd && (
-            <p className="text-sm-token px-1 pt-2 text-muted-foreground">
-              Adding to the list is turned off for this profile.
-            </p>
-          )}
-
-          {composing && (
-            <p className="text-sm-token px-1 pt-2 text-muted-foreground">
-              Enter to add · files under{' '}
-              <span className="font-medium text-foreground">{draftAisle}</span>
-            </p>
-          )}
+          {/* Everything that reports on the field sits under the pair, in a slot
+              that reserves its height — mounted on the first keystroke it shoves
+              the list down and back on Enter. */}
+          <div className="min-h-7 pt-1.5">
+            {addError ? (
+              <p role="alert" className="text-sm-token px-1 text-error">
+                Couldn&rsquo;t add &ldquo;{addError}&rdquo; — check your connection and try again.
+              </p>
+            ) : !canAdd ? (
+              <p className="text-sm-token px-1 text-muted-foreground">
+                Adding to the list is turned off for this profile.
+              </p>
+            ) : composing ? (
+              <p className="text-sm-token px-1 text-muted-foreground">
+                Enter to add · files under{' '}
+                <span className="font-medium text-foreground">{draftAisle}</span>
+              </p>
+            ) : null}
+          </div>
         </>
       )}
 
-      {/* The destination strip swaps the list in place. Narrow hides it while
-          composing — one line under the field at a time, and the filing is the
-          one worth reading at that moment. Wide shows it only once the lists
-          have been asked for, because until then this surface is capture only. */}
-      {/* Always visible now, composing or not: it says where the word you are
-          typing will land, which is not something to hide behind an echo. */}
-      {!capturing && <div className="mt-3">{destinations}</div>}
-
       {!capturing && (
-        <div className={cn('mt-1', composing && 'opacity-50')}>
+        <div className={cn('mt-2', composing && 'opacity-50')}>
           {loading ? (
             <div className="flex justify-center pt-8">
               <Loader2 className="size-5 animate-spin text-muted-foreground" aria-label="Loading" />
