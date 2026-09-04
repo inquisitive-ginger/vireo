@@ -5,6 +5,7 @@ import type { CalendarEvent, CalendarMember } from '../types'
 import { isSameDay, localDateKey } from '../lib/grid'
 import { buildAgenda } from '../lib/week'
 import { AgendaRow } from './AgendaRow'
+import { DayHeading } from './DayHeading'
 import { NextEventHero } from './NextEventHero'
 import { SpanBand, SpanRow } from './SpanBand'
 import { DayMarkOwnerDot } from './DayMarkOwnerDot'
@@ -100,16 +101,7 @@ export function AgendaView({
         return (
           <section key={day.date.toISOString()}>
             <div className="mb-2.5 flex items-baseline justify-between gap-2">
-              <div className="flex items-baseline gap-2">
-                <h3
-                  className={`text-card-title ${
-                    isSameDay(day.date, now) ? 'text-primary' : 'text-foreground'
-                  }`}
-                >
-                  {lead}
-                </h3>
-                {sub && <span className="text-sm-token text-muted-foreground">{sub}</span>}
-              </div>
+              <DayHeading lead={lead} sub={sub} today={isSameDay(day.date, now)} />
               {dayMarks.length > 0 && (
                 <div className="flex items-center gap-3">
                   {dayMarks.map((mark) => {
