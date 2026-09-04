@@ -33,8 +33,9 @@ groceries that happen to be its first content (ADR 069 §2).
 ## Boundary rules (ADR 069)
 
 1. `shopping` owns the `shopping` Postgres schema. `meals` owns `meals`.
-2. Subjects are `shopping.List` and `shopping.Item`. The keys are the six in
-   §Permissions namespace below (ADR 071 completed the set).
+2. Subjects are `shopping.List` and `shopping.Item`. The keys are the seven in
+   §Permissions namespace below (ADR 071 completed the set; ADR 073 added
+   `retract`).
 3. `meals` does not import `shopping`'s Prisma client, and `shopping` does not
    read `planned_meals`. Needs-pushing is a contract (ADR 050 precedent).
 4. Aisle filing — the dictionary, `fileAisle`, `normalizeItemName`, and the
@@ -42,16 +43,17 @@ groceries that happen to be its first content (ADR 069 §2).
 
 ## Permissions namespace
 
-The complete key set (ADR 071). Nothing outside this table is gated:
+The complete key set (ADR 071, 073). Nothing outside this table is gated:
 
-| Key                    | Subject / action       | Baseline | Grantable |
-| ---------------------- | ---------------------- | -------- | --------- |
-| `shopping.list.create` | `create shopping.List` | Tier 4   | Yes       |
-| `shopping.item.view`   | `view shopping.Item`   | Tier 1   | Yes       |
-| `shopping.item.add`    | `create shopping.Item` | Tier 1   | Yes       |
-| `shopping.item.check`  | `check shopping.Item`  | Tier 2   | Yes       |
-| `shopping.item.file`   | `file shopping.Item`   | Tier 4   | Yes       |
-| `shopping.item.manage` | `manage shopping.Item` | Tier 4   | Yes       |
+| Key                     | Subject / action        | Baseline | Grantable |
+| ----------------------- | ----------------------- | -------- | --------- |
+| `shopping.list.create`  | `create shopping.List`  | Tier 4   | Yes       |
+| `shopping.item.view`    | `view shopping.Item`    | Tier 1   | Yes       |
+| `shopping.item.add`     | `create shopping.Item`  | Tier 1   | Yes       |
+| `shopping.item.check`   | `check shopping.Item`   | Tier 2   | Yes       |
+| `shopping.item.retract` | `retract shopping.Item` | Tier 1   | Yes       |
+| `shopping.item.file`    | `file shopping.Item`    | Tier 4   | Yes       |
+| `shopping.item.manage`  | `manage shopping.Item`  | Tier 4   | Yes       |
 
 **Checking off is `check`, and unchecking is the same key** (ADR 071) — a toggle,
 not a one-way door, so the person who mis-taps in an aisle can undo it there.
@@ -62,6 +64,15 @@ kid sent down an aisle able to work.
 from ADR 067/069 — it writes a family-wide override that refiles every future add
 of that name — but it is its own action so that granting it to a shopping teen does
 not also grant delete and rename.
+
+**Taking back your own add is `retract`, tier 1, for fifteen minutes** (ADR 073).
+Scoped by CASL condition to `{ addedBy: profile.id }` and by an `added_at` window
+checked in the route; it hard-deletes the row and does not un-teach `Entry`, so a
+retracted typo stays in the name dictionary. Removing anything else — anyone else's,
+or older than the window — stays `manage`, tier 4. On the wall every add is
+`added_by = 'family'`, so anyone standing there can retract what the wall added in the
+window. The route checks `addedBy` itself: a permission override replays as
+`can(action, subject)` with no conditions, so a regrant would arrive unscoped.
 
 **The wall rides `shopping.item.add`** (ADR 072) — the family pseudo-profile is
 tier 1, so it already holds the key, and the wall gets no key of its own. A house
@@ -76,10 +87,16 @@ what overrides are for.
 
 ## Events namespace
 
-`shopping.item.added` · `shopping.item.checked` · `shopping.list.created`
+`shopping.item.added` · `shopping.item.checked` · `shopping.item.removed` ·
+`shopping.list.created`
 
 **A wall add emits the same `shopping.item.added`** (ADR 072), distinguished by
 `addedBy === 'family'` in the payload rather than by a second event name.
+
+**A retract and a tier-4 delete both emit `shopping.item.removed`** (ADR 073) —
+`{ itemId, listId, name, by, reason }`, `reason: 'retracted' | 'managed'`. One
+transition, one name; `name` rides along because the row is gone by the time a
+consumer reads it.
 
 Replaces `meals.grocery.added`. Meals' needs-push is the first cross-plugin
 consumer of the contract.
