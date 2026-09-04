@@ -178,6 +178,29 @@ export const PERMISSION_REGISTRY = {
     action: 'update',
     subject: 'meals.PlannedMeal',
   },
+  // A list is its own subject (ADR 067, renamespaced by 069) — creating one
+  // commits the household to a trip, unlike adding an item to one already
+  // planned. Baseline tier 4 via `manage all`.
+  'shopping.list.create': {
+    label: 'Create a shopping list',
+    module: 'shopping',
+    action: 'create',
+    subject: 'shopping.List',
+  },
+  'shopping.item.add': {
+    label: 'Add to a shopping list',
+    module: 'shopping',
+    action: 'create',
+    subject: 'shopping.Item',
+  },
+  // The aisle correction: it does not fix one row, it rewrites how every
+  // future add of that name files itself for the whole household.
+  'shopping.item.manage': {
+    label: 'Correct where items file and manage the list',
+    module: 'shopping',
+    action: 'manage',
+    subject: 'shopping.Item',
+  },
 } as const
 
 export type PermissionString = keyof typeof PERMISSION_REGISTRY

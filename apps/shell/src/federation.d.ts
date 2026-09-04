@@ -61,3 +61,9 @@ declare module 'meals/widgets/Tonight' {
   const Tonight: ComponentType
   export default Tonight
 }
+
+declare module 'shopping/Plugin' {
+  import type { ComponentType } from 'react'
+  const Plugin: ComponentType
+  export default Plugin
+}

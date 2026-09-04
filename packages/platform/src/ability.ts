@@ -31,6 +31,8 @@ type Subjects =
   | 'rewards.PunchCard'
   | 'rewards.Grant'
   | 'meals.PlannedMeal'
+  | 'shopping.List'
+  | 'shopping.Item'
   | 'all'
 
 export type AppAbility = PrismaAbility<[Actions, Subjects]>
@@ -93,17 +95,27 @@ export function createAbility(profile: Profile, overrides: PermissionOverride[])
     // Claiming an unclaimed dinner (spec.md: tier 3+). `update` is the capability;
     // the route narrows it to claim-only — full edits stay behind `manage`.
     can('update', 'meals.PlannedMeal')
+    can('view', 'shopping.Item')
+    can('create', 'shopping.Item')
   } else if (profile.tier >= 2) {
     can('view', 'platform.Plugin')
     can('create', 'family-feed.Post')
     can('view', 'chores.Task')
     can('view', 'calendar.Event')
     can('view', 'meals.PlannedMeal')
+    can('view', 'shopping.Item')
+    can('create', 'shopping.Item')
   } else {
     can('view', 'platform.Plugin')
     can('view', 'chores.Task')
     can('view', 'calendar.Event')
     can('view', 'meals.PlannedMeal')
+    // Reading the list is not separately gated (spec.md) — `view shopping.Item`
+    // covers it, and it is a grant, not a registry key nobody would revoke
+    // alone. Adding at tier 1 is deliberate: a kid asking for cereal is the
+    // cheapest participation the house has.
+    can('view', 'shopping.Item')
+    can('create', 'shopping.Item')
   }
 
   for (const override of overrides) {

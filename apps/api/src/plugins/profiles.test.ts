@@ -615,7 +615,7 @@ describe('GET /api/profiles/:id/permissions', () => {
         overrideId: string | null
       }>
     }>()
-    expect(permissions).toHaveLength(17)
+    expect(permissions).toHaveLength(20)
     expect(permissions.every((p) => p.override === null && p.overrideId === null)).toBe(true)
     // tier 1 baseline: view platform.Plugin + view chores.Task + complete
     // chores.Task (every tier can complete its own assigned task) + view
@@ -647,6 +647,12 @@ describe('GET /api/profiles/:id/permissions', () => {
     expect(permissions.find((p) => p.key === 'family-feed.post.create')?.inBaseline).toBe(false)
     expect(permissions.find((p) => p.key === 'chores.task.create')?.inBaseline).toBe(false)
     expect(permissions.find((p) => p.key === 'calendar.event.create')?.inBaseline).toBe(false)
+    // + add to a shopping list (M5.5 — a kid asking for cereal is the cheapest
+    // participation the house has); creating a list and correcting where things
+    // file are both tier 4 (ADR 067/069)
+    expect(permissions.find((p) => p.key === 'shopping.item.add')?.inBaseline).toBe(true)
+    expect(permissions.find((p) => p.key === 'shopping.list.create')?.inBaseline).toBe(false)
+    expect(permissions.find((p) => p.key === 'shopping.item.manage')?.inBaseline).toBe(false)
   })
 
   it('reflects an existing override in the response', async () => {

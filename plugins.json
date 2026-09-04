@@ -1,7 +1,8 @@
 [
   { "name": "calendar", "baseUrl": "http://localhost:3013" },
-  { "name": "chores", "baseUrl": "http://localhost:3012" },
   { "name": "meals", "baseUrl": "http://localhost:3015" },
+  { "name": "shopping", "baseUrl": "http://localhost:3016" },
+  { "name": "chores", "baseUrl": "http://localhost:3012" },
   { "name": "rewards", "baseUrl": "http://localhost:3014" },
   { "name": "family-feed", "baseUrl": "http://localhost:3011" }
 ]
