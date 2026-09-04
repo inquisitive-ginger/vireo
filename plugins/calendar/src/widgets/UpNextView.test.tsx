@@ -224,6 +224,23 @@ describe('UpNextView', () => {
     expect(screen.getByText('FISW Camp')).toBeInTheDocument()
   })
 
+  /* auto-bug #135. The day label used to sit in an 84px left gutter beside its
+     rows; it now leads them on its own line, the way the mobile agenda states a
+     day — same `DayHeading`, one rank down. */
+  it('leads each day with a heading line instead of a left gutter', () => {
+    const { container } = renderWidget({})
+    expect(container.querySelector('[class*="grid-cols-"]')).toBeNull()
+    // Lead and its secondary date share the heading line.
+    const heading = screen.getByText('Tomorrow').parentElement!
+    expect(within(heading).getByText(/Jul 12/)).toBeInTheDocument()
+  })
+
+  it('tints the current day\u2019s heading with the primary hue', () => {
+    renderWidget({})
+    expect(screen.getByText('Later today')).toHaveClass('text-primary')
+    expect(screen.getByText('Tomorrow')).toHaveClass('text-foreground')
+  })
+
   it('deep-links the whole tile to /calendar', () => {
     renderWidget({})
     const link = screen.getByRole('link', { name: 'Open Calendar' })

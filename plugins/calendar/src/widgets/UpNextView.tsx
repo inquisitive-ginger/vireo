@@ -22,6 +22,7 @@ import {
   type WeekModel,
 } from '../lib/week'
 import { huesForEvent, spineColorsForEvent } from '../lib/hues'
+import { DayHeading } from '../components/DayHeading'
 import { EventOwners } from '../components/EventOwners'
 import { NextEventHero } from '../components/NextEventHero'
 import { SpanBand } from '../components/SpanBand'
@@ -39,8 +40,8 @@ import { SpanBand } from '../components/SpanBand'
         condition. It is the one element that touches both edges — which is
         exactly what a multi-day event does to a day-by-day view: runs past the
         frame.
-     3. DAY LIST — flat. Appointments on the tile's own ground plane, in a day
-        gutter. A sequence.
+     3. DAY LIST — flat. Appointments on the tile's own ground plane, each day
+        led by its own `DayHeading`. A sequence.
 
    Two structural fixes came with it. Multi-day events used to be bucketed by
    every day they TOUCHED, so one week-long camp claimed five rows and swamped the
@@ -95,28 +96,17 @@ function spineFor(event: CalendarEvent, membersById: Map<string, CalendarMember>
 const showMembersIn = (framing: UpNextFraming) => framing === 'family'
 
 /* Every row — appointment or "nothing else scheduled" — is exactly one ROW_BAND
-   tall: 48px (a 28px avatar between 10px of padding), so its text always centres
-   on y=24. The `min-h-12` floor is what holds that when there's no avatar to set
-   the height (the Mine framing, an empty day) — otherwise those rows collapse to
-   their text height and the day label drifts off them.
+   tall: 48px (a 28px avatar between 10px of padding). The `min-h-12` floor is
+   what holds that when there's no avatar to set the height (the Mine framing, an
+   empty day) — otherwise those rows collapse to their text height and the list
+   loses its rhythm.
 
    Note `min-height` is border-box: the floor has to be the FULL 48, not the 28px
-   content band, or the padding eats into it and the label rides ~5px high. */
+   content band, or the padding eats into it. */
 const ROW_BAND = 'flex min-h-12 items-center py-2.5'
 
-/* The gutter's day label MIRRORS the row's geometry rather than approximating it:
-   the same 10px top inset, then the same 28px band, centred the same way. So the
-   lead lands on the row's centre line exactly — by construction, not by
-   arithmetic — and stays there if a line-height ever moves. The date then hangs
-   below the band, which is why a day's first row runs taller than the ones under
-   it: days get a little air, for free.
-
-   (Two earlier attempts computed an inset from the lead's line box and missed by
-   a few px each way. The line box is 21px, not the 17.5px `leading-tight` implies
-   — the `text-*-token` utilities bake their own line-height and win the cascade,
-   so that class is silently dead. Don't reach for it; mirror the band instead.) */
-const GUTTER_INSET = 'pt-2.5'
-const GUTTER_LEAD = 'flex h-7 items-center'
+/* The air above a day heading that isn't the list's first. */
+const DAY_GAP = 'pt-2.5'
 
 /** An appointment row: time · title · owners. A `starting` row (a span / daily
  *  series stated once on its start day, gate 4) swaps the clock for its range. */
@@ -208,6 +198,7 @@ interface Row {
   key: string
   lead?: string
   sub?: string
+  today?: boolean
   event?: CalendarEvent
   /** A span / daily series stated once on its start day — the time slot carries
    *  its range instead of a clock (gate 4). */
@@ -229,10 +220,10 @@ function buildRows(days: WeekDay[], now: Date): Row[] {
       ? { lead: 'Later today', sub: undefined }
       : relativeDayLabel(date, now, { distant: 'weekday', sub: true })
     if (dayRows.length === 0) {
-      rows.push({ key: `empty-${date.toISOString()}`, lead, sub })
+      rows.push({ key: `empty-${date.toISOString()}`, lead, sub, today })
       continue
     }
-    dayRows.forEach((row, i) => rows.push(i === 0 ? { ...row, lead, sub } : row))
+    dayRows.forEach((row, i) => rows.push(i === 0 ? { ...row, lead, sub, today } : row))
   }
   return rows
 }
@@ -243,20 +234,18 @@ const MORE_RESERVE = 26
 /* Renders only the whole rows that fit the slot height, then a "+N more" line —
    never a partial row, never a scrollbar. `useFitRows` owns the measure/clamp.
 
-   Two anatomies (auto-bug #117, gated 2026-08-20). The day gutter needs ~100px
-   of every row, which a wide tile affords and the ~350px mobile stack does not —
-   there it left event titles ~150px and truncated most of them. `stackedDays`
-   moves the day label onto its own full-width line above its events, so the rows
-   get the whole width. The header lives INSIDE its day's first row element, not
-   as a sibling, so the clamp can never strand a day label above a "+N more". */
+   Every day leads with its own heading and its events take the full width
+   (auto-bug #117 gated this for the narrow slot; #135 made it the only anatomy —
+   the left gutter it replaced spent ~100px of every row on a label). The heading
+   lives INSIDE its day's first row element, not as a sibling, so the clamp can
+   never strand a day label above a "+N more". */
 function DayList({
   week,
   membersById,
   now,
   framing,
   showOwners = true,
-  stackedDays = false,
-}: ZoneProps & { showOwners?: boolean; stackedDays?: boolean }) {
+}: ZoneProps & { showOwners?: boolean }) {
   const rows = useMemo(() => buildRows(week.days, now), [week.days, now])
   const { boxRef, listRef, shown, measuring } = useFitRows(rows, MORE_RESERVE)
 
@@ -283,41 +272,22 @@ function DayList({
   return (
     <div ref={boxRef} className="relative min-h-0 flex-1 overflow-hidden">
       <div ref={listRef} className="flex flex-col">
-        {shown.map((row, i) =>
-          stackedDays ? (
-            <div key={row.key}>
-              {row.lead && (
-                <div className={cn(i > 0 && GUTTER_INSET, 'flex items-baseline gap-1.5')}>
-                  <span className="text-base-token font-semibold text-foreground">{row.lead}</span>
-                  {row.sub && (
-                    <span className="text-sm-token text-muted-foreground">· {row.sub}</span>
-                  )}
-                </div>
-              )}
-              <div className={cn(i > 0 && !row.lead && 'border-t border-border/50')}>
-                {rowBody(row)}
-              </div>
+        {shown.map((row, i) => (
+          <div key={row.key}>
+            {row.lead && (
+              <DayHeading
+                rank="row"
+                lead={row.lead}
+                sub={row.sub}
+                today={row.today}
+                className={cn(i > 0 && DAY_GAP)}
+              />
+            )}
+            <div className={cn(i > 0 && !row.lead && 'border-t border-border/50')}>
+              {rowBody(row)}
             </div>
-          ) : (
-            <div key={row.key} className="grid grid-cols-[84px_1fr] gap-x-4">
-              <div className={cn(row.lead && GUTTER_INSET)}>
-                {row.lead && (
-                  <>
-                    <div className={GUTTER_LEAD}>
-                      <span className="text-base-token font-semibold text-foreground">
-                        {row.lead}
-                      </span>
-                    </div>
-                    {row.sub && (
-                      <div className="text-sm-token text-muted-foreground">{row.sub}</div>
-                    )}
-                  </>
-                )}
-              </div>
-              <div className={cn(i > 0 && 'border-t border-border/50')}>{rowBody(row)}</div>
-            </div>
-          )
-        )}
+          </div>
+        ))}
         {!measuring && more > 0 && (
           <div className="text-sm-token mt-2 text-muted-foreground">
             <span className="underline underline-offset-4">Show {more} more</span>
@@ -417,9 +387,8 @@ function Standard(props: ZoneProps) {
 }
 
 /* Large (2×2, and the mobile stack): the full three-zone hierarchy — raised hero,
-   recessed all-week groove, flat day list. `stackedDays` is the narrow-slot day
-   list anatomy (see `DayList`). */
-function Large({ stackedDays, ...props }: ZoneProps & { stackedDays?: boolean }) {
+   recessed all-week groove, flat day list. */
+function Large(props: ZoneProps) {
   const { week, membersById, now, framing } = props
   return (
     <div className={cn('flex size-full flex-col', INSET.large)}>
@@ -437,7 +406,7 @@ function Large({ stackedDays, ...props }: ZoneProps & { stackedDays?: boolean })
       </div>
       <AllWeekBand {...props} />
       <div className="mt-3.5 flex min-h-0 flex-1 flex-col">
-        <DayList {...props} stackedDays={stackedDays} />
+        <DayList {...props} />
       </div>
     </div>
   )
@@ -447,21 +416,16 @@ function Large({ stackedDays, ...props }: ZoneProps & { stackedDays?: boolean })
    fits the rendered box (mirrors chores `today-summary`). The two-column standard
    is wide-and-short, so it engages only when the slot is both wide (≥440px) and
    short (≤299px); everything narrower reflows to compact (short) or large (tall).
-   A tall slot at ≤439px (the mobile stack) is large with stacked day headers —
-   the gutter anatomy has no room for its titles there (auto-bug #117). */
+   The mobile stack is large too — the day list has one anatomy now (#135), so a
+   narrow tall slot no longer needs a variant of its own. */
 const WIDGET_STYLES = `
-  .cun-compact, .cun-standard, .cun-large, .cun-narrow { height: 100%; }
+  .cun-compact, .cun-standard, .cun-large { height: 100%; }
   .cun-compact  { display: block; }
   .cun-standard { display: none; }
   .cun-large    { display: none; }
-  .cun-narrow   { display: none; }
   @container (min-height: ${WIDGET_CQ.tallMinHeight}) {
     .cun-compact  { display: none; }
     .cun-large    { display: block; }
-  }
-  @container (max-width: ${WIDGET_CQ.narrowMaxWidth}) and (min-height: ${WIDGET_CQ.tallMinHeight}) {
-    .cun-large    { display: none; }
-    .cun-narrow   { display: block; }
   }
   @container (min-width: ${WIDGET_CQ.wideMinWidth}) and (max-height: ${WIDGET_CQ.shortMaxHeight}) {
     .cun-compact  { display: none; }
@@ -504,9 +468,6 @@ export function UpNextView({ events, membersById, now, framing, size }: UpNextVi
         </div>
         <div className="cun-large">
           <Large {...zones} />
-        </div>
-        <div className="cun-narrow">
-          <Large {...zones} stackedDays />
         </div>
       </div>
     )
