@@ -108,10 +108,26 @@ describe('ShoppingPageView', () => {
     expect(props.onAdd).toHaveBeenCalledWith('tortillas')
   })
 
-  it('says why the unattended family dashboard cannot add rather than failing silently', () => {
+  it('says why a profile whose add is revoked cannot type, rather than failing silently', () => {
     renderView({ canAdd: false })
     expect(screen.getByLabelText('Add to Grocery')).toBeDisabled()
-    expect(screen.getByText(/Switch to your own profile/)).toBeInTheDocument()
+    expect(screen.getByText(/turned off for this profile/)).toBeInTheDocument()
+  })
+
+  it('renders a wall add as the house — words only, no hue and no face (ADR 072/064)', () => {
+    const { container } = renderView({
+      groups: [
+        {
+          aisle: 'Dairy',
+          items: [
+            item({ id: '7', name: 'oat milk', category: 'Dairy', note: 'Added by the house' }),
+          ],
+        },
+      ],
+    })
+    expect(screen.getByText('Added by the house')).toBeInTheDocument()
+    expect(container.querySelector('img')).toBeNull()
+    expect(container.innerHTML).not.toMatch(/identity-/)
   })
 
   it('does not claim the list is empty while the rows are still coming', () => {

@@ -1,5 +1,7 @@
 -- The shopping schema (ADR 069). One migration, not the four the closed PR #127
 -- accumulated: nothing shipped, so there is no data to walk through a backfill.
+-- The profile-referencing columns are TEXT, not UUID (ADR 072) — profile ids are
+-- text and the unattended wall writes the literal 'family'.
 
 CREATE SCHEMA IF NOT EXISTS "shopping";
 
@@ -10,7 +12,7 @@ CREATE TABLE "shopping"."lists" (
     "kind" TEXT NOT NULL,
     "group_by_aisle" BOOLEAN NOT NULL DEFAULT true,
     "sort_order" INTEGER NOT NULL DEFAULT 0,
-    "created_by" UUID,
+    "created_by" TEXT,
     "created_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
 
     CONSTRAINT "lists_pkey" PRIMARY KEY ("id")
@@ -25,9 +27,9 @@ CREATE TABLE "shopping"."items" (
     "status" TEXT NOT NULL DEFAULT 'needed',
     "source_type" TEXT NOT NULL,
     "source_id" TEXT,
-    "added_by" UUID NOT NULL,
+    "added_by" TEXT NOT NULL,
     "added_at" TIMESTAMPTZ(6) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "got_by" UUID,
+    "got_by" TEXT,
     "got_at" TIMESTAMPTZ(6),
     "list_id" UUID NOT NULL,
 

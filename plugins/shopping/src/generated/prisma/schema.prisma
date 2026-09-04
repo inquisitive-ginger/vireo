@@ -12,6 +12,10 @@ datasource db {
 // the planned_meal id, which lives in ANOTHER plugin's schema. `shopping` never
 // reads `planned_meals` (ADR 069 §3); the id is an opaque handle back to
 // whoever pushed.
+// added_by / got_by are text, NOT uuid (ADR 072): `platform.profiles.id` is text
+// and holds the literal 'family' for the unattended wall. A uuid column here
+// narrows below the id space it references, which is what forced the hand-written
+// 403 in front of the one surface whose entire job is capture.
 // category is the aisle, assigned by the dictionary on add or by a family-wide
 // override going forward (lib/filing.ts) — never chosen per row on the client.
 model Item {
@@ -22,9 +26,9 @@ model Item {
   status     String    @default("needed")
   sourceType String    @map("source_type")
   sourceId   String?   @map("source_id")
-  addedBy    String    @map("added_by") @db.Uuid
+  addedBy    String    @map("added_by")
   addedAt    DateTime  @default(now()) @map("added_at") @db.Timestamptz(6)
-  gotBy      String?   @map("got_by") @db.Uuid
+  gotBy      String?   @map("got_by")
   gotAt      DateTime? @map("got_at") @db.Timestamptz(6)
   listId     String    @map("list_id") @db.Uuid
   list       List      @relation(fields: [listId], references: [id])
@@ -44,7 +48,7 @@ model List {
   kind         String // 'permanent' | 'runtime'
   groupByAisle Boolean  @default(true) @map("group_by_aisle")
   sortOrder    Int      @default(0) @map("sort_order")
-  createdBy    String?  @map("created_by") @db.Uuid // null for the seeded permanent lists
+  createdBy    String?  @map("created_by") // null for the seeded permanent lists
   createdAt    DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
 
   items Item[]

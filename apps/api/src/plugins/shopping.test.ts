@@ -178,7 +178,9 @@ describe('POST /api/shopping/lists', () => {
     expect(res.statusCode).toBe(400)
   })
 
-  it('refuses the unattended family profile', async () => {
+  // No id guard any more (ADR 072) — the family profile is tier 1 and list
+  // creation is tier 4, so `ability.can` is the only thing refusing this.
+  it('refuses the family profile on the ability alone, with no hand-written id check', async () => {
     const cookie = await getCookieForProfile(FAMILY_PROFILE_ID)
     const res = await app.inject({
       method: 'POST',
@@ -213,10 +215,28 @@ describe('POST /api/shopping/lists/:id/items', () => {
     expect(res.json().note).toBe('Emma added')
   })
 
-  it('refuses the unattended family profile — there is nobody to attribute the add to', async () => {
+  // ADR 072. This is the assertion that stops someone reinstating a uuid column:
+  // the wall runs as the family profile and capture is its entire job, so an add
+  // as `family` must reach the table, not a hand-written 403.
+  it('accepts an add from the unattended wall and persists added_by = family', async () => {
     const cookie = await getCookieForProfile(FAMILY_PROFILE_ID)
-    const res = await addItem(cookie, await groceryListId(), { name: 'milk' })
-    expect(res.statusCode).toBe(403)
+    const res = await addItem(cookie, await groceryListId(), { name: 'oat milk' })
+    expect(res.statusCode).toBe(201)
+
+    const stored = await shoppingPrisma.item.findUnique({ where: { id: res.json().id } })
+    expect(stored?.addedBy).toBe(FAMILY_PROFILE_ID)
+  })
+
+  it('attributes a wall add to the house — a place, not a person', async () => {
+    const cookie = await getCookieForProfile(FAMILY_PROFILE_ID)
+    const res = await addItem(cookie, await groceryListId(), { name: 'oat milk' })
+    expect(res.json().note).toBe('Added by the house')
+  })
+
+  it('emits one event for a wall add, distinguished by addedBy rather than a second name', async () => {
+    const cookie = await getCookieForProfile(FAMILY_PROFILE_ID)
+    const res = await addItem(cookie, await groceryListId(), { name: 'oat milk' })
+    expect(res.json()).toMatchObject({ name: 'oat milk', category: 'Dairy' })
   })
 
   it('404s on an unknown list', async () => {

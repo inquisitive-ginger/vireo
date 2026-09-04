@@ -1,12 +1,6 @@
 import { useMemo, useState } from 'react'
 import { Loader2 } from 'lucide-react'
-import {
-  FAMILY_PROFILE_ID,
-  useAuth,
-  useMutation,
-  useQuery,
-  useQueryClient,
-} from '@family-os/platform'
+import { useAuth, useMutation, usePermissions, useQuery, useQueryClient } from '@family-os/platform'
 import { ErrorCard } from '@family-os/ui'
 import type { ListResponse, ListsResponse, ShoppingItem } from '../types'
 import { aisleSortIndex, fileAisle, normalizeItemName } from '../lib/filing'
@@ -33,12 +27,17 @@ function groupByAisle(items: ShoppingItem[]): AisleGroup[] {
 
 export function ShoppingPage() {
   const { id } = useAuth()
+  const ability = usePermissions()
   const queryClient = useQueryClient()
   const [selectedListId, setSelectedListId] = useState<string | null>(null)
   const [draft, setDraft] = useState('')
   const [addError, setAddError] = useState<string | null>(null)
 
-  const canAdd = id !== FAMILY_PROFILE_ID
+  // The house adds too (ADR 072) — the wall is the family profile and capture is
+  // its whole job. What can close the field is the revocation ADR 072 §6 names as
+  // the lever: `shopping.item.add` off for one profile. Ability, never a tier or
+  // an id (ADR 018).
+  const canAdd = ability.can('create', 'shopping.Item')
 
   // Profile-scoped, under one `shopping/list` prefix the M5.5/5 widget reuses,
   // so a single invalidation refreshes the page and the widget together.

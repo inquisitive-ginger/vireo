@@ -24,8 +24,8 @@ export interface ShoppingPageViewProps {
   draftAisle: string | null
   /** The name that failed to land, so the word is not silently lost. */
   addError: string | null
-  /** False on the unattended family dashboard, which has nobody to attribute an
-      add to. Everyone else adds — tier 1 included. */
+  /** `shopping.item.add` is revoked for this profile — the one lever that closes
+      the field (ADR 072 §6). The house itself adds; the wall depends on it. */
   canAdd: boolean
 }
 
@@ -92,7 +92,7 @@ export function ShoppingPageView({
 
       {!canAdd && (
         <p className="text-sm-token px-1 pt-2 text-muted-foreground">
-          Switch to your own profile to add to the list.
+          Adding to the list is turned off for this profile.
         </p>
       )}
 

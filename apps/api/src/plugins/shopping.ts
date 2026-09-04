@@ -15,8 +15,14 @@ type ListRow = Awaited<ReturnType<typeof shoppingPrisma.list.create>>
 
 /** The row's second line — a text fact, never a hue or a face (ADR 064). A
     producer-pushed item carries no meal lookup: `shopping` does not read
-    `planned_meals` (ADR 069 §3), so whoever pushes owes the words. */
+    `planned_meals` (ADR 069 §3), so whoever pushes owes the words.
+
+    An add from the unattended wall is attributed to the house (ADR 072): it is a
+    place, not a person, so it gets words and never a name, a hue or a face — a
+    null `identityHue` here must not fall back to `resolveHue('Family')`, which
+    would hash the house into a real member's colour (ADR 044). */
 function noteFor(item: ItemRow, profileById: Map<string, { name: string }>): string | null {
+  if (item.addedBy === FAMILY_PROFILE_ID) return 'Added by the house'
   const adder = profileById.get(item.addedBy)
   return adder ? `${adder.name} added` : null
 }
@@ -110,9 +116,6 @@ const shoppingPlugin: FastifyPluginAsync = async (fastify) => {
     if (!request.ability.can('create', 'shopping.List')) {
       return reply.status(403).send({ error: 'Permission denied' })
     }
-    if (request.profile.id === FAMILY_PROFILE_ID) {
-      return reply.status(403).send({ error: 'Switch to your own profile to create a list' })
-    }
 
     const parsed = ShoppingListCreateSchema.safeParse(request.body ?? {})
     if (!parsed.success) {
@@ -169,11 +172,6 @@ const shoppingPlugin: FastifyPluginAsync = async (fastify) => {
   fastify.post('/shopping/lists/:id/items', async (request, reply) => {
     if (!request.ability.can('create', 'shopping.Item')) {
       return reply.status(403).send({ error: 'Permission denied' })
-    }
-    // The unattended family dashboard has no person to attribute the add to —
-    // its id is not a UUID and must never reach the @db.Uuid added_by column.
-    if (request.profile.id === FAMILY_PROFILE_ID) {
-      return reply.status(403).send({ error: 'Switch to your own profile to add to the list' })
     }
 
     const { id: listId } = request.params as { id: string }
