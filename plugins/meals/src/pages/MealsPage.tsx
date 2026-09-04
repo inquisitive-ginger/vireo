@@ -17,7 +17,7 @@ import { MealDrawer, type MealDrawerInput } from '../components/MealDrawer'
 import { MealsPageView, type WeekDay } from './MealsPageView'
 
 export function MealsPage() {
-  const { id, tier } = useAuth()
+  const { id } = useAuth()
   const ability = usePermissions()
   const queryClient = useQueryClient()
   const [offset, setOffset] = useState(0)
@@ -38,7 +38,7 @@ export function MealsPage() {
   } | null>(null)
 
   const canManage = ability.can('manage', 'meals.PlannedMeal')
-  const canClaim = tier >= 3 && id !== FAMILY_PROFILE_ID
+  const canClaim = ability.can('update', 'meals.PlannedMeal')
   // Pushing a meal's needs IS a shopping add, so it asks the same revocable key
   // the shopping surface asks (ADR 018/071) — never a tier read, and never a
   // meals key: the write lands in another plugin's schema.
