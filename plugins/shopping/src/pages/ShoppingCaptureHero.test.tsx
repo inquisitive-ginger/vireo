@@ -10,6 +10,13 @@ function renderView(over: Partial<ShoppingCaptureHeroProps> = {}) {
       { id: '3', name: 'milk' },
     ],
     openCount: 19,
+    lists: [
+      { id: 'grocery', name: 'Grocery', kind: 'permanent', groupByAisle: true, itemCount: 14 },
+      { id: 'costco', name: 'Costco', kind: 'permanent', groupByAisle: false, itemCount: 3 },
+      { id: 'hardware', name: 'Hardware', kind: 'runtime', groupByAisle: false, itemCount: 2 },
+    ],
+    showingLists: false,
+    onToggleLists: vi.fn(),
     loading: false,
     destination: 'Grocery',
     onAdd: vi.fn(),
@@ -51,12 +58,11 @@ describe('ShoppingCaptureHero', () => {
     expect(screen.queryByText(/Emma|the house|added by/i)).not.toBeInTheDocument()
   })
 
-  it('states the total waiting, and leaves the per-list split to the strip below', () => {
+  it('carries the whole count, split by destination — it is the only answer on screen', () => {
     renderView()
-    expect(screen.getByText('19 things waiting')).toBeInTheDocument()
-    // Restating `Grocery 14 · Costco 3` here would duplicate the destination
-    // strip, which says the same thing and is tappable.
-    expect(screen.queryByText(/Grocery 14/)).not.toBeInTheDocument()
+    expect(
+      screen.getByText('19 things waiting · Grocery 14 · Costco 3 · Hardware 2')
+    ).toBeInTheDocument()
   })
 
   it('reserves the voice slot without pretending it works', () => {
@@ -85,8 +91,21 @@ describe('ShoppingCaptureHero', () => {
     expect(screen.getByText(/turned off/i)).toBeInTheDocument()
   })
 
-  it('offers no way off the page, because the list is the next thing on it', () => {
-    renderView()
-    expect(screen.queryByRole('button', { name: /See the lists/ })).not.toBeInTheDocument()
+  it('asks before it shows the lists, and says how to put them back', () => {
+    const { props } = renderView()
+    const control = screen.getByRole('button', { name: 'Show lists' })
+    expect(control).toHaveAttribute('aria-expanded', 'false')
+    fireEvent.click(control)
+    expect(props.onToggleLists).toHaveBeenCalled()
+  })
+
+  it('reverses with the same control in the same place — never a one-way door', () => {
+    // The trap this avoids: a kiosk left showing the lists, with the way back to
+    // capture somewhere else or nowhere.
+    renderView({ showingLists: true })
+    expect(screen.getByRole('button', { name: 'Hide lists' })).toHaveAttribute(
+      'aria-expanded',
+      'true'
+    )
   })
 })

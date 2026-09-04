@@ -77,35 +77,55 @@ horizontal-scroll affordance.
 draws is chosen by the **viewport**, at the shell's canonical `md:` (768 px) split —
 never by the profile, and never by a control on screen.
 
-- **Tablet and up — capture.** `What do we need?` at `display-xl`, a 76 px
-  `CaptureField` below it, a **Hold to speak** affordance reserved in the trailing slot
-  (**voice is not M5.5 scope** — the slot is reserved, nothing implements it), a
-  **Just added** strip of the last few items as chips naming **what** was added, never
-  who (§Anatomy 5; ADR 072 §3/§4 withdrawn), and a rule stating the total
-  (`19 things waiting`). Then the same aisle list, directly beneath.
-- **Below tablet — the list.** §Anatomy exactly as shipped: compact title row,
-  56 px field, destination strip, aisle list.
+- **Tablet and up — capture, and only capture.** `What do we need?` at `display-xl`,
+  a 76 px `CaptureField` below it, a **Hold to speak** affordance reserved in the
+  trailing slot (**voice is not M5.5 scope** — the slot is reserved, nothing
+  implements it), a **Just added** strip of the last few items as chips naming
+  **what** was added, never who (§Anatomy 5; ADR 072 §3/§4 withdrawn), and a count
+  strip carrying the total and the per-destination split
+  (`19 things waiting · Grocery 14 · Costco 3 · Hardware 2`). The block fills the
+  screen. **The lists are not on it until asked for** — a `Show lists` control reveals
+  them in place, below the hero, and the same control puts them back.
+- **Below tablet — the list.** §Anatomy exactly as shipped: compact title row, 56 px
+  field, destination strip, aisle list.
 
-**Neither layout autofocuses, and nothing else does either** (ADR 070, amended
-2026-09-04). A screen left on in a kitchen is not a screen someone walked up to.
+**Neither layout autofocuses** (ADR 070, amended 2026-09-04). A screen left on in a
+kitchen is not a screen someone walked up to.
 
-**Neither layout is a mode**, which is the same rule §"The answer to the axis" states
-for the field and the list. Nothing toggles: the capture block is simply the size it
-should be on a screen you stand in front of, and the list follows it down the page the
-way it does on a phone. There is no second route, no switch, and no way to be in the
-"wrong" one — resizing a window moves between them, which is also how they are
-reviewed.
+### The wide layout is an exception to "not a mode" — Zach's call, 2026-09-04
 
-**Why not a separate surface.** It was built once as its own route (`/shopping/wall`)
-and rejected on sight: nothing linked to it, so the first question anyone asked was how
-to reach it, and its one exit was one-way. Branching on `FAMILY_PROFILE_ID` instead
-would have made it unreachable from any other device, and so unreviewable. The
-wall-mounted tablet is a **device** in the house — ADR 072 is about how that device's
-adds are attributed, and is unaffected — but the surface it shows has no separate
-identity and carries no separate name.
+§"The answer to the axis" says **the field is not a mode and the list is not a mode**,
+and on narrow that still holds exactly: the field is the hero at rest, the list is
+below it, and scrolling is the only thing between them.
 
-**The per-destination counts are not repeated under the hero.** They live one block
-down in the destination strip, where they are tappable rather than merely stated.
+**The wide layout does not honour that rule.** `Show lists` is a control that changes
+what is on screen, which is what a mode is. It was built the other way first — hero
+above, list below, reachable by scrolling — and **rejected at the live review**: a
+screen you stand in front of to unload a grocery bag should have the field and nothing
+else on it, and a list sharing that screen makes the capture field one item of
+furniture among many.
+
+Recorded as an exception rather than a rewording, so a later session finds the
+disagreement stated instead of discovering it: **the principle holds on narrow, and
+wide is a deliberate departure from it.** Revisit only with the person who asked for
+it.
+
+Two properties keep the exception from becoming the trap the earlier `/shopping/wall`
+route was:
+
+- **The same control reverses it, in the same place.** `Show lists` becomes
+  `Hide lists`; the hero stays above the revealed list, so the way back to capture is
+  never off-screen. There is no one-way door.
+- **It does not survive a reload.** The next person walking up to a kitchen screen is
+  adding, not reading, so the surface returns to capture.
+
+**Why one route and not a second surface.** It was built once as its own route
+(`/shopping/wall`) and rejected on sight: nothing linked to it, so the first question
+anyone asked was how to reach it, and its one exit was one-way. Branching on
+`FAMILY_PROFILE_ID` instead would have made it unreachable from any other device, and
+so unreviewable. The wall-mounted tablet is a **device** in the house — ADR 072 is
+about how that device's adds are attributed, and is unaffected — but the surface it
+shows has no separate identity and carries no separate name.
 
 **The distance-label decision this surface owed is settled** (2026-09-04): structural
 labels get a distance variant, `section-label-lg`, rather than promotion to `heading` —

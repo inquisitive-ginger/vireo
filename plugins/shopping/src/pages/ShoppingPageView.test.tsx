@@ -41,6 +41,8 @@ function renderView(over: Partial<ShoppingPageViewProps> = {}) {
     layout: 'narrow',
     justAdded: [],
     totalOpenCount: 3,
+    showLists: true,
+    onToggleLists: vi.fn(),
     ...over,
   }
   return { props, ...render(<ShoppingPageView {...props} />) }
@@ -143,15 +145,19 @@ describe('ShoppingPageView — the wide layout', () => {
     expect(screen.getByLabelText('Add to Grocery')).not.toHaveFocus()
   })
 
-  it('still draws the same list underneath — the wide layout is not capture-only', () => {
-    renderView({ layout: 'wide' })
-    expect(screen.getByText('snap peas')).toBeInTheDocument()
-    expect(screen.getByText('milk')).toBeInTheDocument()
+  it('is capture ONLY until the lists are asked for (Zach, 2026-09-04)', () => {
+    renderView({ layout: 'wide', showLists: false })
+    expect(screen.getByRole('heading', { name: 'What do we need?' })).toBeInTheDocument()
+    expect(screen.queryByText('snap peas')).not.toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Costco/ })).not.toBeInTheDocument()
   })
 
-  it('offers nothing that switches layout — a toggle would be a mode', () => {
-    renderView({ layout: 'wide' })
-    expect(screen.queryByRole('button', { name: /See the lists|list view|switch/i })).toBeNull()
+  it('renders the same list, in place, once `Show lists` is pressed', () => {
+    renderView({ layout: 'wide', showLists: true })
+    expect(screen.getByText('snap peas')).toBeInTheDocument()
+    expect(screen.getByText('milk')).toBeInTheDocument()
+    // The hero stays above it, so the way back to capture is never off-screen.
+    expect(screen.getByRole('heading', { name: 'What do we need?' })).toBeInTheDocument()
   })
 
   it('drops the narrow header, so the surface has one title and one field', () => {
@@ -160,11 +166,28 @@ describe('ShoppingPageView — the wide layout', () => {
     expect(screen.getAllByRole('textbox')).toHaveLength(1)
   })
 
-  it('keeps the destination strip visible while composing, unlike narrow', () => {
+  it('keeps the destination strip visible while composing once lists are shown', () => {
     // Wide has room for both; narrow trades the strip for the echo line.
-    renderView({ layout: 'wide', draftAisle: 'Pantry' })
+    renderView({ layout: 'wide', showLists: true, draftAisle: 'Pantry' })
     expect(screen.getByRole('button', { name: /Grocery/ })).toBeInTheDocument()
     expect(screen.getByText(/files under/)).toBeInTheDocument()
+  })
+
+  it('scrolls the reveal into view — a control whose effect is off-screen did nothing', () => {
+    // The hero fills the screen, so what `Show lists` reveals starts below the
+    // fold. Without this the button changes its own label and nothing else the
+    // reader can see.
+    const scrollIntoView = vi.fn()
+    HTMLElement.prototype.scrollIntoView = scrollIntoView
+    renderView({ layout: 'wide', showLists: true })
+    expect(scrollIntoView).toHaveBeenCalled()
+  })
+
+  it('does not scroll on narrow, where nothing was revealed', () => {
+    const scrollIntoView = vi.fn()
+    HTMLElement.prototype.scrollIntoView = scrollIntoView
+    renderView({ layout: 'narrow', showLists: true })
+    expect(scrollIntoView).not.toHaveBeenCalled()
   })
 
   it('names what was just added, never who', () => {

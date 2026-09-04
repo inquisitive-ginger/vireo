@@ -1,3 +1,4 @@
+import { useEffect, useRef } from 'react'
 import { ChevronDown, Loader2 } from 'lucide-react'
 import { CaptureField, Chip, ListRow, PageContainer, PageHeader, cn } from '@family-os/ui'
 import type { ShoppingItem, ShoppingList } from '../types'
@@ -36,6 +37,10 @@ export interface ShoppingPageViewProps {
   justAdded: { id: string; name: string }[]
   /** Wide only — everything waiting across every destination. */
   totalOpenCount: number
+  /** Wide only — whether `Show lists` has revealed the strip and the list.
+      Always true on narrow, where the list is simply the page. */
+  showLists: boolean
+  onToggleLists: () => void
 }
 
 /* The /shopping surface (design.md §Anatomy, artifact frames S1/S2). The capture
@@ -59,6 +64,8 @@ export function ShoppingPageView({
   layout,
   justAdded,
   totalOpenCount,
+  showLists,
+  onToggleLists,
 }: ShoppingPageViewProps) {
   const selected = lists.find((l) => l.id === selectedListId)
   const destination = selected?.name ?? 'the list'
@@ -69,6 +76,16 @@ export function ShoppingPageView({
   // field at a time, and the filing is the one worth reading at that moment.
   const composing = draftAisle !== null
   const wide = layout === 'wide'
+  const revealed = useRef<HTMLDivElement>(null)
+
+  // The hero fills the screen, so what `Show lists` reveals starts below the
+  // fold: without this the control changes its own label and nothing else the
+  // reader can see. Wide only — narrow renders the list unconditionally, so
+  // nothing was revealed to scroll to.
+  useEffect(() => {
+    if (!wide || !showLists) return
+    revealed.current?.scrollIntoView({ behavior: 'smooth', block: 'start' })
+  }, [wide, showLists])
 
   return (
     // `list` at BOTH widths. A list is not prose, but it is not a billboard
@@ -80,6 +97,9 @@ export function ShoppingPageView({
         <ShoppingCaptureHero
           justAdded={justAdded}
           openCount={totalOpenCount}
+          lists={lists}
+          showingLists={showLists}
+          onToggleLists={onToggleLists}
           loading={loading}
           destination={selected?.name ?? null}
           onAdd={onAdd}
@@ -137,13 +157,12 @@ export function ShoppingPageView({
         </>
       )}
 
-      {/* The destination strip belongs to both layouts — it is the control that
-          swaps the list in place, and on wide it is also the only place the
-          per-list counts appear, tappable rather than restated under the hero.
-          Narrow hides it while composing: one line under the field at a time,
-          and the filing is the one worth reading at that moment. */}
-      {(wide || !composing) && (
-        <div className="mt-3 flex gap-2 overflow-hidden py-0.5">
+      {/* The destination strip swaps the list in place. Narrow hides it while
+          composing — one line under the field at a time, and the filing is the
+          one worth reading at that moment. Wide shows it only once the lists
+          have been asked for, because until then this surface is capture only. */}
+      {showLists && (wide || !composing) && (
+        <div ref={revealed} className="mt-3 flex gap-2 overflow-hidden py-0.5">
           {lists.map((list) => (
             <Chip
               key={list.id}
@@ -157,48 +176,52 @@ export function ShoppingPageView({
         </div>
       )}
 
-      <div className={cn('mt-1', composing && 'opacity-50')}>
-        {loading ? (
-          <div className="flex justify-center pt-8">
-            <Loader2 className="size-5 animate-spin text-muted-foreground" aria-label="Loading" />
-          </div>
-        ) : groups.length === 0 ? (
-          <p className="text-body px-1 pt-6 text-muted-foreground">Nothing on {destination} yet.</p>
-        ) : (
-          groups.map((group, i) => (
-            <div key={group.aisle}>
-              {showAisles && (
-                <div
-                  className={cn(
-                    'text-section-label pb-1.5 text-muted-foreground',
-                    i === 0 ? 'pt-2.5' : 'pt-4.5'
-                  )}
-                >
-                  {group.aisle}
-                </div>
-              )}
-              {group.items.map((item) => (
-                <ListRow key={item.id} leading={<Ring />}>
-                  <div className="min-w-0 flex-1">
-                    <span className="text-card-title block truncate text-foreground">
-                      {item.name}
-                    </span>
-                    {/* Producer words only ("for Thursday") — who added a thing
-                        is noise on a shared list (live review, 2026-09-03), so
-                        it is stored and never shown. Usually empty until the
-                        needs-push contract lands; that is correct, not a gap. */}
-                    {item.note && (
-                      <span className="text-sm-token block truncate text-muted-foreground">
-                        {item.note}
-                      </span>
-                    )}
-                  </div>
-                </ListRow>
-              ))}
+      {showLists && (
+        <div className={cn('mt-1', composing && 'opacity-50')}>
+          {loading ? (
+            <div className="flex justify-center pt-8">
+              <Loader2 className="size-5 animate-spin text-muted-foreground" aria-label="Loading" />
             </div>
-          ))
-        )}
-      </div>
+          ) : groups.length === 0 ? (
+            <p className="text-body px-1 pt-6 text-muted-foreground">
+              Nothing on {destination} yet.
+            </p>
+          ) : (
+            groups.map((group, i) => (
+              <div key={group.aisle}>
+                {showAisles && (
+                  <div
+                    className={cn(
+                      'text-section-label pb-1.5 text-muted-foreground',
+                      i === 0 ? 'pt-2.5' : 'pt-4.5'
+                    )}
+                  >
+                    {group.aisle}
+                  </div>
+                )}
+                {group.items.map((item) => (
+                  <ListRow key={item.id} leading={<Ring />}>
+                    <div className="min-w-0 flex-1">
+                      <span className="text-card-title block truncate text-foreground">
+                        {item.name}
+                      </span>
+                      {/* Producer words only ("for Thursday") — who added a thing
+                          is noise on a shared list (live review, 2026-09-03), so
+                          it is stored and never shown. Usually empty until the
+                          needs-push contract lands; that is correct, not a gap. */}
+                      {item.note && (
+                        <span className="text-sm-token block truncate text-muted-foreground">
+                          {item.note}
+                        </span>
+                      )}
+                    </div>
+                  </ListRow>
+                ))}
+              </div>
+            ))
+          )}
+        </div>
+      )}
     </PageContainer>
   )
 }

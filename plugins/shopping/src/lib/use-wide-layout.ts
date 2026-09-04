@@ -3,9 +3,9 @@ import { useEffect, useState } from 'react'
 /* `md:` (768px) is the shell's settled tablet/mobile split — the same threshold
    that hides the sidebar and raises the tab bar (design-system.md §Mobile
    Surface). `/shopping` is ONE surface with two layouts, and this picks which,
-   so the two never mount at once: rendering both and hiding one with CSS would
-   put two capture fields in the DOM, and the wide one's autofocus would fire
-   into `display: none`.
+   so only one mounts: rendering both and hiding one with CSS would put two
+   capture fields in the DOM, which is two elements answering to the same
+   accessible name and a draft that survives in whichever is hidden.
 
    Local to `shopping` because it has one caller. If a second surface needs it,
    it moves to `@family-os/ui` then — not now. */

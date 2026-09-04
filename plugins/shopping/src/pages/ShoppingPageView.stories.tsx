@@ -60,6 +60,8 @@ const meta: Meta<typeof ShoppingPageView> = {
     layout: 'narrow',
     justAdded: [],
     totalOpenCount: 19,
+    showLists: true,
+    onToggleLists: () => {},
   },
 }
 export default meta
@@ -112,12 +114,12 @@ export const AddFailed: Story = {
 }
 
 /* The SAME component at tablet width and up — one surface, two layouts, picked
-   by the viewport and never by a control (design.md). Capture is what you land
-   on; the aisle list is right underneath, reached by scrolling, exactly as it is
-   on a phone. Compare against artifact frame W2. */
+   by the viewport (design.md). Capture fills the screen and the lists come in
+   only when asked for. Compare against artifact frame W2. */
 export const Wide: Story = {
   args: {
     layout: 'wide',
+    showLists: false,
     justAdded: [
       { id: 'r1', name: 'snap peas' },
       { id: 'r2', name: 'tortillas' },
@@ -129,6 +131,12 @@ export const Wide: Story = {
 
 export const WideComposing: Story = {
   args: { ...Wide.args, draftAisle: 'Pantry' },
+}
+
+/* After `Show lists` — the same list, in place, with the hero still above it so
+   the way back to capture is never off-screen. */
+export const WideListsShown: Story = {
+  args: { ...Wide.args, showLists: true },
 }
 
 /* Nobody has walked up to it today. The strip says so rather than sitting empty. */

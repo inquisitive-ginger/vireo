@@ -42,6 +42,10 @@ export function ShoppingPage() {
   const [selectedListId, setSelectedListId] = useState<string | null>(null)
   const [draft, setDraft] = useState('')
   const [addError, setAddError] = useState<string | null>(null)
+  // Wide only, and DELIBERATELY not persisted: the next person walking up to a
+  // screen left on in a kitchen is adding, not reading, so a reload returns to
+  // capture. Narrow ignores it — there, the list is simply the page.
+  const [listsRevealed, setListsRevealed] = useState(false)
 
   // The house adds too (ADR 072) — the wall-mounted tablet runs as the family
   // profile and capture is its whole job. What can close the field is the
@@ -177,6 +181,8 @@ export function ShoppingPage() {
         .slice(0, JUST_ADDED)
         .map((i) => ({ id: i.id, name: i.name }))}
       totalOpenCount={lists.reduce((sum, l) => sum + l.itemCount, 0)}
+      showLists={!wide || listsRevealed}
+      onToggleLists={() => setListsRevealed((v) => !v)}
     />
   )
 }

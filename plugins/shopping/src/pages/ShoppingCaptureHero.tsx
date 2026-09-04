@@ -1,15 +1,20 @@
-import { Loader2, Mic } from 'lucide-react'
+import { ChevronDown, ChevronUp, Loader2, Mic } from 'lucide-react'
 import { CaptureField } from '@family-os/ui'
+import type { ShoppingList } from '../types'
 
 export interface ShoppingCaptureHeroProps {
   /** The last few things that landed, anywhere. Names only — never who added
       them (ADR 072 §4, withdrawn 2026-09-04). Ids because a house adds milk
       twice in a week and two chips must not collide. */
   justAdded: { id: string; name: string }[]
-  /** Everything waiting, everywhere. The per-destination split is not repeated
-      here — it lives one block down in the destination strip, where it is
-      tappable rather than merely stated. */
+  /** Everything waiting, everywhere, and the per-destination split beside it.
+      This is the only place either appears while the lists are hidden. */
   openCount: number
+  lists: ShoppingList[]
+  /** Whether the lists are currently revealed below — the control says so, and
+      says how to undo it. */
+  showingLists: boolean
+  onToggleLists: () => void
   loading: boolean
   destination: string | null
   onAdd: (name: string) => void
@@ -19,18 +24,20 @@ export interface ShoppingCaptureHeroProps {
   canAdd: boolean
 }
 
-/* The top block of `/shopping` at tablet width and up (design.md §"The wide
-   layout", artifact frame W2). It is NOT a separate surface and it is not a
-   mode: the same route, the same data, the same list underneath — the field is
-   simply the size it should be on a screen you are standing in front of, and
-   the list follows it down the page exactly as it does on a phone.
+/* `/shopping` at tablet width and up (design.md §"One surface, two layouts",
+   artifact frame W2): capture fills the screen, and the lists come in only when
+   asked for. Same route, same data, no profile check — the viewport picks this,
+   and `Show lists` reveals the rest of the page in place.
 
-   Read from across a room, so every label here is a distance token and the
-   strip label is `section-label-lg` rather than the 11px `section-label` a
-   phone uses (design-system.md §Type scale). */
+   Read from across a room, so every label here is a distance token and the strip
+   label is `section-label-lg` rather than the 11px `section-label` a phone uses
+   (design-system.md §Type scale). */
 export function ShoppingCaptureHero({
   justAdded,
   openCount,
+  lists,
+  showingLists,
+  onToggleLists,
   loading,
   destination,
   onAdd,
@@ -42,7 +49,11 @@ export function ShoppingCaptureHero({
   const composing = draftAisle !== null
 
   return (
-    <div>
+    // Fills the screen, so what a person walks up to is the field and nothing
+    // else. `4.5rem` is `PageContainer`'s own `pt-6 pb-12` — subtracted rather
+    // than guessed, so the block ends exactly where the viewport does instead of
+    // leaving a short scroll to nothing.
+    <div className="flex min-h-[calc(100svh-4.5rem)] flex-col">
       <h1 className="text-display-xl text-foreground">What do we need?</h1>
 
       <CaptureField
@@ -99,16 +110,40 @@ export function ShoppingCaptureHero({
         </div>
       </div>
 
-      {/* The seam between catching and shopping. It states the total and hands
-          off — no button, because the list it would send you to is the next
-          thing on the page. */}
-      <div className="mt-7 border-t border-border pt-5">
+      {/* The seam between catching and shopping. The counts are the whole answer
+          while the lists are hidden, so the per-destination split lives here
+          (artifact W2) rather than only in the strip below. */}
+      <div className="mt-auto flex flex-wrap items-center justify-between gap-3 border-t border-border pt-6">
         {/* Never `0 things waiting` before the read lands — a count is a claim
             about the house, read from across the room by someone who will not
             look twice. */}
         <span className="text-body text-muted-foreground">
-          {loading ? ' ' : `${openCount} thing${openCount === 1 ? '' : 's'} waiting`}
+          {loading
+            ? '\u00a0'
+            : [
+                `${openCount} thing${openCount === 1 ? '' : 's'} waiting`,
+                // The per-destination split is the whole answer while the lists
+                // are hidden. Once they are shown, the strip below says the same
+                // thing and is tappable, so this stops repeating it.
+                ...(showingLists ? [] : lists.map((l) => `${l.name} ${l.itemCount}`)),
+              ].join(' · ')}
         </span>
+        {/* The same control in the same place both ways. Getting BACK to capture
+            is the direction that matters on a screen left on in a kitchen, so it
+            is never a different button somewhere else. */}
+        <button
+          type="button"
+          onClick={onToggleLists}
+          aria-expanded={showingLists}
+          className="text-body flex h-touch cursor-pointer items-center gap-1.5 rounded-panel border border-border px-4 font-medium text-foreground"
+        >
+          {showingLists ? 'Hide lists' : 'Show lists'}
+          {showingLists ? (
+            <ChevronUp size={20} aria-hidden />
+          ) : (
+            <ChevronDown size={20} aria-hidden />
+          )}
+        </button>
       </div>
     </div>
   )
