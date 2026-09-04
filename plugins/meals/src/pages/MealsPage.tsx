@@ -143,7 +143,12 @@ export function MealsPage() {
     // has to reach the person who tapped rather than the console alone.
     onError: (err, meal) => {
       console.error('[meals] claim failed', err)
-      setRowNote({ mealId: meal.id, text: "Couldn't claim that one — try again.", failed: true })
+      setRowNote({ mealId: meal.id, text: 'Somebody got there first.', failed: true })
+      // The likeliest failure is the 409: somebody claimed it from their phone
+      // while this page sat open. Without the refetch the row keeps saying
+      // nobody's on it and every retry 409s forever, so the answer is to go get
+      // the truth, not to invite a retry of something that cannot succeed.
+      void queryClient.invalidateQueries({ queryKey: ['meals/plan'] })
     },
   })
 

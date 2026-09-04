@@ -498,7 +498,7 @@ describe('meals.needs.pushed', () => {
     expect(entry?.name).toBe('Chicken Thighs')
   })
 
-  it('writes nothing and announces nothing when the push is refused', async () => {
+  it('rejects a malformed payload, writing nothing and announcing nothing', async () => {
     const seen: unknown[] = []
     const off = app.eventBus.on('shopping.item.added', (p) => seen.push(p))
     await expect(pushNeeds([], { names: ['ok'], note: '' })).rejects.toThrow(/malformed/)
@@ -517,11 +517,6 @@ describe('meals.needs.pushed', () => {
 
     const stored = await shoppingPrisma.item.findMany()
     expect(seen.map((e) => e.itemId).sort()).toEqual(stored.map((i) => i.id).sort())
-  })
-
-  it('rejects a malformed payload instead of writing a half-understood row', async () => {
-    await expect(pushNeeds([], { names: ['ok'], note: '' })).rejects.toThrow(/malformed/)
-    expect(await shoppingPrisma.item.count()).toBe(0)
   })
 })
 
