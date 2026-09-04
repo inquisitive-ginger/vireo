@@ -1187,6 +1187,7 @@ export namespace Prisma {
     status: string | null
     sourceType: string | null
     sourceId: string | null
+    sourceLabel: string | null
     addedBy: string | null
     addedAt: Date | null
     gotBy: string | null
@@ -1202,6 +1203,7 @@ export namespace Prisma {
     status: string | null
     sourceType: string | null
     sourceId: string | null
+    sourceLabel: string | null
     addedBy: string | null
     addedAt: Date | null
     gotBy: string | null
@@ -1217,6 +1219,7 @@ export namespace Prisma {
     status: number
     sourceType: number
     sourceId: number
+    sourceLabel: number
     addedBy: number
     addedAt: number
     gotBy: number
@@ -1234,6 +1237,7 @@ export namespace Prisma {
     status?: true
     sourceType?: true
     sourceId?: true
+    sourceLabel?: true
     addedBy?: true
     addedAt?: true
     gotBy?: true
@@ -1249,6 +1253,7 @@ export namespace Prisma {
     status?: true
     sourceType?: true
     sourceId?: true
+    sourceLabel?: true
     addedBy?: true
     addedAt?: true
     gotBy?: true
@@ -1264,6 +1269,7 @@ export namespace Prisma {
     status?: true
     sourceType?: true
     sourceId?: true
+    sourceLabel?: true
     addedBy?: true
     addedAt?: true
     gotBy?: true
@@ -1352,6 +1358,7 @@ export namespace Prisma {
     status: string
     sourceType: string
     sourceId: string | null
+    sourceLabel: string | null
     addedBy: string
     addedAt: Date
     gotBy: string | null
@@ -1384,6 +1391,7 @@ export namespace Prisma {
     status?: boolean
     sourceType?: boolean
     sourceId?: boolean
+    sourceLabel?: boolean
     addedBy?: boolean
     addedAt?: boolean
     gotBy?: boolean
@@ -1400,6 +1408,7 @@ export namespace Prisma {
     status?: boolean
     sourceType?: boolean
     sourceId?: boolean
+    sourceLabel?: boolean
     addedBy?: boolean
     addedAt?: boolean
     gotBy?: boolean
@@ -1416,6 +1425,7 @@ export namespace Prisma {
     status?: boolean
     sourceType?: boolean
     sourceId?: boolean
+    sourceLabel?: boolean
     addedBy?: boolean
     addedAt?: boolean
     gotBy?: boolean
@@ -1432,6 +1442,7 @@ export namespace Prisma {
     status?: boolean
     sourceType?: boolean
     sourceId?: boolean
+    sourceLabel?: boolean
     addedBy?: boolean
     addedAt?: boolean
     gotBy?: boolean
@@ -1439,7 +1450,7 @@ export namespace Prisma {
     listId?: boolean
   }
 
-  export type ItemOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "category" | "quantity" | "status" | "sourceType" | "sourceId" | "addedBy" | "addedAt" | "gotBy" | "gotAt" | "listId", ExtArgs["result"]["item"]>
+  export type ItemOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "name" | "category" | "quantity" | "status" | "sourceType" | "sourceId" | "sourceLabel" | "addedBy" | "addedAt" | "gotBy" | "gotAt" | "listId", ExtArgs["result"]["item"]>
   export type ItemInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     list?: boolean | ListDefaultArgs<ExtArgs>
   }
@@ -1463,6 +1474,7 @@ export namespace Prisma {
       status: string
       sourceType: string
       sourceId: string | null
+      sourceLabel: string | null
       addedBy: string
       addedAt: Date
       gotBy: string | null
@@ -1899,6 +1911,7 @@ export namespace Prisma {
     readonly status: FieldRef<"Item", 'String'>
     readonly sourceType: FieldRef<"Item", 'String'>
     readonly sourceId: FieldRef<"Item", 'String'>
+    readonly sourceLabel: FieldRef<"Item", 'String'>
     readonly addedBy: FieldRef<"Item", 'String'>
     readonly addedAt: FieldRef<"Item", 'DateTime'>
     readonly gotBy: FieldRef<"Item", 'String'>
@@ -5454,6 +5467,7 @@ export namespace Prisma {
     status: 'status',
     sourceType: 'sourceType',
     sourceId: 'sourceId',
+    sourceLabel: 'sourceLabel',
     addedBy: 'addedBy',
     addedAt: 'addedAt',
     gotBy: 'gotBy',
@@ -5603,6 +5617,7 @@ export namespace Prisma {
     status?: StringFilter<"Item"> | string
     sourceType?: StringFilter<"Item"> | string
     sourceId?: StringNullableFilter<"Item"> | string | null
+    sourceLabel?: StringNullableFilter<"Item"> | string | null
     addedBy?: StringFilter<"Item"> | string
     addedAt?: DateTimeFilter<"Item"> | Date | string
     gotBy?: StringNullableFilter<"Item"> | string | null
@@ -5619,6 +5634,7 @@ export namespace Prisma {
     status?: SortOrder
     sourceType?: SortOrder
     sourceId?: SortOrderInput | SortOrder
+    sourceLabel?: SortOrderInput | SortOrder
     addedBy?: SortOrder
     addedAt?: SortOrder
     gotBy?: SortOrderInput | SortOrder
@@ -5638,6 +5654,7 @@ export namespace Prisma {
     status?: StringFilter<"Item"> | string
     sourceType?: StringFilter<"Item"> | string
     sourceId?: StringNullableFilter<"Item"> | string | null
+    sourceLabel?: StringNullableFilter<"Item"> | string | null
     addedBy?: StringFilter<"Item"> | string
     addedAt?: DateTimeFilter<"Item"> | Date | string
     gotBy?: StringNullableFilter<"Item"> | string | null
@@ -5654,6 +5671,7 @@ export namespace Prisma {
     status?: SortOrder
     sourceType?: SortOrder
     sourceId?: SortOrderInput | SortOrder
+    sourceLabel?: SortOrderInput | SortOrder
     addedBy?: SortOrder
     addedAt?: SortOrder
     gotBy?: SortOrderInput | SortOrder
@@ -5675,6 +5693,7 @@ export namespace Prisma {
     status?: StringWithAggregatesFilter<"Item"> | string
     sourceType?: StringWithAggregatesFilter<"Item"> | string
     sourceId?: StringNullableWithAggregatesFilter<"Item"> | string | null
+    sourceLabel?: StringNullableWithAggregatesFilter<"Item"> | string | null
     addedBy?: StringWithAggregatesFilter<"Item"> | string
     addedAt?: DateTimeWithAggregatesFilter<"Item"> | Date | string
     gotBy?: StringNullableWithAggregatesFilter<"Item"> | string | null
@@ -5851,6 +5870,7 @@ export namespace Prisma {
     status?: string
     sourceType: string
     sourceId?: string | null
+    sourceLabel?: string | null
     addedBy: string
     addedAt?: Date | string
     gotBy?: string | null
@@ -5866,6 +5886,7 @@ export namespace Prisma {
     status?: string
     sourceType: string
     sourceId?: string | null
+    sourceLabel?: string | null
     addedBy: string
     addedAt?: Date | string
     gotBy?: string | null
@@ -5881,6 +5902,7 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     sourceType?: StringFieldUpdateOperationsInput | string
     sourceId?: NullableStringFieldUpdateOperationsInput | string | null
+    sourceLabel?: NullableStringFieldUpdateOperationsInput | string | null
     addedBy?: StringFieldUpdateOperationsInput | string
     addedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     gotBy?: NullableStringFieldUpdateOperationsInput | string | null
@@ -5896,6 +5918,7 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     sourceType?: StringFieldUpdateOperationsInput | string
     sourceId?: NullableStringFieldUpdateOperationsInput | string | null
+    sourceLabel?: NullableStringFieldUpdateOperationsInput | string | null
     addedBy?: StringFieldUpdateOperationsInput | string
     addedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     gotBy?: NullableStringFieldUpdateOperationsInput | string | null
@@ -5911,6 +5934,7 @@ export namespace Prisma {
     status?: string
     sourceType: string
     sourceId?: string | null
+    sourceLabel?: string | null
     addedBy: string
     addedAt?: Date | string
     gotBy?: string | null
@@ -5926,6 +5950,7 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     sourceType?: StringFieldUpdateOperationsInput | string
     sourceId?: NullableStringFieldUpdateOperationsInput | string | null
+    sourceLabel?: NullableStringFieldUpdateOperationsInput | string | null
     addedBy?: StringFieldUpdateOperationsInput | string
     addedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     gotBy?: NullableStringFieldUpdateOperationsInput | string | null
@@ -5940,6 +5965,7 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     sourceType?: StringFieldUpdateOperationsInput | string
     sourceId?: NullableStringFieldUpdateOperationsInput | string | null
+    sourceLabel?: NullableStringFieldUpdateOperationsInput | string | null
     addedBy?: StringFieldUpdateOperationsInput | string
     addedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     gotBy?: NullableStringFieldUpdateOperationsInput | string | null
@@ -6201,6 +6227,7 @@ export namespace Prisma {
     status?: SortOrder
     sourceType?: SortOrder
     sourceId?: SortOrder
+    sourceLabel?: SortOrder
     addedBy?: SortOrder
     addedAt?: SortOrder
     gotBy?: SortOrder
@@ -6216,6 +6243,7 @@ export namespace Prisma {
     status?: SortOrder
     sourceType?: SortOrder
     sourceId?: SortOrder
+    sourceLabel?: SortOrder
     addedBy?: SortOrder
     addedAt?: SortOrder
     gotBy?: SortOrder
@@ -6231,6 +6259,7 @@ export namespace Prisma {
     status?: SortOrder
     sourceType?: SortOrder
     sourceId?: SortOrder
+    sourceLabel?: SortOrder
     addedBy?: SortOrder
     addedAt?: SortOrder
     gotBy?: SortOrder
@@ -6794,6 +6823,7 @@ export namespace Prisma {
     status?: string
     sourceType: string
     sourceId?: string | null
+    sourceLabel?: string | null
     addedBy: string
     addedAt?: Date | string
     gotBy?: string | null
@@ -6808,6 +6838,7 @@ export namespace Prisma {
     status?: string
     sourceType: string
     sourceId?: string | null
+    sourceLabel?: string | null
     addedBy: string
     addedAt?: Date | string
     gotBy?: string | null
@@ -6851,6 +6882,7 @@ export namespace Prisma {
     status?: StringFilter<"Item"> | string
     sourceType?: StringFilter<"Item"> | string
     sourceId?: StringNullableFilter<"Item"> | string | null
+    sourceLabel?: StringNullableFilter<"Item"> | string | null
     addedBy?: StringFilter<"Item"> | string
     addedAt?: DateTimeFilter<"Item"> | Date | string
     gotBy?: StringNullableFilter<"Item"> | string | null
@@ -6866,6 +6898,7 @@ export namespace Prisma {
     status?: string
     sourceType: string
     sourceId?: string | null
+    sourceLabel?: string | null
     addedBy: string
     addedAt?: Date | string
     gotBy?: string | null
@@ -6880,6 +6913,7 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     sourceType?: StringFieldUpdateOperationsInput | string
     sourceId?: NullableStringFieldUpdateOperationsInput | string | null
+    sourceLabel?: NullableStringFieldUpdateOperationsInput | string | null
     addedBy?: StringFieldUpdateOperationsInput | string
     addedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     gotBy?: NullableStringFieldUpdateOperationsInput | string | null
@@ -6894,6 +6928,7 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     sourceType?: StringFieldUpdateOperationsInput | string
     sourceId?: NullableStringFieldUpdateOperationsInput | string | null
+    sourceLabel?: NullableStringFieldUpdateOperationsInput | string | null
     addedBy?: StringFieldUpdateOperationsInput | string
     addedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     gotBy?: NullableStringFieldUpdateOperationsInput | string | null
@@ -6908,6 +6943,7 @@ export namespace Prisma {
     status?: StringFieldUpdateOperationsInput | string
     sourceType?: StringFieldUpdateOperationsInput | string
     sourceId?: NullableStringFieldUpdateOperationsInput | string | null
+    sourceLabel?: NullableStringFieldUpdateOperationsInput | string | null
     addedBy?: StringFieldUpdateOperationsInput | string
     addedAt?: DateTimeFieldUpdateOperationsInput | Date | string
     gotBy?: NullableStringFieldUpdateOperationsInput | string | null

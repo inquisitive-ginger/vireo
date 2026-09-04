@@ -366,6 +366,144 @@ describe('POST /api/shopping/items/:id/aisle', () => {
   })
 })
 
+// ─── The needs-push contract, consumer side (ADR 069 §4) ──────────────────────
+
+const MEAL_ID = '00000000-5ec0-0002-0000-000000000001'
+
+function pushNeeds(names: string[], overrides: Record<string, unknown> = {}) {
+  return app.eventBus.emitAndAwait('meals.needs.pushed', {
+    sourceType: 'meal',
+    sourceId: MEAL_ID,
+    note: 'for Thursday',
+    requestedBy: PARENT_ID,
+    names,
+    ...overrides,
+  }) as Promise<{ filed: number; alreadyOn: number; listName: string }[]>
+}
+
+describe('meals.needs.pushed', () => {
+  it('files the meal\u2019s needs onto the default list and reports what landed', async () => {
+    const [result] = await pushNeeds(['chicken thighs', 'snap peas'])
+
+    expect(result).toMatchObject({ filed: 2, alreadyOn: 0, listName: 'Grocery' })
+    const items = await shoppingPrisma.item.findMany({ orderBy: { name: 'asc' } })
+    expect(items.map((i) => i.name)).toEqual(['chicken thighs', 'snap peas'])
+  })
+
+  it('files through the same dictionary a manual add uses (AC4)', async () => {
+    await pushNeeds(['chicken thighs', 'sourdough', 'lightbulbs'])
+
+    const byName = new Map((await shoppingPrisma.item.findMany()).map((i) => [i.name, i.category]))
+    expect(byName.get('chicken thighs')).toBe('Meat')
+    expect(byName.get('sourdough')).toBe('Bakery')
+    expect(byName.get('lightbulbs')).toBe('Other')
+  })
+
+  it('honours a family correction, so a push cannot be filed by a second copy of the rule', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const listId = await groceryListId()
+    const added = await addItem(cookie, listId, { name: 'tortillas' })
+    await app.inject({
+      method: 'POST',
+      url: `/api/shopping/items/${added.json().id}/aisle`,
+      headers: { cookie },
+      payload: { category: 'Bakery' },
+    })
+    // The item goes; the family-wide override it taught stays.
+    await shoppingPrisma.item.delete({ where: { id: added.json().id } })
+
+    await pushNeeds(['Tortillas'])
+
+    const pushed = await shoppingPrisma.item.findFirst({ where: { sourceType: 'meal' } })
+    expect(pushed?.category).toBe('Bakery')
+  })
+
+  it('carries the producer\u2019s words to the note line — shopping cannot derive them (AC6)', async () => {
+    await pushNeeds(['chicken thighs'])
+
+    const listId = await groceryListId()
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const res = await app.inject({
+      method: 'GET',
+      url: `/api/shopping/lists/${listId}`,
+      headers: { cookie },
+    })
+    expect(res.json().items[0].note).toBe('for Thursday')
+  })
+
+  it('keeps the meal id as an opaque handle rather than a join (AC2)', async () => {
+    await pushNeeds(['chicken thighs'])
+
+    const pushed = await shoppingPrisma.item.findFirst({ where: { sourceType: 'meal' } })
+    expect(pushed).toMatchObject({ sourceType: 'meal', sourceId: MEAL_ID, addedBy: PARENT_ID })
+  })
+
+  it('does not double a row when the same meal is pushed twice (AC5)', async () => {
+    await pushNeeds(['chicken thighs', 'snap peas'])
+    const [second] = await pushNeeds(['chicken thighs', 'snap peas'])
+
+    expect(second).toMatchObject({ filed: 0, alreadyOn: 2 })
+    expect(await shoppingPrisma.item.count()).toBe(2)
+  })
+
+  it('dedupes on the normalized name, the key the dictionary and overrides use', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    await addItem(cookie, await groceryListId(), { name: 'Snap Peas' })
+
+    const [result] = await pushNeeds(['snap peas,'])
+
+    expect(result).toMatchObject({ filed: 0, alreadyOn: 1 })
+    expect(await shoppingPrisma.item.count()).toBe(1)
+  })
+
+  it('dedupes a repeat of the same name inside one push', async () => {
+    const [result] = await pushNeeds(['snap peas', 'Snap Peas'])
+
+    expect(result).toMatchObject({ filed: 1, alreadyOn: 1 })
+    expect(await shoppingPrisma.item.count()).toBe(1)
+  })
+
+  it('puts a checked row back rather than duplicating it', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const added = await addItem(cookie, await groceryListId(), { name: 'snap peas' })
+    await shoppingPrisma.item.update({
+      where: { id: added.json().id },
+      data: { status: 'got', gotBy: PARENT_ID, gotAt: new Date() },
+    })
+
+    const [result] = await pushNeeds(['snap peas'])
+
+    expect(result).toMatchObject({ filed: 1, alreadyOn: 0 })
+    const rows = await shoppingPrisma.item.findMany()
+    expect(rows).toHaveLength(1)
+    expect(rows[0]).toMatchObject({ status: 'needed', gotBy: null, sourceLabel: 'for Thursday' })
+  })
+
+  it('announces each filed row on the bus under the one add event (ADR 072)', async () => {
+    const seen: unknown[] = []
+    const off = app.eventBus.on('shopping.item.added', (p) => seen.push(p))
+    await pushNeeds(['chicken thighs', 'snap peas'])
+    off()
+
+    expect(seen).toHaveLength(2)
+    expect(seen[0]).toMatchObject({ sourceType: 'meal', addedBy: PARENT_ID })
+  })
+
+  it('teaches the entry table, exactly as a manual add does', async () => {
+    await pushNeeds(['Chicken Thighs'])
+
+    const entry = await shoppingPrisma.entry.findUnique({
+      where: { normalizedName: 'chicken thighs' },
+    })
+    expect(entry?.name).toBe('Chicken Thighs')
+  })
+
+  it('rejects a malformed payload instead of writing a half-understood row', async () => {
+    await expect(pushNeeds([], { names: ['ok'], note: '' })).rejects.toThrow(/malformed/)
+    expect(await shoppingPrisma.item.count()).toBe(0)
+  })
+})
+
 // ─── The permission namespace (ADR 069 §3, spec.md) ───────────────────────────
 
 describe('shopping permission registry', () => {

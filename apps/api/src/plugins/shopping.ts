@@ -1,12 +1,17 @@
 import fp from 'fastify-plugin'
 import type { FastifyPluginAsync } from 'fastify'
+// The only platform import this file needs: a TYPE, for the consumer's signature.
+// The value imports went with rendered attribution (live review, 2026-09-03).
+import type { EventBus } from '@family-os/platform/server'
 import { shoppingPrisma } from '@family-os/plugin-shopping/db'
 import { fileAisle, normalizeItemName, aisleSortIndex } from '@family-os/plugin-shopping/lib/filing'
 import {
   ShoppingItemCreateSchema,
   ShoppingAisleCorrectionSchema,
   ShoppingListCreateSchema,
+  NeedsPushedPayloadSchema,
 } from '@family-os/schemas'
+import type { NeedsPushResult } from '@family-os/schemas'
 
 type ItemRow = Awaited<ReturnType<typeof shoppingPrisma.item.create>>
 type ListRow = Awaited<ReturnType<typeof shoppingPrisma.list.create>>
@@ -22,9 +27,12 @@ function serializeItem(item: ItemRow) {
     addedAt: item.addedAt.toISOString(),
     // Who added a thing is noise on a shared list (live review, 2026-09-03) —
     // `added_by` is still stored for permissions and audit, it just never
-    // renders. What survives here is WHY the row exists: a producer's words
-    // ("for Thursday"), which arrive with the needs-push contract in M5.5/3.
-    note: null as string | null,
+    // renders. What the line carries is WHY the row exists: the producer's own
+    // words, carried across the needs-push contract because `shopping` cannot
+    // read `planned_meals` to derive them (ADR 069 §3). A hand-typed row has no
+    // producer and no note, which is the correct resting state — nothing is
+    // invented to fill the line.
+    note: item.sourceLabel,
   }
 }
 
@@ -72,6 +80,127 @@ async function remember(name: string) {
   } catch (err) {
     console.error('[shopping] could not remember %s', normalizedName, err)
   }
+}
+
+type FileItemInput = {
+  listId: string
+  name: string
+  quantity?: string | null
+  addedBy: string
+  sourceType: string
+  sourceId?: string | null
+  sourceLabel?: string | null
+}
+
+/** The one place a name becomes a row. Override → dictionary → Other, remember
+    the spelling, announce it. A producer's push and a hand-typed add both come
+    through here, so a pushed item cannot end up filed by a second, drifting copy
+    of the rule — and a mis-filed push is correctable by the same `file` action
+    that corrects a mis-filed manual add. */
+async function fileItem(bus: EventBus, input: FileItemInput): Promise<ItemRow> {
+  const normalizedName = normalizeItemName(input.name)
+  const override = await shoppingPrisma.aisleOverride.findUnique({ where: { normalizedName } })
+
+  const item = await shoppingPrisma.item.create({
+    data: {
+      name: input.name,
+      quantity: input.quantity ?? null,
+      category: fileAisle(input.name, override?.category ?? null),
+      status: 'needed',
+      sourceType: input.sourceType,
+      sourceId: input.sourceId ?? null,
+      sourceLabel: input.sourceLabel ?? null,
+      addedBy: input.addedBy,
+      listId: input.listId,
+    },
+  })
+
+  await remember(item.name)
+
+  // One event name for every add, whoever caused it — a wall add is told apart
+  // by `addedBy` (ADR 072) and a pushed one by `sourceType`, not by a second
+  // name on the bus.
+  bus.emit('shopping.item.added', {
+    itemId: item.id,
+    listId: item.listId,
+    name: item.name,
+    addedBy: item.addedBy,
+    sourceType: item.sourceType,
+  })
+
+  return item
+}
+
+/** The consumer half of the needs-push contract (ADR 069 §4). It takes the
+    meal's identity from the payload and never reads `planned_meals`.
+
+    It RETURNS rather than logging: a person tapped "3 things needed" and is
+    standing there waiting to be told what happened, so the counts — and any
+    throw — travel back to the producer's route through `emitAndAwait`. That is
+    the opposite of the fire-and-forget subscribers in `chores`/`rewards`, and
+    deliberately so: a failed XP award must not fail a chore, but a needs push
+    that did not land must not report success. */
+async function fileNeeds(bus: EventBus, payload: unknown): Promise<NeedsPushResult> {
+  const parsed = NeedsPushedPayloadSchema.safeParse(payload)
+  if (!parsed.success) {
+    throw new Error(`malformed meals.needs.pushed payload: ${parsed.error.message}`)
+  }
+  const { names, sourceType, sourceId, note, requestedBy } = parsed.data
+
+  const list = await shoppingPrisma.list.findFirst({
+    where: { kind: 'permanent' },
+    orderBy: { sortOrder: 'asc' },
+  })
+  if (!list) throw new Error('no permanent list to file needs onto')
+
+  // Dedupe on the normalized name — the same key the dictionary and the
+  // overrides use, so "Snap Peas" and "snap peas," are one thing. An OPEN row
+  // beats a checked one when both normalize equal: the open row is what a
+  // repeat push should skip against.
+  const existing = await shoppingPrisma.item.findMany({ where: { listId: list.id } })
+  const byName = new Map<string, ItemRow>()
+  for (const item of existing) {
+    const key = normalizeItemName(item.name)
+    const current = byName.get(key)
+    if (!current || (current.status === 'got' && item.status === 'needed')) byName.set(key, item)
+  }
+
+  let filed = 0
+  let alreadyOn = 0
+  for (const name of names) {
+    const key = normalizeItemName(name)
+    const match = byName.get(key)
+
+    if (match?.status === 'needed') {
+      alreadyOn += 1
+      continue
+    }
+
+    // Pushing a meal that needs something already bought puts the row back
+    // rather than duplicating it (salvaged from PR #127). Nothing can reach
+    // 'got' until M5.5/4 ships checking; the branch is here so dedupe does not
+    // have to change shape when it does.
+    const item = match
+      ? await shoppingPrisma.item.update({
+          where: { id: match.id },
+          data: { status: 'needed', gotBy: null, gotAt: null, sourceLabel: note },
+        })
+      : await fileItem(bus, {
+          listId: list.id,
+          name,
+          addedBy: requestedBy,
+          sourceType,
+          sourceId,
+          sourceLabel: note,
+        })
+
+    // A repeat of the same name inside one push dedupes against what it just
+    // wrote, not just against what was already there.
+    byName.set(key, item)
+    filed += 1
+  }
+
+  return { listId: list.id, listName: list.name, filed, alreadyOn }
 }
 
 const shoppingPlugin: FastifyPluginAsync = async (fastify) => {
@@ -172,29 +301,12 @@ const shoppingPlugin: FastifyPluginAsync = async (fastify) => {
     }
     const { name, quantity } = parsed.data
 
-    const normalizedName = normalizeItemName(name)
-    const override = await shoppingPrisma.aisleOverride.findUnique({ where: { normalizedName } })
-    const category = fileAisle(name, override?.category ?? null)
-
-    const item = await shoppingPrisma.item.create({
-      data: {
-        name,
-        quantity,
-        category,
-        status: 'needed',
-        sourceType: 'manual',
-        addedBy: request.profile.id,
-        listId,
-      },
-    })
-
-    await remember(item.name)
-
-    fastify.eventBus.emit('shopping.item.added', {
-      itemId: item.id,
-      listId: item.listId,
-      name: item.name,
-      addedBy: item.addedBy,
+    const item = await fileItem(fastify.eventBus, {
+      listId,
+      name,
+      quantity,
+      addedBy: request.profile.id,
+      sourceType: 'manual',
     })
 
     return reply.status(201).send(serializeItem(item))
@@ -234,6 +346,15 @@ const shoppingPlugin: FastifyPluginAsync = async (fastify) => {
 
     return serializeItem(item)
   })
+
+  // ─── Event subscribers ─────────────────────────────────────────────────────
+
+  // `meals.needs.pushed` (ADR 069 §4) — the boundary in one line: meals says
+  // what it needs, shopping decides where it goes and what it is called. No
+  // `dependencies` entry is needed the way the day-mark provider needs one:
+  // the bus is looked up at request time, not at boot, so registration order
+  // cannot break this.
+  fastify.eventBus.on('meals.needs.pushed', (payload) => fileNeeds(fastify.eventBus, payload))
 }
 
 export default fp(shoppingPlugin, { name: 'shopping' })

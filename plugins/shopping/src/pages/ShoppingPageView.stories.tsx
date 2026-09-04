@@ -42,7 +42,12 @@ const meta: Meta<typeof ShoppingPageView> = {
       },
       {
         aisle: 'Meat',
-        items: [item('6', 'chicken thighs', 'Meat'), item('7', 'ground beef', 'Meat')],
+        items: [
+          // The pushed row (M5.5/3): its note is the PRODUCER's words, carried
+          // across the contract — artifact frame S1 shows exactly this line.
+          item('6', 'chicken thighs', 'Meat', 'for Thursday'),
+          item('7', 'ground beef', 'Meat'),
+        ],
       },
     ],
     loading: false,
