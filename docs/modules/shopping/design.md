@@ -55,6 +55,11 @@ reverse-chronological is the worst order in an aisle).
    It is still never a screen you land on. It **stays visible while composing**: it says
    where the word being typed will land, and that is the moment the fact matters most.
 
+   **The two jobs are welded, and code depends on that.** M5.5/4 keys its aisle-open
+   state on the selected list id, which is honest only while selecting a pill also swaps
+   the visible list. Wanting "add to Costco while looking at Grocery" later is not a
+   small change: it splits the pill back into two controls and invalidates that key.
+
 5. **The list** — `ListRow` per item (ADR 063/068: hairline, 56 px floor, leading slot).
    The leading slot is the check ring; the whole row is the tap target. Name is
    `card-title`; the note line is `sm` and carries **producer words only** — why the row
