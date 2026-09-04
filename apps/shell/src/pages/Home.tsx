@@ -39,8 +39,9 @@ const WIDGET_META: Record<string, WidgetMeta> = {
   },
   // `shopping` is deliberately absent until the polish session announces it —
   // see the commit that removed it. `home-layout.ts` still places
-  // `shopping.capture` in the default layout and the loop below skips any id
-  // with no meta, so the tile is absent rather than a dead placeholder.
+  // `shopping.capture` in the default layouts; the loop below drops any id with
+  // no meta from the LAYOUT as well as from the children, so no cell is
+  // reserved for it.
 }
 
 function moduleFromWidgetId(widgetId: string): string {
@@ -77,10 +78,18 @@ export function Home({ widgetRemotes }: HomeProps) {
 
   const widgetChildren: Record<string, ReactNode> = {}
   const flatSlots: string[] = []
+  // The grid places a cell for every layout entry it is handed and sizes itself
+  // from the lowest one, so an entry the shell cannot render must not reach it —
+  // otherwise it reserves an empty bordered region and grows the dashboard for a
+  // widget that is not there. A layout can name a widget with no meta whenever
+  // the two disagree: a plugin removed, a widget not yet registered, or a
+  // persisted per-profile layout outliving the widget it was saved with.
+  const placed: WidgetLayoutItem[] = []
 
   for (const item of layout ?? []) {
     const meta = WIDGET_META[moduleFromWidgetId(item.widgetId)]
     if (!meta) continue
+    placed.push(item)
 
     const remoteName = widgetRemotes[item.widgetId]
     if (remoteName) {
@@ -114,7 +123,7 @@ export function Home({ widgetRemotes }: HomeProps) {
   return (
     // `full` — the dashboard grid is meant to fill the viewport, not sit in a column.
     <PageContainer width="full" className="flex flex-col md:h-full">
-      <WidgetGrid layout={layout ?? []} flatSlots={flatSlots} className="md:min-h-0 md:flex-1">
+      <WidgetGrid layout={placed} flatSlots={flatSlots} className="md:min-h-0 md:flex-1">
         {widgetChildren}
       </WidgetGrid>
     </PageContainer>
