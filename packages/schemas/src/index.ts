@@ -212,6 +212,20 @@ export type MealKind = (typeof MEAL_KINDS)[number]
 // The create + edit drawer submits the full field set, so one schema covers both.
 // ownerId null = UNCLAIMED, a first-class state (spec.md). title vs sides is the
 // anti-ambush split: the headline the kid reads, then the rest of the plate.
+// Optional link. Blanks collapse to null like OptionalText, then the protocol is
+// checked: this value ends up in an `href`, so a `javascript:` or `data:` URL is
+// a stored XSS the drawer would happily hand back to every profile. Validated
+// here rather than at render time — the column should never hold one.
+const OptionalHttpUrl = OptionalText.refine((v) => {
+  if (v === null) return true
+  try {
+    const { protocol } = new URL(v)
+    return protocol === 'http:' || protocol === 'https:'
+  } catch {
+    return false
+  }
+}, 'Expected a link starting with http:// or https://')
+
 export const MealInputSchema = z.object({
   date: IsoDateSchema,
   title: z.string().trim().min(1, 'title is required'),
@@ -220,6 +234,7 @@ export const MealInputSchema = z.object({
   ownerId: UuidSchema.nullish().transform((v) => v ?? null),
   tryBite: OptionalText,
   needs: OptionalText,
+  recipeUrl: OptionalHttpUrl,
   notes: OptionalText,
 })
 

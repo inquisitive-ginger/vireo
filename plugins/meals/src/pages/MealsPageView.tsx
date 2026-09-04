@@ -1,4 +1,4 @@
-import { ChevronLeft, ChevronRight } from 'lucide-react'
+import { ChevronLeft, ChevronRight, ExternalLink } from 'lucide-react'
 import {
   Button,
   ItemCard,
@@ -122,6 +122,31 @@ export function MealsPageView({
         ))}
       </div>
     </PageContainer>
+  )
+}
+
+/* `· Recipe ↗` on the meta line (gate, 2026-09-03) — a text link, never a
+   bordered button, the grammar design.md already fixed for M5/6's needs-push.
+   `shrink-0` so the verb and try bite truncate around it rather than clipping
+   the affordance itself, and `z-20` to clear ItemCard's activate overlay the
+   same way `trailing` does — without it the row's tap-to-edit swallows it. */
+function RecipeLink({ url, title }: { url: string; title: string }) {
+  return (
+    <>
+      <span aria-hidden className="text-sm-token shrink-0 text-muted-foreground">
+        ·
+      </span>
+      <a
+        href={url}
+        target="_blank"
+        rel="noopener noreferrer"
+        aria-label={`Recipe for “${title}” (opens in a new tab)`}
+        className="text-sm-token relative z-20 flex shrink-0 items-center gap-1 font-medium text-accent hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+      >
+        Recipe
+        <ExternalLink size={11} aria-hidden />
+      </a>
+    </>
   )
 }
 
@@ -253,6 +278,9 @@ function DayRow({
                   {meal.tryBite && ` · try bite: ${meal.tryBite}`}
                 </span>
               )}
+              {/* Hidden on past days with the rest of the row's affordances —
+                  behind today the page only records (design.md §M5/2). */}
+              {meal.recipeUrl && !isPast && <RecipeLink url={meal.recipeUrl} title={meal.title} />}
             </div>
           </>
         ) : (

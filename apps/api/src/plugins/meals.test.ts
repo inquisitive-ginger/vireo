@@ -125,6 +125,32 @@ describe('POST /api/meals/plan', () => {
     const res = await planMeal(cookie, { date: '2026-08-13', title: 'Tacos' })
     expect(res.statusCode).toBe(403)
   })
+
+  it('stores a recipe link and collapses a blank one to null', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const linked = await planMeal(cookie, {
+      date: '2026-08-13',
+      title: 'Rigatoni',
+      recipeUrl: 'https://www.seriouseats.com/rigatoni-alla-vodka',
+    })
+    expect(linked.statusCode).toBe(201)
+    expect(linked.json().recipeUrl).toBe('https://www.seriouseats.com/rigatoni-alla-vodka')
+
+    const blank = await planMeal(cookie, { date: '2026-08-14', title: 'Tacos', recipeUrl: '  ' })
+    expect(blank.statusCode).toBe(201)
+    expect(blank.json().recipeUrl).toBeNull()
+  })
+
+  // The value lands in an href on every profile's screen, so a non-http(s)
+  // scheme is stored XSS — it has to fail at the route, not at render time.
+  it.each(['javascript:alert(1)', 'data:text/html,<script>x</script>', 'rigatoni alla vodka'])(
+    'rejects %s as a recipe link with 400',
+    async (recipeUrl) => {
+      const cookie = await getCookieForProfile(PARENT_ID)
+      const res = await planMeal(cookie, { date: '2026-08-13', title: 'Rigatoni', recipeUrl })
+      expect(res.statusCode).toBe(400)
+    }
+  )
 })
 
 // ─── GET /api/meals/plan ──────────────────────────────────────────────────────

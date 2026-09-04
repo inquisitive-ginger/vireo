@@ -76,6 +76,7 @@ const mealsPlugin: FastifyPluginAsync = async (fastify) => {
           ownerId: input.ownerId,
           tryBite: input.tryBite,
           needs: input.needs,
+          recipeUrl: input.recipeUrl,
           notes: input.notes,
           createdBy: request.profile.id,
         },
@@ -120,6 +121,7 @@ const mealsPlugin: FastifyPluginAsync = async (fastify) => {
           ownerId: input.ownerId,
           tryBite: input.tryBite,
           needs: input.needs,
+          recipeUrl: input.recipeUrl,
           notes: input.notes,
         },
       })

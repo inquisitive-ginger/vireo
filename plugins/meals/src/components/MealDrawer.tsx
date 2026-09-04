@@ -10,6 +10,7 @@ import {
   Input,
   MemberChip,
   SegmentedControl,
+  cn,
 } from '@family-os/ui'
 import type { Profile } from '@family-os/platform/types'
 import { MEAL_KINDS, type MealKind, type PlannedMeal } from '../types'
@@ -19,6 +20,7 @@ export interface MealDrawerInput {
   sides: string | null
   tryBite: string | null
   needs: string | null
+  recipeUrl: string | null
   kind: MealKind
   ownerId: string | null
 }
@@ -30,6 +32,18 @@ const MealFormSchema = z.object({
   sides: z.string(),
   tryBite: z.string(),
   needs: z.string(),
+  // Blank is valid — the field is optional. A non-blank value has to be a
+  // http(s) link or the form never submits: the same rule the route enforces,
+  // said here so a bad paste is caught before a round trip.
+  recipeUrl: z.string().refine((v) => {
+    if (v.trim().length === 0) return true
+    try {
+      const { protocol } = new URL(v.trim())
+      return protocol === 'http:' || protocol === 'https:'
+    } catch {
+      return false
+    }
+  }, 'That doesn’t look like a link — paste the web address.'),
   kind: z.enum(MEAL_KINDS),
   ownerId: z.string().nullable(),
 })
@@ -97,7 +111,7 @@ export function MealDrawer({
     handleSubmit,
     reset,
     watch,
-    formState: { isSubmitting },
+    formState: { errors, isSubmitting },
   } = useForm<MealForm>({
     resolver: zodResolver(MealFormSchema),
     mode: 'onChange',
@@ -106,6 +120,7 @@ export function MealDrawer({
       sides: '',
       tryBite: '',
       needs: '',
+      recipeUrl: '',
       kind: 'cooked',
       ownerId: null,
     },
@@ -118,6 +133,7 @@ export function MealDrawer({
       sides: editingMeal?.sides ?? '',
       tryBite: editingMeal?.tryBite ?? '',
       needs: editingMeal?.needs ?? '',
+      recipeUrl: editingMeal?.recipeUrl ?? '',
       kind: editingMeal?.kind ?? 'cooked',
       ownerId: editingMeal?.ownerId ?? null,
     })
@@ -139,6 +155,7 @@ export function MealDrawer({
       sides: cooking ? clean(values.sides) : null,
       tryBite: cooking ? clean(values.tryBite) : null,
       needs: cooking ? clean(values.needs) : null,
+      recipeUrl: cooking ? clean(values.recipeUrl) : null,
       kind: values.kind,
       ownerId: values.kind === 'out' ? null : values.ownerId,
     })
@@ -217,6 +234,33 @@ export function MealDrawer({
                   />
                   <p className="text-sm-token mt-2 text-muted-foreground">
                     What it needs from the store — one tap to the grocery list, once that ships.
+                  </p>
+                </div>
+
+                {/* Cooking only (gate, 2026-09-03): needs is the store trip, the
+                    recipe is the stove, and both are the planner's homework
+                    rather than the kid-facing menu card — so it lands after
+                    needs and before the owner ask. */}
+                <div>
+                  <FieldLabel htmlFor="meal-recipe-url" optional>
+                    Recipe link
+                  </FieldLabel>
+                  <Input
+                    id="meal-recipe-url"
+                    type="url"
+                    inputMode="url"
+                    placeholder="https://…"
+                    aria-invalid={errors.recipeUrl ? true : undefined}
+                    {...register('recipeUrl')}
+                  />
+                  <p
+                    className={cn(
+                      'text-sm-token mt-2',
+                      errors.recipeUrl ? 'text-destructive' : 'text-muted-foreground'
+                    )}
+                  >
+                    {errors.recipeUrl?.message ??
+                      'Where you’re cooking from — one tap at the stove.'}
                   </p>
                 </div>
               </>

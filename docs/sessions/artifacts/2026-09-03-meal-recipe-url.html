@@ -1,0 +1,1313 @@
+<title>Recipe Link on a Meal</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@400;500;600;700&display=swap">
+
+<style>
+  /* App tokens read verbatim from packages/ui/src/styles.css (main @ 51d1a91).
+     --page-* are this document's own chrome and are not app tokens. */
+  :root {
+    --background: oklch(0.985 0.008 100);
+    --foreground: oklch(0.18 0.03 100);
+    --primary: oklch(0.5 0.11 122);
+    --primary-foreground: oklch(0.99 0 0);
+    --muted: oklch(0.93 0.016 100);
+    --muted-foreground: oklch(0.52 0.035 100);
+    --accent: oklch(0.47 0.07 185);
+    --border: oklch(0.88 0.02 100);
+    --card: oklch(0.999 0.004 100);
+    --surface-sunken: oklch(0.955 0.006 100);
+    --success: oklch(0.44 0.1 148);
+    --warning: oklch(0.69 0.12 78);
+    --destructive: oklch(0.51 0.17 27);
+
+    --identity-sage: oklch(0.6 0.1 148);
+    --identity-sage-tint: oklch(0.806 0.07 148);
+    --identity-sage-ink: oklch(0.36 0.07 148);
+    --identity-plum: oklch(0.56 0.1 330);
+    --identity-plum-tint: oklch(0.78 0.07 330);
+    --identity-plum-ink: oklch(0.36 0.07 330);
+    --identity-family: oklch(0.55 0.022 65);
+    --identity-family-tint: oklch(0.9 0.018 70);
+
+    --page-bg: oklch(0.955 0.004 230);
+    --page-fg: oklch(0.22 0.02 240);
+    --page-muted: oklch(0.48 0.02 240);
+    --page-rule: oklch(0.87 0.01 240);
+    --page-chip: oklch(0.91 0.012 240);
+    --page-tray: oklch(0.922 0.006 240);
+    --page-bezel: oklch(0.78 0.014 240);
+    --page-surface: oklch(0.985 0.003 240);
+    --page-veil: oklch(0.955 0.004 230 / 0.86);
+
+    --font-display: 'Lora', Georgia, 'Times New Roman', serif;
+    --font-ui: 'DM Sans', 'Helvetica Neue', Arial, sans-serif;
+    --font-mono: ui-monospace, SFMono-Regular, Menlo, monospace;
+    --radius-card: 0.5rem;
+    --radius-panel: 0.75rem;
+    --spacing-row-touch: 64px;
+    --spacing-tab-bar: 56px;
+
+    --rail: 80px;
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme="light"]) {
+      --background: oklch(0.15 0.018 105);
+      --foreground: oklch(0.92 0.012 100);
+      --primary: oklch(0.62 0.11 122);
+      --primary-foreground: oklch(0.99 0 0);
+      --muted: oklch(0.2 0.014 105);
+      --muted-foreground: oklch(0.56 0.02 100);
+      --accent: oklch(0.56 0.08 185);
+      --border: oklch(0.3 0.018 105);
+      --card: oklch(0.21 0.018 105);
+      --surface-sunken: oklch(0.175 0.008 105);
+      --success: oklch(0.57 0.1 148);
+      --warning: oklch(0.75 0.11 78);
+      --destructive: oklch(0.62 0.16 27);
+      --identity-sage: oklch(0.66 0.1 148);
+      --identity-sage-tint: oklch(0.38 0.06 148);
+      --identity-sage-ink: oklch(0.86 0.07 148);
+      --identity-plum: oklch(0.64 0.1 330);
+      --identity-plum-tint: oklch(0.36 0.06 330);
+      --identity-plum-ink: oklch(0.86 0.07 330);
+      --identity-family: oklch(0.66 0.02 65);
+      --identity-family-tint: oklch(0.3 0.014 70);
+      --page-bg: oklch(0.17 0.012 240);
+      --page-fg: oklch(0.9 0.012 240);
+      --page-muted: oklch(0.62 0.018 240);
+      --page-rule: oklch(0.3 0.014 240);
+      --page-chip: oklch(0.24 0.014 240);
+      --page-tray: oklch(0.135 0.01 240);
+      --page-bezel: oklch(0.36 0.016 240);
+      --page-surface: oklch(0.21 0.014 240);
+      --page-veil: oklch(0.17 0.012 240 / 0.86);
+    }
+  }
+
+  :root[data-theme="dark"] {
+    --background: oklch(0.15 0.018 105);
+    --foreground: oklch(0.92 0.012 100);
+    --primary: oklch(0.62 0.11 122);
+    --primary-foreground: oklch(0.99 0 0);
+    --muted: oklch(0.2 0.014 105);
+    --muted-foreground: oklch(0.56 0.02 100);
+    --accent: oklch(0.56 0.08 185);
+    --border: oklch(0.3 0.018 105);
+    --card: oklch(0.21 0.018 105);
+    --surface-sunken: oklch(0.175 0.008 105);
+    --success: oklch(0.57 0.1 148);
+    --warning: oklch(0.75 0.11 78);
+    --destructive: oklch(0.62 0.16 27);
+    --identity-sage: oklch(0.66 0.1 148);
+    --identity-sage-tint: oklch(0.38 0.06 148);
+    --identity-sage-ink: oklch(0.86 0.07 148);
+    --identity-plum: oklch(0.64 0.1 330);
+    --identity-plum-tint: oklch(0.36 0.06 330);
+    --identity-plum-ink: oklch(0.86 0.07 330);
+    --identity-family: oklch(0.66 0.02 65);
+    --identity-family-tint: oklch(0.3 0.014 70);
+    --page-bg: oklch(0.17 0.012 240);
+    --page-fg: oklch(0.9 0.012 240);
+    --page-muted: oklch(0.62 0.018 240);
+    --page-rule: oklch(0.3 0.014 240);
+    --page-chip: oklch(0.24 0.014 240);
+    --page-tray: oklch(0.135 0.01 240);
+    --page-bezel: oklch(0.36 0.016 240);
+    --page-surface: oklch(0.21 0.014 240);
+    --page-veil: oklch(0.17 0.012 240 / 0.86);
+  }
+
+  * { box-sizing: border-box; }
+  html { scroll-behavior: smooth; }
+
+  body {
+    margin: 0; padding: 0 20px 120px;
+    background: var(--page-bg); color: var(--page-fg);
+    font-family: var(--font-ui); font-size: 15px; line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+  .wrap { max-width: 1200px; margin: 0 auto; }
+  a { color: inherit; }
+  :focus-visible { outline: 2px solid var(--accent); outline-offset: 3px; border-radius: 3px; }
+
+  .mono, code {
+    font-family: var(--font-mono); font-size: 0.86em;
+    background: var(--page-chip); padding: 1px 5px; border-radius: 4px;
+  }
+
+  /* ---------- masthead ---------- */
+  .mast { padding: 56px 0 0; }
+  .kicker {
+    display: flex; align-items: center; gap: 10px;
+    font-size: 11px; font-weight: 700; letter-spacing: 0.12em;
+    text-transform: uppercase; color: var(--accent); margin: 0 0 18px;
+  }
+  .kicker::after { content: ""; flex: 1 1 auto; height: 1px; background: var(--page-rule); }
+  h1 {
+    font-family: var(--font-display); font-weight: 600;
+    font-size: clamp(33px, 5vw, 48px); line-height: 1.08;
+    letter-spacing: -0.022em; margin: 0 0 20px; max-width: 20ch;
+    text-wrap: balance;
+  }
+  .lede { font-size: 17px; color: var(--page-muted); max-width: 64ch; margin: 0; }
+  .lede b, .lede strong { color: var(--page-fg); font-weight: 600; }
+
+  blockquote.report {
+    margin: 30px 0 0; padding: 16px 22px; max-width: 64ch;
+    border-left: 3px solid var(--accent); background: var(--page-chip);
+    border-radius: 0 var(--radius-panel) var(--radius-panel) 0;
+  }
+  blockquote.report p { margin: 0; font-family: var(--font-display); font-size: 17px; }
+  blockquote.report .who {
+    display: block; margin-top: 8px; font-family: var(--font-ui);
+    font-size: 12px; color: var(--page-muted);
+  }
+
+  .deltas { display: grid; gap: 14px; margin: 30px 0 0; max-width: 86ch; }
+  .delta {
+    padding: 18px 22px; border-left: 3px solid var(--page-rule);
+    background: var(--page-chip);
+    border-radius: 0 var(--radius-panel) var(--radius-panel) 0;
+  }
+  .delta.ask { border-left-color: var(--primary); }
+  .delta .k {
+    font-size: 11px; font-weight: 700; letter-spacing: 0.1em;
+    text-transform: uppercase; color: var(--page-muted); margin: 0 0 10px;
+  }
+  .delta.ask .k { color: var(--primary); }
+  .delta p { margin: 0; font-size: 14.5px; }
+  .delta p + p { margin-top: 9px; }
+  .delta b { font-weight: 600; color: var(--page-fg); }
+
+  /* ---------- sheet index ---------- */
+  .index {
+    position: sticky; top: 0; z-index: 20;
+    margin: 44px 0 0; padding: 12px 0;
+    background: var(--page-veil); backdrop-filter: blur(10px);
+    border-bottom: 1px solid var(--page-rule);
+    display: flex; gap: 6px; overflow-x: auto; scrollbar-width: none;
+  }
+  .index::-webkit-scrollbar { display: none; }
+  .index a {
+    flex: 0 0 auto; text-decoration: none; padding: 5px 11px;
+    border-radius: 999px; font-size: 12.5px; color: var(--page-muted);
+    white-space: nowrap; border: 1px solid transparent;
+  }
+  .index a .n {
+    font-family: var(--font-mono); font-size: 11px; color: var(--accent);
+    margin-right: 7px; background: none; padding: 0;
+  }
+  .index a:hover { color: var(--page-fg); border-color: var(--page-rule); background: var(--page-surface); }
+
+  /* ---------- sheet ---------- */
+  .sheet {
+    display: grid; grid-template-columns: var(--rail) minmax(0, 1fr);
+    margin-top: 84px; scroll-margin-top: 72px;
+  }
+  .sheet-rail { position: relative; }
+  .sheet-rail .mark {
+    position: sticky; top: 76px;
+    display: flex; flex-direction: column; gap: 8px; align-items: flex-start;
+  }
+  .sheet-rail .no {
+    font-family: var(--font-mono); font-size: 26px; font-weight: 500;
+    color: var(--accent); line-height: 1; letter-spacing: -0.03em;
+    background: none; padding: 0;
+  }
+  .sheet-rail .band {
+    font-size: 9.5px; font-weight: 700; letter-spacing: 0.13em;
+    text-transform: uppercase; color: var(--page-muted);
+    writing-mode: vertical-rl; margin-top: 4px;
+  }
+  .sheet-rail .band::before {
+    content: ""; display: block; width: 1px; height: 26px;
+    background: var(--page-rule); margin: 0 0 10px 0;
+  }
+  .sheet-body { border-top: 1px solid var(--page-fg); padding-top: 22px; }
+  h2 {
+    font-family: var(--font-display); font-size: clamp(24px, 3vw, 30px);
+    font-weight: 600; letter-spacing: -0.018em; line-height: 1.15;
+    margin: 0 0 10px; text-wrap: balance;
+  }
+  .sheet-body .lede { font-size: 16px; }
+
+  .tray {
+    margin-top: 26px; padding: 30px 28px 32px;
+    background: var(--page-tray); border-radius: 18px;
+  }
+  .tray + .tray { margin-top: 18px; }
+  /* Drawer comparisons only — the drawer is a fixed 440px object, so a real
+     two-up column is honest there. Row and widget renders use `.opt` below:
+     they have to be shown at the width they ship at, and a half-column render
+     of a truncation argument proves nothing. */
+  .grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(360px, 1fr));
+    gap: 34px 28px; align-items: start;
+  }
+  .grid > .cell { min-width: 0; display: flex; flex-direction: column; }
+  .grid > .cell .drawer { margin-top: auto; }
+
+  /* One option per band: the caption sits in the margin, the render runs at its
+     real width. Stacked, so the candidates are compared down a column at
+     identical width rather than across three narrowed ones. */
+  .stack { display: flex; flex-direction: column; }
+  .optrow {
+    display: grid;
+    grid-template-columns: minmax(0, 280px) minmax(0, 1fr);
+    grid-template-rows: auto auto;
+    gap: 0 32px; align-items: start;
+  }
+  .optrow + .optrow { margin-top: 30px; padding-top: 30px; border-top: 1px solid var(--page-rule); }
+  .optrow > .cap { grid-column: 1; grid-row: 1 / span 2; margin-bottom: 0; }
+  .optrow > .surface, .optrow > .widget { grid-column: 2; grid-row: 1; }
+  .optrow > .scale { grid-column: 2; grid-row: 2; margin-top: 10px; }
+  @media (max-width: 900px) {
+    .optrow { grid-template-columns: minmax(0, 1fr); }
+    .optrow > .cap { grid-column: 1; grid-row: auto; margin-bottom: 16px; }
+    .optrow > .surface, .optrow > .widget, .optrow > .scale { grid-column: 1; grid-row: auto; }
+  }
+
+  .cap { margin: 0 0 14px; min-width: 0; }
+  .state {
+    display: inline-block; font-size: 10px; font-weight: 700;
+    letter-spacing: 0.12em; text-transform: uppercase; color: var(--accent);
+    border: 1px solid color-mix(in oklch, var(--accent) 34%, transparent);
+    border-radius: 3px; padding: 2px 7px; margin: 0 0 9px;
+  }
+  .state.rec { color: var(--primary); border-color: color-mix(in oklch, var(--primary) 40%, transparent); }
+  h3 { font-family: var(--font-ui); font-size: 14.5px; font-weight: 700; margin: 0 0 5px; line-height: 1.35; }
+  .cap p { margin: 0; font-size: 13.5px; color: var(--page-muted); line-height: 1.55; }
+  .cap p + p { margin-top: 7px; }
+  .cap p b { color: var(--page-fg); font-weight: 600; }
+  .cost { color: var(--destructive) !important; font-weight: 600; }
+
+  .scale {
+    display: flex; align-items: center; gap: 8px; margin: 12px 0 0;
+    font-size: 11.5px; font-weight: 600; letter-spacing: 0.08em;
+    text-transform: uppercase; color: var(--page-muted);
+  }
+  .scale::before { content: ""; width: 34px; height: 1px; background: var(--page-muted); flex: 0 0 auto; }
+
+  /* ---------- app surfaces ---------- */
+  /* 840px = `PageContainer width="list"` (packages/ui/src/components/page-container.tsx).
+     Every row render below is at the width it actually ships at — the crowding
+     argument is only worth anything at true size. */
+  .surface {
+    background: var(--background); border-radius: 14px; padding: 18px 20px;
+    max-width: 840px; min-width: 0;
+    box-shadow: 0 0 0 1px var(--page-bezel), 0 2px 3px oklch(0 0 0 / 0.08),
+                0 16px 34px -16px oklch(0 0 0 / 0.3);
+  }
+
+  /* ItemCard */
+  .icard {
+    display: flex; gap: 12px; align-items: center;
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius-card); padding: 12px 16px;
+    box-shadow: 0 1px 2px oklch(0 0 0 / 0.05);
+    margin-bottom: 8px;
+  }
+  .icard .spine {
+    align-self: stretch; width: 4px; border-radius: 999px; flex: 0 0 4px;
+    margin: -12px 0; background: var(--identity-sage);
+  }
+  .icard .spine.dashed { background: none; border-left: 4px dashed var(--border); width: 0; }
+  .icard .spine.none { background: transparent; }
+  .icard .daycol { width: 44px; flex: 0 0 44px; text-align: center; }
+  .icard .dow {
+    font-family: var(--font-ui); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted-foreground); line-height: 1.4;
+  }
+  .icard .dnum {
+    font-family: var(--font-ui); font-size: 16px; font-weight: 600;
+    line-height: 1.3; color: var(--foreground); font-variant-numeric: tabular-nums;
+  }
+  .icard.today .dow, .icard.today .dnum { color: var(--primary); }
+  .icard .content { flex: 1 1 auto; min-width: 0; min-height: 56px; display: flex; flex-direction: column; justify-content: center; }
+  .icard .headline { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .icard .mtitle { font-family: var(--font-ui); font-size: 16px; font-weight: 600; color: var(--foreground); }
+  .icard .msides { font-family: var(--font-ui); font-size: 14px; color: var(--muted-foreground); }
+  .icard .metaline {
+    margin-top: 2px; display: flex; align-items: center; gap: 6px; min-width: 0;
+  }
+  .icard .metatext {
+    font-family: var(--font-ui); font-size: 13px; color: var(--muted-foreground);
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0;
+  }
+  .icard .trailing { flex: 0 0 auto; display: flex; align-items: center; gap: 6px; }
+
+  .avatar {
+    width: 32px; height: 32px; flex: 0 0 32px; border-radius: 999px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: var(--font-ui); font-size: 13px; font-weight: 600;
+    background: var(--identity-sage-tint); color: var(--identity-sage-ink);
+    border: 2px solid var(--identity-sage);
+  }
+  .avatar.plum { background: var(--identity-plum-tint); color: var(--identity-plum-ink); border-color: var(--identity-plum); }
+  .ring {
+    width: 32px; height: 32px; flex: 0 0 32px; border-radius: 999px;
+    border: 2px dashed var(--border);
+  }
+
+  .btn {
+    font-family: var(--font-ui); font-size: 13px; font-weight: 500;
+    height: 32px; padding: 0 12px; border-radius: var(--radius-card);
+    border: 1px solid var(--border); background: transparent;
+    color: var(--foreground); display: inline-flex; align-items: center; white-space: nowrap;
+  }
+  .kebab {
+    width: 32px; height: 32px; border-radius: var(--radius-card);
+    display: inline-flex; align-items: center; justify-content: center;
+    color: var(--muted-foreground);
+  }
+
+  /* the three candidate affordances */
+  .lnk-title {
+    text-decoration: underline; text-decoration-color: color-mix(in oklch, var(--accent) 45%, transparent);
+    text-underline-offset: 3px; text-decoration-thickness: 1.5px;
+  }
+  .lnk-meta {
+    font-family: var(--font-ui); font-size: 13px; font-weight: 500;
+    color: var(--accent); display: inline-flex; align-items: center; gap: 3px;
+    white-space: nowrap; flex: 0 0 auto;
+  }
+  .lnk-glyph {
+    width: 32px; height: 32px; border-radius: var(--radius-card);
+    display: inline-flex; align-items: center; justify-content: center;
+    color: var(--muted-foreground); border: 1px solid var(--border); background: transparent;
+  }
+  svg { display: block; }
+  .arrow { width: 11px; height: 11px; flex: 0 0 11px; }
+
+  /* widget */
+  .widget {
+    background: var(--card); border: 1px solid var(--border);
+    border-radius: var(--radius-panel); padding: 20px;
+    box-shadow: 0 1px 2px oklch(0 0 0 / 0.05);
+    display: flex; flex-direction: column;
+  }
+  .widget.standard { width: 100%; max-width: 440px; height: 208px; }
+  .widget.large { width: 100%; max-width: 440px; height: 420px; }
+  .whead {
+    display: flex; align-items: center; gap: 7px;
+    font-family: var(--font-ui); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted-foreground);
+  }
+  .wbody { display: flex; flex-direction: column; flex: 1 1 auto; min-height: 0; justify-content: space-between; margin-top: 10px; }
+  .whead-lg { flex: 0 0 auto; }
+  .wheadline {
+    font-family: var(--font-display); font-size: 29px; font-weight: 600;
+    line-height: 1.2; letter-spacing: -0.01em; color: var(--foreground);
+  }
+  .wsub { display: flex; align-items: center; justify-content: space-between; gap: 12px; margin-top: 4px; min-width: 0; }
+  .wsides {
+    font-family: var(--font-display); font-size: 18px; line-height: 1.65;
+    color: var(--muted-foreground); font-style: italic;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0;
+  }
+  .chip-try {
+    font-family: var(--font-ui); font-size: 11px; font-weight: 500; flex: 0 0 auto;
+    border-radius: 999px; padding: 2px 8px;
+    background: color-mix(in oklch, var(--accent) 10%, transparent); color: var(--accent);
+  }
+  .wrail {
+    display: flex; align-items: center; gap: 8px; min-width: 0;
+    border-top: 1px solid color-mix(in oklch, var(--border) 50%, transparent);
+    padding-top: 12px; margin-top: 8px;
+  }
+  .wrail .verb { font-family: var(--font-ui); font-size: 14px; color: var(--foreground); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0; }
+  .wrail .push { margin-left: auto; flex: 0 0 auto; }
+  .groove {
+    margin: 14px -20px -20px; padding: 12px 20px 16px;
+    background: var(--surface-sunken); box-shadow: inset 0 1px 3px oklch(0 0 0 / 0.06);
+    flex: 1 1 auto; min-height: 0; display: flex; flex-direction: column;
+  }
+  .groove .lbl {
+    font-family: var(--font-ui); font-size: 11px; font-weight: 700;
+    letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted-foreground); margin-bottom: 6px;
+  }
+  .grow {
+    display: flex; align-items: center; gap: 12px; min-width: 0;
+    flex: 1 1 0; min-height: 48px; padding: 8px 0;
+  }
+  .grow + .grow { border-top: 1px solid color-mix(in oklch, var(--border) 50%, transparent); }
+  .grow .gd { font-family: var(--font-ui); font-size: 11px; font-weight: 600; color: var(--muted-foreground); width: 32px; flex: 0 0 32px; }
+  .grow .gt { font-family: var(--font-ui); font-size: 14px; color: var(--foreground); flex: 1 1 auto; min-width: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .grow .gt em { font-style: normal; color: var(--muted-foreground); }
+  .grow .gbuy { font-family: var(--font-ui); font-size: 13px; font-weight: 500; color: var(--muted-foreground); display: flex; align-items: center; gap: 4px; flex: 0 0 auto; }
+
+  /* drawer */
+  .drawer {
+    width: 100%; max-width: 440px; background: var(--background);
+    border-radius: 14px; overflow: hidden;
+    box-shadow: 0 0 0 1px var(--page-bezel), 0 18px 40px -16px oklch(0 0 0 / 0.34);
+  }
+  .drawer .dhead {
+    padding: 18px 24px; border-bottom: 1px solid var(--border);
+    font-family: var(--font-display); font-size: 20px; font-weight: 600; color: var(--foreground);
+  }
+  .drawer .dbody { padding: 22px 24px; display: flex; flex-direction: column; gap: 20px; }
+  .flabel {
+    font-family: var(--font-ui); font-size: 13px; font-weight: 600;
+    color: var(--foreground); margin-bottom: 6px; display: flex; gap: 6px; align-items: baseline;
+  }
+  .flabel .opt { font-weight: 400; font-size: 12px; color: var(--muted-foreground); }
+  .finput {
+    height: 42px; border: 1px solid var(--border); border-radius: var(--radius-card);
+    background: var(--card); display: flex; align-items: center; padding: 0 12px;
+    font-family: var(--font-ui); font-size: 14px; color: var(--muted-foreground);
+  }
+  .finput.typed { color: var(--foreground); }
+  .fhelp { font-family: var(--font-ui); font-size: 13px; color: var(--muted-foreground); margin-top: 8px; }
+  .seg { display: flex; gap: 0; border: 1px solid var(--border); border-radius: var(--radius-card); overflow: hidden; }
+  .seg span { flex: 1 1 0; text-align: center; font-family: var(--font-ui); font-size: 13px; padding: 8px 0; color: var(--muted-foreground); }
+  .seg span.on { background: var(--primary); color: var(--primary-foreground); font-weight: 600; }
+  .dim-block { opacity: 0.4; }
+
+  /* ---------- ledger ---------- */
+  .ledger { margin-top: 26px; max-width: 96ch; border-top: 1px solid var(--page-rule); }
+  .ledger .row {
+    display: grid; grid-template-columns: 22px minmax(220px, 30%) minmax(0, 1fr);
+    gap: 0 18px; padding: 14px 0; border-bottom: 1px solid var(--page-rule);
+    align-items: baseline;
+  }
+  .ledger .x {
+    font-family: var(--font-mono); font-size: 14px; font-weight: 700;
+    color: var(--destructive); background: none; padding: 0; line-height: 1.5;
+  }
+  .ledger .t { font-weight: 600; font-size: 14.5px; }
+  .ledger .w { font-size: 13.5px; color: var(--page-muted); }
+
+  @media (max-width: 720px) {
+    .sheet { grid-template-columns: 1fr; }
+    .sheet-rail .mark { position: static; flex-direction: row; align-items: center; margin-bottom: 12px; }
+    .sheet-rail .band { writing-mode: horizontal-tb; margin-top: 0; }
+    .sheet-rail .band::before { display: none; }
+  }
+</style>
+
+<div class="wrap">
+
+  <header class="mast">
+    <p class="kicker">Design exploration · auto-bug #129 · 2026-09-03</p>
+    <h1>A recipe link on a planned meal</h1>
+    <p class="lede">
+      One field, four decisions. The <b>spec's "no recipe bank" position is not up for
+      review</b> — this adds a link, not a model: no scraping, no ingredient parsing,
+      no thumbnails. <code>needs</code> still carries what the store trip requires.
+      What has to be settled is <b>where the cook reaches it</b>, because the meals
+      surfaces are deliberately spare and every one of them is already full.
+    </p>
+
+    <blockquote class="report">
+      <p>“It'd be great if it was possible to add a recipe URL to the meal record”</p>
+      <span class="who">Dad, tier 4 · reported in-app from <code>/meals</code> · report <code>cfc58841</code></span>
+    </blockquote>
+
+    <div class="deltas">
+      <div class="delta ask">
+        <p class="k">Decision 1 — the affordance on the /meals row</p>
+        <p>The week page is <b>calm</b> and its row is full: title · sides on line one,
+          avatar · verb · try bite on line two, actions trailing. Three candidates, sheet 02.</p>
+      </div>
+      <div class="delta ask">
+        <p class="k">Decision 2 — the wording</p>
+        <p>A generic <b>“Recipe”</b>, or the <b>source stated</b> (“seriouseats.com”).
+          The house voice states specifics — “3 things needed”, “Bakery · all 2 in the
+          cart” — but a domain is longer and competes with the try bite. Sheet 03.</p>
+      </div>
+      <div class="delta ask">
+        <p class="k">Decision 3 — does the Tonight widget carry it</p>
+        <p>The fridge is where the cook actually stands at 5pm. It is also the one
+          surface whose whole tile is already a link to <code>/meals</code>. Sheet 04.</p>
+      </div>
+      <div class="delta ask">
+        <p class="k">Decision 4 — which kinds get the field</p>
+        <p>Cooking only, or cooking + takeout (a takeout link is a <b>menu</b>, and
+          “Where from? → the menu” is the same one-tap need). Sheet 05.</p>
+      </div>
+      <div class="delta">
+        <p class="k">Settled without a gate — say so if you disagree</p>
+        <p><b>A new nullable <code>recipe_url</code> column</b>, not the dormant
+          <code>notes</code> field. <code>notes</code> is free text plumbed through the
+          API and rendered nowhere; overloading it would mean parsing a URL back out of
+          prose, which is the parsing problem the spec deleted on purpose.</p>
+        <p><b>http/https only</b>, validated by a shared Zod schema, opened with
+          <code>target="_blank" rel="noopener noreferrer"</code>. The row link is
+          z-lifted above <code>ItemCard</code>'s activate overlay — the same recipe the
+          widget already uses for its claim button.</p>
+      </div>
+    </div>
+  </header>
+
+  <nav class="index">
+    <a href="#s1"><span class="n">01</span>Entering it</a>
+    <a href="#s2"><span class="n">02</span>The row affordance</a>
+    <a href="#s3"><span class="n">03</span>The wording</a>
+    <a href="#s4"><span class="n">04</span>The fridge</a>
+    <a href="#s5"><span class="n">05</span>Which kinds</a>
+    <a href="#s6"><span class="n">06</span>Not building</a>
+  </nav>
+
+  <!-- ═══════════════ 01 ═══════════════ -->
+  <section class="sheet" id="s1">
+    <div class="sheet-rail"><div class="mark"><span class="no">01</span><span class="band">Capture</span></div></div>
+    <div class="sheet-body">
+      <h2>Entering it — the drawer, unchanged in shape</h2>
+      <p class="lede">
+        The editor is kind-first and cooking already runs
+        title → sides → try bite → needs → owner. The link joins that run
+        <b>after needs</b>: needs is the store trip, the recipe is the stove, and both
+        are the planner's homework rather than the kid-facing menu card.
+      </p>
+
+      <div class="tray">
+        <div class="grid two">
+          <div class="cell">
+            <div class="cap">
+              <span class="state rec">Proposed</span>
+              <h3>Cooking — the field lands fifth</h3>
+              <p>Optional, one line, helper states the payoff. Placeholder is a real
+                URL so nobody wonders whether a recipe <i>name</i> belongs here.</p>
+              <p>An invalid paste fails the field, not the save — the same
+                <code>safeParse</code> → inline-error grammar the rest of the drawer uses.</p>
+            </div>
+            <div class="drawer">
+              <div class="dhead">Plan Thursday, Sep 4</div>
+              <div class="dbody">
+                <div class="dim-block">
+                  <div class="flabel">How's it happening?</div>
+                  <div class="seg"><span class="on">Cooking</span><span>Takeout</span><span>Leftovers</span><span>Going out</span></div>
+                </div>
+                <div class="dim-block">
+                  <div class="flabel">What's for dinner?</div>
+                  <div class="finput typed">Rigatoni</div>
+                </div>
+                <div class="dim-block">
+                  <div class="flabel">Sides <span class="opt">optional</span></div>
+                  <div class="finput typed">roasted veggies, garlic bread</div>
+                </div>
+                <div class="dim-block">
+                  <div class="flabel">Try bite <span class="opt">optional</span></div>
+                  <div class="finput typed">the veggies</div>
+                </div>
+                <div class="dim-block">
+                  <div class="flabel">Needs <span class="opt">optional</span></div>
+                  <div class="finput typed">rigatoni, cream, broccoli</div>
+                </div>
+                <div>
+                  <div class="flabel">Recipe link <span class="opt">optional</span></div>
+                  <div class="finput">https://…</div>
+                  <p class="fhelp">Where you're cooking from — one tap at the stove.</p>
+                </div>
+              </div>
+            </div>
+            <p class="scale">440px drawer · actual size</p>
+          </div>
+
+          <div class="cell">
+            <div class="cap">
+              <span class="state">Filled</span>
+              <h3>What a real paste looks like</h3>
+              <p>Recipe URLs are <b>long and ugly</b> — tracking params, slugs, a
+                <code>#jump-to-recipe</code> fragment. The field truncates rather than
+                wrapping to three lines, and nothing downstream ever shows the raw URL.</p>
+              <p>That is the argument for the row affordance being a <b>word</b>, not
+                the address: sheet 03 decides which word.</p>
+            </div>
+            <div class="drawer">
+              <div class="dhead">Edit Thursday, Sep 4</div>
+              <div class="dbody">
+                <div class="dim-block">
+                  <div class="flabel">Needs <span class="opt">optional</span></div>
+                  <div class="finput typed">rigatoni, cream, broccoli</div>
+                </div>
+                <div>
+                  <div class="flabel">Recipe link <span class="opt">optional</span></div>
+                  <div class="finput typed" style="overflow:hidden;white-space:nowrap">https://www.seriouseats.com/rigatoni-alla-vodka-recipe-8422…</div>
+                  <p class="fhelp">Where you're cooking from — one tap at the stove.</p>
+                </div>
+                <div>
+                  <div class="flabel" style="color:var(--destructive)">Recipe link <span class="opt">optional</span></div>
+                  <div class="finput typed" style="border-color:var(--destructive)">rigatoni alla vodka</div>
+                  <p class="fhelp" style="color:var(--destructive)">That doesn't look like a link — paste the web address.</p>
+                </div>
+              </div>
+            </div>
+            <p class="scale">Truncation + the invalid state</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ 02 ═══════════════ -->
+  <section class="sheet" id="s2">
+    <div class="sheet-rail"><div class="mark"><span class="no">02</span><span class="band">Decision 1</span></div></div>
+    <div class="sheet-body">
+      <h2>The /meals row — three ways to reach it</h2>
+      <p class="lede">
+        Each option is rendered on the real row, twice: a <b>roomy</b> meal
+        (short title, no try bite) and a <b>crowded</b> one (long title, sides, try
+        bite, an unclaimed day's claim button). The crowded render is the honest one —
+        it is what Thursday actually looks like.
+      </p>
+
+      <div class="tray">
+        <div class="stack">
+
+          <!-- A -->
+          <div class="optrow">
+            <div class="cap">
+              <span class="state">Option A</span>
+              <h3>The title carries it</h3>
+              <p>No new element at all. A meal with a recipe underlines its own name;
+                tapping the name opens it, tapping anywhere else still edits.</p>
+              <p class="cost">Cost: tapping a title means two different things depending
+                on data, and the row's tap-to-edit target quietly loses its best part.
+                Nothing tells you which rows have one until you look for underlines.</p>
+            </div>
+            <div class="surface">
+              <div class="icard today">
+                <span class="spine"></span>
+                <div class="daycol"><div class="dow">THU</div><div class="dnum">4</div></div>
+                <div class="content">
+                  <div class="headline">
+                    <span class="mtitle lnk-title">Rigatoni</span>
+                  </div>
+                  <div class="metaline">
+                    <span class="avatar">Z</span>
+                    <span class="metatext">Zach's cooking</span>
+                  </div>
+                </div>
+                <div class="trailing"><span class="kebab">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg>
+                </span></div>
+              </div>
+
+              <div class="icard">
+                <span class="spine dashed"></span>
+                <div class="daycol"><div class="dow">FRI</div><div class="dnum">5</div></div>
+                <div class="content">
+                  <div class="headline">
+                    <span class="mtitle lnk-title">Sheet-pan chicken thighs</span><span class="msides"> · roasted veggies, garlic bread</span>
+                  </div>
+                  <div class="metaline">
+                    <span class="ring"></span>
+                    <span class="metatext">planned — nobody's on it yet · try bite: the veggies</span>
+                  </div>
+                </div>
+                <div class="trailing">
+                  <span class="btn">I've got it</span>
+                  <span class="kebab">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg>
+                  </span>
+                </div>
+              </div>
+            </div>
+            <p class="scale">Roomy, then crowded</p>
+          </div>
+
+          <!-- B -->
+          <div class="optrow">
+            <div class="cap">
+              <span class="state">Option B</span>
+              <h3>A stated link on the meta line</h3>
+              <p>Joins the existing meta run in the accent colour — the same
+                “a text link, never a bordered button” grammar the design doc already
+                fixed for the needs-push landing in M5/6.</p>
+              <p class="cost">Cost: the meta line now carries verb · try bite · recipe
+                and truncates from the left. The link is pinned (never truncated) but it
+                eats the try bite's room, and M5/6's needs-push wants this line too.</p>
+            </div>
+            <div class="surface">
+              <div class="icard today">
+                <span class="spine"></span>
+                <div class="daycol"><div class="dow">THU</div><div class="dnum">4</div></div>
+                <div class="content">
+                  <div class="headline"><span class="mtitle">Rigatoni</span></div>
+                  <div class="metaline">
+                    <span class="avatar">Z</span>
+                    <span class="metatext">Zach's cooking</span>
+                    <span class="lnk-meta">· Recipe
+                      <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg>
+                    </span>
+                  </div>
+                </div>
+                <div class="trailing"><span class="kebab">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg>
+                </span></div>
+              </div>
+
+              <div class="icard">
+                <span class="spine dashed"></span>
+                <div class="daycol"><div class="dow">FRI</div><div class="dnum">5</div></div>
+                <div class="content">
+                  <div class="headline"><span class="mtitle">Sheet-pan chicken thighs</span><span class="msides"> · roasted veggies, garlic bread</span></div>
+                  <div class="metaline">
+                    <span class="ring"></span>
+                    <span class="metatext">planned — nobody's on it yet · try bite: the veggies</span>
+                    <span class="lnk-meta">· Recipe
+                      <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg>
+                    </span>
+                  </div>
+                </div>
+                <div class="trailing">
+                  <span class="btn">I've got it</span>
+                  <span class="kebab">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg>
+                  </span>
+                </div>
+              </div>
+            </div>
+            <p class="scale">The try bite is what gets clipped</p>
+          </div>
+
+          <!-- C -->
+          <div class="optrow">
+            <div class="cap">
+              <span class="state">Option C</span>
+              <h3>A trailing glyph</h3>
+              <p>A quiet book icon in the trailing cluster, ahead of the claim button
+                and the kebab. Immune to every title, side, and try bite — the text run
+                is left exactly as shipped.</p>
+              <p class="cost">Cost: trailing is <b>action</b> territory on this row, and
+                an icon-only affordance names nothing. On the crowded row it makes a
+                three-control cluster on a page whose whole brief is “calm”.</p>
+            </div>
+            <div class="surface">
+              <div class="icard today">
+                <span class="spine"></span>
+                <div class="daycol"><div class="dow">THU</div><div class="dnum">4</div></div>
+                <div class="content">
+                  <div class="headline"><span class="mtitle">Rigatoni</span></div>
+                  <div class="metaline">
+                    <span class="avatar">Z</span>
+                    <span class="metatext">Zach's cooking</span>
+                  </div>
+                </div>
+                <div class="trailing">
+                  <span class="lnk-glyph">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                  </span>
+                  <span class="kebab">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg>
+                  </span>
+                </div>
+              </div>
+
+              <div class="icard">
+                <span class="spine dashed"></span>
+                <div class="daycol"><div class="dow">FRI</div><div class="dnum">5</div></div>
+                <div class="content">
+                  <div class="headline"><span class="mtitle">Sheet-pan chicken thighs</span><span class="msides"> · roasted veggies, garlic bread</span></div>
+                  <div class="metaline">
+                    <span class="ring"></span>
+                    <span class="metatext">planned — nobody's on it yet · try bite: the veggies</span>
+                  </div>
+                </div>
+                <div class="trailing">
+                  <span class="lnk-glyph">
+                    <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+                  </span>
+                  <span class="btn">I've got it</span>
+                  <span class="kebab">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg>
+                  </span>
+                </div>
+              </div>
+            </div>
+            <p class="scale">Three trailing controls on the crowded row</p>
+          </div>
+
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ 03 ═══════════════ -->
+  <section class="sheet" id="s3">
+    <div class="sheet-rail"><div class="mark"><span class="no">03</span><span class="band">Decision 2</span></div></div>
+    <div class="sheet-body">
+      <h2>The word — “Recipe”, or the source</h2>
+      <p class="lede">
+        Both rendered in Option B's slot, on the same crowded Friday, so the width
+        difference is real rather than argued. The label also becomes the icon's
+        accessible name under Option C and the title's tooltip under Option A — this
+        decision survives whichever affordance wins.
+      </p>
+
+      <div class="tray">
+        <div class="stack">
+          <div class="optrow">
+            <div class="cap">
+              <span class="state">Wording i</span>
+              <h3>“Recipe”</h3>
+              <p>Short, stable, always the same width. Never lies — some links are a
+                blog post, some a Notes app export, some a photo of a card.</p>
+              <p class="cost">Cost: you tap it without knowing where it goes, which on a
+                fridge iPad shared with kids is a small but real thing.</p>
+            </div>
+            <div class="surface">
+              <div class="icard">
+                <span class="spine dashed"></span>
+                <div class="daycol"><div class="dow">FRI</div><div class="dnum">5</div></div>
+                <div class="content">
+                  <div class="headline"><span class="mtitle">Sheet-pan chicken thighs</span><span class="msides"> · roasted veggies, garlic bread</span></div>
+                  <div class="metaline">
+                    <span class="ring"></span>
+                    <span class="metatext">planned — nobody's on it yet · try bite: the veggies</span>
+                    <span class="lnk-meta">· Recipe
+                      <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg>
+                    </span>
+                  </div>
+                </div>
+                <div class="trailing"><span class="btn">I've got it</span></div>
+              </div>
+              <div class="icard today">
+                <span class="spine"></span>
+                <div class="daycol"><div class="dow">THU</div><div class="dnum">4</div></div>
+                <div class="content">
+                  <div class="headline"><span class="mtitle">Rigatoni</span></div>
+                  <div class="metaline">
+                    <span class="avatar">Z</span>
+                    <span class="metatext">Zach's cooking</span>
+                    <span class="lnk-meta">· Recipe
+                      <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg>
+                    </span>
+                  </div>
+                </div>
+                <div class="trailing"><span class="kebab">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg>
+                </span></div>
+              </div>
+            </div>
+            <p class="scale">Fixed width, every row</p>
+          </div>
+
+          <div class="optrow">
+            <div class="cap">
+              <span class="state">Wording ii</span>
+              <h3>The source, stated</h3>
+              <p>The house voice states specifics — “3 things needed”, “Bakery · all 2
+                in the cart”. <code>seriouseats.com</code> tells you what opens before
+                you commit a tap, and reads as provenance rather than chrome.</p>
+              <p class="cost">Cost: variable and sometimes long
+                (<code>cooking.nytimes.com</code>, <code>docs.google.com</code>), which
+                is width the try bite no longer has. A shortened link is a mystery again.</p>
+            </div>
+            <div class="surface">
+              <div class="icard">
+                <span class="spine dashed"></span>
+                <div class="daycol"><div class="dow">FRI</div><div class="dnum">5</div></div>
+                <div class="content">
+                  <div class="headline"><span class="mtitle">Sheet-pan chicken thighs</span><span class="msides"> · roasted veggies, garlic bread</span></div>
+                  <div class="metaline">
+                    <span class="ring"></span>
+                    <span class="metatext">planned — nobody's on it yet · try bite: the veggies</span>
+                    <span class="lnk-meta">· seriouseats.com
+                      <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg>
+                    </span>
+                  </div>
+                </div>
+                <div class="trailing"><span class="btn">I've got it</span></div>
+              </div>
+              <div class="icard today">
+                <span class="spine"></span>
+                <div class="daycol"><div class="dow">THU</div><div class="dnum">4</div></div>
+                <div class="content">
+                  <div class="headline"><span class="mtitle">Rigatoni</span></div>
+                  <div class="metaline">
+                    <span class="avatar">Z</span>
+                    <span class="metatext">Zach's cooking</span>
+                    <span class="lnk-meta">· cooking.nytimes.com
+                      <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg>
+                    </span>
+                  </div>
+                </div>
+                <div class="trailing"><span class="kebab">
+                  <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg>
+                </span></div>
+              </div>
+            </div>
+            <p class="scale">www. stripped; the longest real case shown</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ 04 ═══════════════ -->
+  <section class="sheet" id="s4">
+    <div class="sheet-rail"><div class="mark"><span class="no">04</span><span class="band">Decision 3</span></div></div>
+    <div class="sheet-body">
+      <h2>The fridge — does Tonight carry the link</h2>
+      <p class="lede">
+        This is the decision that decides whether the feature is <b>used</b>. The cook
+        is standing at the fridge at 5pm; the alternative is two taps (tile → row).
+        Against that: the whole tile is already one link to <code>/meals</code>, the
+        card has two audiences and a hairline that separates them, and every control
+        added here has to be z-lifted out of the overlay.
+      </p>
+
+      <div class="tray">
+        <div class="stack">
+          <div class="optrow">
+            <div class="cap">
+              <span class="state">Reach i</span>
+              <h3>The widget stays spare</h3>
+              <p>Nothing changes on the fridge. The tile deep-links to the week, and the
+                row there carries the link — two taps, and the second one is on the
+                surface that already holds every other meal detail.</p>
+              <p>Keeps the card's promise: above the hairline is what a kid reads at
+                3:30, below it is the adult glance. A recipe link is neither.</p>
+            </div>
+            <div class="widget standard">
+              <div class="whead">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h1a2 2 0 0 0 2-2V2M6 2v20M18 2v20M18 11c2 0 3-1 3-4V2h-3"/></svg>
+                Meals · Tonight
+              </div>
+              <div class="wbody">
+                <div style="min-width:0">
+                  <div class="wheadline">Rigatoni</div>
+                  <div class="wsub">
+                    <span class="wsides">roasted veggies, garlic bread</span>
+                    <span class="chip-try">Try bite · the veggies</span>
+                  </div>
+                </div>
+                <div class="wrail">
+                  <span class="avatar">Z</span>
+                  <span class="verb">You're cooking</span>
+                </div>
+              </div>
+            </div>
+            <p class="scale">Standard slot · as shipped</p>
+          </div>
+
+          <div class="optrow">
+            <div class="cap">
+              <span class="state rec">Reach ii</span>
+              <h3>The rail carries it</h3>
+              <p>The link rides the <b>logistics rail</b>, right-aligned opposite the
+                owner — the adult half of the card, which is exactly whose it is. The
+                kid zone above the hairline is untouched.</p>
+              <p>One tap from the fridge. Mechanically it is the claim button's existing
+                <code>z-20</code> lift, not a new pattern.</p>
+              <p class="cost">Cost: the rail's second control. When the meal is
+                unclaimed and past 4pm the rail already holds a hollow ring and a solid
+                <b>I've got it</b> — rendered below.</p>
+            </div>
+            <div class="widget standard">
+              <div class="whead">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h1a2 2 0 0 0 2-2V2M6 2v20M18 2v20M18 11c2 0 3-1 3-4V2h-3"/></svg>
+                Meals · Tonight
+              </div>
+              <div class="wbody">
+                <div style="min-width:0">
+                  <div class="wheadline">Rigatoni</div>
+                  <div class="wsub">
+                    <span class="wsides">roasted veggies, garlic bread</span>
+                    <span class="chip-try">Try bite · the veggies</span>
+                  </div>
+                </div>
+                <div class="wrail">
+                  <span class="avatar">Z</span>
+                  <span class="verb">You're cooking</span>
+                  <span class="lnk-meta push">Recipe
+                    <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg>
+                  </span>
+                </div>
+              </div>
+            </div>
+            <p class="scale">Standard slot · rail gains one link</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="tray">
+        <div class="stack">
+          <div class="optrow">
+            <div class="cap">
+              <span class="state">Pressure test</span>
+              <h3>Reach ii at 4:30, unclaimed</h3>
+              <p>The escalated state is the card's loudest moment and the rail is
+                already full. The recipe link sits behind the solid claim — a quiet
+                accent word against a filled button, which is the correct order but is
+                the crowding you are approving.</p>
+            </div>
+            <div class="widget standard">
+              <div class="whead">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h1a2 2 0 0 0 2-2V2M6 2v20M18 2v20M18 11c2 0 3-1 3-4V2h-3"/></svg>
+                Meals · Tonight
+              </div>
+              <div class="wbody">
+                <div style="min-width:0">
+                  <div class="wheadline">Sheet-pan chicken thighs</div>
+                  <div class="wsub">
+                    <span style="font-family:var(--font-ui);font-size:11px;font-weight:500;background:var(--warning);color:oklch(0.15 0.04 78);border-radius:999px;padding:3px 9px;white-space:nowrap">Still needs a cook · 4:30</span>
+                    <span class="chip-try">Try bite · the veggies</span>
+                  </div>
+                </div>
+                <div class="wrail">
+                  <span class="ring"></span>
+                  <span class="btn" style="background:var(--primary);color:var(--primary-foreground);border-color:var(--primary);font-weight:600">I've got it</span>
+                  <span class="lnk-meta push">Recipe
+                    <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg>
+                  </span>
+                </div>
+              </div>
+            </div>
+            <p class="scale">Escalated · the busiest the rail ever gets</p>
+          </div>
+
+          <div class="optrow">
+            <div class="cap">
+              <span class="state">Out of scope either way</span>
+              <h3>NEXT UP does not get one</h3>
+              <p>The large widget's lookahead groove is bands of
+                day · cook · meal · store flag, already fitting itself with
+                <code>useFitRows</code>. Tomorrow's recipe is not a thing anyone opens
+                tonight, and a second trailing element there fights the store flag for
+                the same edge.</p>
+              <p>Rendered so the decision is visibly a decision, not an oversight.</p>
+            </div>
+            <div class="widget large">
+              <div class="whead whead-lg">
+                <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 2v7c0 1.1.9 2 2 2h1a2 2 0 0 0 2-2V2M6 2v20M18 2v20M18 11c2 0 3-1 3-4V2h-3"/></svg>
+                Meals · Tonight
+              </div>
+              <div style="margin-top:10px;flex:0 0 auto">
+                <div class="wheadline">Rigatoni</div>
+                <div class="wsub">
+                  <span class="wsides">roasted veggies, garlic bread</span>
+                  <span class="chip-try">Try bite · the veggies</span>
+                </div>
+                <div class="wrail">
+                  <span class="avatar">Z</span>
+                  <span class="verb">You're cooking</span>
+                  <span class="lnk-meta push">Recipe
+                    <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg>
+                  </span>
+                </div>
+              </div>
+              <div class="groove">
+                <div class="lbl">Next up</div>
+                <div class="grow"><span class="gd">FRI</span><span class="ring" style="width:28px;height:28px;flex:0 0 28px"></span><span class="gt">Sheet-pan chicken thighs</span><span class="gbuy">
+                  <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="9" cy="21" r="1"/><circle cx="20" cy="21" r="1"/><path d="M1 1h4l2.7 13.4a2 2 0 0 0 2 1.6h9.7a2 2 0 0 0 2-1.6L23 6H6"/></svg>
+                  3 to buy</span></div>
+                <div class="grow"><span class="gd">SAT</span><span class="avatar plum" style="width:28px;height:28px;flex:0 0 28px;font-size:12px">S</span><span class="gt">Tacos <em>· Sam's cooking</em></span></div>
+                <div class="grow"><span class="gd">SUN</span><span class="ring" style="width:28px;height:28px;flex:0 0 28px"></span><span class="gt"><em>nothing planned</em></span></div>
+              </div>
+            </div>
+            <p class="scale">Large slot · groove rows unchanged</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ 05 ═══════════════ -->
+  <section class="sheet" id="s5">
+    <div class="sheet-rail"><div class="mark"><span class="no">05</span><span class="band">Decision 4</span></div></div>
+    <div class="sheet-body">
+      <h2>Which kinds get the field</h2>
+      <p class="lede">
+        The drawer reshapes per kind and unused fields submit null. Cooking obviously
+        gets it. Takeout is the live question: a link on a takeout meal is a
+        <b>menu</b>, and “Where from? → the menu” is the same one-tap need with a
+        different word. Leftovers and going out get nothing either way.
+      </p>
+
+      <div class="tray">
+        <div class="grid two">
+          <div class="cell">
+            <div class="cap">
+              <span class="state">Kinds i</span>
+              <h3>Cooking only</h3>
+              <p>Matches where sides, try bite and needs already live. One label, one
+                helper, one word on the row — nothing to disambiguate.</p>
+              <p>The request said “recipe”, and this answers exactly it.</p>
+            </div>
+            <div class="drawer">
+              <div class="dhead">Plan Friday, Sep 5</div>
+              <div class="dbody">
+                <div class="dim-block">
+                  <div class="flabel">How's it happening?</div>
+                  <div class="seg"><span>Cooking</span><span class="on">Takeout</span><span>Leftovers</span><span>Going out</span></div>
+                </div>
+                <div class="dim-block">
+                  <div class="flabel">Where from?</div>
+                  <div class="finput typed">Luigi's</div>
+                </div>
+                <div class="dim-block">
+                  <div class="flabel">Who's ordering? <span class="opt">optional</span></div>
+                  <div class="finput">Zach · Sam · Nobody in particular</div>
+                </div>
+                <p class="fhelp" style="color:var(--destructive)">No link field on takeout — the menu lives in someone's phone.</p>
+              </div>
+            </div>
+            <p class="scale">Takeout, unchanged</p>
+          </div>
+
+          <div class="cell">
+            <div class="cap">
+              <span class="state rec">Kinds ii</span>
+              <h3>Cooking + takeout</h3>
+              <p>Same column, same validation, the label follows the kind:
+                <b>Recipe link</b> when cooking, <b>Menu link</b> when takeout. The row
+                and rail render the matching word.</p>
+              <p class="cost">Cost: one more per-kind string, and a meal switched from
+                takeout to cooking keeps a URL whose label just changed meaning. The
+                drawer's existing rule covers it — fields the chosen kind doesn't show
+                submit null — but here both kinds show it, so the URL survives the
+                switch on purpose.</p>
+            </div>
+            <div class="drawer">
+              <div class="dhead">Plan Friday, Sep 5</div>
+              <div class="dbody">
+                <div class="dim-block">
+                  <div class="flabel">How's it happening?</div>
+                  <div class="seg"><span>Cooking</span><span class="on">Takeout</span><span>Leftovers</span><span>Going out</span></div>
+                </div>
+                <div class="dim-block">
+                  <div class="flabel">Where from?</div>
+                  <div class="finput typed">Luigi's</div>
+                </div>
+                <div>
+                  <div class="flabel">Menu link <span class="opt">optional</span></div>
+                  <div class="finput typed">https://luigisdowntown.com/menu</div>
+                  <p class="fhelp">What you're ordering from — one tap when it's time.</p>
+                </div>
+                <div class="dim-block">
+                  <div class="flabel">Who's ordering? <span class="opt">optional</span></div>
+                  <div class="finput">Zach · Sam · Nobody in particular</div>
+                </div>
+              </div>
+            </div>
+            <p class="scale">Takeout, with the menu link</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="tray">
+        <div class="cap" style="margin-bottom:16px">
+          <span class="state">Kinds ii on the row</span>
+          <h3>How the two words sit together in a week</h3>
+          <p>The label is the only thing that changes; the affordance, colour and
+            placement are identical. Rendered here in Option B / wording i.</p>
+        </div>
+        <div class="surface" style="max-width:640px">
+          <div class="icard today">
+            <span class="spine"></span>
+            <div class="daycol"><div class="dow">THU</div><div class="dnum">4</div></div>
+            <div class="content">
+              <div class="headline"><span class="mtitle">Rigatoni</span><span class="msides"> · roasted veggies</span></div>
+              <div class="metaline">
+                <span class="avatar">Z</span>
+                <span class="metatext">Zach's cooking · try bite: the veggies</span>
+                <span class="lnk-meta">· Recipe
+                  <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg>
+                </span>
+              </div>
+            </div>
+            <div class="trailing"><span class="kebab">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg>
+            </span></div>
+          </div>
+          <div class="icard">
+            <span class="spine none"></span>
+            <div class="daycol"><div class="dow">FRI</div><div class="dnum">5</div></div>
+            <div class="content">
+              <div class="headline"><span class="mtitle">Luigi's</span></div>
+              <div class="metaline">
+                <span style="width:32px;height:32px;flex:0 0 32px;border-radius:999px;border:2px solid var(--identity-family);background:var(--identity-family-tint);display:flex;align-items:center;justify-content:center;color:var(--identity-family)">
+                  <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v3M5.5 12a6.5 6.5 0 0 1 13 0zM3 16h18M4 20h16"/></svg>
+                </span>
+                <span class="metatext">we're ordering in</span>
+                <span class="lnk-meta">· Menu
+                  <svg class="arrow" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M7 17 17 7M9 7h8v8"/></svg>
+                </span>
+              </div>
+            </div>
+            <div class="trailing"><span class="kebab">
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="1.6"/><circle cx="12" cy="12" r="1.6"/><circle cx="12" cy="19" r="1.6"/></svg>
+            </span></div>
+          </div>
+          <div class="icard" style="opacity:0.55">
+            <span class="spine" style="background:var(--identity-plum)"></span>
+            <div class="daycol"><div class="dow">SAT</div><div class="dnum">6</div></div>
+            <div class="content">
+              <div class="headline"><span class="mtitle">Tacos</span></div>
+              <div class="metaline">
+                <span class="avatar plum">S</span>
+                <span class="metatext">Sam cooked</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <p class="scale">Cooking · ownerless takeout · a past day with no link</p>
+      </div>
+    </div>
+  </section>
+
+  <!-- ═══════════════ 06 ═══════════════ -->
+  <section class="sheet" id="s6">
+    <div class="sheet-rail"><div class="mark"><span class="no">06</span><span class="band">Ledger</span></div></div>
+    <div class="sheet-body">
+      <h2>What this deliberately is not</h2>
+      <p class="lede">
+        <code>spec.md</code> §“Why there is no recipe bank” is the standing decision and
+        this does not touch it. Every line below is a thing a recipe URL invites and
+        that this story refuses — recorded here so a later session does not rediscover
+        them as ideas.
+      </p>
+
+      <div class="ledger">
+        <div class="row">
+          <span class="x">✕</span>
+          <span class="t">Fetching the page</span>
+          <span class="w">No title, no image, no favicon, no oEmbed. The Pi would be
+            making outbound requests on a family's behalf, and a dead link would
+            start rendering as a broken thumbnail instead of a word.</span>
+        </div>
+        <div class="row">
+          <span class="x">✕</span>
+          <span class="t">Parsing ingredients into <code>needs</code></span>
+          <span class="w">The exact problem the free-text <code>needs</code> field
+            exists to delete. The planner types what the trip needs; the recipe link
+            is for the stove, not the store.</span>
+        </div>
+        <div class="row">
+          <span class="x">✕</span>
+          <span class="t">A recipe library or reuse</span>
+          <span class="w">No “meals you've cooked before” list, no autocomplete off
+            past URLs. That is a recipe bank with extra steps, and it is deferred in
+            <code>progress.md</code> on purpose.</span>
+        </div>
+        <div class="row">
+          <span class="x">✕</span>
+          <span class="t">More than one link</span>
+          <span class="w">One nullable column, one link. A second one is a list, a
+            list is a model, and the model is the thing we are not building.</span>
+        </div>
+        <div class="row">
+          <span class="x">✕</span>
+          <span class="t">An offline copy</span>
+          <span class="w">Opening the link needs the internet; the app does not.
+            The SW story (M5/7) is about the grocery list in an aisle, not about
+            caching third-party recipe pages.</span>
+        </div>
+        <div class="row">
+          <span class="x">✕</span>
+          <span class="t">Reusing <code>notes</code></span>
+          <span class="w">Dormant, free-text, and rendered nowhere. Storing a URL in
+            it means parsing one back out, and it would strand whatever
+            <code>notes</code> is eventually for.</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+</div>

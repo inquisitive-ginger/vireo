@@ -131,6 +131,7 @@ exports.Prisma.PlannedMealScalarFieldEnum = {
   notes: 'notes',
   tryBite: 'tryBite',
   needs: 'needs',
+  recipeUrl: 'recipeUrl',
   createdBy: 'createdBy',
   createdAt: 'createdAt',
   updatedAt: 'updatedAt'

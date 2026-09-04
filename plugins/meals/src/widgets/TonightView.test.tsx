@@ -5,6 +5,7 @@ import { TonightView } from './TonightView'
 import type { MealMember, PlannedMeal } from '../types'
 
 const DAD_ID = '00000000-0000-0000-0000-000000000001'
+const RECIPE = 'https://www.seriouseats.com/rigatoni-alla-vodka'
 
 const membersById = new Map<string, MealMember>([
   [DAD_ID, { name: 'Dad', identityHue: 'terracotta' }],
@@ -22,6 +23,7 @@ function meal(overrides: Partial<PlannedMeal> = {}): PlannedMeal {
     notes: null,
     tryBite: 'the veggies',
     needs: null,
+    recipeUrl: null,
     createdBy: DAD_ID,
     createdAt: '',
     updatedAt: '',
@@ -51,6 +53,25 @@ function renderView(props: Partial<Parameters<typeof TonightView>[0]> = {}) {
 }
 
 describe('TonightView — the four states', () => {
+  it('carries the recipe on the logistics rail when tonight has one', () => {
+    renderView({ meals: [meal({ recipeUrl: RECIPE })] })
+    const link = screen.getByRole('link', { name: /Recipe for .Rigatoni./ })
+    expect(link).toHaveAttribute('href', RECIPE)
+    expect(link).toHaveAttribute('target', '_blank')
+    expect(link).toHaveAttribute('rel', 'noopener noreferrer')
+  })
+
+  it('keeps the rail link beside the claim when tonight is unclaimed and escalated', () => {
+    renderView({ meals: [meal({ ownerId: null, recipeUrl: RECIPE })], now: FIVE_PM })
+    expect(screen.getByRole('button', { name: "I've got it" })).toBeInTheDocument()
+    expect(screen.getByRole('link', { name: /Recipe for/ })).toBeInTheDocument()
+  })
+
+  it('shows no recipe affordance when tonight has no link', () => {
+    renderView()
+    expect(screen.queryByRole('link', { name: /Recipe for/ })).not.toBeInTheDocument()
+  })
+
   it('deep-links the whole tile to /meals', () => {
     renderView()
     expect(screen.getByRole('link', { name: 'Open the meals week' })).toHaveAttribute(

@@ -5,6 +5,7 @@ import type { MealMember, PlannedMeal } from '../types'
 import { fromDateKey } from '../lib/dates'
 
 const DAD_ID = '00000000-0000-0000-0000-000000000001'
+const RECIPE = 'https://www.seriouseats.com/rigatoni-alla-vodka'
 
 const membersById = new Map<string, MealMember>([
   [DAD_ID, { name: 'Dad', identityHue: 'terracotta' }],
@@ -22,6 +23,7 @@ function meal(overrides: Partial<PlannedMeal> = {}): PlannedMeal {
     notes: null,
     tryBite: 'the veggies',
     needs: null,
+    recipeUrl: null,
     createdBy: DAD_ID,
     createdAt: '',
     updatedAt: '',
@@ -145,6 +147,26 @@ describe('MealsPageView', () => {
       canManage: false,
     })
     expect(screen.getByText(/Dad cooked/)).toBeInTheDocument()
+  })
+
+  it('links the recipe from the meta line, opening in a new tab', () => {
+    renderView({ days: weekOf({ '2026-08-13': meal({ recipeUrl: RECIPE }) }) })
+    const link = screen.getByRole('link', { name: /Recipe for .Rigatoni./ })
+    expect(link).toHaveAttribute('href', RECIPE)
+    expect(link).toHaveAttribute('target', '_blank')
+    expect(link).toHaveAttribute('rel', 'noopener noreferrer')
+  })
+
+  it('renders no recipe affordance when the meal has no link', () => {
+    renderView()
+    expect(screen.queryByRole('link', { name: /Recipe for/ })).not.toBeInTheDocument()
+  })
+
+  it('drops the recipe link on past days with the rest of the row\u2019s affordances', () => {
+    renderView({
+      days: weekOf({ '2026-08-09': meal({ date: '2026-08-09', recipeUrl: RECIPE }) }),
+    })
+    expect(screen.queryByRole('link', { name: /Recipe for/ })).not.toBeInTheDocument()
   })
 
   it('never claims for a viewer below tier 3', () => {
