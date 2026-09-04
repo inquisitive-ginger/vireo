@@ -6,7 +6,7 @@
   "routes": ["/meals"],
   "schema": "meals",
   "events": {
-    "publishes": ["meals.dinner.planned", "meals.dinner.claimed"],
+    "publishes": ["meals.dinner.planned", "meals.dinner.claimed", "meals.needs.pushed"],
     "subscribes": []
   },
   "widgets": [
