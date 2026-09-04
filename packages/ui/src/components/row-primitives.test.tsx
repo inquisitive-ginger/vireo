@@ -1,6 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { ItemCard } from './item-card'
+import { ListRow } from './list-row'
 import { RowActions } from './row-actions'
 import { MemberGroupHeader } from './member-group-header'
 
@@ -42,6 +43,85 @@ describe('ItemCard — onActivate', () => {
       </ItemCard>
     )
     expect(screen.queryByRole('button')).not.toBeInTheDocument()
+  })
+})
+
+describe('ListRow', () => {
+  it('renders the leading slot and content', () => {
+    render(
+      <ListRow leading={<span data-testid="leading">●</span>}>
+        <div>milk</div>
+      </ListRow>
+    )
+    expect(screen.getByTestId('leading')).toBeInTheDocument()
+    expect(screen.getByText('milk')).toBeInTheDocument()
+  })
+
+  it('renders no leading slot when omitted', () => {
+    const { container } = render(
+      <ListRow>
+        <div>milk</div>
+      </ListRow>
+    )
+    // Only the content div — no wrapper for an absent leading slot.
+    expect(container.querySelectorAll('div')).toHaveLength(2)
+  })
+
+  it('makes the row a tap target via onActivate', () => {
+    const onActivate = vi.fn()
+    render(
+      <ListRow onActivate={onActivate} activateLabel="Open “milk”">
+        <div>milk</div>
+      </ListRow>
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Open “milk”' }))
+    expect(onActivate).toHaveBeenCalledOnce()
+  })
+
+  it('renders no tap target when not activatable', () => {
+    render(
+      <ListRow>
+        <div>milk</div>
+      </ListRow>
+    )
+    expect(screen.queryByRole('button')).not.toBeInTheDocument()
+  })
+
+  it('keeps its own height floor — a caller cannot shrink the row (ADR 068)', () => {
+    const { container } = render(
+      <ListRow className="min-h-11" leading={<span>x</span>}>
+        <div>milk</div>
+      </ListRow>
+    )
+    const row = container.firstElementChild as HTMLElement
+    expect(row.className).toContain('min-h-[var(--spacing-list-touch)]')
+    // Load-bearing: the arbitrary form is what tailwind-merge recognises as a
+    // `min-h`, so the caller's class is DROPPED rather than left to fight it
+    // out in CSS source order. A named utility would leave both.
+    expect(row.className).not.toContain('min-h-11')
+  })
+
+  it('insets the tap target so neighbouring rows do not touch (ADR 068)', () => {
+    render(
+      <ListRow onActivate={vi.fn()} activateLabel="Check off milk">
+        <div>milk</div>
+      </ListRow>
+    )
+    const target = screen.getByRole('button', { name: 'Check off milk' })
+    expect(target.className).toContain('inset-x-0')
+    // Derived from live ≥ 48px and dead ≥ 8px, minus the hairline the padding
+    // box excludes — not a round number anyone should tidy (ADR 068 §3).
+    expect(target.className).toContain('inset-y-[3.5px]')
+    expect(target.className).not.toContain('inset-0')
+  })
+
+  it('dims via opacity, not a status colour on the primitive', () => {
+    render(
+      <ListRow dimmed>
+        <div>eggs</div>
+      </ListRow>
+    )
+    expect(screen.getByText('eggs').parentElement?.className).toMatch(/opacity-/)
   })
 })
 

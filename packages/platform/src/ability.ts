@@ -14,6 +14,8 @@ type Actions =
   | 'reopen'
   | 'decide'
   | 'punch'
+  | 'check'
+  | 'file'
   | 'manage'
 type Subjects =
   | 'platform.Profile'
@@ -31,6 +33,8 @@ type Subjects =
   | 'rewards.PunchCard'
   | 'rewards.Grant'
   | 'meals.PlannedMeal'
+  | 'shopping.List'
+  | 'shopping.Item'
   | 'all'
 
 export type AppAbility = PrismaAbility<[Actions, Subjects]>
@@ -93,17 +97,31 @@ export function createAbility(profile: Profile, overrides: PermissionOverride[])
     // Claiming an unclaimed dinner (spec.md: tier 3+). `update` is the capability;
     // the route narrows it to claim-only — full edits stay behind `manage`.
     can('update', 'meals.PlannedMeal')
+    can('view', 'shopping.Item')
+    can('create', 'shopping.Item')
+    can('check', 'shopping.Item')
   } else if (profile.tier >= 2) {
     can('view', 'platform.Plugin')
     can('create', 'family-feed.Post')
     can('view', 'chores.Task')
     can('view', 'calendar.Event')
     can('view', 'meals.PlannedMeal')
+    can('view', 'shopping.Item')
+    can('create', 'shopping.Item')
+    // Checking off is its own action from tier 2 up (ADR 071): the partner
+    // shopper and the kid sent down an aisle are the people holding the cart.
+    can('check', 'shopping.Item')
   } else {
     can('view', 'platform.Plugin')
     can('view', 'chores.Task')
     can('view', 'calendar.Event')
     can('view', 'meals.PlannedMeal')
+    // Adding at tier 1 is deliberate: a kid asking for cereal is the cheapest
+    // participation the house has. The toggle is NOT here (ADR 071) — the
+    // four-year-old at the wall must not be able to clear a trip, and a tier-1
+    // kid who should be trusted with it is one grant away.
+    can('view', 'shopping.Item')
+    can('create', 'shopping.Item')
   }
 
   for (const override of overrides) {

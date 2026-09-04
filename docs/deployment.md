@@ -410,7 +410,7 @@ jobs:
       - run: pnpm typecheck
       - run: pnpm lint
       - run: |
-          for p in platform plugin-family-feed plugin-chores plugin-calendar plugin-rewards plugin-meals; do
+          for p in platform plugin-family-feed plugin-chores plugin-calendar plugin-rewards plugin-meals plugin-shopping; do
             pnpm --filter "@family-os/$p" exec prisma migrate deploy
           done
           pnpm --filter @family-os/platform exec prisma db seed

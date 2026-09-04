@@ -38,11 +38,24 @@ reverse-chronological is the worst order in an aisle).
 4. **The destination strip** — `Chip` pills, one per list, with counts
    (`Grocery 14 · Costco 3 · Hardware 2`). Selecting one **swaps the list in place**.
    It is a filter. It is never a screen you land on.
-5. **The list** — `ListRow` per item (ADR 063/068: hairline, 56 px floor, leading slot),
-   grouped under `section-label` aisle headers in the list's walk order. The leading slot
-   is the check ring; the whole row is the tap target. Name is `card-title`, the note line
-   is `sm` and carries text facts only — `Emma added`, `for Thursday`, `Sam added · just
-now`. **No spine, no hue, no avatar** (ADR 064).
+5. **The list** — `ListRow` per item (ADR 063/068: hairline, 56 px floor, leading slot).
+   The leading slot is the check ring; the whole row is the tap target. Name is
+   `card-title`; the note line is `sm` and carries **producer words only** — why the row
+   exists, not who put it there: `for Thursday`. **No spine, no hue, no avatar**
+   (ADR 064). Most rows have no note line at all, which is the resting state, not a gap.
+
+   **Who added a row is never shown** (live review, 2026-09-03). `added_by` is still
+   stored — permissions and audit need it — but a shared list does not answer "whose
+   milk is this", and `Emma added` on thirty rows is noise between the shopper and the
+   next word they have to read. This retires the earlier anatomy's `Emma added` /
+   `Sam added · just now`, and with it the family profile's rendered attribution
+   (ADR 072 §3, amended).
+
+   **Aisle grouping follows the list's own flag**, `group_by_aisle` — it is a property of
+   the destination, not of the app. Grocery groups under `section-label` aisle headers in
+   walk order; a warehouse club or a hardware run renders **flat, in the order things were
+   added**, because imposing a grocery walk on a shop that has none is an order its
+   shopper cannot see. Costco ships `false`.
 
 ### In a shop
 

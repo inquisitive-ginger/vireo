@@ -1,4 +1,4 @@
-# Build the shell + all four plugins, then serve the flat prod tree (shell at /,
+# Build the shell + every plugin, then serve the flat prod tree (shell at /,
 # plugins under /plugins/<name>/) from Caddy. A2 verified this layout loads the
 # federated remotes with the default base — see docs/deployment.md.
 #
@@ -13,7 +13,7 @@ COPY . .
 RUN pnpm install --frozen-lockfile
 RUN pnpm --filter @family-os/plugin-family-feed --filter @family-os/plugin-chores \
         --filter @family-os/plugin-calendar --filter @family-os/plugin-rewards \
-        --filter @family-os/plugin-meals build
+        --filter @family-os/plugin-meals --filter @family-os/plugin-shopping build
 RUN pnpm --filter @family-os/shell build
 
 # Caddy with the Cloudflare DNS-01 module, cross-compiled to the target arch
@@ -31,3 +31,4 @@ COPY --from=build /repo/plugins/chores/dist       /srv/plugins/chores
 COPY --from=build /repo/plugins/calendar/dist     /srv/plugins/calendar
 COPY --from=build /repo/plugins/rewards/dist      /srv/plugins/rewards
 COPY --from=build /repo/plugins/meals/dist        /srv/plugins/meals
+COPY --from=build /repo/plugins/shopping/dist     /srv/plugins/shopping

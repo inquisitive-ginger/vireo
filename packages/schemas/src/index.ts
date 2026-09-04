@@ -240,6 +240,50 @@ export const MealInputSchema = z.object({
 
 export type MealInput = z.infer<typeof MealInputSchema>
 
+// ─── Shopping (M5.5) ──────────────────────────────────────────────────────────
+
+/** The fixed walk order (shopping/design.md) — never re-sorted per family. The
+    canonical list: the aisle dictionary and a correction's `category` both
+    resolve to one of these. */
+export const SHOPPING_AISLES = [
+  'Produce',
+  'Bakery',
+  'Meat',
+  'Dairy',
+  'Pantry',
+  'Frozen',
+  'Other',
+] as const
+export type ShoppingAisle = (typeof SHOPPING_AISLES)[number]
+
+export const ShoppingAisleSchema = z.enum(SHOPPING_AISLES)
+
+// category is never client-set on create — the server files it (dictionary or
+// override) so a producer's push, which creates items with no UI in the loop at
+// all, gets the exact same filing a manual add does.
+export const ShoppingItemCreateSchema = z.object({
+  name: z.string().trim().min(1, 'name is required').max(120),
+  quantity: OptionalText,
+})
+
+export type ShoppingItemCreateInput = z.infer<typeof ShoppingItemCreateSchema>
+
+// A correction re-files this item and teaches a family-wide override for the
+// next add of the same normalized name.
+export const ShoppingAisleCorrectionSchema = z.object({
+  category: ShoppingAisleSchema,
+})
+
+export type ShoppingAisleCorrectionInput = z.infer<typeof ShoppingAisleCorrectionSchema>
+
+// A runtime list (ADR 067/069: creating one is tier 4). Permanent lists are
+// seeded, not created through this route.
+export const ShoppingListCreateSchema = z.object({
+  name: z.string().trim().min(1, 'name is required').max(60),
+})
+
+export type ShoppingListCreateInput = z.infer<typeof ShoppingListCreateSchema>
+
 // ─── Bug reports ──────────────────────────────────────────────────────────────
 
 /** The lifecycle a report moves through (ADR 046). `deployed` is the only status the

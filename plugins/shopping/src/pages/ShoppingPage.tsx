@@ -1,0 +1,150 @@
+import { useMemo, useState } from 'react'
+import { Loader2 } from 'lucide-react'
+import { useAuth, useMutation, usePermissions, useQuery, useQueryClient } from '@family-os/platform'
+import { ErrorCard } from '@family-os/ui'
+import type { ListResponse, ListsResponse, ShoppingItem } from '../types'
+import { aisleSortIndex, fileAisle, normalizeItemName } from '../lib/filing'
+import { ShoppingPageView, type AisleGroup } from './ShoppingPageView'
+
+function json<T>(res: Response): Promise<T> {
+  if (!res.ok) throw new Error(String(res.status))
+  return res.json() as Promise<T>
+}
+
+/** One group per aisle, in walk order. A list with no aisles of ours is ONE
+    group in the order the server sent — regrouping it by category would reorder
+    a flat list behind the shopper's back. */
+function toGroups(items: ShoppingItem[], groupByAisle: boolean): AisleGroup[] {
+  if (!groupByAisle) return items.length ? [{ aisle: '', items }] : []
+  const groups: AisleGroup[] = []
+  for (const item of items) {
+    const last = groups[groups.length - 1]
+    if (last?.aisle === item.category) last.items.push(item)
+    else groups.push({ aisle: item.category, items: [item] })
+  }
+  return groups.sort((a, b) => aisleSortIndex(a.aisle) - aisleSortIndex(b.aisle))
+}
+
+export function ShoppingPage() {
+  const { id } = useAuth()
+  const ability = usePermissions()
+  const queryClient = useQueryClient()
+  const [selectedListId, setSelectedListId] = useState<string | null>(null)
+  const [draft, setDraft] = useState('')
+  const [addError, setAddError] = useState<string | null>(null)
+
+  // The house adds too (ADR 072) — the wall is the family profile and capture is
+  // its whole job. What can close the field is the revocation ADR 072 §6 names as
+  // the lever: `shopping.item.add` off for one profile. Ability, never a tier or
+  // an id (ADR 018).
+  const canAdd = ability.can('create', 'shopping.Item')
+
+  // Profile-scoped, under one `shopping/list` prefix the M5.5/5 widget reuses,
+  // so a single invalidation refreshes the page and the widget together.
+  const listsQuery = useQuery<ListsResponse>({
+    queryKey: ['shopping/list', id, 'index'],
+    queryFn: () => fetch('/api/shopping/lists').then(json<ListsResponse>),
+    retry: 1,
+  })
+
+  const lists = useMemo(() => listsQuery.data?.lists ?? [], [listsQuery.data])
+  const activeListId = selectedListId ?? lists[0]?.id ?? null
+  const selected = lists.find((l) => l.id === activeListId)
+
+  const listQuery = useQuery<ListResponse>({
+    queryKey: ['shopping/list', id, activeListId],
+    queryFn: () => fetch(`/api/shopping/lists/${activeListId}`).then(json<ListResponse>),
+    enabled: activeListId !== null,
+    retry: 1,
+  })
+
+  const openItems = useMemo(
+    () => (listQuery.data?.items ?? []).filter((i) => i.status === 'needed'),
+    [listQuery.data]
+  )
+
+  const groups = useMemo(
+    () => toGroups(openItems, selected?.groupByAisle ?? true),
+    [openItems, selected]
+  )
+
+  // The echo has to state the aisle the SERVER will pick, so it reads the
+  // family's corrections, not the bare dictionary.
+  const draftAisle = useMemo(() => {
+    const trimmed = draft.trim()
+    if (!trimmed) return null
+    const overrides = listQuery.data?.overrides ?? {}
+    return String(fileAisle(trimmed, overrides[normalizeItemName(trimmed)] ?? null))
+  }, [draft, listQuery.data])
+
+  const addItem = useMutation({
+    mutationFn: ({ listId, name }: { listId: string; name: string }) =>
+      fetch(`/api/shopping/lists/${listId}/items`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name }),
+      }).then(json<ShoppingItem>),
+    onSuccess: () => {
+      setAddError(null)
+      void queryClient.invalidateQueries({ queryKey: ['shopping/list'] })
+    },
+    onError: (err, variables) => {
+      // The field already cleared — the word is gone from the screen, so the
+      // failure has to name it back or the person never learns what was lost.
+      console.error('[shopping] could not add %s', variables.name, err)
+      setAddError(variables.name)
+    },
+  })
+
+  if (listsQuery.isLoading) {
+    return (
+      <div className="flex h-64 items-center justify-center">
+        <Loader2 className="size-5 animate-spin text-muted-foreground" />
+      </div>
+    )
+  }
+
+  if (listsQuery.isError || listQuery.isError) {
+    return (
+      <div className="p-6">
+        <ErrorCard
+          moduleName="Shopping"
+          onRetry={() => {
+            void listsQuery.refetch()
+            void listQuery.refetch()
+          }}
+        />
+      </div>
+    )
+  }
+
+  // The list read is a SERIAL second fetch — it needs an id from the index — and
+  // it restarts on every pill tap. Without this the surface paints "Nothing on
+  // Grocery yet." beside a count strip reading 14, which is the one state a
+  // shopper must never be shown wrongly. The index already knows the count, so
+  // the strip stays true while the rows are still coming.
+  const listLoading = activeListId !== null && listQuery.isPending
+
+  return (
+    <ShoppingPageView
+      lists={lists}
+      loading={listLoading}
+      selectedListId={activeListId ?? ''}
+      onSelectList={(listId) => {
+        setSelectedListId(listId)
+        setAddError(null)
+      }}
+      groups={groups}
+      openCount={listLoading ? (selected?.itemCount ?? 0) : openItems.length}
+      onAdd={(name) => {
+        if (!activeListId) return
+        addItem.mutate({ listId: activeListId, name })
+        setDraft('')
+      }}
+      onDraftChange={setDraft}
+      draftAisle={draftAisle}
+      addError={addError}
+      canAdd={canAdd}
+    />
+  )
+}

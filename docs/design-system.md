@@ -1,6 +1,8 @@
 # Design System
 
-> Last updated: 2026-09-03 — **ADR 070** (`CaptureField` beside `ComposeForm`)
+> Last updated: 2026-09-03 — **ADR 068** (`ListRow` lands; row height belongs to
+> the primitive) ([The scanned-list primitive](#the-scanned-list-primitive--listrow)),
+> **ADR 070** (`CaptureField` beside `ComposeForm`)
 > ([Capture primitives](#capture-primitives--capturefield-and-composeform)).
 >
 > Prior: 2026-08-20 — ADR 063 (ListRow), ADR 064 (identity-hue trigger narrowed); 2026-07-28 — ADR 057, daily time-window recurrence
@@ -567,16 +569,17 @@ grid (2026-07-10 decision a).
 
 Defined in `packages/ui/src/styles.css` (`@theme`).
 
-| Token                 | Value | Utility                     | Role                                            |
-| --------------------- | ----- | --------------------------- | ----------------------------------------------- |
-| `--spacing-touch`     | 48px  | `min-h-touch`/`min-w-touch` | Minimum touch target                            |
-| `--spacing-row-touch` | 64px  | `min-h-row-touch`           | Minimum interactive card/list-item height       |
-| `--spacing-tab-bar`   | 56px  | `h-tab-bar`, safe-area calc | Mobile bottom tab bar + anything anchored to it |
-| `--spacing-top-bar`   | 52px  | `min-h-top-bar`             | Mobile brand top bar                            |
-| `--spacing-sidebar`   | 220px | `w-sidebar`                 | Tablet sidebar (ADR 022)                        |
-| `--spacing-meter`     | 6px   | `h-meter`                   | Progress-meter bar height                       |
-| `--container-content` | 680px | `max-w-content`             | Single-column content pages                     |
-| `--container-drawer`  | 440px | `md:w-drawer`               | Side-drawer width                               |
+| Token                  | Value | Utility                          | Role                                                           |
+| ---------------------- | ----- | -------------------------------- | -------------------------------------------------------------- |
+| `--spacing-touch`      | 48px  | `min-h-touch`/`min-w-touch`      | Minimum touch target                                           |
+| `--spacing-card-touch` | 64px  | —                                | `ItemCard`'s floor per ADR 068 — **declared, not yet applied** |
+| `--spacing-list-touch` | 56px  | (primitive only, arbitrary form) | `ListRow`'s floor, applied unconditionally (ADR 068)           |
+| `--spacing-tab-bar`    | 56px  | `h-tab-bar`, safe-area calc      | Mobile bottom tab bar + anything anchored to it                |
+| `--spacing-top-bar`    | 52px  | `min-h-top-bar`                  | Mobile brand top bar                                           |
+| `--spacing-sidebar`    | 220px | `w-sidebar`                      | Tablet sidebar (ADR 022)                                       |
+| `--spacing-meter`      | 6px   | `h-meter`                        | Progress-meter bar height                                      |
+| `--container-content`  | 680px | `max-w-content`                  | Single-column content pages                                    |
+| `--container-drawer`   | 440px | `md:w-drawer`                    | Side-drawer width                                              |
 
 ### Radius family
 
@@ -632,8 +635,20 @@ See [Tablet Nav Layout](#tablet-nav-layout) and [Widget Composition System](#wid
 define the final composition surface — that is the widget system,
 designed in M1. See ADR 011.
 
-**Touch targets:** All interactive elements minimum 48px. Cards and
-list items minimum 64px tall.
+**Touch targets:** All interactive elements minimum 48px. Row height belongs to
+the primitive, not to the caller (ADR 068): `ItemCard` is 64px
+(`--spacing-card-touch`, when interactive), `ListRow` is 56px
+(`--spacing-list-touch`, always). **`ListRow` applies its floor today; `ItemCard`
+does not yet** — nothing reads `--spacing-card-touch`, so the card floor is a
+decision on the books, not enforced code. Landing it grows every chores, calendar
+and meals row and owes a visual review of its own. You pick a primitive by ADR
+063's rule and it brings its own floor — a number written in a consumer, a story spec, or an AC is
+a copy, and copies drift. Adjacent activation targets keep ≥8px of dead space
+between them. `ListRow`'s overlay is `inset-y-[3.5px]`, a value **derived** from
+two invariants — live target ≥ `--spacing-touch`, dead band ≥ 8px — and the
+hairline the padding box excludes: `(56 − 1 − 48) / 2`. It yields 48px live and
+8px dead on a 56px row. Re-derive it if any of the three moves; a whole-pixel
+`inset-y-1` measures 47/9 and puts the target under the declared minimum.
 
 **Viewing distance:** Primary readable content minimum 18px. Status
 counts and key values minimum 20px. This is the **across-the-room** floor of the
@@ -1080,6 +1095,43 @@ use `--radius-panel` / `--radius-hero` — see [Spacing](#spacing).
 >
 > - `px-4 py-3`. `FeedPostCard`'s three variants map to chrome: `note` →
 >   `card`/`article`, `widget` → `bare`, `plain` → returns its inner layout directly.
+
+### The scanned-list primitive — `ListRow`
+
+**Settled** — ADR 063 (2026-08-11); floors and targets settled by **ADR 068**
+(2026-08-26). Landed in `@family-os/ui` with M5.5/2.
+
+`@family-os/ui` has a second row primitive alongside `ItemCard`: **`<ListRow>`**
+— hairline-separated (`border-b border-border`, no per-row border/shadow/radius),
+`--spacing-list-touch` (56px) applied by the primitive itself and not lowerable
+by a caller (ADR 068), a leading control slot, whole-row activation on an
+`inset-y-[3.5px]` target. The rule for choosing:
+
+> **Cards** when items are independent objects with several actions.
+> **Rows** when items are a set you scan and act on one way.
+
+`ItemCard` is unchanged; **do not** reach for `chrome="bare"` on a dense list
+instead of `ListRow` — bare removes chrome but keeps the card's contract (spine,
+trailing, per-row semantics) and models neither group membership nor a leading
+slot. ADR 063 has the density argument.
+
+| Prop            | Values        | Default | Role                                                                                                                                                                        |
+| --------------- | ------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `leading`       | `ReactNode`   | —       | The row's leading control. `ListRow` renders it but doesn't define it — the primitive stays agnostic so a later interactive fill (a check ring) needs no prop-shape change. |
+| `dimmed`        | boolean       | `false` | Opacity dim, no status colour — the primitive carries no semantic of its own                                                                                                |
+| `onActivate`    | `() => void`  | —       | Whole-row tap target, ported from `ItemCard`                                                                                                                                |
+| `activateLabel` | `string`      | —       | Accessible name for the tap target                                                                                                                                          |
+| `as`            | `ElementType` | `div`   | Wrapper tag                                                                                                                                                                 |
+
+Type: the name line is `text-card-title`, the note line `text-sm-token` and
+muted; a group header (an aisle head) is `text-section-label`, muted. The
+content column is the caller's `children`, same contract as `ItemCard`: bring
+your own `min-w-0 flex-1` wrapper.
+
+A `ListRow` carries **no identity chrome** — no spine, no avatar, no hue — on
+any surface where the person is not the answer to the surface's question (ADR
+064). Shopping is the case in point: who added the milk renders as a text fact
+on the note line, never as colour nobody would decode mid-aisle.
 
 ### View switches — `SegmentedControl`
 

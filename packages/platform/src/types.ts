@@ -178,6 +178,51 @@ export const PERMISSION_REGISTRY = {
     action: 'update',
     subject: 'meals.PlannedMeal',
   },
+  // A list is its own subject (ADR 067, renamespaced by 069) — creating one
+  // commits the household to a trip, unlike adding an item to one already
+  // planned. Baseline tier 4 via `manage all`.
+  'shopping.list.create': {
+    label: 'Create a shopping list',
+    module: 'shopping',
+    action: 'create',
+    subject: 'shopping.List',
+  },
+  'shopping.item.view': {
+    label: 'See the shopping lists',
+    module: 'shopping',
+    action: 'view',
+    subject: 'shopping.Item',
+  },
+  'shopping.item.add': {
+    label: 'Add to a shopping list',
+    module: 'shopping',
+    action: 'create',
+    subject: 'shopping.Item',
+  },
+  // A toggle, not a one-way door (ADR 071) — unchecking is the same key,
+  // because the person who mis-taps is in an aisle, one-handed, maybe offline.
+  'shopping.item.check': {
+    label: 'Check things off the shopping list',
+    module: 'shopping',
+    action: 'check',
+    subject: 'shopping.Item',
+  },
+  // The aisle correction: it does not fix one row, it rewrites how every
+  // future add of that name files itself for the whole household. Its own
+  // action rather than `manage` (ADR 071) so granting it to a shopping teen
+  // does not also grant delete and rename.
+  'shopping.item.file': {
+    label: 'Correct which aisle an item files under',
+    module: 'shopping',
+    action: 'file',
+    subject: 'shopping.Item',
+  },
+  'shopping.item.manage': {
+    label: 'Edit and remove items on a shopping list',
+    module: 'shopping',
+    action: 'manage',
+    subject: 'shopping.Item',
+  },
 } as const
 
 export type PermissionString = keyof typeof PERMISSION_REGISTRY

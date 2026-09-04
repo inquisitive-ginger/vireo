@@ -1,0 +1,19 @@
+{
+  "name": "shopping",
+  "version": "0.0.1",
+  "remoteEntry": "http://localhost:3016/assets/remoteEntry.js",
+  "exposes": ["./Plugin"],
+  "routes": ["/shopping"],
+  "schema": "shopping",
+  "events": {
+    "publishes": ["shopping.item.added", "shopping.list.created"],
+    "subscribes": []
+  },
+  "widgets": [],
+  "navItem": {
+    "label": "Shopping",
+    "route": "/shopping",
+    "icon": "shopping-cart",
+    "minTier": 1
+  }
+}
