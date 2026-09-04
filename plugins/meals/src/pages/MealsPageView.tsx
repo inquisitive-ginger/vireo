@@ -10,7 +10,7 @@ import {
   resolveHue,
 } from '@family-os/ui'
 import type { MealMember, PlannedMeal } from '../types'
-import { isCovered, kindVerb, needsCookLabel } from '../lib/meals'
+import { isCovered, kindVerb, needsCookLabel, needsCount, needsPushLabel } from '../lib/meals'
 
 export interface WeekDay {
   key: string
@@ -30,12 +30,22 @@ export interface MealsPageViewProps {
   needCount: number | null
   canManage: boolean
   canClaim: boolean
+  /** The needs-push link's gate — `shopping.item.add`, the same key the shopping
+      surface asks (ADR 018/071). */
+  canPushNeeds: boolean
+  /** What the last push said back, carried by `mealId` to the row that was
+      tapped — the outcome of a row-scoped action states itself on the row it
+      changed, not under the page title where it names no meal and can sit a
+      screen away from the finger. `failed` turns it destructive and leaves the
+      link in place: the link is the retry. */
+  pushNote: { mealId: string; text: string; failed: boolean } | null
   onPrevWeek: () => void
   onNextWeek: () => void
   onThisWeek: () => void
   onPlan: (day: WeekDay) => void
   onEdit: (day: WeekDay) => void
   onClaim: (meal: PlannedMeal) => void
+  onPushNeeds: (meal: PlannedMeal) => void
   onRemove: (meal: PlannedMeal) => void
 }
 
@@ -58,12 +68,15 @@ export function MealsPageView({
   needCount,
   canManage,
   canClaim,
+  canPushNeeds,
+  pushNote,
   onPrevWeek,
   onNextWeek,
   onThisWeek,
   onPlan,
   onEdit,
   onClaim,
+  onPushNeeds,
   onRemove,
 }: MealsPageViewProps) {
   return (
@@ -114,9 +127,12 @@ export function MealsPageView({
             membersById={membersById}
             canManage={canManage}
             canClaim={canClaim}
+            canPushNeeds={canPushNeeds}
+            note={day.meal && pushNote?.mealId === day.meal.id ? pushNote : null}
             onPlan={onPlan}
             onEdit={onEdit}
             onClaim={onClaim}
+            onPushNeeds={onPushNeeds}
             onRemove={onRemove}
           />
         ))}
@@ -150,6 +166,34 @@ function RecipeLink({ url, title }: { url: string; title: string }) {
   )
 }
 
+/* "3 things needed" — the meta line, not the trailing slot. design.md §M5/2
+   fixed this as a text link rather than a bordered button, and the meta line is
+   where this page already puts row-level text links (`RecipeLink`, directly
+   after it). The trailing slot is `shrink-0`: a third control there and the
+   content column collapses to nothing at 390px, which took the meal's TITLE off
+   a phone entirely. `shrink-0` here too, so the verb and try bite truncate
+   around the affordance instead of clipping it, and `z-20` to clear ItemCard's
+   activate overlay — without it the row's tap-to-edit swallows the push. */
+function NeedsPushLink({ count, onPush }: { count: number; onPush: () => void }) {
+  return (
+    // One flex item, so the pair wraps together. The separator only earns its
+    // place while the link sits INLINE after the verb — on the wrapped line it
+    // would lead with a stray bullet, so it is gone at the widths that wrap.
+    <span className="flex shrink-0 items-center gap-1.5">
+      <span aria-hidden className="text-sm-token hidden text-muted-foreground sm:inline">
+        ·
+      </span>
+      <button
+        type="button"
+        onClick={onPush}
+        className="text-sm-token relative z-20 shrink-0 cursor-pointer font-medium text-primary hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+      >
+        {needsPushLabel(count)}
+      </button>
+    </span>
+  )
+}
+
 function DayRow({
   day,
   isToday,
@@ -158,9 +202,12 @@ function DayRow({
   membersById,
   canManage,
   canClaim,
+  canPushNeeds,
+  note,
   onPlan,
   onEdit,
   onClaim,
+  onPushNeeds,
   onRemove,
 }: {
   day: WeekDay
@@ -170,9 +217,12 @@ function DayRow({
   membersById: Map<string, MealMember>
   canManage: boolean
   canClaim: boolean
+  canPushNeeds: boolean
+  note: { text: string; failed: boolean } | null
   onPlan: (day: WeekDay) => void
   onEdit: (day: WeekDay) => void
   onClaim: (meal: PlannedMeal) => void
+  onPushNeeds: (meal: PlannedMeal) => void
   onRemove: (meal: PlannedMeal) => void
 }) {
   const meal = day.meal
@@ -187,6 +237,8 @@ function DayRow({
     : meal && isCovered(meal)
       ? 'transparent'
       : 'var(--border)'
+
+  const needed = needsCount(meal)
 
   const trailing = isPast ? undefined : meal ? (
     <>
@@ -218,7 +270,7 @@ function DayRow({
       spineDashed={!(meal && isCovered(meal))}
       align="center"
       dimmed={isPast}
-      className={cn(!meal && 'border-dashed shadow-none')}
+      className={cn(!meal && 'border-dashed shadow-none', note && 'flex-wrap')}
       onActivate={canActivate ? () => (meal ? onEdit(day) : onPlan(day)) : undefined}
       activateLabel={
         canActivate ? (meal ? `Edit “${meal.title}”` : `Plan ${DOW[day.date.getDay()]}`) : undefined
@@ -253,7 +305,13 @@ function DayRow({
                 <span className="text-base-token text-muted-foreground"> · {meal.sides}</span>
               )}
             </div>
-            <div className="mt-0.5 flex min-w-0 items-center gap-1.5">
+            {/* Wraps rather than shrinks: at 390px the day column, the verb and
+                a text affordance do not fit on one line, and squeezing them
+                truncated "planned — nobody's on it yet" down to "p.". The
+                affordances drop to their own line there — the same rule the
+                header cluster follows, and the same one that says nothing gets
+                hidden on the phone, which is the primary device. */}
+            <div className="mt-0.5 flex min-w-0 flex-wrap items-center gap-x-1.5">
               {owner ? (
                 <>
                   <ProfileAvatar
@@ -278,8 +336,11 @@ function DayRow({
                   {meal.tryBite && ` · try bite: ${meal.tryBite}`}
                 </span>
               )}
-              {/* Hidden on past days with the rest of the row's affordances —
-                  behind today the page only records (design.md §M5/2). */}
+              {/* Both hidden on past days with the rest of the row's affordances
+                  — behind today the page only records (design.md §M5/2). */}
+              {needed > 0 && canPushNeeds && !isPast && (
+                <NeedsPushLink count={needed} onPush={() => onPushNeeds(meal)} />
+              )}
               {meal.recipeUrl && !isPast && <RecipeLink url={meal.recipeUrl} title={meal.title} />}
             </div>
           </>
@@ -289,6 +350,34 @@ function DayRow({
           </span>
         )}
       </div>
+
+      {/* The push outcome, on the row it changed — a row-scoped action states
+          its result on the row, not under the page title where it names no meal
+          and can sit a screen away from the finger.
+
+          A full-width line of its own (`order-last w-full` against the card's
+          `flex-wrap`, which only turns on when there's a note), NOT the meta
+          line and NOT the trailing slot: the meta line describes the meal and
+          truncates — a failure that can be truncated away is a failure nobody
+          sees — and at 390px the trailing slot and the content column together
+          leave ~90px, which wraps this sentence into five lines. The sentence
+          needs the row's whole width, so it takes the row's whole width.
+
+          The row growing past `min-h-14` IS the evidence the tap did something,
+          and only the tapped row grows. Medium weight on a failure so it can't
+          read as one more muted meta fragment; `pl-14` sets it under the title
+          rather than under the day column. */}
+      {note && (
+        <p
+          role="status"
+          className={cn(
+            'text-sm-token order-last w-full pl-14 leading-snug',
+            note.failed ? 'font-medium text-destructive' : 'text-muted-foreground'
+          )}
+        >
+          {note.text}
+        </p>
+      )}
     </ItemCard>
   )
 }

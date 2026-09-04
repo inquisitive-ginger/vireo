@@ -4,19 +4,21 @@ import {
   FAMILY_PROFILE_ID,
   useAuth,
   useMutation,
+  usePermissions,
   useQuery,
   useQueryClient,
 } from '@family-os/platform'
 import type { Profile } from '@family-os/platform/types'
 import { ConfirmDialog, ErrorCard } from '@family-os/ui'
-import type { MealMember, PlanResponse, PlannedMeal } from '../types'
+import type { MealMember, NeedsPushResult, PlanResponse, PlannedMeal } from '../types'
 import { toDateKey, weekDays, weekRangeLabel, weekStart } from '../lib/dates'
-import { DINNER_DONE_HOUR, daysNeedingCook } from '../lib/meals'
+import { DINNER_DONE_HOUR, daysNeedingCook, needsPushOutcome } from '../lib/meals'
 import { MealDrawer, type MealDrawerInput } from '../components/MealDrawer'
 import { MealsPageView, type WeekDay } from './MealsPageView'
 
 export function MealsPage() {
   const { id, tier } = useAuth()
+  const ability = usePermissions()
   const queryClient = useQueryClient()
   const [offset, setOffset] = useState(0)
   const [drawer, setDrawer] = useState<{ open: boolean; day: WeekDay | null }>({
@@ -26,9 +28,21 @@ export function MealsPage() {
   // Set → the remove-confirm dialog is open for this meal (RowActions only
   // reports intent; the host confirms — the chores pattern).
   const [removeTarget, setRemoveTarget] = useState<PlannedMeal | null>(null)
+  // What the last push said back, tagged with the meal it belongs to so the row
+  // that was tapped is what states it. Cleared on the next tap and whenever the
+  // plan changes underneath it.
+  const [pushNote, setPushNote] = useState<{
+    mealId: string
+    text: string
+    failed: boolean
+  } | null>(null)
 
-  const canManage = tier >= 4
+  const canManage = ability.can('manage', 'meals.PlannedMeal')
   const canClaim = tier >= 3 && id !== FAMILY_PROFILE_ID
+  // Pushing a meal's needs IS a shopping add, so it asks the same revocable key
+  // the shopping surface asks (ADR 018/071) — never a tier read, and never a
+  // meals key: the write lands in another plugin's schema.
+  const canPushNeeds = ability.can('create', 'shopping.Item')
 
   const now = new Date()
   const start = weekStart(now, offset)
@@ -86,6 +100,9 @@ export function MealsPage() {
   // page and the Tonight widget, `calendar/day-marks` is what makes the month
   // grid + agenda mark itself update without a reload (M5/4 AC6).
   const invalidate = () => {
+    // An edited/claimed/removed meal makes its push note stale — the note
+    // describes needs that may no longer be the row's.
+    setPushNote(null)
     queryClient.invalidateQueries({ queryKey: ['meals/plan'] })
     queryClient.invalidateQueries({ queryKey: ['calendar/day-marks'] })
   }
@@ -120,6 +137,36 @@ export function MealsPage() {
         return r.json() as Promise<PlannedMeal>
       }),
     onSuccess: () => void invalidate(),
+  })
+
+  // The producer's half of the needs-push contract. What comes back is the
+  // CONSUMER's count, not what was sent — dedupe means the two differ — so the
+  // tapped row states what actually landed. A failure says so on that same row
+  // rather than dying in a console nobody has open (ADR 046).
+  const pushNeeds = useMutation({
+    mutationFn: (meal: PlannedMeal) =>
+      fetch('/api/meals/push-needs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mealId: meal.id }),
+      }).then((r) => {
+        if (!r.ok) throw new Error(String(r.status))
+        return r.json() as Promise<NeedsPushResult>
+      }),
+    onSuccess: (result, meal) => {
+      setPushNote({ mealId: meal.id, text: needsPushOutcome(result), failed: false })
+      // The rows land in shopping's schema, so shopping's queries are what go
+      // stale — one prefix refreshes its page and the M5.5/5 widget together.
+      void queryClient.invalidateQueries({ queryKey: ['shopping/list'] })
+    },
+    onError: (err, meal) => {
+      console.error('[meals] needs push failed', err)
+      setPushNote({
+        mealId: meal.id,
+        text: "Couldn't send that to the list — try again.",
+        failed: true,
+      })
+    },
   })
 
   const removeMeal = useMutation({
@@ -171,12 +218,18 @@ export function MealsPage() {
         }
         canManage={canManage}
         canClaim={canClaim}
+        canPushNeeds={canPushNeeds}
+        pushNote={pushNote}
         onPrevWeek={() => setOffset((o) => o - 1)}
         onNextWeek={() => setOffset((o) => o + 1)}
         onThisWeek={() => setOffset(0)}
         onPlan={(day) => setDrawer({ open: true, day })}
         onEdit={(day) => setDrawer({ open: true, day })}
         onClaim={(meal) => claimMeal.mutate(meal)}
+        onPushNeeds={(meal) => {
+          setPushNote(null)
+          pushNeeds.mutate(meal)
+        }}
         onRemove={(meal) => setRemoveTarget(meal)}
       />
       {removeTarget && (

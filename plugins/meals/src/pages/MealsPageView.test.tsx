@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen } from '@testing-library/react'
+import { render, screen, fireEvent } from '@testing-library/react'
 import { MealsPageView, type WeekDay } from './MealsPageView'
 import type { MealMember, PlannedMeal } from '../types'
 import { fromDateKey } from '../lib/dates'
@@ -56,7 +56,10 @@ function renderView(props: Partial<Parameters<typeof MealsPageView>[0]> = {}) {
       needCount={2}
       canManage
       canClaim
+      canPushNeeds
+      pushNote={null}
       onPrevWeek={vi.fn()}
+      onPushNeeds={vi.fn()}
       onNextWeek={vi.fn()}
       onThisWeek={vi.fn()}
       onPlan={vi.fn()}
@@ -176,5 +179,63 @@ describe('MealsPageView', () => {
       canClaim: false,
     })
     expect(screen.queryByRole('button', { name: "I've got it" })).not.toBeInTheDocument()
+  })
+
+  it('offers the needs push as a count, and fires it with the meal', () => {
+    const onPushNeeds = vi.fn()
+    const withNeeds = meal({ needs: 'chicken thighs, snap peas' })
+    renderView({ days: weekOf({ '2026-08-13': withNeeds }), onPushNeeds })
+
+    fireEvent.click(screen.getByRole('button', { name: '2 things needed' }))
+    expect(onPushNeeds).toHaveBeenCalledWith(withNeeds)
+  })
+
+  it('offers nothing to push when the meal lists nothing', () => {
+    renderView({ days: weekOf({ '2026-08-13': meal({ needs: '  ,  ' }) }) })
+    expect(screen.queryByRole('button', { name: /needed/ })).not.toBeInTheDocument()
+  })
+
+  it('hides the push from a viewer without the shopping add key', () => {
+    renderView({
+      days: weekOf({ '2026-08-13': meal({ needs: 'chicken thighs' }) }),
+      canPushNeeds: false,
+    })
+    expect(screen.queryByRole('button', { name: /needed/ })).not.toBeInTheDocument()
+  })
+
+  it('states what the push did, on the row that was pushed', () => {
+    const pushed = meal({ id: 'meal-thu', needs: 'chicken thighs, snap peas' })
+    const other = meal({ id: 'meal-tue', date: '2026-08-11', title: 'Tacos', needs: 'tortillas' })
+    renderView({
+      days: weekOf({ '2026-08-11': other, '2026-08-13': pushed }),
+      pushNote: { mealId: 'meal-thu', text: '2 things sent to Grocery', failed: false },
+    })
+
+    const note = screen.getByRole('status')
+    expect(note).toHaveTextContent('2 things sent to Grocery')
+    // The outcome belongs to the meal it changed, not to the page.
+    expect(note.closest('[class*="rounded-card"]')).toHaveTextContent('Rigatoni')
+    expect(note.closest('[class*="rounded-card"]')).not.toHaveTextContent('Tacos')
+  })
+
+  it('says a push failed on the row that was tapped, with the link still there to retry', () => {
+    const pushed = meal({ needs: 'chicken thighs, snap peas' })
+    renderView({
+      days: weekOf({ '2026-08-13': pushed }),
+      pushNote: { mealId: pushed.id, text: "Couldn't send that to the list", failed: true },
+    })
+
+    const note = screen.getByRole('status')
+    expect(note).toHaveClass('text-destructive')
+    expect(note.closest('[class*="rounded-card"]')).toHaveTextContent('Rigatoni')
+    expect(screen.getByRole('button', { name: '2 things needed' })).toBeInTheDocument()
+  })
+
+  it('says nothing on a row whose meal was not the one pushed', () => {
+    renderView({
+      days: weekOf({ '2026-08-13': meal({ needs: 'chicken thighs' }) }),
+      pushNote: { mealId: 'some-other-meal', text: '1 thing sent to Grocery', failed: false },
+    })
+    expect(screen.queryByRole('status')).not.toBeInTheDocument()
   })
 })
