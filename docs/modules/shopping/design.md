@@ -14,8 +14,13 @@ identity chrome), **ADR 032** (one nav entry), **ADR 070** (`CaptureField`).
 
 The capture field is the hero at rest; the aisle-ordered list is the page. The field is
 not a mode and the list is not a mode — the field scrolls away under the thumb when you
-are in a shop, and nothing switches. Three directions were rejected and are drawn in the
-artifact with their costs: shop-first alone (wrong posture for the common open),
+are in a shop, and nothing switches.
+
+**This answers the axis for the phone**, where capture and list genuinely are one scroll
+apart, and it is scoped to that layout (clarified 2026-09-04; see §"One surface, two
+layouts"). It was never the rule for the wall-sized surface: W2 was capture only from
+the day it was drawn, with a control out to the lists. Three directions were rejected
+and are drawn in the artifact with their costs: shop-first alone (wrong posture for the common open),
 needs-first (one stream, three aisle vocabularies), trip-first (a run is ceremony, and
 reverse-chronological is the worst order in an aisle).
 
@@ -92,25 +97,27 @@ never by the profile, and never by a control on screen.
 **Neither layout autofocuses** (ADR 070, amended 2026-09-04). A screen left on in a
 kitchen is not a screen someone walked up to.
 
-### The wide layout is an exception to "not a mode" — Zach's call, 2026-09-04
+### Why the wide layout has modes and the narrow one does not
 
-§"The answer to the axis" says **the field is not a mode and the list is not a mode**,
-and on narrow that still holds exactly: the field is the hero at rest, the list is
-below it, and scrolling is the only thing between them.
+`Show lists` is a control that changes what is on screen, which is what a mode is. That
+is not an exception granted to this layout — **it is what W2 always was**, and the
+apparent contradiction is an artifact of a merge rather than a decision anyone made.
 
-**The wide layout does not honour that rule.** `Show lists` is a control that changes
-what is on screen, which is what a mode is. It was built the other way first — hero
-above, list below, reachable by scrolling — and **rejected at the live review**: a
-screen you stand in front of to unload a grocery bag should have the field and nothing
-else on it, and a list sharing that screen makes the capture field one item of
-furniture among many.
+The record: §"The answer to the axis" is the answer for **`/shopping` on a phone**,
+where the field scrolls away under the thumb and the list is one gesture below it. The
+wall was a **different surface** at a different route — _"the wall only takes things
+in"_, capture only, with `See the lists` as the way out. Capture-with-a-control was the
+design from the day it was drawn.
 
-Recorded as an exception rather than a rewording, so a later session finds the
-disagreement stated instead of discovering it: **the principle holds on narrow, and
-wide is a deliberate departure from it.** Revisit only with the person who asked for
-it.
+Merging the two onto one route (2026-09-04) put both under one document, and the phone's
+rule got read as though it governed the wide layout too. It never did. **The no-mode
+principle is scoped to the narrow layout, where it is exactly as true as it was**, and
+the wide layout is W2 relocated — same shape, same control, now reached by viewport
+instead of by URL.
 
-Two properties keep the exception from becoming the trap the earlier `/shopping/wall`
+Confirmed by Zach, 2026-09-04: _"capture mode vs list mode makes sense."_
+
+Two properties keep the control from becoming the trap the deleted `/shopping/wall`
 route was:
 
 - **The same control reverses it, in the same place.** `Show lists` becomes

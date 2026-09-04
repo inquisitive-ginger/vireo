@@ -29,9 +29,11 @@ export interface ShoppingPageViewProps {
   /** `shopping.item.add` is revoked for this profile — the one lever that closes
       the field (ADR 072 §6). The house itself adds; the wide layout needs it. */
   canAdd: boolean
-  /** Which arrangement of THIS surface to draw. Not a mode and not a route: the
-      viewport picks it, nothing on screen toggles it, and both draw the same
-      list from the same data (design.md §"One surface, two layouts"). */
+  /** Which arrangement of THIS surface to draw. Not a route and not something a
+      reader switches — the viewport picks it, and both draw the same list from
+      the same data. Wide DOES have capture/list modes inside it, which is what
+      W2 always was; the no-mode rule is the narrow layout's (design.md
+      §"Why the wide layout has modes and the narrow one does not"). */
   layout: 'narrow' | 'wide'
   /** Wide only — the hero's short memory of what landed, anywhere. */
   justAdded: { id: string; name: string }[]

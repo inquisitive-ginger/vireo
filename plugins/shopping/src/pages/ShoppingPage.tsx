@@ -33,9 +33,9 @@ function toGroups(items: ShoppingItem[], groupByAisle: boolean): AisleGroup[] {
 export function ShoppingPage() {
   const { id } = useAuth()
   // ONE route, two layouts, picked by the viewport — never by the profile
-  // (settled at the 2026-09-04 live review). A tablet and up opens on capture;
-  // a phone opens on the list. Nothing on screen switches between them, so
-  // neither is a mode, and resizing a window is enough to see both.
+  // (settled at the 2026-09-04 live review). A tablet and up is W2 relocated:
+  // capture only, with `Show lists` bringing the lists in. A phone is the
+  // scrolling list, and the layout itself is not something anyone can switch.
   const wide = useWideLayout()
   const ability = usePermissions()
   const queryClient = useQueryClient()

@@ -131,8 +131,8 @@ describe('ShoppingPageView', () => {
 })
 
 /* The same surface at tablet width and up (design.md §"One surface, two
-   layouts"). Not a route and not a mode: the viewport picks the arrangement,
-   nothing on screen switches it, and the aisle list is the same list. */
+   layouts"): W2 relocated onto this route. Capture only until asked otherwise,
+   and the aisle list it reveals is the same list the phone scrolls to. */
 describe('ShoppingPageView — the wide layout', () => {
   it('opens on capture: the question and the big field', () => {
     renderView({ layout: 'wide' })
