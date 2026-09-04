@@ -1,7 +1,12 @@
 # 067 — A List Is Its Own Subject, and Creating One Is Tier 4
 
-**Status:** Decided (2026-08-23) · Applies ADR 018 (CASL subjects +
-`PERMISSION_REGISTRY`) to the M5/6 grocery list
+**Status:** Superseded in part (2026-09-03) by **ADR 069** — the reasoning
+stands, the namespace does not. Groceries left `meals`, so every
+`meals.GroceryList` / `meals.GroceryItem` below reads `shopping.List` /
+`shopping.Item`, and the keys read `shopping.list.create` / `shopping.item.add` /
+`shopping.item.manage`. Tier baselines are unchanged. The rename cost nothing
+because nothing had shipped — which is the rule this ADR stated and 069 acted on.
+· Applies ADR 018 (CASL subjects + `PERMISSION_REGISTRY`) to the M5/6 grocery list
 
 ## Decision
 

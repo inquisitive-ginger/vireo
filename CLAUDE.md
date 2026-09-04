@@ -17,16 +17,17 @@ before it reads anything else, and it is size-capped — see
 
 - **Milestone:** M4.5 — Companion (M4.5/3 next); **M5/3 + M5/4 done 2026-08-23,
   PRs #124/#125** — the 16:00 dinner nudge and calendar day marks (ADR 050/066).
-- **Active stories:** **M5/6 is PR #127, design gate closed 2026-08-23** — per-store
-  lists, rework above the data layer. Beacon due at the December visit.
+- **Active stories:** **M5.5 — Shopping (ADR 069, 2026-09-03)** — groceries left
+  `meals`, PR #127 closed unmerged, surface back to design. Beacon due in December.
 - **Deployment:** 🟢 live at `https://vireohome.app` — Pi 5 (192.168.0.42, pinned
   in NetworkManager 2026-09-02; eth0 `88:a2:9e:d4:e7:33`, router reservation still
   owed); auto-deploy + Tailscale + restic→R2 + watchdog intact. Runbook Part F/G.
-- **Last session:** 2026-09-03 — planned power-down for cable work. App self-restored;
-  the Actions runner died on the stale cold-boot clock (no RTC) and is now gated on
-  `time-sync.target`. `logs/2026-09-03-infra-power-down-clock-gate.md`.
+- **Last session:** 2026-09-03 — the groceries boundary. ADR 032 (one nav entry per
+  plugin) made it near-binary: a top-level destination _is_ a plugin.
+  `logs/2026-09-03-product-shopping-boundary.md`.
 - **What's next and everything outstanding:** `docs/sessions/queue.md` — the one
-  index. M4.5/3 or the M5/6 design gate next; NVMe HAT is an upgrade, not a rescue.
+  index. M4.5/3 or M5.5/1 (fresh shopping design) next. **ADR 068's `ListRow` fix is
+  stranded on the closed `dev/meals-grocery-list` and owes a path to `main`.**
 - **Owed in-app:** report `2b882a8c` (#128) is `triaged` and owed the `deployed`
   flip — needs a tier-4 PIN session, so only Zach can do it. Check the table.
 

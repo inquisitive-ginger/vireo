@@ -163,63 +163,22 @@ veggies` (accent at 12% wash, accent ink). No gold — gold is XP/reward only.
 
 ---
 
-## M5/6 — The Grocery List (capture + filing)
+## M5/6 + M5/7 — moved to `shopping`
 
-> The build/shop **mode split is retired**. One aisle-grouped list everywhere;
-> "build" and "shop" are contexts, not arrangements. What flat-capture-order
-> existed for — "did my add land?" — is answered by the **just-added flash**
-> (the row flashes primary-tint in place, in its aisle). What shop mode was —
-> big targets, dim-in-place, offline — is how the list always behaves.
-
-- **Rows are `ListRow`** (ADR 063): hairline-separated, 56px min, leading 26px
-  check ring, name 17px, note line 13px muted. No cards — forty bordered cards
-  was the density failure the critique caught.
-- **Aisle heads govern their group:** 13px bold + count (`2 left`), full-width
-  hairline under, sticky within scroll contexts.
-- **Add bar at the bottom on the phone** (thumb zone; the top is for reading).
-  The chip strip above it shows **staples at rest, typeahead while typing**.
-  On the wall the add bar sits top with staples beside it — the width exists
-  there and reach doesn't constrain.
-- **Items file themselves:** aisle dictionary (~200 keywords shipping) assigns
-  `category` on add; unknown words land in **Other** with a one-time
-  `Which aisle?` chip row rendered **on the row, in place** — never a layout
-  jump above the list. **Corrections teach a per-family override** (one small
-  table); re-filing an item updates it.
-- Provenance is one grammar: the **note line** — `for Sunday's rigatoni` (needs
-  push), `Emma added these` (manual), `Sam got it` (checked). Never a chip in
-  the name line.
-- Meal `needs` push: comma-split into items, each noted with its meal; dedupe
-  by name against open items (re-adding an existing checked item unchecks it).
-
----
-
-## M5/7 — Shop Context, Sync + Offline, the Wall
-
-- **Whole-row tap toggles** got/needed; tap again undoes; nothing on a row is
-  destructive. Checked rows **dim in place** (0.46 opacity + strikethrough) and
-  keep position.
-- **A fully cleared aisle collapses** to a stated row — `✓ Bakery · all 2 in
-the cart`, tap to reopen. This is the sanctioned reading of "dim in place,
-  never vanish" (spec.md amended): the rule answers _"did I already get
-  that?"_, and the stated row answers it better than dimmed lines. Individual
-  checked items still never vanish.
-- **Progress is structure:** `2 in the cart · 8 to go` + a filled track under
-  the page title, on every surface. Completion is a real moment — the track
-  fills, aisles collapse, the list physically shrinks as the store is walked.
-- **Fixed walk order:** Produce → Bakery → Meat → Dairy → Pantry → Frozen →
-  Other. Per-family reorder is a **named non-goal** (revisit only if the fixed
-  order demonstrably annoys).
-- **Partner sync renders as text**, not identity chrome (ADR 064): a row checked
-  by the other shopper reads `Sam got it` in the note line.
-- **Offline:** quiet pill under the title — `Offline — checks will sync`. Not a
-  banner, not amber; offline is expected, not exceptional. (The SW work itself
-  is this story's other half; see queue.)
-- **The wall (fridge iPad, ~1060px content):** aisles as **three balanced
-  columns** — the whole list visible, no scrolling, groups never split across
-  columns (`break-inside: avoid`). Header carries the one fact only the wall
-  can: **"Sam is at the store right now"** (green pulse dot), derived from
-  check activity — no new tables. Column re-flow after add/clear is accepted
-  pending a check on the physical fridge before this story closes.
+> **Both sections were removed 2026-09-03 (ADR 069).** Groceries left `meals` and
+> became the `shopping` plugin, so its UX spec is no longer meals' to hold —
+> see `docs/modules/shopping/spec.md`.
+>
+> They were **already twice-stale** when they moved: the 2026-08-23 design gate
+> killed the note line, the chip strip and the three-column wall that the text
+> described, and ADR 069 then superseded the gate's own index-of-lists outcome.
+> The surviving reasoning — aisle order is walk order, the just-added flash
+> answers "did my add land?", corrections teach a family-wide override — is
+> carried into the shopping spec. The layout decisions are carried nowhere; they
+> are the subject of a fresh design exploration.
+>
+> Git history has the removed text if it is ever wanted:
+> `git log -p -- docs/modules/meals/design.md`.
 
 ---
 

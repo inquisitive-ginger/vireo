@@ -21,9 +21,10 @@ Feature UX is next**, then dev foundation and surfaces. See
 
 **Also in flight: M5 — Meals & Groceries** — design gate closed 2026-08-11
 (M5/1, ADRs 063/064); **M5/2 shipped 2026-08-13 (PR #105)**, **M5/3 Who's Got
-Dinner and M5/4 Calendar Day Marks shipped 2026-08-23 (PRs #124/#125)**. M5/6
-The Grocery List is in flight (PR #127, back for a design gate); M5/5 + M5/7 are
-wave 2.
+Dinner and M5/4 Calendar Day Marks shipped 2026-08-23 (PRs #124/#125)**. **M5/6
+The Grocery List was closed unmerged 2026-09-03** — groceries split out to
+**M5.5 — Shopping** (ADR 069) and returns to a fresh design exploration. M5/5 Try
+Bites is the last M5 story.
 
 ## Completed
 
@@ -133,10 +134,11 @@ _Overview + session plan: `docs/modules/companion/spec.md`_
 
 ---
 
-### M5 — Meals & Groceries
+### M5 — Meals
 
 Two jobs that turn out to be one module: **nobody gets ambushed by dinner**, and
-**somebody has dinner**.
+**somebody has dinner**. Groceries was a third and turned out not to belong —
+**split out to M5.5 on 2026-09-03 (ADR 069)**.
 
 - Week plan + **Tonight's Dinner** widget — readable from the door, no tap
 - **Who's got dinner** — owner + kind (cooked/takeout/leftovers/out); **unclaimed is a
@@ -144,10 +146,42 @@ Two jobs that turn out to be one module: **nobody gets ambushed by dinner**, and
 - Calendar presence as a **day mark**, not an event (**ADR 050**) — a small platform
   story shared with M7 School
 - **Try bites** — punches a rewards card (**ADR 049**; punch cards shipped M4/6, 2026-08-01)
-- **Grocery list** — one aisle-grouped list (the build/shop mode split was retired in M5/1, ADR 063) and offline
+- ~~**Grocery list**~~ — moved to **M5.5 — Shopping** (ADR 069)
 
 **Deferred deliberately:** the recipe bank. A free-text `needs` field on the planned
-meal pushes to groceries and removes the reason to build ingredient parsing.
+meal pushes to `shopping` and removes the reason to build ingredient parsing.
+
+---
+
+### M5.5 — Shopping
+
+> Split out of M5 at the 2026-09-03 product session (**ADR 069**), numbered
+> fractionally so M6–M9 keep their numbers — the same move M4.5 made.
+
+The shared list you actually shop from, as its own plugin with its own nav entry.
+It replaces a Google Keep list the family already keeps, which is the bar: slower
+than Keep means unused.
+
+- **Lists are rows, not columns** — a list carries its producer; permanent lists
+  persist, runtime lists live while they hold items
+- **Capture** in one gesture from anywhere in the house
+- **Filing** — items sort into walk order _inside one list_; unknown words land in
+  Other and a correction teaches a family-wide override
+- **Shop mode** — one-handed, moving, and **offline** (the SW is network-first for
+  `/api`, so offline is its own reviewable chunk)
+- **Meals is a producer, not an owner** — the `needs` push crosses a contract
+  (ADR 050's provider pattern), not a shared table
+
+**Why it split:** ADR 032 gives one nav entry per plugin, so a top-level
+destination _is_ a plugin — groceries could not be first-class while living inside
+meals. Four of the six models in the `meals` schema were already grocery models,
+`/groceries/*` was already a top-level route, and the only real coupling was one
+push function.
+
+**Done when:** The family shops off this list instead of Keep, including with no
+signal in the store.
+
+_Overview + session plan: `docs/modules/shopping/spec.md`_
 
 **Done when:** Nobody has to ask what's for dinner or who's making it, and the week's
 shopping happens off the list in the app.

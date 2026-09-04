@@ -18,8 +18,9 @@
 ## Up Next
 
 > **M4.5 — Companion is the active milestone** (M4.5/3 next). M5 is running
-> alongside it: /2 shipped 2026-08-13, /3 and /4 on 2026-08-23, and **M5/6's design
-> rework is the one runnable M5 session**. Part F offsite backups went live
+> alongside it: /2 shipped 2026-08-13, /3 and /4 on 2026-08-23, and **groceries
+> left M5 entirely on 2026-09-03** — it is now **M5.5 — Shopping** (ADR 069),
+> starting from a fresh design exploration. Part F offsite backups went live
 > 2026-08-16, so the remaining infra items are improvements, not risks to the data.
 
 ### Beacon — Product+Design: paired friend lamps (deadline: the friends' December visit)
@@ -58,14 +59,13 @@ One pre-launch family task: **name the feature at the dinner table** (ADR 061 �
 
 ---
 
-### M5 — Meals & Groceries: five sessions, two waves
+### M5 — Meals: one story left (groceries split out to M5.5)
 
-**Wave 1 landed 2026-08-23** — M5/3 (PR #124) and M5/4 (PR #125) are done; M5/6 is
-open as PR #127, its design gate now closed and the rework queued (below). Wave 2 is
-M5/5 + M5/7, and both share `apps/api/src/plugins/meals.ts` and
-`plugins/meals/prisma/` — land routes in a **new file**, rebase + `prisma generate`
-before merging. _Log:
-`logs/2026-08-22-infra-agent-delegation.md`._
+**Wave 1 landed 2026-08-23** — M5/3 (PR #124) and M5/4 (PR #125) are done. **M5/6 and
+M5/7 left this milestone on 2026-09-03** (ADR 069) and are re-planned as M5.5 below;
+PR #127 was closed unmerged. **M5/5 Try Bites is the only M5 story left**, and it no
+longer shares a branch with anything. _Log:
+`logs/2026-09-03-product-shopping-boundary.md`._
 
 ### M5/5 — Dev: Try Bites
 
@@ -73,36 +73,47 @@ before merging. _Log:
 `meals.trybite.taken` → punches a `rewards` card. Replaces the paper sheet (15 squares →
 small reward → reset). `meals` knows nothing about cards. _Depends on: M5/2, M4/6._
 
-### M5/6 — Dev: the grocery list, reworked on PR #127 · **run this next**
+---
 
-**Type:** development · **Kickoff:** `kickoffs/dev-grocery-list.md`
-Rework above the data layer, **amending #127** rather than opening a PR: index of lists
-→ per-list view, a new migration giving `grocery_items` a list reference, ADR 067's
-registry key, and `GroceriesPage.tsx:26`'s `tier >= 4` → `ability.can`. `ListRow` unchanged.
-_Contract: [dev-ready visual](artifacts/2026-08-23-grocery-list-devready.html) —
-read it first, it is newer than the spec and carries the index decision —
-plus [handoff](artifacts/2026-08-23-grocery-list-handoff.md) · ADR 067. Depends on:
-nothing — #127 is open and waits on this._
+### M5.5 — Shopping: four sessions (split out of M5 by ADR 069, 2026-09-03)
 
-### M5/7 — Dev: Shop Context, Sync + Offline, the Wall
+Groceries became its own plugin. **PR #127 closed unmerged**; everything above the data
+layer is unsettled and the two 2026-08-23 artifacts are banner-marked SUPERSEDED.
+_Module: `docs/modules/shopping/spec.md` · ADR 069 ·
+Log: `logs/2026-09-03-product-shopping-boundary.md`._
 
-**Type:** development · **Kickoff:** `kickoffs/dev-grocery-shop-offline.md`
-Whole-row checks, cleared-aisle collapse, progress track, "Sam got it" sync between
-shoppers, the wall's presence line — and **offline**. The SW is network-first for
-`/api`, so today the list fails in the exact place it is used; it has bitten twice —
-treat the offline half as its own reviewable chunk. **Amended 2026-08-23:** the M5/6
-gate killed the three-column wall and the note line, so ACs 4 and 5 were rewritten.
-_Reads: `design.md` §M5/7, `apps/shell/public/sw.js`,
-`logs/2026-07-19-dev-sw-cache-strategy.md`. Depends on: M5/6 (PR #127)._
+### M5.5/1 — Design: the shopping surface · **run this next**
 
-### Groceries' home, and an index-count animation
+**Type:** design · **Kickoff:** `kickoffs/design-shopping-surface.md`
+Fresh exploration — the index-of-lists shape is the answer already rejected. The axis is
+set in the brief, not by the agent. _Depends on: nothing._
 
-**Type:** product + design, then a small design+dev · **Kickoffs:** _to be written_
-Two things the M5/6 review raised. Groceries sits under `meals` because that is where
-it was born — a list of lists anticipating Home Depot (ADR 067) may not belong under
-dinner planning; the crowded meals header is a symptom, fixed in #127. Separately,
-adding from the index moves a count with no motion, so the signal the add hit the
-right list is easy to miss. _Raised 2026-08-26, M5/6 live review._
+### M5.5/2 — Dev: the plugin split + capture
+
+**Type:** development · **Kickoff:** _to be written (after M5.5/1)_
+Scaffold `shopping` (five registration points), move the four grocery tables to a
+`shopping` schema, renamespace subjects, build what M5.5/1 settles. Salvage from #127:
+dictionary, schemas, routes, migrations, tests. _Depends on: M5.5/1._
+
+### M5.5/3 — Dev: the needs-push contract
+
+**Type:** development · **Kickoff:** _to be written_
+`meals` → `shopping` over the bus (ADR 050 precedent); meals stops writing grocery rows.
+_Depends on: M5.5/2._
+
+### M5.5/4 — Dev: Shop Context, Sync + Offline, the Wall
+
+**Type:** development · **Kickoff:** `kickoffs/dev-grocery-shop-offline.md` _(rewrite
+against M5.5/1 first)_
+Whole-row checks, cleared-aisle collapse, progress track, shopper sync, the wall — and
+**offline**. The SW is network-first for `/api`, so the list fails where it is used; it
+has bitten twice, so treat offline as its own reviewable chunk. _Depends on: M5.5/2._
+
+### ~~Groceries' home, and an index-count animation~~
+
+**Answered 2026-09-03:** groceries' home is its own plugin (ADR 069). The count-animation
+half dies with the index that raised it; if it survives the fresh exploration, M5.5/1
+owns it.
 
 ---
 

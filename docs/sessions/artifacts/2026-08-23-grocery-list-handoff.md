@@ -1,3 +1,10 @@
+> **SUPERSEDED 2026-09-03 by ADR 069.** This spec is a historical record, not a
+> contract. Groceries left `meals` and became the `shopping` plugin, and the
+> surface it describes — the index of lists and the drill-in — was not carried
+> over. PR #127, which built to this spec, was closed unmerged.
+> **Do not build from this file.** Its aisle-filing and row-content reasoning may
+> still inform the fresh design exploration; its structure decisions do not.
+
 # Handoff spec — M5/6 grocery list
 
 Design gate closed 2026-08-23. Options and rejected directions:

@@ -1,5 +1,10 @@
-# Meals & Groceries — Module Spec
+# Meals — Module Spec
 
+> **Groceries left this module 2026-09-03 (ADR 069)** and became the `shopping`
+> plugin — see `docs/modules/shopping/spec.md`. Grocery scope, permissions and
+> tables below are retained only where meals still touches them (the `needs`
+> push). Everything else moved.
+>
 > Spec drafted in the M4/M5 planning session (2026-07-21). Story-level design
 > was settled in **M5/1 (2026-08-11)** — see `design.md` in this directory and
 > ADR 063/064. Amendments from that session are marked _[M5/1]_ inline.
@@ -16,7 +21,9 @@ Two jobs that turn out to be one module:
 2. **Somebody has dinner.** The single most useful fact for a family with a full
    schedule is _who is responsible today_ — cooking it or calling it in.
 
-Groceries follows from both, and is the biggest surface in the module.
+Groceries once followed from both and was the biggest surface here. It outgrew the
+framing: shopping is its own activity with its own producers, and a hardware-store
+run is not dinner planning (ADR 069).
 
 ## M5 scope (MVP)
 
@@ -24,8 +31,8 @@ Groceries follows from both, and is the biggest surface in the module.
 - **Who's got dinner** — owner + kind, an explicit **unclaimed** state, a day-level nudge
 - Calendar presence as a **day mark** (ADR 050) — the _who_, never the _what_
 - **Try bites** at the table — punches a `rewards` card (ADR 049)
-- **Grocery list** — one aisle-grouped list (the mode split is retired, ADR 063 — see
-  below): capture + filing, shop sync + offline
+- ~~**Grocery list**~~ — moved to the `shopping` module (ADR 069). Meals keeps only
+  the `needs` free-text field and the push that hands it across the contract.
 
 ## Explicitly deferred
 
@@ -119,29 +126,27 @@ M5/2 (2026-08-13); a paid dinner is a dedicated chore.
 
 ## Permissions namespace
 
-| Permission key              | CASL                                 | Default baseline                    |
-| --------------------------- | ------------------------------------ | ----------------------------------- |
-| `meals.plan.view`           | `can('view', 'meals.PlannedMeal')`   | Tier 1+                             |
-| `meals.dinner.claim`        | `can('update', 'meals.PlannedMeal')` | Tier 3+ (claim an unclaimed dinner) |
-| `meals.trybite.take`        | `can('take', 'meals.TryBite')`       | Tier 1+ (row-level: own)            |
-| `meals.grocery.view`        | `can('view', 'meals.GroceryItem')`   | Tier 1+                             |
-| `meals.grocery.add`         | `can('create', 'meals.GroceryItem')` | Tier 1+                             |
-| `meals.grocery.check`       | `can('check', 'meals.GroceryItem')`  | Tier 2+                             |
-| `meals.grocery-list.create` | `can('create', 'meals.GroceryList')` | Tier 4 (ADR 067, grantable)         |
+| Permission key       | CASL                                 | Default baseline                    |
+| -------------------- | ------------------------------------ | ----------------------------------- |
+| `meals.plan.view`    | `can('view', 'meals.PlannedMeal')`   | Tier 1+                             |
+| `meals.dinner.claim` | `can('update', 'meals.PlannedMeal')` | Tier 3+ (claim an unclaimed dinner) |
+| `meals.trybite.take` | `can('take', 'meals.TryBite')`       | Tier 1+ (row-level: own)            |
 
 The claim row is `update` on `meals.PlannedMeal`, not `claim` on `meals.Meal` — the
 route narrows `update` to claim-only, and full edits stay behind `manage`.
 
-Tier-4 baselines (not registry keys): `can('manage', 'meals.PlannedMeal')` — plan,
-assign, edit, delete — and `can('manage', 'meals.GroceryItem')`.
+Tier-4 baseline (not a registry key): `can('manage', 'meals.PlannedMeal')` — plan,
+assign, edit, delete.
 
-**Lists** (ADR 067): creating one is the only gated list action — reading is covered by
-`view meals.GroceryItem`, and renaming, deleting and reordering stay inside tier 4's
-`manage all`. Adding to an existing list is `create meals.GroceryItem`, tier 1+.
+**Grocery keys moved to `shopping`** (ADR 069): `shopping.item.add`,
+`shopping.item.manage`, `shopping.list.create`. Their tier baselines are unchanged —
+see `docs/modules/shopping/spec.md` §Permissions namespace.
 
-> **Kids adding to the grocery list is deliberate.** It is low-stakes participation for
-> tier 1–2, and it closes the loop: a kid adds a vegetable they want to try → it lands
-> on the meal plan → it's flagged as the try bite → they get the punch. The kid started it.
+> **Kids adding to the shopping list is deliberate**, and it is the loop that ties the
+> two modules together: a kid adds a vegetable they want to try → it lands on the meal
+> plan → it's flagged as the try bite → they get the punch. The kid started it. That
+> loop crosses a plugin boundary now; it is a reason the contract has to be good, not a
+> reason to have kept one module.
 
 ---
 
@@ -194,31 +199,18 @@ planned_meals
   owner_id    uuid  nullable              -- null = UNCLAIMED, a first-class state
   notes       text  nullable
   try_bite    text  nullable              -- the one named, bounded ask
-  needs       text  nullable              -- free text → grocery push; no recipe model
+  needs       text  nullable              -- free text → pushed to `shopping` across the
+                                          --   contract (ADR 069); no recipe model
   created_by  uuid
   created_at  timestamptz
   updated_at  timestamptz
   UNIQUE (date, slot)
 
-grocery_items
-  id           uuid  PK
-  name         text
-  category     text                       -- the aisle; dictionary-assigned on add, corrections learned per family [M5/1]
-  quantity     text  nullable             -- free text ("2 lbs"), not a number
-  status       text  default 'needed'     -- 'needed' | 'got'
-  source_type  text                       -- 'manual' | 'meal' | 'staple'
-  source_id    text  nullable
-  added_by     uuid
-  added_at     timestamptz
-  got_by       uuid  nullable
-  got_at       timestamptz nullable
-
-staples
-  id        uuid  PK
-  name      text
-  category  text
-  active    boolean default true
+(grocery_items, grocery_lists, grocery_entries, grocery_aisle_overrides and
+staples moved to the `shopping` schema — ADR 069. Meals holds no grocery tables.)
 ```
 
 `try_bite` is free text on the meal, not a foreign key — the punch card it feeds lives
-in `rewards` and is reached over the bus (ADR 049).
+in `rewards` and is reached over the bus (ADR 049). `needs` is the same shape for the
+same reason: it feeds `shopping` over a contract, and meals does not model an
+ingredient.
