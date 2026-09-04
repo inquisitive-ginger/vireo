@@ -479,6 +479,35 @@ systemd service so it survives reboot, running as `zach` (in the `docker` group)
 To pause deploys:
 `sudo systemctl stop actions.runner.inquisitive-ginger-family-os.vireo-pi`.
 
+**It only survives a reboot if the clock is right first (fixed 2026-09-03).** The
+Pi has no battery-backed RTC, so a cold boot starts on `fake-hwclock`'s stale time
+— after a 2h power-down it came up believing it was still the minute it halted,
+and NTP corrected it only once the network was up. The runner authenticated inside
+that skew, GitHub answered `Failed to create a session. The runner registration
+has been deleted from the server, please re-configure`, and it exited
+`no retry needed` — **permanently dead, with auto-deploy silently broken**: a
+merge to main would build images and then queue the deploy job against a runner
+that was never coming back. Nothing was actually deregistered (the API still
+listed it as plain `offline`); a bare `systemctl start` once NTP had settled
+brought it straight back `online`. The unit shipped waiting only on
+`network-online.target`, so it is now gated on the clock too:
+
+```ini
+# /etc/systemd/system/actions.runner.inquisitive-ginger-family-os.vireo-pi.service.d/wait-for-time-sync.conf
+[Unit]
+Wants=time-sync.target
+After=time-sync.target
+```
+
+plus `sudo systemctl enable systemd-time-wait-sync.service` — **both halves are
+load-bearing.** Without that service enabled, `time-sync.target` is reached
+immediately and the gate is decorative. Like the watchdog script and
+`docker-compose.prod.yml`, this drop-in lives only on the Pi; nothing deploys it.
+
+Docker and Postgres ride the same skew harmlessly — the only symptom is
+`docker compose ps` reporting a nonsense `Up 2 hours` on a box that booted ten
+minutes ago, because `StartedAt` was stamped before the jump. Trust `uptime`.
+
 The shipped job adds `concurrency: { group: deploy, cancel-in-progress: false }`
 to the sample below — **keep it**. Two releases finishing close together will
 otherwise race the same `.env` and compose stack; queueing them is what made the
@@ -528,6 +557,25 @@ jobs:
   - **Restore:** `restic dump latest /familyos.sql | docker exec -i
 family-os-postgres-1 psql -U familyos -d <target-db>` — verified
     2026-08-16 into a scratch DB, counts matched prod.
+- **Planned power-down (cable work, moving the Pi):** back up, stop the runner,
+  halt — **never `docker compose stop`/`down`.** Every service is
+  `restart: unless-stopped`; a compose stop sets the manually-stopped flag and the
+  stack then stays down through the next boot, which is the one outcome a planned
+  outage must avoid. A systemd halt does not set it, so Docker (enabled, gated on
+  `/mnt/data` by `RequiresMountsFor=`) restores all three containers on power-up.
+  1. `sudo systemctl start familyos-backup.service`, then confirm a new snapshot
+     with `restic snapshots --latest 3` — the timer is nightly, so without this
+     the newest backup can be most of a day old.
+  2. `sudo systemctl stop actions.runner.inquisitive-ginger-family-os.vireo-pi`.
+  3. `sudo shutdown -h now` (NOPASSWD sudo; safe to pull power at the red-LED
+     standby state).
+  - **The dead-man will page while the box is off.** There is no Healthchecks
+    management API key on the Pi and `POST <ping-url>/pause` answers
+    `400 invalid url format`, so pausing is a click in the web UI or not at all;
+    a paused check resumes on the watchdog's first healthy ping either way.
+  - **On the way back, check the runner explicitly** (`systemctl is-active` +
+    `gh api repos/:owner/:repo/actions/runners`). The app going green says nothing
+    about it — see E3.
 - **Logs:** `docker compose logs -f api web`.
 - **Health:** `docker compose ps`; external paging is live via the watchdog below.
 - **SSD watchdog + self-heal (LIVE 2026-08-20)** — after the enclosure's UAS

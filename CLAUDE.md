@@ -22,9 +22,9 @@ before it reads anything else, and it is size-capped — see
 - **Deployment:** 🟢 live at `https://vireohome.app` — Pi 5 (192.168.0.42, pinned
   in NetworkManager 2026-09-02; eth0 `88:a2:9e:d4:e7:33`, router reservation still
   owed); auto-deploy + Tailscale + restic→R2 + watchdog intact. Runbook Part F/G.
-- **Last session:** 2026-09-02 — auto-bug #128 (PR #130): the calendar chrome's "Add
-  event" passed a null date prefill, so it always said today; it now seeds the day
-  on screen. `logs/2026-09-02-dev-calendar-add-event-date.md`.
+- **Last session:** 2026-09-03 — planned power-down for cable work. App self-restored;
+  the Actions runner died on the stale cold-boot clock (no RTC) and is now gated on
+  `time-sync.target`. `logs/2026-09-03-infra-power-down-clock-gate.md`.
 - **What's next and everything outstanding:** `docs/sessions/queue.md` — the one
   index. M4.5/3 or the M5/6 design gate next; NVMe HAT is an upgrade, not a rescue.
 - **Owed in-app:** report `2b882a8c` (#128) is `triaged` and owed the `deployed`
