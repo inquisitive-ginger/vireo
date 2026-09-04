@@ -115,31 +115,39 @@ Major second ratio (1.125), base 16px. 11 tokens.
 
 The rule used to name **widgets** as the across-the-room category, which was too broad: a widget is a _container_, not a distance. The same `calendar.up-next` tile is read at arm's length on a parent's laptop and from six feet away on the kitchen wall — so the floor belongs to the surface it's rendered on, not the tile. At desk distance 14px `base` is the right size for an event title, and forcing 18px there costs rows without buying legibility.
 
+**Structural labels have their own floor, and it is not 18px (settled — 2026-09-04, M5.5/5).** The distance rule above floors _primary content_; it used to say nothing about the labels that name it, which is why `section-label` at 11px went to the wall tablet unreadable at six feet while the rows beside it cleared 18px. The answer is a distance variant, `section-label-lg` — **not** promotion to `heading`:
+
+- **The family is the meaning.** Uppercase, 700, 0.1em tracked, muted — that is what says _this names a group, it is not part of one_. `heading` is sentence-case content type; a label promoted to it stops reading as structure and starts competing with the surface's actual subject. On the wall, `Just added` at `heading` would sit one step under `What do we need?` and read as a second question.
+- **14px, because optical size is what the distance floor is really about.** All-caps has no descenders and no x-height gap — cap height is the whole glyph — so uppercase 700 at 0.1em reads roughly one step larger than its px suggests: 14px here carries the optical size of 18px lowercase regular. Taking labels to a literal 18px would size them level with the content they subordinate, which inverts the hierarchy the token exists to state.
+- **Where it applies:** any surface under the across-the-room rule — the wall tablet, the family pseudo-profile, an always-on ambient screen. `section-label` stays 11px everywhere you are holding or sitting at. A component does not choose between them; the **surface** does, the same way autofocus does (§Capture primitives).
+
 **This does not soften the wall tablet.** If anything it sharpens it: the family-profile surface is now the _named_ place the 18px floor applies, rather than one instance of a vaguer rule (see [Tablet — Primary Hub](#tablet--primary-hub)). A widget that renders on both surfaces should scale its type with its prominence — which is what [Widget prominence](#widget-prominence) already gives it.
 
 All tokens are defined as CSS utilities in `packages/ui/src/styles.css` and are available as Tailwind classes throughout the codebase. Use the utility name — never raw pixel values.
 
-| Token           | Utility class        | px  | Weight | Line-height | Tracking | Font                       |
-| --------------- | -------------------- | --- | ------ | ----------- | -------- | -------------------------- |
-| `xs`            | `text-xs-token`      | 10  | 600    | 1.4         | 0        | DM Sans                    |
-| `xs-body`       | `text-xs-body`       | 11  | 400    | 1.4         | 0        | DM Sans                    |
-| `section-label` | `text-section-label` | 11  | 700    | 1.4         | 0.1em    | DM Sans · always uppercase |
-| `sm`            | `text-sm-token`      | 13  | 400    | 1.5         | 0        | DM Sans                    |
-| `base`          | `text-base-token`    | 14  | 400    | 1.5         | 0        | DM Sans                    |
-| `prose-sm`      | `text-prose-sm`      | 15  | 400    | 1.5         | 0        | **Lora**                   |
-| `card-title`    | `text-card-title`    | 16  | 600    | 1.3         | 0        | DM Sans                    |
-| `body`          | `text-body`          | 18  | 400    | 1.6         | 0        | DM Sans                    |
-| `prose`         | `text-prose`         | 18  | 400    | 1.65        | 0        | **Lora**                   |
-| `heading`       | `text-heading`       | 20  | 600    | 1.2         | −0.01em  | DM Sans                    |
-| `page-title`    | `text-page-title`    | 26  | 600    | 1.2         | −0.02em  | **Lora**                   |
-| `display-lg`    | `text-display-lg`    | 29  | 600    | 1.2         | −0.01em  | **Lora**                   |
-| `metric`        | `text-metric`        | 32  | 700    | 1.0         | −0.01em  | DM Sans                    |
-| `display-xl`    | `text-display-xl`    | 36  | 400    | 1.15        | −0.01em  | **Lora**                   |
+| Token              | Utility class           | px  | Weight | Line-height | Tracking | Font                       |
+| ------------------ | ----------------------- | --- | ------ | ----------- | -------- | -------------------------- |
+| `xs`               | `text-xs-token`         | 10  | 600    | 1.4         | 0        | DM Sans                    |
+| `xs-body`          | `text-xs-body`          | 11  | 400    | 1.4         | 0        | DM Sans                    |
+| `section-label`    | `text-section-label`    | 11  | 700    | 1.4         | 0.1em    | DM Sans · always uppercase |
+| `section-label-lg` | `text-section-label-lg` | 14  | 700    | 1.4         | 0.1em    | DM Sans · always uppercase |
+| `sm`               | `text-sm-token`         | 13  | 400    | 1.5         | 0        | DM Sans                    |
+| `base`             | `text-base-token`       | 14  | 400    | 1.5         | 0        | DM Sans                    |
+| `prose-sm`         | `text-prose-sm`         | 15  | 400    | 1.5         | 0        | **Lora**                   |
+| `card-title`       | `text-card-title`       | 16  | 600    | 1.3         | 0        | DM Sans                    |
+| `body`             | `text-body`             | 18  | 400    | 1.6         | 0        | DM Sans                    |
+| `prose`            | `text-prose`            | 18  | 400    | 1.65        | 0        | **Lora**                   |
+| `heading`          | `text-heading`          | 20  | 600    | 1.2         | −0.01em  | DM Sans                    |
+| `page-title`       | `text-page-title`       | 26  | 600    | 1.2         | −0.02em  | **Lora**                   |
+| `display-lg`       | `text-display-lg`       | 29  | 600    | 1.2         | −0.01em  | **Lora**                   |
+| `metric`           | `text-metric`           | 32  | 700    | 1.0         | −0.01em  | DM Sans                    |
+| `display-xl`       | `text-display-xl`       | 36  | 400    | 1.15        | −0.01em  | **Lora**                   |
 
 **Usage notes:**
 
 - `xs-body` — smallest regular-weight text: placeholder/error-card descriptions, tier pills, meta captions (added 2026-07-10 audit — the settled placeholder/error anatomies specified 11px/400 with no token to express it)
 - `section-label` — `--muted-foreground` by default; `--accent` when naming a module surface (widget identity headers, feed day markers); uppercase is baked into the utility
+- `section-label-lg` — the same label at across-the-room distance (the wall). Same family, one size step that clears six feet; never mix the two on one surface
 - `prose` — user-authored content only (feed posts, notes, messages). The family's own words get the warmth of the display face; text _about_ the UI never does. Same 18px viewing-distance floor as `body`
 - `prose-sm` — the family voice at 15px for **dense** contexts (multi-post feed widget rows) where 18px crowds. Same Lora face; use `prose` on roomy surfaces (feed page, across-room banner). Not for UI chrome
 - `page-title` — one per route; renders in Lora

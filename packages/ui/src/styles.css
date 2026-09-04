@@ -106,6 +106,20 @@
   text-transform: uppercase;
 }
 
+/* The same label at across-the-room size. 14px and not 18: a structural label
+   is subordinate to the rows it names, and uppercase 700 at 0.1em reads about
+   one step larger than its px suggests — cap height is its whole height, so
+   14px here carries the optical size of 18px lowercase regular. Going to the
+   18px content floor would size labels level with the content. */
+@utility text-section-label-lg {
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
 /* 11px regular — the settled placeholder/error-card description size,
    which the scale previously had no token for (xs is 600-weight). */
 @utility text-xs-body {
