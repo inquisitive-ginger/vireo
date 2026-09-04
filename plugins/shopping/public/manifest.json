@@ -6,7 +6,12 @@
   "routes": ["/shopping", "/shopping/lists"],
   "schema": "shopping",
   "events": {
-    "publishes": ["shopping.item.added", "shopping.item.removed", "shopping.list.created"],
+    "publishes": [
+      "shopping.item.added",
+      "shopping.item.checked",
+      "shopping.item.removed",
+      "shopping.list.created"
+    ],
     "subscribes": ["meals.needs.pushed"]
   },
   "widgets": [
@@ -20,11 +25,5 @@
       "requiredPermission": "shopping.item.view",
       "description": "Add to the list without leaving the dashboard, and what is waiting."
     }
-  ],
-  "navItem": {
-    "label": "Shopping",
-    "route": "/shopping",
-    "icon": "shopping-cart",
-    "minTier": 1
-  }
+  ]
 }

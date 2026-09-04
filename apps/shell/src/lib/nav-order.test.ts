@@ -40,15 +40,29 @@ function moreSheet(tier: number): string[] {
 }
 
 describe('phone tab order', () => {
-  it('reads Home · Calendar · Meals · Shopping · More (settled at the M5.5/1 gate)', () => {
-    expect(phoneBar(4)).toEqual(['Home', 'Calendar', 'Meals', 'Shopping', 'More'])
+  /* Shopping is BUILT and reachable at `/shopping`, and deliberately announced
+     nowhere until the polish session turns it on (Zach, 2026-09-04). It has no
+     `navItem`, so it does not consume one of the three plugin tabs — which is
+     why Chores is back on the bar rather than in More. Reverting the disable
+     restores both halves at once, and these expectations flip back with it. */
+  it('reads Home · Calendar · Meals · Chores · More while Shopping is hidden', () => {
+    expect(phoneBar(4)).toEqual(['Home', 'Calendar', 'Meals', 'Chores', 'More'])
   })
 
-  it('keeps Chores reachable — it moved into More, it did not disappear', () => {
-    expect(moreSheet(4)).toContain('Chores')
+  it('shows Shopping nowhere — not on the bar, and not tucked into More', () => {
+    expect(phoneBar(4)).not.toContain('Shopping')
+    expect(moreSheet(4)).not.toContain('Shopping')
+    expect(phoneBar(1)).not.toContain('Shopping')
+    expect(moreSheet(1)).not.toContain('Shopping')
+  })
+
+  it('still routes /shopping — hidden is not unbuilt', () => {
+    const shopping = manifests.find((p) => p.name === 'shopping')!
+    expect(shopping.manifest.navItem).toBeUndefined()
+    expect(shopping.manifest.routes).toContain('/shopping')
   })
 
   it('reads the same at tier 1, the tier the shopping list exists for', () => {
-    expect(phoneBar(1)).toEqual(['Home', 'Calendar', 'Meals', 'Shopping', 'More'])
+    expect(phoneBar(1)).toEqual(['Home', 'Calendar', 'Meals', 'Chores', 'More'])
   })
 })

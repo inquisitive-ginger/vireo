@@ -82,3 +82,26 @@ export const AisleGroup: Story = {
     </div>
   ),
 }
+
+/* A row that is itself a target, with a control that must survive it. The
+   trailing slot sits above the activation overlay — a control the overlay
+   swallows is a control that does nothing (shopping's aisle correction). */
+export const WithTrailingControl: Story = {
+  name: 'Trailing control on an activatable row',
+  render: () => (
+    <div className="max-w-sm">
+      <ListRow
+        leading={<Ring />}
+        onActivate={() => {}}
+        activateLabel="Check off “snap peas”"
+        trailing={
+          <button type="button" className="h-11 w-11 text-muted-foreground">
+            ···
+          </button>
+        }
+      >
+        <Body name="snap peas" />
+      </ListRow>
+    </div>
+  ),
+}
