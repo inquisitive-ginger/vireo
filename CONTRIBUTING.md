@@ -1,4 +1,4 @@
-# Contributing to Family OS
+# Contributing to Vireo
 
 ## Code Style & Formatting
 

@@ -1,4 +1,4 @@
-# Deployment — Family OS on a Raspberry Pi 4
+# Deployment — Vireo on a Raspberry Pi
 
 > **Status: 🟢 LIVE at `https://vireohome.app` — on a Pi 5 (4 GB) since
 > 2026-08-16** (LAN IP 192.168.0.42; migrated after the 3B's USB power budget

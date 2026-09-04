@@ -2,7 +2,7 @@
 
 **Status:** Decided · supersedes the "Profile chip on mobile" and top-bar clauses of [ADR 033](033-mobile-nav-pattern.md)
 
-**Decision:** Mobile (`< md:`, 768px) gains a persistent brand top bar with three slots: profile avatar (left) → opens the `ProfileGrid` switcher; the **Family OS** wordmark (center); the notification bell (right). The bottom tab bar drops its profile slot and becomes **nav-only** — Home + the tier-filtered plugin tabs. The top bar shares the bottom bar's `--secondary` material so the two chrome strips bookend the page content.
+**Decision:** Mobile (`< md:`, 768px) gains a persistent brand top bar with three slots: profile avatar (left) → opens the `ProfileGrid` switcher; the **Vireo** wordmark (center); the notification bell (right). The bottom tab bar drops its profile slot and becomes **nav-only** — Home + the tier-filtered plugin tabs. The top bar shares the bottom bar's `--secondary` material so the two chrome strips bookend the page content.
 
 **Why:** ADR 033 left two things open — bell placement and whether mobile gets a top bar — and shipped an interim floating bell (`fixed top-3 right-3`) plus a profile tab. Two problems surfaced in the mobile dev session and the follow-up UX playground (`Platform/Mobile UX Playground`):
 
@@ -24,4 +24,4 @@ The brand top bar solves both: the bell is always visible in peripheral vision (
 - **Option 3 — In-page bell (per-page header).** Rejected: placement varies per page, the Home surface has no header to hold it, and every plugin would have to re-implement the bell — untested shell/plugin coupling.
 - **Option 4 — Bell slot in the tab bar.** Rejected: 4 nav + Alerts + profile = 6 items at ~62px each on a 375px screen, below iOS HIG / Material's ≤5-tab guidance and over the 5-slot bar ADR 033 settled on.
 
-**Do not revisit unless:** User testing shows the top chrome meaningfully hurts content density on small phones (fall back to Option 2), or the wordmark/brand treatment changes when "Family OS" is renamed.
+**Do not revisit unless:** User testing shows the top chrome meaningfully hurts content density on small phones (fall back to Option 2), or the wordmark/brand treatment changes again (the wordmark became "Vireo" on 2026-08-22 — ADR 065).

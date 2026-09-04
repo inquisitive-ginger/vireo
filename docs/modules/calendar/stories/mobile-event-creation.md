@@ -7,7 +7,7 @@
 
 As a parent away from home, I can add an event from my phone in a few taps so I
 stop duplicating appointments into Google just to capture them — capture happens
-once, in Family OS.
+once, in Vireo.
 
 ## Scope
 

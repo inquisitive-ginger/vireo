@@ -1,4 +1,4 @@
-# Family OS
+# Vireo
 
 A locally-hosted, plugin-native platform for family organization — chores, scheduling, finance, smart home, and more. Designed to grow with the family that runs it.
 

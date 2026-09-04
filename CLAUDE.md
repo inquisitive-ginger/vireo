@@ -1,8 +1,7 @@
-# Family OS — Master Context
+# Vireo — Master Context
 
 A locally-hosted, plugin-native platform for family organization — chores,
 scheduling, finance, smart home, and more. See [`docs/vision.md`](docs/vision.md).
-("Family OS" is a provisional working title — use it consistently until renamed.)
 
 **This file is an index, not a record.** It carries only what a cold session needs
 before it reads anything else, and it is size-capped — see

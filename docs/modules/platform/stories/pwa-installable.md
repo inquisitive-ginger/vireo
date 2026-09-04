@@ -5,7 +5,7 @@
 
 ## User story
 
-As a parent, I can install Family OS to my phone's home screen so I can access the family dashboard without a browser URL bar.
+As a parent, I can install Vireo to my phone's home screen so I can access the family dashboard without a browser URL bar.
 
 ## Scope
 

@@ -12,10 +12,10 @@ properties (design tokens). Radix UI primitives underpin all
 interactive components, providing accessibility (focus management,
 keyboard navigation, ARIA) without a baked-in visual language.
 
-**Why:** Family OS needs to start with a coherent, production-quality
+**Why:** Vireo needs to start with a coherent, production-quality
 component set and evolve toward its own visual identity over time.
 The copy-paste model means components are editable without fighting
-a framework — the migration from "shadcn default" to "Family OS
+a framework — the migration from "shadcn default" to "Vireo
 custom" is incremental file edits, not a library upgrade or fork.
 Tailwind v4's CSS variable token system makes theming (light/dark,
 tier variants) clean and cascade-based with no JavaScript overhead.

@@ -4,7 +4,7 @@ import type { PlopTypes } from '@turbo/gen'
 
 export default function generator(plop: PlopTypes.NodePlopAPI): void {
   plop.setGenerator('plugin', {
-    description: 'Scaffold a new Family OS plugin',
+    description: 'Scaffold a new Vireo plugin',
     prompts: [
       {
         type: 'input',

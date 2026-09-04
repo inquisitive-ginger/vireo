@@ -6,7 +6,7 @@
 
 ## What it is
 
-The chores module lets parents assign tasks to family members, tracks kid completions, and awards XP as immediate positive feedback. It is the first feature module after the platform shell — the entry point for turning Family OS from infrastructure into a daily-use tool for kids.
+The chores module lets parents assign tasks to family members, tracks kid completions, and awards XP as immediate positive feedback. It is the first feature module after the platform shell — the entry point for turning Vireo from infrastructure into a daily-use tool for kids.
 
 ## M2 scope (MVP)
 

@@ -1,8 +1,11 @@
-# Family OS — Vision
+# Vireo — Vision
 
 ## Name
 
-"Family OS" is a working title. Rename globally when the real name lands.
+**Vireo**, renamed 2026-08-22 from the "Family OS" working title (ADR 065).
+Infrastructure identifiers — the `@family-os/*` package scope, the GitHub repo,
+GHCR image names, the `familyos` databases, and `/opt/family-os` on the Pi —
+deliberately still carry the old name.
 
 ## What It Is
 
@@ -15,7 +18,7 @@ platform that evolves with the family that runs it.
 Family life is managed across a fragmented set of apps, tools, and
 mental overhead. Chores, schedules, finances, routines, and
 communication all live in different places with no shared context.
-Family OS brings these into a single coherent system — on your
+Vireo brings these into a single coherent system — on your
 hardware, under your control.
 
 ## Core Beliefs

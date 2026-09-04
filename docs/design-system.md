@@ -56,7 +56,7 @@ directly from the project vision.
 | **Calm by default**                   | No unnecessary motion, badges, or urgency cues                                                        |
 | **Touch-first, pointer-friendly**     | Tablet and mobile are touch surfaces; mouse/keyboard work but are secondary                           |
 | **Plugins feel native**               | Community-built plugins use the same component library and tokens as first-party modules              |
-| **No AI aesthetic**                   | Family OS should have its own visual character — avoid the generic Inter/Geist/hyper-minimal look     |
+| **No AI aesthetic**                   | Vireo should have its own visual character — avoid the generic Inter/Geist/hyper-minimal look         |
 | **People are color**                  | Every family member maps to a stable identity hue, used consistently across all modules               |
 | **The family voice is serif**         | User-authored words (posts, notes) render in Lora via `prose`; UI chrome stays DM Sans                |
 | **Surfaces lift, backgrounds recede** | Content cards float on the warm background via elevation tokens — depth, not lines, creates hierarchy |
@@ -1676,7 +1676,7 @@ Every export is a commitment plugins can depend on.
 ### Nav pattern — top bar + bottom tab bar
 
 Two chrome strips bookend the page content, both on `--secondary` material: a
-**brand top bar** (ADR 034) — profile avatar (left) · **Family OS** wordmark
+**brand top bar** (ADR 034) — profile avatar (left) · **Vireo** wordmark
 (center, DM Sans, never Lora) · notification bell (right) — and a **nav-only
 bottom tab bar** capped at **5 tabs** (ADR 033, amended 2026-08-17): Home + the
 first three tier-visible plugin tabs + a **More** tab. Always visible,
@@ -1684,7 +1684,7 @@ thumb-friendly, 1 tap to any pinned destination.
 
 ```
 ┌─────────────────────────────────────┐
-│ [avatar]    Family OS       [bell]  │
+│ [avatar]      Vireo         [bell]  │
 ├─────────────────────────────────────┤
 │         [page content]              │
 │                                     │
