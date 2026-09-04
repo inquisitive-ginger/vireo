@@ -10,11 +10,7 @@ function renderView(over: Partial<ShoppingCaptureHeroProps> = {}) {
       { id: '3', name: 'milk' },
     ],
     openCount: 19,
-    lists: [
-      { id: 'grocery', name: 'Grocery', kind: 'permanent', groupByAisle: true, itemCount: 14 },
-      { id: 'costco', name: 'Costco', kind: 'permanent', groupByAisle: false, itemCount: 3 },
-      { id: 'hardware', name: 'Hardware', kind: 'runtime', groupByAisle: false, itemCount: 2 },
-    ],
+    destinations: <div>Grocery 14 · Costco 3</div>,
     onShowLists: vi.fn(),
     loading: false,
     destination: 'Grocery',
@@ -57,11 +53,31 @@ describe('ShoppingCaptureHero', () => {
     expect(screen.queryByText(/Emma|the house|added by/i)).not.toBeInTheDocument()
   })
 
-  it('carries the whole count, split by destination — it is the only answer on screen', () => {
+  it('states one cumulative count, and leaves the split to the pills', () => {
     renderView()
-    expect(
-      screen.getByText('19 things waiting · Grocery 14 · Costco 3 · Hardware 2')
-    ).toBeInTheDocument()
+    expect(screen.getByText('19 things to get')).toBeInTheDocument()
+  })
+
+  it('carries the destinations, so Costco is reachable from a capture screen', () => {
+    // The hole this closes: the trailing slot holds `Hold to speak`, so before
+    // the pills came up here an add could only ever land on the default list.
+    renderView()
+    expect(screen.getByText('Grocery 14 · Costco 3')).toBeInTheDocument()
+  })
+
+  it('offers to take back a just-added typo, naming the thing it removes', () => {
+    const onRemove = vi.fn()
+    renderView({ justAdded: [{ id: 'a1', name: 'mikk' }], onRemove })
+    fireEvent.click(screen.getByRole('button', { name: 'Remove mikk' }))
+    expect(onRemove).toHaveBeenCalledWith('a1')
+  })
+
+  it('offers no remove when the profile cannot remove — a kid adds but cannot', () => {
+    // `manage` is tier 4 while adding is tier 1 (ADR 071), so the person who
+    // made the typo may not be the one who can undo it.
+    renderView({ justAdded: [{ id: 'a1', name: 'mikk' }], onRemove: undefined })
+    expect(screen.queryByRole('button', { name: /Remove/ })).not.toBeInTheDocument()
+    expect(screen.getByText('mikk')).toBeInTheDocument()
   })
 
   it('reserves the voice slot without pretending it works', () => {

@@ -1,4 +1,4 @@
-import { ChevronDown, ChevronLeft, Loader2 } from 'lucide-react'
+import { ChevronLeft, Loader2 } from 'lucide-react'
 import { CaptureField, Chip, ListRow, PageContainer, PageHeader, cn } from '@family-os/ui'
 import type { ShoppingItem, ShoppingList } from '../types'
 import { ShoppingCaptureHero } from './ShoppingCaptureHero'
@@ -17,7 +17,6 @@ export interface ShoppingPageViewProps {
   /** The rows are still coming. Distinct from "there are none" — the empty line
       is a claim about the house, and it must not be made before the answer is in. */
   loading: boolean
-  openCount: number
   onAdd: (name: string) => void
   onDraftChange: (draft: string) => void
   /** What the current draft would file under. Null while the field is empty —
@@ -43,13 +42,16 @@ export interface ShoppingPageViewProps {
   /** The way back, offered ONLY on the wide list view. Undefined on a phone,
       which has no dedicated capture view to return to. */
   onBackToCapture?: () => void
+  /** Taking back a just-added typo. Undefined when this profile cannot remove —
+      `manage` is tier 4 while adding is tier 1 (ADR 071). */
+  onRemove?: (id: string) => void
 }
 
 /* The /shopping surface (design.md §Anatomy, artifact frames S1/S2). The capture
    field is the hero at rest and the aisle-ordered list is the page; neither is a
    mode, and the field simply scrolls away under the thumb in a shop. There is no
-   index of lists and no drill-in — the destination strip is a filter that swaps
-   the list in place. No spine, no hue, no avatar (ADR 064): "who added the milk"
+   index of lists and no drill-in — the destination strip both swaps the list in
+   place and says where an add will land, which is one control, not two. No spine, no hue, no avatar (ADR 064): "who added the milk"
    is not a question this list answers, so provenance is a text fact. */
 export function ShoppingPageView({
   lists,
@@ -57,7 +59,6 @@ export function ShoppingPageView({
   onSelectList,
   groups,
   loading,
-  openCount,
   onAdd,
   onDraftChange,
   draftAisle,
@@ -68,16 +69,40 @@ export function ShoppingPageView({
   totalOpenCount,
   onShowLists,
   onBackToCapture,
+  onRemove,
 }: ShoppingPageViewProps) {
   const selected = lists.find((l) => l.id === selectedListId)
   const destination = selected?.name ?? 'the list'
   // Aisles belong to the LIST, not to the app — a hardware run has none of ours,
   // so it renders flat rather than filing every screw under Other.
   const showAisles = selected?.groupByAisle ?? true
-  // While composing, the strip gives way to the echo (S2) — one line under the
-  // field at a time, and the filing is the one worth reading at that moment.
   const composing = draftAisle !== null
   const capturing = layout === 'capture'
+
+  /* ONE control, not two (Zach, 2026-09-04). The field used to carry a
+     destination chip while this row filtered the list — two controls in similar
+     clothes answering "which list?" differently. The selected pill is now both:
+     what you are looking at, and where an add goes. That is also what makes
+     Costco reachable from the capture screen, which had no way to it at all. */
+  const destinations = (
+    <div className="flex gap-2 overflow-hidden py-0.5">
+      {lists.map((list) => (
+        <Chip
+          key={list.id}
+          selected={list.id === selectedListId}
+          onClick={() => onSelectList(list.id)}
+          selectedClassName="border-primary bg-primary/13 text-primary"
+          // `Chip` is 13px, which is right at arm's length and unreadable at six
+          // feet — and on the capture layout these are load-bearing, since they
+          // decide where an add lands. Sized up to the distance floor there, via
+          // the sizing override the primitive documents.
+          className={capturing ? 'text-body px-4 py-2' : undefined}
+        >
+          {list.name} {list.itemCount}
+        </Chip>
+      ))}
+    </div>
+  )
 
   return (
     // `list` at BOTH widths. A list is not prose, but it is not a billboard
@@ -89,7 +114,8 @@ export function ShoppingPageView({
         <ShoppingCaptureHero
           justAdded={justAdded}
           openCount={totalOpenCount}
-          lists={lists}
+          onRemove={onRemove}
+          destinations={destinations}
           onShowLists={onShowLists}
           loading={loading}
           destination={selected?.name ?? null}
@@ -118,7 +144,14 @@ export function ShoppingPageView({
           <PageHeader
             className="mb-0 items-baseline"
             title="Shopping"
-            action={<span className="text-sm-token text-muted-foreground">{openCount} to get</span>}
+            // Cumulative across every destination — the pills beside it already
+            // give the per-list split, so the one number on the page that could
+            // answer "how much is waiting in total" should not repeat a pill.
+            action={
+              <span className="text-sm-token text-muted-foreground">
+                {totalOpenCount} thing{totalOpenCount === 1 ? '' : 's'} to get
+              </span>
+            }
           />
 
           <CaptureField
@@ -132,7 +165,6 @@ export function ShoppingPageView({
             disabled={!canAdd}
             onValueChange={onDraftChange}
             onSubmit={onAdd}
-            trailing={<DestinationChip name={destination} many={lists.length > 1} />}
           />
 
           {/* Everything that reports on the field sits between the field and the
@@ -163,20 +195,9 @@ export function ShoppingPageView({
           composing — one line under the field at a time, and the filing is the
           one worth reading at that moment. Wide shows it only once the lists
           have been asked for, because until then this surface is capture only. */}
-      {!capturing && !composing && (
-        <div className="mt-3 flex gap-2 overflow-hidden py-0.5">
-          {lists.map((list) => (
-            <Chip
-              key={list.id}
-              selected={list.id === selectedListId}
-              onClick={() => onSelectList(list.id)}
-              selectedClassName="border-primary bg-primary/13 text-primary"
-            >
-              {list.name} {list.itemCount}
-            </Chip>
-          ))}
-        </div>
-      )}
+      {/* Always visible now, composing or not: it says where the word you are
+          typing will land, which is not something to hide behind an echo. */}
+      {!capturing && <div className="mt-3">{destinations}</div>}
 
       {!capturing && (
         <div className={cn('mt-1', composing && 'opacity-50')}>
@@ -239,19 +260,4 @@ export function ShoppingPageView({
    would be worse than one that plainly is not yet. */
 function Ring() {
   return <span className="size-6 shrink-0 rounded-full border-2 border-border" aria-hidden />
-}
-
-/* The scope slot: what you type, and where it lands, on one line (ADR 070). It
-   states the destination; the strip below changes it — which is why the chevron
-   only appears when there is more than one place to land. */
-function DestinationChip({ name, many }: { name: string; many: boolean }) {
-  // The border is not decoration: `--secondary` sits 0.01 L above `--card` on
-  // dark, so the fill alone leaves the pill invisible and the scope reads as
-  // loose text floating in the field. The edge is what makes it an object.
-  return (
-    <span className="text-sm-token flex h-8.5 items-center gap-1.5 rounded-full border border-border bg-secondary px-2.5 font-semibold text-secondary-foreground">
-      {name}
-      {many && <ChevronDown size={14} aria-hidden />}
-    </span>
-  )
 }

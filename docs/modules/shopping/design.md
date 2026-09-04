@@ -31,18 +31,30 @@ reverse-chronological is the worst order in an aisle).
 `PageContainer width="list"`. Top to bottom:
 
 1. **Title row** — `PageHeader`-shaped: `Shopping` (page-title) with the count strip
-   (`14 to get`) on the trailing edge. The count is `sm` and muted; it never shouts.
+   (`19 things to get`) on the trailing edge. The count is `sm` and muted; it never
+   shouts, and it is **cumulative across every destination** — the pills beside it
+   already give the per-list split, so the one number that could answer "how much is
+   waiting in total" must not repeat a pill.
 2. **The capture field** — `CaptureField` (ADR 070), 56 px, the first thing under the
-   title. Live on arrival on the wall and on the Home widget; on the phone it does **not**
-   autofocus (an unrequested keyboard on a route you opened to read is hostile). Trailing
-   slot carries the **destination chip** (`Grocery ▾`).
+   title. It does **not** autofocus, and nothing else does either (ADR 070, amended
+   2026-09-04). Its trailing slot is **empty**: the destination is the selected pill, not
+   a second control in the field (see 4).
 3. **The filing echo** — one `sm` line under the field while composing:
    `Enter to add · files under Pantry`. The aisle is stated **before** the commit, so a
    mis-file is caught by the person who caused it. On submit the field clears and stays
    open; the new row appears in its aisle.
 4. **The destination strip** — `Chip` pills, one per list, with counts
-   (`Grocery 14 · Costco 3 · Hardware 2`). Selecting one **swaps the list in place**.
-   It is a filter. It is never a screen you land on.
+   (`Grocery 14 · Costco 3 · Hardware 2`). **One control, two jobs** (Zach, 2026-09-04):
+   the selected pill is both the list you are looking at and where an add lands.
+
+   It used to be a filter only, with a separate destination chip inside the field —
+   two controls in similar clothes answering "which list?" differently. Collapsing them
+   is what makes Costco reachable from the capture layout, which has `Hold to speak` in
+   that trailing slot and so had no way to any list but the default.
+
+   It is still never a screen you land on. It **stays visible while composing**: it says
+   where the word being typed will land, and that is the moment the fact matters most.
+
 5. **The list** — `ListRow` per item (ADR 063/068: hairline, 56 px floor, leading slot).
    The leading slot is the check ring; the whole row is the tap target. Name is
    `card-title`; the note line is `sm` and carries **producer words only** — why the row
@@ -86,11 +98,20 @@ never by the profile, and never by a control on screen.
   a 76 px `CaptureField` below it, a **Hold to speak** affordance reserved in the
   trailing slot (**voice is not M5.5 scope** — the slot is reserved, nothing
   implements it), a **Just added** strip of the last few items as chips naming
-  **what** was added, never who (§Anatomy 5; ADR 072 §3/§4 withdrawn), and a count
-  strip carrying the total and the per-destination split
-  (`19 things waiting · Grocery 14 · Costco 3 · Hardware 2`). The block fills the
-  screen. **The lists are not on it** — a `Show lists` control swaps to them at
-  `/shopping/lists`, and `Back to adding` at the top of that view swaps back.
+  **what** was added, never who (§Anatomy 5; ADR 072 §3/§4 withdrawn), the destination
+  pills (§Anatomy 4 — without them an add here could only ever land on the default
+  list), and a rule stating the cumulative total (`19 things to get`). The block fills
+  the screen. **The lists themselves are not on it** — a `Show lists` control swaps to
+  them at `/shopping/lists`, and `Back to adding` at the top of that view swaps back.
+
+  **Each `Just added` chip carries a remove.** Taking back a typo you made two seconds
+  ago is a different act from checking something off in a shop: one says "this was never
+  needed", the other "this is in the cart". It is gated on `manage`, which ADR 071 puts
+  at **tier 4** while adding is tier 1 — so **a kid, and the unattended wall, can put a
+  typo on the list and cannot take it off.** They see chips with no remove. Whether that
+  split is right is a permission question, raised at the M5.5/5 review and deliberately
+  not answered by widening a check in a component.
+
 - **Below tablet — the list.** §Anatomy exactly as shipped: compact title row, 56 px
   field, destination strip, aisle list.
 

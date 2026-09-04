@@ -317,6 +317,60 @@ describe('GET /api/shopping/lists/:id', () => {
   })
 })
 
+// ─── DELETE /api/shopping/items/:id ───────────────────────────────────────────
+
+describe('DELETE /api/shopping/items/:id', () => {
+  it('takes the item off the list entirely — not the same as checking it off', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const item = await addItem(cookie, await groceryListId(), { name: 'mikk' })
+
+    const res = await app.inject({
+      method: 'DELETE',
+      url: `/api/shopping/items/${item.json().id}`,
+      headers: { cookie },
+    })
+    expect(res.statusCode).toBe(204)
+    expect(await shoppingPrisma.item.findUnique({ where: { id: item.json().id } })).toBeNull()
+  })
+
+  it('refuses a kid, who can add but not remove — `manage` is tier 4 (ADR 071)', async () => {
+    const parent = await getCookieForProfile(PARENT_ID)
+    const item = await addItem(parent, await groceryListId(), { name: 'snap peas' })
+
+    const kid = await getCookieForProfile(KID_ID)
+    const res = await app.inject({
+      method: 'DELETE',
+      url: `/api/shopping/items/${item.json().id}`,
+      headers: { cookie: kid },
+    })
+    expect(res.statusCode).toBe(403)
+    expect(await shoppingPrisma.item.findUnique({ where: { id: item.json().id } })).not.toBeNull()
+  })
+
+  it('refuses the unattended wall for the same reason — it adds as tier 1', async () => {
+    const parent = await getCookieForProfile(PARENT_ID)
+    const item = await addItem(parent, await groceryListId(), { name: 'oat milk' })
+
+    const family = await getCookieForProfile(FAMILY_PROFILE_ID)
+    const res = await app.inject({
+      method: 'DELETE',
+      url: `/api/shopping/items/${item.json().id}`,
+      headers: { cookie: family },
+    })
+    expect(res.statusCode).toBe(403)
+  })
+
+  it('404s on an unknown item', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const res = await app.inject({
+      method: 'DELETE',
+      url: '/api/shopping/items/00000000-0000-4000-8000-000000000000',
+      headers: { cookie },
+    })
+    expect(res.statusCode).toBe(404)
+  })
+})
+
 // ─── GET /api/shopping/recent ─────────────────────────────────────────────────
 
 describe('GET /api/shopping/recent', () => {

@@ -1,16 +1,24 @@
-import { ChevronRight, Loader2, Mic } from 'lucide-react'
+import { ChevronRight, Loader2, Mic, X } from 'lucide-react'
+import type { ReactNode } from 'react'
 import { CaptureField } from '@family-os/ui'
-import type { ShoppingList } from '../types'
 
 export interface ShoppingCaptureHeroProps {
   /** The last few things that landed, anywhere. Names only — never who added
       them (ADR 072 §4, withdrawn 2026-09-04). Ids because a house adds milk
       twice in a week and two chips must not collide. */
   justAdded: { id: string; name: string }[]
-  /** Everything waiting, everywhere, and the per-destination split beside it.
-      This is the only place either appears while the lists are hidden. */
+  /** Taking back a typo you made two seconds ago. Undefined when this profile
+      cannot remove — `manage` is tier 4 while adding is tier 1 (ADR 071), so the
+      person who made the typo may not be the one who can undo it. */
+  onRemove?: (id: string) => void
+  /** The destination pills. Rendered here rather than built here so ONE strip
+      serves both layouts — it is the same control, in the same component, just
+      placed differently. */
+  destinations: ReactNode
+  /** Everything waiting across every destination — one number. The per-list
+      split lives on the pills, which are also the control that picks where an
+      add lands. */
   openCount: number
-  lists: ShoppingList[]
   /** Swaps to the list, at its own URL. */
   onShowLists: () => void
   loading: boolean
@@ -32,8 +40,9 @@ export interface ShoppingCaptureHeroProps {
    (design-system.md §Type scale). */
 export function ShoppingCaptureHero({
   justAdded,
+  onRemove,
+  destinations,
   openCount,
-  lists,
   onShowLists,
   loading,
   destination,
@@ -87,7 +96,11 @@ export function ShoppingCaptureHero({
         ) : null}
       </div>
 
-      <div className="mt-6">
+      {/* Where an add lands, and the only way to reach Costco or Hardware from a
+          screen whose whole job is capture (Zach, 2026-09-04). */}
+      <div className="mt-2">{destinations}</div>
+
+      <div className="mt-7">
         <div className="text-section-label-lg text-muted-foreground">Just added</div>
         <div className="flex flex-wrap gap-2.5 pt-3">
           {loading ? (
@@ -98,30 +111,34 @@ export function ShoppingCaptureHero({
             justAdded.map((chip) => (
               <span
                 key={chip.id}
-                className="text-body rounded-full border-2 border-border px-4.5 py-2 text-foreground"
+                className="text-body flex items-center gap-2 rounded-full border-2 border-border py-2 pl-4.5 pr-2 text-foreground"
               >
                 {chip.name}
+                {onRemove && (
+                  <button
+                    type="button"
+                    onClick={() => onRemove(chip.id)}
+                    aria-label={`Remove ${chip.name}`}
+                    className="flex size-7 cursor-pointer items-center justify-center rounded-full text-muted-foreground hover:bg-secondary hover:text-foreground"
+                  >
+                    <X size={18} aria-hidden />
+                  </button>
+                )}
               </span>
             ))
           )}
         </div>
       </div>
 
-      {/* The seam between catching and shopping. The counts are the whole answer
-          while the lists are hidden, so the per-destination split lives here
-          (artifact W2) rather than only in the strip below. */}
+      {/* The seam between catching and shopping. One number, across every
+          destination — the per-list split is on the pills above, where it is
+          also the control that picks where an add goes. */}
       <div className="mt-auto flex flex-wrap items-center justify-between gap-3 border-t border-border pt-6">
-        {/* Never `0 things waiting` before the read lands — a count is a claim
+        {/* Never `0 things to get` before the read lands — a count is a claim
             about the house, read from across the room by someone who will not
             look twice. */}
         <span className="text-body text-muted-foreground">
-          {loading
-            ? '\u00a0'
-            : [
-                `${openCount} thing${openCount === 1 ? '' : 's'} waiting`,
-                // The whole answer on a screen that has no list on it.
-                ...lists.map((l) => `${l.name} ${l.itemCount}`),
-              ].join(' · ')}
+          {loading ? '\u00a0' : `${openCount} thing${openCount === 1 ? '' : 's'} to get`}
         </span>
         {/* Swaps to the list, at its own URL. The way back is `Back to adding`
             at the top of that view AND the browser's own back gesture — which is

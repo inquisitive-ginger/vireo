@@ -25,11 +25,17 @@ const meta: Meta<typeof ShoppingCaptureHero> = {
       { id: '4', name: 'wood screws' },
     ],
     openCount: 19,
-    lists: [
-      { id: 'grocery', name: 'Grocery', kind: 'permanent', groupByAisle: true, itemCount: 14 },
-      { id: 'costco', name: 'Costco', kind: 'permanent', groupByAisle: false, itemCount: 3 },
-      { id: 'hardware', name: 'Hardware', kind: 'runtime', groupByAisle: false, itemCount: 2 },
-    ],
+    destinations: (
+      <div className="flex gap-2">
+        <span className="text-sm-token rounded-full border-2 border-primary bg-primary/13 px-3.5 py-1.5 font-semibold text-primary">
+          Grocery 14
+        </span>
+        <span className="text-sm-token rounded-full border-2 border-border px-3.5 py-1.5">
+          Costco 3
+        </span>
+      </div>
+    ),
+    onRemove: () => {},
     onShowLists: () => {},
     loading: false,
     destination: 'Grocery',
@@ -50,7 +56,7 @@ export const AtRest: Story = {}
 export const Composing: Story = { args: { draftAisle: 'Pantry' } }
 
 /* The short memory is empty. Not a gap — a wall nobody has walked up to today. */
-export const NothingYet: Story = { args: { justAdded: [], openCount: 0, lists: [] } }
+export const NothingYet: Story = { args: { justAdded: [], openCount: 0 } }
 
 /* The add did not land. The field cleared on Enter, so this line is the only
    thing standing between the person and a word they think they said. */
@@ -59,3 +65,7 @@ export const AddFailed: Story = { args: { addError: 'oat milk' } }
 /* `shopping.item.add` revoked for this profile (ADR 072 §6) — the one lever that
    closes the wall's field. */
 export const AddingRevoked: Story = { args: { canAdd: false } }
+
+/* A tier-1 profile — the unattended wall included — can add but not remove, so
+   the chips carry no way back (ADR 071: `manage` is tier 4). */
+export const CannotRemove: Story = { args: { onRemove: undefined } }

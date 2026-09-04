@@ -51,7 +51,6 @@ const meta: Meta<typeof ShoppingPageView> = {
       },
     ],
     loading: false,
-    openCount: 14,
     onAdd: () => {},
     onDraftChange: () => {},
     draftAisle: null,
@@ -61,6 +60,7 @@ const meta: Meta<typeof ShoppingPageView> = {
     justAdded: [],
     totalOpenCount: 19,
     onShowLists: () => {},
+    onRemove: () => {},
   },
 }
 export default meta
@@ -93,7 +93,6 @@ export const FlatList: Story = {
         ],
       },
     ],
-    openCount: 3,
   },
 }
 
@@ -104,7 +103,6 @@ export const Empty: Story = {
       { id: 'costco', name: 'Costco', kind: 'permanent', groupByAisle: true, itemCount: 3 },
     ],
     groups: [],
-    openCount: 0,
   },
 }
 

@@ -389,6 +389,24 @@ const shoppingPlugin: FastifyPluginAsync = async (fastify) => {
     return reply.status(201).send(serializeItem(item))
   })
 
+  // DELETE /shopping/items/:id — taking back something that should never have
+  // been on the list, which is a different act from checking it off in a shop
+  // (ADR 071 split `check` out of `manage` for the same reason). `manage` is the
+  // remove verb, tier 4 — see the note in the surface: an add is tier 1, so the
+  // person most likely to make the typo may not be the one who can undo it.
+  fastify.delete('/shopping/items/:id', async (request, reply) => {
+    if (!request.ability.can('manage', 'shopping.Item')) {
+      return reply.status(403).send({ error: 'Permission denied' })
+    }
+
+    const { id } = request.params as { id: string }
+    const existing = await shoppingPrisma.item.findUnique({ where: { id } })
+    if (!existing) return reply.status(404).send({ error: 'Item not found' })
+
+    await shoppingPrisma.item.delete({ where: { id } })
+    return reply.status(204).send()
+  })
+
   // POST /shopping/items/:id/aisle — a correction re-files this item AND
   // teaches a family-wide override, keyed by the same normalized name, so the
   // next add of "snap peas" files itself correctly. Gated on `file` — its own
