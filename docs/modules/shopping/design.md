@@ -97,7 +97,7 @@ never by the profile, and never by a control on screen.
 **Neither layout autofocuses** (ADR 070, amended 2026-09-04). A screen left on in a
 kitchen is not a screen someone walked up to.
 
-### Why the wide layout has modes and the narrow one does not
+### The no-mode principle is scoped to narrow
 
 `Show lists` is a control that changes what is on screen, which is what a mode is. That
 is not an exception granted to this layout — **it is what W2 always was**, and the
@@ -115,7 +115,16 @@ principle is scoped to the narrow layout, where it is exactly as true as it was*
 the wide layout is W2 relocated — same shape, same control, now reached by viewport
 instead of by URL.
 
-Confirmed by Zach, 2026-09-04: _"capture mode vs list mode makes sense."_
+Zach's call at the live review was the **viewport split and capture-only**; the mode
+structure came with W2 from the design session that had already settled it. Asked
+directly, he agreed the reading was the right one — _"capture mode vs list mode makes
+sense"_ — which confirms the scope rather than granting it.
+
+**The stacked alternative was built first and rejected**, 2026-09-04: hero above, list
+below, reachable by scrolling. It reads well and it is what the narrow layout does, but
+a screen you stand in front of to unload a grocery bag should have the field on it and
+nothing else — a list sharing that screen makes the capture field one piece of furniture
+among many. That rejection is why the control exists at all.
 
 Two properties keep the control from becoming the trap the deleted `/shopping/wall`
 route was:

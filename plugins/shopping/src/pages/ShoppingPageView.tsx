@@ -33,7 +33,7 @@ export interface ShoppingPageViewProps {
       reader switches — the viewport picks it, and both draw the same list from
       the same data. Wide DOES have capture/list modes inside it, which is what
       W2 always was; the no-mode rule is the narrow layout's (design.md
-      §"Why the wide layout has modes and the narrow one does not"). */
+      §"The no-mode principle is scoped to narrow"). */
   layout: 'narrow' | 'wide'
   /** Wide only — the hero's short memory of what landed, anywhere. */
   justAdded: { id: string; name: string }[]
