@@ -72,11 +72,12 @@ The list renders and checks replay with no signal, without staling the shell or 
 ### Shopping: the polish session — **owns turning the plugin on**
 
 **Type:** dev + design-system · **Kickoff:** _to be written_
-One `git revert e4052b0` restores the manifest `navItem` and the shell `WIDGET_META` entry;
-everything else is Zach's cleanup pass before the family sees it. Named items: the **check-ring
-contrast** (1.29:1 light — a design-system decision, `CompletionToggle` and chores fail
-identically); the **colliding `14`s** (title strip is cumulative across lists, the meter is
-per-list, and today both print 14); the widget's **two-row grid growth**, back with the revert.
+Zach's cleanup pass before the family sees it, ending in **announcing the plugin**: re-add the
+manifest's `navItem` and the shell's `WIDGET_META` entry (both removed in `e4052b0`; reverting
+that commit is the whole change). Named items: the **check-ring contrast** (1.29:1 light — a
+design-system decision, `CompletionToggle` and chores fail identically); the **colliding `14`s**
+(title strip is cumulative across lists, the meter is per-list, and today both print 14); the
+widget's **two-row grid growth**, which returns with it.
 _`logs/2026-09-04-dev-shopping-shop-context.md`._
 
 ---
