@@ -19,6 +19,16 @@ export interface PlannedMeal {
   updatedAt: string
 }
 
+/** What the needs-push contract hands back (ADR 069 §4). The counts are shown
+    to the person who tapped, so they are exact — `filed` is what landed,
+    `alreadyOn` is what was already there. */
+export interface NeedsPushResult {
+  listId: string
+  listName: string
+  filed: number
+  alreadyOn: number
+}
+
 export interface PlanResponse {
   meals: PlannedMeal[]
 }

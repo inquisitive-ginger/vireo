@@ -7,7 +7,7 @@
   "schema": "shopping",
   "events": {
     "publishes": ["shopping.item.added", "shopping.list.created"],
-    "subscribes": []
+    "subscribes": ["meals.needs.pushed"]
   },
   "widgets": [],
   "navItem": {

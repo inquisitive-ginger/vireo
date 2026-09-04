@@ -128,6 +128,7 @@ exports.Prisma.ItemScalarFieldEnum = {
   status: 'status',
   sourceType: 'sourceType',
   sourceId: 'sourceId',
+  sourceLabel: 'sourceLabel',
   addedBy: 'addedBy',
   addedAt: 'addedAt',
   gotBy: 'gotBy',

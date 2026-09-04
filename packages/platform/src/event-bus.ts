@@ -23,6 +23,17 @@ export function createEventBus(): EventBus {
       emitter.emit(event, payload)
       for (const h of anyHandlers) h({ event, payload })
     },
+    async emitAndAwait(event, payload) {
+      assertValidEventName(event)
+      // `emitter.emit` discards return values, so the handlers are called
+      // directly. They are invoked first and `anyHandlers` fired before the
+      // await, so the /events broadcast still goes out at emit time rather than
+      // waiting on however long the consumer's writes take.
+      const handlers = emitter.listeners(event) as ((payload: unknown) => unknown)[]
+      const pending = handlers.map((h) => h(payload))
+      for (const h of anyHandlers) h({ event, payload })
+      return Promise.all(pending)
+    },
     on(event, handler) {
       assertValidEventName(event)
       emitter.on(event, handler)

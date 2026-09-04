@@ -57,6 +57,52 @@ describe('createEventBus', () => {
     })
   })
 
+  describe('emitAndAwait — the contract half (ADR 069 §4)', () => {
+    it('validates the name the same way emit does', async () => {
+      const bus = createEventBus()
+      await expect(
+        bus.emitAndAwait('Meals.needs.pushed' as `${string}.${string}.${string}`, {})
+      ).rejects.toThrow(/Invalid event name/)
+    })
+
+    it('waits for an async handler and hands back what it returned', async () => {
+      const bus = createEventBus()
+      bus.on('meals.needs.pushed', async () => {
+        await new Promise((r) => setTimeout(r, 5))
+        return { filed: 3 }
+      })
+      await expect(bus.emitAndAwait('meals.needs.pushed', {})).resolves.toEqual([{ filed: 3 }])
+    })
+
+    it('resolves to an empty array when nothing is listening', async () => {
+      const bus = createEventBus()
+      await expect(bus.emitAndAwait('meals.needs.pushed', {})).resolves.toEqual([])
+    })
+
+    it('rejects when a handler throws — the producer has a person waiting', async () => {
+      const bus = createEventBus()
+      bus.on('meals.needs.pushed', () => {
+        throw new Error('no permanent list')
+      })
+      await expect(bus.emitAndAwait('meals.needs.pushed', {})).rejects.toThrow('no permanent list')
+    })
+
+    it('broadcasts to onAny at emit time, not after the handlers settle', async () => {
+      const bus = createEventBus()
+      const seen = vi.fn()
+      bus.onAny(seen)
+      let release: () => void = () => {}
+      bus.on('meals.needs.pushed', () => new Promise<void>((r) => (release = r)))
+
+      const pending = bus.emitAndAwait('meals.needs.pushed', { a: 1 })
+      await Promise.resolve()
+      expect(seen).toHaveBeenCalledWith({ event: 'meals.needs.pushed', payload: { a: 1 } })
+
+      release()
+      await pending
+    })
+  })
+
   describe('onAny — wildcard', () => {
     it('receives every emitted event', () => {
       const bus = createEventBus()

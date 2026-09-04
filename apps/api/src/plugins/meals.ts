@@ -3,7 +3,8 @@ import type { FastifyPluginAsync } from 'fastify'
 import { prisma } from '@family-os/platform/server'
 import { FAMILY_PROFILE_ID } from '@family-os/platform/types'
 import { mealPrisma } from '@family-os/plugin-meals/db'
-import { MealInputSchema } from '@family-os/schemas'
+import { MealInputSchema, NeedsPushSchema } from '@family-os/schemas'
+import type { NeedsPushResult } from '@family-os/schemas'
 import { startMealsNudgeScheduler } from '../lib/meals-nudge'
 
 type PlannedMealRow = Awaited<ReturnType<typeof mealPrisma.plannedMeal.create>>
@@ -26,6 +27,23 @@ function plannedPayload(meal: PlannedMealRow) {
 }
 
 const DATE_KEY = /^\d{4}-\d{2}-\d{2}$/
+
+/** `needs` is comma-separated free text — meals' storage format, and meals'
+    problem. The contract speaks in items. */
+function parseNeeds(needs: string | null): string[] {
+  return (needs ?? '')
+    .split(',')
+    .map((n) => n.trim())
+    .filter((n) => n.length > 0)
+}
+
+/** The words the pushed row's note line will carry (design.md §Anatomy 5:
+    "for Thursday"). The producer owes them — `shopping` never reads
+    `planned_meals` (ADR 069 §3), so this is the only moment they exist.
+    `date` is @db.Date, i.e. UTC midnight, so the weekday is read in UTC. */
+function needsNote(date: Date): string {
+  return `for ${date.toLocaleDateString('en-US', { weekday: 'long', timeZone: 'UTC' })}`
+}
 
 const mealsPlugin: FastifyPluginAsync = async (fastify) => {
   // The afternoon nudge poll (ADR 045 precedent, spec.md §"Day-level nudge"). Not
@@ -183,6 +201,60 @@ const mealsPlugin: FastifyPluginAsync = async (fastify) => {
     await mealPrisma.plannedMeal.delete({ where: { id } })
 
     return reply.status(204).send()
+  })
+
+  // POST /meals/push-needs — the week page's "N things needed" link. Meals
+  // PUBLISHES; it does not write a shopping row and does not import shopping's
+  // Prisma client (ADR 069 §3/§4). The gate is still shopping's own key, asked
+  // through `ability.can` (ADR 018): pushing IS an add, so it asks exactly what
+  // an add asks, and a house that revokes `shopping.item.add` for someone closes
+  // this path for them too.
+  //
+  // `emitAndAwait`, not `emit`: someone tapped this and is waiting to be told
+  // what happened, so the consumer's counts come back here and a consumer that
+  // throws surfaces as a failure instead of a silent success.
+  fastify.post('/meals/push-needs', async (request, reply) => {
+    if (!request.ability.can('create', 'shopping.Item')) {
+      return reply.status(403).send({ error: 'Permission denied' })
+    }
+
+    const parsed = NeedsPushSchema.safeParse(request.body ?? {})
+    if (!parsed.success) {
+      return reply.status(400).send({ error: parsed.error.flatten() })
+    }
+
+    const meal = await mealPrisma.plannedMeal.findUnique({ where: { id: parsed.data.mealId } })
+    if (!meal) return reply.status(404).send({ error: 'Meal not found' })
+
+    const names = parseNeeds(meal.needs)
+    if (names.length === 0) {
+      return reply.status(400).send({ error: 'That meal has nothing listed to buy' })
+    }
+
+    const results = await fastify.eventBus.emitAndAwait('meals.needs.pushed', {
+      sourceType: 'meal',
+      sourceId: meal.id,
+      note: needsNote(meal.date),
+      requestedBy: request.profile.id,
+      names,
+    })
+
+    // Nothing filed them. Saying "sent" here would be the exact lie the contract
+    // exists to prevent, so it reads as the failure it is.
+    //
+    // Matched on SHAPE, not on non-null: any plugin may subscribe to this event,
+    // and a second subscriber that returns something of its own would otherwise
+    // be handed back to the week page as the filing result — rendering
+    // "undefined things sent to undefined" if it registered first.
+    const isResult = (r: unknown): r is NeedsPushResult =>
+      typeof r === 'object' && r !== null && 'filed' in r && 'listName' in r
+    const result = results.find(isResult)
+    if (!result) {
+      request.log.error('[meals] nothing consumed meals.needs.pushed')
+      return reply.status(503).send({ error: 'The shopping list is not listening right now' })
+    }
+
+    return result
   })
 
   // Day-mark provider (ADR 050/066) — meals never writes calendar.events; the

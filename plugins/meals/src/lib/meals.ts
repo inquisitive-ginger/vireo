@@ -1,4 +1,4 @@
-import type { MealKind, PlannedMeal } from '../types'
+import type { MealKind, NeedsPushResult, PlannedMeal } from '../types'
 import { toDateKey } from './dates'
 
 /** The hour the widget escalates — the same hour M5/3's afternoon poll fires
@@ -72,6 +72,23 @@ export function daysNeedingCook(
     if (key < todayKey) return false
     return !isCovered(mealsByDate.get(key))
   }).length
+}
+
+/** The row's link — a count, not a verb: "3 things needed" says what is true,
+    and tapping it is what does something about it (design.md §M5/2). */
+export function needsPushLabel(count: number): string {
+  return count === 1 ? '1 thing needed' : `${count} things needed`
+}
+
+/** What the push says back. Both halves get stated when both happened — a
+    person who pushed four things and saw "3 sent" would otherwise be left
+    wondering about the fourth. */
+export function needsPushOutcome(result: NeedsPushResult): string {
+  const { filed, alreadyOn, listName } = result
+  const things = (n: number) => (n === 1 ? '1 thing' : `${n} things`)
+  if (filed === 0) return `Already on ${listName}`
+  if (alreadyOn === 0) return `${things(filed)} sent to ${listName}`
+  return `${things(filed)} sent to ${listName} · ${alreadyOn} already on it`
 }
 
 /** The strip/header label states the count in words — the viewer never tallies

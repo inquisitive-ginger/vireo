@@ -46,6 +46,14 @@ describe('event bus double', () => {
     expect(received).toHaveLength(1)
   })
 
+  it('records and awaits an emitAndAwait, so the double stays a real EventBus', async () => {
+    bus.on('test.event.fired', async () => ({ filed: 2 }))
+    await expect(bus.emitAndAwait('test.event.fired', { value: 1 })).resolves.toEqual([
+      { filed: 2 },
+    ])
+    expect(bus.emitted).toHaveLength(1)
+  })
+
   it('reset clears emitted log and handlers', () => {
     bus.emit('test.event.fired', {})
     bus.reset()

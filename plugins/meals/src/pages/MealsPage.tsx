@@ -4,19 +4,21 @@ import {
   FAMILY_PROFILE_ID,
   useAuth,
   useMutation,
+  usePermissions,
   useQuery,
   useQueryClient,
 } from '@family-os/platform'
 import type { Profile } from '@family-os/platform/types'
 import { ConfirmDialog, ErrorCard } from '@family-os/ui'
-import type { MealMember, PlanResponse, PlannedMeal } from '../types'
+import type { MealMember, NeedsPushResult, PlanResponse, PlannedMeal } from '../types'
 import { toDateKey, weekDays, weekRangeLabel, weekStart } from '../lib/dates'
-import { DINNER_DONE_HOUR, daysNeedingCook } from '../lib/meals'
+import { DINNER_DONE_HOUR, daysNeedingCook, needsPushOutcome } from '../lib/meals'
 import { MealDrawer, type MealDrawerInput } from '../components/MealDrawer'
 import { MealsPageView, type WeekDay } from './MealsPageView'
 
 export function MealsPage() {
-  const { id, tier } = useAuth()
+  const { id } = useAuth()
+  const ability = usePermissions()
   const queryClient = useQueryClient()
   const [offset, setOffset] = useState(0)
   const [drawer, setDrawer] = useState<{ open: boolean; day: WeekDay | null }>({
@@ -26,9 +28,20 @@ export function MealsPage() {
   // Set → the remove-confirm dialog is open for this meal (RowActions only
   // reports intent; the host confirms — the chores pattern).
   const [removeTarget, setRemoveTarget] = useState<PlannedMeal | null>(null)
+  // The outcome of the last row-scoped action, tagged with the meal it belongs
+  // to so the row that was tapped is what states it.
+  const [rowNote, setRowNote] = useState<{
+    mealId: string
+    text: string
+    failed: boolean
+  } | null>(null)
 
-  const canManage = tier >= 4
-  const canClaim = tier >= 3 && id !== FAMILY_PROFILE_ID
+  const canManage = ability.can('manage', 'meals.PlannedMeal')
+  const canClaim = ability.can('update', 'meals.PlannedMeal')
+  // Pushing a meal's needs IS a shopping add, so it asks the same revocable key
+  // the shopping surface asks (ADR 018/071) — never a tier read, and never a
+  // meals key: the write lands in another plugin's schema.
+  const canPushNeeds = ability.can('create', 'shopping.Item')
 
   const now = new Date()
   const start = weekStart(now, offset)
@@ -85,7 +98,11 @@ export function MealsPage() {
   // claim/plan/remove here has to invalidate BOTH: `meals/plan` refreshes this
   // page and the Tonight widget, `calendar/day-marks` is what makes the month
   // grid + agenda mark itself update without a reload (M5/4 AC6).
-  const invalidate = () => {
+  // `changedId` clears the note only on the meal that actually changed. Clearing
+  // unconditionally wiped Thursday's "2 things sent to Grocery" the moment
+  // somebody claimed Friday.
+  const invalidate = (changedId?: string) => {
+    setRowNote((note) => (note && note.mealId === changedId ? null : note))
     queryClient.invalidateQueries({ queryKey: ['meals/plan'] })
     queryClient.invalidateQueries({ queryKey: ['calendar/day-marks'] })
   }
@@ -107,8 +124,8 @@ export function MealsPage() {
         return r.json() as Promise<PlannedMeal>
       })
     },
-    onSuccess: () => {
-      void invalidate()
+    onSuccess: (meal) => {
+      void invalidate(meal.id)
       setDrawer({ open: false, day: null })
     },
   })
@@ -119,7 +136,50 @@ export function MealsPage() {
         if (!r.ok) throw new Error(String(r.status))
         return r.json() as Promise<PlannedMeal>
       }),
-    onSuccess: () => void invalidate(),
+    onSuccess: (meal) => void invalidate(meal.id),
+    // The claim route still refuses the family profile by id — `owner_id` is
+    // `@db.Uuid` and cannot hold 'family' (deferred backlog: the platform-wide
+    // uuid mismatch). The ability says yes and the route says no, so the refusal
+    // has to reach the person who tapped rather than the console alone.
+    onError: (err, meal) => {
+      console.error('[meals] claim failed', err)
+      setRowNote({ mealId: meal.id, text: 'Somebody got there first.', failed: true })
+      // The likeliest failure is the 409: somebody claimed it from their phone
+      // while this page sat open. Without the refetch the row keeps saying
+      // nobody's on it and every retry 409s forever, so the answer is to go get
+      // the truth, not to invite a retry of something that cannot succeed.
+      void queryClient.invalidateQueries({ queryKey: ['meals/plan'] })
+    },
+  })
+
+  // The producer's half of the needs-push contract. What comes back is the
+  // CONSUMER's count, not what was sent — dedupe means the two differ — so the
+  // tapped row states what actually landed. A failure says so on that same row
+  // rather than dying in a console nobody has open (ADR 046).
+  const pushNeeds = useMutation({
+    mutationFn: (meal: PlannedMeal) =>
+      fetch('/api/meals/push-needs', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ mealId: meal.id }),
+      }).then((r) => {
+        if (!r.ok) throw new Error(String(r.status))
+        return r.json() as Promise<NeedsPushResult>
+      }),
+    onSuccess: (result, meal) => {
+      setRowNote({ mealId: meal.id, text: needsPushOutcome(result), failed: false })
+      // The rows land in shopping's schema, so shopping's queries are what go
+      // stale — one prefix refreshes its page and the M5.5/5 widget together.
+      void queryClient.invalidateQueries({ queryKey: ['shopping/list'] })
+    },
+    onError: (err, meal) => {
+      console.error('[meals] needs push failed', err)
+      setRowNote({
+        mealId: meal.id,
+        text: "Couldn't send that to the list — try again.",
+        failed: true,
+      })
+    },
   })
 
   const removeMeal = useMutation({
@@ -127,8 +187,8 @@ export function MealsPage() {
       fetch(`/api/meals/plan/${meal.id}`, { method: 'DELETE' }).then((r) => {
         if (!r.ok) throw new Error(String(r.status))
       }),
-    onSuccess: () => {
-      void invalidate()
+    onSuccess: (_data, meal) => {
+      void invalidate(meal.id)
       setRemoveTarget(null)
     },
   })
@@ -171,12 +231,19 @@ export function MealsPage() {
         }
         canManage={canManage}
         canClaim={canClaim}
+        canPushNeeds={canPushNeeds}
+        rowNote={rowNote}
+        pushPendingMealId={pushNeeds.isPending ? (pushNeeds.variables?.id ?? null) : null}
         onPrevWeek={() => setOffset((o) => o - 1)}
         onNextWeek={() => setOffset((o) => o + 1)}
         onThisWeek={() => setOffset(0)}
         onPlan={(day) => setDrawer({ open: true, day })}
         onEdit={(day) => setDrawer({ open: true, day })}
         onClaim={(meal) => claimMeal.mutate(meal)}
+        onPushNeeds={(meal) => {
+          setRowNote(null)
+          pushNeeds.mutate(meal)
+        }}
         onRemove={(meal) => setRemoveTarget(meal)}
       />
       {removeTarget && (
