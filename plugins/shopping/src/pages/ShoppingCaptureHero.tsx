@@ -48,11 +48,9 @@ export function ShoppingCaptureHero({
       <CaptureField
         size="wall"
         className="mt-6"
-        // Wide only (ADR 070): this is the screen someone walked up to in order
-        // to type, and any tap before the word loses to a notepad. The narrow
-        // layout does not focus — an unrequested keyboard on a route you opened
-        // to read is hostile.
-        autoFocus
+        // No autofocus, at any width (ADR 070, amended 2026-09-04). A screen
+        // left on in a kitchen is not a screen someone walked up to, and it must
+        // not hold the keyboard on the chance that they did.
         placeholder="Type it, or say it"
         label={destination ? `Add to ${destination}` : 'Add to the shopping list'}
         disabled={!canAdd || !destination}

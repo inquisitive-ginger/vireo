@@ -1178,10 +1178,12 @@ whole claim is speed is not a place a person is displayed.
 | Controls  | Cancel + a submit button         | Enter; no Cancel                                        |
 | Height    | `--shadow-raised` panel          | 48 px inline · 56 px as a page hero · 76 px on the wall |
 
-**Autofocus is a surface decision, not a prop default.** Focus it on an ambient surface
-someone walked up to in order to type (the wall) and inside a widget; do **not** focus it
-on a route the user navigated to, where an unrequested keyboard covers the content they
-opened it to read.
+**Nothing autofocuses** (ADR 070, amended 2026-09-04 — this replaces the earlier
+"autofocus is a surface decision" rule, whose two yes-cases both turned out to be
+no-cases). `CaptureField` has no prop to ask: a widget claiming focus scrolled a stacked
+phone dashboard 1272 px to a tile nobody asked for, and the same widget on the family
+profile made an always-on kitchen display hold the keyboard. **A screen left on in a room
+is not a screen someone walked up to.**
 
 **State the filing before the commit.** Where a capture files what it catches somewhere
 derived (shopping's aisle), say so in one `sm` line under the field while composing —

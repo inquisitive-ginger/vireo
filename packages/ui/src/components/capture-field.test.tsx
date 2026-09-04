@@ -66,84 +66,47 @@ describe('CaptureField', () => {
     expect(screen.getByRole('button', { name: 'Grocery' })).toBeInTheDocument()
   })
 
-  it('does not autofocus unless the surface asks — an unrequested keyboard is a surface decision (ADR 070)', () => {
+  /* ADR 070, amended 2026-09-04: NO surface autofocuses, and there is no prop
+     to ask. The three tests below are the record of why that is not merely a
+     default — the two mechanisms cost a live-shell session to find, and both
+     are invisible to a test that mounts this component directly. */
+
+  it('never claims focus on mount — no surface autofocuses (ADR 070, amended)', () => {
     render(<CaptureField onSubmit={vi.fn()} placeholder="Add to Grocery" label="Add to Grocery" />)
     expect(screen.getByLabelText('Add to Grocery')).not.toHaveFocus()
   })
 
-  it('focuses when the surface asks, even mounted long after the document parsed', () => {
-    // The regression this guards: the `autoFocus` DOM prop is honoured by
-    // browsers only during parsing, so it focused nothing on the two surfaces
-    // that ask for it — both mount inside a lazily loaded federated remote.
-    // Rendering into an already-parsed document is the closest a unit test gets
-    // to that; the real proof was the live shell.
+  it("offers no way to ask for focus — the decision is not a call site's to make", () => {
     render(
       <CaptureField
         onSubmit={vi.fn()}
         placeholder="Add to Grocery"
         label="Add to Grocery"
-        autoFocus
-      />
-    )
-    expect(screen.getByLabelText('Add to Grocery')).toHaveFocus()
-  })
-
-  it('waits for the field to be usable before claiming focus', async () => {
-    // The real defect this caught: an ambient surface mounts DISABLED while its
-    // first read is in flight, because it does not know its destination yet.
-    // Focusing a disabled input is a silent no-op, so the wall came up with the
-    // keyboard unclaimed — the one thing that surface exists to do.
-    const { rerender } = render(
-      <CaptureField
-        onSubmit={vi.fn()}
-        placeholder="Add to Grocery"
-        label="Add to Grocery"
-        autoFocus
-        disabled
+        // A prop nobody may set is a trap, so there is no prop: TypeScript
+        // rejects `autoFocus` at every call site. Forced through at runtime it
+        // still does nothing, which is what this asserts. If autofocus ever
+        // returns it comes back through the ADR, not through a call site.
+        {...({ autoFocus: true } as Record<string, unknown>)}
       />
     )
     expect(screen.getByLabelText('Add to Grocery')).not.toHaveFocus()
-
-    rerender(
-      <CaptureField
-        onSubmit={vi.fn()}
-        placeholder="Add to Grocery"
-        label="Add to Grocery"
-        autoFocus
-      />
-    )
-    expect(screen.getByLabelText('Add to Grocery')).toHaveFocus()
   })
 
-  it('does not yank the caret back if it is disabled and re-enabled later', async () => {
+  it('stays unfocused when a disabled field becomes usable', () => {
+    // The second mechanism, kept because it is the one that made the first look
+    // fixed when it was not: this field mounts DISABLED while its first read is
+    // in flight, and focusing a disabled input is a silent no-op — so an
+    // autofocus that "works" in a unit test can still focus nothing in the app.
     const { rerender } = render(
       <CaptureField
         onSubmit={vi.fn()}
         placeholder="Add to Grocery"
         label="Add to Grocery"
-        autoFocus
-      />
-    )
-    const field = screen.getByLabelText('Add to Grocery')
-    expect(field).toHaveFocus()
-
-    field.blur()
-    rerender(
-      <CaptureField
-        onSubmit={vi.fn()}
-        placeholder="Add to Grocery"
-        label="Add to Grocery"
-        autoFocus
         disabled
       />
     )
     rerender(
-      <CaptureField
-        onSubmit={vi.fn()}
-        placeholder="Add to Grocery"
-        label="Add to Grocery"
-        autoFocus
-      />
+      <CaptureField onSubmit={vi.fn()} placeholder="Add to Grocery" label="Add to Grocery" />
     )
     expect(screen.getByLabelText('Add to Grocery')).not.toHaveFocus()
   })

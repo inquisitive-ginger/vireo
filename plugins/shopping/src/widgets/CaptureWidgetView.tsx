@@ -70,9 +70,9 @@ export function CaptureWidgetView({
         // field is a hairline rectangle and the rows below it carry the tile.
         // The recess is the one rung that reads in both themes (ADR 040).
         className="mt-3 shrink-0 bg-surface-sunken shadow-[var(--shadow-inset)]"
-        // A widget is a surface you did not navigate to (ADR 070) — nothing was
-        // covered up to put this here, so the field is live on arrival.
-        autoFocus
+        // No autofocus (ADR 070, amended 2026-09-04). On a phone the dashboard
+        // stacks and this tile is fifth, so claiming focus scrolled the reader
+        // 1272px to a surface they had not asked for.
         placeholder={destination ? `Add to ${destination}` : 'Add something'}
         label={destination ? `Add to ${destination}` : 'Add to the shopping list'}
         disabled={!canAdd || !destination}

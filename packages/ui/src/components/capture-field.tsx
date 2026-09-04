@@ -1,4 +1,4 @@
-import { useEffect, useRef, useState, type FormEvent, type ReactNode } from 'react'
+import { useRef, useState, type FormEvent, type ReactNode } from 'react'
 import { Plus } from 'lucide-react'
 import { cn } from '../lib/utils'
 
@@ -21,9 +21,6 @@ export interface CaptureFieldProps {
   trailing?: ReactNode
   /** Every keystroke, so the surface can state the filing before the commit. */
   onValueChange?: (value: string) => void
-  /** A SURFACE decision, never a default (ADR 070): focus on an ambient screen
-      someone walked up to in order to type, not on a route they navigated to. */
-  autoFocus?: boolean
   size?: CaptureFieldSize
   disabled?: boolean
   className?: string
@@ -50,7 +47,6 @@ export function CaptureField({
   label,
   trailing,
   onValueChange,
-  autoFocus = false,
   size = 'inline',
   disabled = false,
   className,
@@ -58,23 +54,19 @@ export function CaptureField({
   const [value, setValue] = useState('')
   const inputRef = useRef<HTMLInputElement>(null)
 
-  // Focus imperatively, NOT with the `autoFocus` prop. React 19 renders that as
-  // the DOM attribute, which browsers honour only while parsing the document —
-  // so it does nothing for anything mounted later, which is every one of this
-  // primitive's autofocusing surfaces: both the wall and the Home widget arrive
-  // inside a lazily loaded federated remote.
-  //
-  // ONCE, and not before the field can take it: an ambient surface mounts
-  // disabled while its first read is in flight (it does not know its
-  // destination yet), and focusing a disabled input is a silent no-op. So this
-  // waits for `disabled` to clear — and then never fires again, because a
-  // permission changing under someone mid-word must not yank the caret back.
-  const claimedFocus = useRef(false)
-  useEffect(() => {
-    if (!autoFocus || disabled || claimedFocus.current) return
-    claimedFocus.current = true
-    inputRef.current?.focus()
-  }, [autoFocus, disabled])
+  /* NOTHING here claims focus, and no prop offers to (ADR 070, amended
+     2026-09-04). Both surfaces that used to — the wide `/shopping` layout and
+     the Home widget — cost more than they bought: an always-on display claiming
+     the keyboard nobody walked up to, and a stacked phone dashboard scrolling
+     1272px to a tile the reader never asked for.
+
+     Two facts underneath that are expensive to rediscover, pinned by tests in
+     capture-field.test.tsx because the next person to reach for autofocus here
+     will hit both: React renders the `autoFocus` prop as the DOM attribute,
+     which browsers honour ONLY while parsing the document — inert for anything
+     mounted later, which is every federated remote — and focusing a disabled
+     input (this field mounts disabled while its first read is in flight) is a
+     silent no-op. */
 
   function change(next: string) {
     setValue(next)

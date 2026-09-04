@@ -23,10 +23,10 @@ function renderView(over: Partial<ShoppingCaptureHeroProps> = {}) {
 }
 
 describe('ShoppingCaptureHero', () => {
-  it('asks the question and takes the keyboard — somebody walked up to it to type', () => {
+  it('asks the question without taking the keyboard', () => {
     renderView()
     expect(screen.getByRole('heading', { name: 'What do we need?' })).toBeInTheDocument()
-    expect(screen.getByLabelText('Add to Grocery')).toHaveFocus()
+    expect(screen.getByLabelText('Add to Grocery')).not.toHaveFocus()
   })
 
   it('adds on Enter and leaves the field open for the next thing out of the fridge', () => {

@@ -78,14 +78,16 @@ draws is chosen by the **viewport**, at the shell's canonical `md:` (768 px) spl
 never by the profile, and never by a control on screen.
 
 - **Tablet and up — capture.** `What do we need?` at `display-xl`, a 76 px
-  `CaptureField` below it (**autofocused** — this is a screen you walked up to in
-  order to type), a **Hold to speak** affordance reserved in the trailing slot
+  `CaptureField` below it, a **Hold to speak** affordance reserved in the trailing slot
   (**voice is not M5.5 scope** — the slot is reserved, nothing implements it), a
   **Just added** strip of the last few items as chips naming **what** was added, never
   who (§Anatomy 5; ADR 072 §3/§4 withdrawn), and a rule stating the total
   (`19 things waiting`). Then the same aisle list, directly beneath.
 - **Below tablet — the list.** §Anatomy exactly as shipped: compact title row,
-  56 px field, destination strip, aisle list. It does **not** autofocus.
+  56 px field, destination strip, aisle list.
+
+**Neither layout autofocuses, and nothing else does either** (ADR 070, amended
+2026-09-04). A screen left on in a kitchen is not a screen someone walked up to.
 
 **Neither layout is a mode**, which is the same rule §"The answer to the axis" states
 for the field and the list. Nothing toggles: the capture block is simply the size it

@@ -36,9 +36,14 @@ function renderView(over: Partial<CaptureWidgetViewProps> = {}) {
 }
 
 describe('CaptureWidgetView', () => {
-  it('captures with zero navigation — the field is live on arrival', () => {
+  it('captures with zero navigation — the field is open, not focused', () => {
+    // Open on arrival is the whole value; TAKING the keyboard is not. On a phone
+    // the dashboard stacks and this tile is fifth, so focus scrolled the reader
+    // 1272px to a surface they had not asked for (ADR 070, amended 2026-09-04).
     renderView()
-    expect(screen.getByLabelText('Add to Grocery')).toHaveFocus()
+    const field = screen.getByLabelText('Add to Grocery')
+    expect(field).toBeInTheDocument()
+    expect(field).not.toHaveFocus()
   })
 
   it('adds on Enter and clears, so four things out of the fridge is four keystrokes', () => {

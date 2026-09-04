@@ -132,10 +132,15 @@ describe('ShoppingPageView', () => {
    layouts"). Not a route and not a mode: the viewport picks the arrangement,
    nothing on screen switches it, and the aisle list is the same list. */
 describe('ShoppingPageView — the wide layout', () => {
-  it('opens on capture: the question, the big field, and the keyboard', () => {
+  it('opens on capture: the question and the big field', () => {
     renderView({ layout: 'wide' })
     expect(screen.getByRole('heading', { name: 'What do we need?' })).toBeInTheDocument()
-    expect(screen.getByLabelText('Add to Grocery')).toHaveFocus()
+    expect(screen.getByLabelText('Add to Grocery')).toBeInTheDocument()
+  })
+
+  it('does not take the keyboard — a kitchen screen is not one you walked up to', () => {
+    renderView({ layout: 'wide' })
+    expect(screen.getByLabelText('Add to Grocery')).not.toHaveFocus()
   })
 
   it('still draws the same list underneath — the wide layout is not capture-only', () => {
