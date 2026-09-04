@@ -569,17 +569,17 @@ grid (2026-07-10 decision a).
 
 Defined in `packages/ui/src/styles.css` (`@theme`).
 
-| Token                  | Value | Utility                          | Role                                                   |
-| ---------------------- | ----- | -------------------------------- | ------------------------------------------------------ |
-| `--spacing-touch`      | 48px  | `min-h-touch`/`min-w-touch`      | Minimum touch target                                   |
-| `--spacing-card-touch` | 64px  | `min-h-card-touch`               | `ItemCard`'s floor, applied when interactive (ADR 068) |
-| `--spacing-list-touch` | 56px  | (primitive only, arbitrary form) | `ListRow`'s floor, applied unconditionally (ADR 068)   |
-| `--spacing-tab-bar`    | 56px  | `h-tab-bar`, safe-area calc      | Mobile bottom tab bar + anything anchored to it        |
-| `--spacing-top-bar`    | 52px  | `min-h-top-bar`                  | Mobile brand top bar                                   |
-| `--spacing-sidebar`    | 220px | `w-sidebar`                      | Tablet sidebar (ADR 022)                               |
-| `--spacing-meter`      | 6px   | `h-meter`                        | Progress-meter bar height                              |
-| `--container-content`  | 680px | `max-w-content`                  | Single-column content pages                            |
-| `--container-drawer`   | 440px | `md:w-drawer`                    | Side-drawer width                                      |
+| Token                  | Value | Utility                          | Role                                                           |
+| ---------------------- | ----- | -------------------------------- | -------------------------------------------------------------- |
+| `--spacing-touch`      | 48px  | `min-h-touch`/`min-w-touch`      | Minimum touch target                                           |
+| `--spacing-card-touch` | 64px  | —                                | `ItemCard`'s floor per ADR 068 — **declared, not yet applied** |
+| `--spacing-list-touch` | 56px  | (primitive only, arbitrary form) | `ListRow`'s floor, applied unconditionally (ADR 068)           |
+| `--spacing-tab-bar`    | 56px  | `h-tab-bar`, safe-area calc      | Mobile bottom tab bar + anything anchored to it                |
+| `--spacing-top-bar`    | 52px  | `min-h-top-bar`                  | Mobile brand top bar                                           |
+| `--spacing-sidebar`    | 220px | `w-sidebar`                      | Tablet sidebar (ADR 022)                                       |
+| `--spacing-meter`      | 6px   | `h-meter`                        | Progress-meter bar height                                      |
+| `--container-content`  | 680px | `max-w-content`                  | Single-column content pages                                    |
+| `--container-drawer`   | 440px | `md:w-drawer`                    | Side-drawer width                                              |
 
 ### Radius family
 
@@ -638,8 +638,11 @@ designed in M1. See ADR 011.
 **Touch targets:** All interactive elements minimum 48px. Row height belongs to
 the primitive, not to the caller (ADR 068): `ItemCard` is 64px
 (`--spacing-card-touch`, when interactive), `ListRow` is 56px
-(`--spacing-list-touch`, always). You pick a primitive by ADR 063's rule and it
-brings its own floor — a number written in a consumer, a story spec, or an AC is
+(`--spacing-list-touch`, always). **`ListRow` applies its floor today; `ItemCard`
+does not yet** — nothing reads `--spacing-card-touch`, so the card floor is a
+decision on the books, not enforced code. Landing it grows every chores, calendar
+and meals row and owes a visual review of its own. You pick a primitive by ADR
+063's rule and it brings its own floor — a number written in a consumer, a story spec, or an AC is
 a copy, and copies drift. Adjacent activation targets keep ≥8px of dead space
 between them. `ListRow`'s overlay is `inset-y-[3.5px]`, a value **derived** from
 two invariants — live target ≥ `--spacing-touch`, dead band ≥ 8px — and the
@@ -1107,13 +1110,10 @@ by a caller (ADR 068), a leading control slot, whole-row activation on an
 > **Cards** when items are independent objects with several actions.
 > **Rows** when items are a set you scan and act on one way.
 
-Forty bordered `ItemCard`s was the density failure an external critique of the
-M5/1 gate caught — five items fit a phone screen against a ~30-item real
-shopping list, and floating cards are the wrong metaphor for entries that must
-cohere under an aisle heading. `ItemCard` is unchanged; **do not** reach for
-`chrome="bare"` on a dense list instead of `ListRow` — bare removes chrome but
-keeps the card's contract (spine, trailing, per-row semantics) and doesn't model
-group membership or a leading slot.
+`ItemCard` is unchanged; **do not** reach for `chrome="bare"` on a dense list
+instead of `ListRow` — bare removes chrome but keeps the card's contract (spine,
+trailing, per-row semantics) and models neither group membership nor a leading
+slot. ADR 063 has the density argument.
 
 | Prop            | Values        | Default | Role                                                                                                                                                                        |
 | --------------- | ------------- | ------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |

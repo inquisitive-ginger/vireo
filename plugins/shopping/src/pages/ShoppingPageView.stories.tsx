@@ -45,6 +45,7 @@ const meta: Meta<typeof ShoppingPageView> = {
         items: [item('6', 'chicken thighs', 'Meat'), item('7', 'ground beef', 'Meat')],
       },
     ],
+    loading: false,
     openCount: 14,
     onAdd: () => {},
     onDraftChange: () => {},

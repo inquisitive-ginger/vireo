@@ -50,6 +50,7 @@ export function ShoppingPage() {
 
   const lists = useMemo(() => listsQuery.data?.lists ?? [], [listsQuery.data])
   const activeListId = selectedListId ?? lists[0]?.id ?? null
+  const selected = lists.find((l) => l.id === activeListId)
 
   const listQuery = useQuery<ListResponse>({
     queryKey: ['shopping/list', id, activeListId],
@@ -130,16 +131,24 @@ export function ShoppingPage() {
     )
   }
 
+  // The list read is a SERIAL second fetch — it needs an id from the index — and
+  // it restarts on every pill tap. Without this the surface paints "Nothing on
+  // Grocery yet." beside a count strip reading 14, which is the one state a
+  // shopper must never be shown wrongly. The index already knows the count, so
+  // the strip stays true while the rows are still coming.
+  const listLoading = activeListId !== null && listQuery.isPending
+
   return (
     <ShoppingPageView
       lists={lists}
+      loading={listLoading}
       selectedListId={activeListId ?? ''}
       onSelectList={(listId) => {
         setSelectedListId(listId)
         setAddError(null)
       }}
       groups={groups}
-      openCount={openItems.length}
+      openCount={listLoading ? (selected?.itemCount ?? 0) : openItems.length}
       onAdd={(name) => {
         if (!activeListId) return
         addItem.mutate({ listId: activeListId, name })

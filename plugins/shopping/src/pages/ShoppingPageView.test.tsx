@@ -31,6 +31,7 @@ function renderView(over: Partial<ShoppingPageViewProps> = {}) {
       },
       { aisle: 'Dairy', items: [item({ id: '3', name: 'milk', category: 'Dairy' })] },
     ],
+    loading: false,
     openCount: 3,
     onAdd: vi.fn(),
     onDraftChange: vi.fn(),
@@ -111,6 +112,28 @@ describe('ShoppingPageView', () => {
     renderView({ canAdd: false })
     expect(screen.getByLabelText('Add to Grocery')).toBeDisabled()
     expect(screen.getByText(/Switch to your own profile/)).toBeInTheDocument()
+  })
+
+  it('does not claim the list is empty while the rows are still coming', () => {
+    renderView({ loading: true, groups: [], openCount: 14 })
+    expect(screen.queryByText(/Nothing on/)).not.toBeInTheDocument()
+    // The index already knows the count, so the strip stays true meanwhile.
+    expect(screen.getByText('14 to get')).toBeInTheDocument()
+  })
+
+  it('renders flat, with no aisle headers, on a list that has no aisles of ours', () => {
+    renderView({
+      lists: [
+        { id: 'hardware', name: 'Hardware', kind: 'runtime', groupByAisle: false, itemCount: 1 },
+      ],
+      selectedListId: 'hardware',
+      groups: [
+        { aisle: 'Other', items: [item({ id: '9', name: 'wood screws', category: 'Other' })] },
+      ],
+      openCount: 1,
+    })
+    expect(screen.getByText('wood screws')).toBeInTheDocument()
+    expect(screen.queryByText('Other')).not.toBeInTheDocument()
   })
 
   it('has no index of lists and no drill-in — a pill is a filter, not a link', () => {

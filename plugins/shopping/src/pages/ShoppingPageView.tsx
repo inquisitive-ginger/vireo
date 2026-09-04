@@ -1,5 +1,5 @@
-import { ChevronDown } from 'lucide-react'
-import { CaptureField, Chip, ListRow, PageContainer, cn } from '@family-os/ui'
+import { ChevronDown, Loader2 } from 'lucide-react'
+import { CaptureField, Chip, ListRow, PageContainer, PageHeader, cn } from '@family-os/ui'
 import type { ShoppingItem, ShoppingList } from '../types'
 
 export interface AisleGroup {
@@ -13,6 +13,9 @@ export interface ShoppingPageViewProps {
   onSelectList: (id: string) => void
   /** Already in walk order, already grouped — the server sorts, the view draws. */
   groups: AisleGroup[]
+  /** The rows are still coming. Distinct from "there are none" — the empty line
+      is a claim about the house, and it must not be made before the answer is in. */
+  loading: boolean
   openCount: number
   onAdd: (name: string) => void
   onDraftChange: (draft: string) => void
@@ -37,6 +40,7 @@ export function ShoppingPageView({
   selectedListId,
   onSelectList,
   groups,
+  loading,
   openCount,
   onAdd,
   onDraftChange,
@@ -46,16 +50,23 @@ export function ShoppingPageView({
 }: ShoppingPageViewProps) {
   const selected = lists.find((l) => l.id === selectedListId)
   const destination = selected?.name ?? 'the list'
+  // Aisles belong to the LIST, not to the app — a hardware run has none of ours,
+  // so it renders flat rather than filing every screw under Other.
+  const showAisles = selected?.groupByAisle ?? true
   // While composing, the strip gives way to the echo (S2) — one line under the
   // field at a time, and the filing is the one worth reading at that moment.
   const composing = draftAisle !== null
 
   return (
     <PageContainer width="list">
-      <div className="flex items-baseline justify-between gap-2">
-        <h1 className="text-page-title text-foreground">Shopping</h1>
-        <span className="text-sm-token text-muted-foreground">{openCount} to get</span>
-      </div>
+      {/* The count rides the title's own baseline and the field sits 14px under
+          it (artifact S1), so the primitive's `items-start` / `mb-6` are the two
+          things overridden — not the header. */}
+      <PageHeader
+        className="mb-0 items-baseline"
+        title="Shopping"
+        action={<span className="text-sm-token text-muted-foreground">{openCount} to get</span>}
+      />
 
       <CaptureField
         size="hero"
@@ -106,19 +117,25 @@ export function ShoppingPageView({
       )}
 
       <div className={cn('mt-1', composing && 'opacity-50')}>
-        {groups.length === 0 ? (
+        {loading ? (
+          <div className="flex justify-center pt-8">
+            <Loader2 className="size-5 animate-spin text-muted-foreground" aria-label="Loading" />
+          </div>
+        ) : groups.length === 0 ? (
           <p className="text-body px-1 pt-6 text-muted-foreground">Nothing on {destination} yet.</p>
         ) : (
           groups.map((group, i) => (
             <div key={group.aisle}>
-              <div
-                className={cn(
-                  'text-section-label pb-1.5 text-muted-foreground',
-                  i === 0 ? 'pt-2.5' : 'pt-4.5'
-                )}
-              >
-                {group.aisle}
-              </div>
+              {showAisles && (
+                <div
+                  className={cn(
+                    'text-section-label pb-1.5 text-muted-foreground',
+                    i === 0 ? 'pt-2.5' : 'pt-4.5'
+                  )}
+                >
+                  {group.aisle}
+                </div>
+              )}
               {group.items.map((item) => (
                 <ListRow key={item.id} leading={<Ring />}>
                   <div className="min-w-0 flex-1">
