@@ -17,11 +17,11 @@
 
 ## Up Next
 
-> **M4.5 — Companion is the active milestone** (M4.5/3 next). M5 runs alongside:
-> /2 shipped 2026-08-13, /3 and /4 on 2026-08-23; **groceries left M5 on
-> 2026-09-03** and is now **M5.5 — Shopping** (ADR 069), surface settled the same
-> day — **M5.5/2 builds it**. Part F offsite backups went live 2026-08-16, so the
-> remaining infra items are improvements, not risks to the data.
+> **M4.5 — Companion is the active milestone** (M4.5/3 next). M5 runs alongside: /2 shipped
+> 2026-08-13, /3 and /4 on 2026-08-23; **groceries left M5 on 2026-09-03** and is now
+> **M5.5 — Shopping** (ADR 069), surface settled the same day and **resequenced into five
+> dev sessions** — **M5.5/2 builds it**. Part F offsite backups went live 2026-08-16, so
+> the remaining infra items are improvements, not risks to the data.
 
 ### Beacon — Product+Design: paired friend lamps (deadline: the friends' December visit)
 
@@ -61,49 +61,58 @@ One pre-launch family task: **name the feature at the dinner table** (ADR 061 �
 
 ### M5 — Meals: one story left (groceries split out to M5.5)
 
-**Wave 1 landed 2026-08-23** — M5/3 (PR #124) and M5/4 (PR #125). M5/6 and M5/7 left for
-M5.5 on 2026-09-03 (ADR 069), so **M5/5 Try Bites is the only M5 story left**, sharing a
-branch with nothing. _Log: `logs/2026-09-03-product-shopping-boundary.md`._
+Wave 1 landed 2026-08-23 (PRs #124/#125); M5/6 and M5/7 left for M5.5 on 2026-09-03
+(ADR 069), so **M5/5 Try Bites is all that remains**.
+_Log: `logs/2026-09-03-product-shopping-boundary.md`._
 
 ### M5/5 — Dev: Try Bites
 
-**Type:** development · **Kickoff:** `kickoffs/dev-try-bites.md`
+**Kickoff:** `kickoffs/dev-try-bites.md` · dev · _depends on M5/2, M4/6_
 `meals.trybite.taken` → punches a `rewards` card. Replaces the paper sheet (15 squares →
-small reward → reset). `meals` knows nothing about cards. _Depends on: M5/2, M4/6._
+small reward → reset). `meals` knows nothing about cards.
 
 ---
 
-### M5.5 — Shopping: four sessions (split out of M5 by ADR 069, 2026-09-03)
+### M5.5 — Shopping: five sessions (split out of M5 by ADR 069, 2026-09-03)
 
-Groceries became its own plugin; **PR #127 closed unmerged** and the two 2026-08-23
-artifacts are banner-marked SUPERSEDED. The surface was settled 2026-09-03 — build from
-`docs/modules/shopping/design.md` **and its artifact**, never from #127.
-_Spec: `docs/modules/shopping/spec.md` · ADR 069, ADR 070._
+**PR #127 closed unmerged**; the two 2026-08-23 artifacts are banner-marked SUPERSEDED.
+Build from `docs/modules/shopping/design.md` **and its artifact**, never from #127.
+**Resequenced 2026-09-03** — the old /4 bundled shop context, sync, the wall and offline;
+offline is now its own PR (the SW is network-first for `/api`, bitten twice) and the
+wall+widget theirs (separate devices, plus an owed label decision), so each session is one
+demoable, reviewable chunk. _`docs/modules/shopping/{spec,salvage}.md` · ADR 069, 070._
 
-### M5.5/2 — Dev: the plugin split + capture · **run this next**
+### M5.5/2 — Dev: the plugin split + the capture surface · **run this next**
 
-**Type:** development · **Kickoff:** _to be written_
-Scaffold `shopping` (five registration points), move the four grocery tables to a
-`shopping` schema, renamespace subjects, and build the surface M5.5/1 settled — read
-`docs/modules/shopping/design.md` **with** its artifact. Also lands `ListRow` (still not
-on `main`) and `CaptureField` (ADR 070), and **reorders `plugins.json`** so Shopping takes
-a phone tab and `chores` moves into More. Salvage from #127: dictionary, schemas, routes,
-migrations, tests. _Depends on: M5.5/1 ✅._
+**Kickoff:** `kickoffs/dev-shopping-split-capture.md` · dev · _depends on M5.5/1 ✅_
+Scaffold `shopping` (four of five registration points — WIDGET_META is /5's), move the four
+tables, renamespace subjects, land `ListRow`+ADR 068 and `CaptureField`, build S1/S2, and
+reorder `plugins.json` so Shopping takes a phone tab from `chores`.
 
 ### M5.5/3 — Dev: the needs-push contract
 
-**Type:** development · **Kickoff:** _to be written_
-`meals` → `shopping` over the bus (ADR 050 precedent); meals stops writing grocery rows.
-_Depends on: M5.5/2._
+**Kickoff:** `kickoffs/dev-shopping-needs-push.md` · dev · _depends on /2_
+`meals` publishes, `shopping` consumes (ADR 050 precedent); meals stops writing shopping
+rows. May pick up the `MealsPage.tsx:35` TierGate.
 
-### M5.5/4 — Dev: Shop Context, Sync + Offline, the Wall
+### M5.5/4 — Dev: shop context + shopper sync
 
-**Type:** development · **Kickoff:** `kickoffs/dev-grocery-shop-offline.md` — **still
-describes the superseded index-and-drill-in world; rewrite against
-`docs/modules/shopping/design.md` before it runs**
-Whole-row checks, cleared-aisle collapse, progress track, shopper sync, the wall — and
-**offline**. The SW is network-first for `/api`, so the list fails where it is used; it
-has bitten twice, so treat offline as its own reviewable chunk. _Depends on: M5.5/2._
+**Kickoff:** `kickoffs/dev-shopping-shop-context.md` · dev · _depends on /2_
+Frame S3: whole-row checks, cleared-aisle collapse, progress meter, two shoppers converging.
+**Blocking flag it owns — no permission key exists for checking an item off**, so spec.md's
+three keys make it tier 4. Escalate, don't improvise.
+
+### M5.5/5 — Dev: the wall and the Home widget
+
+**Kickoff:** `kickoffs/dev-shopping-capture-surfaces.md` · dev · _depends on /2_
+Frame W2 (the wall only takes things in; voice slot reserved, unimplemented) plus the
+zero-navigation widget, which lands the **fifth** registration point. **Owes the wall's
+`section-label` distance decision** into design-system.md.
+
+### M5.5/6 — Dev: offline
+
+**Kickoff:** `kickoffs/dev-shopping-offline.md` · dev · _depends on /4_
+The list renders and checks replay with no signal, without staling the shell or `/api`.
 
 ---
 
@@ -121,33 +130,27 @@ _Depends on: none._
 ### Retire the Pi 3B: second-copy backup puller
 
 **Type:** infra (small) · **Kickoff:** _to be written_
-Part F shipped 2026-08-16 (restic → R2, restore-tested; prod now on a Pi 5 —
-`logs/2026-08-16-infra-offsite-backups.md`). The 3B still holds stale
-docker/tailscale/runner state: wipe it, then give it a weekly
-`restic copy`-style second-copy pull of the R2 repo. Also owed from that log:
-live-test the backup failure hook. _Depends on: none._
+Part F shipped 2026-08-16 (restic → R2, restore-tested). The 3B still holds stale
+docker/tailscale/runner state: wipe it, then give it a weekly `restic copy`-style
+second-copy pull of the R2 repo. Also owed from that log: live-test the backup failure
+hook. _Reads: `logs/2026-08-16-infra-offsite-backups.md`. Depends on: none._
 
 ### Deployment: shrink the api image
 
 **Type:** infra/tooling · **Kickoff:** _to be written_
-What's left of the deploy-hardening session (E3 auto-deploy and faster builds
-**shipped 2026-07-21**; the SSD storage move **done 2026-07-20**, both roots —
-`docs/deployment.md` Part C9). **Shrink the api image** — at
-**2.09 GB** (web is 150 MB) it is the whole reason a deploy takes ~6 min on the
-Pi; every source change rebuilds the `pnpm install` layer so ~2 GB is re-pulled.
-Split `node_modules` off the source layer (`COPY` manifests → install → `COPY`
-source). **This is the same class of change that took the API down on 2026-07-21
-— boot-test the image against a real DB in CI before it goes near the Pi**, and
-do not reach for `pnpm fetch` + `--offline`. _Reads: `docs/deployment.md` E2/E3,
-`logs/2026-07-21-infra-deploy-hardening.md`, memory `project-poc-hardware`._
+All that's left of deploy hardening. The api image is **2.09 GB** (web is 150 MB) and is
+why a Pi deploy takes ~6 min — every source change rebuilds the `pnpm install` layer. Split
+`node_modules` off the source layer. **Same class of change that took the API down on
+2026-07-21 — boot-test against a real DB in CI first**, and no `pnpm fetch` + `--offline`.
+_Reads: `docs/deployment.md` E2/E3, `logs/2026-07-21-infra-deploy-hardening.md`._
 _Depends on: none (live)._
 
 ### Platform: family-feed test addendum
 
 **Type:** development (test addendum) · **Kickoff:** _to be written_
-`family-feed` has a `test` script and **zero test files** — silently "passing" for
-its whole life, exactly the condition chores was in before ADR 043. Stand up an RTL
-suite mirroring chores/calendar. _Depends on: none._
+`family-feed` has a `test` script and **zero test files** — silently "passing" its whole
+life, the condition chores was in before ADR 043. Stand up an RTL suite mirroring
+chores/calendar. _Depends on: none._
 
 ---
 
@@ -171,8 +174,8 @@ suite mirroring chores/calendar. _Depends on: none._
   exists. **M7 School owes the decision** — drop the quick-add below some width, wrap,
   or shrink the glyph. _Reads: `logs/2026-08-23-dev-calendar-day-marks.md`._
 - **Member capacity** — where per-member capacity lives and who sets it. Gates the
-  capacity-aware chores workload meter (chores 1.5, a post-MVP enhancement); blocks
-  no MVP story. _Reads: `docs/modules/chores/design.md` §1._
+  capacity-aware chores workload meter (chores 1.5); blocks no MVP story.
+  _Reads: `docs/modules/chores/design.md` §1._
 
 ### Platform v2 — post-M3 platform/mobile follow-ons
 
@@ -228,11 +231,10 @@ suite mirroring chores/calendar. _Depends on: none._
   in ui stories to Tailwind utilities (ADR 035), keeping inline `style` only for
   dynamic token values. Heaviest first: `color-tokens`, `form-primitives`,
   `typography`, `elevation`. _Unblocked by the 2026-06-22 `@source` fix._
-- **Family-wall feed typography** — the family banner should render its body at
-  across-room `text-prose` (18px), not `text-prose-sm` (15px). Robust fix is passing
-  prominence into the widget (`useWidgetProminence()` from `WidgetSlot`); 15px Lora
-  reads fine meanwhile, so it's polish. _Reads: `plugins/family-feed/src/widgets/FeedWidgetView.tsx`,
-  ADR 039._
+- **Family-wall feed typography** — the family banner should render at across-room
+  `text-prose` (18px), not `text-prose-sm` (15px). Robust fix passes prominence into the
+  widget (`useWidgetProminence()` from `WidgetSlot`); 15px Lora reads fine meanwhile, so
+  it's polish. _Reads: `plugins/family-feed/src/widgets/FeedWidgetView.tsx`, ADR 039._
 
 ---
 
