@@ -284,6 +284,45 @@ export const ShoppingListCreateSchema = z.object({
 
 export type ShoppingListCreateInput = z.infer<typeof ShoppingListCreateSchema>
 
+// ─── The needs-push contract (ADR 069 §4) ─────────────────────────────────────
+
+// The producer's route body. `meals` owns the route because it owns the meal;
+// `shopping` never sees the id as anything but an opaque handle.
+export const NeedsPushSchema = z.object({
+  mealId: UuidSchema,
+})
+
+export type NeedsPushInput = z.infer<typeof NeedsPushSchema>
+
+/** The `meals.needs.pushed` payload. The bus checks the event NAME; nothing
+    checks an `unknown` payload, so the consumer parses it with this before it
+    writes a row.
+
+    `note` is the whole reason the contract carries words at all: `shopping` does
+    not read `planned_meals` (ADR 069 §3), so it cannot look up "for Thursday" —
+    the producer owes it. Text facts only, never identity chrome (ADR 064).
+
+    `names` is already split. Comma-separated free text is meals' storage format
+    and its problem; the contract speaks in items. */
+export const NeedsPushedPayloadSchema = z.object({
+  sourceType: z.literal('meal'),
+  sourceId: UuidSchema,
+  note: z.string().trim().min(1).max(60),
+  requestedBy: z.string().min(1),
+  names: z.array(z.string().trim().min(1).max(120)).min(1).max(60),
+})
+
+export type NeedsPushedPayload = z.infer<typeof NeedsPushedPayloadSchema>
+
+/** What a consumer hands back — the producer reports it to the person who
+    tapped, so the counts are user-facing and must be exact. */
+export type NeedsPushResult = {
+  listId: string
+  listName: string
+  filed: number
+  alreadyOn: number
+}
+
 // ─── Bug reports ──────────────────────────────────────────────────────────────
 
 /** The lifecycle a report moves through (ADR 046). `deployed` is the only status the

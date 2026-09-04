@@ -12,7 +12,15 @@ export type BusMessage = { event: EventName; payload: unknown }
 
 export type EventBus = {
   emit(event: EventName, payload: unknown): void
-  on(event: EventName, handler: (payload: unknown) => void): () => void
+  /** `emit` for a contract event (ADR 069 §4): dispatches the same way, then
+      awaits every handler and hands back what each returned. A producer whose
+      user is standing there watching has to be able to say what the consumer
+      actually did — "3 filed, 1 already on the list" — and a handler that throws
+      has to reach the person who tapped, not just the log. Notifications keep
+      using `emit`, which stays fire-and-forget on purpose: a failed XP award must
+      never fail the chore completion that triggered it. */
+  emitAndAwait(event: EventName, payload: unknown): Promise<unknown[]>
+  on(event: EventName, handler: (payload: unknown) => unknown): () => void
   onAny(handler: (message: BusMessage) => void): () => void
 }
 

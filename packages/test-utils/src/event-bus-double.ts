@@ -1,7 +1,7 @@
 import type { EventBus, BusMessage } from '@family-os/platform/server'
 import type { EventName } from '@family-os/platform'
 
-type Handler = (payload: unknown) => void
+type Handler = (payload: unknown) => unknown
 
 type EventBusDouble = EventBus & {
   emitted: { event: EventName; payload: unknown }[]
@@ -19,6 +19,12 @@ export function createEventBusDouble(): EventBusDouble {
       emitted.push({ event, payload })
       handlers.get(event)?.forEach((h) => h(payload))
       for (const h of anyHandlers) h({ event, payload })
+    },
+    async emitAndAwait(event: EventName, payload: unknown) {
+      emitted.push({ event, payload })
+      const pending = (handlers.get(event) ?? []).map((h) => h(payload))
+      for (const h of anyHandlers) h({ event, payload })
+      return Promise.all(pending)
     },
     on(event: EventName, handler: Handler) {
       handlers.set(event, [...(handlers.get(event) ?? []), handler])
