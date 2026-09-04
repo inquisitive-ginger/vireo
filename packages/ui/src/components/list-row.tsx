@@ -5,8 +5,13 @@ export interface ListRowProps {
   /** The row's leading control — a check ring, a static marker, whatever the
       consumer needs. `ListRow` renders it, it does not define it (ADR 063: the
       primitive takes a generic slot so a later story, e.g. an interactive
-      check, can fill it without a prop-shape change here). Lifted above the
-      activation overlay when both are present, same reasoning as `trailing`. */
+      check, can fill it without a prop-shape change here).
+
+      On an activatable row the slot is painted above the overlay but is INERT:
+      a decorative marker there would otherwise punch a dead hole through the
+      row's own target, dead-centre on the affordance the thumb aims for. A
+      leading control that is genuinely interactive opts back in with
+      `pointer-events-auto` on itself — it keeps the z-order either way. */
   leading?: ReactNode
   /** The row's trailing control — a correction menu, an inline action. Lifted
       above the activation overlay so it stays tappable on a row that is itself
@@ -81,7 +86,15 @@ export function ListRow({
         />
       )}
       {leading !== undefined && (
-        <div className={cn('flex shrink-0 items-center', onActivate && 'relative z-20')}>
+        <div
+          className={cn(
+            'flex shrink-0 items-center',
+            // Above the overlay in paint order, below it in hit-testing.
+            // `pointer-events: none` on the ring alone is not enough — the hit
+            // resolves to this wrapper, which has no handler and swallows it.
+            onActivate && 'relative z-20 pointer-events-none'
+          )}
+        >
           {leading}
         </div>
       )}

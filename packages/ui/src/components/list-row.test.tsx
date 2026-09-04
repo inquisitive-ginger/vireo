@@ -39,6 +39,32 @@ describe('ListRow', () => {
     expect(onActivate).not.toHaveBeenCalled()
   })
 
+  it('leaves the leading slot inert on an activatable row, so the ring is not a dead hole', () => {
+    render(
+      <ListRow
+        onActivate={() => {}}
+        activateLabel="Mark “milk” as got"
+        leading={<span data-testid="ring" />}
+      >
+        <div className="min-w-0 flex-1">milk</div>
+      </ListRow>
+    )
+    // Painted above the overlay, but not hit-testable: a tap on the ring has to
+    // reach the row's own button, which is the only thing with a handler.
+    const wrapper = screen.getByTestId('ring').parentElement!
+    expect(wrapper.className).toContain('z-20')
+    expect(wrapper.className).toContain('pointer-events-none')
+  })
+
+  it('leaves the leading slot hit-testable when the row is not itself a target', () => {
+    render(
+      <ListRow leading={<span data-testid="ring" />}>
+        <div className="min-w-0 flex-1">milk</div>
+      </ListRow>
+    )
+    expect(screen.getByTestId('ring').parentElement!.className).not.toContain('pointer-events-none')
+  })
+
   it('leaves a trailing slot unwrapped when the row is not itself a target', () => {
     render(
       <ListRow trailing={<span>3</span>}>

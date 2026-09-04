@@ -532,11 +532,14 @@ const shoppingPlugin: FastifyPluginAsync = async (fastify) => {
         itemId: item.id,
         listId: item.listId,
         name: item.name,
-        // ONE event for both directions, read by its `status` (ADR 072 §5's rule
-        // applied: a consumer that cares tests the value; a second name makes
-        // every consumer subscribe twice and eventually forget one).
-        status: item.status,
-        gotBy: item.gotBy,
+        // The TRANSITION this request made, not the row's state when it was read
+        // back. `spec.md` promises a consumer can test this value, and two people
+        // writing opposite targets in the same millisecond would otherwise send
+        // two events both quoting whichever write landed second.
+        // ONE event for both directions (ADR 072 §5's rule applied: a second name
+        // makes every consumer subscribe twice and eventually forget one).
+        status,
+        gotBy: status === 'got' ? request.profile.id : null,
       })
     }
 
