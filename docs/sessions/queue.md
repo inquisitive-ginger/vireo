@@ -15,7 +15,7 @@
 
 > **M4.5 — Companion is the active milestone** (M4.5/3 next). M5 runs alongside: /2 shipped
 > 2026-08-13, /3 and /4 on 2026-08-23; **groceries left M5 on 2026-09-03** and is now
-> **M5.5 — Shopping** (ADR 069), whose /2 and /3 shipped 2026-09-04. Part F offsite backups
+> **M5.5 — Shopping** (ADR 069), five of six shipped by 2026-09-04. Part F offsite backups
 > went live 2026-08-16, so the remaining infra items are improvements, not risks.
 
 ### Beacon — Product+Design: paired friend lamps (deadline: the friends' December visit)
@@ -57,39 +57,36 @@ _`logs/2026-09-03-product-shopping-boundary.md`._
 
 ---
 
-### M5.5 — Shopping: /2 and /3 shipped 2026-09-04; /4, /5, /6 remain
+### M5.5 — Shopping: five of six shipped; **/6 offline is the last story**
 
 **PR #127 closed unmerged**; the two 2026-08-23 artifacts are banner-marked SUPERSEDED —
-build from `docs/modules/shopping/design.md` **and its artifact**, never from #127.
-_`docs/modules/shopping/{spec,salvage}.md` · ADR 069, 070, 071, 072._
+build from `docs/modules/shopping/design.md` **and its artifact**, never from #127. The plugin
+is **built and reachable by URL but announced nowhere** until the polish session below.
+_`docs/modules/shopping/{spec,salvage}.md` · ADR 069–073._
 
-### M5.5/4 — Dev: shop context + shopper sync **+ the aisle correction UI** — _next_
+### M5.5/6 — Dev: offline — _next in the milestone, and the last_
 
-**Kickoff:** `kickoffs/dev-shopping-shop-context.md` · dev · _depends on /2 ✅ — ready._
-Frame S3: whole-row checks, cleared-aisle collapse, progress meter, two shoppers converging.
-**Also owns the aisle correction UI** — /2 shipped `POST /items/:id/aisle` and nothing reaches
-it, so a mis-filed item sits in `Other` forever. Keys settled by ADR 071 (`check` 2, `file` 4).
-
-### M5.5/5 — Dev: the wall and the Home widget
-
-**Kickoff:** `kickoffs/dev-shopping-capture-surfaces.md` · dev · _depends on /2 ✅ — ready._
-Frame W2 (the wall only takes things in; voice slot reserved) plus the zero-navigation
-widget, which lands the **fifth** registration point. The wall adds as the house (ADR 072) but
-renders **no adder** — §3/§4 withdrawn 2026-09-04. **Owes the `section-label` decision.**
-
-### M5.5/6 — Dev: offline
-
-**Kickoff:** `kickoffs/dev-shopping-offline.md` · dev · _depends on /4_
+**Kickoff:** `kickoffs/dev-shopping-offline.md` · dev · _depends on /4 ✅ — ready._
 The list renders and checks replay with no signal, without staling the shell or `/api`.
 
-### Docs: get `design-system.md` back under its cap — **blocks M5.5/5**
+### Shopping: the polish session — **owns turning the plugin on**
 
-**Type:** docs (small) · **Kickoff:** _to be written_
-**~170 bytes under its 120 KB cap**, so the next line added fails CI — and M5.5/5 owes it the
-wall's `section-label` distance decision. Move `Rewards surfaces` (5.6 KB) + `Currency marks`
-(4.3 KB) to a new `docs/modules/rewards/design.md`. _Depends on: none._
+**Type:** dev + design-system · **Kickoff:** _to be written_
+One `git revert e4052b0` restores the manifest `navItem` and the shell `WIDGET_META` entry;
+everything else is Zach's cleanup pass before the family sees it. Named items: the **check-ring
+contrast** (1.29:1 light — a design-system decision, `CompletionToggle` and chores fail
+identically); the **colliding `14`s** (title strip is cumulative across lists, the meter is
+per-list, and today both print 14); the widget's **two-row grid growth**, back with the revert.
+_`logs/2026-09-04-dev-shopping-shop-context.md`._
 
 ---
+
+### Fix: auto-bug #135 — calendar widget day labels
+
+**Type:** fix · **Kickoff:** _to be written_
+Reported 2026-09-04, `fixing` in `platform.bug_reports` (`69863d86`) — the home dashboard's
+calendar widget puts its day labels on the wrong edge. `docs/fix-it-playbook.md`; the report
+owes a `deployed` flip after the fix ships (tier-4 PIN, only Zach).
 
 ### Prod storage off USB: NVMe HAT for the Pi 5
 
@@ -158,20 +155,15 @@ Stand up an RTL suite mirroring chores/calendar. See also the Deferred CI-glob g
 
 ### Platform v2 — post-M3 platform/mobile follow-ons
 
-- **Bug-report screenshots (ADR 046 v2)** — the strongest signal for visual bugs; deferred
-  out of v1 because it needs a client capture dependency plus image storage (reuse the
-  ADR 042 bytes-in-Postgres + magic-byte pattern). _Reads: ADR 046 §"Why not"._
-- **Autonomous fix agent (ADR 046)** — a GitHub Action on `auto-bug` issue open that patches
-  and opens a **PR only**, no auto-merge. Needs an `ANTHROPIC_API_KEY` secret, and must not
-  run on the Pi runner. _Reads: `docs/fix-it-playbook.md` §"Making it automatic"._
+- **Bug-report screenshots (ADR 046 v2)** — strongest signal for visual bugs; waits on a client
+  capture dep + image storage (reuse ADR 042's bytes-in-Postgres). _ADR 046 §"Why not"._
+- **Autonomous fix agent (ADR 046)** — Action on `auto-bug` open that patches and opens a **PR
+  only**; needs `ANTHROPIC_API_KEY`, must not run on the Pi runner. _`fix-it-playbook.md`._
 - **Push subscription reconciliation** — `db:reset` drops `push_subscriptions` while the phone
-  keeps its browser-local subscription, so the toggle reads ON with **no server row** (silent
-  no-op). On load, reconcile the browser's `PushSubscription` against the server.
-  _Reads: `apps/api/src/plugins/push.ts`, `packages/platform/prisma/reset.ts`._
-- **Offline plugin render (optional)** — plugins are network-first, so one only renders
-  offline if its chunks were fetched online first. Fix if it ever matters: `remoteEntry.js`
-  network-first, content-hashed chunks cache-first. Moot for a LAN appliance (offline ⇒ no
-  API data). _Reads: `apps/shell/public/sw.js`._
+  keeps its local one, so the toggle reads ON with no server row. Reconcile on load.
+  _`apps/api/src/plugins/push.ts`._
+- **Offline plugin render (optional)** — a plugin renders offline only if its chunks were
+  fetched online first; moot for a LAN appliance. _`apps/shell/public/sw.js`._
 - **Family Profile Notifications** — M1-scoped, deferred as a Platform v2 extra: surface
   shape + `FamilyNotificationStrip` + ADR 029 `audience`.
   _Kickoff: `kickoffs/design-family-profile-notifications.md`._
@@ -186,35 +178,34 @@ Stand up an RTL suite mirroring chores/calendar. See also the Deferred CI-glob g
   an **empty** `vireo_postgres_data` volume and the API boots against a blank dev DB.
   Workaround: `COMPOSE_PROJECT_NAME=family-os`. _Hit 2026-09-02 —
   `logs/2026-09-02-dev-calendar-add-event-date.md`._
+- **Permission overrides drop their conditions** — `ability.ts` replays overrides as
+  `can(action, subject)` unconditioned, so revoke-then-regrant of any conditioned key returns it
+  **unscoped**; already true of shipped `rewards.{Wallet,Redemption,PunchCard}`. Found writing
+  ADR 073, which works around it with a route-side ownership check.
 - **Validation audit — align routes to shared Zod schemas** — every API route that hand-rolls
   body validation moves onto a `@family-os/schemas` schema (`safeParse` → 400 flatten);
   `chores` tasks was migrated 2026-07-30, the rest is a sweep. _Reads:
   `packages/schemas/src/index.ts`, `apps/api/src/plugins/chores.ts` as an aligned example._
 - **Harden the plugin generator (`turbo gen plugin`)** — scaffolds a frontend-only remote, so
-  every data-backed plugin hand-patches around it: no data layer, federation `shared` in
-  array not singleton-object form, `dev` can't serve a remote, all backend wiring manual.
-  _Reads: `turbo/generators/config.ts` + `templates/plugin/*`._
+  every data-backed plugin hand-patches it: no data layer, `shared` in array not singleton form,
+  `dev` can't serve a remote, backend wiring manual. _`turbo/generators/`._
 - **Plugin test suites never run in CI** — `vitest.workspace.ts` globs only `packages/*` and
   `apps/*`, so every `plugins/*` suite (shopping's 28 included) passes locally and CI runs
   none of them. Widen the globs, then fix whatever the first honest run exposes.
-- **`@db.Uuid` on profile-referencing columns is wrong platform-wide** (found by ADR 072) —
-  `family-feed.posts.author_id`, `calendar.events.created_by`, `meals.planned_meals.owner_id`
-  declare `uuid` while `platform.profiles.id` is text holding `'family'`; each grew a
-  hand-written 403 to hide it (`meals.ts:149`, `chores.ts:363`). **Latent, not urgent** — the
-  routes block first, and each fix is a migration with a cast on live rows. Urgent the day
-  any surface lets the family profile write one.
+- **`@db.Uuid` on profile-referencing columns is wrong platform-wide** (ADR 072) — `posts
+.author_id`, `events.created_by`, `planned_meals.owner_id` declare `uuid` while
+  `platform.profiles.id` is text holding `'family'`; each grew a hand-written 403 to hide it.
+  **Latent** — urgent the day a surface lets the family profile write one.
 - **`Profile` literals that drop `identityHue`** — `synthesizeHousehold`
   (`apps/api/src/plugins/auth.ts:79`) rebuilds a profile without the hue: the exact ADR 044
   silent failure CLAUDE.md names. Benign only while nothing calls `resolveHue(name)` on the
   family profile — ADR 072 §3 forbids that for shopping and nowhere else. Audit every
   `Profile` construction site.
-- **Storybook stories → Tailwind utilities** — migrate legacy inline-`style` layout in ui
-  stories to Tailwind (ADR 035), keeping inline `style` only for dynamic token values.
-  Heaviest first: `color-tokens`, `form-primitives`, `typography`, `elevation`.
-- **Family-wall feed typography** — the family banner should render at across-room
-  `text-prose` (18px), not `text-prose-sm`; the robust fix passes prominence into the widget
-  (`useWidgetProminence()` from `WidgetSlot`). Polish — 15px Lora reads fine meanwhile.
-  _Reads: `plugins/family-feed/src/widgets/FeedWidgetView.tsx`, ADR 039._
+- **Storybook stories → Tailwind utilities** — legacy inline-`style` layout in ui stories moves
+  to Tailwind (ADR 035); inline `style` only for dynamic token values. `color-tokens` first.
+- **Family-wall feed typography** — the family banner wants across-room `text-prose` (18px); the
+  robust fix passes prominence in via `useWidgetProminence()`. Polish.
+  _`plugins/family-feed/src/widgets/FeedWidgetView.tsx`, ADR 039._
 
 ---
 
@@ -224,6 +215,12 @@ Stand up an RTL suite mirroring chores/calendar. See also the Deferred CI-glob g
 > recent first, nothing older than the current milestone's start. `docs/sessions/logs/` is
 > date-ordered and holds the record. Do not restore entries pruned from here.
 
+- **2026-09-04 — Dev: shop context, shopper sync, the aisle correction** (M5.5/4, PR #136) —
+  ADR 064 amended: per-row attribution is rendered in neither direction. Ships with the nav item
+  and widget **disabled**, one revertable commit. _[log](logs/2026-09-04-dev-shopping-shop-context.md)_
+- **2026-09-04 — Dev: the capture surface, the widget, and taking back an add** (M5.5/5, PR #134) —
+  the no-mode rule is the phone's, not an exception; ADR 070 amended (nothing autofocuses) and
+  ADR 073 written. _[log](logs/2026-09-04-dev-shopping-capture-surfaces.md)_
 - **2026-09-04 — Dev: the plugin split + the capture surface** (M5.5/2, PR #132) — `shopping`
   is its own plugin and schema; ADR 071 (`check` at tier 2) and 072 (profile columns are text)
   came out of the build, and the live review cut rendered attribution.

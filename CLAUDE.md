@@ -16,18 +16,18 @@ before it reads anything else, and it is size-capped — see
 
 - **Milestone:** M4.5 — Companion (M4.5/3 next); **M5/3 + M5/4 done 2026-08-23,
   PRs #124/#125** — the 16:00 dinner nudge and calendar day marks (ADR 050/066).
-- **Active stories:** **M5.5 — Shopping** — /2 and /3 shipped 2026-09-04 (PRs #132/#133);
-  **/4, /5, /6 remain**. Beacon due in December.
+- **Active stories:** **M5.5 — Shopping** — five of six shipped; **/6 offline is the
+  last one**. Beacon due in December.
+- **Shopping ships dark:** built and reachable by URL, but the nav item and Home widget
+  are off (one revertable commit) until Zach's polish session — see the queue.
 - **Deployment:** 🟢 live at `https://vireohome.app` — Pi 5 (192.168.0.42, pinned
   in NetworkManager 2026-09-02; eth0 `88:a2:9e:d4:e7:33`, router reservation still
   owed); auto-deploy + Tailscale + restic→R2 + watchdog intact. Runbook Part F/G.
-- **Last session:** 2026-09-04 — `shopping` is its own plugin and schema, and `meals` pushes
-  needs over the bus instead of writing rows. ADR 071 + 072 came out of the build; per-row
-  attribution is never rendered. `logs/2026-09-04-dev-shopping-{split-capture,needs-push}.md`.
+- **Last session:** 2026-09-04 — the capture surface, the widget, shopper sync and the
+  aisle correction (PRs #134/#136). ADR 070 amended (nothing autofocuses), 073 written,
+  064 narrowed. `logs/2026-09-04-dev-shopping-{capture-surfaces,shop-context}.md`.
 - **What's next and everything outstanding:** `docs/sessions/queue.md` — the one
-  index. M5.5/4 (shop context + aisle correction) or M4.5/3 next.
-- **Owed in-app:** reports `2b882a8c` (#128, `triaged`) and `cfc58841` (#129,
-  `fixing`) both owe the `deployed` flip — tier-4 PIN, only Zach. Check the table.
+  index. M5.5/6 (offline) or M4.5/3 next.
 
 ---
 
