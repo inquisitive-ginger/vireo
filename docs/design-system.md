@@ -642,8 +642,11 @@ the primitive, not to the caller (ADR 068): `ItemCard` is 64px
 (`--spacing-list-touch`, always). You pick a primitive by ADR 063's rule and it
 brings its own floor — a number written in a consumer, a story spec, or an AC is
 a copy, and copies drift. Adjacent activation targets keep ≥8px of dead space
-between them; `ListRow`'s overlay is `inset-y-1` for that reason, which leaves a
-48px live target on a 56px row.
+between them. `ListRow`'s overlay is `inset-y-[3.5px]`, a value **derived** from
+two invariants — live target ≥ `--spacing-touch`, dead band ≥ 8px — and the
+hairline the padding box excludes: `(56 − 1 − 48) / 2`. It yields 48px live and
+8px dead on a 56px row. Re-derive it if any of the three moves; a whole-pixel
+`inset-y-1` measures 47/9 and puts the target under the declared minimum.
 
 **Viewing distance:** Primary readable content minimum 18px. Status
 counts and key values minimum 20px. This is the **across-the-room** floor of the

@@ -62,12 +62,17 @@ export function ListRow({
           type="button"
           onClick={onActivate}
           aria-label={activateLabel}
-          // 4px dead band top and bottom, so neighbouring targets are 8px
-          // apart (ADR 068). A tap in the band does nothing, which is the
-          // point: a no-op costs one tap, a mis-toggle corrupts the list
-          // someone is reading in a shop. The hairline does not move — it is
-          // the row's own border, not the target's edge.
-          className="absolute inset-x-0 inset-y-1 z-10 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset focus-visible:outline-none"
+          // Derived, not chosen (ADR 068 §3): the overlay lays out against the
+          // PADDING box, which the `border-b` sits outside of, so the box being
+          // inset is 55px, not 56. `(56 − 1 − 48) / 2 = 3.5` is the gutter that
+          // leaves a 48px live target — `--spacing-touch`, declared since the
+          // 2026-07-10 audit — with `3.5 + 1 + 3.5 = 8px` of dead band between
+          // neighbours. Re-derive it if the row floor, the hairline, or
+          // `--spacing-touch` moves; do not round it back to `inset-y-1`, which
+          // measures 47/9. A tap in the band does nothing, which is the point:
+          // a no-op costs one tap, a mis-toggle corrupts the list someone is
+          // reading in a shop. The hairline itself does not move.
+          className="absolute inset-x-0 inset-y-[3.5px] z-10 cursor-pointer focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-inset focus-visible:outline-none"
         />
       )}
       {leading !== undefined && (

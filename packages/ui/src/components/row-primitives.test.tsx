@@ -113,7 +113,9 @@ describe('ListRow', () => {
     // that lands there does nothing, which beats toggling the wrong row.
     const target = screen.getByRole('button', { name: 'Check off Milk' })
     expect(target.className).toContain('inset-x-0')
-    expect(target.className).toContain('inset-y-1')
+    // Derived from live ≥ 48px and dead ≥ 8px, minus the hairline the padding
+    // box excludes — not a round number anyone should tidy (ADR 068 §3).
+    expect(target.className).toContain('inset-y-[3.5px]')
     expect(target.className).not.toContain('inset-0')
   })
 
