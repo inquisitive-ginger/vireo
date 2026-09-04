@@ -51,11 +51,17 @@ routes, the migrations and the filing tests — all need renamespacing to `shopp
 none need rethinking.
 
 **ADR 068's `ListRow` target-inset fix was committed to the branch before closing.**
-It is a UI primitive correction, not a shopping decision: the overlay lays out against
-the padding box and the hairline sits outside it, so `inset-y-1` measured 47px live /
-9px dead — under the declared 48px minimum. It is `inset-y-[3.5px]`, derived from the
-two invariants rather than chosen. **It is on `dev/meals-grocery-list` only and still
-owes a path to `main`** — see open questions.
+The overlay lays out against the padding box and the hairline sits outside it, so
+`inset-y-1` measured 47px live / 9px dead — under the declared 48px minimum. It is
+`inset-y-[3.5px]`, derived from the two invariants rather than chosen.
+
+**It stays on the branch, and nothing about ADR 068 goes to `main`** (decided later the
+same session, after checking). It reads like a stranded `packages/ui` fix and is not
+one: `ListRow` **does not exist on `main`** — ADR 063 created it for the grocery
+surface and it never merged. On `main`, `ItemCard` applies no height floor and
+`--spacing-row-touch` is declared in `styles.css:56` and read by nothing. All three of
+ADR 068's clauses are therefore inert there. Porting the primitive ahead of the design
+that justifies it would be PR #127's mistake one size down.
 
 ## Superseded, and banner-marked so a cold session cannot mistake them
 
@@ -80,9 +86,9 @@ what lives there. It is not a parallel track.
 
 ## Open questions
 
-- **ADR 068 needs a path to `main`.** It is a `packages/ui` primitive fix stranded on
-  a closed PR's branch, and `MealsPageView` consumes `ListRow` too. Cherry-pick it to
-  `main` on its own, or fold it into M5.5/2 — but it should not wait on shopping.
+- **ADR number 068 is spoken for but unreachable from `main`.** The file exists only on
+  `dev/meals-grocery-list`, so `docs/decisions/` on `main` skips from 067 to 069. Do not
+  reuse 068 — it arrives with `ListRow` in M5.5/2, if M5.5/1 keeps that primitive.
 - **`MealsPage.tsx:35` still reads `const canManage = tier >= 4`.** The identical
   `TierGate` defect ADR 018 forbids, one file over from the one M5/6 fixed. Not in any
   story's scope right now.

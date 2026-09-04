@@ -26,8 +26,8 @@ before it reads anything else, and it is size-capped — see
   plugin) made it near-binary: a top-level destination _is_ a plugin.
   `logs/2026-09-03-product-shopping-boundary.md`.
 - **What's next and everything outstanding:** `docs/sessions/queue.md` — the one
-  index. M4.5/3 or M5.5/1 (fresh shopping design) next. **ADR 068's `ListRow` fix is
-  stranded on the closed `dev/meals-grocery-list` and owes a path to `main`.**
+  index. M4.5/3 or M5.5/1 (fresh shopping design) next; NVMe HAT is an upgrade, not a
+  rescue.
 - **Owed in-app:** report `2b882a8c` (#128) is `triaged` and owed the `deployed`
   flip — needs a tier-4 PIN session, so only Zach can do it. Check the table.
 

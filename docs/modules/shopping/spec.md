@@ -69,8 +69,9 @@ Salvage, pending the design exploration:
   is walk order regardless of what the surface looks like or where it lives.
 - The **Zod schemas**, the **API routes**, and the **migrations** — all need
   renamespacing to `shopping`, none need rethinking.
-- **ADR 068**'s `ListRow` target-inset fix, already committed to `main`'s history
-  via the branch; it is a UI primitive correction, not a shopping decision.
+- **ADR 068** and the `ListRow` primitive it governs — both branch-only. Neither
+  `list-row.tsx` nor ADR 068 is on `main`, so ADR number 068 is reserved, not free.
+  Whether the primitive survives is M5.5/1's call.
 
 **Not carried over:** the index-of-lists surface, the drill-in shape, and the
 `2026-08-23-grocery-list-handoff.md` contract. Those are superseded and are the
