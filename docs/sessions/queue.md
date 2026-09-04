@@ -57,28 +57,28 @@ _`logs/2026-09-03-product-shopping-boundary.md`._
 
 ---
 
-### M5.5 — Shopping: five of six shipped; **/6 offline is the last story**
+### M5.5 — Shopping: five of six shipped; **polish (design → dev), then /6 offline**
 
-**PR #127 closed unmerged**; the two 2026-08-23 artifacts are banner-marked SUPERSEDED —
-build from `docs/modules/shopping/design.md` **and its artifact**, never from #127. The plugin
-is **built and reachable by URL but announced nowhere** until the polish session below.
-_`docs/modules/shopping/{spec,salvage}.md` · ADR 069–073._
+**PR #127 closed unmerged**; the two 2026-08-23 artifacts are banner-marked SUPERSEDED — build
+from `docs/modules/shopping/design.md` **and its artifact**, never from #127. The plugin is
+**built and reachable by URL but announced nowhere** until the dev polish session. _`docs/modules/shopping/{spec,salvage}.md` · ADR 069–073._
 
-### M5.5/6 — Dev: offline — _next in the milestone, and the last_
+### Shopping polish — **two sessions, next in the milestone** (Zach, 2026-09-04)
 
-**Kickoff:** `kickoffs/dev-shopping-offline.md` · dev · _depends on /4 ✅ — ready._
+**1. Design: the critique** · `kickoffs/design-shopping-polish.md` · _ready._ The built surface
+judged whole, with Zach adding items in concert. Settles the check-ring contrast (a shared token —
+chores fails identically), the widget's 2×2 footprint (an elevation-ladder call), the colliding
+`14`s, `addError` erased by a later success, `section-label` spacing.
+_`logs/2026-09-04-dev-shopping-{shop-context,capture-surfaces}.md`._
+
+**2. Dev: the build** · `kickoffs/dev-shopping-polish.md` · _depends on the critique._ Builds the
+decision set and **announces the plugin** — the `navItem` and `WIDGET_META` entry come back last.
+
+### M5.5/6 — Dev: offline — _the last story in the milestone_
+
+**Kickoff:** `kickoffs/dev-shopping-offline.md` · dev · _depends on /4 ✅; runs after both
+polish sessions._
 The list renders and checks replay with no signal, without staling the shell or `/api`.
-
-### Shopping: the polish session — **owns turning the plugin on**
-
-**Type:** dev + design-system · **Kickoff:** _to be written_
-Zach's cleanup pass before the family sees it, ending in **announcing the plugin**: re-add the
-manifest's `navItem` and the shell's `WIDGET_META` entry (both removed in `e4052b0`; reverting
-that commit is the whole change). Named items: the **check-ring contrast** (1.29:1 light — a
-design-system decision, `CompletionToggle` and chores fail identically); the **colliding `14`s**
-(title strip is cumulative across lists, the meter is per-list, and today both print 14); the
-widget's **two-row grid growth**, which returns with it.
-_`logs/2026-09-04-dev-shopping-shop-context.md`._
 
 ---
 
@@ -120,12 +120,10 @@ the check reads only changed files.
 
 ### Docs: `section-label` has no block-spacing rule
 
-**Type:** design-system · **Kickoff:** _to be written_
-The token sets size, weight, tracking and colour and says nothing about the space around
-it, so four call sites hand-roll four answers: `ui/widget-header.tsx` (none),
-`family-feed/FeedPage.tsx` and `meals/TonightView.tsx` (`mb-1.5`), `shopping/ShoppingPageView.tsx`
-(`pt-7`/`pt-4`/`pb-2`). Survey the four, decide what the token owns vs the surface. Found in
-M5.5/5 (2026-09-04).
+**Type:** design-system · **Kickoff:** _to be written_ · **the shopping design critique decides
+whether it folds in there** — if it does, this entry closes with it. The token says nothing about the space
+around it, so four call sites hand-roll four answers (`ui/widget-header.tsx`, `family-feed`,
+`meals/TonightView.tsx`, `shopping/ShoppingPageView.tsx`). Found in M5.5/5.
 
 ### Platform: family-feed test addendum
 
