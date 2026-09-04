@@ -315,7 +315,7 @@ describe('POST /api/shopping/items/:id/aisle', () => {
     expect(next.json().category).toBe('Pantry')
   })
 
-  it('refuses a tier-3 profile by ability, not a tier read — the key is grantable (ADR 018)', async () => {
+  it('refuses a tier-3 profile by ability, not a tier read — `file` is tier 4 and grantable (ADR 071)', async () => {
     const parent = await getCookieForProfile(PARENT_ID)
     const created = await addItem(parent, await groceryListId(), { name: 'milk' })
 
@@ -345,10 +345,13 @@ describe('POST /api/shopping/items/:id/aisle', () => {
 // ─── The permission namespace (ADR 069 §3, spec.md) ───────────────────────────
 
 describe('shopping permission registry', () => {
-  it('registers exactly the three keys spec.md names', () => {
+  it('registers exactly the six keys ADR 071 completed', () => {
     expect(Object.keys(PERMISSION_REGISTRY).filter((k) => k.startsWith('shopping.'))).toEqual([
       'shopping.list.create',
+      'shopping.item.view',
       'shopping.item.add',
+      'shopping.item.check',
+      'shopping.item.file',
       'shopping.item.manage',
     ])
   })
@@ -363,14 +366,28 @@ describe('shopping permission registry', () => {
       action: 'create',
       subject: 'shopping.Item',
     })
+    expect(PERMISSION_REGISTRY['shopping.item.view']).toMatchObject({
+      action: 'view',
+      subject: 'shopping.Item',
+    })
+    // Checking and filing are their own actions, never folded into `manage`
+    // (ADR 071) — `manage` is the delete verb.
+    expect(PERMISSION_REGISTRY['shopping.item.check']).toMatchObject({
+      action: 'check',
+      subject: 'shopping.Item',
+    })
+    expect(PERMISSION_REGISTRY['shopping.item.file']).toMatchObject({
+      action: 'file',
+      subject: 'shopping.Item',
+    })
     expect(PERMISSION_REGISTRY['shopping.item.manage']).toMatchObject({
       action: 'manage',
       subject: 'shopping.Item',
     })
   })
 
-  it('does not carry the branch key that read the list — viewing is a grant, not a key', () => {
-    expect(PERMISSION_REGISTRY).not.toHaveProperty('shopping.item.view')
+  it('does not carry the branch key from the closed PR', () => {
     expect(PERMISSION_REGISTRY).not.toHaveProperty('meals.grocery.view')
+    expect(PERMISSION_REGISTRY).not.toHaveProperty('meals.grocery.check')
   })
 })

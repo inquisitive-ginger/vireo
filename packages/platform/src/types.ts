@@ -187,16 +187,38 @@ export const PERMISSION_REGISTRY = {
     action: 'create',
     subject: 'shopping.List',
   },
+  'shopping.item.view': {
+    label: 'See the shopping lists',
+    module: 'shopping',
+    action: 'view',
+    subject: 'shopping.Item',
+  },
   'shopping.item.add': {
     label: 'Add to a shopping list',
     module: 'shopping',
     action: 'create',
     subject: 'shopping.Item',
   },
+  // A toggle, not a one-way door (ADR 071) — unchecking is the same key,
+  // because the person who mis-taps is in an aisle, one-handed, maybe offline.
+  'shopping.item.check': {
+    label: 'Check things off the shopping list',
+    module: 'shopping',
+    action: 'check',
+    subject: 'shopping.Item',
+  },
   // The aisle correction: it does not fix one row, it rewrites how every
-  // future add of that name files itself for the whole household.
+  // future add of that name files itself for the whole household. Its own
+  // action rather than `manage` (ADR 071) so granting it to a shopping teen
+  // does not also grant delete and rename.
+  'shopping.item.file': {
+    label: 'Correct which aisle an item files under',
+    module: 'shopping',
+    action: 'file',
+    subject: 'shopping.Item',
+  },
   'shopping.item.manage': {
-    label: 'Correct where items file and manage the list',
+    label: 'Edit and remove items on a shopping list',
     module: 'shopping',
     action: 'manage',
     subject: 'shopping.Item',

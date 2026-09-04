@@ -217,12 +217,13 @@ const shoppingPlugin: FastifyPluginAsync = async (fastify) => {
 
   // POST /shopping/items/:id/aisle — a correction re-files this item AND
   // teaches a family-wide override, keyed by the same normalized name, so the
-  // next add of "snap peas" files itself correctly. Gated on `manage`, not
-  // `create` (ADR 067): it rewrites how every future add of the name files
-  // itself for the whole household. `ability.can`, never a tier read — a parent
-  // handing a shopping teen the correction is what overrides are for.
+  // next add of "snap peas" files itself correctly. Gated on `file` — its own
+  // action, not `manage` (ADR 071), so handing the correction to a shopping
+  // teen does not also hand them delete and rename. Tier 4 baseline, unchanged
+  // from ADR 067/069: the blast radius is the family, forever. `ability.can`,
+  // never a tier read — the grant is exactly what overrides are for.
   fastify.post('/shopping/items/:id/aisle', async (request, reply) => {
-    if (!request.ability.can('manage', 'shopping.Item')) {
+    if (!request.ability.can('file', 'shopping.Item')) {
       return reply.status(403).send({ error: 'Permission denied' })
     }
 
