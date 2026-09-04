@@ -22,14 +22,14 @@ before it reads anything else, and it is size-capped — see
 - **Deployment:** 🟢 live at `https://vireohome.app` — Pi 5 (192.168.0.42, pinned
   in NetworkManager 2026-09-02; eth0 `88:a2:9e:d4:e7:33`, router reservation still
   owed); auto-deploy + Tailscale + restic→R2 + watchdog intact. Runbook Part F/G.
-- **Last session:** 2026-09-03 — the groceries boundary. ADR 032 (one nav entry per
-  plugin) made it near-binary: a top-level destination _is_ a plugin.
-  `logs/2026-09-03-product-shopping-boundary.md`.
+- **Last session:** 2026-09-03 — auto-bug #129, PR #131: a recipe link on a meal.
+  A column, not a recipe bank — `spec.md`'s refusal stands and the artifact ledgers it.
+  `logs/2026-09-03-dev-meals-recipe-url.md`.
 - **What's next and everything outstanding:** `docs/sessions/queue.md` — the one
   index. M4.5/3 or M5.5/1 (fresh shopping design) next; NVMe HAT is an upgrade, not a
   rescue.
-- **Owed in-app:** report `2b882a8c` (#128) is `triaged` and owed the `deployed`
-  flip — needs a tier-4 PIN session, so only Zach can do it. Check the table.
+- **Owed in-app:** reports `2b882a8c` (#128, `triaged`) and `cfc58841` (#129,
+  `fixing`) both owe the `deployed` flip — tier-4 PIN, only Zach. Check the table.
 
 ---
 

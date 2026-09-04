@@ -253,15 +253,15 @@ suite mirroring chores/calendar. _Depends on: none._
 > start. `docs/sessions/logs/` is date-ordered and holds the record — that
 > directory listing is the changelog. Do not restore entries pruned from here.
 
+- **2026-09-03 — Dev: a recipe link on a planned meal** (auto-bug #129, PR #131) — a
+  `recipe_url` column and nothing more; the artifact ledgers the recipe-bank features
+  refused. _[log](logs/2026-09-03-dev-meals-recipe-url.md)_
 - **2026-09-02 — Fix: calendar "Add event" date prefill** (auto-bug #128, PR #130) —
   the chrome CTA passed a null prefill while the three per-day affordances passed
   theirs. _[log](logs/2026-09-02-dev-calendar-add-event-date.md)_
 - **2026-09-02 — Infra: the Pi's LAN address, pinned** — a reboot moved the Pi to
   `.43` while DNS and the Tailscale /32 still said `.42`; router reservation owed.
   _[log](logs/2026-09-02-infra-pi-static-ip.md)_
-- **2026-08-23 — Design: the grocery list gate** (M5/6, ADR 067) — each store is its
-  own list, index → drill-in, no note line; `ListRow` survives unchanged. Contract:
-  _[handoff](artifacts/2026-08-23-grocery-list-handoff.md)_
 - **2026-08-23 — Dev: Calendar Day Marks** (M5/4, PR #125) — ADR 050's provider
   contract at platform level, ADR 066's two gates server-side; **marks are
   today-forward only**, filtered in `MonthGrid` so M7's range survives.
