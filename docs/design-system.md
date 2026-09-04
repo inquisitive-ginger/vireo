@@ -1,9 +1,9 @@
 # Design System
 
-> Last updated: 2026-08-20 — **ADR 063** (ListRow), **ADR 064** (identity-hue
-> trigger narrowed).
+> Last updated: 2026-09-03 — **ADR 070** (`CaptureField` beside `ComposeForm`)
+> ([Capture primitives](#capture-primitives--capturefield-and-composeform)).
 >
-> Prior: 2026-07-28 — ADR 057, daily time-window recurrence
+> Prior: 2026-08-20 — ADR 063 (ListRow), ADR 064 (identity-hue trigger narrowed); 2026-07-28 — ADR 057, daily time-window recurrence
 > ([Daily time-window series](#daily-time-window-series--a-condition-with-a-clock-settled--2026-07-28));
 > 2026-07-24 — ADR 054, currency named Pritchett Bucks
 > ([Currency marks](#currency-marks)); 2026-07-22 — ADR 051, gold and coin to
@@ -1092,6 +1092,42 @@ with roving `tabindex` + arrow-key navigation, so it reads as **one** control, n
 buttons. Generic over a string-union value (`options`/`value`/`onChange` +
 `aria-label`). Use it instead of hand-rolling a button group; the calendar's
 hand-rolled Month/Week/Day switch was its first adopter.
+
+### Capture primitives — `CaptureField` and `ComposeForm`
+
+**Settled** — ADR 070, M5.5/1 shopping surface design, 2026-09-03.
+
+Two shapes of "type something in", and they are not sizes of one control:
+
+> **`ComposeForm`** when the thing is **authored** — it has an author worth showing,
+> it is worth a second draft, and submitting it ends the act.
+> **`CaptureField`** when the thing is **caught** — it is one noun, it has no author
+> worth showing, and submitting it should leave you ready to catch the next one.
+
+`CaptureField` (`@family-os/ui`) is a single line that submits on Enter and **stays open
+with its value cleared**. Anatomy: a leading glyph, the input, and an optional **trailing
+scope slot** — the control that says _where what you type will land_ (shopping's
+destination chip). It carries **no author avatar and no identity hue**: a primitive whose
+whole claim is speed is not a place a person is displayed.
+
+|           | `ComposeForm`                    | `CaptureField`                                          |
+| --------- | -------------------------------- | ------------------------------------------------------- |
+| Lifecycle | opens → submit → closes          | never closes; clears and stays focused                  |
+| Lines     | multi (`Textarea`)               | one                                                     |
+| Author    | avatar + identity hue            | none                                                    |
+| Scope     | none — a note goes to the family | optional trailing scope control                         |
+| Controls  | Cancel + a submit button         | Enter; no Cancel                                        |
+| Height    | `--shadow-raised` panel          | 48 px inline · 56 px as a page hero · 76 px on the wall |
+
+**Autofocus is a surface decision, not a prop default.** Focus it on an ambient surface
+someone walked up to in order to type (the wall) and inside a widget; do **not** focus it
+on a route the user navigated to, where an unrequested keyboard covers the content they
+opened it to read.
+
+**State the filing before the commit.** Where a capture files what it catches somewhere
+derived (shopping's aisle), say so in one `sm` line under the field while composing —
+`Enter to add · files under Pantry`. A mis-file is then caught by the person who caused
+it, at the one moment they still know what they meant.
 
 ### Widget prominence — the elevation ladder
 

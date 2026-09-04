@@ -17,17 +17,16 @@ before it reads anything else, and it is size-capped — see
 
 - **Milestone:** M4.5 — Companion (M4.5/3 next); **M5/3 + M5/4 done 2026-08-23,
   PRs #124/#125** — the 16:00 dinner nudge and calendar day marks (ADR 050/066).
-- **Active stories:** **M5.5 — Shopping (ADR 069, 2026-09-03)** — groceries left
-  `meals`, PR #127 closed unmerged, surface back to design. Beacon due in December.
+- **Active stories:** **M5.5 — Shopping** — surface settled 2026-09-03 (M5.5/1, ADR 070);
+  **M5.5/2 builds it**. Beacon due in December.
 - **Deployment:** 🟢 live at `https://vireohome.app` — Pi 5 (192.168.0.42, pinned
   in NetworkManager 2026-09-02; eth0 `88:a2:9e:d4:e7:33`, router reservation still
   owed); auto-deploy + Tailscale + restic→R2 + watchdog intact. Runbook Part F/G.
-- **Last session:** 2026-09-03 — auto-bug #129, PR #131: a recipe link on a meal.
-  A column, not a recipe bank — `spec.md`'s refusal stands and the artifact ledgers it.
-  `logs/2026-09-03-dev-meals-recipe-url.md`.
+- **Last session:** 2026-09-03 — the shopping surface. A capture field as the hero on a
+  walk-order list, no mode; the wall only takes things in; Shopping takes a phone tab from
+  `chores` (the 5-tab cap). `logs/2026-09-03-design-shopping-surface.md`.
 - **What's next and everything outstanding:** `docs/sessions/queue.md` — the one
-  index. M4.5/3 or M5.5/1 (fresh shopping design) next; NVMe HAT is an upgrade, not a
-  rescue.
+  index. M4.5/3 or M5.5/2 (build shopping) next; NVMe HAT is an upgrade, not a rescue.
 - **Owed in-app:** reports `2b882a8c` (#128, `triaged`) and `cfc58841` (#129,
   `fixing`) both owe the `deployed` flip — tier-4 PIN, only Zach. Check the table.
 

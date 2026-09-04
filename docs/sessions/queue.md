@@ -17,11 +17,11 @@
 
 ## Up Next
 
-> **M4.5 — Companion is the active milestone** (M4.5/3 next). M5 is running
-> alongside it: /2 shipped 2026-08-13, /3 and /4 on 2026-08-23, and **groceries
-> left M5 entirely on 2026-09-03** — it is now **M5.5 — Shopping** (ADR 069),
-> starting from a fresh design exploration. Part F offsite backups went live
-> 2026-08-16, so the remaining infra items are improvements, not risks to the data.
+> **M4.5 — Companion is the active milestone** (M4.5/3 next). M5 runs alongside:
+> /2 shipped 2026-08-13, /3 and /4 on 2026-08-23; **groceries left M5 on
+> 2026-09-03** and is now **M5.5 — Shopping** (ADR 069), surface settled the same
+> day — **M5.5/2 builds it**. Part F offsite backups went live 2026-08-16, so the
+> remaining infra items are improvements, not risks to the data.
 
 ### Beacon — Product+Design: paired friend lamps (deadline: the friends' December visit)
 
@@ -61,11 +61,9 @@ One pre-launch family task: **name the feature at the dinner table** (ADR 061 �
 
 ### M5 — Meals: one story left (groceries split out to M5.5)
 
-**Wave 1 landed 2026-08-23** — M5/3 (PR #124) and M5/4 (PR #125) are done. **M5/6 and
-M5/7 left this milestone on 2026-09-03** (ADR 069) and are re-planned as M5.5 below;
-PR #127 was closed unmerged. **M5/5 Try Bites is the only M5 story left**, and it no
-longer shares a branch with anything. _Log:
-`logs/2026-09-03-product-shopping-boundary.md`._
+**Wave 1 landed 2026-08-23** — M5/3 (PR #124) and M5/4 (PR #125). M5/6 and M5/7 left for
+M5.5 on 2026-09-03 (ADR 069), so **M5/5 Try Bites is the only M5 story left**, sharing a
+branch with nothing. _Log: `logs/2026-09-03-product-shopping-boundary.md`._
 
 ### M5/5 — Dev: Try Bites
 
@@ -77,23 +75,20 @@ small reward → reset). `meals` knows nothing about cards. _Depends on: M5/2, M
 
 ### M5.5 — Shopping: four sessions (split out of M5 by ADR 069, 2026-09-03)
 
-Groceries became its own plugin. **PR #127 closed unmerged**; everything above the data
-layer is unsettled and the two 2026-08-23 artifacts are banner-marked SUPERSEDED.
-_Module: `docs/modules/shopping/spec.md` · ADR 069 ·
-Log: `logs/2026-09-03-product-shopping-boundary.md`._
+Groceries became its own plugin; **PR #127 closed unmerged** and the two 2026-08-23
+artifacts are banner-marked SUPERSEDED. The surface was settled 2026-09-03 — build from
+`docs/modules/shopping/design.md` **and its artifact**, never from #127.
+_Spec: `docs/modules/shopping/spec.md` · ADR 069, ADR 070._
 
-### M5.5/1 — Design: the shopping surface · **run this next**
+### M5.5/2 — Dev: the plugin split + capture · **run this next**
 
-**Type:** design · **Kickoff:** `kickoffs/design-shopping-surface.md`
-Fresh exploration — the index-of-lists shape is the answer already rejected. The axis is
-set in the brief, not by the agent. _Depends on: nothing._
-
-### M5.5/2 — Dev: the plugin split + capture
-
-**Type:** development · **Kickoff:** _to be written (after M5.5/1)_
+**Type:** development · **Kickoff:** _to be written_
 Scaffold `shopping` (five registration points), move the four grocery tables to a
-`shopping` schema, renamespace subjects, build what M5.5/1 settles. Salvage from #127:
-dictionary, schemas, routes, migrations, tests. _Depends on: M5.5/1._
+`shopping` schema, renamespace subjects, and build the surface M5.5/1 settled — read
+`docs/modules/shopping/design.md` **with** its artifact. Also lands `ListRow` (still not
+on `main`) and `CaptureField` (ADR 070), and **reorders `plugins.json`** so Shopping takes
+a phone tab and `chores` moves into More. Salvage from #127: dictionary, schemas, routes,
+migrations, tests. _Depends on: M5.5/1 ✅._
 
 ### M5.5/3 — Dev: the needs-push contract
 
@@ -103,17 +98,12 @@ _Depends on: M5.5/2._
 
 ### M5.5/4 — Dev: Shop Context, Sync + Offline, the Wall
 
-**Type:** development · **Kickoff:** `kickoffs/dev-grocery-shop-offline.md` _(rewrite
-against M5.5/1 first)_
+**Type:** development · **Kickoff:** `kickoffs/dev-grocery-shop-offline.md` — **still
+describes the superseded index-and-drill-in world; rewrite against
+`docs/modules/shopping/design.md` before it runs**
 Whole-row checks, cleared-aisle collapse, progress track, shopper sync, the wall — and
 **offline**. The SW is network-first for `/api`, so the list fails where it is used; it
 has bitten twice, so treat offline as its own reviewable chunk. _Depends on: M5.5/2._
-
-### ~~Groceries' home, and an index-count animation~~
-
-**Answered 2026-09-03:** groceries' home is its own plugin (ADR 069). The count-animation
-half dies with the index that raised it; if it survives the fresh exploration, M5.5/1
-owns it.
 
 ---
 
@@ -256,6 +246,9 @@ suite mirroring chores/calendar. _Depends on: none._
 - **2026-09-03 — Dev: a recipe link on a planned meal** (auto-bug #129, PR #131) — a
   `recipe_url` column and nothing more; the artifact ledgers the recipe-bank features
   refused. _[log](logs/2026-09-03-dev-meals-recipe-url.md)_
+- **2026-09-03 — Design: the shopping surface** (M5.5/1, ADR 070) — capture field as the
+  hero on a walk-order list, no mode; the wall only takes things in; Shopping takes a phone
+  tab from `chores`. _[log](logs/2026-09-03-design-shopping-surface.md)_
 - **2026-09-02 — Fix: calendar "Add event" date prefill** (auto-bug #128, PR #130) —
   the chrome CTA passed a null prefill while the three per-day affordances passed
   theirs. _[log](logs/2026-09-02-dev-calendar-add-event-date.md)_

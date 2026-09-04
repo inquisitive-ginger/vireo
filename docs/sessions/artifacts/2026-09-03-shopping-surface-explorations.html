@@ -1,0 +1,2827 @@
+<title>Shopping Surface Explorations</title>
+<link rel="preconnect" href="https://fonts.googleapis.com" />
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+<link
+  rel="stylesheet"
+  href="https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;0,700;1,400&family=DM+Sans:wght@400;500;600;700&display=swap"
+/>
+
+<style>
+  /* Tokens read verbatim from packages/ui/src/styles.css @ main (2026-09-03). */
+  :root {
+    --background: oklch(0.985 0.008 100);
+    --foreground: oklch(0.18 0.03 100);
+    --primary: oklch(0.5 0.11 122);
+    --primary-foreground: oklch(0.99 0 0);
+    --secondary: oklch(0.93 0.02 100);
+    --secondary-foreground: oklch(0.28 0.04 100);
+    --muted: oklch(0.93 0.016 100);
+    --muted-foreground: oklch(0.52 0.035 100);
+    --accent: oklch(0.47 0.07 185);
+    --border: oklch(0.88 0.02 100);
+    --input: oklch(0.88 0.02 100);
+    --card: oklch(0.999 0.004 100);
+    --surface-sunken: oklch(0.955 0.006 100);
+    --shadow-card: 0 1px 2px oklch(0.35 0.05 100 / 0.06), 0 2px 10px oklch(0.35 0.05 100 / 0.07);
+    --shadow-raised: 0 2px 6px oklch(0.35 0.05 100 / 0.07), 0 10px 28px oklch(0.35 0.05 100 / 0.12);
+    --shadow-inset:
+      inset 0 2px 3px -1px oklch(0.35 0.05 100 / 0.1), inset 0 -1px 0 0 oklch(1 0 0 / 0.55);
+    --success: oklch(0.44 0.1 148);
+    --warning: oklch(0.69 0.12 78);
+    --error: oklch(0.5 0.17 12);
+
+    --identity-terracotta: oklch(0.6 0.13 35);
+    --identity-sage: oklch(0.6 0.1 148);
+    --identity-sky: oklch(0.58 0.09 235);
+    --identity-plum: oklch(0.56 0.1 330);
+
+    --font-display: 'Lora', Georgia, 'Times New Roman', serif;
+    --font-ui: 'DM Sans', 'Helvetica Neue', Arial, sans-serif;
+    --radius-card: 0.5rem;
+    --radius-panel: 0.75rem;
+    --spacing-list-touch: 56px;
+    --spacing-touch: 48px;
+    --spacing-tab-bar: 56px;
+    --spacing-top-bar: 52px;
+    --spacing-meter: 6px;
+
+    /* The document this artifact is — deliberately NOT the app palette, so the
+       page chrome can never be mistaken for a rendered surface. */
+    --page-bg: oklch(0.955 0.004 230);
+    --page-fg: oklch(0.22 0.02 240);
+    --page-muted: oklch(0.48 0.02 240);
+    --page-rule: oklch(0.87 0.01 240);
+    --page-chip: oklch(0.91 0.012 240);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+      --background: oklch(0.15 0.018 105);
+      --foreground: oklch(0.92 0.012 100);
+      --primary: oklch(0.62 0.11 122);
+      --primary-foreground: oklch(0.99 0 0);
+      --secondary: oklch(0.22 0.016 105);
+      --secondary-foreground: oklch(0.82 0.012 100);
+      --muted: oklch(0.2 0.014 105);
+      --muted-foreground: oklch(0.56 0.02 100);
+      --accent: oklch(0.56 0.08 185);
+      --border: oklch(0.3 0.018 105);
+      --input: oklch(0.3 0.018 105);
+      --card: oklch(0.21 0.018 105);
+      --surface-sunken: oklch(0.175 0.008 105);
+      --shadow-card: 0 1px 2px oklch(0 0 0 / 0.3), 0 2px 10px oklch(0 0 0 / 0.35);
+      --shadow-raised: 0 2px 6px oklch(0 0 0 / 0.35), 0 10px 28px oklch(0 0 0 / 0.45);
+      --shadow-inset: inset 0 2px 4px -1px oklch(0 0 0 / 0.4), inset 0 -1px 0 0 oklch(1 0 0 / 0.04);
+      --success: oklch(0.57 0.1 148);
+      --warning: oklch(0.75 0.11 78);
+      --error: oklch(0.62 0.17 12);
+      --identity-terracotta: oklch(0.7 0.13 35);
+      --identity-sage: oklch(0.7 0.1 148);
+      --identity-sky: oklch(0.68 0.09 235);
+      --identity-plum: oklch(0.66 0.1 330);
+      --page-bg: oklch(0.17 0.012 240);
+      --page-fg: oklch(0.9 0.012 240);
+      --page-muted: oklch(0.62 0.018 240);
+      --page-rule: oklch(0.3 0.014 240);
+      --page-chip: oklch(0.24 0.014 240);
+    }
+  }
+
+  :root[data-theme='dark'] {
+    --background: oklch(0.15 0.018 105);
+    --foreground: oklch(0.92 0.012 100);
+    --primary: oklch(0.62 0.11 122);
+    --primary-foreground: oklch(0.99 0 0);
+    --secondary: oklch(0.22 0.016 105);
+    --secondary-foreground: oklch(0.82 0.012 100);
+    --muted: oklch(0.2 0.014 105);
+    --muted-foreground: oklch(0.56 0.02 100);
+    --accent: oklch(0.56 0.08 185);
+    --border: oklch(0.3 0.018 105);
+    --input: oklch(0.3 0.018 105);
+    --card: oklch(0.21 0.018 105);
+    --surface-sunken: oklch(0.175 0.008 105);
+    --shadow-card: 0 1px 2px oklch(0 0 0 / 0.3), 0 2px 10px oklch(0 0 0 / 0.35);
+    --shadow-raised: 0 2px 6px oklch(0 0 0 / 0.35), 0 10px 28px oklch(0 0 0 / 0.45);
+    --shadow-inset: inset 0 2px 4px -1px oklch(0 0 0 / 0.4), inset 0 -1px 0 0 oklch(1 0 0 / 0.04);
+    --success: oklch(0.57 0.1 148);
+    --warning: oklch(0.75 0.11 78);
+    --error: oklch(0.62 0.17 12);
+    --identity-terracotta: oklch(0.7 0.13 35);
+    --identity-sage: oklch(0.7 0.1 148);
+    --identity-sky: oklch(0.68 0.09 235);
+    --identity-plum: oklch(0.66 0.1 330);
+    --page-bg: oklch(0.17 0.012 240);
+    --page-fg: oklch(0.9 0.012 240);
+    --page-muted: oklch(0.62 0.018 240);
+    --page-rule: oklch(0.3 0.014 240);
+    --page-chip: oklch(0.24 0.014 240);
+  }
+
+  * {
+    box-sizing: border-box;
+  }
+
+  body {
+    margin: 0;
+    padding: 36px 20px 96px;
+    background: var(--page-bg);
+    color: var(--page-fg);
+    font-family: var(--font-ui);
+    font-size: 15px;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+  }
+
+  .wrap {
+    max-width: 1240px;
+    margin: 0 auto;
+  }
+
+  h1 {
+    font-family: var(--font-display);
+    font-size: 32px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    margin: 0 0 8px;
+  }
+  h2 {
+    font-family: var(--font-display);
+    font-size: 24px;
+    font-weight: 600;
+    letter-spacing: -0.015em;
+    margin: 64px 0 6px;
+    padding-top: 26px;
+    border-top: 1px solid var(--page-rule);
+  }
+  h3 {
+    font-size: 15px;
+    font-weight: 700;
+    margin: 30px 0 10px;
+  }
+
+  .lede {
+    color: var(--page-muted);
+    max-width: 68ch;
+    margin: 0 0 4px;
+  }
+  .kicker {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--page-muted);
+    margin: 0 0 8px;
+  }
+  .answer {
+    font-family: var(--font-display);
+    font-size: 19px;
+    line-height: 1.4;
+    margin: 6px 0 0;
+    max-width: 62ch;
+  }
+  .answer em {
+    font-style: normal;
+    font-weight: 700;
+  }
+
+  .axis {
+    margin: 26px 0 8px;
+    padding: 20px 22px;
+    border-left: 3px solid var(--accent);
+    background: var(--page-chip);
+    border-radius: 0 10px 10px 0;
+  }
+  .axis p {
+    margin: 0;
+  }
+  .axis .q {
+    font-family: var(--font-display);
+    font-size: 19px;
+    line-height: 1.45;
+  }
+
+  .warn {
+    margin: 22px 0;
+    padding: 18px 20px;
+    border: 1px solid var(--page-rule);
+    border-left: 3px solid var(--warning);
+    background: var(--page-chip);
+    border-radius: 0 10px 10px 0;
+  }
+  .warn p {
+    margin: 0 0 8px;
+  }
+  .warn p:last-child {
+    margin-bottom: 0;
+  }
+
+  .cost {
+    margin: 18px 0 0;
+    padding: 14px 18px;
+    border: 1px dashed var(--page-rule);
+    border-radius: 10px;
+    color: var(--page-muted);
+    max-width: 74ch;
+  }
+  .cost strong {
+    color: var(--page-fg);
+  }
+  .cost p {
+    margin: 0 0 8px;
+  }
+  .cost p:last-child {
+    margin: 0;
+  }
+
+  .rack {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 30px;
+    align-items: flex-start;
+    margin: 26px 0 0;
+  }
+  .col {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .caption {
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--page-muted);
+  }
+  .caption span {
+    font-weight: 400;
+    text-transform: none;
+    letter-spacing: 0;
+  }
+
+  /* ---------- device frames ---------- */
+  .phone {
+    width: 390px;
+    height: 720px;
+    flex: none;
+    border-radius: 22px;
+    overflow: hidden;
+    border: 1px solid var(--page-rule);
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-ui);
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 18px 40px oklch(0.2 0.02 240 / 0.16);
+  }
+  .wall {
+    width: 100%;
+    max-width: 1180px;
+    height: 620px;
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--page-rule);
+    background: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-ui);
+    display: flex;
+    box-shadow: 0 18px 40px oklch(0.2 0.02 240 / 0.16);
+  }
+
+  .topbar {
+    height: var(--spacing-top-bar);
+    flex: none;
+    background: var(--secondary);
+    color: var(--secondary-foreground);
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 14px;
+  }
+  .topbar .brand {
+    font-size: 14px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+  .av {
+    width: 28px;
+    height: 28px;
+    border-radius: 999px;
+    display: grid;
+    place-items: center;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--primary-foreground);
+  }
+
+  .tabbar {
+    height: var(--spacing-tab-bar);
+    flex: none;
+    background: var(--secondary);
+    border-top: 1px solid var(--border);
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+  }
+  .tab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 2px;
+    font-size: 10px;
+    font-weight: 500;
+    color: var(--muted-foreground);
+  }
+  .tab.on {
+    color: var(--primary);
+    font-weight: 600;
+  }
+  .tab.on .pill {
+    background: color-mix(in oklch, var(--primary) 13%, transparent);
+    border-radius: var(--radius-panel);
+    padding: 4px 12px 3px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+  .tab .pill {
+    padding: 4px 12px 3px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 2px;
+  }
+
+  .screen {
+    flex: 1;
+    overflow: hidden;
+    position: relative;
+  }
+  .pad {
+    padding: 24px 16px 0;
+  }
+  .pad-tight {
+    padding: 14px 16px 0;
+  }
+
+  /* ---------- type tokens ---------- */
+  .t-page-title {
+    font-family: var(--font-display);
+    font-size: 26px;
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: -0.02em;
+    margin: 0;
+  }
+  .t-display-lg {
+    font-family: var(--font-display);
+    font-size: 29px;
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    margin: 0;
+  }
+  .t-heading {
+    font-size: 20px;
+    font-weight: 600;
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    margin: 0;
+  }
+  .t-card-title {
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+  .t-body {
+    font-size: 18px;
+    font-weight: 400;
+    line-height: 1.6;
+  }
+  .t-base {
+    font-size: 14px;
+    font-weight: 400;
+    line-height: 1.5;
+  }
+  .t-sm {
+    font-size: 13px;
+    font-weight: 400;
+    line-height: 1.5;
+  }
+  .t-xs-body {
+    font-size: 11px;
+    font-weight: 400;
+    line-height: 1.4;
+  }
+  .t-section-label {
+    font-size: 11px;
+    font-weight: 700;
+    line-height: 1.4;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+  .t-metric {
+    font-size: 32px;
+    font-weight: 700;
+    line-height: 1;
+    letter-spacing: -0.01em;
+  }
+  .mut {
+    color: var(--muted-foreground);
+  }
+  .acc {
+    color: var(--accent);
+  }
+  .pri {
+    color: var(--primary);
+  }
+
+  /* ---------- ListRow (packages/ui list-row.tsx) ---------- */
+  .lr {
+    position: relative;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-bottom: 1px solid var(--border);
+    min-height: var(--spacing-list-touch);
+  }
+  .lr .body {
+    min-width: 0;
+    flex: 1;
+  }
+  .lr.dim {
+    opacity: 0.66;
+  }
+  .lr.dim .name {
+    text-decoration: line-through;
+  }
+  .name {
+    font-size: 16px;
+    font-weight: 600;
+    line-height: 1.3;
+  }
+  .note {
+    font-size: 13px;
+    color: var(--muted-foreground);
+    line-height: 1.4;
+  }
+  .lr .trail {
+    flex: none;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .ring {
+    width: 24px;
+    height: 24px;
+    border-radius: 999px;
+    flex: none;
+    border: 2px solid var(--border);
+    display: grid;
+    place-items: center;
+  }
+  .ring.on {
+    background: var(--primary);
+    border-color: var(--primary);
+    color: var(--primary-foreground);
+  }
+
+  /* ---------- ItemCard (packages/ui item-card.tsx) ---------- */
+  .ic {
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    border-radius: var(--radius-card);
+    border: 1px solid var(--border);
+    background: var(--card);
+    padding: 12px 16px;
+    box-shadow: var(--shadow-card);
+  }
+  .spine {
+    width: 4px;
+    border-radius: 2px;
+    align-self: stretch;
+    flex: none;
+  }
+
+  /* ---------- aisle headers ---------- */
+  .aisle {
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--muted-foreground);
+    padding: 18px 0 6px;
+    background: var(--background);
+  }
+  .aisle.first {
+    padding-top: 10px;
+  }
+  .aisle-done {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 0;
+    border-bottom: 1px solid var(--border);
+    color: var(--muted-foreground);
+    opacity: 0.7;
+  }
+
+  /* ---------- capture ---------- */
+  .capture {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    height: var(--spacing-touch);
+    border: 1px solid var(--input);
+    border-radius: var(--radius-panel);
+    background: var(--card);
+    box-shadow: var(--shadow-raised);
+    padding: 0 8px 0 14px;
+  }
+  .capture.hero {
+    height: 56px;
+  }
+  .capture .ph {
+    flex: 1;
+    color: var(--muted-foreground);
+    font-size: 16px;
+  }
+  .capture .ph.live {
+    color: var(--foreground);
+  }
+  .caret {
+    display: inline-block;
+    width: 2px;
+    height: 20px;
+    background: var(--primary);
+    vertical-align: -4px;
+    margin-left: 1px;
+  }
+  .storechip {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    flex: none;
+    height: 34px;
+    padding: 0 10px;
+    border-radius: 999px;
+    background: var(--secondary);
+    color: var(--secondary-foreground);
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .echo {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 4px 0;
+    font-size: 13px;
+    color: var(--muted-foreground);
+  }
+
+  /* ---------- buttons ---------- */
+  .btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    height: 36px;
+    padding: 0 16px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 500;
+    background: var(--primary);
+    color: var(--primary-foreground);
+    box-shadow: var(--shadow-card);
+  }
+  .btn.lg {
+    height: 40px;
+    padding: 0 32px;
+  }
+  .btn.ghost {
+    background: transparent;
+    color: var(--foreground);
+    box-shadow: none;
+  }
+  .btn.outline {
+    background: var(--background);
+    color: var(--foreground);
+    border: 1px solid var(--input);
+  }
+  .btn.wide {
+    width: 100%;
+  }
+
+  /* ---------- chips / pills ---------- */
+  .chiprow {
+    display: flex;
+    gap: 8px;
+    overflow: hidden;
+    padding: 2px 0;
+  }
+  .chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    flex: none;
+    border: 2px solid var(--border);
+    border-radius: 999px;
+    padding: 5px 13px;
+    font-size: 13px;
+    color: var(--foreground);
+  }
+  .chip.on {
+    border-color: var(--primary);
+    background: color-mix(in oklch, var(--primary) 13%, transparent);
+    color: var(--primary);
+    font-weight: 600;
+  }
+  .tag {
+    display: inline-flex;
+    align-items: center;
+    flex: none;
+    border: 1px solid var(--border);
+    border-radius: 999px;
+    padding: 1px 8px;
+    font-size: 11px;
+    color: var(--muted-foreground);
+  }
+
+  /* ---------- progress ---------- */
+  .meter {
+    height: var(--spacing-meter);
+    border-radius: 3px;
+    background: var(--muted);
+    overflow: hidden;
+  }
+  .meter i {
+    display: block;
+    height: 100%;
+    background: var(--primary);
+  }
+
+  /* ---------- misc app bits ---------- */
+  .bottombar {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    padding: 10px 16px 12px;
+    background: var(--background);
+    border-top: 1px solid var(--border);
+  }
+  .runband {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    border-radius: var(--radius-panel);
+    background: var(--primary);
+    color: var(--primary-foreground);
+    padding: 14px 16px;
+    box-shadow: var(--shadow-card);
+  }
+  .livebar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-radius: var(--radius-panel);
+    background: var(--surface-sunken);
+    box-shadow: var(--shadow-inset);
+    padding: 8px 12px;
+    font-size: 13px;
+    color: var(--muted-foreground);
+  }
+  .fade {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    height: 60px;
+    background: linear-gradient(to bottom, transparent, var(--background));
+    pointer-events: none;
+  }
+
+  .widget {
+    border-radius: var(--radius-panel);
+    background: var(--card);
+    box-shadow: var(--shadow-card);
+    padding: 16px;
+    width: 360px;
+  }
+
+  /* ---------- comparison table ---------- */
+  table {
+    border-collapse: collapse;
+    width: 100%;
+    margin: 22px 0 0;
+    font-size: 14px;
+  }
+  th,
+  td {
+    text-align: left;
+    vertical-align: top;
+    padding: 12px 14px;
+    border-bottom: 1px solid var(--page-rule);
+  }
+  th {
+    font-size: 11px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--page-muted);
+  }
+  td:first-child {
+    font-weight: 600;
+    width: 190px;
+  }
+  tbody tr:hover {
+    background: var(--page-chip);
+  }
+
+  .scroller {
+    overflow-x: auto;
+  }
+  svg.i {
+    width: 18px;
+    height: 18px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  svg.i.sm {
+    width: 14px;
+    height: 14px;
+  }
+  svg.i.lg {
+    width: 22px;
+    height: 22px;
+  }
+</style>
+
+<svg width="0" height="0" style="position: absolute" aria-hidden="true">
+  <defs>
+    <symbol id="i-plus" viewBox="0 0 24 24"><path d="M12 5v14M5 12h14" /></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5" /></symbol>
+    <symbol id="i-chev-d" viewBox="0 0 24 24"><path d="m6 9 6 6 6-6" /></symbol>
+    <symbol id="i-chev-r" viewBox="0 0 24 24"><path d="m9 18 6-6-6-6" /></symbol>
+    <symbol id="i-cart" viewBox="0 0 24 24">
+      <circle cx="8" cy="21" r="1" />
+      <circle cx="19" cy="21" r="1" />
+      <path d="M2.05 2.05h2l2.66 12.42a2 2 0 0 0 2 1.58h9.78a2 2 0 0 0 2-1.58l1.65-7.42H5.12" />
+    </symbol>
+    <symbol id="i-home" viewBox="0 0 24 24">
+      <path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+      <path d="M9 22V12h6v10" />
+    </symbol>
+    <symbol id="i-cal" viewBox="0 0 24 24">
+      <rect x="3" y="4" width="18" height="18" rx="2" />
+      <path d="M16 2v4M8 2v4M3 10h18" />
+    </symbol>
+    <symbol id="i-chk-sq" viewBox="0 0 24 24">
+      <path d="M9 11l3 3L22 4" />
+      <path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11" />
+    </symbol>
+    <symbol id="i-utensils" viewBox="0 0 24 24">
+      <path
+        d="M3 2v7c0 1.1.9 2 2 2h1a2 2 0 0 0 2-2V2M6 2v20M18 2v20M18 9c2 0 3-1 3-3.5S20 2 18 2"
+      />
+    </symbol>
+    <symbol id="i-more" viewBox="0 0 24 24">
+      <circle cx="12" cy="12" r="1" />
+      <circle cx="19" cy="12" r="1" />
+      <circle cx="5" cy="12" r="1" />
+    </symbol>
+    <symbol id="i-bell" viewBox="0 0 24 24">
+      <path d="M6 8a6 6 0 0 1 12 0c0 7 3 9 3 9H3s3-2 3-9" />
+      <path d="M10.3 21a1.94 1.94 0 0 0 3.4 0" />
+    </symbol>
+    <symbol id="i-mic" viewBox="0 0 24 24">
+      <rect x="9" y="2" width="6" height="11" rx="3" />
+      <path d="M19 10a7 7 0 0 1-14 0M12 17v4" />
+    </symbol>
+    <symbol id="i-flag" viewBox="0 0 24 24">
+      <path d="M4 15s1-1 4-1 5 2 8 2 4-1 4-1V3s-1 1-4 1-5-2-8-2-4 1-4 1z" />
+      <path d="M4 22v-7" />
+    </symbol>
+  </defs>
+</svg>
+
+<div class="wrap">
+  <p class="kicker">M5.5/1 · Design · 2026-09-03</p>
+  <h1>Shopping — what is on screen when you open it</h1>
+  <p class="lede">
+    Four directions for the <code>shopping</code> plugin's opening surface, each rendered in the
+    real primitives — <code>ListRow</code> (hairline, 56&nbsp;px floor, leading slot),
+    <code>ItemCard</code>, <code>PageContainer</code>, the Olive&nbsp;&amp;&nbsp;Teal tokens and the
+    mobile shell chrome. Nothing here is described in prose that another direction gets drawn for.
+  </p>
+
+  <div class="axis">
+    <p class="kicker" style="margin-bottom: 6px">The axis</p>
+    <p class="q">
+      What is the primary object on screen when you open Shopping — and what does the app think you
+      are about to do?
+    </p>
+    <p class="t-sm" style="margin-top: 12px; color: var(--page-muted)">
+      The answer already rejected is <strong>“you are about to choose a list.”</strong>
+      PR&nbsp;#127 shipped an index of lists with a drill-in and it read as filing, not shopping.
+      The four directions below answer the question as
+      <strong>add</strong> · <strong>shop</strong> · <strong>see</strong> · <strong>go</strong>.
+    </p>
+  </div>
+
+  <div class="warn">
+    <p class="kicker" style="margin-bottom: 8px">
+      A constraint the brief did not carry — found while reading the shell
+    </p>
+    <p>
+      The mobile bottom tab bar is <strong>capped at 5 tabs</strong> (ADR 033, amended 2026-08-17):
+      Home + the first three tier-visible plugins + <strong>More</strong>, pinned in
+      <code>plugins.json</code> registry order. That order today is
+      <code>calendar · chores · meals · rewards · family-feed</code>. A sixth plugin lands
+      <strong>inside the More sheet</strong> — two taps and a sheet.
+    </p>
+    <p>
+      Every direction below assumes Shopping is pinned into the four, because
+      <em>capture speed is the acceptance bar</em> and a two-tap capture loses to Google Keep before
+      the surface design gets a vote. That pin costs another plugin its tab — on the phone,
+      <code>meals</code> is the weakest claim (it is a planning surface, opened weekly, not a
+      standing-in-the-kitchen surface).
+      <strong>This is a decision this session should hand to M5.5/2 explicitly</strong>, not leave
+      to registry order.
+    </p>
+  </div>
+
+  <!-- ============================== A ============================== -->
+  <h2>Direction A — The line is the page</h2>
+  <p class="kicker">Capture-first</p>
+  <p class="answer">
+    You are about to <em>add</em> something. The list is what your addition falls into.
+  </p>
+  <p class="lede" style="margin-top: 10px">
+    The capture field is the hero and it is the first thing under the page title — a 56&nbsp;px
+    field with the destination as a chip on its trailing edge. Type, hit enter, the word files
+    itself and the field stays open for the next one. The aisle-grouped list runs underneath and
+    scrolls the field away when you are actually shopping. One surface, one posture:
+    <strong>the app is always ready to be typed into.</strong>
+  </p>
+
+  <div class="rack">
+    <div class="col">
+      <div class="caption">A1 — open it at home <span>· the default state</span></div>
+      <div class="phone">
+        <div class="topbar">
+          <div class="av" style="background: var(--identity-sage)">Z</div>
+          <div class="brand">Family OS</div>
+          <svg class="i mut"><use href="#i-bell" /></svg>
+        </div>
+        <div class="screen">
+          <div class="pad">
+            <h1 class="t-page-title">Shopping</h1>
+            <div class="capture hero" style="margin-top: 16px">
+              <svg class="i lg mut"><use href="#i-plus" /></svg>
+              <span class="ph">Add to Grocery</span>
+              <span class="storechip"
+                >Grocery <svg class="i sm"><use href="#i-chev-d" /></svg
+              ></span>
+            </div>
+
+            <div style="margin-top: 10px">
+              <div class="aisle first">Produce</div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body">
+                  <div class="name">snap peas</div>
+                  <div class="note">Emma added</div>
+                </div>
+              </div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body"><div class="name">bananas</div></div>
+              </div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body"><div class="name">cilantro</div></div>
+              </div>
+              <div class="aisle">Dairy</div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body"><div class="name">milk</div></div>
+              </div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body"><div class="name">greek yogurt</div></div>
+              </div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body"><div class="name">butter</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="fade"></div>
+        </div>
+        <div class="tabbar">
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-home" /></svg><span>Home</span>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-cal" /></svg><span>Calendar</span>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-chk-sq" /></svg><span>Chores</span>
+            </div>
+          </div>
+          <div class="tab on">
+            <div class="pill">
+              <svg class="i"><use href="#i-cart" /></svg><span>Shopping</span>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-more" /></svg><span>More</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="caption">A2 — typing <span>· the field never closes</span></div>
+      <div class="phone">
+        <div class="topbar">
+          <div class="av" style="background: var(--identity-sage)">Z</div>
+          <div class="brand">Family OS</div>
+          <svg class="i mut"><use href="#i-bell" /></svg>
+        </div>
+        <div class="screen">
+          <div class="pad">
+            <h1 class="t-page-title">Shopping</h1>
+            <div
+              class="capture hero"
+              style="
+                margin-top: 16px;
+                border-color: var(--primary);
+                box-shadow:
+                  0 0 0 1px var(--primary),
+                  var(--shadow-raised);
+              "
+            >
+              <svg class="i lg pri"><use href="#i-plus" /></svg>
+              <span class="ph live">tortill<span class="caret"></span></span>
+              <span class="storechip"
+                >Grocery <svg class="i sm"><use href="#i-chev-d" /></svg
+              ></span>
+            </div>
+            <div class="echo">
+              <span class="t-sm"
+                >Enter to add · will file under
+                <strong style="color: var(--foreground)">Pantry</strong></span
+              >
+            </div>
+            <div style="margin-top: 10px; opacity: 0.55">
+              <div class="aisle first">Produce</div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body">
+                  <div class="name">snap peas</div>
+                  <div class="note">Emma added</div>
+                </div>
+              </div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body"><div class="name">bananas</div></div>
+              </div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body"><div class="name">cilantro</div></div>
+              </div>
+            </div>
+          </div>
+          <div
+            style="
+              position: absolute;
+              left: 0;
+              right: 0;
+              bottom: 0;
+              height: 250px;
+              background: var(--secondary);
+              border-top: 1px solid var(--border);
+              display: grid;
+              place-items: center;
+              color: var(--muted-foreground);
+            "
+            class="t-sm"
+          >
+            keyboard
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="caption">A3 — in the shop <span>· the field has scrolled away</span></div>
+      <div class="phone">
+        <div class="topbar">
+          <div class="av" style="background: var(--identity-sage)">Z</div>
+          <div class="brand">Family OS</div>
+          <svg class="i mut"><use href="#i-bell" /></svg>
+        </div>
+        <div class="screen">
+          <div class="pad-tight">
+            <div
+              style="display: flex; align-items: center; justify-content: space-between; gap: 10px"
+            >
+              <div class="t-section-label mut">Grocery · 6 of 14</div>
+              <span class="storechip" style="height: 28px; font-size: 12px"
+                >Grocery <svg class="i sm"><use href="#i-chev-d" /></svg
+              ></span>
+            </div>
+            <div class="meter" style="margin-top: 8px"><i style="width: 43%"></i></div>
+            <div style="margin-top: 6px">
+              <div class="aisle first">Produce</div>
+              <div class="lr dim">
+                <span class="ring on"
+                  ><svg class="i sm"><use href="#i-check" /></svg
+                ></span>
+                <div class="body"><div class="name">snap peas</div></div>
+              </div>
+              <div class="lr dim">
+                <span class="ring on"
+                  ><svg class="i sm"><use href="#i-check" /></svg
+                ></span>
+                <div class="body"><div class="name">bananas</div></div>
+              </div>
+              <div class="lr dim">
+                <span class="ring on"
+                  ><svg class="i sm"><use href="#i-check" /></svg
+                ></span>
+                <div class="body"><div class="name">cilantro</div></div>
+              </div>
+              <div class="aisle">Dairy</div>
+              <div class="lr dim">
+                <span class="ring on"
+                  ><svg class="i sm"><use href="#i-check" /></svg
+                ></span>
+                <div class="body"><div class="name">milk</div></div>
+              </div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body"><div class="name">greek yogurt</div></div>
+              </div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body"><div class="name">butter</div></div>
+              </div>
+              <div class="aisle">Meat</div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body">
+                  <div class="name">chicken thighs</div>
+                  <div class="note">for Thursday</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="fade"></div>
+        </div>
+        <div class="tabbar">
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-home" /></svg><span>Home</span>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-cal" /></svg><span>Calendar</span>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-chk-sq" /></svg><span>Chores</span>
+            </div>
+          </div>
+          <div class="tab on">
+            <div class="pill">
+              <svg class="i"><use href="#i-cart" /></svg><span>Shopping</span>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-more" /></svg><span>More</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cost">
+    <p>
+      <strong>What it costs.</strong> The field owns the top of a screen that is also the screen you
+      hold in an aisle — and mid-shop it is dead weight you have to scroll past before the first
+      row. A3 solves that by letting it scroll away, which means the in-shop state is
+      <em>the same screen minus its hero</em>: no wrong mode, but also no posture. Store switching
+      hides in a chip menu, so a Costco list is a two-tap discovery rather than a visible thing.
+    </p>
+    <p>
+      <strong>What it buys.</strong> The fastest possible add — the field is under your thumb the
+      instant the route paints, with no tap to open it. It is the only direction that beats Keep on
+      its own terms.
+    </p>
+  </div>
+
+  <!-- ============================== B ============================== -->
+  <h2>Direction B — You are already in the list</h2>
+  <p class="kicker">Shop-first</p>
+  <p class="answer">
+    You are about to <em>shop</em>. The app picks the list and drops you into it, mid-walk.
+  </p>
+  <p class="lede" style="margin-top: 10px">
+    There is no index and no chooser: opening Shopping lands you in Grocery, aisle-grouped in walk
+    order, with a progress track under the title and every row already checkable. The other
+    destinations are a pill strip that swaps the list <em>in place</em> — a filter, not a drill-in.
+    Adding is a pinned bar above the tab bar, always reachable by thumb, never competing with the
+    list for the top of the screen.
+  </p>
+
+  <div class="rack">
+    <div class="col">
+      <div class="caption">B1 — open it <span>· at home or in the aisle, same screen</span></div>
+      <div class="phone">
+        <div class="topbar">
+          <div class="av" style="background: var(--identity-sage)">Z</div>
+          <div class="brand">Family OS</div>
+          <svg class="i mut"><use href="#i-bell" /></svg>
+        </div>
+        <div class="screen">
+          <div class="pad">
+            <h1 class="t-page-title">Grocery</h1>
+            <p class="t-sm mut" style="margin: 6px 0 8px">14 to get · 6 in the cart</p>
+            <div class="meter"><i style="width: 30%"></i></div>
+            <div class="chiprow" style="margin-top: 14px">
+              <span class="chip on">Grocery 14</span>
+              <span class="chip">Costco 3</span>
+              <span class="chip">Hardware 2</span>
+            </div>
+            <div style="margin-top: 6px">
+              <div class="aisle first">Produce</div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body">
+                  <div class="name">snap peas</div>
+                  <div class="note">Emma added</div>
+                </div>
+              </div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body"><div class="name">bananas</div></div>
+              </div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body"><div class="name">cilantro</div></div>
+              </div>
+              <div class="aisle">Dairy</div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body"><div class="name">milk</div></div>
+              </div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body"><div class="name">greek yogurt</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="fade" style="bottom: 71px"></div>
+          <div class="bottombar">
+            <div class="capture" style="box-shadow: var(--shadow-card)">
+              <svg class="i lg mut"><use href="#i-plus" /></svg>
+              <span class="ph">Add to Grocery</span>
+              <svg class="i mut"><use href="#i-mic" /></svg>
+            </div>
+          </div>
+        </div>
+        <div class="tabbar">
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-home" /></svg><span>Home</span>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-cal" /></svg><span>Calendar</span>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-chk-sq" /></svg><span>Chores</span>
+            </div>
+          </div>
+          <div class="tab on">
+            <div class="pill">
+              <svg class="i"><use href="#i-cart" /></svg><span>Shopping</span>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-more" /></svg><span>More</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="caption">B2 — halfway <span>· a cleared aisle collapses</span></div>
+      <div class="phone">
+        <div class="topbar">
+          <div class="av" style="background: var(--identity-sage)">Z</div>
+          <div class="brand">Family OS</div>
+          <svg class="i mut"><use href="#i-bell" /></svg>
+        </div>
+        <div class="screen">
+          <div class="pad">
+            <h1 class="t-page-title">Grocery</h1>
+            <p class="t-sm mut" style="margin: 6px 0 8px">6 to get · 8 in the cart</p>
+            <div class="meter"><i style="width: 57%"></i></div>
+            <div class="chiprow" style="margin-top: 14px">
+              <span class="chip on">Grocery 6</span>
+              <span class="chip">Costco 3</span>
+              <span class="chip">Hardware 2</span>
+            </div>
+            <div style="margin-top: 6px">
+              <div class="aisle-done">
+                <span class="t-section-label">Produce</span>
+                <span class="t-sm" style="display: flex; align-items: center; gap: 6px"
+                  >3 in the cart <svg class="i sm"><use href="#i-chev-r" /></svg
+                ></span>
+              </div>
+              <div class="aisle-done">
+                <span class="t-section-label">Dairy</span>
+                <span class="t-sm" style="display: flex; align-items: center; gap: 6px"
+                  >3 in the cart <svg class="i sm"><use href="#i-chev-r" /></svg
+                ></span>
+              </div>
+              <div class="aisle">Meat</div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body">
+                  <div class="name">chicken thighs</div>
+                  <div class="note">for Thursday</div>
+                </div>
+              </div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body"><div class="name">ground beef</div></div>
+              </div>
+              <div class="aisle">Pantry</div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body"><div class="name">black beans</div></div>
+              </div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body">
+                  <div class="name">tortillas</div>
+                  <div class="note">Sam added · just now</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="fade" style="bottom: 71px"></div>
+          <div class="bottombar">
+            <div class="capture" style="box-shadow: var(--shadow-card)">
+              <svg class="i lg mut"><use href="#i-plus" /></svg>
+              <span class="ph">Add to Grocery</span>
+              <svg class="i mut"><use href="#i-mic" /></svg>
+            </div>
+          </div>
+        </div>
+        <div class="tabbar">
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-home" /></svg><span>Home</span>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-cal" /></svg><span>Calendar</span>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-chk-sq" /></svg><span>Chores</span>
+            </div>
+          </div>
+          <div class="tab on">
+            <div class="pill">
+              <svg class="i"><use href="#i-cart" /></svg><span>Shopping</span>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-more" /></svg><span>More</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="caption">B3 — the pill switches in place <span>· Costco, no drill-in</span></div>
+      <div class="phone">
+        <div class="topbar">
+          <div class="av" style="background: var(--identity-sage)">Z</div>
+          <div class="brand">Family OS</div>
+          <svg class="i mut"><use href="#i-bell" /></svg>
+        </div>
+        <div class="screen">
+          <div class="pad">
+            <h1 class="t-page-title">Costco</h1>
+            <p class="t-sm mut" style="margin: 6px 0 8px">3 to get</p>
+            <div class="meter"><i style="width: 0%"></i></div>
+            <div class="chiprow" style="margin-top: 14px">
+              <span class="chip">Grocery 14</span>
+              <span class="chip on">Costco 3</span>
+              <span class="chip">Hardware 2</span>
+            </div>
+            <div style="margin-top: 6px">
+              <div class="aisle first">Paper &amp; household</div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body"><div class="name">paper towels</div></div>
+              </div>
+              <div class="aisle">Pantry</div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body">
+                  <div class="name">coffee beans</div>
+                  <div class="note">Mum added</div>
+                </div>
+              </div>
+              <div class="aisle">Frozen &amp; fish</div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body"><div class="name">salmon</div></div>
+              </div>
+            </div>
+            <p class="t-sm mut" style="margin-top: 24px">Costco's aisle order is its own.</p>
+          </div>
+          <div class="fade" style="bottom: 71px"></div>
+          <div class="bottombar">
+            <div class="capture" style="box-shadow: var(--shadow-card)">
+              <svg class="i lg mut"><use href="#i-plus" /></svg>
+              <span class="ph">Add to Costco</span>
+              <svg class="i mut"><use href="#i-mic" /></svg>
+            </div>
+          </div>
+        </div>
+        <div class="tabbar">
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-home" /></svg><span>Home</span>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-cal" /></svg><span>Calendar</span>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-chk-sq" /></svg><span>Chores</span>
+            </div>
+          </div>
+          <div class="tab on">
+            <div class="pill">
+              <svg class="i"><use href="#i-cart" /></svg><span>Shopping</span>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-more" /></svg><span>More</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cost">
+    <p>
+      <strong>What it costs.</strong> It opens in shopping posture on the ~90&nbsp;% of opens that
+      are somebody adding one thing at the fridge. The add bar is thumb-reachable but still one tap
+      from a keyboard, so it is measurably slower than A. And the pill strip is a soft index: three
+      pills is fine, seven is the rejected shape wearing a costume.
+    </p>
+    <p>
+      <strong>What it buys.</strong> The list is the page — nothing above it but its own progress.
+      Store switching is <em>visible</em> rather than discovered, and “14 to get, 6 in the cart” is
+      legible from the top of the screen without reading a single row.
+    </p>
+  </div>
+
+  <!-- ============================== C ============================== -->
+  <h2>Direction C — Everything the house needs, in one stream</h2>
+  <p class="kicker">Needs-first</p>
+  <p class="answer">
+    You are about to <em>see what the house needs</em>. Where it gets bought is a property of the
+    thing, not a place you go.
+  </p>
+  <p class="lede" style="margin-top: 10px">
+    One list, no destinations at the top. Every outstanding item in the house sits in one
+    section-grouped stream, and the store is a small tag on the row that carries one. When you are
+    actually somewhere, you say so — <strong>“I'm at Grocery”</strong> — and the stream narrows to
+    what you can buy there and turns into the shopping surface. The model still has lists; the
+    surface refuses to make you choose one.
+  </p>
+
+  <div class="rack">
+    <div class="col">
+      <div class="caption">C1 — the house's needs <span>· the default state</span></div>
+      <div class="phone">
+        <div class="topbar">
+          <div class="av" style="background: var(--identity-sage)">Z</div>
+          <div class="brand">Family OS</div>
+          <svg class="i mut"><use href="#i-bell" /></svg>
+        </div>
+        <div class="screen">
+          <div class="pad">
+            <h1 class="t-page-title">Shopping</h1>
+            <p class="t-sm mut" style="margin: 6px 0 14px">19 things the house needs</p>
+            <div class="capture" style="box-shadow: var(--shadow-card)">
+              <svg class="i lg mut"><use href="#i-plus" /></svg>
+              <span class="ph">Add something</span>
+              <svg class="i mut"><use href="#i-mic" /></svg>
+            </div>
+            <div style="margin-top: 6px">
+              <div class="aisle first">Produce</div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body">
+                  <div class="name">snap peas</div>
+                  <div class="note">Emma added</div>
+                </div>
+              </div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body"><div class="name">bananas</div></div>
+              </div>
+              <div class="aisle">Dairy</div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body"><div class="name">milk</div></div>
+              </div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body"><div class="name">greek yogurt</div></div>
+              </div>
+              <div class="aisle">Paper &amp; household</div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body"><div class="name">paper towels</div></div>
+                <span class="trail"><span class="tag">Costco</span></span>
+              </div>
+              <div class="aisle">Hardware</div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body"><div class="name">furnace filter</div></div>
+                <span class="trail"><span class="tag">Hardware</span></span>
+              </div>
+            </div>
+          </div>
+          <div class="fade" style="bottom: 71px"></div>
+          <div class="bottombar" style="padding: 8px 16px 10px">
+            <div style="display: flex; align-items: center; gap: 8px">
+              <span class="t-sm mut" style="flex: none">I'm at</span>
+              <div class="chiprow" style="flex: 1">
+                <span class="chip">Grocery</span>
+                <span class="chip">Costco</span>
+                <span class="chip">Hardware</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div class="tabbar">
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-home" /></svg><span>Home</span>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-cal" /></svg><span>Calendar</span>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-chk-sq" /></svg><span>Chores</span>
+            </div>
+          </div>
+          <div class="tab on">
+            <div class="pill">
+              <svg class="i"><use href="#i-cart" /></svg><span>Shopping</span>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-more" /></svg><span>More</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="caption">
+        C2 — “I'm at Grocery” <span>· the stream narrows and becomes the shop</span>
+      </div>
+      <div class="phone">
+        <div class="topbar">
+          <div class="av" style="background: var(--identity-sage)">Z</div>
+          <div class="brand">Family OS</div>
+          <svg class="i mut"><use href="#i-bell" /></svg>
+        </div>
+        <div class="screen">
+          <div class="pad">
+            <div
+              style="display: flex; align-items: baseline; justify-content: space-between; gap: 8px"
+            >
+              <h1 class="t-page-title">At Grocery</h1>
+              <span class="t-sm pri" style="font-weight: 600">Done</span>
+            </div>
+            <p class="t-sm mut" style="margin: 6px 0 8px">
+              14 to get · 5 things wait for another store
+            </p>
+            <div class="meter"><i style="width: 21%"></i></div>
+            <div style="margin-top: 8px">
+              <div class="aisle first">Produce</div>
+              <div class="lr dim">
+                <span class="ring on"
+                  ><svg class="i sm"><use href="#i-check" /></svg
+                ></span>
+                <div class="body"><div class="name">snap peas</div></div>
+              </div>
+              <div class="lr dim">
+                <span class="ring on"
+                  ><svg class="i sm"><use href="#i-check" /></svg
+                ></span>
+                <div class="body"><div class="name">bananas</div></div>
+              </div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body"><div class="name">cilantro</div></div>
+              </div>
+              <div class="aisle">Dairy</div>
+              <div class="lr dim">
+                <span class="ring on"
+                  ><svg class="i sm"><use href="#i-check" /></svg
+                ></span>
+                <div class="body"><div class="name">milk</div></div>
+              </div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body"><div class="name">greek yogurt</div></div>
+              </div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body"><div class="name">butter</div></div>
+              </div>
+              <div class="aisle">Meat</div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body">
+                  <div class="name">chicken thighs</div>
+                  <div class="note">for Thursday</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="fade" style="bottom: 71px"></div>
+          <div class="bottombar">
+            <div class="capture" style="box-shadow: var(--shadow-card)">
+              <svg class="i lg mut"><use href="#i-plus" /></svg>
+              <span class="ph">Add to Grocery</span>
+              <svg class="i mut"><use href="#i-mic" /></svg>
+            </div>
+          </div>
+        </div>
+        <div class="tabbar">
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-home" /></svg><span>Home</span>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-cal" /></svg><span>Calendar</span>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-chk-sq" /></svg><span>Chores</span>
+            </div>
+          </div>
+          <div class="tab on">
+            <div class="pill">
+              <svg class="i"><use href="#i-cart" /></svg><span>Shopping</span>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-more" /></svg><span>More</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="caption">
+        C3 — the honest problem <span>· one stream, three vocabularies</span>
+      </div>
+      <div class="phone">
+        <div class="topbar">
+          <div class="av" style="background: var(--identity-sage)">Z</div>
+          <div class="brand">Family OS</div>
+          <svg class="i mut"><use href="#i-bell" /></svg>
+        </div>
+        <div class="screen">
+          <div class="pad">
+            <h1 class="t-page-title">Shopping</h1>
+            <p class="t-sm mut" style="margin: 6px 0 14px">19 things the house needs</p>
+            <div style="margin-top: 2px">
+              <div class="aisle first">Frozen</div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body"><div class="name">peas</div></div>
+              </div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body"><div class="name">salmon</div></div>
+                <span class="trail"><span class="tag">Costco</span></span>
+              </div>
+              <div class="aisle">Pantry</div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body"><div class="name">black beans</div></div>
+              </div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body"><div class="name">olive oil</div></div>
+              </div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body">
+                  <div class="name">coffee beans</div>
+                  <div class="note">Mum added</div>
+                </div>
+                <span class="trail"><span class="tag">Costco</span></span>
+              </div>
+              <div class="aisle">Fasteners</div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body">
+                  <div class="name">wood screws</div>
+                  <div class="note">2½&quot; deck</div>
+                </div>
+                <span class="trail"><span class="tag">Hardware</span></span>
+              </div>
+              <div class="aisle">Other</div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body"><div class="name">birthday candles</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="fade"></div>
+        </div>
+        <div class="tabbar">
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-home" /></svg><span>Home</span>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-cal" /></svg><span>Calendar</span>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-chk-sq" /></svg><span>Chores</span>
+            </div>
+          </div>
+          <div class="tab on">
+            <div class="pill">
+              <svg class="i"><use href="#i-cart" /></svg><span>Shopping</span>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-more" /></svg><span>More</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cost">
+    <p>
+      <strong>What it costs — and C3 is drawn so the cost is visible, not argued.</strong> Aisle
+      order is <em>walk order in one shop</em> (ADR&nbsp;069 §5). Merge three shops into one stream
+      and the grouping stops meaning anything: <em>Frozen</em> holds a Costco salmon you cannot buy
+      at the grocery store, <em>Fasteners</em> sits between <em>Pantry</em> and <em>Other</em>, and
+      the reader has to filter by tag with their eyes. The narrowing in C2 is therefore not a
+      convenience — it is <strong>mandatory</strong>, which means the default screen is the one
+      nobody ever shops from.
+    </p>
+    <p>
+      <strong>What it buys.</strong> It is the only direction that answers “do we need anything?” in
+      one glance without picking a context first, and the only one where adding never requires
+      knowing which store a thing comes from.
+    </p>
+  </div>
+
+  <!-- ============================== D ============================== -->
+  <h2>Direction D — The stream at rest, the run when you go</h2>
+  <p class="kicker">Trip-first</p>
+  <p class="answer">
+    You are about to <em>drop something into the family's stream</em> — until someone says they're
+    going, and then the app becomes a trip.
+  </p>
+  <p class="lede" style="margin-top: 10px">
+    At rest there is no list and no chooser: there is
+    <strong>what the house has been adding, newest first</strong>, with who and when — the shape the
+    family already has in Keep. One primary band sits above it: <em>Going out?</em> Tapping it names
+    the store and the surface <strong>changes into a live run</strong> — aisle order, progress,
+    whole-row checks, and everyone at home watching it fill and adding into it in real time.
+    Finishing the run ends it. Two surfaces, and the mode is bound to a real-world event rather than
+    a toggle.
+  </p>
+
+  <div class="rack">
+    <div class="col">
+      <div class="caption">D1 — at rest <span>· the family's stream, newest first</span></div>
+      <div class="phone">
+        <div class="topbar">
+          <div class="av" style="background: var(--identity-sage)">Z</div>
+          <div class="brand">Family OS</div>
+          <svg class="i mut"><use href="#i-bell" /></svg>
+        </div>
+        <div class="screen">
+          <div class="pad">
+            <h1 class="t-page-title">Shopping</h1>
+            <div class="runband" style="margin-top: 14px">
+              <svg class="i lg"><use href="#i-cart" /></svg>
+              <div style="flex: 1">
+                <div class="t-card-title">Going out?</div>
+                <div class="t-sm" style="opacity: 0.85">Start a run — 19 things waiting</div>
+              </div>
+              <svg class="i"><use href="#i-chev-r" /></svg>
+            </div>
+            <div class="capture" style="margin-top: 12px; box-shadow: var(--shadow-card)">
+              <svg class="i lg mut"><use href="#i-plus" /></svg>
+              <span class="ph">Add something</span>
+              <svg class="i mut"><use href="#i-mic" /></svg>
+            </div>
+            <div style="margin-top: 6px">
+              <div class="aisle first">Today</div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body">
+                  <div class="name">snap peas</div>
+                  <div class="note">Emma · 4:10 pm · Grocery</div>
+                </div>
+              </div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body">
+                  <div class="name">wood screws</div>
+                  <div class="note">Dad · 2:38 pm · Hardware</div>
+                </div>
+              </div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body">
+                  <div class="name">tortillas</div>
+                  <div class="note">you · 11:02 am · Grocery</div>
+                </div>
+              </div>
+              <div class="aisle">Yesterday</div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body">
+                  <div class="name">coffee beans</div>
+                  <div class="note">Mum · Costco</div>
+                </div>
+              </div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body">
+                  <div class="name">chicken thighs</div>
+                  <div class="note">Meals · for Thursday</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="fade"></div>
+        </div>
+        <div class="tabbar">
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-home" /></svg><span>Home</span>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-cal" /></svg><span>Calendar</span>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-chk-sq" /></svg><span>Chores</span>
+            </div>
+          </div>
+          <div class="tab on">
+            <div class="pill">
+              <svg class="i"><use href="#i-cart" /></svg><span>Shopping</span>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-more" /></svg><span>More</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="caption">
+        D2 — the run is live <span>· aisle order, progress, whole-row checks</span>
+      </div>
+      <div class="phone">
+        <div class="topbar">
+          <div class="av" style="background: var(--identity-sage)">Z</div>
+          <div class="brand">Family OS</div>
+          <svg class="i mut"><use href="#i-bell" /></svg>
+        </div>
+        <div class="screen">
+          <div class="pad-tight">
+            <div
+              style="display: flex; align-items: baseline; justify-content: space-between; gap: 8px"
+            >
+              <h1 class="t-page-title">Grocery run</h1>
+              <span
+                class="t-sm pri"
+                style="font-weight: 600; display: flex; align-items: center; gap: 5px"
+                ><svg class="i sm"><use href="#i-flag" /></svg>Finish</span
+              >
+            </div>
+            <p class="t-sm mut" style="margin: 6px 0 8px">6 of 14 · started 5:12 pm</p>
+            <div class="meter"><i style="width: 43%"></i></div>
+            <div class="livebar" style="margin-top: 12px">
+              <span
+                class="ring"
+                style="
+                  width: 18px;
+                  height: 18px;
+                  border-color: var(--identity-terracotta);
+                  background: var(--identity-terracotta);
+                "
+              ></span>
+              <span
+                ><strong style="color: var(--foreground)">Sam</strong> just added tortillas —
+                Pantry</span
+              >
+            </div>
+            <div style="margin-top: 2px">
+              <div class="aisle first">Produce</div>
+              <div class="lr dim">
+                <span class="ring on"
+                  ><svg class="i sm"><use href="#i-check" /></svg
+                ></span>
+                <div class="body"><div class="name">snap peas</div></div>
+              </div>
+              <div class="lr dim">
+                <span class="ring on"
+                  ><svg class="i sm"><use href="#i-check" /></svg
+                ></span>
+                <div class="body"><div class="name">bananas</div></div>
+              </div>
+              <div class="aisle">Dairy</div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body"><div class="name">greek yogurt</div></div>
+              </div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body"><div class="name">butter</div></div>
+              </div>
+              <div class="aisle">Pantry</div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body">
+                  <div class="name">tortillas</div>
+                  <div class="note">Sam · just now</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="fade" style="bottom: 71px"></div>
+          <div class="bottombar">
+            <div class="capture" style="box-shadow: var(--shadow-card)">
+              <svg class="i lg mut"><use href="#i-plus" /></svg>
+              <span class="ph">Add to this run</span>
+              <svg class="i mut"><use href="#i-mic" /></svg>
+            </div>
+          </div>
+        </div>
+        <div class="tabbar">
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-home" /></svg><span>Home</span>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-cal" /></svg><span>Calendar</span>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-chk-sq" /></svg><span>Chores</span>
+            </div>
+          </div>
+          <div class="tab on">
+            <div class="pill">
+              <svg class="i"><use href="#i-cart" /></svg><span>Shopping</span>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-more" /></svg><span>More</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="caption">D3 — someone else is out <span>· what the house sees at rest</span></div>
+      <div class="phone">
+        <div class="topbar">
+          <div class="av" style="background: var(--identity-plum)">E</div>
+          <div class="brand">Family OS</div>
+          <svg class="i mut"><use href="#i-bell" /></svg>
+        </div>
+        <div class="screen">
+          <div class="pad">
+            <h1 class="t-page-title">Shopping</h1>
+            <div class="ic" style="margin-top: 14px">
+              <span class="spine" style="background: var(--identity-sage)"></span>
+              <div style="flex: 1; min-width: 0">
+                <div class="t-card-title">Dad is at Grocery</div>
+                <div class="t-sm mut" style="margin-top: 2px">6 of 14 · started 12 min ago</div>
+                <div class="meter" style="margin-top: 8px"><i style="width: 43%"></i></div>
+              </div>
+            </div>
+            <div class="capture" style="margin-top: 12px; box-shadow: var(--shadow-card)">
+              <svg class="i lg mut"><use href="#i-plus" /></svg>
+              <span class="ph">Add — he'll see it</span>
+              <svg class="i mut"><use href="#i-mic" /></svg>
+            </div>
+            <div style="margin-top: 6px">
+              <div class="aisle first">Today</div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body">
+                  <div class="name">wood screws</div>
+                  <div class="note">Dad · 2:38 pm · Hardware</div>
+                </div>
+              </div>
+              <div class="aisle">Yesterday</div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body">
+                  <div class="name">coffee beans</div>
+                  <div class="note">Mum · Costco</div>
+                </div>
+              </div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body">
+                  <div class="name">furnace filter</div>
+                  <div class="note">Dad · Hardware</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="fade"></div>
+        </div>
+        <div class="tabbar">
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-home" /></svg><span>Home</span>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-cal" /></svg><span>Calendar</span>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-chk-sq" /></svg><span>Chores</span>
+            </div>
+          </div>
+          <div class="tab on">
+            <div class="pill">
+              <svg class="i"><use href="#i-cart" /></svg><span>Shopping</span>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-more" /></svg><span>More</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cost">
+    <p>
+      <strong>What it costs.</strong> A run is ceremony: one tap and a store choice stand between
+      you and a shoppable screen, and a person who forgets to start one is shopping from a
+      reverse-chronological log, which is the worst possible order in an aisle. Reverse-chron is
+      also bad at the one question a shared list gets asked constantly —
+      <em>“did someone already put milk on here?”</em> — because the same word can sit three days
+      apart in two places. D3 leans hard on identity, which ADR&nbsp;064 says shopping does not get:
+      “Dad is at Grocery” is a person as the answer, so a spine is defensible <em>there</em> and
+      nowhere else in the module.
+    </p>
+    <p>
+      <strong>What it buys.</strong> The only direction where the house can
+      <em>see a trip happening</em> and act on it — the “I'm at the store, anything else?” text
+      message, built in. And the only one whose two modes are justified by something real rather
+      than a control.
+    </p>
+  </div>
+
+  <!-- ============================== WALL ============================== -->
+  <h2>The wall tablet — decision 5</h2>
+  <p class="lede">
+    Two candidate answers, drawn rather than argued. The wall is a
+    <strong>family-profile surface</strong>, so the 18&nbsp;px across-the-room floor applies
+    (design-system §Typography) and every row is read from six feet away, standing, usually with one
+    hand holding something else.
+  </p>
+
+  <h3>W1 — the same surface, at across-the-room size</h3>
+  <div class="wall">
+    <div
+      style="
+        width: 220px;
+        flex: none;
+        background: var(--secondary);
+        border-right: 1px solid var(--border);
+        padding: 20px 14px;
+      "
+    >
+      <div class="t-section-label acc" style="margin-bottom: 18px">Family OS</div>
+      <div class="t-base mut" style="padding: 10px 12px">Home</div>
+      <div class="t-base mut" style="padding: 10px 12px">Calendar</div>
+      <div class="t-base mut" style="padding: 10px 12px">Chores</div>
+      <div class="t-base mut" style="padding: 10px 12px">Meals</div>
+      <div
+        class="t-base pri"
+        style="
+          padding: 10px 12px;
+          font-weight: 600;
+          background: color-mix(in oklch, var(--primary) 13%, transparent);
+          border-radius: var(--radius-panel);
+        "
+      >
+        Shopping
+      </div>
+      <div class="t-base mut" style="padding: 10px 12px">Rewards</div>
+    </div>
+    <div style="flex: 1; padding: 26px 28px; overflow: hidden">
+      <div style="display: flex; align-items: baseline; justify-content: space-between">
+        <h1 class="t-display-lg">Grocery</h1>
+        <span class="t-body mut">14 to get</span>
+      </div>
+      <div class="capture hero" style="margin-top: 16px; height: 60px">
+        <svg class="i lg mut"><use href="#i-plus" /></svg>
+        <span class="ph" style="font-size: 18px">Add to Grocery</span>
+        <svg class="i lg mut"><use href="#i-mic" /></svg>
+      </div>
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0 40px; margin-top: 14px">
+        <div>
+          <div class="aisle first">Produce</div>
+          <div class="lr" style="min-height: 64px">
+            <span class="ring" style="width: 28px; height: 28px"></span>
+            <div class="body">
+              <div class="name" style="font-size: 18px">snap peas</div>
+              <div class="note" style="font-size: 15px">Emma added</div>
+            </div>
+          </div>
+          <div class="lr" style="min-height: 64px">
+            <span class="ring" style="width: 28px; height: 28px"></span>
+            <div class="body"><div class="name" style="font-size: 18px">bananas</div></div>
+          </div>
+          <div class="lr" style="min-height: 64px">
+            <span class="ring" style="width: 28px; height: 28px"></span>
+            <div class="body"><div class="name" style="font-size: 18px">cilantro</div></div>
+          </div>
+          <div class="aisle">Dairy</div>
+          <div class="lr" style="min-height: 64px">
+            <span class="ring" style="width: 28px; height: 28px"></span>
+            <div class="body"><div class="name" style="font-size: 18px">milk</div></div>
+          </div>
+        </div>
+        <div>
+          <div class="aisle first">Meat</div>
+          <div class="lr" style="min-height: 64px">
+            <span class="ring" style="width: 28px; height: 28px"></span>
+            <div class="body">
+              <div class="name" style="font-size: 18px">chicken thighs</div>
+              <div class="note" style="font-size: 15px">for Thursday</div>
+            </div>
+          </div>
+          <div class="lr" style="min-height: 64px">
+            <span class="ring" style="width: 28px; height: 28px"></span>
+            <div class="body"><div class="name" style="font-size: 18px">ground beef</div></div>
+          </div>
+          <div class="aisle">Pantry</div>
+          <div class="lr" style="min-height: 64px">
+            <span class="ring" style="width: 28px; height: 28px"></span>
+            <div class="body"><div class="name" style="font-size: 18px">black beans</div></div>
+          </div>
+          <div class="lr" style="min-height: 64px">
+            <span class="ring" style="width: 28px; height: 28px"></span>
+            <div class="body"><div class="name" style="font-size: 18px">tortillas</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <h3>W2 — its own thing: the wall only takes things in</h3>
+  <div class="wall">
+    <div
+      style="
+        width: 220px;
+        flex: none;
+        background: var(--secondary);
+        border-right: 1px solid var(--border);
+        padding: 20px 14px;
+      "
+    >
+      <div class="t-section-label acc" style="margin-bottom: 18px">Family OS</div>
+      <div class="t-base mut" style="padding: 10px 12px">Home</div>
+      <div class="t-base mut" style="padding: 10px 12px">Calendar</div>
+      <div class="t-base mut" style="padding: 10px 12px">Chores</div>
+      <div class="t-base mut" style="padding: 10px 12px">Meals</div>
+      <div
+        class="t-base pri"
+        style="
+          padding: 10px 12px;
+          font-weight: 600;
+          background: color-mix(in oklch, var(--primary) 13%, transparent);
+          border-radius: var(--radius-panel);
+        "
+      >
+        Shopping
+      </div>
+      <div class="t-base mut" style="padding: 10px 12px">Rewards</div>
+    </div>
+    <div style="flex: 1; padding: 40px 48px; display: flex; flex-direction: column">
+      <h1 class="t-display-lg" style="font-size: 36px; font-weight: 400">What do we need?</h1>
+      <div class="capture hero" style="margin-top: 22px; height: 76px; border-radius: 16px">
+        <svg class="i" style="width: 28px; height: 28px; color: var(--muted-foreground)">
+          <use href="#i-plus" />
+        </svg>
+        <span class="ph" style="font-size: 24px">Type it, or say it</span>
+        <span class="btn lg" style="height: 52px; border-radius: 12px; font-size: 17px"
+          ><svg class="i lg"><use href="#i-mic" /></svg> Hold to speak</span
+        >
+      </div>
+      <div class="t-section-label mut" style="margin-top: 34px">Just added</div>
+      <div style="display: flex; flex-wrap: wrap; gap: 10px; margin-top: 12px">
+        <span class="chip" style="font-size: 17px; padding: 9px 18px"
+          >snap peas <span class="mut" style="font-size: 14px">Emma</span></span
+        >
+        <span class="chip" style="font-size: 17px; padding: 9px 18px"
+          >tortillas <span class="mut" style="font-size: 14px">Sam</span></span
+        >
+        <span class="chip" style="font-size: 17px; padding: 9px 18px"
+          >milk <span class="mut" style="font-size: 14px">you</span></span
+        >
+        <span class="chip" style="font-size: 17px; padding: 9px 18px"
+          >wood screws <span class="mut" style="font-size: 14px">Dad</span></span
+        >
+      </div>
+      <div
+        style="
+          margin-top: auto;
+          display: flex;
+          align-items: center;
+          justify-content: space-between;
+          padding-top: 24px;
+          border-top: 1px solid var(--border);
+        "
+      >
+        <span class="t-body mut">19 things waiting · Grocery 14 · Costco 3 · Hardware 2</span>
+        <span class="btn outline" style="height: 44px; font-size: 16px"
+          >See the lists <svg class="i"><use href="#i-chev-r" /></svg
+        ></span>
+      </div>
+    </div>
+  </div>
+
+  <div class="cost">
+    <p>
+      <strong>The case for W2.</strong> Nobody shops from a wall-mounted tablet. Everything the wall
+      is physically good at is <em>capture</em> — you are standing at the fridge with the empty
+      carton in your hand — and everything it is bad at is the aisle. W2 makes the wall one enormous
+      input with a short memory, and hands the list itself to the phone.
+    </p>
+    <p>
+      <strong>A defect both inherit.</strong> The aisle labels above are the real
+      <code>section-label</code> token — 11&nbsp;px uppercase — and at six feet they are unreadable,
+      while the rows beside them clear the 18&nbsp;px across-the-room floor. The distance rule
+      (design-system §Typography) sets a floor for <em>primary content</em> and says nothing about
+      structural labels, so the wall has no label size that clears the distance. On a surface whose
+      legibility depends entirely on aisle grouping, that is a hole in the scale, not a styling
+      choice. <strong>Whichever wall answer wins owes a decision here</strong> — a distance variant
+      of <code>section-label</code>, or aisle names promoted to <code>heading</code> on the wall.
+    </p>
+    <p>
+      <strong>The case for W1.</strong> One surface, one mental model, no second thing to design,
+      build, and keep in sync — and the two-column aisle layout is genuinely useful for the “are we
+      out of anything?” glance while cooking. W2 is a second surface that M5.5/4 has to build and
+      that every later change has to touch twice.
+    </p>
+  </div>
+
+  <!-- ============================== CAPTURE ============================== -->
+  <h2>Adding from anywhere in the house — decision 2</h2>
+  <p class="lede">
+    This is the acceptance bar and it is mostly <em>not</em> answered by the Shopping page, because
+    the fastest add is the one that never navigates. Three paths, all of which survive whichever
+    direction wins.
+  </p>
+
+  <div class="rack">
+    <div class="col">
+      <div class="caption">The Home widget <span>· zero navigation</span></div>
+      <div class="widget">
+        <div style="display: flex; align-items: center; justify-content: space-between">
+          <span class="t-section-label acc">Shopping</span>
+          <span class="t-sm mut">19</span>
+        </div>
+        <div class="capture" style="margin-top: 12px; box-shadow: none; height: 44px">
+          <svg class="i mut"><use href="#i-plus" /></svg>
+          <span class="ph" style="font-size: 15px">Add something</span>
+          <svg class="i mut"><use href="#i-mic" /></svg>
+        </div>
+        <div style="margin-top: 4px">
+          <div class="lr" style="min-height: 44px">
+            <span class="ring" style="width: 20px; height: 20px"></span>
+            <div class="body"><div class="name" style="font-size: 15px">snap peas</div></div>
+            <span class="trail"><span class="t-xs-body mut">Emma</span></span>
+          </div>
+          <div class="lr" style="min-height: 44px">
+            <span class="ring" style="width: 20px; height: 20px"></span>
+            <div class="body"><div class="name" style="font-size: 15px">wood screws</div></div>
+            <span class="trail"><span class="tag">Hardware</span></span>
+          </div>
+          <div class="lr" style="min-height: 44px; border-bottom: none">
+            <span class="ring" style="width: 20px; height: 20px"></span>
+            <div class="body"><div class="name" style="font-size: 15px">tortillas</div></div>
+            <span class="trail"><span class="t-xs-body mut">Sam</span></span>
+          </div>
+        </div>
+        <div class="t-sm mut" style="margin-top: 10px">+16 more</div>
+      </div>
+      <p class="t-sm" style="color: var(--page-muted); max-width: 36ch">
+        The home dashboard is already the first screen after login. A widget with a live capture
+        line makes the common add <strong>zero taps of navigation</strong> — this is the single
+        biggest lever on the Keep comparison, and it is independent of the direction chosen.
+      </p>
+    </div>
+
+    <div class="col">
+      <div class="caption">The tab <span>· one tap, if we pin it</span></div>
+      <div
+        style="
+          width: 360px;
+          border: 1px solid var(--page-rule);
+          border-radius: 14px;
+          overflow: hidden;
+          background: var(--background);
+        "
+      >
+        <div class="tabbar" style="height: 60px">
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-home" /></svg><span>Home</span>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-cal" /></svg><span>Calendar</span>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-chk-sq" /></svg><span>Chores</span>
+            </div>
+          </div>
+          <div class="tab on">
+            <div class="pill">
+              <svg class="i"><use href="#i-cart" /></svg><span>Shopping</span>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-more" /></svg><span>More</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div
+        style="
+          width: 360px;
+          border: 1px solid var(--page-rule);
+          border-radius: 14px;
+          overflow: hidden;
+          background: var(--background);
+          opacity: 0.6;
+        "
+      >
+        <div class="tabbar" style="height: 60px">
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-home" /></svg><span>Home</span>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-cal" /></svg><span>Calendar</span>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-chk-sq" /></svg><span>Chores</span>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-utensils" /></svg><span>Meals</span>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-more" /></svg><span>More</span>
+            </div>
+          </div>
+        </div>
+      </div>
+      <p class="t-sm" style="color: var(--page-muted); max-width: 36ch">
+        Top: Shopping pinned, Meals demoted to <strong>More</strong>. Bottom: today's order —
+        Shopping is <em>inside</em> More, two taps and a sheet. The lower strip is what ships if
+        nobody decides.
+      </p>
+    </div>
+
+    <div class="col">
+      <div class="caption">The wall <span>· hands full, carton in hand</span></div>
+      <div
+        style="
+          width: 360px;
+          border: 1px solid var(--page-rule);
+          border-radius: 14px;
+          background: var(--background);
+          padding: 22px 20px;
+        "
+      >
+        <div class="t-section-label mut">Kitchen wall</div>
+        <div class="capture hero" style="margin-top: 12px; height: 64px">
+          <svg class="i lg mut"><use href="#i-plus" /></svg>
+          <span class="ph" style="font-size: 19px">What do we need?</span>
+          <svg class="i lg mut"><use href="#i-mic" /></svg>
+        </div>
+        <div class="echo" style="font-size: 15px">
+          <svg class="i sm" style="color: var(--success)"><use href="#i-check" /></svg>
+          <span>milk → Dairy, Grocery</span>
+        </div>
+      </div>
+      <p class="t-sm" style="color: var(--page-muted); max-width: 36ch">
+        Voice matters most here and is the one path that is genuinely faster than Keep. It is
+        <strong>not</strong> in M5.5 scope — but the field's anatomy should leave the slot for it
+        rather than have it bolted on later.
+      </p>
+    </div>
+  </div>
+
+  <!-- ============================== TABLE ============================== -->
+  <h2>The five decisions, side by side</h2>
+  <div class="scroller">
+    <table>
+      <thead>
+        <tr>
+          <th></th>
+          <th>A — Capture-first</th>
+          <th>B — Shop-first</th>
+          <th>C — Needs-first</th>
+          <th>D — Trip-first</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td>1. Primary object</td>
+          <td>The capture field</td>
+          <td>One list, in walk order</td>
+          <td>Everything outstanding, one stream</td>
+          <td>The stream of what's been added; then the run</td>
+        </tr>
+        <tr>
+          <td>2. How a thing gets added</td>
+          <td>Field is the hero — zero taps in the page. Home widget + wall echo it</td>
+          <td>Pinned bottom bar — one tap to a keyboard</td>
+          <td>Field under the title — one tap</td>
+          <td>Field under the band — one tap; during a run it adds to the run</td>
+        </tr>
+        <tr>
+          <td>3. Multiple destinations</td>
+          <td>A chip on the field. Invisible until opened</td>
+          <td>A pill strip that swaps in place. Visible; degrades past ~5</td>
+          <td>A tag on the row + an “I'm at” filter. Never a place</td>
+          <td>Named when the run starts; a tag on the row at rest</td>
+        </tr>
+        <tr>
+          <td>4. Shopping vs adding</td>
+          <td>One surface. The hero scrolls away — no mode at all</td>
+          <td>One surface, permanently in shop posture</td>
+          <td>Two states, entered by declaring where you are</td>
+          <td>Two surfaces, entered by starting a run — the only one bound to a real event</td>
+        </tr>
+        <tr>
+          <td>5. The wall</td>
+          <td>W1 — the same screen; the hero is already the wall's whole job</td>
+          <td>W1 or W2 — the list is phone-shaped, so W2 fits well</td>
+          <td>W1 — the needs glance is what a wall is for</td>
+          <td>W2 — the wall takes things in, the run happens on a phone</td>
+        </tr>
+        <tr>
+          <td>Beats Keep on capture?</td>
+          <td><strong>Yes</strong> — nothing is faster than a focused field on arrival</td>
+          <td>Ties — one tap, but thumb-placed</td>
+          <td>Ties</td>
+          <td>Ties at rest; better mid-run than Keep can be</td>
+        </tr>
+        <tr>
+          <td>Reads as “fresh”?</td>
+          <td>Yes — nothing on screen is filing</td>
+          <td>Yes — you are mid-activity on arrival</td>
+          <td>Yes, until C3: three vocabularies in one stream</td>
+          <td>Yes — most unlike anything the app already has</td>
+        </tr>
+        <tr>
+          <td>Biggest risk</td>
+          <td>No shopping posture at all; store switching hidden</td>
+          <td>Wrong posture for the common case; the pill strip re-grows an index</td>
+          <td>The default view is the one nobody shops from</td>
+          <td>Ceremony; reverse-chron is bad at “is milk already on here?”</td>
+        </tr>
+        <tr>
+          <td>Build cost for M5.5/2</td>
+          <td>Lowest — one surface, one state</td>
+          <td>Low — one surface + collapse behaviour</td>
+          <td>Medium — a cross-list stream and a location state</td>
+          <td>Highest — a run is a new object with a lifecycle, live state, and a finish</td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <h2>Settled — the surface that ships</h2>
+  <p class="kicker">Gate answered 2026-09-03 · A on B, W2 wall, Shopping pinned over Chores</p>
+  <p class="lede">
+    <strong>A's capture field is the hero; B's list is the page.</strong> The field sits under the
+    title with the destination as a chip on its trailing edge; the aisle-ordered list runs beneath
+    it and scrolls the field away when you are in a shop. The destination pill strip is visible, and
+    switching it swaps the list in place — never a drill-in. There is <strong>no mode</strong>:
+    checking is live at rest, adding is live mid-shop, and progress reads from the top of the screen
+    without reading a row.
+  </p>
+
+  <div class="rack">
+    <div class="col">
+      <div class="caption">
+        S1 — at rest <span>· the field is the first thing under the title</span>
+      </div>
+      <div class="phone">
+        <div class="topbar">
+          <div class="av" style="background: var(--identity-sage)">Z</div>
+          <div class="brand">Family OS</div>
+          <svg class="i mut"><use href="#i-bell" /></svg>
+        </div>
+        <div class="screen">
+          <div class="pad">
+            <div
+              style="display: flex; align-items: baseline; justify-content: space-between; gap: 8px"
+            >
+              <h1 class="t-page-title">Shopping</h1>
+              <span class="t-sm mut">14 to get</span>
+            </div>
+            <div class="capture hero" style="margin-top: 14px">
+              <svg class="i lg mut"><use href="#i-plus" /></svg>
+              <span class="ph">Add to Grocery</span>
+              <span class="storechip"
+                >Grocery <svg class="i sm"><use href="#i-chev-d" /></svg
+              ></span>
+            </div>
+            <div class="chiprow" style="margin-top: 12px">
+              <span class="chip on">Grocery 14</span>
+              <span class="chip">Costco 3</span>
+              <span class="chip">Hardware 2</span>
+            </div>
+            <div style="margin-top: 4px">
+              <div class="aisle first">Produce</div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body">
+                  <div class="name">snap peas</div>
+                  <div class="note">Emma added</div>
+                </div>
+              </div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body"><div class="name">bananas</div></div>
+              </div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body"><div class="name">cilantro</div></div>
+              </div>
+              <div class="aisle">Dairy</div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body"><div class="name">milk</div></div>
+              </div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body"><div class="name">greek yogurt</div></div>
+              </div>
+            </div>
+          </div>
+          <div class="fade"></div>
+        </div>
+        <div class="tabbar">
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-home" /></svg><span>Home</span>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-cal" /></svg><span>Calendar</span>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-utensils" /></svg><span>Meals</span>
+            </div>
+          </div>
+          <div class="tab on">
+            <div class="pill">
+              <svg class="i"><use href="#i-cart" /></svg><span>Shopping</span>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-more" /></svg><span>More</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="caption">S2 — typing <span>· the filing is stated before you commit</span></div>
+      <div class="phone">
+        <div class="topbar">
+          <div class="av" style="background: var(--identity-sage)">Z</div>
+          <div class="brand">Family OS</div>
+          <svg class="i mut"><use href="#i-bell" /></svg>
+        </div>
+        <div class="screen">
+          <div class="pad">
+            <div
+              style="display: flex; align-items: baseline; justify-content: space-between; gap: 8px"
+            >
+              <h1 class="t-page-title">Shopping</h1>
+              <span class="t-sm mut">14 to get</span>
+            </div>
+            <div
+              class="capture hero"
+              style="
+                margin-top: 14px;
+                border-color: var(--primary);
+                box-shadow:
+                  0 0 0 1px var(--primary),
+                  var(--shadow-raised);
+              "
+            >
+              <svg class="i lg pri"><use href="#i-plus" /></svg>
+              <span class="ph live">tortill<span class="caret"></span></span>
+              <span class="storechip"
+                >Grocery <svg class="i sm"><use href="#i-chev-d" /></svg
+              ></span>
+            </div>
+            <div class="echo">
+              <span class="t-sm"
+                >Enter to add · files under
+                <strong style="color: var(--foreground)">Pantry</strong></span
+              >
+            </div>
+            <div style="margin-top: 6px; opacity: 0.5">
+              <div class="aisle first">Produce</div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body">
+                  <div class="name">snap peas</div>
+                  <div class="note">Emma added</div>
+                </div>
+              </div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body"><div class="name">bananas</div></div>
+              </div>
+            </div>
+          </div>
+          <div
+            style="
+              position: absolute;
+              left: 0;
+              right: 0;
+              bottom: 0;
+              height: 250px;
+              background: var(--secondary);
+              border-top: 1px solid var(--border);
+              display: grid;
+              place-items: center;
+              color: var(--muted-foreground);
+            "
+            class="t-sm"
+          >
+            keyboard
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="col">
+      <div class="caption">
+        S3 — in the aisle <span>· the hero has scrolled away, nothing switched modes</span>
+      </div>
+      <div class="phone">
+        <div class="topbar">
+          <div class="av" style="background: var(--identity-sage)">Z</div>
+          <div class="brand">Family OS</div>
+          <svg class="i mut"><use href="#i-bell" /></svg>
+        </div>
+        <div class="screen">
+          <div class="pad-tight">
+            <div
+              style="display: flex; align-items: center; justify-content: space-between; gap: 10px"
+            >
+              <div class="t-section-label mut">Grocery · 6 of 14</div>
+              <span class="storechip" style="height: 28px; font-size: 12px"
+                >Grocery <svg class="i sm"><use href="#i-chev-d" /></svg
+              ></span>
+            </div>
+            <div class="meter" style="margin-top: 8px"><i style="width: 43%"></i></div>
+            <div style="margin-top: 4px">
+              <div class="aisle-done">
+                <span class="t-section-label">Produce</span>
+                <span class="t-sm" style="display: flex; align-items: center; gap: 6px"
+                  >3 in the cart <svg class="i sm"><use href="#i-chev-r" /></svg
+                ></span>
+              </div>
+              <div class="aisle first">Dairy</div>
+              <div class="lr dim">
+                <span class="ring on"
+                  ><svg class="i sm"><use href="#i-check" /></svg
+                ></span>
+                <div class="body"><div class="name">milk</div></div>
+              </div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body"><div class="name">greek yogurt</div></div>
+              </div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body"><div class="name">butter</div></div>
+              </div>
+              <div class="aisle">Meat</div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body">
+                  <div class="name">chicken thighs</div>
+                  <div class="note">for Thursday</div>
+                </div>
+              </div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body"><div class="name">ground beef</div></div>
+              </div>
+              <div class="aisle">Pantry</div>
+              <div class="lr">
+                <span class="ring"></span>
+                <div class="body">
+                  <div class="name">tortillas</div>
+                  <div class="note">Sam added · just now</div>
+                </div>
+              </div>
+            </div>
+          </div>
+          <div class="fade"></div>
+        </div>
+        <div class="tabbar">
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-home" /></svg><span>Home</span>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-cal" /></svg><span>Calendar</span>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-utensils" /></svg><span>Meals</span>
+            </div>
+          </div>
+          <div class="tab on">
+            <div class="pill">
+              <svg class="i"><use href="#i-cart" /></svg><span>Shopping</span>
+            </div>
+          </div>
+          <div class="tab">
+            <div class="pill">
+              <svg class="i"><use href="#i-more" /></svg><span>More</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cost">
+    <p>
+      <strong>What the hybrid gives up, stated so nobody re-discovers it as a bug.</strong> There is
+      no live run (D) — the house cannot see that someone is at the store, and “anything else while
+      I'm here?” stays a text message. There is no whole-house glance (C) — answering “do we need
+      anything anywhere?” means reading three pills, not one list. Both are additive later; neither
+      is designed around here.
+    </p>
+    <p>
+      <strong>The one thing the hybrid must not do.</strong> The pill strip is a filter that swaps
+      the list in place. The moment it becomes a screen you land on, or grows past about five
+      destinations, it is the index-of-lists that #127 was rejected for. If a sixth destination ever
+      appears, that is a design question, not a scroll affordance.
+    </p>
+  </div>
+
+  <h2>What the gate answered</h2>
+  <p class="lede">
+    <strong>Direction:</strong> A on B — the hybrid drawn above. <strong>The wall:</strong> W2 — it
+    only takes things in. <strong>The tab:</strong> Shopping is pinned into the four and
+    <strong>Chores</strong> moves into More, so the phone reads Home · Calendar · Meals · Shopping ·
+    More. The contract M5.5/2 builds from is <code>docs/modules/shopping/design.md</code>; this
+    artifact is its picture, and the two are read together.
+  </p>
+  <p class="t-sm" style="color: var(--page-muted)">
+    Rendered against <code>packages/ui</code> @ <code>main</code>, 2026-09-03.
+    <code>ListRow</code> is drawn per ADR 063/068 (hairline, 56&nbsp;px floor, leading slot) — the
+    primitive is not on <code>main</code> yet and is M5.5/2's to land. No identity chrome appears on
+    a shopping row (ADR&nbsp;064); the one exception drawn is D3's “Dad is at Grocery”, where the
+    person <em>is</em> the answer.
+  </p>
+</div>
