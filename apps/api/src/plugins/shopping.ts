@@ -8,6 +8,7 @@ import { fileAisle, normalizeItemName, aisleSortIndex } from '@family-os/plugin-
 import {
   ShoppingItemCreateSchema,
   ShoppingAisleCorrectionSchema,
+  ShoppingCheckSchema,
   ShoppingListCreateSchema,
   NeedsPushedPayloadSchema,
 } from '@family-os/schemas'
@@ -484,6 +485,62 @@ const shoppingPlugin: FastifyPluginAsync = async (fastify) => {
     // un-teaching would restore. Accepted residue, not an oversight.
     announceRemoval(fastify.eventBus, existing, request.profile.id, 'retracted')
     return reply.status(204).send()
+  })
+
+  // POST /shopping/items/:id/check — whole-row check, and the same route
+  // unchecks (ADR 071 §2: one key, a toggle, not a one-way door). Gated on
+  // `check`, tier 2 — the person holding the cart is often not the tier-4 one,
+  // and a read-only shop surface is the failure ADR 071 exists to prevent.
+  // `ability.can`, never a tier read (ADR 018).
+  fastify.post('/shopping/items/:id/check', async (request, reply) => {
+    if (!request.ability.can('check', 'shopping.Item')) {
+      return reply.status(403).send({ error: 'Permission denied' })
+    }
+
+    const { id } = request.params as { id: string }
+    const parsed = ShoppingCheckSchema.safeParse(request.body ?? {})
+    if (!parsed.success) {
+      return reply.status(400).send({ error: parsed.error.flatten() })
+    }
+    const { status } = parsed.data
+
+    // The body names the TARGET STATE, so two phones tapping the same row settle
+    // on one answer instead of toggling each other. The write is conditional on
+    // the row still being in the OTHER state, which makes the transition atomic:
+    // `status` is last-write-wins between two different targets, and `got_by` is
+    // first-writer-wins between two identical ones — whoever actually reached
+    // the shelf keeps the attribution, and the second tap is a true no-op rather
+    // than a second row-version and a second event the other phone must absorb.
+    const moved = await shoppingPrisma.item.updateMany({
+      where: { id, status: status === 'got' ? 'needed' : 'got' },
+      data:
+        status === 'got'
+          ? { status, gotBy: request.profile.id, gotAt: new Date() }
+          : // Unchecking clears the attribution rather than leaving a stale "got"
+            // on a row nobody has got. The needs-push re-add path clears the same
+            // two columns; the two must not disagree.
+            { status, gotBy: null, gotAt: null },
+    })
+
+    const item = await shoppingPrisma.item.findUnique({ where: { id } })
+    if (!item) return reply.status(404).send({ error: 'Item not found' })
+
+    // Only a real transition is announced. Re-announcing a no-op would make the
+    // other shopper's list refetch for a change that did not happen.
+    if (moved.count > 0) {
+      fastify.eventBus.emit('shopping.item.checked', {
+        itemId: item.id,
+        listId: item.listId,
+        name: item.name,
+        // ONE event for both directions, read by its `status` (ADR 072 §5's rule
+        // applied: a consumer that cares tests the value; a second name makes
+        // every consumer subscribe twice and eventually forget one).
+        status: item.status,
+        gotBy: item.gotBy,
+      })
+    }
+
+    return serializeItem(item)
   })
 
   // POST /shopping/items/:id/aisle — a correction re-files this item AND

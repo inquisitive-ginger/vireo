@@ -4,12 +4,18 @@ import type { ShoppingItem } from '../types'
 
 /* The /shopping surface — design.md §Anatomy, artifact frames S1 and S2. */
 
-const item = (id: string, name: string, category: string, note?: string): ShoppingItem => ({
+const item = (
+  id: string,
+  name: string,
+  category: string,
+  note?: string,
+  status: ShoppingItem['status'] = 'needed'
+): ShoppingItem => ({
   id,
   name,
   category,
   quantity: null,
-  status: 'needed',
+  status,
   listId: 'grocery',
   addedAt: '2026-09-03T12:00:00.000Z',
   note: note ?? null,
@@ -57,6 +63,11 @@ const meta: Meta<typeof ShoppingPageView> = {
     draftAisle: null,
     addError: null,
     canAdd: true,
+    canCheck: true,
+    canFile: false,
+    onToggle: () => {},
+    onRefile: () => {},
+    rowErrors: {},
     layout: 'list',
     justAdded: [],
     totalOpenCount: 19,
@@ -140,4 +151,66 @@ export const WideListsShown: Story = {
 /* Nobody has walked up to it today. The strip says so rather than sitting empty. */
 export const WideNothingYet: Story = {
   args: { ...Wide.args, justAdded: [] },
+}
+
+/* The same screen, scrolled, mid-shop — Produce cleared and collapsed, Dairy
+   part-done, the status line and meter pinned. Nothing switched modes. */
+export const InTheAisle: Story = {
+  name: 'S3 — in the aisle',
+  args: {
+    // `itemCount` is the OPEN count the index endpoint sends, so it falls as the
+    // walk proceeds. Inheriting the at-rest 14 drew a screen the API cannot
+    // produce: the pill said Grocery 14 while the title said 4 to get and the
+    // meter said 4 of 8 — three numbers for one list, none of them agreeing.
+    lists: [
+      { id: 'grocery', name: 'Grocery', kind: 'permanent', groupByAisle: true, itemCount: 4 },
+      { id: 'costco', name: 'Costco', kind: 'permanent', groupByAisle: true, itemCount: 3 },
+      { id: 'hardware', name: 'Hardware', kind: 'runtime', groupByAisle: false, itemCount: 2 },
+    ],
+    groups: [
+      {
+        aisle: 'Produce',
+        items: [
+          item('1', 'snap peas', 'Produce', 'for Thursday', 'got'),
+          item('2', 'bananas', 'Produce', undefined, 'got'),
+          item('3', 'cilantro', 'Produce', undefined, 'got'),
+        ],
+      },
+      {
+        aisle: 'Dairy',
+        items: [
+          item('4', 'milk', 'Dairy', undefined, 'got'),
+          item('5', 'greek yogurt', 'Dairy'),
+          item('6', 'butter', 'Dairy'),
+        ],
+      },
+      {
+        aisle: 'Meat',
+        items: [
+          item('7', 'chicken thighs', 'Meat', 'for Thursday'),
+          item('8', 'ground beef', 'Meat'),
+        ],
+      },
+    ],
+  },
+}
+
+/* AC9. Tier 4 only — below it the control is absent, not disabled. */
+export const CanCorrectTheAisle: Story = {
+  name: 'The aisle correction (tier 4)',
+  args: { canFile: true },
+}
+
+/* A check that never reached the server. The row that was tapped is the row that
+   answers — a page-scoped line names nothing when thirty rows look alike. */
+export const CheckFailed: Story = {
+  args: {
+    canCheck: true,
+    rowErrors: { '4': "Didn't reach the list — check your connection and tap again." },
+  },
+}
+
+/* `shopping.item.check` revoked: the list still reads, it just does not move. */
+export const CheckRevoked: Story = {
+  args: { canCheck: false },
 }

@@ -464,6 +464,138 @@ describe('GET /api/shopping/recent', () => {
   })
 })
 
+// ─── POST /api/shopping/items/:id/check ───────────────────────────────────────
+
+function check(cookie: string, itemId: string, status: 'needed' | 'got') {
+  return app.inject({
+    method: 'POST',
+    url: `/api/shopping/items/${itemId}/check`,
+    headers: { cookie },
+    payload: { status },
+  })
+}
+
+describe('POST /api/shopping/items/:id/check', () => {
+  it('marks a row got and records who reached the shelf', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const created = await addItem(cookie, await groceryListId(), { name: 'milk' })
+
+    const res = await check(cookie, created.json().id, 'got')
+    expect(res.statusCode).toBe(200)
+    expect(res.json().status).toBe('got')
+
+    const stored = await shoppingPrisma.item.findUnique({ where: { id: created.json().id } })
+    expect(stored?.gotBy).toBe(PARENT_ID)
+    expect(stored?.gotAt).not.toBeNull()
+  })
+
+  it('unchecks on the same key and clears the attribution (ADR 071 §2)', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const created = await addItem(cookie, await groceryListId(), { name: 'milk' })
+    await check(cookie, created.json().id, 'got')
+
+    const res = await check(cookie, created.json().id, 'needed')
+    expect(res.json().status).toBe('needed')
+
+    const stored = await shoppingPrisma.item.findUnique({ where: { id: created.json().id } })
+    expect(stored).toMatchObject({ gotBy: null, gotAt: null })
+  })
+
+  it('lets a tier-2 profile check — the person holding the cart is rarely tier 4', async () => {
+    const parent = await getCookieForProfile(PARENT_ID)
+    const created = await addItem(parent, await groceryListId(), { name: 'milk' })
+
+    const teen = await getCookieForProfile(TEEN_ID)
+    expect((await check(teen, created.json().id, 'got')).statusCode).toBe(200)
+    expect((await check(teen, created.json().id, 'needed')).statusCode).toBe(200)
+  })
+
+  it('refuses a tier-1 kid — adding is the participation, clearing a trip is not', async () => {
+    const parent = await getCookieForProfile(PARENT_ID)
+    const created = await addItem(parent, await groceryListId(), { name: 'milk' })
+
+    const kid = await getCookieForProfile(KID_ID)
+    expect((await check(kid, created.json().id, 'got')).statusCode).toBe(403)
+  })
+
+  it('refuses the unattended wall on the ability alone — it adds, it does not clear', async () => {
+    const parent = await getCookieForProfile(PARENT_ID)
+    const created = await addItem(parent, await groceryListId(), { name: 'milk' })
+
+    const wall = await getCookieForProfile(FAMILY_PROFILE_ID)
+    expect((await check(wall, created.json().id, 'got')).statusCode).toBe(403)
+  })
+
+  it('rejects a body that is a toggle verb rather than a target state', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const created = await addItem(cookie, await groceryListId(), { name: 'milk' })
+    const res = await app.inject({
+      method: 'POST',
+      url: `/api/shopping/items/${created.json().id}/check`,
+      headers: { cookie },
+      payload: { toggle: true },
+    })
+    expect(res.statusCode).toBe(400)
+  })
+
+  it('404s on an unknown item', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const res = await check(cookie, '00000000-0000-4000-8000-000000000000', 'got')
+    expect(res.statusCode).toBe(404)
+  })
+
+  it('settles two shoppers on the same answer, and keeps the first writer’s attribution', async () => {
+    const parent = await getCookieForProfile(PARENT_ID)
+    const created = await addItem(parent, await groceryListId(), { name: 'milk' })
+    const teen = await getCookieForProfile(TEEN_ID)
+
+    // Both phones name the target state, not a toggle: the second tap lands on a
+    // row that is already there and settles rather than flipping it back.
+    const first = await check(parent, created.json().id, 'got')
+    const second = await check(teen, created.json().id, 'got')
+    expect(first.json().status).toBe('got')
+    expect(second.json().status).toBe('got')
+
+    const stored = await shoppingPrisma.item.findUnique({ where: { id: created.json().id } })
+    expect(stored?.gotBy).toBe(PARENT_ID)
+  })
+
+  it('announces one event per real transition, and nothing for a no-op', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const created = await addItem(cookie, await groceryListId(), { name: 'milk' })
+
+    const seen: unknown[] = []
+    const off = app.eventBus.on('shopping.item.checked', (p) => seen.push(p))
+    await check(cookie, created.json().id, 'got')
+    await check(cookie, created.json().id, 'got')
+    await check(cookie, created.json().id, 'needed')
+    off()
+
+    // One name for both directions, read by its `status` — a second event name
+    // makes every consumer subscribe twice and eventually forget one.
+    expect(seen).toHaveLength(2)
+    expect(seen[0]).toMatchObject({ name: 'milk', status: 'got', gotBy: PARENT_ID })
+    expect(seen[1]).toMatchObject({ name: 'milk', status: 'needed', gotBy: null })
+  })
+
+  it('keeps a checked row on the list, in its place — it never leaves the read', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const listId = await groceryListId()
+    const milk = await addItem(cookie, listId, { name: 'milk' })
+    await addItem(cookie, listId, { name: 'butter' })
+    await check(cookie, milk.json().id, 'got')
+
+    const res = await app.inject({
+      method: 'GET',
+      url: `/api/shopping/lists/${listId}`,
+      headers: { cookie },
+    })
+    expect(res.json().items.map((i: { name: string }) => i.name)).toEqual(['milk', 'butter'])
+    // The count strip counts what is still to get, not what is on the list.
+    expect(res.json().list.itemCount).toBe(1)
+  })
+})
+
 // ─── POST /api/shopping/items/:id/aisle ───────────────────────────────────────
 
 describe('POST /api/shopping/items/:id/aisle', () => {

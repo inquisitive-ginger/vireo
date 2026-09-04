@@ -276,6 +276,16 @@ export const ShoppingAisleCorrectionSchema = z.object({
 
 export type ShoppingAisleCorrectionInput = z.infer<typeof ShoppingAisleCorrectionSchema>
 
+// The check route names the TARGET STATE, never a toggle verb. Two shoppers
+// tapping the same row a second apart both say `got`, so they settle on the same
+// answer instead of racing each other back and forth (M5.5/4). Unchecking is the
+// same key and the same route (ADR 071 §2) — a toggle, not a one-way door.
+export const ShoppingCheckSchema = z.object({
+  status: z.enum(['needed', 'got']),
+})
+
+export type ShoppingCheckInput = z.infer<typeof ShoppingCheckSchema>
+
 // A runtime list (ADR 067/069: creating one is tier 4). Permanent lists are
 // seeded, not created through this route.
 export const ShoppingListCreateSchema = z.object({

@@ -8,6 +8,10 @@ export interface ListRowProps {
       check, can fill it without a prop-shape change here). Lifted above the
       activation overlay when both are present, same reasoning as `trailing`. */
   leading?: ReactNode
+  /** The row's trailing control — a correction menu, an inline action. Lifted
+      above the activation overlay so it stays tappable on a row that is itself
+      a target; a control the overlay swallows is a control that does nothing. */
+  trailing?: ReactNode
   /** Dim the row — e.g. a checked-off item. */
   dimmed?: boolean
   /** Makes the row's passive area a single tap target — the `ItemCard`
@@ -32,6 +36,7 @@ export interface ListRowProps {
    (groceries). See design-system.md "The card-row primitive" for the rule. */
 export function ListRow({
   leading,
+  trailing,
   dimmed = false,
   onActivate,
   activateLabel,
@@ -81,6 +86,11 @@ export function ListRow({
         </div>
       )}
       {children}
+      {trailing !== undefined && (
+        <div className={cn('flex shrink-0 items-center', onActivate && 'relative z-20')}>
+          {trailing}
+        </div>
+      )}
     </Tag>
   )
 }

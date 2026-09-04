@@ -1,8 +1,16 @@
-import { useMemo, useState } from 'react'
+import { useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Loader2 } from 'lucide-react'
-import { useAuth, useMutation, usePermissions, useQuery, useQueryClient } from '@family-os/platform'
+import {
+  useAuth,
+  useEventBus,
+  useMutation,
+  usePermissions,
+  useQuery,
+  useQueryClient,
+} from '@family-os/platform'
 import { ErrorCard } from '@family-os/ui'
+import type { ShoppingAisle } from '@family-os/schemas'
 import type { ListResponse, ListsResponse, RecentResponse, ShoppingItem } from '../types'
 import { aisleSortIndex, fileAisle, normalizeItemName } from '../lib/filing'
 import { useWideLayout } from '../lib/use-wide-layout'
@@ -11,6 +19,8 @@ import { ShoppingPageView, type AisleGroup } from './ShoppingPageView'
 /** How many chips the wide layout's short memory holds. More than a row's worth
     stops being a memory and starts being the list it sits above. */
 const JUST_ADDED = 5
+
+const CHECK_MUTATION = ['shopping/check'] as const
 
 function json<T>(res: Response): Promise<T> {
   if (!res.ok) throw new Error(String(res.status))
@@ -50,10 +60,22 @@ export function ShoppingPage() {
   const capturing = wide && !onListsRoute
   const ability = usePermissions()
   const queryClient = useQueryClient()
+  const { subscribe } = useEventBus()
   const [selectedListId, setSelectedListId] = useState<string | null>(null)
   const [draft, setDraft] = useState('')
   const [addError, setAddError] = useState<string | null>(null)
   const [retractError, setRetractError] = useState<string | null>(null)
+  const [rowErrors, setRowErrors] = useState<Record<string, string>>({})
+
+  // A retry that works has to clear what the failure said, or the row keeps
+  // reporting a problem it no longer has for the rest of the session.
+  const clearRowError = (itemId: string) =>
+    setRowErrors((errors) => {
+      if (!(itemId in errors)) return errors
+      const next = { ...errors }
+      delete next[itemId]
+      return next
+    })
 
   // The house adds too (ADR 072) — the wall-mounted tablet runs as the family
   // profile and capture is its whole job. What can close the field is the
@@ -65,6 +87,12 @@ export function ShoppingPage() {
   // Whether a given ROW qualifies is the server's answer (`canRetract`), since
   // it owns the clock and `added_by` never reaches the client.
   const canRetract = ability.can('retract', 'shopping.Item')
+  // Tier 2 and the SAME key in both directions (ADR 071 §2) — the person who
+  // mis-taps is in an aisle, and the undo has to be reachable by them.
+  const canCheck = ability.can('check', 'shopping.Item')
+  // Tier 4, and its own action rather than `manage` (ADR 071 §3), so a house can
+  // hand a shopping teen the correction without also handing over delete.
+  const canFile = ability.can('file', 'shopping.Item')
 
   // Profile-scoped, under one `shopping/list` prefix the M5.5/5 widget reuses,
   // so a single invalidation refreshes the page and the widget together.
@@ -78,8 +106,14 @@ export function ShoppingPage() {
   const activeListId = selectedListId ?? lists[0]?.id ?? null
   const selected = lists.find((l) => l.id === activeListId)
 
+  // Keyed by the list the row actually belongs to, not by what is selected right
+  // now: a mutation that settles after a pill tap must roll back into the list it
+  // came from, or Grocery's rows land under the Costco key until the refetch
+  // catches up.
+  const keyFor = (listId: string | null) => ['shopping/list', id, listId]
+
   const listQuery = useQuery<ListResponse>({
-    queryKey: ['shopping/list', id, activeListId],
+    queryKey: keyFor(activeListId),
     queryFn: () => fetch(`/api/shopping/lists/${activeListId}`).then(json<ListResponse>),
     enabled: activeListId !== null,
     retry: 1,
@@ -94,15 +128,50 @@ export function ShoppingPage() {
     retry: 1,
   })
 
-  const openItems = useMemo(
-    () => (listQuery.data?.items ?? []).filter((i) => i.status === 'needed'),
-    [listQuery.data]
-  )
+  // Checked rows stay in the list, in their place (M5.5/4) — the server's order
+  // is walk order and a check does not move a row out of it. An item never
+  // vanishes from under a thumb.
+  const items = useMemo(() => listQuery.data?.items ?? [], [listQuery.data])
 
-  const groups = useMemo(
-    () => toGroups(openItems, selected?.groupByAisle ?? true),
-    [openItems, selected]
-  )
+  const groups = useMemo(() => toGroups(items, selected?.groupByAisle ?? true), [items, selected])
+
+  // Two phones on one list. The `/events` websocket already broadcasts every bus
+  // message to every connected client, so the other shopper's check arrives as
+  // an invalidation rather than a poll running all day in a pocket. A refresh is
+  // held back while one of our own checks is in flight — its optimistic row is
+  // the truth on this screen until the mutation settles, and a refetch landing
+  // mid-flight flips the row back under the thumb that just moved it.
+  //
+  // Held back, NOT dropped: the settle window includes the mutation's own
+  // refetch, so a partner's check arriving inside it would otherwise be answered
+  // by a response that was already in the air before they tapped, and their item
+  // would sit unchecked on our phone until something unrelated happened. The
+  // missed beat is replayed once the window closes.
+  const missedRefresh = useRef(false)
+  // Counted, not a membership set: tapping one row twice before the first
+  // settles puts the same id in flight twice, and a plain `delete` would
+  // declare the air clear while the second request is still out.
+  const inFlightChecks = useRef(new Map<string, number>())
+  useEffect(() => {
+    const refresh = (payload: unknown) => {
+      const itemId = (payload as { itemId?: string } | null)?.itemId
+      // `/events` fans out to every socket with no originator on the frame, so
+      // our own check comes straight back to us. Answering it would arm the
+      // replay on every tap — and the replay exists for the partner's tap.
+      if (itemId && inFlightChecks.current.has(itemId)) return
+      if (queryClient.isMutating({ mutationKey: CHECK_MUTATION }) > 0) {
+        missedRefresh.current = true
+        return
+      }
+      void queryClient.invalidateQueries({ queryKey: ['shopping/list'] })
+    }
+    const offChecked = subscribe('shopping.item.checked', refresh)
+    const offAdded = subscribe('shopping.item.added', refresh)
+    return () => {
+      offChecked()
+      offAdded()
+    }
+  }, [subscribe, queryClient])
 
   // The echo has to state the aisle the SERVER will pick, so it reads the
   // family's corrections, not the bare dictionary.
@@ -129,6 +198,89 @@ export function ShoppingPage() {
       // failure has to name it back or the person never learns what was lost.
       console.error('[shopping] could not add %s', variables.name, err)
       setAddError(variables.name)
+    },
+  })
+
+  // The body names the TARGET STATE, not a toggle verb: two people tapping the
+  // same row a second apart both say `got` and settle there, instead of racing
+  // each other back and forth.
+  const checkItem = useMutation({
+    mutationKey: CHECK_MUTATION,
+    mutationFn: ({ item, status }: { item: ShoppingItem; status: ShoppingItem['status'] }) =>
+      fetch(`/api/shopping/items/${item.id}/check`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ status }),
+      }).then(json<ShoppingItem>),
+    onMutate: async ({ item, status }) => {
+      // A shop is where the signal is worst and the thumb is fastest. The row
+      // answers immediately and the server confirms behind it.
+      const key = keyFor(item.listId)
+      inFlightChecks.current.set(item.id, (inFlightChecks.current.get(item.id) ?? 0) + 1)
+      await queryClient.cancelQueries({ queryKey: key })
+      queryClient.setQueryData<ListResponse>(key, (old) =>
+        old
+          ? { ...old, items: old.items.map((i) => (i.id === item.id ? { ...i, status } : i)) }
+          : old
+      )
+      clearRowError(item.id)
+      // The row's OWN prior status, not a snapshot of the list. Restoring a whole
+      // snapshot would undo whatever else landed while this request was in the
+      // air: two checks in flight, the second succeeds, the first fails, and the
+      // rollback quietly puts the second row back on the list with no error on
+      // it — the exact failure the row-scoped rule exists to prevent.
+      return { key, was: item.status }
+    },
+    onError: (err, { item, status }, context) => {
+      if (context)
+        queryClient.setQueryData<ListResponse>(context.key, (old) =>
+          old
+            ? {
+                ...old,
+                items: old.items.map((i) => (i.id === item.id ? { ...i, status: context.was } : i)),
+              }
+            : old
+        )
+      // The row goes back to what it was, and says why. Silence here is a person
+      // walking away from a shelf believing the thing is in the cart.
+      console.error('[shopping] could not mark %s as %s', item.name, status, err)
+      setRowErrors((errors) => ({
+        ...errors,
+        [item.id]: "Didn't reach the list — check your connection and tap again.",
+      }))
+    },
+    onSettled: async (_data, _err, { item }) => {
+      const outstanding = (inFlightChecks.current.get(item.id) ?? 1) - 1
+      if (outstanding > 0) inFlightChecks.current.set(item.id, outstanding)
+      else inFlightChecks.current.delete(item.id)
+      await queryClient.invalidateQueries({ queryKey: ['shopping/list'] })
+      // Another tap is already in the air — walking an aisle is a run of them —
+      // and refetching now would land on top of its optimistic row. The flag
+      // stays set; whichever check settles last replays it.
+      if (missedRefresh.current && inFlightChecks.current.size === 0) {
+        missedRefresh.current = false
+        void queryClient.invalidateQueries({ queryKey: ['shopping/list'] })
+      }
+    },
+  })
+
+  // A correction refiles THIS row and teaches a family-wide override, so the
+  // next add of the same name files itself correctly for everyone.
+  const refileItem = useMutation({
+    mutationFn: ({ item, category }: { item: ShoppingItem; category: ShoppingAisle }) =>
+      fetch(`/api/shopping/items/${item.id}/aisle`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ category }),
+      }).then(json<ShoppingItem>),
+    onMutate: ({ item }) => clearRowError(item.id),
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['shopping/list'] }),
+    onError: (err, { item, category }) => {
+      console.error('[shopping] could not refile %s under %s', item.name, category, err)
+      setRowErrors((errors) => ({
+        ...errors,
+        [item.id]: `Couldn’t move this to ${category} — check your connection and try again.`,
+      }))
     },
   })
 
@@ -203,6 +355,7 @@ export function ShoppingPage() {
       onSelectList={(listId) => {
         setSelectedListId(listId)
         setAddError(null)
+        setRowErrors({})
       }}
       groups={groups}
       onAdd={(name) => {
@@ -225,6 +378,13 @@ export function ShoppingPage() {
       onShowLists={() => void navigate('/shopping/lists')}
       onRetract={canRetract ? (itemId, name) => retractItem.mutate({ itemId, name }) : undefined}
       retractError={retractError}
+      canCheck={canCheck}
+      canFile={canFile}
+      onToggle={(item) =>
+        checkItem.mutate({ item, status: item.status === 'got' ? 'needed' : 'got' })
+      }
+      onRefile={(item, category) => refileItem.mutate({ item, category })}
+      rowErrors={rowErrors}
     />
   )
 }

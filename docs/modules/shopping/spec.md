@@ -93,6 +93,25 @@ what overrides are for.
 **A wall add emits the same `shopping.item.added`** (ADR 072), distinguished by
 `addedBy === 'family'` in the payload rather than by a second event name.
 
+**Unchecking emits the same `shopping.item.checked`**, carrying
+`status: 'needed' | 'got'` (settled M5.5/4). There is no `shopping.item.unchecked`.
+The three candidates were a second event name, one event carrying the state, and
+nothing at all:
+
+- **A second name** loses to the rule ADR 072 §5 already set for the wall add — a
+  consumer that cares tests the value, and a second name makes every consumer
+  subscribe twice and eventually forget one. It would also split what ADR 071 §2
+  deliberately joined: unchecking is not a second capability, it is the same key
+  in the other direction.
+- **Nothing** was the tempting one, and it is wrong for the reason this session
+  exists: the second shopper's screen is driven off this event, so an unchecked
+  row would silently stay struck through on the other phone until something else
+  happened to invalidate it.
+
+Only a real transition is announced — re-asserting a state a row is already in
+writes nothing and emits nothing, so the other phone is not asked to refetch for
+a change that did not happen.
+
 **A retract and a tier-4 delete both emit `shopping.item.removed`** (ADR 073) —
 `{ itemId, listId, name, by, reason }`, `reason: 'retracted' | 'managed'`. One
 transition, one name; `name` rides along because the row is gone by the time a
