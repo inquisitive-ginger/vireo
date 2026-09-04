@@ -1,5 +1,5 @@
 import { useMemo, type ReactNode } from 'react'
-import { HandPlatter, ShoppingCart, Utensils } from 'lucide-react'
+import { ExternalLink, HandPlatter, ShoppingCart, Utensils } from 'lucide-react'
 import { Link } from 'react-router-dom'
 import {
   Badge,
@@ -131,6 +131,28 @@ function TryBiteChip({ tryBite }: { tryBite: string }) {
   )
 }
 
+/* The recipe rides the LOGISTICS RAIL (gate, 2026-09-03), right-aligned
+   opposite the owner: the cook is standing at the fridge at 5pm, and the two
+   taps through /meals is the difference between the field being used and not.
+   Below the hairline on purpose — the kid zone above it stays what a kid reads
+   at 3:30. `z-20` is CardLink's overlay recipe, the same lift the claim button
+   already takes; without it the whole-tile link swallows the click. NEXT UP
+   gets none: tomorrow's recipe is not a thing anyone opens tonight. */
+function RailRecipeLink({ url, title }: { url: string; title: string }) {
+  return (
+    <a
+      href={url}
+      target="_blank"
+      rel="noopener noreferrer"
+      aria-label={`Recipe for “${title}” (opens in a new tab)`}
+      className="text-sm-token relative z-20 ml-auto flex shrink-0 items-center gap-1 font-medium text-accent hover:underline focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+    >
+      Recipe
+      <ExternalLink size={11} aria-hidden />
+    </a>
+  )
+}
+
 /* Both stand-ins hold the exact footprint of a rendered `sm` avatar (32px) so
    rows never shift between owned, unclaimed, and going-out states. */
 function HollowRing() {
@@ -217,6 +239,7 @@ function Body({ stretch = true, ...zone }: ZoneProps & { stretch?: boolean }) {
               I've got it
             </Button>
           )}
+          {today.recipeUrl && <RailRecipeLink url={today.recipeUrl} title={today.title} />}
         </div>
       </div>
     )
@@ -256,6 +279,7 @@ function Body({ stretch = true, ...zone }: ZoneProps & { stretch?: boolean }) {
             </span>
           </>
         )}
+        {today.recipeUrl && <RailRecipeLink url={today.recipeUrl} title={today.title} />}
       </div>
     </div>
   )

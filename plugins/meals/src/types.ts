@@ -13,6 +13,7 @@ export interface PlannedMeal {
   notes: string | null
   tryBite: string | null
   needs: string | null
+  recipeUrl: string | null
   createdBy: string
   createdAt: string
   updatedAt: string

@@ -978,6 +978,7 @@ export namespace Prisma {
     notes: string | null
     tryBite: string | null
     needs: string | null
+    recipeUrl: string | null
     createdBy: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -994,6 +995,7 @@ export namespace Prisma {
     notes: string | null
     tryBite: string | null
     needs: string | null
+    recipeUrl: string | null
     createdBy: string | null
     createdAt: Date | null
     updatedAt: Date | null
@@ -1010,6 +1012,7 @@ export namespace Prisma {
     notes: number
     tryBite: number
     needs: number
+    recipeUrl: number
     createdBy: number
     createdAt: number
     updatedAt: number
@@ -1028,6 +1031,7 @@ export namespace Prisma {
     notes?: true
     tryBite?: true
     needs?: true
+    recipeUrl?: true
     createdBy?: true
     createdAt?: true
     updatedAt?: true
@@ -1044,6 +1048,7 @@ export namespace Prisma {
     notes?: true
     tryBite?: true
     needs?: true
+    recipeUrl?: true
     createdBy?: true
     createdAt?: true
     updatedAt?: true
@@ -1060,6 +1065,7 @@ export namespace Prisma {
     notes?: true
     tryBite?: true
     needs?: true
+    recipeUrl?: true
     createdBy?: true
     createdAt?: true
     updatedAt?: true
@@ -1149,6 +1155,7 @@ export namespace Prisma {
     notes: string | null
     tryBite: string | null
     needs: string | null
+    recipeUrl: string | null
     createdBy: string
     createdAt: Date
     updatedAt: Date
@@ -1182,6 +1189,7 @@ export namespace Prisma {
     notes?: boolean
     tryBite?: boolean
     needs?: boolean
+    recipeUrl?: boolean
     createdBy?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -1198,6 +1206,7 @@ export namespace Prisma {
     notes?: boolean
     tryBite?: boolean
     needs?: boolean
+    recipeUrl?: boolean
     createdBy?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -1214,6 +1223,7 @@ export namespace Prisma {
     notes?: boolean
     tryBite?: boolean
     needs?: boolean
+    recipeUrl?: boolean
     createdBy?: boolean
     createdAt?: boolean
     updatedAt?: boolean
@@ -1230,12 +1240,13 @@ export namespace Prisma {
     notes?: boolean
     tryBite?: boolean
     needs?: boolean
+    recipeUrl?: boolean
     createdBy?: boolean
     createdAt?: boolean
     updatedAt?: boolean
   }
 
-  export type PlannedMealOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "date" | "slot" | "title" | "sides" | "kind" | "ownerId" | "notes" | "tryBite" | "needs" | "createdBy" | "createdAt" | "updatedAt", ExtArgs["result"]["plannedMeal"]>
+  export type PlannedMealOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "date" | "slot" | "title" | "sides" | "kind" | "ownerId" | "notes" | "tryBite" | "needs" | "recipeUrl" | "createdBy" | "createdAt" | "updatedAt", ExtArgs["result"]["plannedMeal"]>
 
   export type $PlannedMealPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     name: "PlannedMeal"
@@ -1251,6 +1262,7 @@ export namespace Prisma {
       notes: string | null
       tryBite: string | null
       needs: string | null
+      recipeUrl: string | null
       createdBy: string
       createdAt: Date
       updatedAt: Date
@@ -1687,6 +1699,7 @@ export namespace Prisma {
     readonly notes: FieldRef<"PlannedMeal", 'String'>
     readonly tryBite: FieldRef<"PlannedMeal", 'String'>
     readonly needs: FieldRef<"PlannedMeal", 'String'>
+    readonly recipeUrl: FieldRef<"PlannedMeal", 'String'>
     readonly createdBy: FieldRef<"PlannedMeal", 'String'>
     readonly createdAt: FieldRef<"PlannedMeal", 'DateTime'>
     readonly updatedAt: FieldRef<"PlannedMeal", 'DateTime'>
@@ -3073,6 +3086,7 @@ export namespace Prisma {
     notes: 'notes',
     tryBite: 'tryBite',
     needs: 'needs',
+    recipeUrl: 'recipeUrl',
     createdBy: 'createdBy',
     createdAt: 'createdAt',
     updatedAt: 'updatedAt'
@@ -3179,6 +3193,7 @@ export namespace Prisma {
     notes?: StringNullableFilter<"PlannedMeal"> | string | null
     tryBite?: StringNullableFilter<"PlannedMeal"> | string | null
     needs?: StringNullableFilter<"PlannedMeal"> | string | null
+    recipeUrl?: StringNullableFilter<"PlannedMeal"> | string | null
     createdBy?: UuidFilter<"PlannedMeal"> | string
     createdAt?: DateTimeFilter<"PlannedMeal"> | Date | string
     updatedAt?: DateTimeFilter<"PlannedMeal"> | Date | string
@@ -3195,6 +3210,7 @@ export namespace Prisma {
     notes?: SortOrderInput | SortOrder
     tryBite?: SortOrderInput | SortOrder
     needs?: SortOrderInput | SortOrder
+    recipeUrl?: SortOrderInput | SortOrder
     createdBy?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -3215,6 +3231,7 @@ export namespace Prisma {
     notes?: StringNullableFilter<"PlannedMeal"> | string | null
     tryBite?: StringNullableFilter<"PlannedMeal"> | string | null
     needs?: StringNullableFilter<"PlannedMeal"> | string | null
+    recipeUrl?: StringNullableFilter<"PlannedMeal"> | string | null
     createdBy?: UuidFilter<"PlannedMeal"> | string
     createdAt?: DateTimeFilter<"PlannedMeal"> | Date | string
     updatedAt?: DateTimeFilter<"PlannedMeal"> | Date | string
@@ -3231,6 +3248,7 @@ export namespace Prisma {
     notes?: SortOrderInput | SortOrder
     tryBite?: SortOrderInput | SortOrder
     needs?: SortOrderInput | SortOrder
+    recipeUrl?: SortOrderInput | SortOrder
     createdBy?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -3253,6 +3271,7 @@ export namespace Prisma {
     notes?: StringNullableWithAggregatesFilter<"PlannedMeal"> | string | null
     tryBite?: StringNullableWithAggregatesFilter<"PlannedMeal"> | string | null
     needs?: StringNullableWithAggregatesFilter<"PlannedMeal"> | string | null
+    recipeUrl?: StringNullableWithAggregatesFilter<"PlannedMeal"> | string | null
     createdBy?: UuidWithAggregatesFilter<"PlannedMeal"> | string
     createdAt?: DateTimeWithAggregatesFilter<"PlannedMeal"> | Date | string
     updatedAt?: DateTimeWithAggregatesFilter<"PlannedMeal"> | Date | string
@@ -3317,6 +3336,7 @@ export namespace Prisma {
     notes?: string | null
     tryBite?: string | null
     needs?: string | null
+    recipeUrl?: string | null
     createdBy: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -3333,6 +3353,7 @@ export namespace Prisma {
     notes?: string | null
     tryBite?: string | null
     needs?: string | null
+    recipeUrl?: string | null
     createdBy: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -3349,6 +3370,7 @@ export namespace Prisma {
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     tryBite?: NullableStringFieldUpdateOperationsInput | string | null
     needs?: NullableStringFieldUpdateOperationsInput | string | null
+    recipeUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdBy?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -3365,6 +3387,7 @@ export namespace Prisma {
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     tryBite?: NullableStringFieldUpdateOperationsInput | string | null
     needs?: NullableStringFieldUpdateOperationsInput | string | null
+    recipeUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdBy?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -3381,6 +3404,7 @@ export namespace Prisma {
     notes?: string | null
     tryBite?: string | null
     needs?: string | null
+    recipeUrl?: string | null
     createdBy: string
     createdAt?: Date | string
     updatedAt?: Date | string
@@ -3397,6 +3421,7 @@ export namespace Prisma {
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     tryBite?: NullableStringFieldUpdateOperationsInput | string | null
     needs?: NullableStringFieldUpdateOperationsInput | string | null
+    recipeUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdBy?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -3413,6 +3438,7 @@ export namespace Prisma {
     notes?: NullableStringFieldUpdateOperationsInput | string | null
     tryBite?: NullableStringFieldUpdateOperationsInput | string | null
     needs?: NullableStringFieldUpdateOperationsInput | string | null
+    recipeUrl?: NullableStringFieldUpdateOperationsInput | string | null
     createdBy?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
@@ -3553,6 +3579,7 @@ export namespace Prisma {
     notes?: SortOrder
     tryBite?: SortOrder
     needs?: SortOrder
+    recipeUrl?: SortOrder
     createdBy?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -3569,6 +3596,7 @@ export namespace Prisma {
     notes?: SortOrder
     tryBite?: SortOrder
     needs?: SortOrder
+    recipeUrl?: SortOrder
     createdBy?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
@@ -3585,6 +3613,7 @@ export namespace Prisma {
     notes?: SortOrder
     tryBite?: SortOrder
     needs?: SortOrder
+    recipeUrl?: SortOrder
     createdBy?: SortOrder
     createdAt?: SortOrder
     updatedAt?: SortOrder
