@@ -1,13 +1,14 @@
 import { useEffect, useRef, useState } from 'react'
 import { Check, ChevronLeft } from 'lucide-react'
-import { SHOPPING_AISLES, type ShoppingAisle } from '@family-os/schemas'
+import { SHOPPING_AISLES, ShoppingItemNameSchema, type ShoppingAisle } from '@family-os/schemas'
 import { Button, Input, Sheet, cn } from '@family-os/ui'
 import type { ShoppingItem } from '../types'
 
-/** `ShoppingItemRenameSchema`'s ceiling. Held at the field so a long word is
-    stopped where the person can see it, rather than coming back as a 400 after
-    the sheet has closed. */
-const RENAME_MAX = 120
+/** Read off the schema the create, the rename and the batch all share, never
+    restated: a copy of 120 here is a second rule wearing the first one's clothes.
+    Held at the field so a long word is stopped where the person can see it,
+    rather than coming back as a 400 after the sheet has closed. */
+const NAME_MAX = ShoppingItemNameSchema.maxLength ?? undefined
 
 export interface RowActionsSheetProps {
   /** Null closes the sheet. The row it was opened from restores focus. */
@@ -166,7 +167,7 @@ export function RowActionsSheet({
               onChange={(e) => setDraft(e.target.value)}
               aria-label={`Rename “${item.name}”`}
               enterKeyHint="done"
-              maxLength={RENAME_MAX}
+              maxLength={NAME_MAX}
               className="min-h-touch"
             />
             <Button type="submit" disabled={!trimmed} className="self-start">

@@ -27,13 +27,8 @@ import {
   type CaptureState,
 } from '../lib/capture-report'
 import { MAX_NAMES, parseNames } from '../lib/parse-names'
-import {
-  collisions,
-  failedNames,
-  retractMessage,
-  tooMany,
-  toDuplicate,
-} from '../lib/use-ambient-capture'
+import { collisions, failedNames, toDuplicate, tooMany } from '../lib/batch-results'
+import { retractMessage } from '../lib/use-ambient-capture'
 import { useWideLayout } from '../lib/use-wide-layout'
 import { ShoppingPageView, type AisleGroup } from './ShoppingPageView'
 

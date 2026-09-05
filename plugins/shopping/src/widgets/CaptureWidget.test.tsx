@@ -177,7 +177,11 @@ describe('CaptureWidget', () => {
                     item: { ...RECENT.items[0], id: 'c2', name: 'cereal' },
                     duplicateOf: null,
                   },
-                  { name: 'chicken thighs', error: 'Something went wrong' },
+                  // Zod's own message, which is exactly what the route sends.
+                  {
+                    name: 'chicken thighs',
+                    error: 'String must contain at most 120 character(s)',
+                  },
                 ],
               }),
           } as Response)
@@ -203,6 +207,17 @@ describe('CaptureWidget', () => {
     // notice under it. One collision, so it stays unnamed.
     expect(await screen.findByRole('alert')).toHaveTextContent('Couldn’t add “chicken thighs”')
     expect(screen.getByText('Already on Grocery.')).toBeInTheDocument()
+
+    /* THE TRAP: `error` is Zod's raw message — developer copy. It must never
+       reach a family member at the wall, and it must not be swallowed either.
+       The slot says it in the surface's own voice; the reason goes to the
+       console, where ADR 046's ring buffer can have it. */
+    expect(document.body.textContent).not.toContain('String must contain')
+    expect(consoleError).toHaveBeenCalledWith(
+      expect.stringContaining('could not add'),
+      'chicken thighs',
+      'String must contain at most 120 character(s)'
+    )
     consoleError.mockRestore()
   })
 

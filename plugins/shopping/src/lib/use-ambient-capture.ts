@@ -6,9 +6,9 @@ import {
   buildReport,
   clearErrors,
   dismissNotice,
-  type CaptureDuplicate,
   type CaptureState,
 } from './capture-report'
+import { collisions, failedNames, toDuplicate, tooMany } from './batch-results'
 import { MAX_NAMES, parseNames } from './parse-names'
 
 /* The Home widget's read and write. `/shopping` has its own container because
@@ -166,42 +166,6 @@ export function useAmbientCapture(canAdd: boolean, canRetract: boolean): Ambient
     }),
     canAdd,
   }
-}
-
-/** The row a collision points at is the one the add CREATED, never the
-    pre-existing row it doubled — on a shared list those belong to two people. */
-export function toDuplicate(
-  listName: string,
-  item: { id: string; name: string; canRetract: boolean },
-  canRetract: boolean
-): CaptureDuplicate {
-  return {
-    listName,
-    name: item.name,
-    retractId: canRetract && item.canRetract ? item.id : null,
-  }
-}
-
-/** In submitted order, so the error line names the first thing that was lost
-    rather than whichever the server happened to answer last. */
-export function failedNames(data: BatchAddResponse): string[] {
-  return data.results.filter((r) => !('item' in r)).map((r) => r.name)
-}
-
-export function collisions(
-  data: BatchAddResponse,
-  listName: string,
-  canRetract: boolean
-): CaptureDuplicate[] {
-  return data.results.flatMap((r) =>
-    'item' in r && r.duplicateOf ? [toDuplicate(listName, r.item, canRetract)] : []
-  )
-}
-
-/** Refused before it is sent — the batch route's own ceiling, said in the slot
-    rather than discovered as a 400. */
-export function tooMany(count: number): string {
-  return `That is ${count} things at once — ${MAX_NAMES} is the most in one go.`
 }
 
 /** The 403 at the boundary reads as an outcome, not a fault: the window closed

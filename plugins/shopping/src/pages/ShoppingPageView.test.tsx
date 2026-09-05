@@ -1,5 +1,6 @@
 import { describe, it, expect, vi } from 'vitest'
 import { act, render, screen, fireEvent, within } from '@testing-library/react'
+import { ShoppingItemNameSchema } from '@family-os/schemas'
 import { ShoppingPageView, type ShoppingPageViewProps } from './ShoppingPageView'
 import type { CaptureReport, ShoppingItem } from '../types'
 
@@ -626,6 +627,20 @@ describe('ShoppingPageView — the row’s verbs', () => {
       rowErrors: { '1': 'Too late to take back “snap peas” — it has been on the list a while.' },
     })
     expect(screen.getByRole('alert')).toHaveTextContent(/Too late to take back/)
+  })
+
+  /* The cap is READ from the schema the create, the rename and the batch share,
+     never restated — a second copy of 120 is a second rule wearing the first
+     one's clothes. Held at the field so a long word stops where the person can
+     see it rather than returning a 400 after the sheet has closed. */
+  it('caps the rename field at the shared schema’s own ceiling', () => {
+    renderView({ canManage: true })
+    openSheet('snap peas')
+    fireEvent.click(screen.getByRole('button', { name: 'Rename' }))
+    expect(screen.getByLabelText('Rename “snap peas”')).toHaveAttribute(
+      'maxlength',
+      String(ShoppingItemNameSchema.maxLength)
+    )
   })
 
   /* SH-06 / D5. Rename is `manage` and nothing more: no new key, no re-file, no
