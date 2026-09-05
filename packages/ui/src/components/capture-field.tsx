@@ -29,11 +29,18 @@ export interface CaptureFieldProps {
 /* `text` scales with the surface, not with the box: what you are typing IS the
    primary content, and on the wall the distance rule wants a key value at
    `heading`, not at the 18px floor (design-system.md §Type scale). Inline and
-   hero are both read close up, where `body` is right. */
+   hero are both read close up, where `body` is right.
+
+   The wall's placeholder drops back to `font-normal`, and that is a rule rather
+   than a tweak: `heading`'s 600 exists to carry CONTENT across a room, and a
+   placeholder is instruction. Wearing the weight it looks typed — worst where a
+   placeholder demonstrates a syntax, since the example then reads as a value the
+   surface is about to act on. Colour is untouched; `--muted-foreground` measures
+   5.23:1 on `--background` and was never the problem. */
 const SIZE: Record<CaptureFieldSize, { box: string; text: string; icon: number }> = {
   inline: { box: 'h-touch gap-2 pl-3', text: 'text-body', icon: 18 },
   hero: { box: 'h-14 gap-2.5 pl-3.5', text: 'text-body', icon: 22 },
-  wall: { box: 'h-19 gap-3 pl-5', text: 'text-heading', icon: 26 },
+  wall: { box: 'h-19 gap-3 pl-5', text: 'text-heading placeholder:font-normal', icon: 26 },
 }
 
 /* The catch half of the capture taxonomy (ADR 070): one line, always open,

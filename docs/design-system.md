@@ -1212,10 +1212,19 @@ phone dashboard 1272 px to a tile nobody asked for, and the same widget on the f
 profile made an always-on kitchen display hold the keyboard. **A screen left on in a room
 is not a screen someone walked up to.**
 
-**State the filing before the commit.** Where a capture files what it catches somewhere
-derived (shopping's aisle), say so in one `sm` line under the field while composing —
-`Enter to add · files under Pantry`. A mis-file is then caught by the person who caused
-it, at the one moment they still know what they meant.
+**A placeholder does not carry the field's weight at wall size** (2026-09-04). `wall` sets
+its text to `heading`, whose 600 exists to carry **content** across a room — a placeholder
+is instruction, and wearing that weight it reads as something already typed. Drop it to
+`font-normal`; the colour is not the lever and stays `--muted-foreground` (5.23:1 on
+`--background`, measured off the render). The case that forced it: a placeholder that
+_demonstrates_ a syntax rather than describing the field — shopping's `milk, eggs, bread`
+— looks most like a value exactly when the surface is answering about milk, eggs and bread.
+
+**Reserve the report line, and keep it still.** A capture surface owes one line under the
+field for what it has to say back — a failure, a collision. Its height is reserved from
+first paint, because a line that mounts on the first keystroke shoves the page down and
+Enter shoves it back. It may grow in answer to a submit, which is the reader's own act;
+it must never move while someone is typing.
 
 ### Widget prominence — the elevation ladder
 
