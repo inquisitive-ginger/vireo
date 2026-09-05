@@ -21,9 +21,9 @@ const RECENT = {
       listId: 'grocery',
       addedAt: '2026-09-04T12:00:00.000Z',
       note: null,
+      canRetract: true,
     },
   ],
-  overrides: { 'snap peas': 'Produce' },
 }
 
 afterEach(() => {
@@ -110,6 +110,41 @@ describe('CaptureWidget', () => {
     expect(await screen.findByRole('alert')).toHaveTextContent('milk')
     expect(consoleError).toHaveBeenCalled()
     consoleError.mockRestore()
+  })
+
+  /* The add is an ENVELOPE, not a row — `{ item, duplicateOf }` — so this is the
+     one place the widget's whole add path is read against the shape the server
+     actually sends. The assertion that matters is the ID: `Take it back?` undoes
+     the row the add JUST CREATED, never the pre-existing one it collided with.
+     On a shared list those are two different people's rows. */
+  it('reads the add envelope, and takes back the row it created — not the one it doubled', async () => {
+    const fetchMock = vi.fn((url: string, init?: RequestInit) =>
+      init?.method === 'POST' && String(url).endsWith('/items')
+        ? Promise.resolve({
+            ok: true,
+            json: () =>
+              Promise.resolve({
+                item: { ...RECENT.items[0], id: 'created-1', name: 'milk', canRetract: true },
+                duplicateOf: { id: 'pre-existing-1', name: 'milk' },
+              }),
+          } as Response)
+        : Promise.resolve({ ok: true, json: () => Promise.resolve(RECENT) } as Response)
+    )
+    renderWidget(fetchMock as unknown as ReturnType<typeof vi.fn>)
+    await screen.findByText('snap peas')
+
+    const field = screen.getByLabelText('Add to Grocery')
+    fireEvent.change(field, { target: { value: 'milk' } })
+    fireEvent.submit(field.closest('form')!)
+
+    // Two clauses, verbatim, list name interpolated — and no aisle clause.
+    expect(await screen.findByText('Already on Grocery.')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Take it back?' }))
+    await waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith('/api/shopping/items/created-1/retract', {
+        method: 'POST',
+      })
+    )
   })
 
   /* SH-13. The echo says the field is live and Enter commits, and nothing about

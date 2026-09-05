@@ -10,6 +10,7 @@
       "shopping.item.added",
       "shopping.item.checked",
       "shopping.item.removed",
+      "shopping.item.renamed",
       "shopping.list.created"
     ],
     "subscribes": ["meals.needs.pushed"]

@@ -175,12 +175,20 @@ export function ShoppingPage() {
       }
       void queryClient.invalidateQueries({ queryKey: ['shopping/list'] })
     }
-    const offChecked = subscribe('shopping.item.checked', refresh)
-    const offAdded = subscribe('shopping.item.added', refresh)
-    return () => {
-      offChecked()
-      offAdded()
-    }
+    // Every transition a second shopper can cause. `removed` and `renamed` were
+    // both emitted with nothing listening: ADR 073 §5 added the first one FOR
+    // live staleness, and a rename lands on the same argument — one client fixes
+    // `mikk` and every other screen keeps reading the typo until something
+    // unrelated refetches.
+    const offs = (
+      [
+        'shopping.item.checked',
+        'shopping.item.added',
+        'shopping.item.removed',
+        'shopping.item.renamed',
+      ] as const
+    ).map((event) => subscribe(event, refresh))
+    return () => offs.forEach((off) => off())
   }, [subscribe, queryClient])
 
   const addItem = useMutation({
