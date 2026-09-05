@@ -50,8 +50,16 @@ any federated remote, which mounts later), and focusing a **disabled** input —
 this field is while its first read is in flight — is a silent no-op. Both are pinned
 by tests in `capture-field.test.tsx`.
 
-Unchanged: the taxonomy, the scope slot, clear-and-stay, the height floors, and the
-filing echo.
+Unchanged: the taxonomy, the scope slot, clear-and-stay, and the height floors.
+
+**The filing echo goes with it** — this amendment first listed it as unchanged; the
+polish critique (SH-13, same day) withdrew it. The echo slot stays, and holds
+`Enter to add`; shopping no longer names the aisle in it. Correcting an aisle is
+`file`, tier 4 (ADR 071), and the tiers doing most of the capturing are tier 1 and the
+wall, which adds as tier 1 (ADR 072) — so the line spent the field's whole speed
+budget reporting a problem to an audience that could not act on it. Filing is
+list-view work, done once before a trip, by the tier that can re-file. The server's
+filing is untouched. See `shopping/design.md` §Anatomy 3.
 
 ## Decision (as originally written)
 

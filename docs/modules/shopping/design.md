@@ -30,19 +30,47 @@ reverse-chronological is the worst order in an aisle).
 
 `PageContainer width="list"`. Top to bottom:
 
-1. **Title row** — `PageHeader`-shaped: `Shopping` (page-title) with the count strip
-   (`19 things to get`) on the trailing edge. The count is `sm` and muted; it never
-   shouts, and it is **cumulative across every destination** — the pills beside it
-   already give the per-list split, so the one number that could answer "how much is
-   waiting in total" must not repeat a pill.
+1. **Title row** — `PageHeader`-shaped: `Shopping` (page-title), and **nothing on the
+   trailing edge**.
+
+   **Amended 2026-09-04 (SH-10, polish session).** This item used to specify a count
+   strip (`19 things to get`), **cumulative across every destination**, on the argument
+   that the one number answering "how much is waiting in total" must not repeat a pill.
+   The strip is **deleted, not relabelled** — the argument held and the number still
+   failed, because nobody acts on a total across lists: you shop one destination, so a
+   figure spanning all of them names no trip. It also put a third arithmetic on a screen
+   that already had two, and three numbers in the same visual register that count
+   different things read as one number disagreeing with itself.
+
+   **One scheme remains, "what's left."** The pill is what is remaining on that list;
+   the in-shop sticky bar reads `{list} · {n} left`. They count the same thing over the
+   same rows, so they cannot disagree — which is the property deleting the third one
+   bought. The Home widget's header keeps a house-wide figure on the same arithmetic
+   (D6): its rows are cross-list and each names its list, so the figure and what it
+   counts share a screen.
+
 2. **The capture field** — `CaptureField` (ADR 070), 56 px, the first thing under the
    title. It does **not** autofocus, and nothing else does either (ADR 070, amended
    2026-09-04). Its trailing slot is **empty**: the destination is the selected pill, not
    a second control in the field (see 4).
-3. **The filing echo** — one `sm` line under the field while composing:
-   `Enter to add · files under Pantry`. The aisle is stated **before** the commit, so a
-   mis-file is caught by the person who caused it. On submit the field clears and stays
-   open; the new row appears in its aisle.
+3. **The echo** — one `sm` line under the field while composing: `Enter to add`. On
+   submit the field clears and stays open; the new row appears in its aisle.
+
+   **Amended 2026-09-04 (SH-13, polish session): capture no longer names an aisle.** The
+   line used to read `Enter to add · files under Pantry`, stating the aisle **before** the
+   commit so a mis-file was caught by the person who caused it. It reported a problem to
+   an audience that could not act on it: correcting an aisle is `file`, tier 4 (ADR 071),
+   and the tiers doing most of the capturing — a kid, and the unattended wall, which adds
+   as tier 1 (ADR 072) — cannot correct one at all. What they got was a fact about
+   somebody else's job, on the one line whose whole budget is speed.
+
+   **Filing is list-view work, done once before a trip**, by the tier that can actually
+   re-file. The echo's remaining job is to say the field is live and Enter commits.
+
+   The server still resolves the aisle the same way (override → dictionary → `Other`), and
+   the list read still carries the family's corrections — the echo's disappearance is a
+   surface change, not a filing one. See ADR 070's 2026-09-04 amendment.
+
 4. **The destination strip** — `Chip` pills, one per list, with counts
    (`Grocery 14 · Costco 3 · Hardware 2`). **One control, two jobs** (Zach, 2026-09-04):
    the selected pill is both the list you are looking at and where an add lands.
