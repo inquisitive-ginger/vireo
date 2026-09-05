@@ -22,9 +22,17 @@ above, `mb-6` below. A titled route therefore renders exactly where it did
 before: 16 + 8 = 24 on a phone, 24 + 16 = 40 at `md:`. A route that renders no
 title pays neither, which is the whole point.
 
-**3. A surface that sizes itself against the frame subtracts the tokens, never
-the sum.** `--page-frame-{x,top,bottom}` and their `-md` pairs exist in the plain
-`@theme` block for exactly this. Writing the sum is what went wrong.
+**3. A surface that must fill the frame FILLS ITS PARENT. It does not compute
+against the viewport at all.** `h-full` inside the shell's own `h-dvh` /
+`flex-1 overflow-auto` chain has no constant to drift, and it tracks a tablet's
+browser chrome and on-screen keyboard, which `svh` does not.
+
+This is the shopping capture hero's answer (`b7a0a8c`), reached independently
+during the M5.5 polish, and it is better than the one this ADR first gave —
+subtracting the frame from tokens rather than from a literal. Both fix the stale
+copy; only one removes the copy. A subtraction is still a duplicate of a number
+owned elsewhere, and the frame's values are declared by `PageContainer`'s
+utilities, so there is nothing else to read them from.
 
 **4. Chrome and the page frame step at `md:`. Content may reflow at any
 breakpoint.** The frame had been stepping at `sm:` while every piece of shell
@@ -46,9 +54,10 @@ under mobile chrome.
   taxes every other child.** The frame cannot see whether a title is coming, so
   it must not reserve space for one. The header can, so it does.
 - The stale `4.5rem` is the same mistake one layer down. A literal sum is a copy
-  of two numbers that live somewhere else, and it went wrong within a day.
-  ADR 068 already settled the general form of this — the token is authoritative
-  and one owner reads it — and this extends it from row heights to the frame.
+  of two numbers that live somewhere else, and it went wrong within a day. ADR
+  068 settled the general form — the token is authoritative and one owner reads
+  it — but the frame admits a stronger answer than a token: a child can inherit
+  the height instead of naming it, and then there is no second copy to go stale.
 - The bottom is the one asymmetry, and it is earned: the shell already reserves
   `--spacing-tab-bar` + safe area beneath `<main>` on a phone. Adding a full 48
   inside that put 104px of nothing under the last row of every mobile list. 24 is

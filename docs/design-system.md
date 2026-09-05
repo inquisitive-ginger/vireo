@@ -612,23 +612,17 @@ be exempted in the script itself, with the reason it is geometry and not rhythm 
 
 Defined in `packages/ui/src/styles.css` (`@theme`).
 
-| Token                    | Value | Utility                          | Role                                                           |
-| ------------------------ | ----- | -------------------------------- | -------------------------------------------------------------- |
-| `--spacing-touch`        | 48px  | `min-h-touch`/`min-w-touch`      | Minimum touch target                                           |
-| `--spacing-card-touch`   | 64px  | —                                | `ItemCard`'s floor per ADR 068 — **declared, not yet applied** |
-| `--spacing-list-touch`   | 56px  | (primitive only, arbitrary form) | `ListRow`'s floor, applied unconditionally (ADR 068)           |
-| `--spacing-tab-bar`      | 56px  | `h-tab-bar`, safe-area calc      | Mobile bottom tab bar + anything anchored to it                |
-| `--spacing-top-bar`      | 52px  | `min-h-top-bar`                  | Mobile brand top bar                                           |
-| `--spacing-sidebar`      | 220px | `w-sidebar`                      | Tablet sidebar (ADR 022)                                       |
-| `--spacing-meter`        | 6px   | `h-meter`                        | Progress-meter bar height                                      |
-| `--page-frame-x`         | 16px  | (frame declaration is `px-4`)    | `PageContainer` side gutter, phone                             |
-| `--page-frame-x-md`      | 24px  | (`md:px-6`)                      | `PageContainer` side gutter, ≥ 768                             |
-| `--page-frame-top`       | 16px  | (`pt-4`)                         | `PageContainer` top inset, phone                               |
-| `--page-frame-top-md`    | 24px  | (`md:pt-6`)                      | `PageContainer` top inset, ≥ 768                               |
-| `--page-frame-bottom`    | 24px  | (`pb-6`)                         | `PageContainer` bottom inset, phone                            |
-| `--page-frame-bottom-md` | 48px  | (`md:pb-12`)                     | `PageContainer` bottom inset, ≥ 768                            |
-| `--container-content`    | 680px | `max-w-content`                  | Single-column content pages                                    |
-| `--container-drawer`     | 440px | `md:w-drawer`                    | Side-drawer width                                              |
+| Token                  | Value | Utility                          | Role                                                           |
+| ---------------------- | ----- | -------------------------------- | -------------------------------------------------------------- |
+| `--spacing-touch`      | 48px  | `min-h-touch`/`min-w-touch`      | Minimum touch target                                           |
+| `--spacing-card-touch` | 64px  | —                                | `ItemCard`'s floor per ADR 068 — **declared, not yet applied** |
+| `--spacing-list-touch` | 56px  | (primitive only, arbitrary form) | `ListRow`'s floor, applied unconditionally (ADR 068)           |
+| `--spacing-tab-bar`    | 56px  | `h-tab-bar`, safe-area calc      | Mobile bottom tab bar + anything anchored to it                |
+| `--spacing-top-bar`    | 52px  | `min-h-top-bar`                  | Mobile brand top bar                                           |
+| `--spacing-sidebar`    | 220px | `w-sidebar`                      | Tablet sidebar (ADR 022)                                       |
+| `--spacing-meter`      | 6px   | `h-meter`                        | Progress-meter bar height                                      |
+| `--container-content`  | 680px | `max-w-content`                  | Single-column content pages                                    |
+| `--container-drawer`   | 440px | `md:w-drawer`                    | Side-drawer width                                              |
 
 ### Radius family
 
@@ -1978,18 +1972,19 @@ the two is the point of having roles rather than one shared width.
 jumps between routes. A surface that must break the gutter does it on a **child**,
 not by renegotiating the page frame.
 
-| Side   | Utility         | Phone | ≥ `md:` | Token                                            |
-| ------ | --------------- | ----- | ------- | ------------------------------------------------ |
-| Sides  | `px-4 md:px-6`  | 16    | 24      | `--page-frame-x` / `--page-frame-x-md`           |
-| Top    | `pt-4 md:pt-6`  | 16    | 24      | `--page-frame-top` / `--page-frame-top-md`       |
-| Bottom | `pb-6 md:pb-12` | 24    | 48      | `--page-frame-bottom` / `--page-frame-bottom-md` |
+| Side   | Utility         | Phone | ≥ `md:` |
+| ------ | --------------- | ----- | ------- |
+| Sides  | `px-4 md:px-6`  | 16    | 24      |
+| Top    | `pt-4 md:pt-6`  | 16    | 24      |
+| Bottom | `pb-6 md:pb-12` | 24    | 48      |
 
 **The frame carries no allowance for a title** (ADR 074) — Home, the calendar's
 tablet lens and the shopping hero render none into that slot. A title's air is
 `PageHeader`'s. **The bottom is shorter on a phone** because the shell already
-reserves the tab bar under it. **A surface sizing itself against the frame
-subtracts the tokens**, never the sum: the hero's `calc(100svh - 4.5rem)` was
-stale within a day of the frame moving.
+reserves the tab bar under it. **A surface that must fill the frame fills its
+PARENT** (`h-full` inside the shell's `h-dvh` chain), never computing against the
+viewport: the hero's `calc(100svh - 4.5rem)` went stale within a day, and a
+subtraction is still a copy.
 
 ### One breakpoint for the chrome
 

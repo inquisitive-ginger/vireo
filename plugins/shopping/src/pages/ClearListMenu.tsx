@@ -122,7 +122,7 @@ function ClearAction({
       type="button"
       onClick={active ? onFire : onArm}
       className={cn(
-        'min-h-touch text-body flex w-full cursor-pointer items-center gap-2 rounded-lg px-2 text-left hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
+        'min-h-touch text-body flex w-full cursor-pointer items-center gap-2 rounded-card px-2 text-left hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
         destructive || active ? 'text-error' : 'text-foreground',
         active && 'font-semibold'
       )}

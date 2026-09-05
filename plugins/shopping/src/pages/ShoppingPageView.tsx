@@ -793,7 +793,7 @@ function RenameField({
         if (cancelled.current) return
         onFinish(draft.trim() || null)
       }}
-      className="text-card-title min-h-touch w-full rounded-lg border border-input bg-card px-2 text-foreground outline-none focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary"
+      className="text-card-title min-h-touch w-full rounded-card border border-input bg-card px-2 text-foreground outline-none focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary"
     />
   )
 }

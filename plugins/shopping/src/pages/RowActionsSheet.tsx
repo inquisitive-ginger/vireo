@@ -163,7 +163,7 @@ export function RowActionsPanel({
               }}
               aria-current={aisle === item.category}
               className={cn(
-                'min-h-touch text-body flex w-full cursor-pointer items-center justify-between rounded-lg px-2 text-left hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
+                'min-h-touch text-body flex w-full cursor-pointer items-center justify-between rounded-card px-2 text-left hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
                 aisle === item.category && 'font-semibold text-primary'
               )}
             >
@@ -202,7 +202,7 @@ function SheetAction({
       type="button"
       onClick={onSelect}
       className={cn(
-        'min-h-touch text-body flex w-full cursor-pointer items-center rounded-lg px-2 text-left hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
+        'min-h-touch text-body flex w-full cursor-pointer items-center rounded-card px-2 text-left hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
         destructive ? 'text-error' : 'text-foreground'
       )}
     >
