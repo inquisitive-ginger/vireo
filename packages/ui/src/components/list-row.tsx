@@ -54,7 +54,7 @@ export function ListRow({
   return (
     <Tag
       className={cn(
-        'relative flex items-center gap-3 border-b border-border',
+        'relative flex items-center gap-3 border-b border-border px-4',
         dimmed && 'opacity-[0.66]',
         onActivate && 'cursor-pointer',
         className,

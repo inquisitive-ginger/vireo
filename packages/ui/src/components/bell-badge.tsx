@@ -49,7 +49,7 @@ export function BellBadge({
         )}
       >
         <Bell size={18} aria-hidden />
-        <span className="text-xs-body xl:text-sm leading-tight xl:flex-1 xl:text-left font-normal">
+        <span className="text-xs-body xl:text-sm-token leading-tight xl:flex-1 xl:text-left font-normal">
           <span className="xl:hidden">Alerts</span>
           <span className="hidden xl:inline">Notifications</span>
         </span>
@@ -104,7 +104,7 @@ export function BellBadge({
       )}
     >
       <Bell size={18} aria-hidden />
-      <span className="flex-1 text-sm text-left font-normal">Notifications</span>
+      <span className="flex-1 text-sm-token text-left font-normal">Notifications</span>
       {count > 0 && (
         <span
           className={cn(

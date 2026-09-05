@@ -122,10 +122,10 @@ export function StoreTab({
           body="Ask a parent to add things you can spend your P-Bucks on."
         />
       ) : (
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-7">
           {now.length > 0 && (
             <Shelf label="Get it now">
-              <div className="flex flex-col gap-2.5">
+              <div className="flex flex-col gap-3">
                 {visibleNow.map((r) => (
                   <StoreTicket
                     key={r.id}
@@ -270,7 +270,7 @@ function NearRow({ reward, gap, onPick }: { reward: Reward; gap: number; onPick:
       className="flex w-full items-center gap-3 rounded-card border border-border bg-card px-3.5 py-3 text-left transition-transform active:scale-[0.99]"
       style={{ boxShadow: 'var(--shadow-card)' }}
     >
-      <span className="flex-none text-2xl leading-none" aria-hidden>
+      <span className="flex-none text-page-title leading-none" aria-hidden>
         {reward.emoji}
       </span>
       <span className="text-sm-token min-w-0 flex-1 truncate font-semibold" aria-hidden>

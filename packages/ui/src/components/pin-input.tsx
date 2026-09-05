@@ -56,7 +56,7 @@ export function PinInput({
             key={i}
             className={cn(
               s.box,
-              'rounded-xl border-2 flex items-center justify-center',
+              'rounded-panel border-2 flex items-center justify-center',
               'transition-all duration-[var(--duration-normal)]',
               error
                 ? 'border-destructive'

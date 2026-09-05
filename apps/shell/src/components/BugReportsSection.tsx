@@ -191,7 +191,7 @@ function ReportRow({
               type="button"
               disabled={pending}
               onClick={() => onStatus(report.id, status)}
-              className="text-xs-body rounded-md border border-border px-2 py-1 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-50"
+              className="text-xs-body rounded-card border border-border px-2 py-1 text-muted-foreground transition-colors hover:bg-secondary hover:text-foreground disabled:opacity-50"
             >
               {STATUS_LABELS[status]}
             </button>

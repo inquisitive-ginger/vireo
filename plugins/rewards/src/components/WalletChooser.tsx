@@ -30,7 +30,7 @@ export function WalletChooser() {
 
   return (
     <div className="mx-auto max-w-[430px] pt-6 text-center">
-      <div className="text-3xl" aria-hidden>
+      <div className="text-display-lg" aria-hidden>
         👛
       </div>
       <h1 className="text-page-title mt-2">Wallets are personal.</h1>

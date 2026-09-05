@@ -5,7 +5,7 @@ import { cn } from '../lib/utils'
 
 // `focus-visible:ring-1 ring-ring` is the sanctioned focus treatment across the UI kit.
 const buttonVariants = cva(
-  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-md text-base-token font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 cursor-pointer',
+  'inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-card text-base-token font-medium transition-colors focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:pointer-events-none disabled:opacity-50 cursor-pointer',
   {
     variants: {
       variant: {
@@ -23,8 +23,8 @@ const buttonVariants = cva(
       },
       size: {
         default: 'h-9 px-4 py-2',
-        sm: 'h-8 rounded-md px-3 text-sm-token',
-        lg: 'h-10 rounded-md px-8',
+        sm: 'h-8 rounded-card px-3 text-sm-token',
+        lg: 'h-10 rounded-card px-8',
         icon: 'h-9 w-9',
         'icon-sm': 'h-4 w-4 rounded p-0',
       },

@@ -16,7 +16,7 @@ export function PluginView({ remoteName }: Props) {
   return (
     <Suspense
       fallback={
-        <div className="flex items-center justify-center h-full text-sm text-muted-foreground">
+        <div className="flex items-center justify-center h-full text-sm-token text-muted-foreground">
           Loading…
         </div>
       }

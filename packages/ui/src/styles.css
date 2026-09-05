@@ -63,6 +63,11 @@
   --spacing-sidebar: 220px; /* tablet sidebar — expanded, label-beside (ADR 022/031) */
   --spacing-sidebar-rail: 96px; /* sidebar — collapsed slim rail, label-under-icon (ADR 031) */
   --spacing-meter: 6px; /* progress-meter bar height */
+  /* The dashboard grid's rhythm. `WidgetGrid` measures its own layout in JS, so
+     it reads these rather than carrying its own copy of the numbers — a token
+     grep never found them while they were module constants. */
+  --spacing-grid-gap: 16px;
+  --spacing-widget-row: 180px; /* row-height floor */
 
   /* Page widths — the four page ROLES (→ `PageContainer`, design-system.md
      §Page containers). A page picks a role, never a number; six ad-hoc recipes

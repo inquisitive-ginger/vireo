@@ -87,8 +87,11 @@ export function TaskeeView({
 
   return (
     <PageContainer width="list">
-      <PageHeader title="Chores" action={<ScorePlate ref={plateRef} value={lifetime} />} />
-      {tabBar}
+      <PageHeader
+        title="Chores"
+        action={<ScorePlate ref={plateRef} value={lifetime} />}
+        nav={tabBar}
+      />
 
       {active.length > 0 ? (
         <>

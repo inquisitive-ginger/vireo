@@ -115,7 +115,7 @@ export function PunchSquares({
   label: string
 }) {
   const cell =
-    'grid aspect-square w-full min-h-11 place-items-center rounded-lg text-[24px] leading-none'
+    'grid aspect-square w-full min-h-11 place-items-center rounded-card text-[24px] leading-none'
   return (
     <div
       role="img"

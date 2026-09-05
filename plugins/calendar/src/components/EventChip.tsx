@@ -42,7 +42,7 @@ export function EventChip({
   return (
     <div
       className={cn(
-        'flex items-center gap-1 truncate rounded-md px-1.5 py-0.5 text-xs-token font-semibold'
+        'flex items-center gap-1 truncate rounded-card px-1.5 py-0.5 text-xs-token font-semibold'
       )}
       style={{ background, color }}
       title={`${event.title} — ${who}`}

@@ -234,7 +234,7 @@ export function WalletsView() {
                         }
                       >
                         <span
-                          className="grid size-9 flex-none place-items-center rounded-lg bg-secondary text-xl"
+                          className="grid size-9 flex-none place-items-center rounded-card bg-secondary text-heading"
                           aria-hidden
                         >
                           {c.template.glyph}
@@ -329,7 +329,7 @@ function Shelf({ label, children }: { label: string; children: React.ReactNode }
         <span className="text-section-label text-muted-foreground">{label}</span>
         <span className="h-px flex-1 bg-border" />
       </div>
-      <div className="flex flex-col gap-2">{children}</div>
+      <div className="flex flex-col gap-3">{children}</div>
     </section>
   )
 }

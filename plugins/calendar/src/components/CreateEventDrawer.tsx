@@ -582,7 +582,7 @@ export function CreateEventDrawer({
                   />
                 </div>
                 {repeatWeekly && (
-                  <div className="rounded-lg bg-secondary/50 p-3">
+                  <div className="rounded-card bg-secondary/50 p-3">
                     <FieldLabel htmlFor="event-until" optional>
                       Until
                     </FieldLabel>
@@ -641,7 +641,7 @@ export function CreateEventDrawer({
                 id="event-notes"
                 placeholder="Anything else?"
                 rows={2}
-                className="w-full resize-none rounded-md border border-input bg-background px-3 py-2 text-sm shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
+                className="w-full resize-none rounded-card border border-input bg-background px-3 py-2 text-sm-token shadow-sm transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring"
                 {...register('description')}
               />
             </div>
@@ -650,7 +650,7 @@ export function CreateEventDrawer({
 
         {/* Footer — safe-area bottom clears the home indicator on a full-screen
             mobile sheet. */}
-        <div className="flex flex-col gap-2.5 border-t border-border p-6 pb-[calc(env(safe-area-inset-bottom)+1.5rem)]">
+        <div className="flex flex-col gap-2.5 border-t border-border p-6 pb-[calc(env(safe-area-inset-bottom)_+_var(--spacing)_*_6)]">
           <Button type="submit" className="w-full" disabled={!canSubmit || isSubmitting}>
             {isEdit
               ? isSubmitting

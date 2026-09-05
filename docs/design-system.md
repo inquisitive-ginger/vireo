@@ -599,6 +599,15 @@ rhythm scale is a convention, not CSS.
 No custom off-grid steps exist — 7/18/22px legacy values were snapped to the
 grid (2026-07-10 decision a).
 
+**`scripts/check-spacing.sh` enforces this**, in CI on every PR and as a
+`PostToolUse` hook — the same shape as the context-budget check, and for the same
+reason: the rules above were written down years before they were kept. It fails
+on a raw type class, a raw named radius, and bracket spacing that does not derive
+from `var()` or `env()`. Stories and tests are exempt (they render specimens,
+including ones the system rejected), and a component's own internal geometry can
+be exempted in the script itself, with the reason it is geometry and not rhythm —
+`ListRow`'s `inset-y-[3.5px]` is the only entry.
+
 ### Semantic dimension tokens
 
 Defined in `packages/ui/src/styles.css` (`@theme`).
@@ -1959,9 +1968,95 @@ A **list is not prose.** 680px is a reading measure; a list row carries a spine,
 title, badges and controls, so it needs more room than a sentence does. Splitting
 the two is the point of having roles rather than one shared width.
 
-**Padding is not a prop.** Every role gets the same rhythm (`px-4 sm:px-6 pt-6
-pb-12`) so the gutter never jumps between routes. A surface that must break the
-gutter does it on a **child**, not by renegotiating the page frame.
+**Padding is not a prop.** Every role gets the same rhythm so the gutter never
+jumps between routes. A surface that must break the gutter does it on a **child**,
+not by renegotiating the page frame.
+
+| Side   | Utility         | Phone | ≥ `md:` |
+| ------ | --------------- | ----- | ------- |
+| Sides  | `px-4 md:px-6`  | 16    | 24      |
+| Top    | `pt-4 md:pt-6`  | 16    | 24      |
+| Bottom | `pb-6 md:pb-12` | 24    | 48      |
+
+**The frame carries no allowance for a title** (ADR 074) — Home, the calendar's
+tablet lens and the shopping hero render none into that slot. A title's air is
+`PageHeader`'s. **The bottom is shorter on a phone** because the shell already
+reserves the tab bar under it. **A surface that must fill the frame fills its
+PARENT** (`h-full` inside the shell's `h-dvh` chain), never computing against the
+viewport: the hero's `calc(100svh - 4.5rem)` went stale within a day, and a
+subtraction is still a copy.
+
+### One breakpoint for the chrome
+
+**Chrome and the page frame step at `md:` (768). Content may reflow at any
+breakpoint.** 768 is where the shell swaps tab bar for sidebar, so it is the only
+width at which the page's own geometry may change. `BREAKPOINT_MD`
+(`@family-os/ui`) carries the number to the measurements JS makes itself, so
+`WidgetGrid`'s stacking and the frame cannot drift. The frame used to step at
+`sm:`, leaving a 128px band wearing the desktop gutter under mobile chrome.
+
+**A reflow is a layout or visibility change** — a card stacking, a button's label
+appearing — and may step wherever it reads best. **A spacing step that serves a
+reflow steps with it**; one that serves nothing but roominess is chrome, and
+steps at `md:`.
+
+### The page header
+
+**Settled** — spacing contract, 2026-09-04. Component: `PageHeader`
+(`@family-os/ui`). See ADR 074.
+
+| Relationship               | Utility        | px   |
+| -------------------------- | -------------- | ---- |
+| Header lead                | `pt-2 md:pt-4` | 8/16 |
+| Title → nav strip          | `mt-4`         | 16   |
+| Title (or strip) → content | `mb-6`         | 24   |
+
+**Never hand-roll a page title.** Compose `PageHeader` inside `PageContainer`.
+Six surfaces had six title→content gaps (12/16/20/24/28) for want of one place to
+change it.
+
+**The nav strip is the header's, not the caller's.** A `TabBar` switching the
+panel below goes in the `nav` slot, so the header's `mb-6` is the strip's bottom
+margin and no caller does the arithmetic. A strip reads **below** the page title
+everywhere — the calendar's tablet lens stopped being the exception 2026-09-04.
+
+**`text-page-title` is `PageHeader`'s type token**, and four surfaces use it as
+one without being page headers: `FocusView`'s task title, `TonightView` compact,
+`WalletChooser`'s prompt, `DemoPage`'s placeholder.
+
+### The rhythm of a page's body
+
+**Settled** — spacing contract, 2026-09-04. One value per relationship, and where
+a primitive owns it, the caller does not write it.
+
+| Relationship                        | Owner                | px  | Utility            |
+| ----------------------------------- | -------------------- | --- | ------------------ |
+| Section group → section group       | caller's stack       | 28  | `gap-7`            |
+| Row → row inside a group            | caller's stack       | 12  | `gap-3`            |
+| Section label → its content         | `SectionLabel`       | 8   | `mb-2`             |
+| Group above → a section label       | `SectionLabel`       | 28  | `pt-7`             |
+| The surface above → the first label | `SectionLabel`       | 16  | `pt-4` (`leading`) |
+| Row inner padding                   | `ItemCard`/`ListRow` | 16  | `px-4`             |
+
+`gap-7` and `gap-3` had 28/24/16/8 and 12/10/8 in use for the same two
+relationships. The winners are the ones the codebase reached independently on
+five surfaces — consistency should cost the fewest diffs.
+
+**`SectionLabel` owns the space around a group label; it does not own the type
+token.** Pass `leading` when something else already separates the label from what
+precedes it — the first group in a stack, or a group inside a `gap-7` stack that
+already holds the 28. Colour (`text-accent`, `text-primary`) and a trailing rule
+stay the caller's: those are token choices, not rhythm. A caller that wants a
+different _gap_ wants a different primitive — say so in the session log rather
+than passing a number.
+
+**`text-section-label` stays the type token.** A label is `SectionLabel`'s
+business only when it opens a group of content in a page's flow. Where it does
+not, the container already owns the space and the raw token is correct:
+`WidgetHeader` and `PageHeader`'s eyebrow, `SettingsSection`'s panel head,
+`Disclosure`'s trigger, `EmojiPicker`'s groups, `SpanBand` and `MonthGrid`'s
+dense cells, the inline meta in `NextEventHero` / `TonightView` / `UpNextView` /
+`GrabsTray` / `FocusView`, and `ActivitiesView`'s timeline months.
 
 > **Why this exists.** Six surfaces had six recipes. Chores and the feed matched at
 > 680px only by coincidence; the calendar hardcoded `max-w-[1100px]` next to a token

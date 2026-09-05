@@ -12,6 +12,7 @@ import {
   PageContainer,
   PageHeader,
   PunchCard,
+  SectionLabel,
   TicketFrame,
   bucks,
   bucksSpoken,
@@ -102,8 +103,7 @@ export function PunchCardsTab({ tabBar }: { tabBar: ReactNode }) {
 
   return (
     <PageContainer width="list">
-      <PageHeader title="Chores" />
-      {tabBar}
+      <PageHeader title="Chores" nav={tabBar} />
 
       {cards.isError ? (
         <ErrorCard moduleName="Punch cards" onRetry={() => cards.refetch()} />
@@ -234,7 +234,7 @@ function RailArt({
 }) {
   return (
     <span
-      className={`grid size-13 shrink-0 place-items-center rounded-lg text-[26px] leading-none ${
+      className={`grid size-13 shrink-0 place-items-center rounded-card text-[26px] leading-none ${
         variant === 'unset' ? 'opacity-75 grayscale-[0.3]' : ''
       }`}
       style={
@@ -253,10 +253,12 @@ function Rail({ washed = false, children }: { washed?: boolean; children: ReactN
   return (
     <div
       className={`flex min-w-0 flex-1 flex-col ${
-        washed ? 'rounded-lg bg-[color-mix(in_oklab,var(--primary)_5%,transparent)] p-3' : ''
+        washed ? 'rounded-card bg-[color-mix(in_oklab,var(--primary)_5%,transparent)] p-3' : ''
       }`}
     >
-      <p className="text-section-label mb-2 text-muted-foreground">Your prize</p>
+      <SectionLabel leading as="p" className="text-muted-foreground">
+        Your prize
+      </SectionLabel>
       {children}
     </div>
   )
@@ -488,10 +490,13 @@ function FinishedShelf({ finished }: { finished: FinishedCards[] }) {
     .slice(0, 3)
   const total = finished.reduce((n, f) => n + f.count, 0)
   return (
-    <div className="mt-8">
-      <h2 className="text-section-label mb-3 flex items-center gap-3 text-muted-foreground after:h-px after:flex-1 after:bg-border">
+    <div>
+      <SectionLabel
+        as="h2"
+        className="flex items-center gap-3 text-muted-foreground after:h-px after:flex-1 after:bg-border"
+      >
         Cards you&rsquo;ve finished
-      </h2>
+      </SectionLabel>
       <div className="flex flex-wrap items-center gap-2.5">
         {latest.map((f) => (
           <FinishedStub key={f.templateId} f={f} />
@@ -513,13 +518,13 @@ function FinishedStub({ f }: { f: FinishedCards }) {
     : null
   const prize = f.prizeName ?? (f.prizeCoins != null ? bucks(f.prizeCoins) : null)
   return (
-    <div className="relative flex items-center gap-2.5 overflow-hidden rounded-lg border border-border bg-card py-2.5 pl-3 pr-4">
+    <div className="relative flex items-center gap-2.5 overflow-hidden rounded-card border border-border bg-card py-2.5 pl-3 pr-4">
       <span
         className="absolute inset-y-0 right-0 w-[3px] opacity-70"
         style={{ background: 'linear-gradient(to bottom, var(--coin-hi), var(--coin-deep))' }}
         aria-hidden
       />
-      <span className="text-xl leading-none" aria-hidden>
+      <span className="text-heading leading-none" aria-hidden>
         {f.glyph}
       </span>
       <span>

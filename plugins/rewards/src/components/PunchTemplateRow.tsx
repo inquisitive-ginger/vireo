@@ -49,7 +49,7 @@ export function PunchTemplateRow({
         </>
       }
     >
-      <div className="grid size-11 shrink-0 place-items-center rounded-xl bg-secondary text-2xl">
+      <div className="grid size-11 shrink-0 place-items-center rounded-panel bg-secondary text-page-title">
         {template.glyph}
       </div>
 

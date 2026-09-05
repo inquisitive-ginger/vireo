@@ -52,7 +52,7 @@ export function ColorPicker({
             aria-label={taken ? `${hue} — taken by ${owner}` : hue}
             title={taken ? `${owner} has ${hue}` : hue}
             className={cn(
-              'relative grid size-11 shrink-0 place-items-center rounded-lg',
+              'relative grid size-11 shrink-0 place-items-center rounded-card',
               'transition-transform duration-[var(--duration-fast)]',
               'focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:outline-none',
               isMine && 'ring-2 ring-foreground ring-offset-2 ring-offset-background',
@@ -72,7 +72,7 @@ export function ColorPicker({
             {taken && (
               <span
                 aria-hidden
-                className="absolute inset-0 grid place-items-center rounded-lg bg-card/65 text-xs-token font-bold text-muted-foreground"
+                className="absolute inset-0 grid place-items-center rounded-card bg-card/65 text-xs-token font-bold text-muted-foreground"
               >
                 {[...(owner ?? '')][0]?.toUpperCase()}
               </span>

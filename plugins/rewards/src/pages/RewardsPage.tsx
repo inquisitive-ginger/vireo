@@ -1,5 +1,5 @@
 import { useState } from 'react'
-import { PageContainer, TabBar } from '@family-os/ui'
+import { PageContainer, PageHeader, TabBar } from '@family-os/ui'
 import { FAMILY_PROFILE_ID, useAuth } from '@family-os/platform'
 import { ApprovalsQueue } from '../components/ApprovalsQueue'
 import { CatalogView } from '../components/CatalogView'
@@ -48,17 +48,20 @@ function ParentRewards({ tab, setTab }: { tab: Tab; setTab: (t: Tab) => void }) 
 
   return (
     <PageContainer width="list">
-      <h1 className="text-page-title mb-4">Rewards</h1>
-      <TabBar<Tab>
-        aria-label="Rewards"
-        className="mb-6"
-        value={tab}
-        onChange={setTab}
-        options={[
-          { value: 'wallets', label: 'Wallets' },
-          { value: 'approvals', label: 'Approvals', badge: waiting },
-          { value: 'catalog', label: 'Catalog' },
-        ]}
+      <PageHeader
+        title="Rewards"
+        nav={
+          <TabBar<Tab>
+            aria-label="Rewards"
+            value={tab}
+            onChange={setTab}
+            options={[
+              { value: 'wallets', label: 'Wallets' },
+              { value: 'approvals', label: 'Approvals', badge: waiting },
+              { value: 'catalog', label: 'Catalog' },
+            ]}
+          />
+        }
       />
 
       {tab === 'wallets' ? (

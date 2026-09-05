@@ -88,7 +88,6 @@ export function ChoresPageView({
   const kidTabBar = !seesAllTasks ? (
     <TabBar<KidTab>
       aria-label="Chores"
-      className="mb-5"
       value={kidTab}
       onChange={setKidTab}
       options={[
@@ -133,8 +132,8 @@ export function ChoresPageView({
         title="Chores"
         subtitle={summaryLine({ total: tasks.length, pending, done, overdue, seesAllTasks })}
         action={tasks.length > 0 ? newTaskButton : undefined}
+        nav={kidTabBar}
       />
-      {kidTabBar}
 
       {tasks.length === 0 ? (
         <ChoresEmptyState

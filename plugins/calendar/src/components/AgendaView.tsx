@@ -119,7 +119,7 @@ export function AgendaView({
                 </div>
               )}
             </div>
-            <div className="flex flex-col gap-2.5">
+            <div className="flex flex-col gap-3">
               {/* A span begins here — stated once, in the day it starts, and never
                   again on the days it covers. */}
               {day.startingSpans.length > 0 && (

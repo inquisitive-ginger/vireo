@@ -45,7 +45,7 @@ export function Spine({ color, inset = false, dashed = false, className }: Spine
   return (
     <span
       aria-hidden
-      className={cn('w-1 shrink-0 self-stretch rounded-sm', inset && 'my-2', className)}
+      className={cn('w-1 shrink-0 self-stretch rounded-full', inset && 'my-2', className)}
       style={{
         background: dashed
           ? `repeating-linear-gradient(180deg, ${solid} 0 10px, transparent 10px 15px)`

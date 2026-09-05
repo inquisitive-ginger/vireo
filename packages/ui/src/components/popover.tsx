@@ -32,7 +32,7 @@ export function PopoverContent({
         align={align}
         sideOffset={sideOffset}
         className={cn(
-          'z-50 rounded-xl border border-border bg-card text-card-foreground shadow-[var(--shadow-raised)]',
+          'z-50 rounded-panel border border-border bg-card text-card-foreground shadow-[var(--shadow-raised)]',
           'outline-none',
           className
         )}

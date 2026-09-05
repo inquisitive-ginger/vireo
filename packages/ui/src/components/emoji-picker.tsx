@@ -41,7 +41,7 @@ export function EmojiPicker({ onSelect, selected, groups, className }: EmojiPick
                   aria-pressed={selected === e}
                   onClick={() => onSelect(e)}
                   className={cn(
-                    'grid aspect-square place-items-center rounded-lg text-xl transition-colors',
+                    'grid aspect-square place-items-center rounded-card text-heading transition-colors',
                     selected === e ? 'bg-primary/15 ring-2 ring-primary' : 'hover:bg-muted'
                   )}
                 >
@@ -62,7 +62,7 @@ export function EmojiPicker({ onSelect, selected, groups, className }: EmojiPick
       columns={9}
     >
       <Frimousse.Search
-        className="text-sm-token mx-2 mt-2 rounded-lg border border-border bg-background px-3 py-2 outline-none focus:ring-2 focus:ring-primary"
+        className="text-sm-token mx-2 mt-2 rounded-card border border-border bg-background px-3 py-2 outline-none focus:ring-2 focus:ring-primary"
         placeholder="Search emoji"
       />
       <Frimousse.Viewport className="relative flex-1 outline-none">
@@ -90,7 +90,7 @@ export function EmojiPicker({ onSelect, selected, groups, className }: EmojiPick
             ),
             Emoji: ({ emoji, ...props }) => (
               <button
-                className="grid size-9 place-items-center rounded-lg text-xl hover:bg-muted data-[active]:bg-primary/15"
+                className="grid size-9 place-items-center rounded-card text-heading hover:bg-muted data-[active]:bg-primary/15"
                 {...props}
               >
                 {emoji.emoji}

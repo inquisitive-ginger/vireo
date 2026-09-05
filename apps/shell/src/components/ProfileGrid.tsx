@@ -138,7 +138,7 @@ export function ProfileGrid({ open, onClose, className, onNavigate }: ProfileGri
                 key={profile.id}
                 onClick={() => switchTo(profile)}
                 className={cn(
-                  'flex items-center gap-3 w-full px-3 py-2.5 rounded-md text-left cursor-pointer',
+                  'flex items-center gap-3 w-full px-3 py-2.5 rounded-card text-left cursor-pointer',
                   'transition-colors duration-[var(--duration-fast)]',
                   'hover:bg-background/60'
                 )}
@@ -157,7 +157,7 @@ export function ProfileGrid({ open, onClose, className, onNavigate }: ProfileGri
                   avatarUrl={profile.avatarUrl ?? undefined}
                   size="sm"
                 />
-                <span className="flex-1 text-sm">{profile.name.split(' ')[0]}</span>
+                <span className="flex-1 text-sm-token">{profile.name.split(' ')[0]}</span>
               </button>
             ))}
 
@@ -166,7 +166,7 @@ export function ProfileGrid({ open, onClose, className, onNavigate }: ProfileGri
               <button
                 onClick={() => doSwitch(FAMILY_PROFILE_ID)}
                 className={cn(
-                  'flex items-center gap-2 w-full px-3 py-2.5 rounded-md cursor-pointer',
+                  'flex items-center gap-2 w-full px-3 py-2.5 rounded-card cursor-pointer',
                   'transition-colors duration-[var(--duration-fast)]',
                   activeId === FAMILY_PROFILE_ID
                     ? 'bg-primary/10 pointer-events-none'
@@ -180,7 +180,7 @@ export function ProfileGrid({ open, onClose, className, onNavigate }: ProfileGri
                   identity={FAMILY_HUE}
                   size="sm"
                 />
-                <span className="text-sm text-muted-foreground leading-none">
+                <span className="text-sm-token text-muted-foreground leading-none">
                   {familyName ?? 'Family view'}
                 </span>
                 {activeId === FAMILY_PROFILE_ID && (
@@ -195,13 +195,13 @@ export function ProfileGrid({ open, onClose, className, onNavigate }: ProfileGri
                 <button
                   onClick={() => onNavigate('/settings')}
                   className={cn(
-                    'flex items-center gap-3 w-full px-3 py-2.5 rounded-md cursor-pointer',
+                    'flex items-center gap-3 w-full px-3 py-2.5 rounded-card cursor-pointer',
                     'transition-colors duration-[var(--duration-fast)]',
                     'text-muted-foreground hover:bg-background/60'
                   )}
                 >
                   <Settings size={16} aria-hidden />
-                  <span className="text-sm">Settings</span>
+                  <span className="text-sm-token">Settings</span>
                 </button>
               </div>
             )}
@@ -210,7 +210,7 @@ export function ProfileGrid({ open, onClose, className, onNavigate }: ProfileGri
           <div className="flex flex-col items-center gap-3 py-5 px-3">
             <p
               className={cn(
-                'text-xs font-medium',
+                'text-xs-body font-medium',
                 pinPhase === 'pin-locked' ? 'text-destructive' : 'text-muted-foreground'
               )}
             >
@@ -234,7 +234,7 @@ export function ProfileGrid({ open, onClose, className, onNavigate }: ProfileGri
                 setPinPhase('list')
                 setPinValue('')
               }}
-              className="text-xs text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
+              className="text-xs-body text-muted-foreground hover:text-foreground transition-colors cursor-pointer"
             >
               Cancel
             </button>

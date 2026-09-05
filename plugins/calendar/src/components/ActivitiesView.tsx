@@ -150,7 +150,7 @@ export function ActivitiesView({
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-7">
       <div className="flex flex-wrap items-center gap-2.5">
         <SegmentedControl
           aria-label="Activities lens"
@@ -230,7 +230,7 @@ function OwnerRoster({
           ) : undefined
         }
       />
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-3">
         {group.activities.map((activity) => (
           <ActivityRow
             key={activity.seriesId}
@@ -260,7 +260,7 @@ function WeekdayLoad({ hue, days }: { hue: IdentityHue; days: Set<number> }) {
         return (
           <span
             key={i}
-            className="text-xs-token flex h-6 w-6 items-center justify-center rounded-md"
+            className="text-xs-token flex h-6 w-6 items-center justify-center rounded-card"
             style={
               on
                 ? {
@@ -413,7 +413,7 @@ function SeasonTimeline({ groups, now }: { groups: OwnerGroup[]; now: Date }) {
           </div>
         </div>
 
-        <div className="relative flex flex-col gap-2.5">
+        <div className="relative flex flex-col gap-3">
           {bars.map((b) => {
             const ongoing = !b.recurrenceUntil
             const end = ongoing
@@ -436,7 +436,7 @@ function SeasonTimeline({ groups, now }: { groups: OwnerGroup[]; now: Date }) {
                 </div>
                 <div className="relative h-7 flex-1">
                   <div
-                    className="text-xs-token absolute inset-y-1 left-0 flex items-center rounded-md px-2 font-semibold"
+                    className="text-xs-token absolute inset-y-1 left-0 flex items-center rounded-card px-2 font-semibold"
                     style={{ width: `${width}%`, ...fillForHues(b.hues) }}
                   >
                     <span className="truncate">

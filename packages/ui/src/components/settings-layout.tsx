@@ -1,5 +1,6 @@
 import type { ReactNode } from 'react'
 import { PageContainer } from './page-container'
+import { PageHeader } from './page-header'
 import { cn } from '../lib/utils'
 
 export interface SettingsSectionProps {
@@ -13,7 +14,7 @@ export function SettingsSection({ title, action, children, className }: Settings
   return (
     <section
       className={cn(
-        'border border-border rounded-2xl overflow-hidden bg-card shadow-[var(--shadow-card)]',
+        'border border-border rounded-hero overflow-hidden bg-card shadow-[var(--shadow-card)]',
         className
       )}
     >
@@ -37,8 +38,8 @@ export function SettingsLayout({ children }: SettingsLayoutProps) {
     // our token) *without* `mx-auto`, so Settings quietly hugged the left edge
     // while every sibling route sat centred.
     <PageContainer width="list">
-      <h1 className="text-page-title mb-5 md:mb-7">Settings</h1>
-      <div className="flex flex-col gap-4 md:gap-5">{children}</div>
+      <PageHeader title="Settings" />
+      <div className="flex flex-col gap-7">{children}</div>
     </PageContainer>
   )
 }

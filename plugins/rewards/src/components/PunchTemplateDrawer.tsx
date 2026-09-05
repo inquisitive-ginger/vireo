@@ -125,9 +125,9 @@ export function PunchTemplateDrawer({
                 type="button"
                 aria-expanded={pickerOpen}
                 onClick={() => setPickerOpen((o) => !o)}
-                className="flex w-full items-center gap-3 rounded-lg border border-border px-3 py-2 text-left hover:bg-muted"
+                className="flex w-full items-center gap-3 rounded-card border border-border px-3 py-2 text-left hover:bg-muted"
               >
-                <span className="grid size-11 place-items-center rounded-lg bg-secondary text-2xl">
+                <span className="grid size-11 place-items-center rounded-card bg-secondary text-page-title">
                   {glyph || '⭐'}
                 </span>
                 <span className="text-sm-token flex-1 text-muted-foreground">
@@ -138,7 +138,7 @@ export function PunchTemplateDrawer({
                 />
               </button>
               {pickerOpen && (
-                <div className="mt-2 rounded-lg border border-border p-3">
+                <div className="mt-2 rounded-card border border-border p-3">
                   <EmojiPicker
                     groups={PUNCH_EMOJI_GROUPS}
                     selected={glyph}
@@ -293,7 +293,7 @@ function ToggleField({
   onChange: (v: boolean) => void
 }) {
   return (
-    <label className="flex cursor-pointer items-center justify-between gap-3 rounded-lg border border-border px-3 py-2.5">
+    <label className="flex cursor-pointer items-center justify-between gap-3 rounded-card border border-border px-3 py-2.5">
       <span>
         <span className="block text-sm-token font-semibold text-foreground">{title}</span>
         {hint && <span className="block text-xs-body text-muted-foreground">{hint}</span>}

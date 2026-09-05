@@ -62,7 +62,7 @@ export function NotificationTray({
                 <Button
                   variant="ghost"
                   size="sm"
-                  className="text-xs text-muted-foreground h-7 px-2"
+                  className="text-xs-body text-muted-foreground h-7 px-2"
                   onClick={onClearAll}
                 >
                   Clear all
@@ -83,7 +83,7 @@ export function NotificationTray({
 
           <div className="flex-1 overflow-y-auto">
             {loading ? (
-              <div className="flex items-center justify-center h-32 text-sm text-muted-foreground">
+              <div className="flex items-center justify-center h-32 text-sm-token text-muted-foreground">
                 Loading…
               </div>
             ) : notifications.length === 0 ? (
@@ -106,7 +106,7 @@ export function NotificationTray({
           </div>
 
           {footer && (
-            <div className="shrink-0 border-t border-border px-4 py-3 pb-[calc(env(safe-area-inset-bottom)+0.75rem)]">
+            <div className="shrink-0 border-t border-border px-4 py-3 pb-[calc(env(safe-area-inset-bottom)_+_var(--spacing)_*_3)]">
               {footer}
             </div>
           )}

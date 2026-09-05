@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { CURRENCY, Coin, Sheet, relativeDayLabel } from '@family-os/ui'
+import { CURRENCY, Coin, SectionLabel, Sheet, relativeDayLabel } from '@family-os/ui'
 import { useAuth } from '@family-os/platform'
 import { useLedger, useProfiles } from '../lib/hooks'
 import type { LedgerEntry } from '../types'
@@ -84,11 +84,11 @@ export function HistorySheet({ open, onClose }: { open: boolean; onClose: () => 
           </p>
         ) : (
           <>
-            {days.map((day) => (
+            {days.map((day, i) => (
               <section key={day.key} aria-label={day.label}>
-                <div className="text-section-label pb-1.5 pt-4 text-muted-foreground">
+                <SectionLabel leading={i === 0} className="text-muted-foreground">
                   {day.label}
-                </div>
+                </SectionLabel>
                 <div className="flex flex-col gap-2.5">
                   {day.rows.map((e) => (
                     <HistoryRow key={e.id} entry={e} nameById={nameById} />
@@ -133,7 +133,7 @@ function HistoryRow({ entry, nameById }: { entry: LedgerEntry; nameById: Map<str
 
   return (
     <div className="flex items-center gap-3">
-      <span className="w-6 flex-none text-center text-lg leading-none" aria-hidden>
+      <span className="w-6 flex-none text-center text-card-title leading-none" aria-hidden>
         {glyphFor(entry)}
       </span>
       <div className="min-w-0 flex-1">

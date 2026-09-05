@@ -36,6 +36,6 @@ describe('WidgetSlot — elevation-ladder rungs', () => {
     const cls = slotClass({ prominence: 'feature', flat: true })
     expect(cls).not.toContain('shadow-')
     expect(cls).not.toContain('rounded-hero')
-    expect(cls).toContain('rounded-xl')
+    expect(cls).toContain('rounded-panel')
   })
 })
