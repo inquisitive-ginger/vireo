@@ -37,7 +37,6 @@ function renderView(over: Partial<ShoppingPageViewProps> = {}) {
     report: null,
     canAdd: true,
     layout: 'list',
-    justAdded: [],
     totalOpenCount: 3,
     onShowLists: vi.fn(),
     canCheck: true,
@@ -245,11 +244,10 @@ describe('ShoppingPageView — the capture layout', () => {
     expect(props.onShowLists).toHaveBeenCalled()
   })
 
-  it('names what was just added, never who and never where it filed', () => {
-    renderView({ layout: 'capture', justAdded: [{ id: '1', name: 'oat milk', canRetract: true }] })
-    expect(screen.getByText('oat milk')).toBeInTheDocument()
-    expect(screen.queryByText(/Emma|the house|added by/i)).not.toBeInTheDocument()
-    expect(screen.queryByText(/Dairy|files under/)).not.toBeInTheDocument()
+  it('draws no short memory and no voice slot — the rows carry take-back now', () => {
+    renderView({ layout: 'capture' })
+    expect(screen.queryByText('Just added')).not.toBeInTheDocument()
+    expect(screen.queryByText(/speak/i)).not.toBeInTheDocument()
   })
 
   it('keeps the house-wide seam count — one number, at the scope it states (D6)', () => {

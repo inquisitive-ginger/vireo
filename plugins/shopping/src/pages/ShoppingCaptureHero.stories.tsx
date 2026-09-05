@@ -18,12 +18,6 @@ const meta: Meta<typeof ShoppingCaptureHero> = {
     ),
   ],
   args: {
-    justAdded: [
-      { id: '1', name: 'snap peas', canRetract: true },
-      { id: '2', name: 'tortillas', canRetract: true },
-      { id: '3', name: 'milk', canRetract: false },
-      { id: '4', name: 'wood screws', canRetract: false },
-    ],
     openCount: 19,
     destinations: (
       <div className="flex gap-2">
@@ -35,7 +29,6 @@ const meta: Meta<typeof ShoppingCaptureHero> = {
         </span>
       </div>
     ),
-    onRetract: () => {},
     onShowLists: () => {},
     loading: false,
     destination: 'Grocery',
@@ -49,8 +42,8 @@ type Story = StoryObj<typeof ShoppingCaptureHero>
 
 export const AtRest: Story = {}
 
-/* The short memory is empty. Not a gap — a wall nobody has walked up to today. */
-export const NothingYet: Story = { args: { justAdded: [], openCount: 0 } }
+/* Nothing waiting anywhere. The seam still states it rather than going blank. */
+export const NothingYet: Story = { args: { openCount: 0 } }
 
 /* The add did not land. The field cleared on Enter, so this line is the only
    thing standing between the person and a word they think they said. */
@@ -80,17 +73,6 @@ export const Duplicate: Story = {
 /* `shopping.item.add` revoked for this profile (ADR 072 §6) — the one lever that
    closes the wall's field. */
 export const AddingRevoked: Story = { args: { canAdd: false } }
-
-/* Past the fifteen-minute window, or somebody else's adds: `canRetract` is false
-   and the chips carry no way back (ADR 073). */
-export const NothingRetractable: Story = {
-  args: {
-    justAdded: [
-      { id: '1', name: 'snap peas', canRetract: false },
-      { id: '2', name: 'tortillas', canRetract: false },
-    ],
-  },
-}
 
 /* The window closed between fetches. Expected, and shown. */
 export const RetractRefused: Story = {

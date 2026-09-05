@@ -34,8 +34,6 @@ export interface ShoppingPageViewProps {
       W2 always was; the no-mode rule is the narrow layout's (design.md
       §"One surface, two layouts"). */
   layout: 'capture' | 'list'
-  /** Wide only — the hero's short memory of what landed, anywhere. */
-  justAdded: { id: string; name: string; canRetract: boolean }[]
   /** Wide only — everything waiting across every destination, on the same "what's
       left" arithmetic as everywhere else (D6). */
   totalOpenCount: number
@@ -44,9 +42,6 @@ export interface ShoppingPageViewProps {
   /** The way back, offered ONLY on the wide list view. Undefined on a phone,
       which has no dedicated capture view to return to. */
   onBackToCapture?: () => void
-  /** Taking back a chip on the wide hero (ADR 073, tier 1). Undefined when the
-      profile lacks the key; per-chip eligibility is the server's `canRetract`. */
-  onRetract?: (id: string, name: string) => void
   /** `shopping.item.check`, tier 2 (ADR 071) — the ring AND the whole-row tap,
       in both directions. Without it the rows are still readable, just inert. */
   canCheck: boolean
@@ -92,11 +87,9 @@ export function ShoppingPageView({
   report,
   canAdd,
   layout,
-  justAdded,
   totalOpenCount,
   onShowLists,
   onBackToCapture,
-  onRetract,
   canCheck,
   canFile,
   canManage,
@@ -164,9 +157,7 @@ export function ShoppingPageView({
     <PageContainer width="list">
       {capturing ? (
         <ShoppingCaptureHero
-          justAdded={justAdded}
           openCount={totalOpenCount}
-          onRetract={onRetract}
           destinations={destinations}
           onShowLists={onShowLists}
           loading={loading}

@@ -75,10 +75,8 @@ const meta: Meta<typeof ShoppingPageView> = {
     onRowRetract: () => {},
     rowErrors: {},
     layout: 'list',
-    justAdded: [],
     totalOpenCount: 19,
     onShowLists: () => {},
-    onRetract: () => {},
   },
 }
 export default meta
@@ -181,15 +179,7 @@ export const Duplicate: Story = {
    by the viewport (design.md). Capture fills the screen and the lists come in
    only when asked for. Compare against artifact frame W2. */
 export const Wide: Story = {
-  args: {
-    layout: 'capture',
-    justAdded: [
-      { id: 'r1', name: 'snap peas', canRetract: true },
-      { id: 'r2', name: 'tortillas', canRetract: true },
-      { id: 'r3', name: 'milk', canRetract: true },
-      { id: 'r4', name: 'wood screws', canRetract: true },
-    ],
-  },
+  args: { layout: 'capture' },
 }
 
 /* After `Show lists` — the same list, in place, with the hero still above it so
@@ -200,7 +190,7 @@ export const WideListsShown: Story = {
 
 /* Nobody has walked up to it today. The strip says so rather than sitting empty. */
 export const WideNothingYet: Story = {
-  args: { ...Wide.args, justAdded: [] },
+  args: { ...Wide.args },
 }
 
 /* The same screen, scrolled, mid-shop — Produce cleared and collapsed, Dairy

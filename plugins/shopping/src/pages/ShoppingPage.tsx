@@ -11,22 +11,12 @@ import {
 } from '@family-os/platform'
 import { ErrorCard } from '@family-os/ui'
 import type { ShoppingAisle } from '@family-os/schemas'
-import type {
-  AddItemResponse,
-  ListResponse,
-  ListsResponse,
-  RecentResponse,
-  ShoppingItem,
-} from '../types'
+import type { AddItemResponse, ListResponse, ListsResponse, ShoppingItem } from '../types'
 import { aisleSortIndex } from '../lib/filing'
 import { EMPTY_CAPTURE, buildReport, dismissReport, type CaptureState } from '../lib/capture-report'
 import { retractMessage } from '../lib/use-ambient-capture'
 import { useWideLayout } from '../lib/use-wide-layout'
 import { ShoppingPageView, type AisleGroup } from './ShoppingPageView'
-
-/** How many chips the wide layout's short memory holds. More than a row's worth
-    stops being a memory and starts being the list it sits above. */
-const JUST_ADDED = 5
 
 const CHECK_MUTATION = ['shopping/check'] as const
 
@@ -126,15 +116,6 @@ export function ShoppingPage() {
     queryKey: keyFor(activeListId),
     queryFn: () => fetch(`/api/shopping/lists/${activeListId}`).then(json<ListResponse>),
     enabled: activeListId !== null,
-    retry: 1,
-  })
-
-  // Wide only: what landed lately, anywhere. Same key the Home widget reads, so
-  // the two share one cache entry and one invalidation.
-  const recentQuery = useQuery<RecentResponse>({
-    queryKey: ['shopping/list', id, 'recent'],
-    queryFn: () => fetch('/api/shopping/recent').then(json<RecentResponse>),
-    enabled: capturing,
     retry: 1,
   })
 
@@ -447,16 +428,8 @@ export function ShoppingPage() {
       // Only the wide list view offers the way back; a phone has no dedicated
       // capture view to return to (Zach, 2026-09-04).
       onBackToCapture={wide && onListsRoute ? () => void navigate('/shopping') : undefined}
-      justAdded={(recentQuery.data?.items ?? [])
-        .slice(0, JUST_ADDED)
-        .map((i) => ({ id: i.id, name: i.name, canRetract: i.canRetract }))}
       totalOpenCount={lists.reduce((sum, l) => sum + l.itemCount, 0)}
       onShowLists={() => void navigate('/shopping/lists')}
-      onRetract={
-        canRetract
-          ? (itemId, name) => retractItem.mutate({ itemId, name, onRow: false })
-          : undefined
-      }
       canCheck={canCheck}
       canFile={canFile}
       canManage={canManage}

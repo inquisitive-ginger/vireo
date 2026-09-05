@@ -13,11 +13,6 @@ const report = (over: Partial<CaptureReport> = {}): CaptureReport => ({
 
 function renderView(over: Partial<ShoppingCaptureHeroProps> = {}) {
   const props: ShoppingCaptureHeroProps = {
-    justAdded: [
-      { id: '1', name: 'snap peas', canRetract: true },
-      { id: '2', name: 'tortillas', canRetract: true },
-      { id: '3', name: 'milk', canRetract: true },
-    ],
     openCount: 19,
     destinations: <div>Grocery 14 · Costco 3</div>,
     onShowLists: vi.fn(),
@@ -48,19 +43,12 @@ describe('ShoppingCaptureHero', () => {
     expect(field).toHaveFocus()
   })
 
-  /* SH-13. The echo says the field is live and Enter commits, and nothing about
-     an aisle — the wall adds as tier 1 (ADR 072) and cannot re-file at all. */
-  it('says Enter commits, and names no aisle', () => {
+  /* SH-13 — nothing here names an aisle: the wall adds as tier 1 (ADR 072) and
+     cannot re-file at all. */
+  it('names no aisle, anywhere', () => {
     renderView()
     fireEvent.change(screen.getByLabelText('Add to Grocery'), { target: { value: 'oat milk' } })
-    expect(screen.getByText('Enter to add')).toBeInTheDocument()
     expect(screen.queryByText(/files under/)).not.toBeInTheDocument()
-  })
-
-  it('names what was just added, never who added it', () => {
-    renderView({ justAdded: [{ id: '1', name: 'snap peas', canRetract: true }] })
-    expect(screen.getByText('snap peas')).toBeInTheDocument()
-    expect(screen.queryByText(/Emma|the house|added by/i)).not.toBeInTheDocument()
   })
 
   it('states one cumulative count, and leaves the split to the pills', () => {
@@ -75,23 +63,15 @@ describe('ShoppingCaptureHero', () => {
     expect(screen.getByText('Grocery 14 · Costco 3')).toBeInTheDocument()
   })
 
-  it('offers to take back a just-added typo, naming the thing it takes back', () => {
-    const onRetract = vi.fn()
-    renderView({ justAdded: [{ id: 'a1', name: 'mikk', canRetract: true }], onRetract })
-    fireEvent.click(screen.getByRole('button', { name: 'Take back mikk' }))
-    expect(onRetract).toHaveBeenCalledWith('a1', 'mikk')
-  })
-
-  it('offers none on a row that is not yours or is past the window', () => {
-    // `canRetract` is the server's answer and folds in both (ADR 073) — the
-    // client never sees `added_by` and does not own the clock.
-    renderView({ justAdded: [{ id: 'a1', name: 'mikk', canRetract: false }], onRetract: vi.fn() })
-    expect(screen.queryByRole('button', { name: /Take back/ })).not.toBeInTheDocument()
-    expect(screen.getByText('mikk')).toBeInTheDocument()
-  })
-
-  it('offers none at all when the profile lacks the key', () => {
-    renderView({ justAdded: [{ id: 'a1', name: 'mikk', canRetract: true }], onRetract: undefined })
+  /* The `Just added` strip is gone (Zach, live pass). Take-back lives on the rows
+     at `/shopping/lists`, one click away and doing strictly more — rename,
+     re-file and remove sit beside it. It could not leave until the rows had it:
+     at W2 everyone is the `family` profile, so the chip `×` was once the wall's
+     ONLY undo (ADR 073 §3). `ShoppingPageView`'s own suite pins the replacement,
+     by touch long-press, on a row the wall cannot even check. */
+  it('draws no short memory of what landed — the rows carry take-back now', () => {
+    renderView()
+    expect(screen.queryByText('Just added')).not.toBeInTheDocument()
     expect(screen.queryByRole('button', { name: /Take back/ })).not.toBeInTheDocument()
   })
 
@@ -103,11 +83,22 @@ describe('ShoppingCaptureHero', () => {
     expect(screen.getByRole('alert')).toHaveTextContent('Too late to take back')
   })
 
-  it('reserves the voice slot without pretending it works', () => {
+  /* `Hold to speak` is gone (Zach, live pass): a control reserved for a feature
+     outside M5.5 was the largest thing on the field. The hint took its slot. */
+  it('carries the Enter hint in the field, persistently, in place of the voice slot', () => {
     renderView()
-    // Reserved, not implemented (design.md §W2) — so it must not be reachable
-    // as a control that does nothing when a family member taps it.
-    expect(screen.queryByRole('button', { name: /speak/i })).not.toBeInTheDocument()
+    expect(screen.queryByText(/speak/i)).not.toBeInTheDocument()
+    // Persistent, not a thing that appears mid-word: it replaces chrome that was
+    // always there, and on a screen someone walks up to it IS the instruction.
+    expect(screen.getByText('Enter to add')).toBeInTheDocument()
+    fireEvent.change(screen.getByLabelText('Add to Grocery'), { target: { value: 'oat milk' } })
+    expect(screen.getByText('Enter to add')).toBeInTheDocument()
+  })
+
+  it('drops the hint when the field is dead, and says why in the slot instead', () => {
+    renderView({ canAdd: false })
+    expect(screen.queryByText('Enter to add')).not.toBeInTheDocument()
+    expect(screen.getByText(/turned off/i)).toBeInTheDocument()
   })
 
   it('is a block on the page, not a surface — it draws no list of its own', () => {
@@ -116,6 +107,15 @@ describe('ShoppingCaptureHero', () => {
     renderView()
     expect(screen.queryByRole('checkbox')).not.toBeInTheDocument()
     expect(screen.queryByText('Produce')).not.toBeInTheDocument()
+  })
+
+  /* The seam rule is UNCHANGED by any of this: house-wide is right here for the
+     same reason it is right on the widget (D6) and wrong on the phone (SH-10) —
+     this surface has no rows of its own to contradict, and the pills directly
+     above name every scope it sums. */
+  it('keeps the seam pinned to the bottom, counting the whole house', () => {
+    renderView()
+    expect(screen.getByText('19 things to get')).toBeInTheDocument()
   })
 
   it('names the word that failed, because the field already cleared', () => {
