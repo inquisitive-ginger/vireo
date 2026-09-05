@@ -110,7 +110,8 @@ reverse-chronological is the worst order in an aisle).
 ### In a shop
 
 The same screen scrolled. Above the fold once the hero has gone: a compacted status line
-(`Grocery · 6 of 14` + the destination chip) and the **progress meter**
+(`Grocery · 8 left` + the destination chip — the same arithmetic as the pill, amended
+2026-09-04 with item 1; `6 of 14` was the third count) and the **progress meter**
 (`--spacing-meter`, `--primary` on `--muted`). A **cleared aisle collapses** to one muted
 summary row (`Produce · 3 in the cart ›`) so the walk keeps moving. Checked rows dim to
 `0.66` with a strikethrough on the name.
