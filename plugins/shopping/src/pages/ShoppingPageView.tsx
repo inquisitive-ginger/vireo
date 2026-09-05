@@ -1,5 +1,5 @@
 import { Fragment, useEffect, useRef, useState, type ReactNode } from 'react'
-import { Check, ChevronDown, ChevronLeft, ChevronUp, Loader2, ShoppingCart } from 'lucide-react'
+import { Check, ChevronDown, ChevronLeft, ChevronUp, Loader2, ShoppingCart, X } from 'lucide-react'
 import { ShoppingItemNameSchema, type ShoppingAisle } from '@family-os/schemas'
 import {
   CaptureField,
@@ -757,9 +757,11 @@ function Row({
 /* Renaming happens where the row already is, at BOTH widths (Zach, list pass).
    A field inside a bottom sheet on a phone sat under the keyboard; a field on the
    row is scrolled above it by the browser, the same as every other input on the
-   page. Enter commits, Escape cancels, blur commits — a rename is one word, and
-   a person who taps away from it has finished, not abandoned it. The cap is the
-   schema's own, never a copy of the number. */
+   page. Enter commits, blur commits — a rename is one word, and a person who
+   taps away from it has finished, not abandoned it. Cancelling is Escape AND a
+   × on the row: a fridge iPad has no Escape key, so the keyboard-only exit was
+   no exit at all (auto-bug #141). The cap is the schema's own, never a copy of
+   the number. */
 function RenameField({
   name,
   onFinish,
@@ -771,30 +773,52 @@ function RenameField({
   const cancelled = useRef(false)
 
   return (
-    <input
-      autoFocus
-      value={draft}
-      maxLength={ShoppingItemNameSchema.maxLength ?? undefined}
-      aria-label={`Rename “${name}”`}
-      enterKeyHint="done"
-      onChange={(e) => setDraft(e.target.value)}
-      onKeyDown={(e) => {
-        if (e.key === 'Enter') {
-          e.preventDefault()
+    <div className="flex min-w-0 items-center gap-1.5">
+      <input
+        autoFocus
+        value={draft}
+        maxLength={ShoppingItemNameSchema.maxLength ?? undefined}
+        aria-label={`Rename “${name}”`}
+        enterKeyHint="done"
+        onChange={(e) => setDraft(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter') {
+            e.preventDefault()
+            onFinish(draft.trim() || null)
+          } else if (e.key === 'Escape') {
+            e.preventDefault()
+            // Marked before blur so the blur that follows does not commit it.
+            cancelled.current = true
+            onFinish(null)
+          }
+        }}
+        onBlur={() => {
+          // The mark survives the blur the cancel button itself causes, and
+          // turns that blur INTO the cancel: a pointer that goes down on × and
+          // lifts somewhere else never fires a click, and a field left focusless
+          // in rename mode is the same dead end being fixed here.
+          if (cancelled.current) {
+            onFinish(null)
+            return
+          }
           onFinish(draft.trim() || null)
-        } else if (e.key === 'Escape') {
-          e.preventDefault()
-          // Marked before blur so the blur that follows does not commit it.
+        }}
+        className="text-card-title min-h-touch w-full min-w-0 flex-1 rounded-card border border-input bg-card px-2 text-foreground outline-none focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary"
+      />
+      <button
+        type="button"
+        // Down, not click: the click arrives after the blur, and the blur is
+        // what commits. Marking here is what tells that blur to cancel instead.
+        onPointerDown={() => {
           cancelled.current = true
-          onFinish(null)
-        }
-      }}
-      onBlur={() => {
-        if (cancelled.current) return
-        onFinish(draft.trim() || null)
-      }}
-      className="text-card-title min-h-touch w-full rounded-card border border-input bg-card px-2 text-foreground outline-none focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary"
-    />
+        }}
+        onClick={() => onFinish(null)}
+        aria-label={`Stop renaming “${name}”`}
+        className="min-h-touch flex w-touch shrink-0 cursor-pointer items-center justify-center rounded-panel text-muted-foreground hover:bg-secondary hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+      >
+        <X size={18} aria-hidden />
+      </button>
+    </div>
   )
 }
 

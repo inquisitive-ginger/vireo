@@ -80,6 +80,10 @@ export function ChoresPageView({
   const [hideCompleted, setHideCompleted] = useHideCompleted(profileId)
   const [kidTab, setKidTab] = useState<KidTab>('today')
   const payoutIndex = useMemo(() => indexPayouts(payouts ?? []), [payouts])
+  // Same seed the flight engine uses, so the plate reads the same on both tabs.
+  const lifetimeXp =
+    initialXp ??
+    tasks.filter((t) => t.status === 'completed').reduce((sum, t) => sum + t.xpReward, 0)
 
   // The kid page splits into two peer surfaces (M4/6): Today — the work — and
   // Punch cards, the tallies. Chores and cards are disparate enough for separate
@@ -98,7 +102,7 @@ export function ChoresPageView({
   ) : null
 
   if (!seesAllTasks && kidTab === 'cards') {
-    return <PunchCardsTab tabBar={kidTabBar} />
+    return <PunchCardsTab tabBar={kidTabBar} xp={lifetimeXp} />
   }
 
   // Taskee, non-empty → the dedicated taskee surface (owns its header, the
@@ -127,7 +131,7 @@ export function ChoresPageView({
     <PageContainer width="list">
       {/* Family pulse summary — counts only, no family XP (design §1). When the
           board is empty the empty-state owns the primary CTA, so the header action
-          is suppressed (avoids a duplicate "New Task" primary action). */}
+          is suppressed (avoids a duplicate "Add task" primary action). */}
       <PageHeader
         title="Chores"
         subtitle={summaryLine({ total: tasks.length, pending, done, overdue, seesAllTasks })}

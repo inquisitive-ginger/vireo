@@ -55,7 +55,7 @@ export const EmptyStandard: Story = {
     posts: [],
     emptyAction: (
       <Button size="sm" variant="outline">
-        New Post
+        Add post
       </Button>
     ),
   },

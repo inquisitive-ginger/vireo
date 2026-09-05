@@ -31,7 +31,7 @@ type Story = StoryObj<typeof ChoresPageView>
 const newTaskButton = (
   <Button>
     <Plus size={16} />
-    New Task
+    Add task
   </Button>
 )
 
@@ -39,7 +39,7 @@ const newTaskButton = (
 const emptyNewTaskButton = (
   <Button size="sm">
     <Plus size={16} />
-    New Task
+    Add task
   </Button>
 )
 

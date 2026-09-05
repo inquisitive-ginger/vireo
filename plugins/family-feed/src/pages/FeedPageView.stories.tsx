@@ -27,7 +27,7 @@ type Story = StoryObj<typeof FeedPageView>
 const composeButton = (
   <Button>
     <PenLine size={16} />
-    New Post
+    Add post
   </Button>
 )
 

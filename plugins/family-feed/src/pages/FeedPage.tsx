@@ -92,7 +92,7 @@ export function FeedPage() {
             <PermissionGate action="create" subject="family-feed.Post">
               <Button onClick={() => setComposing(true)}>
                 <PenLine size={16} />
-                New Post
+                Add post
               </Button>
             </PermissionGate>
           ) : null

@@ -27,6 +27,7 @@ import {
   type PunchCardData,
   type PunchPayout,
 } from '../lib/punch-cards'
+import { ScorePlate } from './ScorePlate'
 
 /* The Punch cards tab (joy rework 2026-08-02, built to the gated artifact) — the
    kid's tallies beside Today. Three moves over the shipped M4/6 surface: a fixed
@@ -62,7 +63,7 @@ function finishedLabel(iso: string): string {
   return `Finished ${lead === 'Today' || lead === 'Yesterday' ? lead.toLowerCase() : lead}`
 }
 
-export function PunchCardsTab({ tabBar }: { tabBar: ReactNode }) {
+export function PunchCardsTab({ tabBar, xp }: { tabBar: ReactNode; xp: number }) {
   const cards = usePunchCards()
   const punch = usePunch()
   const choose = useChoosePrize()
@@ -103,7 +104,7 @@ export function PunchCardsTab({ tabBar }: { tabBar: ReactNode }) {
 
   return (
     <PageContainer width="list">
-      <PageHeader title="Chores" nav={tabBar} />
+      <PageHeader title="Chores" action={<ScorePlate value={xp} />} nav={tabBar} />
 
       {cards.isError ? (
         <ErrorCard moduleName="Punch cards" onRetry={() => cards.refetch()} />

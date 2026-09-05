@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react'
-import { Check, ChevronLeft } from 'lucide-react'
+import { Check, ChevronLeft, X } from 'lucide-react'
 import { SHOPPING_AISLES, type ShoppingAisle } from '@family-os/schemas'
 import { Sheet, cn } from '@family-os/ui'
 import type { ShoppingItem } from '../types'
@@ -102,11 +102,28 @@ export function RowActionsPanel({
         </button>
       )}
 
-      <div className="pt-1 pb-3">
-        <p className="text-card-title truncate text-foreground">{item.name}</p>
-        {/* What the row IS, not who put it there (ADR 064) — the aisle is the
+      <div className="flex items-start justify-between gap-3 pt-1 pb-3">
+        <div className="min-w-0">
+          <p className="text-card-title truncate text-foreground">{item.name}</p>
+          {/* What the row IS, not who put it there (ADR 064) — the aisle is the
               one fact a verb here might change. */}
-        <p className="text-sm-token text-muted-foreground">{item.category}</p>
+          <p className="text-sm-token text-muted-foreground">{item.category}</p>
+        </div>
+        {/* Inline only, and the one place the two presentations differ. The sheet
+            is dismissed three ways already — the scrim, the grab bar, Escape —
+            and none of them exist for a panel let into the list: opening it left
+            a reader with three verbs, all of which DO something, and Escape
+            (auto-bug #141). A panel with no way back out is not a menu. */}
+        {inline && (
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label={`Close the actions for ${item.name}`}
+            className="min-h-touch -mt-1.5 flex w-touch shrink-0 cursor-pointer items-center justify-center rounded-panel text-muted-foreground hover:bg-secondary hover:text-foreground focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none"
+          >
+            <X size={18} aria-hidden />
+          </button>
+        )}
       </div>
 
       {view === 'menu' && (
