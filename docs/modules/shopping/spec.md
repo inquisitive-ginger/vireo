@@ -88,7 +88,7 @@ what overrides are for.
 ## Events namespace
 
 `shopping.item.added` · `shopping.item.checked` · `shopping.item.removed` ·
-`shopping.list.created`
+`shopping.item.renamed` · `shopping.list.created`
 
 **A wall add emits the same `shopping.item.added`** (ADR 072), distinguished by
 `addedBy === 'family'` in the payload rather than by a second event name.
