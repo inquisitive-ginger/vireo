@@ -1990,6 +1990,29 @@ last row of every mobile list.
 sum. The shopping hero wrote `calc(100svh - 4.5rem)` and that literal was stale
 within a day of the frame moving — on the wall tablet the hero exists for.
 
+### One breakpoint for the chrome
+
+**Chrome and the page frame step at `md:` (768). Content may reflow at any
+breakpoint.** 768 is where the shell swaps its bottom tab bar and brand top bar
+for the sidebar, so it is the only width at which the page's own geometry may
+change. `--spacing-*` chrome dimensions and `PageContainer`'s inset follow it;
+`BREAKPOINT_MD` (`@family-os/ui`) carries the same number to the measurements JS
+makes itself, so `WidgetGrid`'s stacking and the frame cannot drift apart.
+
+The frame used to step at `sm:`, one breakpoint early. Nothing decided that — it
+left a 128px band (landscape phones, split-view tablets, a Pi display at an odd
+resolution) wearing the desktop gutter under mobile chrome.
+
+**A reflow is a layout or visibility change, and it may step wherever it reads
+best.** `punch-card` stacking into two columns, a ghost button's label appearing
+beside its icon, a meta line dropping to its own row — all legitimately `sm:`.
+
+**A spacing step that exists only to serve a reflow steps with that reflow.**
+`profile-list-item`'s button gap widens at `sm:` because that is where the button
+labels appear; splitting them would widen the gap 128px before it has anything to
+hold. A spacing step that serves nothing but roominess is chrome, and steps at
+`md:`.
+
 > **Why this exists.** Six surfaces had six recipes. Chores and the feed matched at
 > 680px only by coincidence; the calendar hardcoded `max-w-[1100px]` next to a token
 > that existed to prevent exactly that; the calendar's mobile agenda re-declared

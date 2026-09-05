@@ -35,7 +35,7 @@ export function ProfileListItem({
   return (
     <div
       className={cn(
-        'flex items-center gap-3 px-4 py-4 sm:gap-4 sm:px-6',
+        'flex items-center gap-3 px-4 py-4 md:gap-4 md:px-6',
         !isLast && 'border-b border-border'
       )}
     >

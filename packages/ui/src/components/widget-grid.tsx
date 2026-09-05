@@ -3,6 +3,7 @@ import { GridLayout, noCompactor, useContainerWidth } from 'react-grid-layout'
 import 'react-grid-layout/css/styles.css'
 import { WidgetSlot, type WidgetProminence } from './widget-slot'
 import { cn } from '../lib/utils'
+import { BREAKPOINT_MD } from '../lib/breakpoints'
 
 export interface WidgetLayoutItem {
   widgetId: string
@@ -27,7 +28,6 @@ const GRID_COLS = 4
 const MIN_ROW_HEIGHT = 180
 const MAX_ROW_HEIGHT = 400
 const GAP = 16
-const STACK_BREAKPOINT = 768
 
 function maxRow(layout: WidgetLayoutItem[]): number {
   return layout.reduce((m, item) => Math.max(m, item.y + item.h), 0)
@@ -78,7 +78,7 @@ export function WidgetGrid({ layout, children, className, flatSlots }: WidgetGri
     static: true,
   }))
 
-  const isNarrow = width > 0 && width < STACK_BREAKPOINT
+  const isNarrow = width > 0 && width < BREAKPOINT_MD
 
   return (
     <div ref={containerRef} data-testid="widget-grid" className={cn('w-full', className)}>

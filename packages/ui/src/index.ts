@@ -84,6 +84,7 @@ export {
 export type { IdentityHue, IdentityLayer, OwnerHue } from './lib/identity'
 export { startOfDay, addDays, isSameDay, dayDiff, relativeDayLabel } from './lib/dates'
 export type { RelativeDayLabel, RelativeDayLabelOptions } from './lib/dates'
+export { BREAKPOINT_MD } from './lib/breakpoints'
 export { WIDGET_CQ, WIDGET_INSET } from './lib/widget-breakpoints'
 export { useFitRows } from './lib/use-fit-rows'
 export type { FitRows } from './lib/use-fit-rows'
