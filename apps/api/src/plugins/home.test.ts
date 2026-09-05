@@ -78,7 +78,7 @@ describe('GET /api/home/layout', () => {
 
     const calendar = slots.find((s) => s.widgetId === 'calendar.up-next')!
     expect(calendar).toMatchObject({ x: 0, y: 0, w: 2, h: 4, prominence: 'card' })
-    expect(slots.find((s) => s.widgetId === 'shopping.capture')!.prominence).toBe('quiet')
+    expect(slots.find((s) => s.widgetId === 'family-feed.feed')!.prominence).toBe('quiet')
   })
 
   // The fridge tablet sits on the family pseudo-profile; it now triages exactly
@@ -89,7 +89,7 @@ describe('GET /api/home/layout', () => {
 
     const calendar = slots.find((s) => s.widgetId === 'calendar.up-next')!
     expect(calendar).toMatchObject({ x: 0, y: 0, w: 2, h: 4, prominence: 'card' })
-    expect(slots.find((s) => s.widgetId === 'shopping.capture')!.prominence).toBe('quiet')
+    expect(slots.find((s) => s.widgetId === 'family-feed.feed')!.prominence).toBe('quiet')
   })
 
   it('leads a kid with the wallet as the one feature', async () => {
@@ -99,21 +99,19 @@ describe('GET /api/home/layout', () => {
     expect(features[0].widgetId).toBe('rewards.wallet')
   })
 
-  /* The reported bug: chores (card) rendered BELOW a quiet peer in the right-hand
+  /* The reported bug: chores (card) rendered BELOW the feed (quiet) in the right-hand
      column, because geometry came from a stale seed while prominence came from the
      re-ranked code. Position and elevation both say "how much does this matter" — if
-     they disagree, one of them is lying. The pair was chores-vs-feed until the feed
-     yielded its cell (D3, polish session); shopping now holds the quiet rung under
-     chores in the same column, which is the same rule with the surviving example. */
+     they disagree, one of them is lying. */
   it('stacks the higher rung above the lower one in a column', async () => {
     const RANK: Record<string, number> = { feature: 0, card: 1, quiet: 2 }
     const slots = await layoutFor('seed-parent-1')
 
     const chores = slots.find((s) => s.widgetId === 'chores.today-summary')!
-    const shopping = slots.find((s) => s.widgetId === 'shopping.capture')!
-    expect(chores.x).toBe(shopping.x) // same column
-    expect(chores.y).toBeLessThan(shopping.y) // chores on top
-    expect(RANK[chores.prominence]).toBeLessThan(RANK[shopping.prominence])
+    const feed = slots.find((s) => s.widgetId === 'family-feed.feed')!
+    expect(chores.x).toBe(feed.x) // same column
+    expect(chores.y).toBeLessThan(feed.y) // chores on top
+    expect(RANK[chores.prominence]).toBeLessThan(RANK[feed.prominence])
   })
 
   /* A default must never be frozen. It used to be written into `widget_layouts` on the
