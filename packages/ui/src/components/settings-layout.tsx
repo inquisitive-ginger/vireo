@@ -14,7 +14,7 @@ export function SettingsSection({ title, action, children, className }: Settings
   return (
     <section
       className={cn(
-        'border border-border rounded-2xl overflow-hidden bg-card shadow-[var(--shadow-card)]',
+        'border border-border rounded-hero overflow-hidden bg-card shadow-[var(--shadow-card)]',
         className
       )}
     >

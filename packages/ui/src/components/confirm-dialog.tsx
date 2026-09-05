@@ -35,7 +35,7 @@ export function ConfirmDialog({
       <AlertDialog.Portal>
         <AlertDialog.Overlay className="fixed inset-0 z-[60] bg-black/15 backdrop-blur-[1px]" />
         <AlertDialog.Content
-          className="fixed left-1/2 top-1/2 z-[60] -translate-x-1/2 -translate-y-1/2 bg-card border border-border rounded-xl p-6 w-[340px] focus:outline-none"
+          className="fixed left-1/2 top-1/2 z-[60] -translate-x-1/2 -translate-y-1/2 bg-card border border-border rounded-panel p-6 w-[340px] focus:outline-none"
           style={{ boxShadow: 'var(--shadow-raised)' }}
           onCloseAutoFocus={(e) => e.preventDefault()}
           onEscapeKeyDown={(e) => isPending && e.preventDefault()}

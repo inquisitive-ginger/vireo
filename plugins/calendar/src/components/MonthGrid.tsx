@@ -130,7 +130,7 @@ export function MonthGrid({
                             return (
                               <div
                                 key={`${mark.ownerId ?? ''}-${mark.glyph}`}
-                                className="flex items-center gap-[3px]"
+                                className="flex items-center gap-1"
                                 title={mark.label}
                               >
                                 {owner && <DayMarkOwnerDot member={owner} />}

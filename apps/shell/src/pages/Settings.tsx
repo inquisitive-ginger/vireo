@@ -89,7 +89,7 @@ const APPEARANCE_OPTIONS: { value: DarkModeValue; label: string; Icon: LucideIco
 function FieldError({ message }: { message?: string }) {
   if (!message) return null
   return (
-    <p className="flex items-center gap-1.5 text-xs text-destructive">
+    <p className="flex items-center gap-1.5 text-xs-body text-destructive">
       <CircleAlert size={12} className="shrink-0" />
       {message}
     </p>
@@ -419,7 +419,7 @@ function FocusModeField({ profile }: { profile: ProfileRow }) {
         value={focusToChoice(value)}
         onChange={(v) => handleChange(FOCUS_TO_OVERRIDE[v])}
       />
-      <p className="text-xs text-muted-foreground">
+      <p className="text-xs-body text-muted-foreground">
         {value === null
           ? `Default for this tier → ${tierDefault}`
           : value
@@ -756,7 +756,7 @@ function ProfilesSection() {
         ))}
 
         {nonFamily.length === 0 && !showCreate && (
-          <p className="px-6 py-5 text-sm text-muted-foreground">No profiles yet.</p>
+          <p className="px-6 py-5 text-sm-token text-muted-foreground">No profiles yet.</p>
         )}
 
         {showCreate && (
@@ -858,8 +858,8 @@ function FamilySection() {
     return (
       <div className="flex items-center justify-between px-6 py-4">
         <div>
-          <p className="text-sm font-medium">Family name</p>
-          <p className="text-xs text-muted-foreground mt-0.5">{familyName ?? '—'}</p>
+          <p className="text-sm-token font-medium">Family name</p>
+          <p className="text-xs-body text-muted-foreground mt-0.5">{familyName ?? '—'}</p>
         </div>
         <Button
           variant="ghost"
@@ -891,7 +891,7 @@ function FamilySection() {
           autoFocus
         />
         {errors.name && (
-          <p className="flex items-center gap-1.5 text-xs text-destructive">
+          <p className="flex items-center gap-1.5 text-xs-body text-destructive">
             <CircleAlert size={12} className="shrink-0" />
             {errors.name.message}
           </p>
@@ -1023,12 +1023,12 @@ function PinResetRow() {
   if (phase === 'idle') {
     return (
       <div className="flex items-center gap-4 px-6 py-4">
-        <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+        <div className="w-9 h-9 rounded-card bg-primary/10 flex items-center justify-center shrink-0">
           <Shield size={16} className="text-primary" />
         </div>
         <div className="flex-1">
-          <p className="text-sm font-medium">Family PIN</p>
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <p className="text-sm-token font-medium">Family PIN</p>
+          <p className="text-xs-body text-muted-foreground mt-0.5">
             Required to switch to parent profiles
           </p>
         </div>
@@ -1048,7 +1048,7 @@ function PinResetRow() {
 
   return (
     <div className="flex flex-col items-center gap-4 px-6 py-6">
-      <p className={cn('text-sm font-medium', isErrorPhase && 'text-destructive')}>
+      <p className={cn('text-sm-token font-medium', isErrorPhase && 'text-destructive')}>
         {PHASE_LABEL[phase]}
       </p>
 
@@ -1073,7 +1073,7 @@ function PinResetRow() {
 
       <button
         onClick={cancelReset}
-        className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+        className="text-xs-body text-muted-foreground hover:text-foreground transition-colors"
       >
         Cancel
       </button>
@@ -1115,9 +1115,9 @@ function AppearanceRow() {
   return (
     <div className="flex items-center justify-between px-6 py-4">
       <div>
-        <p className="text-sm font-medium">Appearance</p>
+        <p className="text-sm-token font-medium">Appearance</p>
         {isFamily && (
-          <p className="text-xs text-muted-foreground mt-0.5">
+          <p className="text-xs-body text-muted-foreground mt-0.5">
             The family profile follows the system setting
           </p>
         )}
@@ -1125,7 +1125,7 @@ function AppearanceRow() {
 
       <div
         className={cn(
-          'flex rounded-lg bg-muted p-1 gap-0.5',
+          'flex rounded-card bg-muted p-1 gap-0.5',
           isFamily && 'pointer-events-none opacity-50'
         )}
       >
@@ -1182,14 +1182,22 @@ function PushNotificationsRow() {
 
   return (
     <div className="flex items-center gap-4 px-6 py-4">
-      <div className="w-9 h-9 rounded-lg bg-primary/10 flex items-center justify-center shrink-0">
+      <div className="w-9 h-9 rounded-card bg-primary/10 flex items-center justify-center shrink-0">
         <Bell size={16} className="text-primary" />
       </div>
       <div className="flex-1">
-        <Label htmlFor="push-notifications-toggle" className="text-sm font-medium cursor-pointer">
+        <Label
+          htmlFor="push-notifications-toggle"
+          className="text-sm-token font-medium cursor-pointer"
+        >
           Push Notifications
         </Label>
-        <p className={cn('text-xs mt-0.5', error ? 'text-destructive' : 'text-muted-foreground')}>
+        <p
+          className={cn(
+            'text-xs-body mt-0.5',
+            error ? 'text-destructive' : 'text-muted-foreground'
+          )}
+        >
           {error ?? subtitle}
         </p>
       </div>

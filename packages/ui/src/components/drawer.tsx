@@ -29,7 +29,7 @@ export function Drawer({ open, onClose, title, children, className }: DrawerProp
           )}
         >
           {/* Safe-area top clears the notch when the sheet is full-screen on mobile. */}
-          <div className="flex shrink-0 items-center justify-between border-b border-border px-6 pb-5 pt-[calc(env(safe-area-inset-top)+1.25rem)]">
+          <div className="flex shrink-0 items-center justify-between border-b border-border px-6 pb-5 pt-[calc(env(safe-area-inset-top)_+_var(--spacing)_*_5)]">
             <Dialog.Title className="text-card-title">{title}</Dialog.Title>
             <Dialog.Close asChild>
               <Button variant="ghost" size="sm" className="size-8 p-0" aria-label="Close">

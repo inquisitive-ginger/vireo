@@ -599,6 +599,15 @@ rhythm scale is a convention, not CSS.
 No custom off-grid steps exist — 7/18/22px legacy values were snapped to the
 grid (2026-07-10 decision a).
 
+**`scripts/check-spacing.sh` enforces this**, in CI on every PR and as a
+`PostToolUse` hook — the same shape as the context-budget check, and for the same
+reason: the rules above were written down years before they were kept. It fails
+on a raw type class, a raw named radius, and bracket spacing that does not derive
+from `var()` or `env()`. Stories and tests are exempt (they render specimens,
+including ones the system rejected), and a component's own internal geometry can
+be exempted in the script itself, with the reason it is geometry and not rhythm —
+`ListRow`'s `inset-y-[3.5px]` is the only entry.
+
 ### Semantic dimension tokens
 
 Defined in `packages/ui/src/styles.css` (`@theme`).
@@ -1975,43 +1984,26 @@ not by renegotiating the page frame.
 | Top    | `pt-4 md:pt-6`  | 16    | 24      | `--page-frame-top` / `--page-frame-top-md`       |
 | Bottom | `pb-6 md:pb-12` | 24    | 48      | `--page-frame-bottom` / `--page-frame-bottom-md` |
 
-**The frame carries no allowance for a title** (ADR 074). Three surfaces render
-none into that slot — Home's widget grid, the calendar's tablet lens strip, the
-shopping hero — and a frame that budgets for a header charges them for one they
-do not have. The title's air is `PageHeader`'s: `pt-2 md:pt-4` above it, `mb-6`
-below, so a titled route sits exactly where it always did (16 + 8, 24 + 16).
-
-**The bottom is shorter on a phone** because the shell already reserves the tab
-bar underneath it (`App.tsx`, `--spacing-tab-bar` + safe area). 24 above that is
-the gap you see; stacking a full 48 on top of it put 104px of nothing under the
-last row of every mobile list.
-
-**A surface that sizes itself against the frame subtracts the tokens**, never the
-sum. The shopping hero wrote `calc(100svh - 4.5rem)` and that literal was stale
-within a day of the frame moving — on the wall tablet the hero exists for.
+**The frame carries no allowance for a title** (ADR 074) — Home, the calendar's
+tablet lens and the shopping hero render none into that slot. A title's air is
+`PageHeader`'s. **The bottom is shorter on a phone** because the shell already
+reserves the tab bar under it. **A surface sizing itself against the frame
+subtracts the tokens**, never the sum: the hero's `calc(100svh - 4.5rem)` was
+stale within a day of the frame moving.
 
 ### One breakpoint for the chrome
 
 **Chrome and the page frame step at `md:` (768). Content may reflow at any
-breakpoint.** 768 is where the shell swaps its bottom tab bar and brand top bar
-for the sidebar, so it is the only width at which the page's own geometry may
-change. `--spacing-*` chrome dimensions and `PageContainer`'s inset follow it;
-`BREAKPOINT_MD` (`@family-os/ui`) carries the same number to the measurements JS
-makes itself, so `WidgetGrid`'s stacking and the frame cannot drift apart.
+breakpoint.** 768 is where the shell swaps tab bar for sidebar, so it is the only
+width at which the page's own geometry may change. `BREAKPOINT_MD`
+(`@family-os/ui`) carries the number to the measurements JS makes itself, so
+`WidgetGrid`'s stacking and the frame cannot drift. The frame used to step at
+`sm:`, leaving a 128px band wearing the desktop gutter under mobile chrome.
 
-The frame used to step at `sm:`, one breakpoint early. Nothing decided that — it
-left a 128px band (landscape phones, split-view tablets, a Pi display at an odd
-resolution) wearing the desktop gutter under mobile chrome.
-
-**A reflow is a layout or visibility change, and it may step wherever it reads
-best.** `punch-card` stacking into two columns, a ghost button's label appearing
-beside its icon, a meta line dropping to its own row — all legitimately `sm:`.
-
-**A spacing step that exists only to serve a reflow steps with that reflow.**
-`profile-list-item`'s button gap widens at `sm:` because that is where the button
-labels appear; splitting them would widen the gap 128px before it has anything to
-hold. A spacing step that serves nothing but roominess is chrome, and steps at
-`md:`.
+**A reflow is a layout or visibility change** — a card stacking, a button's label
+appearing — and may step wherever it reads best. **A spacing step that serves a
+reflow steps with it**; one that serves nothing but roominess is chrome, and
+steps at `md:`.
 
 ### The page header
 
@@ -2025,24 +2017,17 @@ hold. A spacing step that serves nothing but roominess is chrome, and steps at
 | Title (or strip) → content | `mb-6`         | 24   |
 
 **Never hand-roll a page title.** Compose `PageHeader` inside `PageContainer`.
-Six surfaces had six title→content gaps (12, 16, 20, 24, 28) because there was no
-one place to change it.
+Six surfaces had six title→content gaps (12/16/20/24/28) for want of one place to
+change it.
 
-**The nav strip is the header's, not the caller's.** A `TabBar` that switches the
-panel below goes in the `nav` slot. It binds to what it switches, so the header's
-own `mb-6` is the strip's bottom margin and no caller does the arithmetic. A
-strip reads **below** the page title on every surface — the calendar's tablet lens
-was the one exception and stopped being one (2026-09-04).
+**The nav strip is the header's, not the caller's.** A `TabBar` switching the
+panel below goes in the `nav` slot, so the header's `mb-6` is the strip's bottom
+margin and no caller does the arithmetic. A strip reads **below** the page title
+everywhere — the calendar's tablet lens stopped being the exception 2026-09-04.
 
-**`text-page-title` is `PageHeader`'s type token.** Four surfaces may still use it
-directly, and none of them is a page header:
-
-| Surface                 | What it is                                       |
-| ----------------------- | ------------------------------------------------ |
-| `FocusView` task title  | The one task on the surface, not the page's name |
-| `TonightView` (compact) | A widget's meal name at the small density        |
-| `WalletChooser`         | A centred chooser prompt with no page frame      |
-| `DemoPage`              | The plugin-loader story's placeholder slot       |
+**`text-page-title` is `PageHeader`'s type token**, and four surfaces use it as
+one without being page headers: `FocusView`'s task title, `TonightView` compact,
+`WalletChooser`'s prompt, `DemoPage`'s placeholder.
 
 ### The rhythm of a page's body
 
@@ -2070,19 +2055,13 @@ stay the caller's: those are token choices, not rhythm. A caller that wants a
 different _gap_ wants a different primitive — say so in the session log rather
 than passing a number.
 
-**`text-section-label` stays the type token, and these surfaces use it as one.** A
-label is only `SectionLabel`'s business when it opens a group of content in a
-page's flow. These do not, and their own container owns their space:
-
-| Surface                                                                | Who owns the space                          |
-| ---------------------------------------------------------------------- | ------------------------------------------- |
-| `WidgetHeader`, `PageHeader` eyebrow                                   | The primitive itself                        |
-| `SettingsSection` panel head                                           | The panel's `px-6 py-4`                     |
-| `Disclosure` trigger                                                   | The trigger's own `py-2`                    |
-| `EmojiPicker` group + sticky category                                  | Picker-internal chrome                      |
-| `SpanBand`, `MonthGrid` weekday cells                                  | Dense component geometry                    |
-| `NextEventHero`, `TonightView`, `UpNextView`, `GrabsTray`, `FocusView` | Inline meta inside a card, not a group head |
-| `ActivitiesView` timeline months                                       | An axis label, not a group                  |
+**`text-section-label` stays the type token.** A label is `SectionLabel`'s
+business only when it opens a group of content in a page's flow. Where it does
+not, the container already owns the space and the raw token is correct:
+`WidgetHeader` and `PageHeader`'s eyebrow, `SettingsSection`'s panel head,
+`Disclosure`'s trigger, `EmojiPicker`'s groups, `SpanBand` and `MonthGrid`'s
+dense cells, the inline meta in `NextEventHero` / `TonightView` / `UpNextView` /
+`GrabsTray` / `FocusView`, and `ActivitiesView`'s timeline months.
 
 > **Why this exists.** Six surfaces had six recipes. Chores and the feed matched at
 > 680px only by coincidence; the calendar hardcoded `max-w-[1100px]` next to a token

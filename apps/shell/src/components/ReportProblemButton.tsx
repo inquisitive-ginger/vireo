@@ -44,7 +44,7 @@ export function ReportProblemButton({
         )}
       >
         <Bug size={18} aria-hidden />
-        <span className="text-xs-body xl:text-sm leading-tight xl:flex-1 xl:text-left font-normal">
+        <span className="text-xs-body xl:text-sm-token leading-tight xl:flex-1 xl:text-left font-normal">
           <span className="xl:hidden">Report</span>
           <span className="hidden xl:inline">Report a problem</span>
         </span>
@@ -60,7 +60,7 @@ export function ReportProblemButton({
         )}
       >
         <Bug size={18} aria-hidden />
-        <span className="text-sm flex-1 text-left font-normal">Report a problem</span>
+        <span className="text-sm-token flex-1 text-left font-normal">Report a problem</span>
       </Button>
     )
 

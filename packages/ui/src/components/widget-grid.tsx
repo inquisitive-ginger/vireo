@@ -4,6 +4,7 @@ import 'react-grid-layout/css/styles.css'
 import { WidgetSlot, type WidgetProminence } from './widget-slot'
 import { cn } from '../lib/utils'
 import { BREAKPOINT_MD } from '../lib/breakpoints'
+import { readSpacingToken } from '../lib/read-spacing-token'
 
 export interface WidgetLayoutItem {
   widgetId: string
@@ -25,9 +26,9 @@ export interface WidgetGridProps {
 }
 
 const GRID_COLS = 4
-const MIN_ROW_HEIGHT = 180
 const MAX_ROW_HEIGHT = 400
-const GAP = 16
+const MIN_ROW_HEIGHT = readSpacingToken('--spacing-widget-row', 180)
+const GAP = readSpacingToken('--spacing-grid-gap', 16)
 
 function maxRow(layout: WidgetLayoutItem[]): number {
   return layout.reduce((m, item) => Math.max(m, item.y + item.h), 0)

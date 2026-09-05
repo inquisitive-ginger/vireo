@@ -50,7 +50,7 @@ export function DatePicker({
             setContainer(dialog instanceof HTMLElement ? dialog : null)
           }}
           className={cn(
-            'flex h-9 w-full items-center justify-between rounded-md border border-input bg-background px-3 text-sm shadow-sm',
+            'flex h-9 w-full items-center justify-between rounded-card border border-input bg-background px-3 text-sm-token shadow-sm',
             'transition-colors focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ring',
             'disabled:cursor-not-allowed disabled:opacity-50',
             !value && 'text-muted-foreground'

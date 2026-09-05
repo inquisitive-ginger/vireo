@@ -66,7 +66,7 @@ function StepDots({ current }: { current: Step }) {
 function FieldError({ message }: { message?: string }) {
   if (!message) return null
   return (
-    <p className="flex items-center gap-1.5 text-xs text-destructive">
+    <p className="text-xs-body flex items-center gap-1.5 text-destructive">
       <CircleAlert size={12} className="shrink-0" />
       {message}
     </p>
@@ -118,11 +118,11 @@ function Step1({ onComplete }: { onComplete: () => void }) {
           error={!!errors.parentName}
         />
         <FieldError message={errors.parentName?.message} />
-        <p className="text-xs text-muted-foreground">You'll be the family administrator.</p>
+        <p className="text-xs-body text-muted-foreground">You'll be the family administrator.</p>
       </div>
 
       {mutation.isError && (
-        <p className="text-xs text-destructive">Something went wrong — please try again.</p>
+        <p className="text-xs-body text-destructive">Something went wrong — please try again.</p>
       )}
 
       <div className="flex justify-end pt-1">
@@ -206,13 +206,13 @@ function Step2({ onComplete }: { onComplete: () => void }) {
         <ul className="flex flex-col gap-2">
           {members.map((m) => (
             <li key={m.id} className="flex flex-col gap-2">
-              <div className="flex items-center justify-between gap-3 px-3 py-2.5 rounded-lg bg-background border border-border">
+              <div className="flex items-center justify-between gap-3 rounded-card border border-border bg-background px-3 py-2.5">
                 <div className="flex min-w-0 items-center gap-3">
                   {/* The colour is assigned, and SHOWN. Never hidden behind a step the
                       parent has to complete before they can get on with it (ADR 044). */}
                   <Spine color={identityToken(m.hue)} className="h-8" />
                   <ProfileAvatar name={m.name} size="sm" identity={m.hue} />
-                  <span className="truncate text-sm font-medium">{m.name}</span>
+                  <span className="text-sm-token truncate font-medium">{m.name}</span>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
                   <Badge variant="muted">{tierLabel(m.tier)}</Badge>
@@ -246,7 +246,7 @@ function Step2({ onComplete }: { onComplete: () => void }) {
               </div>
 
               {recolouring === m.id && (
-                <div className="rounded-lg border border-border bg-background p-3">
+                <div className="rounded-card border border-border bg-background p-3">
                   <ColorPicker
                     value={m.hue}
                     takenBy={takenBy}
@@ -262,7 +262,7 @@ function Step2({ onComplete }: { onComplete: () => void }) {
         </ul>
       )}
 
-      <div className="flex flex-col gap-3 p-4 rounded-xl border border-dashed border-border">
+      <div className="flex flex-col gap-3 rounded-panel border border-dashed border-border p-4">
         <div className="flex flex-col gap-2">
           <Label htmlFor="memberName">Name</Label>
           <Input
@@ -293,7 +293,7 @@ function Step2({ onComplete }: { onComplete: () => void }) {
                 type="button"
                 onClick={() => setDraftTier(tier)}
                 className={cn(
-                  'flex-1 py-2 rounded-lg border text-xs font-medium transition-colors',
+                  'text-xs-body flex-1 rounded-card border py-2 font-medium transition-colors',
                   draftTier === tier
                     ? 'bg-primary text-primary-foreground border-primary'
                     : 'border-border text-muted-foreground hover:bg-muted'
@@ -318,14 +318,14 @@ function Step2({ onComplete }: { onComplete: () => void }) {
         </Button>
 
         {paletteFull && (
-          <p className="text-xs text-muted-foreground">
+          <p className="text-xs-body text-muted-foreground">
             Every colour is taken — a family can have at most 8 members.
           </p>
         )}
       </div>
 
       {mutation.isError && (
-        <p className="text-xs text-destructive">Something went wrong — please try again.</p>
+        <p className="text-xs-body text-destructive">Something went wrong — please try again.</p>
       )}
 
       <div className="flex items-center justify-between pt-1">
@@ -412,7 +412,7 @@ function Step3() {
   return (
     <div className="flex flex-col items-center gap-7 py-2">
       <div className="text-center">
-        <p className="text-sm font-medium">
+        <p className="text-sm-token font-medium">
           {isDone
             ? 'PIN confirmed'
             : isMismatch
@@ -421,7 +421,7 @@ function Step3() {
                 ? 'Confirm your PIN'
                 : 'Choose a 4-digit PIN'}
         </p>
-        <p className="text-xs text-muted-foreground mt-1">
+        <p className="text-xs-body mt-1 text-muted-foreground">
           {isDone
             ? 'Tap Finish to complete setup.'
             : isMismatch
@@ -462,7 +462,7 @@ function Step3() {
             <div
               key={i}
               className={cn(
-                'w-14 h-14 rounded-xl border-2 flex items-center justify-center transition-all duration-150',
+                'w-14 h-14 rounded-panel border-2 flex items-center justify-center transition-all duration-150',
                 isMismatch
                   ? 'border-destructive'
                   : i < current.length
@@ -488,7 +488,7 @@ function Step3() {
         </button>
       )}
 
-      <p className="text-xs text-muted-foreground h-4">
+      <p className="text-xs-body h-4 text-muted-foreground">
         {!isDone && !isMismatch && (phase === 'enter' ? 'Step 1 of 2' : 'Step 2 of 2')}
       </p>
 
@@ -504,7 +504,7 @@ function Step3() {
       )}
 
       {mutation.isError && (
-        <p className="flex items-center gap-1.5 text-xs text-destructive">
+        <p className="text-xs-body flex items-center gap-1.5 text-destructive">
           <CircleAlert size={12} />
           Something went wrong — please try again.
         </p>
@@ -531,24 +531,20 @@ function OnboardingFlow({ initialStep }: { initialStep: Step }) {
   }
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-screen bg-background p-6">
-      <p className="text-muted-foreground text-xs tracking-[0.15em] uppercase font-semibold mb-6">
-        Vireo
-      </p>
+    <div className="flex min-h-dvh flex-col items-center justify-center bg-background p-6">
+      <p className="text-section-label mb-6 text-muted-foreground">Vireo</p>
 
-      <div className="w-full max-w-md bg-card border border-border rounded-2xl shadow-[var(--shadow-raised)] overflow-hidden">
-        <div className="px-8 pt-8 pb-6 border-b border-border flex items-start justify-between gap-4">
+      <div className="w-full max-w-drawer overflow-hidden rounded-hero border border-border bg-card shadow-[var(--shadow-raised)]">
+        <div className="flex items-start justify-between gap-4 border-b border-border p-6">
           <div>
-            <p className="text-xs text-muted-foreground uppercase tracking-widest font-semibold mb-1.5">
-              Step {step} of 3
-            </p>
+            <p className="text-section-label mb-1.5 text-muted-foreground">Step {step} of 3</p>
             <h2 className="text-heading">{STEP_META[step].title}</h2>
-            <p className="text-sm text-muted-foreground mt-1">{STEP_META[step].sub}</p>
+            <p className="text-sm-token mt-1 text-muted-foreground">{STEP_META[step].sub}</p>
           </div>
           <StepDots current={step} />
         </div>
 
-        <div className="px-8 py-7">
+        <div className="p-6">
           {step === 1 && <Step1 onComplete={advance} />}
           {step === 2 && <Step2 onComplete={advance} />}
           {step === 3 && <Step3 />}

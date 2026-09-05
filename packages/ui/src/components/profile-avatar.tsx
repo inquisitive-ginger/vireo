@@ -30,7 +30,7 @@ function getInitials(name: string): string {
 const SIZE_CLASSES: Record<ProfileAvatarSize, string> = {
   sm: 'w-8 h-8 text-xs-body',
   base: 'w-10 h-10 text-sm-token',
-  md: 'w-14 h-14 text-base',
+  md: 'w-14 h-14 text-base-token',
   // Raw px is intentional here: initials scale with the lg avatar, off the token ramp.
   lg: 'w-20 h-20 text-[22px]',
 }

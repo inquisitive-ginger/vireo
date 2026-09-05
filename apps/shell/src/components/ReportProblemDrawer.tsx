@@ -141,7 +141,7 @@ export function ReportProblemDrawer({ open, onClose }: { open: boolean; onClose:
 
 function ContextTag({ label, value }: { label: string; value: string }) {
   return (
-    <span className="text-xs-body rounded-md border border-border bg-card px-2 py-1 text-muted-foreground">
+    <span className="text-xs-body rounded-card border border-border bg-card px-2 py-1 text-muted-foreground">
       {label} <span className="font-semibold text-foreground">{value}</span>
     </span>
   )

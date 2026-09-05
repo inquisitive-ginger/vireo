@@ -93,7 +93,7 @@ export function StubChip({ emoji, name, count }: { emoji: string; name: string; 
           'polygon(0 0, 96% 0, 100% 14%, 96% 28%, 100% 42%, 96% 56%, 100% 70%, 96% 84%, 100% 100%, 0 100%)',
       }}
     >
-      <span className="text-base" aria-hidden>
+      <span className="text-base-token" aria-hidden>
         {emoji}
       </span>
       <span className="text-foreground">{name}</span>

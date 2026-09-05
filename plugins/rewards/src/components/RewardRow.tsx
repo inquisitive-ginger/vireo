@@ -43,7 +43,7 @@ export function RewardRow({
       }
     >
       <div className="relative shrink-0">
-        <div className="grid size-11 place-items-center rounded-xl bg-secondary text-2xl">
+        <div className="grid size-11 place-items-center rounded-panel bg-secondary text-page-title">
           {reward.emoji}
         </div>
         {reward.requiresApproval && (

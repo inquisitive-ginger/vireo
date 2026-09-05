@@ -69,7 +69,7 @@ function TicketLine({ tickets }: { tickets: Redemption[] }) {
         borderColor: 'color-mix(in oklch, var(--coin) 55%, var(--border))',
       }}
     >
-      <span className="text-lg leading-none" aria-hidden>
+      <span className="text-card-title leading-none" aria-hidden>
         {lead?.reward?.emoji ?? '🎟️'}
       </span>
       <span style={{ color: 'var(--coin-ink)' }}>
@@ -98,7 +98,7 @@ function Adaptive({
   if (affordable.length > 0) {
     return (
       <div className="text-sm-token">
-        <span className="text-lg" aria-hidden>
+        <span className="text-card-title" aria-hidden>
           {affordable.slice(0, 4).map((r) => r.emoji)}
         </span>{' '}
         <span className="text-muted-foreground">{affordable.length} you can get</span>
@@ -161,7 +161,7 @@ function StandardBody({ balance, rewards, tickets = [], lifetimeXp }: WalletView
           <div className="flex flex-col gap-2">
             {affordable.slice(0, 2).map((r) => (
               <div key={r.id} className="flex items-center gap-2.5">
-                <span className="text-lg" aria-hidden>
+                <span className="text-card-title" aria-hidden>
                   {r.emoji}
                 </span>
                 <span className="text-sm-token flex-1 truncate font-semibold">{r.name}</span>

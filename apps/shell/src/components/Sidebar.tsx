@@ -76,7 +76,9 @@ function ProfileChip() {
           size="sm"
           active
         />
-        <span className="hidden xl:block text-sm font-medium truncate flex-1">{displayName}</span>
+        <span className="hidden xl:block text-sm-token font-medium truncate flex-1">
+          {displayName}
+        </span>
         <ChevronRight
           size={14}
           className={cn(
@@ -135,7 +137,7 @@ function NavItem({
       }
     >
       {icon}
-      <span className="text-xs-body xl:text-sm leading-tight xl:leading-normal">{label}</span>
+      <span className="text-xs-body xl:text-sm-token leading-tight xl:leading-normal">{label}</span>
     </NavLink>
   )
 }

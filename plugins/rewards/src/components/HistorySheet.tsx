@@ -133,7 +133,7 @@ function HistoryRow({ entry, nameById }: { entry: LedgerEntry; nameById: Map<str
 
   return (
     <div className="flex items-center gap-3">
-      <span className="w-6 flex-none text-center text-lg leading-none" aria-hidden>
+      <span className="w-6 flex-none text-center text-card-title leading-none" aria-hidden>
         {glyphFor(entry)}
       </span>
       <div className="min-w-0 flex-1">

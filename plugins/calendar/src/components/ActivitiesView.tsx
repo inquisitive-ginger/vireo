@@ -260,7 +260,7 @@ function WeekdayLoad({ hue, days }: { hue: IdentityHue; days: Set<number> }) {
         return (
           <span
             key={i}
-            className="text-xs-token flex h-6 w-6 items-center justify-center rounded-md"
+            className="text-xs-token flex h-6 w-6 items-center justify-center rounded-card"
             style={
               on
                 ? {
@@ -436,7 +436,7 @@ function SeasonTimeline({ groups, now }: { groups: OwnerGroup[]; now: Date }) {
                 </div>
                 <div className="relative h-7 flex-1">
                   <div
-                    className="text-xs-token absolute inset-y-1 left-0 flex items-center rounded-md px-2 font-semibold"
+                    className="text-xs-token absolute inset-y-1 left-0 flex items-center rounded-card px-2 font-semibold"
                     style={{ width: `${width}%`, ...fillForHues(b.hues) }}
                   >
                     <span className="truncate">

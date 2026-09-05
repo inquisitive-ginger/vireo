@@ -19,8 +19,8 @@ export function SpanBar({
     <div
       className={cn(
         'flex h-full items-center px-1.5 text-xs-token font-semibold',
-        span.openStart ? 'rounded-l-none' : 'rounded-l-md',
-        span.openEnd ? 'rounded-r-none' : 'rounded-r-md'
+        span.openStart ? 'rounded-l-none' : 'rounded-l-card',
+        span.openEnd ? 'rounded-r-none' : 'rounded-r-card'
       )}
       style={{ background, color }}
       title={span.event.title}

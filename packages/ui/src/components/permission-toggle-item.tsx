@@ -27,7 +27,7 @@ export const PermissionToggleItem = memo(function PermissionToggleItem({
 }: PermissionToggleItemProps) {
   return (
     <div className={cn('flex items-center gap-3 px-6 py-3.5', !isLast && 'border-b border-border')}>
-      <label htmlFor={id} className="flex-1 text-sm text-foreground cursor-pointer">
+      <label htmlFor={id} className="flex-1 text-sm-token text-foreground cursor-pointer">
         {label}
       </label>
 

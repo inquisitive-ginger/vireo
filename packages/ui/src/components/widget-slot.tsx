@@ -38,7 +38,7 @@ export function WidgetSlot({ children, className, prominence = 'card', flat }: W
     <div
       className={cn(
         'h-full w-full overflow-hidden',
-        flat ? 'rounded-xl' : PROMINENCE_CHROME[prominence],
+        flat ? 'rounded-panel' : PROMINENCE_CHROME[prominence],
         className
       )}
     >
