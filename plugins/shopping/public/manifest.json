@@ -11,6 +11,7 @@
       "shopping.item.checked",
       "shopping.item.removed",
       "shopping.item.renamed",
+      "shopping.list.cleared",
       "shopping.list.created"
     ],
     "subscribes": ["meals.needs.pushed"]

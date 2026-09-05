@@ -52,6 +52,7 @@ function renderView(over: Partial<ShoppingPageViewProps> = {}) {
     onRename: vi.fn(),
     onRemove: vi.fn(),
     onRowRetract: vi.fn(),
+    onClear: vi.fn(),
     rowErrors: {},
     ...over,
   }
@@ -380,6 +381,14 @@ describe('ShoppingPageView — in a shop', () => {
     expect(container.querySelector('.invisible')).not.toBeNull()
   })
 
+  /* The count goes quiet before a shop starts; the block does not. Hiding the
+     whole row took the always-available clear menu with it. */
+  it('keeps the clear menu reachable before anything is in the cart', () => {
+    renderView({ canManage: true })
+    expect(screen.queryByRole('progressbar')).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: 'What to do with this list' })).toBeInTheDocument()
+  })
+
   it('never switches the hero off — the capture field is present in a shop too', () => {
     shopping()
     expect(screen.getByLabelText('Add to Grocery')).toBeInTheDocument()
@@ -681,6 +690,69 @@ describe('ShoppingPageView — the row’s verbs', () => {
      never restated — a second copy of 120 is a second rule wearing the first
      one's clothes. Held at the field so a long word stops where the person can
      see it rather than returning a 400 after the sheet has closed. */
+  /* Renaming happens on the ROW at both widths (Zach, list pass) — a field in a
+     bottom sheet on a phone sat under the keyboard, and a field on the row gets
+     scrolled above it by the browser like every other input on the page. */
+  it('renames on the row itself, not in the sheet, at either width', () => {
+    const { props } = renderView({ canManage: true, inlineActions: true })
+    openSheet('snap peas')
+    fireEvent.click(screen.getByRole('button', { name: 'Rename' }))
+
+    // The panel is gone and the row is the field.
+    expect(screen.queryByRole('button', { name: 'Remove from the list' })).not.toBeInTheDocument()
+    const field = screen.getByLabelText('Rename “snap peas”')
+    fireEvent.change(field, { target: { value: 'sugar snap peas' } })
+    fireEvent.keyDown(field, { key: 'Enter' })
+    expect(props.onRename).toHaveBeenCalledWith(
+      expect.objectContaining({ id: '1' }),
+      'sugar snap peas'
+    )
+  })
+
+  it('cancels on Escape without committing, and the blur after it does not either', () => {
+    const { props } = renderView({ canManage: true })
+    openSheet('snap peas')
+    fireEvent.click(screen.getByRole('button', { name: 'Rename' }))
+
+    const field = screen.getByLabelText('Rename “snap peas”')
+    fireEvent.change(field, { target: { value: 'something else' } })
+    fireEvent.keyDown(field, { key: 'Escape' })
+    fireEvent.blur(field)
+    expect(props.onRename).not.toHaveBeenCalled()
+    expect(screen.getByText('snap peas')).toBeInTheDocument()
+  })
+
+  /* A rename is one word — someone who taps away from it has finished, not
+     abandoned it. */
+  it('commits on blur', () => {
+    const { props } = renderView({ canManage: true })
+    openSheet('snap peas')
+    fireEvent.click(screen.getByRole('button', { name: 'Rename' }))
+
+    const field = screen.getByLabelText('Rename “snap peas”')
+    fireEvent.change(field, { target: { value: 'sugar snap peas' } })
+    fireEvent.blur(field)
+    expect(props.onRename).toHaveBeenCalledWith(
+      expect.objectContaining({ id: '1' }),
+      'sugar snap peas'
+    )
+  })
+
+  /* The row being edited is a field and nothing else: a drag or a whole-row tap
+     on it is a mis-tap every time. */
+  it('takes the gesture and the check off the row while it is being renamed', () => {
+    const { container, props } = renderView({ canManage: true })
+    openSheet('snap peas')
+    fireEvent.click(screen.getByRole('button', { name: 'Rename' }))
+
+    // Its neighbours keep theirs; the row being edited loses the wrapper entirely.
+    expect(container.querySelectorAll('[data-row-swipe-quick]')).toHaveLength(2)
+    expect(
+      screen.queryByRole('button', { name: /Mark .snap peas. as got/ })
+    ).not.toBeInTheDocument()
+    expect(props.onToggle).not.toHaveBeenCalled()
+  })
+
   it('caps the rename field at the shared schema’s own ceiling', () => {
     renderView({ canManage: true })
     openSheet('snap peas')
@@ -697,9 +769,10 @@ describe('ShoppingPageView — the row’s verbs', () => {
     const { props, unmount } = renderView({ canManage: true })
     openSheet('snap peas')
     fireEvent.click(screen.getByRole('button', { name: 'Rename' }))
+    // The sheet closes and the ROW becomes the field, at both widths.
     const field = screen.getByLabelText('Rename “snap peas”')
     fireEvent.change(field, { target: { value: 'sugar snap peas' } })
-    fireEvent.submit(field.closest('form')!)
+    fireEvent.keyDown(field, { key: 'Enter' })
     expect(props.onRename).toHaveBeenCalledWith(
       expect.objectContaining({ id: '1' }),
       'sugar snap peas'
@@ -709,6 +782,132 @@ describe('ShoppingPageView — the row’s verbs', () => {
     renderView({ canManage: false, canFile: true })
     openSheet('snap peas')
     expect(screen.queryByRole('button', { name: 'Rename' })).not.toBeInTheDocument()
+  })
+})
+
+/* A paper list gets recycled until the next time (Zach). Both verbs are hard
+   deletes with no undo, which is why the confirmation names the count. */
+describe('ShoppingPageView — ending the list', () => {
+  const midShop = (over: Partial<ShoppingPageViewProps> = {}) =>
+    renderView({
+      canManage: true,
+      groups: [
+        {
+          aisle: 'Produce',
+          items: [
+            item({ id: '1', name: 'snap peas', status: 'got' }),
+            item({ id: '2', name: 'bananas' }),
+          ],
+        },
+      ],
+      ...over,
+    })
+
+  it('rides the sticky line, not the destination pills', () => {
+    midShop()
+    const menu = screen.getByRole('button', { name: 'What to do with this list' })
+    // Inside the sticky block, which is what keeps it reachable down a long list.
+    expect(menu.closest('.sticky')).not.toBeNull()
+  })
+
+  /* Same rule as the row's edges: a profile without the verb sees no control at
+     all, rather than one that 403s. */
+  it('is absent entirely below `manage`', () => {
+    midShop({ canManage: false })
+    expect(
+      screen.queryByRole('button', { name: 'What to do with this list' })
+    ).not.toBeInTheDocument()
+  })
+
+  it('offers the recycle only once something is in the cart', () => {
+    midShop({
+      groups: [{ aisle: 'Produce', items: [item({ id: '1', name: 'snap peas' })] }],
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'What to do with this list' }))
+    expect(screen.queryByText(/Clear the/)).not.toBeInTheDocument()
+    expect(screen.getByText('Throw the list away')).toBeInTheDocument()
+  })
+
+  /* Two-step and inline, never a dialog — the same shape as the row's
+     reveal-then-tap. The count IS the warning, because there is no undo. */
+  it('confirms in place, naming the count, and fires only on the second tap', () => {
+    const { props } = midShop()
+    fireEvent.click(screen.getByRole('button', { name: 'What to do with this list' }))
+
+    fireEvent.click(screen.getByText('Throw the list away'))
+    expect(props.onClear).not.toHaveBeenCalled()
+    expect(screen.getByText('Sure? This removes 2')).toBeInTheDocument()
+
+    fireEvent.click(screen.getByText('Sure? This removes 2'))
+    expect(props.onClear).toHaveBeenCalledWith('all')
+  })
+
+  it('names the checked count on the recycle, not the total', () => {
+    const { props } = midShop()
+    fireEvent.click(screen.getByRole('button', { name: 'What to do with this list' }))
+    fireEvent.click(screen.getByText('Clear the 1 checked'))
+    fireEvent.click(screen.getByText('Sure? This removes 1'))
+    expect(props.onClear).toHaveBeenCalledWith('checked')
+  })
+
+  /* Finishing a shop is exactly when you bin a paper list, so the recycle gets a
+     real button in the cleared state rather than staying behind the menu. */
+  it('promotes the recycle to a button once the list is clear', () => {
+    const { props } = renderView({
+      canManage: true,
+      groups: [{ aisle: 'Produce', items: [item({ id: '1', name: 'snap peas', status: 'got' })] }],
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Start a fresh list' }))
+    expect(props.onClear).not.toHaveBeenCalled()
+    fireEvent.click(screen.getByRole('button', { name: 'Sure? This removes 1' }))
+    expect(props.onClear).toHaveBeenCalledWith('checked')
+  })
+
+  it('offers no fresh-list button below `manage`', () => {
+    renderView({
+      canManage: false,
+      groups: [{ aisle: 'Produce', items: [item({ id: '1', name: 'snap peas', status: 'got' })] }],
+    })
+    expect(screen.queryByRole('button', { name: 'Start a fresh list' })).not.toBeInTheDocument()
+  })
+})
+
+/* Session-only, deliberately: nothing is stored and nothing syncs, so a fresh
+   arrival always sees the shop in its truthful state. */
+describe('ShoppingPageView — aisles open and close', () => {
+  const oneClearedAisle = () =>
+    renderView({
+      groups: [
+        { aisle: 'Produce', items: [item({ id: '1', name: 'snap peas', status: 'got' })] },
+        { aisle: 'Dairy', items: [item({ id: '2', name: 'milk', category: 'Dairy' })] },
+      ],
+    })
+
+  it('reopens a completed aisle, and closes it again on a second tap', () => {
+    oneClearedAisle()
+    expect(screen.queryByText('snap peas')).not.toBeInTheDocument()
+
+    fireEvent.click(screen.getByRole('button', { name: /Open Produce/ }))
+    expect(screen.getByText('snap peas')).toBeInTheDocument()
+
+    // The header of an open COMPLETE aisle is the way back to closed.
+    fireEvent.click(screen.getByRole('button', { name: /^Produce/ }))
+    expect(screen.queryByText('snap peas')).not.toBeInTheDocument()
+  })
+
+  /* ADR 071 §2 — the uncheck has to stay reachable by the person standing in the
+     aisle, which is the whole reason the summary reopens at all. */
+  it('keeps the uncheck reachable through the summary', () => {
+    const { props } = oneClearedAisle()
+    fireEvent.click(screen.getByRole('button', { name: /Open Produce/ }))
+    fireEvent.click(screen.getByRole('button', { name: /Put .snap peas. back on the list/ }))
+    expect(props.onToggle).toHaveBeenCalledWith(expect.objectContaining({ id: '1' }))
+  })
+
+  it('leaves an incomplete aisle open, with no toggle to close it', () => {
+    oneClearedAisle()
+    expect(screen.getByText('milk')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /^Dairy/ })).not.toBeInTheDocument()
   })
 })
 

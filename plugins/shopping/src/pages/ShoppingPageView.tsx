@@ -1,11 +1,12 @@
 import { Fragment, useEffect, useRef, useState, type ReactNode } from 'react'
-import { Check, ChevronDown, ChevronLeft, Loader2 } from 'lucide-react'
-import type { ShoppingAisle } from '@family-os/schemas'
+import { Check, ChevronDown, ChevronLeft, ChevronUp, Loader2 } from 'lucide-react'
+import { ShoppingItemNameSchema, type ShoppingAisle } from '@family-os/schemas'
 import { CaptureField, Chip, ListRow, PageContainer, PageHeader, RowSwipe, cn } from '@family-os/ui'
 import type { CaptureReport, ShoppingItem, ShoppingList } from '../types'
 import { ReportLine } from '../components/ReportLine'
 import { ShoppingCaptureHero } from './ShoppingCaptureHero'
 import { RowActionsPanel, RowActionsSheet } from './RowActionsSheet'
+import { ClearListMenu, type ClearScope } from './ClearListMenu'
 
 export interface AisleGroup {
   aisle: string
@@ -63,6 +64,9 @@ export interface ShoppingPageViewProps {
   onRename: (item: ShoppingItem, name: string) => void
   onRemove: (item: ShoppingItem) => void
   onRowRetract: (item: ShoppingItem) => void
+  /** Recycling the list or throwing it away — both `manage`, both hard deletes.
+      A profile without the key sees no menu at all, rather than one that 403s. */
+  onClear: (scope: ClearScope) => void
   /** Row-scoped failures, keyed by item id. A check that did not reach the
       server is a person in an aisle believing a thing is in the cart, so it
       reports on the row they tapped, never in the page chrome (M5.5/3). A
@@ -105,6 +109,7 @@ export function ShoppingPageView({
   onRename,
   onRemove,
   onRowRetract,
+  onClear,
   rowErrors,
 }: ShoppingPageViewProps) {
   // Local to the view since SH-13: the echo says the field is live and Enter
@@ -112,6 +117,11 @@ export function ShoppingPageView({
   // nothing above holds it.
   const [composing, setComposing] = useState(false)
   const [sheetItem, setSheetItem] = useState<ShoppingItem | null>(null)
+  // Renaming happens on the ROW, at both widths (Zach, list pass). On a phone the
+  // browser scrolls a focused input above the keyboard the way it does for every
+  // other field on the page, which is the actual fix for the occlusion a sheet
+  // field had; on a tablet it means the inline panel never has to host one.
+  const [renamingId, setRenamingId] = useState<string | null>(null)
   const selected = lists.find((l) => l.id === selectedListId)
   const destination = selected?.name ?? 'the list'
   // Aisles belong to the LIST, not to the app — a hardware run has none of ours,
@@ -245,21 +255,38 @@ export function ShoppingPageView({
               total={total}
               aisles={groups.length}
               showAisles={showAisles}
+              onRecycle={canManage ? () => onClear('checked') : undefined}
             />
           ) : (
-            <div className={cn(got === 0 && 'invisible')} aria-hidden={got === 0}>
-              {/* `{list} · {n} left` — the figure at `heading`, the name and the
-                  word at `sm`, so what is LEFT reads first and the list it
-                  belongs to reads second. Same number as the pill above, counted
-                  over the same rows (SH-10/11). */}
-              <span className="block">
-                <span className="text-sm-token text-muted-foreground">{destination} · </span>
-                <span className="text-heading text-foreground">{needed}</span>
-                <span className="text-sm-token text-muted-foreground"> left</span>
-              </span>
+            <>
+              <div className="flex items-center justify-between gap-3">
+                {/* `{list} · {n} left` — the figure at `heading`, the name and the
+                    word at `sm`, so what is LEFT reads first and the list it
+                    belongs to reads second. Same number as the pill above,
+                    counted over the same rows (SH-10/11).
+
+                    It is the COUNT that goes quiet before anything is in the
+                    cart, not the block: ADR 043's rule is about the comparison,
+                    and the menu beside it is available whether or not a shop has
+                    started. Hiding the whole row took the menu with it. */}
+                <span className={cn(got === 0 && 'invisible')} aria-hidden={got === 0}>
+                  <span className="text-sm-token text-muted-foreground">{destination} · </span>
+                  <span className="text-heading text-foreground">{needed}</span>
+                  <span className="text-sm-token text-muted-foreground"> left</span>
+                </span>
+                {/* On the sticky line rather than beside the destination pills
+                    (Zach's correction): the moment you want to bin a list is the
+                    moment you are at the bottom of a long one, and only this
+                    block is still on screen there. */}
+                {canManage && <ClearListMenu got={got} total={total} onClear={onClear} />}
+              </div>
               <div
-                className="h-meter mt-2 overflow-hidden rounded-full bg-muted"
+                className={cn(
+                  'h-meter mt-2 overflow-hidden rounded-full bg-muted',
+                  got === 0 && 'invisible'
+                )}
                 role="progressbar"
+                aria-hidden={got === 0}
                 aria-label={`${got} of ${total} in the cart`}
                 aria-valuenow={got}
                 aria-valuemin={0}
@@ -270,7 +297,7 @@ export function ShoppingPageView({
                   style={{ width: `${total === 0 ? 0 : Math.round((got / total) * 100)}%` }}
                 />
               </div>
-            </div>
+            </>
           )}
         </div>
       )}
@@ -299,6 +326,11 @@ export function ShoppingPageView({
               onRemove={onRemove}
               onRowRetract={onRowRetract}
               sheetItemId={sheetItem?.id ?? null}
+              renamingId={renamingId}
+              onFinishRename={(item, name) => {
+                setRenamingId(null)
+                if (name && name !== item.name) onRename(item, name)
+              }}
               rowErrors={rowErrors}
               actionsPanel={
                 inlineActions
@@ -310,7 +342,10 @@ export function ShoppingPageView({
                         canManage={canManage}
                         canRetract={canRetract}
                         onRefile={onRefile}
-                        onRename={onRename}
+                        onStartRename={() => {
+                          setSheetItem(null)
+                          setRenamingId(item.id)
+                        }}
                         onRemove={onRemove}
                         onRetract={onRowRetract}
                       />
@@ -332,7 +367,10 @@ export function ShoppingPageView({
           canManage={canManage}
           canRetract={canRetract}
           onRefile={onRefile}
-          onRename={onRename}
+          onStartRename={(item: ShoppingItem) => {
+            setSheetItem(null)
+            setRenamingId(item.id)
+          }}
           onRemove={onRemove}
           onRetract={onRowRetract}
         />
@@ -355,12 +393,16 @@ function ClearedList({
   total,
   aisles,
   showAisles,
+  onRecycle,
 }: {
   destination: string
   total: number
   aisles: number
   showAisles: boolean
+  /** Undefined below `manage` — the button is absent rather than refused. */
+  onRecycle?: () => void
 }) {
+  const [confirming, setConfirming] = useState(false)
   return (
     <div className="flex flex-col items-center gap-2 pt-2 pb-1">
       {/* The ring is the product's own mark — the thing you pressed seventeen
@@ -373,6 +415,24 @@ function ClearedList({
         {total} thing{total === 1 ? '' : 's'}
         {showAisles && `, ${aisles} aisle${aisles === 1 ? '' : 's'}`}, {destination} is clear.
       </p>
+      {/* Finishing a shop is exactly when you bin a paper list, so the recycle
+          gets a real button here rather than staying behind the menu. Same
+          two-step confirmation, naming the same count — there is no undo. */}
+      {onRecycle && (
+        <button
+          type="button"
+          onClick={() => (confirming ? onRecycle() : setConfirming(true))}
+          onBlur={() => setConfirming(false)}
+          className={cn(
+            'text-body min-h-touch mt-1 cursor-pointer rounded-panel border px-4 font-medium',
+            confirming
+              ? 'border-error text-error'
+              : 'border-border text-foreground hover:bg-secondary'
+          )}
+        >
+          {confirming ? `Sure? This removes ${total}` : 'Start a fresh list'}
+        </button>
+      )}
     </div>
   )
 }
@@ -389,6 +449,11 @@ interface ItemListProps {
   onRemove: (item: ShoppingItem) => void
   onRowRetract: (item: ShoppingItem) => void
   sheetItemId: string | null
+  /** The row currently being renamed in place, if any. */
+  renamingId: string | null
+  /** Empty or unchanged name means cancel — the caller decides, so Escape and a
+      blur that changed nothing take the same path. */
+  onFinishRename: (item: ShoppingItem, name: string | null) => void
   rowErrors: Record<string, string>
   /** Tablet and up — renders the open row's verbs directly under it. Undefined
       on a phone, where the bottom sheet carries them instead. */
@@ -412,25 +477,32 @@ function ItemList({
   onRemove,
   onRowRetract,
   sheetItemId,
+  renamingId,
+  onFinishRename,
   rowErrors,
   actionsPanel,
 }: ItemListProps) {
-  // An aisle you have touched stays open. That is what reconciles the two rules
-  // that otherwise fight: a cleared aisle collapses so the walk keeps moving,
-  // but the row you just tapped must not vanish from under your thumb. An aisle
-  // cleared by someone else, or already cleared when the page loaded, arrives
-  // collapsed; the one you are standing in does not close on you.
-  const [opened, setOpened] = useState<string[]>([])
+  /* A complete aisle collapses on its own so the walk keeps moving, and the
+     reader can override that either way — open one to look, close one they are
+     done with. SESSION-ONLY, deliberately: nothing is stored and nothing syncs,
+     so a fresh arrival always sees the shop in its truthful state rather than
+     yesterday's opinion of it.
+
+     The other rule this reconciles: the row you just tapped must not vanish from
+     under your thumb, so checking the last item in an aisle forces it open. An
+     aisle completed by someone else, or already complete on load, arrives
+     collapsed. */
+  const [openOverride, setOpenOverride] = useState<Record<string, boolean>>({})
 
   return (
     <>
       {groups.map((group, i) => {
-        const cleared = group.items.every((item) => item.status === 'got')
+        const complete = group.items.every((item) => item.status === 'got')
         // A flat list has no aisles of ours, so it has no cleared aisle either —
         // collapsing its single pseudo-group would hide the whole list behind a
         // summary of a grouping its shopper cannot see. The meter still works
         // there; only the collapse is aisle-coupled.
-        const collapsed = showAisles && cleared && !opened.includes(group.aisle)
+        const collapsed = showAisles && complete && openOverride[group.aisle] !== true
 
         if (collapsed) {
           return (
@@ -442,7 +514,7 @@ function ItemList({
             <ListRow
               key={group.aisle}
               className="text-muted-foreground"
-              onActivate={() => setOpened((open) => [...open, group.aisle])}
+              onActivate={() => setOpenOverride((o) => ({ ...o, [group.aisle]: true }))}
               activateLabel={`Open ${group.aisle} — ${group.items.length} in the cart`}
             >
               {/* The chevron rides the label, not the far margin: it is the only
@@ -461,18 +533,36 @@ function ItemList({
 
         return (
           <div key={group.aisle}>
-            {showAisles && (
-              <div
-                className={cn(
-                  // A section label binds to what is BELOW it, so the gap above
-                  // stays the larger of the two (live review, 2026-09-04).
-                  'text-section-label pb-2 text-muted-foreground',
-                  i === 0 ? 'pt-4' : 'pt-7'
-                )}
-              >
-                {group.aisle}
-              </div>
-            )}
+            {showAisles &&
+              // A complete aisle that is open was opened by hand (or by the check
+              // that completed it), so its header is the way back to closed —
+              // tapping reopens, tapping again closes. An incomplete aisle has
+              // nothing to collapse and stays a label.
+              (complete ? (
+                <button
+                  type="button"
+                  onClick={() => setOpenOverride((o) => ({ ...o, [group.aisle]: false }))}
+                  aria-expanded
+                  className={cn(
+                    'text-section-label min-h-touch flex w-full cursor-pointer items-center gap-1.5 pb-2 text-left text-muted-foreground',
+                    i === 0 ? 'pt-4' : 'pt-7'
+                  )}
+                >
+                  {group.aisle}
+                  <ChevronUp size={14} aria-hidden />
+                </button>
+              ) : (
+                <div
+                  className={cn(
+                    // A section label binds to what is BELOW it, so the gap above
+                    // stays the larger of the two (live review, 2026-09-04).
+                    'text-section-label pb-2 text-muted-foreground',
+                    i === 0 ? 'pt-4' : 'pt-7'
+                  )}
+                >
+                  {group.aisle}
+                </div>
+              ))}
             {group.items.map((item) => (
               <Fragment key={item.id}>
                 <Row
@@ -484,14 +574,16 @@ function ItemList({
                   sheetOpen={sheetItemId === item.id}
                   error={rowErrors[item.id]}
                   onToggle={() => {
-                    setOpened((open) =>
-                      open.includes(group.aisle) ? open : [...open, group.aisle]
-                    )
+                    // Checking the last row in an aisle would otherwise collapse
+                    // it out from under the thumb that just moved.
+                    setOpenOverride((o) => ({ ...o, [group.aisle]: true }))
                     onToggle(item)
                   }}
                   onOpenSheet={() => onOpenSheet(item)}
                   onRemove={() => onRemove(item)}
                   onRetract={() => onRowRetract(item)}
+                  renaming={renamingId === item.id}
+                  onFinishRename={(name) => onFinishRename(item, name)}
                 />
                 {sheetItemId === item.id && actionsPanel?.(item)}
               </Fragment>
@@ -515,6 +607,8 @@ interface RowProps {
   onOpenSheet: () => void
   onRemove: () => void
   onRetract: () => void
+  renaming: boolean
+  onFinishRename: (name: string | null) => void
 }
 
 function Row({
@@ -529,6 +623,8 @@ function Row({
   onOpenSheet,
   onRemove,
   onRetract,
+  renaming,
+  onFinishRename,
 }: RowProps) {
   const got = item.status === 'got'
   /* Two verbs, two endpoints, and they read differently to the person holding
@@ -542,6 +638,18 @@ function Row({
     : canRetract && item.canRetract
       ? { label: 'Take it back', onFire: onRetract }
       : undefined
+
+  /* While renaming, the row is a field and nothing else: no gesture, no check.
+     A drag or a whole-row tap on a row you are editing is a mis-tap every time. */
+  if (renaming) {
+    return (
+      <ListRow leading={<Ring checked={got} />}>
+        <div className="min-w-0 flex-1 py-1.5">
+          <RenameField name={item.name} onFinish={onFinishRename} />
+        </div>
+      </ListRow>
+    )
+  }
 
   return (
     <RowSwipe
@@ -584,6 +692,50 @@ function Row({
         </div>
       </ListRow>
     </RowSwipe>
+  )
+}
+
+/* Renaming happens where the row already is, at BOTH widths (Zach, list pass).
+   A field inside a bottom sheet on a phone sat under the keyboard; a field on the
+   row is scrolled above it by the browser, the same as every other input on the
+   page. Enter commits, Escape cancels, blur commits — a rename is one word, and
+   a person who taps away from it has finished, not abandoned it. The cap is the
+   schema's own, never a copy of the number. */
+function RenameField({
+  name,
+  onFinish,
+}: {
+  name: string
+  onFinish: (name: string | null) => void
+}) {
+  const [draft, setDraft] = useState(name)
+  const cancelled = useRef(false)
+
+  return (
+    <input
+      autoFocus
+      value={draft}
+      maxLength={ShoppingItemNameSchema.maxLength ?? undefined}
+      aria-label={`Rename “${name}”`}
+      enterKeyHint="done"
+      onChange={(e) => setDraft(e.target.value)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault()
+          onFinish(draft.trim() || null)
+        } else if (e.key === 'Escape') {
+          e.preventDefault()
+          // Marked before blur so the blur that follows does not commit it.
+          cancelled.current = true
+          onFinish(null)
+        }
+      }}
+      onBlur={() => {
+        if (cancelled.current) return
+        onFinish(draft.trim() || null)
+      }}
+      className="text-card-title min-h-touch w-full rounded-lg border border-input bg-card px-2 text-foreground outline-none focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary"
+    />
   )
 }
 

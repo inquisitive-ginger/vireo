@@ -1,14 +1,8 @@
-import { useEffect, useRef, useState } from 'react'
+import { useEffect, useState } from 'react'
 import { Check, ChevronLeft } from 'lucide-react'
-import { SHOPPING_AISLES, ShoppingItemNameSchema, type ShoppingAisle } from '@family-os/schemas'
-import { Button, Input, Sheet, cn } from '@family-os/ui'
+import { SHOPPING_AISLES, type ShoppingAisle } from '@family-os/schemas'
+import { Sheet, cn } from '@family-os/ui'
 import type { ShoppingItem } from '../types'
-
-/** Read off the schema the create, the rename and the batch all share, never
-    restated: a copy of 120 here is a second rule wearing the first one's clothes.
-    Held at the field so a long word is stopped where the person can see it,
-    rather than coming back as a 400 after the sheet has closed. */
-const NAME_MAX = ShoppingItemNameSchema.maxLength ?? undefined
 
 export interface RowActionsProps {
   /** Null closes it. The row it was opened from restores focus. */
@@ -26,7 +20,9 @@ export interface RowActionsProps {
       position in the Just-added strip (ADR 073 §2). */
   canRetract: boolean
   onRefile: (item: ShoppingItem, category: ShoppingAisle) => void
-  onRename: (item: ShoppingItem, name: string) => void
+  /** Hands off to the ROW, which becomes the field (Zach, list pass). The panel
+      hosts no input of its own at either width — one rename path, not two. */
+  onStartRename: (item: ShoppingItem) => void
   onRemove: (item: ShoppingItem) => void
   onRetract: (item: ShoppingItem) => void
 }
@@ -53,31 +49,20 @@ export function RowActionsPanel({
   canManage,
   canRetract,
   onRefile,
-  onRename,
+  onStartRename,
   onRemove,
   onRetract,
 }: RowActionsProps) {
-  const [view, setView] = useState<'menu' | 'aisle' | 'rename'>('menu')
-  const [draft, setDraft] = useState('')
-  const renameRef = useRef<HTMLInputElement>(null)
+  const [view, setView] = useState<'menu' | 'aisle'>('menu')
 
-  // A reopen must not land on the last row's rename panel with the last row's
-  // word in the field.
+  // A reopen must not land on the last row's aisle picker.
   useEffect(() => {
-    if (item) {
-      setView('menu')
-      setDraft(item.name)
-    }
+    if (item) setView('menu')
   }, [item])
-
-  useEffect(() => {
-    if (view === 'rename') renameRef.current?.focus()
-  }, [view])
 
   if (!item) return null
 
   const retractable = canRetract && item.canRetract
-  const trimmed = draft.trim()
 
   return (
     <div
@@ -114,7 +99,17 @@ export function RowActionsPanel({
           {canFile && (
             <SheetAction label="Move to another aisle" onSelect={() => setView('aisle')} />
           )}
-          {canManage && <SheetAction label="Rename" onSelect={() => setView('rename')} />}
+          {/* Hands off to the row, which becomes the field. The panel hosts no
+              input at either width — one rename path, not two. */}
+          {canManage && (
+            <SheetAction
+              label="Rename"
+              onSelect={() => {
+                onClose()
+                onStartRename(item)
+              }}
+            />
+          )}
           {retractable && (
             <SheetAction
               label="Take it back"
@@ -162,34 +157,6 @@ export function RowActionsPanel({
             </button>
           ))}
         </div>
-      )}
-
-      {view === 'rename' && (
-        <form
-          onSubmit={(e) => {
-            e.preventDefault()
-            if (!trimmed) return
-            onClose()
-            if (trimmed !== item.name) onRename(item, trimmed)
-          }}
-          className="flex flex-col gap-3"
-        >
-          {/* A rename fixes a typo and nothing else: it does not re-file the
-                aisle and does not teach the dictionary (D5, ADR 073 §4's
-                asymmetry). */}
-          <Input
-            ref={renameRef}
-            value={draft}
-            onChange={(e) => setDraft(e.target.value)}
-            aria-label={`Rename “${item.name}”`}
-            enterKeyHint="done"
-            maxLength={NAME_MAX}
-            className="min-h-touch"
-          />
-          <Button type="submit" disabled={!trimmed} className="self-start">
-            Rename
-          </Button>
-        </form>
       )}
     </div>
   )

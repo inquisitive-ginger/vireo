@@ -80,6 +80,7 @@ const meta: Meta<typeof ShoppingPageView> = {
     onRename: () => {},
     onRemove: () => {},
     onRowRetract: () => {},
+    onClear: () => {},
     rowErrors: {},
     layout: 'list',
     totalOpenCount: 19,
@@ -108,11 +109,29 @@ export const MidShop: Story = {
   },
 }
 
+/* The list's own menu, on the sticky line above the bar — right-aligned, and
+   reachable while scrolling because the line it rides is what stays on screen.
+   `manage` only; below it there is no menu rather than one that 403s. */
+export const EndingTheList: Story = {
+  name: 'S3 — the list’s own menu',
+  args: {
+    canManage: true,
+    groups: [
+      { aisle: 'Produce', items: [gotItem('1', 'snap peas', 'Produce')] },
+      {
+        aisle: 'Dairy',
+        items: [gotItem('4', 'milk', 'Dairy'), item('5', 'greek yogurt', 'Dairy')],
+      },
+    ],
+  },
+}
+
 /* The walk gets an ending (SH-07). It replaces the meter and nothing else — the
    field, the pills and every aisle summary stay live. */
 export const Cleared: Story = {
   name: 'The list is clear',
   args: {
+    canManage: true,
     groups: [
       { aisle: 'Produce', items: [gotItem('1', 'snap peas', 'Produce')] },
       { aisle: 'Dairy', items: [gotItem('4', 'milk', 'Dairy')] },
@@ -335,7 +354,7 @@ export const InlineRowActions: Story = {
         canManage
         canRetract
         onRefile={() => {}}
-        onRename={() => {}}
+        onStartRename={() => {}}
         onRemove={() => {}}
         onRetract={() => {}}
       />

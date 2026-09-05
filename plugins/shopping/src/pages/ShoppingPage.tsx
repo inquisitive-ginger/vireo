@@ -31,6 +31,7 @@ import { collisions, failedNames, toDuplicate, tooMany } from '../lib/batch-resu
 import { retractMessage } from '../lib/use-ambient-capture'
 import { useWideLayout } from '../lib/use-wide-layout'
 import { ShoppingPageView, type AisleGroup } from './ShoppingPageView'
+import type { ClearScope } from './ClearListMenu'
 
 const CHECK_MUTATION = ['shopping/check'] as const
 
@@ -181,6 +182,11 @@ export function ShoppingPage() {
         'shopping.item.added',
         'shopping.item.removed',
         'shopping.item.renamed',
+        // A clear emits ONE event for the whole act and no per-row `removed`
+        // (backend, pinned by a test), so this subscription is the only thing
+        // that refreshes the other shopper's screen. It fires even when nothing
+        // was removed, so the refetch does not depend on the list's contents.
+        'shopping.list.cleared',
       ] as const
     ).map((event) => subscribe(event, refresh))
     return () => offs.forEach((off) => off())
@@ -380,6 +386,33 @@ export function ShoppingPage() {
     },
   })
 
+  /* Recycling the list, or throwing it away. One route, two scopes, because the
+     acts differ in which rows they name and not in what they do — both are hard
+     deletes with no undo, which is why the confirmation names the count. */
+  const clearList = useMutation({
+    mutationFn: async ({ listId, scope }: { listId: string; scope: ClearScope }) => {
+      const res = await fetch(`/api/shopping/lists/${listId}/clear`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ scope }),
+      })
+      if (!res.ok) {
+        const body = (await res.json().catch(() => null)) as { error?: string } | null
+        throw new Error(body?.error ?? String(res.status))
+      }
+    },
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['shopping/list'] }),
+    onError: (err, { scope }) => {
+      // Page-scoped because the rows it names are gone or were never named — the
+      // one failure on this surface with no row to report on.
+      console.error('[shopping] could not clear the list (%s)', scope, err)
+      setCapture((state) => ({
+        ...state,
+        actionError: 'Couldn’t clear the list — check your connection and try again.',
+      }))
+    },
+  })
+
   // A rename fixes a typo. It does not re-file the aisle and it does not teach
   // the dictionary (D5) — the asymmetry ADR 073 §4 already recorded for retract.
   const renameItem = useMutation({
@@ -494,6 +527,9 @@ export function ShoppingPage() {
       onRename={(item, name) => renameItem.mutate({ item, name })}
       onRemove={(item) => removeItem.mutate({ item })}
       onRowRetract={(item) => retractItem.mutate({ itemId: item.id, name: item.name, onRow: true })}
+      onClear={(scope) => {
+        if (activeListId) clearList.mutate({ listId: activeListId, scope })
+      }}
       rowErrors={rowErrors}
     />
   )
