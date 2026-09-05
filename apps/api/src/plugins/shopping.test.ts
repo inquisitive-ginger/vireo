@@ -591,6 +591,166 @@ describe('POST /api/shopping/lists/:id/items/batch', () => {
   })
 })
 
+// ─── POST /api/shopping/lists/:id/clear ───────────────────────────────────────
+
+function clearList(cookie: string, listId: string, payload: Record<string, unknown>) {
+  return app.inject({
+    method: 'POST',
+    url: `/api/shopping/lists/${listId}/clear`,
+    headers: { cookie },
+    payload,
+  })
+}
+
+async function runtimeListId(cookie: string, name: string): Promise<string> {
+  const res = await app.inject({
+    method: 'POST',
+    url: '/api/shopping/lists',
+    headers: { cookie },
+    payload: { name },
+  })
+  return res.json().id
+}
+
+describe('POST /api/shopping/lists/:id/clear', () => {
+  it('recycles the cart — `checked` takes the got rows and leaves the rest', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const listId = await groceryListId()
+    const milk = await addItem(cookie, listId, { name: 'milk' })
+    const bananas = await addItem(cookie, listId, { name: 'bananas' })
+    await addItem(cookie, listId, { name: 'cereal' })
+    await check(cookie, milk.json().item.id, 'got')
+    await check(cookie, bananas.json().item.id, 'got')
+
+    const res = await clearList(cookie, listId, { scope: 'checked' })
+    expect(res.statusCode).toBe(200)
+    expect(res.json()).toEqual({ removed: 2 })
+
+    const left = await shoppingPrisma.item.findMany({ where: { listId } })
+    expect(left.map((i) => i.name)).toEqual(['cereal'])
+  })
+
+  it('throws the list away — `all` takes every row whatever its status', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const listId = await groceryListId()
+    const milk = await addItem(cookie, listId, { name: 'milk' })
+    await addItem(cookie, listId, { name: 'bananas' })
+    await check(cookie, milk.json().item.id, 'got')
+
+    const res = await clearList(cookie, listId, { scope: 'all' })
+    expect(res.json()).toEqual({ removed: 2 })
+    expect(await shoppingPrisma.item.count({ where: { listId } })).toBe(0)
+  })
+
+  it('never reaches another destination, on either scope', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const grocery = await groceryListId()
+    const other = await runtimeListId(cookie, 'Corner shop')
+    const theirs = await addItem(cookie, other, { name: 'milk' })
+    await check(cookie, theirs.json().item.id, 'got')
+    await addItem(cookie, other, { name: 'bananas' })
+    await addItem(cookie, grocery, { name: 'cereal' })
+
+    expect((await clearList(cookie, grocery, { scope: 'all' })).json()).toEqual({ removed: 1 })
+    expect(await shoppingPrisma.item.count({ where: { listId: other } })).toBe(2)
+
+    expect((await clearList(cookie, other, { scope: 'checked' })).json()).toEqual({ removed: 1 })
+    expect(await shoppingPrisma.item.count({ where: { listId: other } })).toBe(1)
+  })
+
+  it('announces one event for the whole act, not one per row', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const listId = await groceryListId()
+    for (const name of ['milk', 'bananas', 'cereal']) {
+      const added = await addItem(cookie, listId, { name })
+      await check(cookie, added.json().item.id, 'got')
+    }
+
+    const cleared: Record<string, unknown>[] = []
+    const removedEvents: Record<string, unknown>[] = []
+    app.eventBus.on('shopping.list.cleared', (p) => cleared.push(p as Record<string, unknown>))
+    app.eventBus.on('shopping.item.removed', (p) =>
+      removedEvents.push(p as Record<string, unknown>)
+    )
+
+    await clearList(cookie, listId, { scope: 'checked' })
+
+    expect(cleared).toHaveLength(1)
+    expect(cleared[0]).toEqual({ listId, scope: 'checked', removed: 3 })
+    expect(removedEvents).toHaveLength(0)
+  })
+
+  it('refuses a teen and a kid, and deletes nothing — `manage`, both scopes', async () => {
+    const parent = await getCookieForProfile(PARENT_ID)
+    const listId = await groceryListId()
+    const milk = await addItem(parent, listId, { name: 'milk' })
+    await check(parent, milk.json().item.id, 'got')
+
+    const teen = await getCookieForProfile(TEEN_ID)
+    expect((await clearList(teen, listId, { scope: 'checked' })).statusCode).toBe(403)
+    expect((await clearList(teen, listId, { scope: 'all' })).statusCode).toBe(403)
+
+    const kid = await getCookieForProfile(KID_ID)
+    expect((await clearList(kid, listId, { scope: 'all' })).statusCode).toBe(403)
+
+    expect(await shoppingPrisma.item.count({ where: { listId } })).toBe(1)
+  })
+
+  it('refuses the unattended wall — it adds, it does not end the list', async () => {
+    const parent = await getCookieForProfile(PARENT_ID)
+    const listId = await groceryListId()
+    await addItem(parent, listId, { name: 'milk' })
+
+    const family = await getCookieForProfile(FAMILY_PROFILE_ID)
+    expect((await clearList(family, listId, { scope: 'all' })).statusCode).toBe(403)
+    expect(await shoppingPrisma.item.count({ where: { listId } })).toBe(1)
+  })
+
+  it('clears an empty list to `removed: 0` rather than erroring', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const listId = await groceryListId()
+
+    expect((await clearList(cookie, listId, { scope: 'checked' })).json()).toEqual({ removed: 0 })
+    expect((await clearList(cookie, listId, { scope: 'all' })).json()).toEqual({ removed: 0 })
+  })
+
+  it('reports zero when nothing on the list is checked', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const listId = await groceryListId()
+    await addItem(cookie, listId, { name: 'milk' })
+
+    expect((await clearList(cookie, listId, { scope: 'checked' })).json()).toEqual({ removed: 0 })
+    expect(await shoppingPrisma.item.count({ where: { listId } })).toBe(1)
+  })
+
+  it('does not un-teach the dictionary (ADR 073 §4)', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const listId = await groceryListId()
+    await addItem(cookie, listId, { name: 'Chicken Thighs' })
+
+    await clearList(cookie, listId, { scope: 'all' })
+    expect(
+      (await shoppingPrisma.entry.findUnique({ where: { normalizedName: 'chicken thighs' } }))?.name
+    ).toBe('Chicken Thighs')
+  })
+
+  it('rejects a scope outside the two, and a missing one', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const listId = await groceryListId()
+    await addItem(cookie, listId, { name: 'milk' })
+
+    expect((await clearList(cookie, listId, { scope: 'everything' })).statusCode).toBe(400)
+    expect((await clearList(cookie, listId, {})).statusCode).toBe(400)
+    expect(await shoppingPrisma.item.count({ where: { listId } })).toBe(1)
+  })
+
+  it('404s on an unknown list', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const res = await clearList(cookie, '00000000-0000-4000-8000-000000000000', { scope: 'all' })
+    expect(res.statusCode).toBe(404)
+  })
+})
+
 // ─── PATCH /api/shopping/items/:id ────────────────────────────────────────────
 
 function rename(cookie: string, itemId: string, payload: Record<string, unknown>) {

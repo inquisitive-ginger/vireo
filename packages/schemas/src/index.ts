@@ -311,6 +311,15 @@ export const ShoppingCheckSchema = z.object({
 
 export type ShoppingCheckInput = z.infer<typeof ShoppingCheckSchema>
 
+// Ending a paper list: `checked` recycles it — what was in the cart stops existing
+// and has to be re-originated — and `all` throws it away mid-trip. Both delete; the
+// scope names which rows, never how hard.
+export const ShoppingListClearSchema = z.object({
+  scope: z.enum(['checked', 'all']),
+})
+
+export type ShoppingListClearInput = z.infer<typeof ShoppingListClearSchema>
+
 // A runtime list (ADR 067/069: creating one is tier 4). Permanent lists are
 // seeded, not created through this route.
 export const ShoppingListCreateSchema = z.object({

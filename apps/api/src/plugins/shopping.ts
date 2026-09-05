@@ -12,6 +12,7 @@ import {
   ShoppingItemRenameSchema,
   ShoppingAisleCorrectionSchema,
   ShoppingCheckSchema,
+  ShoppingListClearSchema,
   ShoppingListCreateSchema,
   NeedsPushedPayloadSchema,
 } from '@family-os/schemas'
@@ -451,6 +452,50 @@ const shoppingPlugin: FastifyPluginAsync = async (fastify) => {
     // The add always completes; the collision rides back with it so the surface
     // needs no second read to say `Already on Grocery.`
     return reply.status(201).send({ item: serializeItem(item, request.profile.id), duplicateOf })
+  })
+
+  // POST /shopping/lists/:id/clear — how a paper list ends. `checked` recycles it
+  // (what was in the cart stops existing and has to be re-originated, which is the
+  // point: a list that keeps its history is a receipt, not a list), `all` throws it
+  // away mid-trip.
+  //
+  // `manage` for BOTH scopes (Zach, 2026-09-04), and no new key: if you cannot
+  // delete one row you cannot delete twelve. A teen who shops hands the recycling
+  // to a parent, or is granted `manage` through the override lever ADR 071 already
+  // provides. `ability.can`, never a tier read (ADR 018).
+  fastify.post('/shopping/lists/:id/clear', async (request, reply) => {
+    if (!request.ability.can('manage', 'shopping.Item')) {
+      return reply.status(403).send({ error: 'Permission denied' })
+    }
+
+    const { id: listId } = request.params as { id: string }
+    const list = await shoppingPrisma.list.findUnique({ where: { id: listId } })
+    if (!list) return reply.status(404).send({ error: 'List not found' })
+
+    const parsed = ShoppingListClearSchema.safeParse(request.body ?? {})
+    if (!parsed.success) {
+      return reply.status(400).send({ error: parsed.error.flatten() })
+    }
+    const { scope } = parsed.data
+
+    const { count: removed } = await shoppingPrisma.item.deleteMany({
+      where: scope === 'checked' ? { listId, status: 'got' } : { listId },
+    })
+
+    // ONE event for one act. Seventeen `shopping.item.removed`s would have every
+    // consumer invalidate seventeen times for a single gesture, and nothing today
+    // cares which rows went — only that the list changed. This is the same
+    // reasoning ADR 072 §5 applies to naming, one step up: one transition, one
+    // event, whatever its cardinality.
+    //
+    // Emitted even at zero, so a consumer's refetch does not depend on whether the
+    // list happened to be empty.
+    fastify.eventBus.emit('shopping.list.cleared', { listId, scope, removed })
+
+    // Deliberately does NOT un-teach `Entry` — the same accepted residue ADR 073 §4
+    // records for retract: `remember()` overwrote the prior spelling on the way in,
+    // so there is nothing un-teaching would restore.
+    return { removed }
   })
 
   // DELETE /shopping/items/:id — taking back something that should never have
