@@ -43,11 +43,21 @@ reverse-chronological is the worst order in an aisle).
    different things read as one number disagreeing with itself.
 
    **One scheme remains, "what's left."** The pill is what is remaining on that list;
-   the in-shop sticky bar reads `{list} · {n} left`. They count the same thing over the
-   same rows, so they cannot disagree — which is the property deleting the third one
-   bought. The Home widget's header keeps a house-wide figure on the same arithmetic
-   (D6): its rows are cross-list and each names its list, so the figure and what it
-   counts share a screen.
+   the in-shop sticky bar reads `{n} items left` (`1 item left` in the singular). They
+   count the same thing over the same rows, so they cannot disagree — which is the
+   property deleting the third one bought. The Home widget's header keeps a house-wide
+   figure on the same arithmetic (D6): its rows are cross-list and each names its list,
+   so the figure and what it counts share a screen.
+
+   **Amended again 2026-09-04 (Zach's live pass): the sticky line drops the list name.**
+   It read `{list} · {n} left` for most of this session — SH-11 put the name there
+   deliberately, because the destination pills scroll away in a shop and the line is
+   then the only thing on screen saying **which list you are shopping**. That signal is
+   **spent, not overlooked.** Zach traded it for a quieter line, and the cost is real:
+   a shopper deep in a long list has no on-screen answer to "which list is this?"
+   without scrolling back to the pills. Recorded so the next session weighs it as a
+   trade already made rather than a defect to fix — if list identity has to return, it
+   needs a home that is not this line.
 
 2. **The capture field** — `CaptureField` (ADR 070), 56 px, the first thing under the
    title. It does **not** autofocus, and nothing else does either (ADR 070, amended
@@ -111,9 +121,20 @@ reverse-chronological is the worst order in an aisle).
 ### In a shop
 
 The same screen scrolled. Above the fold once the hero has gone: a compacted status line
-(`Grocery · 8 left` + the destination chip — the same arithmetic as the pill, amended
-2026-09-04 with item 1; `6 of 14` was the third count) and the **progress meter**
-(`--spacing-meter`, `--primary` on `--muted`). A **cleared aisle collapses** to one muted
+(`8 items left` + the destination chip — the same arithmetic as the pill, amended
+2026-09-04 with item 1; `6 of 14` was the third count, and `Grocery · 8 left` the
+list-named form item 1 records trading away) and the **progress meter**
+(`--spacing-meter`, `--primary` on `--muted`).
+
+**The meter renders from first paint** whenever the list has items, filling from zero —
+it is not gated on anything having been checked yet (Zach's live pass, 2026-09-04). It
+is doing a second job here: the `⋯` list menu sits on its line, and a control with
+nothing under it reads as floating. This is a **named exception** to ADR 043's "a meter
+is a comparison; at zero it must not render", amended there rather than overridden, and
+it does not travel: the general rule still binds every other meter, and a list with no
+items has no comparison to draw and no bar.
+
+A **cleared aisle collapses** to one muted
 summary row (`Produce · 3 in the cart ›`) so the walk keeps moving. Checked rows dim to
 `0.66` with a strikethrough on the name.
 
