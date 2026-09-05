@@ -25,5 +25,11 @@
       "requiredPermission": "shopping.item.view",
       "description": "Add to the list without leaving the dashboard, and what is waiting."
     }
-  ]
+  ],
+  "navItem": {
+    "label": "Shopping",
+    "route": "/shopping",
+    "icon": "shopping-cart",
+    "minTier": 1
+  }
 }
