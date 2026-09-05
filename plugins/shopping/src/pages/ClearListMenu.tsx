@@ -1,13 +1,14 @@
 import { useState } from 'react'
-import { MoreHorizontal, Recycle, Trash2 } from 'lucide-react'
+import { ListX, MoreHorizontal, Trash2 } from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { Popover, PopoverContent, PopoverTrigger, cn } from '@family-os/ui'
 
 export type ClearScope = 'checked' | 'all'
 
 export interface ClearListMenuProps {
-  /** What is in the cart — the recycle verb's count, and the reason it is absent
-      before anything has been checked. */
+  /** What is in the cart. It is not in the label — it is the whole of the
+      confirmation — but it is still what decides whether the verb appears: with
+      nothing checked there is nothing for it to remove. */
   got: number
   /** Everything on the list — what `all` would take. */
   total: number
@@ -59,11 +60,16 @@ export function ClearListMenu({ got, total, onClear }: ClearListMenuProps) {
             `--error` — the same order the row's sheet runs in. */}
         {got > 0 && (
           <ClearAction
-            // `Recycle`, not a bin: a paper list gets recycled until the next
-            // time, and the icon carries the one real difference between these
-            // two verbs — this one comes back.
-            icon={Recycle}
-            label={`Clear the ${got} checked`}
+            /* `ListX` over the `Recycle` this first shipped with: the recycling
+               metaphor does not survive contact with a list of checkmarks, and
+               both of these are hard deletes — an icon promising the items go
+               somewhere retrievable would be a lie. */
+            icon={ListX}
+            /* "Clear" reads as UNCHECK on a surface whose items carry
+               checkmarks. `Remove` is the verb the row's own sheet already uses
+               (`Remove from the list`), so the two now agree. The count is not in
+               the label; it does its work in the confirmation. */
+            label="Remove checked items"
             confirm={`Sure? This removes ${got}`}
             active={confirming === 'checked'}
             onArm={() => setConfirming('checked')}

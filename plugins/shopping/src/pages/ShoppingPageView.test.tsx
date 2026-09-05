@@ -65,6 +65,11 @@ function renderView(over: Partial<ShoppingPageViewProps> = {}) {
 const openSheet = (name: string) =>
   fireEvent.keyDown(screen.getAllByText(name)[0], { key: 'F10', shiftKey: true })
 
+/** Mirrors the view's own constant rather than importing it — a test that reads
+    the value under test cannot catch the value changing. Must track
+    `FOLD_AFTER_MS`. */
+const FOLD_AFTER_MS = 220
+
 const report = (over: Partial<CaptureReport> = {}): CaptureReport => ({
   tone: 'error',
   message: 'Couldn’t add “tortillas”',
@@ -419,12 +424,45 @@ describe('ShoppingPageView — in a shop', () => {
     expect(screen.getByText('snap peas')).toBeInTheDocument()
   })
 
-  it('does not close the aisle you are standing in — the row you tapped stays put', () => {
-    shopping()
-    // Dairy has one open row; clearing it would clear the aisle.
-    fireEvent.click(screen.getByRole('button', { name: /Mark .butter. as got/ }))
-    expect(screen.getByText('butter')).toBeInTheDocument()
-    expect(screen.getByText('milk')).toBeInTheDocument()
+  /* The aisle you just completed folds too — the fold IS the message. Clearing an
+     aisle is the one moment in a shop that says "done here, move on", and holding
+     it open makes the shopper learn that by reading a summary that has not
+     changed. It waits for the check's own motion first, so the fold reads as a
+     consequence of the tap rather than as the tap having done something else. */
+  it('folds the aisle the last check completed, after the check’s own motion lands', async () => {
+    vi.useFakeTimers()
+    const done = [
+      { aisle: 'Produce', items: [item({ id: '1', name: 'snap peas', status: 'got' as const })] },
+    ]
+    const { props, rerender } = renderView({
+      groups: [{ aisle: 'Produce', items: [item({ id: '1', name: 'snap peas' })] }],
+    })
+
+    fireEvent.click(screen.getByRole('button', { name: /Mark .snap peas. as got/ }))
+    expect(props.onToggle).toHaveBeenCalled()
+    // The check lands upstream and the row comes back checked.
+    rerender(<ShoppingPageView {...props} groups={done} />)
+
+    // Still open while the ring finishes — folding on the same frame would read
+    // as the tap having done something other than check.
+    expect(screen.getByText('snap peas')).toBeInTheDocument()
+
+    await act(() => vi.advanceTimersByTimeAsync(FOLD_AFTER_MS))
+    vi.useRealTimers()
+    expect(screen.queryByText('snap peas')).not.toBeInTheDocument()
+    expect(screen.getByRole('button', { name: /Open Produce/ })).toBeInTheDocument()
+  })
+
+  /* ADR 071 §2 still binds: "the aisle collapsed and took the row with it" is a
+     bug report someone will file about correct behaviour, and the reopen is the
+     answer. One tap on the summary, and the uncheck is there. */
+  it('keeps the uncheck one tap away behind the summary it folded into', () => {
+    const { props } = renderView({
+      groups: [{ aisle: 'Produce', items: [item({ id: '1', name: 'snap peas', status: 'got' })] }],
+    })
+    fireEvent.click(screen.getByRole('button', { name: /Open Produce/ }))
+    fireEvent.click(screen.getByRole('button', { name: /Put .snap peas. back on the list/ }))
+    expect(props.onToggle).toHaveBeenCalledWith(expect.objectContaining({ id: '1' }))
   })
 
   it('has no cleared-aisle collapse on a flat list — that grouping is not one its shopper can see', () => {
@@ -906,7 +944,7 @@ describe('ShoppingPageView — ending the list', () => {
       groups: [{ aisle: 'Produce', items: [item({ id: '1', name: 'snap peas' })] }],
     })
     fireEvent.click(screen.getByRole('button', { name: 'What to do with this list' }))
-    expect(screen.queryByText(/Clear the/)).not.toBeInTheDocument()
+    expect(screen.queryByText('Remove checked items')).not.toBeInTheDocument()
     expect(screen.getByText('Throw the list away')).toBeInTheDocument()
   })
 
@@ -924,33 +962,43 @@ describe('ShoppingPageView — ending the list', () => {
     expect(props.onClear).toHaveBeenCalledWith('all')
   })
 
-  it('names the checked count on the recycle, not the total', () => {
+  /* "Clear" reads as UNCHECK on a surface whose items carry checkmarks, so the
+     label says `Remove` — the same verb the row's own sheet uses. The count is
+     not in the label; it does its work in the confirmation. */
+  it('says `Remove checked items` and puts the count in the confirmation', () => {
     const { props } = midShop()
     fireEvent.click(screen.getByRole('button', { name: 'What to do with this list' }))
-    fireEvent.click(screen.getByText('Clear the 1 checked'))
+    const verb = screen.getByText('Remove checked items')
+    expect(verb).toBeInTheDocument()
+    expect(screen.queryByText(/Clear the/)).not.toBeInTheDocument()
+
+    fireEvent.click(verb)
     fireEvent.click(screen.getByText('Sure? This removes 1'))
     expect(props.onClear).toHaveBeenCalledWith('checked')
   })
 
   /* Finishing a shop is exactly when you bin a paper list, so the recycle gets a
-     real button in the cleared state rather than staying behind the menu. */
-  it('promotes the recycle to a button once the list is clear', () => {
+     real button in the cleared state rather than staying behind the menu — and
+     it fires DIRECTLY. Everything here is already bought, so there is nothing to
+     lose, and a confirm on the one unambiguously good outcome is friction for
+     its own sake. The menu's verbs still confirm; mid-shop there are unchecked
+     rows on screen and the count is the warning. */
+  it('fires the fresh list straight off, with no confirmation step', () => {
     const { props } = renderView({
       canManage: true,
       groups: [{ aisle: 'Produce', items: [item({ id: '1', name: 'snap peas', status: 'got' })] }],
     })
     fireEvent.click(screen.getByRole('button', { name: 'Start a fresh list' }))
-    expect(props.onClear).not.toHaveBeenCalled()
-    fireEvent.click(screen.getByRole('button', { name: 'Sure? This removes 1' }))
     expect(props.onClear).toHaveBeenCalledWith('checked')
+    expect(screen.queryByText(/Sure\?/)).not.toBeInTheDocument()
   })
 
   /* The icon carries the one real difference between the two verbs: a recycled
      list comes back, a thrown-away one does not. */
-  it('marks the recycle and the throw-away with different icons, and neither on the confirm', () => {
+  it('marks the two verbs with different icons, and neither on the confirm', () => {
     midShop()
     fireEvent.click(screen.getByRole('button', { name: 'What to do with this list' }))
-    const recycle = screen.getByText('Clear the 1 checked').closest('button')!
+    const recycle = screen.getByText('Remove checked items').closest('button')!
     const bin = screen.getByText('Throw the list away').closest('button')!
     expect(recycle.querySelector('svg')).not.toBeNull()
     expect(bin.querySelector('svg')).not.toBeNull()

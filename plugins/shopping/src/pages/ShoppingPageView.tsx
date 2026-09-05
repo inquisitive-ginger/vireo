@@ -10,6 +10,7 @@ import {
   PageHeader,
   RowSwipe,
   cn,
+  useReducedMotion,
 } from '@family-os/ui'
 import type { CaptureReport, ShoppingItem, ShoppingList } from '../types'
 import { ReportLine } from '../components/ReportLine'
@@ -17,6 +18,11 @@ import { ShoppingCaptureHero } from './ShoppingCaptureHero'
 import { RowActionsPanel, RowActionsSheet } from './RowActionsSheet'
 import { ClearListMenu, type ClearScope } from './ClearListMenu'
 import { removalVerb } from '../lib/removal-verb'
+
+/** Long enough for the check's own motion to land before the aisle folds. Must
+    track `--duration-fast`, which is what the ring's fill and its 1 → 1.08 → 1
+    pop both run at; the extra is the eye catching up with it. */
+const FOLD_AFTER_MS = 220
 
 export interface AisleGroup {
   aisle: string
@@ -422,7 +428,6 @@ function ClearedList({
   /** Undefined below `manage` — the button is absent rather than refused. */
   onRecycle?: () => void
 }) {
-  const [confirming, setConfirming] = useState(false)
   return (
     <div className="flex flex-col items-center gap-2 pt-2 pb-1">
       {/* The ring is the product's own mark — the thing you pressed seventeen
@@ -438,19 +443,18 @@ function ClearedList({
       {/* Finishing a shop is exactly when you bin a paper list, so the recycle
           gets a real button here rather than staying behind the menu. Same
           two-step confirmation, naming the same count — there is no undo. */}
+      {/* NO confirmation here, unlike the menu's two verbs. Everything on this
+          list is already bought, so there is nothing to lose by removing it, and
+          a confirm on the one action that is unambiguously good news is friction
+          for its own sake. Mid-shop is the opposite case: unchecked rows are
+          still on screen and the count is the warning. */}
       {onRecycle && (
         <button
           type="button"
-          onClick={() => (confirming ? onRecycle() : setConfirming(true))}
-          onBlur={() => setConfirming(false)}
-          className={cn(
-            'text-body min-h-touch mt-1 cursor-pointer rounded-panel border px-4 font-medium',
-            confirming
-              ? 'border-error text-error'
-              : 'border-border text-foreground hover:bg-secondary'
-          )}
+          onClick={onRecycle}
+          className="text-body min-h-touch mt-1 cursor-pointer rounded-panel border border-border px-4 font-medium text-foreground hover:bg-secondary"
         >
-          {confirming ? `Sure? This removes ${total}` : 'Start a fresh list'}
+          Start a fresh list
         </button>
       )}
     </div>
@@ -506,17 +510,25 @@ function ItemList({
   rowErrors,
   actionsPanel,
 }: ItemListProps) {
-  /* A complete aisle collapses on its own so the walk keeps moving, and the
-     reader can override that either way — open one to look, close one they are
-     done with. SESSION-ONLY, deliberately: nothing is stored and nothing syncs,
-     so a fresh arrival always sees the shop in its truthful state rather than
-     yesterday's opinion of it.
+  /* A complete aisle collapses, including the one you just completed. The fold IS
+     the message — clearing an aisle is the one moment in a shop that says "done
+     here, move on", and holding it open makes the shopper learn that by reading a
+     summary that has not changed.
 
-     The other rule this reconciles: the row you just tapped must not vanish from
-     under your thumb, so checking the last item in an aisle forces it open. An
-     aisle completed by someone else, or already complete on load, arrives
-     collapsed. */
+     It waits for the check's own motion first: the ring fills and pops, THEN the
+     aisle closes, so the fold reads as a consequence of the tap rather than as
+     the tap having done something else. Under `prefers-reduced-motion` there is
+     nothing to wait for and it folds at once.
+
+     ADR 071 §2 still binds and still holds: the uncheck is one tap on the
+     summary away. "The aisle collapsed and took the row with it" is a bug report
+     someone will file about correct behaviour — the reopen is the answer.
+
+     Overrides are SESSION-ONLY, deliberately: nothing is stored and nothing
+     syncs, so a fresh arrival always sees the shop in its truthful state. */
   const [openOverride, setOpenOverride] = useState<Record<string, boolean>>({})
+  const [folding, setFolding] = useState<string | null>(null)
+  const reducedMotion = useReducedMotion()
 
   return (
     <>
@@ -526,7 +538,8 @@ function ItemList({
         // collapsing its single pseudo-group would hide the whole list behind a
         // summary of a grouping its shopper cannot see. The meter still works
         // there; only the collapse is aisle-coupled.
-        const collapsed = showAisles && complete && openOverride[group.aisle] !== true
+        const collapsed =
+          showAisles && complete && openOverride[group.aisle] !== true && folding !== group.aisle
 
         if (collapsed) {
           return (
@@ -598,9 +611,21 @@ function ItemList({
                   sheetOpen={sheetItemId === item.id}
                   error={rowErrors[item.id]}
                   onToggle={() => {
-                    // Checking the last row in an aisle would otherwise collapse
-                    // it out from under the thumb that just moved.
-                    setOpenOverride((o) => ({ ...o, [group.aisle]: true }))
+                    /* Any toggle drops a manual override: a check that completes
+                       the aisle folds it, and an uncheck makes it incomplete so
+                       it stays open on its own. Neither needs the override. */
+                    setOpenOverride((o) => {
+                      if (!(group.aisle in o)) return o
+                      const next = { ...o }
+                      delete next[group.aisle]
+                      return next
+                    })
+                    // Held open just long enough for the ring to finish, so the
+                    // fold reads as the consequence of a check that landed.
+                    if (!reducedMotion) {
+                      setFolding(group.aisle)
+                      window.setTimeout(() => setFolding(null), FOLD_AFTER_MS)
+                    }
                     onToggle(item)
                   }}
                   onOpenSheet={() => onOpenSheet(item)}

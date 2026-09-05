@@ -19,7 +19,10 @@ const LONG_PRESS_MS = 500
    that silently stops holding. */
 let openRow: (() => void) | null = null
 
-function useReducedMotion(): boolean {
+/** `prefers-reduced-motion`, as a value JS can branch on — the CSS media query
+    covers animations, but a behaviour that WAITS for one (shopping's aisle fold)
+    has to know in JavaScript whether there is anything to wait for. */
+export function useReducedMotion(): boolean {
   const [reduced, setReduced] = useState(false)
   useEffect(() => {
     if (typeof window.matchMedia !== 'function') return
