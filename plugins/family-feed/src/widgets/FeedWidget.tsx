@@ -28,7 +28,7 @@ export default function FeedWidget() {
           <PermissionGate action="create" subject="family-feed.Post">
             <Link to="/family-feed">
               <Button size="sm" variant="outline">
-                New Post
+                Add post
               </Button>
             </Link>
           </PermissionGate>

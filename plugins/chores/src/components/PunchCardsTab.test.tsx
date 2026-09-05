@@ -79,14 +79,14 @@ beforeEach(() => {
   vi.stubGlobal('fetch', fetchMock)
 })
 
-function renderTab() {
+function renderTab(xp = 0) {
   return render(
     <MemoryRouter>
       <MockAuthProvider profile={teddy}>
         <QueryClientProvider
           client={new QueryClient({ defaultOptions: { queries: { retry: false } } })}
         >
-          <PunchCardsTab tabBar={<div data-testid="tabbar" />} />
+          <PunchCardsTab tabBar={<div data-testid="tabbar" />} xp={xp} />
         </QueryClientProvider>
       </MockAuthProvider>
     </MemoryRouter>
@@ -96,6 +96,16 @@ function renderTab() {
 const gridLabels = () => screen.getAllByRole('img').map((el) => el.getAttribute('aria-label') ?? '')
 
 describe('PunchCardsTab', () => {
+  // Both kid tabs are one page and wear one header; the plate went missing when
+  // the tab split landed and the tally half kept a title and nothing else.
+  it('carries the lifetime XP plate, the same as Today', async () => {
+    renderTab(1240)
+
+    await screen.findByText('Try bites')
+    expect(screen.getByText('1,240')).toBeInTheDocument()
+    expect(screen.getByText('XP')).toBeInTheDocument()
+  })
+
   it('renders the stamp wall — one dashed tap target, countdown in the header', async () => {
     renderTab()
 

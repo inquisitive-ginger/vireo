@@ -245,6 +245,9 @@ export function ChoresPage() {
       ),
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: ['chores/tasks'] })
+      // The score plate seeds from this, and the Punch cards tab has no flight of
+      // its own to keep it current — a stale seed reads lower than Today's plate.
+      queryClient.invalidateQueries({ queryKey: ['chores/xp'] })
       // A paying completion may have created a held payout, or auto-credited the ledger.
       // Refetch payouts AND the wallet/store balance so the widget and store reflect the
       // new P-Bucks (the credit lands async on the event bus; the refetch round-trip
@@ -325,17 +328,17 @@ export function ChoresPage() {
           <PermissionGate action="create" subject="chores.Task">
             <Button onClick={() => openCreate()}>
               <Plus size={16} />
-              New Task
+              Add task
             </Button>
           </PermissionGate>
         }
         emptyAction={
           // sm matches the empty-state CTA convention (EmptyState stories + family-feed);
-          // the header "New Task" keeps the default size when the board has tasks.
+          // the header "Add task" keeps the default size when the board has tasks.
           <PermissionGate action="create" subject="chores.Task">
             <Button size="sm" onClick={() => openCreate()}>
               <Plus size={16} />
-              New Task
+              Add task
             </Button>
           </PermissionGate>
         }

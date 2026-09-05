@@ -1190,7 +1190,7 @@ function PushNotificationsRow() {
           htmlFor="push-notifications-toggle"
           className="text-sm-token font-medium cursor-pointer"
         >
-          Push Notifications
+          Push notifications
         </Label>
         <p
           className={cn(

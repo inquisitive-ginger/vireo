@@ -79,7 +79,7 @@ export function ShoppingCaptureHero({
             the block measured centred and did not look it. Out of flow it also
             means a notice arriving cannot move the field someone is typing into. */}
         <div className="relative">
-          <h1 className="text-display-xl text-foreground">What do we need?</h1>
+          <h1 className="text-page-title text-foreground">What do we need?</h1>
 
           <CaptureField
             size="wall"

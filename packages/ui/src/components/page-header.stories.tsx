@@ -36,6 +36,6 @@ export const WithSubtitleAndAction: Story = {
   args: {
     title: 'Chores',
     subtitle: '4 pending · 3 overdue · 1 done',
-    action: <Button>New Task</Button>,
+    action: <Button>Add task</Button>,
   },
 }

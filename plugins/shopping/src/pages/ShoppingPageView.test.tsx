@@ -725,6 +725,25 @@ describe('ShoppingPageView — the row’s verbs', () => {
     expect(screen.queryByRole('button', { name: 'Remove from the list' })).not.toBeInTheDocument()
   })
 
+  /* Escape was the inline panel's only exit, and it opened on a tablet nobody
+     keyboards at: three verbs, all of which DO something (auto-bug #141). The
+     sheet needs none of this — scrim, grab bar and Escape all dismiss it. */
+  it('gives the inline panel a way out that is not a verb, and the sheet none', () => {
+    const { unmount } = renderView({ inlineActions: true, canManage: true })
+    openSheet('snap peas')
+    const close = screen.getByRole('button', { name: 'Close the actions for snap peas' })
+
+    fireEvent.click(close)
+    expect(screen.queryByRole('button', { name: 'Remove from the list' })).not.toBeInTheDocument()
+    unmount()
+
+    renderView({ inlineActions: false, canManage: true })
+    openSheet('snap peas')
+    expect(
+      screen.queryByRole('button', { name: 'Close the actions for snap peas' })
+    ).not.toBeInTheDocument()
+  })
+
   it('opens one row’s verbs at a time — another row replaces it', () => {
     renderView({ inlineActions: true, canManage: true })
     openSheet('snap peas')
@@ -921,6 +940,26 @@ describe('ShoppingPageView — the row’s verbs', () => {
     renderView({ canManage: false, canFile: true })
     openSheet('snap peas')
     expect(screen.queryByRole('button', { name: 'Rename' })).not.toBeInTheDocument()
+  })
+
+  // Escape was the only way out, and the fridge iPad has no Escape key —
+  // every exit from the field committed whatever was in it (auto-bug #141).
+  it('backs out of a rename from the row, not just the keyboard', () => {
+    const { props } = renderView({ canManage: true })
+    openSheet('snap peas')
+    fireEvent.click(screen.getByRole('button', { name: 'Rename' }))
+    const field = screen.getByLabelText('Rename “snap peas”')
+    fireEvent.change(field, { target: { value: 'sugar snap peas' } })
+
+    const cancel = screen.getByRole('button', { name: 'Stop renaming “snap peas”' })
+    // The blur the tap itself causes is the one that used to commit.
+    fireEvent.pointerDown(cancel)
+    fireEvent.blur(field)
+    fireEvent.click(cancel)
+
+    expect(props.onRename).not.toHaveBeenCalled()
+    expect(screen.queryByLabelText('Rename “snap peas”')).not.toBeInTheDocument()
+    expect(screen.getByText('snap peas')).toBeInTheDocument()
   })
 })
 
