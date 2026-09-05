@@ -118,7 +118,7 @@ describe('POST /api/profiles', () => {
     // Parents get no feature rung (ADR 039, amended); the calendar leads the first column.
     expect(slots.find((s) => s.widgetId === 'calendar.up-next')).toMatchObject({ x: 0 })
     expect(slots.filter((s) => s.prominence === 'feature')).toHaveLength(0)
-    expect(slots.find((s) => s.widgetId === 'family-feed.feed')?.prominence).toBe('quiet')
+    expect(slots.find((s) => s.widgetId === 'shopping.capture')?.prominence).toBe('quiet')
   })
 
   it('returns 403 when session is tier < 4', async () => {
