@@ -1,5 +1,6 @@
 import { useState } from 'react'
-import { MoreHorizontal } from 'lucide-react'
+import { MoreHorizontal, Recycle, Trash2 } from 'lucide-react'
+import type { LucideIcon } from 'lucide-react'
 import { Popover, PopoverContent, PopoverTrigger, cn } from '@family-os/ui'
 
 export type ClearScope = 'checked' | 'all'
@@ -58,6 +59,10 @@ export function ClearListMenu({ got, total, onClear }: ClearListMenuProps) {
             `--error` — the same order the row's sheet runs in. */}
         {got > 0 && (
           <ClearAction
+            // `Recycle`, not a bin: a paper list gets recycled until the next
+            // time, and the icon carries the one real difference between these
+            // two verbs — this one comes back.
+            icon={Recycle}
             label={`Clear the ${got} checked`}
             confirm={`Sure? This removes ${got}`}
             active={confirming === 'checked'}
@@ -70,6 +75,8 @@ export function ClearListMenu({ got, total, onClear }: ClearListMenuProps) {
         )}
         <ClearAction
           destructive
+          // The house's established destructive mark.
+          icon={Trash2}
           label="Throw the list away"
           confirm={`Sure? This removes ${total}`}
           active={confirming === 'all'}
@@ -88,6 +95,7 @@ export function ClearListMenu({ got, total, onClear }: ClearListMenuProps) {
    Escape, a tap outside — disarms it, which is why the arm state lives on the
    menu rather than in here. */
 function ClearAction({
+  icon: Icon,
   label,
   confirm,
   active,
@@ -95,6 +103,7 @@ function ClearAction({
   onArm,
   onFire,
 }: {
+  icon: LucideIcon
   label: string
   confirm: string
   active: boolean
@@ -107,11 +116,14 @@ function ClearAction({
       type="button"
       onClick={active ? onFire : onArm}
       className={cn(
-        'min-h-touch text-body flex w-full cursor-pointer items-center rounded-lg px-2 text-left hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
+        'min-h-touch text-body flex w-full cursor-pointer items-center gap-2 rounded-lg px-2 text-left hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
         destructive || active ? 'text-error' : 'text-foreground',
         active && 'font-semibold'
       )}
     >
+      {/* The icon names the VERB, so it goes with the verb. A confirm line's whole
+          job is the count, and a glyph adds nothing to a number. */}
+      {!active && <Icon size={16} aria-hidden className="shrink-0" />}
       {active ? confirm : label}
     </button>
   )

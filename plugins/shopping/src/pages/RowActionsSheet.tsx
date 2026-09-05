@@ -25,6 +25,12 @@ export interface RowActionsProps {
   onStartRename: (item: ShoppingItem) => void
   onRemove: (item: ShoppingItem) => void
   onRetract: (item: ShoppingItem) => void
+  /** The inline presentation carries the recess — it says "let into the list".
+      The phone's sheet is already a raised surface over the page and renders on
+      `--card`; `--surface-sunken` and `--shadow-inset` travel together and are
+      card-interior only (ADR 040). The surface lives HERE rather than at the
+      call site so a story cannot draw a panel the app does not have. */
+  inline?: boolean
 }
 
 /* The right edge's destination (SH-09 panel 3/4): every verb this reader may use
@@ -52,6 +58,7 @@ export function RowActionsPanel({
   onStartRename,
   onRemove,
   onRetract,
+  inline = false,
 }: RowActionsProps) {
   const [view, setView] = useState<'menu' | 'aisle'>('menu')
 
@@ -74,7 +81,10 @@ export function RowActionsPanel({
         e.stopPropagation()
         onClose()
       }}
-      className="border-b border-border bg-surface-sunken px-4 pt-1 pb-4"
+      className={cn(
+        'px-4 pt-1 pb-4',
+        inline && 'border-b border-border bg-surface-sunken shadow-[var(--shadow-inset)]'
+      )}
     >
       {view !== 'menu' && (
         <button

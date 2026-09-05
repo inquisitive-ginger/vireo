@@ -403,13 +403,17 @@ export function ShoppingPage() {
     },
     onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['shopping/list'] }),
     onError: (err, { scope }) => {
-      // Page-scoped because the rows it names are gone or were never named — the
-      // one failure on this surface with no row to report on.
+      /* Page-scoped because the rows it names are gone or were never named — the
+         one failure on this surface with no row to report on.
+
+         It claims ONLY what it knows. A 403, a 404 on a list someone else just
+         deleted and a dropped connection all land here, and only one of them is
+         a connection problem: telling someone to check their wifi when their
+         permission was revoked sends them to fix the wrong thing. The reason
+         goes to the console, same rule as the server's Zod string — contained,
+         not swallowed. */
       console.error('[shopping] could not clear the list (%s)', scope, err)
-      setCapture((state) => ({
-        ...state,
-        actionError: 'Couldn’t clear the list — check your connection and try again.',
-      }))
+      setCapture((state) => ({ ...state, actionError: 'Couldn’t clear the list.' }))
     },
   })
 

@@ -140,6 +140,20 @@ describe('ShoppingPageView', () => {
     expect(screen.getByText(/turned off for this profile/)).toBeInTheDocument()
   })
 
+  /* The platform's own pattern, not a bare `<p>` (design-system.md §Empty States):
+     module icon, heading, body. No `action` — the capture field is directly above
+     and IS the action, and a CTA that focused it would be the autofocus ADR 070
+     withdrew. */
+  it('uses the shared empty state, pointing at the field rather than repeating it', () => {
+    const { container } = renderView({ groups: [] })
+    expect(screen.getByRole('heading', { name: 'Nothing on Grocery yet.' })).toBeInTheDocument()
+    expect(screen.getByText('Add something in the field above.')).toBeInTheDocument()
+    // The module's own icon, never a generic empty box.
+    expect(container.querySelector('svg.opacity-40')).not.toBeNull()
+    // The field above is the action; a button here would duplicate it.
+    expect(screen.queryByRole('button', { name: /add/i })).not.toBeInTheDocument()
+  })
+
   it('has no index of lists and no drill-in — a pill is a filter, not a link', () => {
     const { container } = renderView()
     expect(container.querySelector('a')).toBeNull()
@@ -354,38 +368,41 @@ describe('ShoppingPageView — in a shop', () => {
     expect(screen.getByText('butter')).toBeInTheDocument()
   })
 
-  /* SH-10 / SH-11. One arithmetic — what's LEFT — so the pill and the line count
-     the same rows and cannot disagree, and the line carries the list name design.md
-     specified and the build dropped. */
-  it('reads `{list} · {n} left`, the same figure the pill reports', () => {
+  /* SH-10. One arithmetic — what's LEFT — so the pill and the line count the same
+     rows and cannot disagree. The line carries NO list name (Zach, list pass,
+     reversing SH-11): the destination pills sit directly above it, and a line
+     that repeats its neighbour is one people stop reading. */
+  it('reads `{n} items left`, the same figure the pill reports, with no list name', () => {
     shopping()
-    expect(screen.getByRole('progressbar').previousElementSibling).toHaveTextContent(
-      'Grocery · 1 left'
-    )
+    const line = screen.getByRole('progressbar').previousElementSibling!
+    expect(line).toHaveTextContent('1 item left')
+    expect(line).not.toHaveTextContent('Grocery')
     const meter = screen.getByRole('progressbar')
     expect(meter).toHaveAttribute('aria-valuenow', '3')
     expect(meter).toHaveAttribute('aria-valuemax', '4')
   })
 
-  it('says `1 left`, not `1 lefts`', () => {
+  it('says `1 item left`, not `1 items left`', () => {
     shopping()
-    expect(screen.queryByText(/lefts/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/1 items left/)).not.toBeInTheDocument()
   })
 
   /* SH-12. It used to MOUNT on the first check, shoving the row the thumb was
-     still over down ~58px mid-interaction. ADR 043's "no comparison until there
-     is progress" is about what the block says, so it goes quiet, not absent. */
-  it('reserves the meter’s height from first paint and only goes quiet', () => {
-    const { container } = renderView()
-    expect(screen.queryByRole('progressbar')).not.toBeInTheDocument()
-    expect(container.querySelector('.invisible')).not.toBeNull()
+     still over down ~58px mid-interaction. The height was reserved to fix that;
+     it is now also PAINTED from the first render (Zach, list pass), because the
+     menu beside it needs an anchor — a `⋯` hovering against nothing reads as a
+     mis-render. ADR 043's "no meter at zero" is amended for this surface in the
+     same PR; the general rule stands elsewhere. */
+  it('paints the meter from first paint, filling from zero', () => {
+    renderView()
+    const meter = screen.getByRole('progressbar')
+    expect(meter).toHaveAttribute('aria-valuenow', '0')
+    expect(meter).toHaveAttribute('aria-valuemax', '3')
+    expect(meter.previousElementSibling).toHaveTextContent('3 items left')
   })
 
-  /* The count goes quiet before a shop starts; the block does not. Hiding the
-     whole row took the always-available clear menu with it. */
   it('keeps the clear menu reachable before anything is in the cart', () => {
     renderView({ canManage: true })
-    expect(screen.queryByRole('progressbar')).not.toBeInTheDocument()
     expect(screen.getByRole('button', { name: 'What to do with this list' })).toBeInTheDocument()
   })
 
@@ -449,7 +466,7 @@ describe('ShoppingPageView — in a shop', () => {
     const meter = screen.getByRole('progressbar')
     expect(meter).toHaveAttribute('aria-valuenow', '1')
     expect(meter).toHaveAttribute('aria-valuemax', '2')
-    expect(meter.previousElementSibling).toHaveTextContent('Hardware · 1 left')
+    expect(meter.previousElementSibling).toHaveTextContent('1 item left')
   })
 
   it('reports a failed check on the row that was tapped, not in the page chrome', () => {
@@ -494,9 +511,11 @@ describe('ShoppingPageView — the cleared list', () => {
     expect(screen.queryByRole('progressbar')).not.toBeInTheDocument()
   })
 
+  /* Two different branches with two different jobs: this one is a finish, the
+     zero-items one is a beginning. */
   it('is not the empty state — that one is a claim about a list with nothing on it', () => {
     renderView({ groups: [] })
-    expect(screen.getByText('Nothing on Grocery yet.')).toBeInTheDocument()
+    expect(screen.getByRole('heading', { name: 'Nothing on Grocery yet.' })).toBeInTheDocument()
     expect(screen.queryByText('That’s everything.')).not.toBeInTheDocument()
   })
 
@@ -617,6 +636,22 @@ describe('ShoppingPageView — the row’s verbs', () => {
     renderView({ inlineActions: false, canManage: true })
     openSheet('snap peas')
     expect(document.querySelector('[role="dialog"]')).not.toBeNull()
+  })
+
+  /* The recess belongs to the INLINE presentation — it says "let into the list".
+     A phone's sheet is already a raised surface over the page and renders on
+     `--card`; `--surface-sunken` and `--shadow-inset` travel together and are
+     card-interior only (ADR 040). */
+  it('recesses the inline panel and leaves the phone sheet raised', () => {
+    const { container, unmount } = renderView({ inlineActions: true, canManage: true })
+    openSheet('snap peas')
+    expect(container.querySelector('.bg-surface-sunken')).not.toBeNull()
+    unmount()
+
+    renderView({ inlineActions: false, canManage: true })
+    openSheet('snap peas')
+    const sheet = document.querySelector('[role="dialog"]')!
+    expect(sheet.querySelector('.bg-surface-sunken')).toBeNull()
   })
 
   it('removes a row through the sheet, under `manage`', () => {
@@ -861,6 +896,24 @@ describe('ShoppingPageView — ending the list', () => {
     expect(props.onClear).not.toHaveBeenCalled()
     fireEvent.click(screen.getByRole('button', { name: 'Sure? This removes 1' }))
     expect(props.onClear).toHaveBeenCalledWith('checked')
+  })
+
+  /* The icon carries the one real difference between the two verbs: a recycled
+     list comes back, a thrown-away one does not. */
+  it('marks the recycle and the throw-away with different icons, and neither on the confirm', () => {
+    midShop()
+    fireEvent.click(screen.getByRole('button', { name: 'What to do with this list' }))
+    const recycle = screen.getByText('Clear the 1 checked').closest('button')!
+    const bin = screen.getByText('Throw the list away').closest('button')!
+    expect(recycle.querySelector('svg')).not.toBeNull()
+    expect(bin.querySelector('svg')).not.toBeNull()
+    expect(recycle.querySelector('svg')).not.toEqual(bin.querySelector('svg'))
+
+    // The confirm's whole job is the count; a glyph adds nothing to a number.
+    fireEvent.click(screen.getByText('Throw the list away'))
+    expect(
+      screen.getByText('Sure? This removes 2').closest('button')!.querySelector('svg')
+    ).toBeNull()
   })
 
   it('offers no fresh-list button below `manage`', () => {

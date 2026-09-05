@@ -1,7 +1,16 @@
 import { Fragment, useEffect, useRef, useState, type ReactNode } from 'react'
-import { Check, ChevronDown, ChevronLeft, ChevronUp, Loader2 } from 'lucide-react'
+import { Check, ChevronDown, ChevronLeft, ChevronUp, Loader2, ShoppingCart } from 'lucide-react'
 import { ShoppingItemNameSchema, type ShoppingAisle } from '@family-os/schemas'
-import { CaptureField, Chip, ListRow, PageContainer, PageHeader, RowSwipe, cn } from '@family-os/ui'
+import {
+  CaptureField,
+  Chip,
+  EmptyState,
+  ListRow,
+  PageContainer,
+  PageHeader,
+  RowSwipe,
+  cn,
+} from '@family-os/ui'
 import type { CaptureReport, ShoppingItem, ShoppingList } from '../types'
 import { ReportLine } from '../components/ReportLine'
 import { ShoppingCaptureHero } from './ShoppingCaptureHero'
@@ -260,19 +269,25 @@ export function ShoppingPageView({
           ) : (
             <>
               <div className="flex items-center justify-between gap-3">
-                {/* `{list} · {n} left` — the figure at `heading`, the name and the
-                    word at `sm`, so what is LEFT reads first and the list it
-                    belongs to reads second. Same number as the pill above,
-                    counted over the same rows (SH-10/11).
+                {/* `{n} items left` — the figure at `heading`, the words at `sm`,
+                    so what is LEFT reads first. It carries no list name: the
+                    destination pills sit directly above and a line that repeats
+                    its neighbour is a line people stop reading. This reverses
+                    SH-11, which put the name here; the pills had not yet been
+                    settled as the permanent thing above it.
 
-                    It is the COUNT that goes quiet before anything is in the
-                    cart, not the block: ADR 043's rule is about the comparison,
-                    and the menu beside it is available whether or not a shop has
-                    started. Hiding the whole row took the menu with it. */}
-                <span className={cn(got === 0 && 'invisible')} aria-hidden={got === 0}>
-                  <span className="text-sm-token text-muted-foreground">{destination} · </span>
+                    The block paints from first paint rather than waiting for a
+                    check, because the menu beside it needs an anchor — a `⋯`
+                    hovering against nothing reads as a mis-render. ADR 043's
+                    "no meter at zero" is amended for this surface in the same
+                    PR; the general rule stands elsewhere. SH-12 is untouched:
+                    the height was already reserved, and now it is also drawn. */}
+                <span>
                   <span className="text-heading text-foreground">{needed}</span>
-                  <span className="text-sm-token text-muted-foreground"> left</span>
+                  <span className="text-sm-token text-muted-foreground">
+                    {' '}
+                    item{needed === 1 ? '' : 's'} left
+                  </span>
                 </span>
                 {/* On the sticky line rather than beside the destination pills
                     (Zach's correction): the moment you want to bin a list is the
@@ -281,12 +296,8 @@ export function ShoppingPageView({
                 {canManage && <ClearListMenu got={got} total={total} onClear={onClear} />}
               </div>
               <div
-                className={cn(
-                  'h-meter mt-2 overflow-hidden rounded-full bg-muted',
-                  got === 0 && 'invisible'
-                )}
+                className="h-meter mt-2 overflow-hidden rounded-full bg-muted"
                 role="progressbar"
-                aria-hidden={got === 0}
                 aria-label={`${got} of ${total} in the cart`}
                 aria-valuenow={got}
                 aria-valuemin={0}
@@ -309,9 +320,15 @@ export function ShoppingPageView({
               <Loader2 className="size-5 animate-spin text-muted-foreground" aria-label="Loading" />
             </div>
           ) : groups.length === 0 ? (
-            <p className="text-body px-1 pt-6 text-muted-foreground">
-              Nothing on {destination} yet.
-            </p>
+            /* The zero-items case, which is NOT the cleared state (SH-07) —
+               that one is a finish, this one is a beginning. No `action`: the
+               capture field is directly above and is the action, and a CTA that
+               focuses it would be the autofocus ADR 070 withdrew. */
+            <EmptyState
+              icon={ShoppingCart}
+              heading={`Nothing on ${destination} yet.`}
+              body="Add something in the field above."
+            />
           ) : (
             <ItemList
               key={selectedListId}
@@ -337,6 +354,7 @@ export function ShoppingPageView({
                 inlineActions
                   ? (item) => (
                       <RowActionsPanel
+                        inline
                         item={item}
                         onClose={() => setSheetItem(null)}
                         canFile={canFile}

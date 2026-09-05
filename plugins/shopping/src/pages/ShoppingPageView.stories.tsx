@@ -348,6 +348,7 @@ export const InlineRowActions: Story = {
         </div>
       </ListRow>
       <RowActionsPanel
+        inline
         item={item('1', 'cilantro', 'Produce')}
         onClose={() => {}}
         canFile
