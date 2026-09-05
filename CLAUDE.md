@@ -24,9 +24,9 @@ before it reads anything else, and it is size-capped — see
 - **Deployment:** 🟢 live at `https://vireohome.app` — Pi 5 (192.168.0.42, pinned
   in NetworkManager 2026-09-02; eth0 `88:a2:9e:d4:e7:33`, router reservation still
   owed); auto-deploy + Tailscale + restic→R2 + watchdog intact. Runbook Part F/G.
-- **Last session:** 2026-09-05 — the dev seed was installing the API suite's `Parent` /
-  `Child` fixtures into the dev DB; both now name their target (`db:reset` requires
-  `DATABASE_URL`). `logs/2026-09-05-fix-seed-target-guards.md`.
+- **Last session:** 2026-09-05 — four auto-bug reports (PR #143): the kid's XP plate reaches
+  Punch cards, the shopping rename and its inline panel each get a visible way out, the last
+  title-cased labels go. Four `deployed` flips owed. `logs/2026-09-05-fix-auto-bugs-140-142.md`.
 - **What's next and everything outstanding:** `docs/sessions/queue.md` — the one
   index. M5.5/6 (offline) or M4.5/3 next.
 

@@ -98,10 +98,12 @@ _`kickoffs/shopping-polish-decision-set.md` · `artifacts/2026-09-04-shopping-po
 
 ---
 
-### Owed: auto-bug #135's `deployed` flip
+### Owed: four auto-bug `deployed` flips
 
-The fix shipped (PR #137). `platform.bug_reports` `69863d86` still reads `fixing` — tier-4 PIN,
-only Zach. _[log](logs/2026-09-04-dev-calendar-day-headings.md)_
+All four fixes shipped. The flip notifies the reporter, from the API handler and not the
+database — `psql` cannot do it. **Settings → Reported problems**, tier-4 PIN, only Zach.
+`69863d86` · `95872941` · `42a1d6f2` · `13b72a22`.
+_[log](logs/2026-09-05-fix-auto-bugs-140-142.md)_
 
 ### Prod storage off USB: NVMe HAT for the Pi 5
 
@@ -224,6 +226,9 @@ Stand up an RTL suite mirroring chores/calendar. See also the Deferred CI-glob g
 > recent first, nothing older than the current milestone's start. `docs/sessions/logs/` is
 > date-ordered and holds the record. Do not restore entries pruned from here.
 
+- **2026-09-05 — Fix: four auto-bug reports** (#140–#142, PR #143) — the XP plate reaches Punch
+  cards (`chores/xp` was never invalidated), the rename and its inline panel each get a visible
+  way out, the last title-cased labels go. _[log](logs/2026-09-05-fix-auto-bugs-140-142.md)_
 - **2026-09-04 — Dev: the page frame insets, the header leads** (PR #139) — the spacing audit's
   contract, ADR 074, a `SectionLabel` primitive, and `check-spacing.sh` in CI. Closes the
   `section-label` block-spacing entry. _[log](logs/2026-09-04-dev-spacing-contract.md)_
@@ -246,15 +251,9 @@ Stand up an RTL suite mirroring chores/calendar. See also the Deferred CI-glob g
 - **2026-09-04 — Dev: the needs-push contract** (M5.5/3, PR #133) — `meals.needs.pushed` over
   the bus with a new `emitAndAwait` so a failed push reports; `source_label` carries the
   producer's words. _[log](logs/2026-09-04-dev-shopping-needs-push.md)_
-- **2026-09-03 — Dev: a recipe link on a planned meal** (auto-bug #129, PR #131) — a
-  `recipe_url` column and nothing more; the artifact ledgers the recipe-bank features
-  refused. _[log](logs/2026-09-03-dev-meals-recipe-url.md)_
 - **2026-09-03 — Design: the shopping surface** (M5.5/1, ADR 070) — capture field as the
   hero on a walk-order list, no mode; the wall only takes things in; Shopping takes a phone
   tab from `chores`. _[log](logs/2026-09-03-design-shopping-surface.md)_
-- **2026-09-02 — Infra: the Pi's LAN address, pinned** — a reboot moved the Pi to
-  `.43` while DNS and the Tailscale /32 still said `.42`; router reservation owed.
-  _[log](logs/2026-09-02-infra-pi-static-ip.md)_
 
-Everything before 2026-08-22 (M0 through M4, deployment Parts A–F): see
+Everything before 2026-09-02 (M0 through M4, deployment Parts A–F): see
 `docs/sessions/logs/` and `docs/roadmap.md`.
