@@ -3,6 +3,7 @@ import {
   Button,
   ItemCard,
   PageContainer,
+  PageHeader,
   ProfileAvatar,
   RowActions,
   cn,
@@ -90,13 +91,12 @@ export function MealsPageView({
           never moves when the title's width changes with the month name. The
           reset label diverges from calendar's "Today" deliberately: the
           surface's unit is the week. */}
-      <div className="flex items-start justify-between gap-3">
-        <div>
-          <h1 className="text-page-title text-foreground">{weekTitle}</h1>
-          {needCount !== null && (
-            <p
+      <PageHeader
+        title={weekTitle}
+        subtitle={
+          needCount !== null && (
+            <span
               className={cn(
-                'text-sm-token mt-1',
                 // The all-clear is a murmur; a gap speaks in the action colour —
                 // bold ink reads as a heading, not an ask. Primary, never amber:
                 // the page stays calm, the widget does the shouting.
@@ -104,23 +104,25 @@ export function MealsPageView({
               )}
             >
               {needsCookLabel(needCount)}
-            </p>
-          )}
-        </div>
-        <div className="flex shrink-0 items-center gap-1">
-          <Button variant="ghost" size="sm" onClick={onThisWeek}>
-            This week
-          </Button>
-          <Button variant="ghost" size="icon" aria-label="Previous week" onClick={onPrevWeek}>
-            <ChevronLeft className="h-5 w-5" aria-hidden />
-          </Button>
-          <Button variant="ghost" size="icon" aria-label="Next week" onClick={onNextWeek}>
-            <ChevronRight className="h-5 w-5" aria-hidden />
-          </Button>
-        </div>
-      </div>
+            </span>
+          )
+        }
+        action={
+          <div className="flex items-center gap-1">
+            <Button variant="ghost" size="sm" onClick={onThisWeek}>
+              This week
+            </Button>
+            <Button variant="ghost" size="icon" aria-label="Previous week" onClick={onPrevWeek}>
+              <ChevronLeft className="h-5 w-5" aria-hidden />
+            </Button>
+            <Button variant="ghost" size="icon" aria-label="Next week" onClick={onNextWeek}>
+              <ChevronRight className="h-5 w-5" aria-hidden />
+            </Button>
+          </div>
+        }
+      />
 
-      <div className="mt-5 flex flex-col gap-2">
+      <div className="flex flex-col gap-2">
         {days.map((day) => (
           <DayRow
             key={day.key}

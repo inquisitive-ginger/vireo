@@ -5,6 +5,7 @@ import {
   ConfirmDialog,
   EmptyState,
   PageContainer,
+  PageHeader,
   SegmentedControl,
   TabBar,
   type TabBarOption,
@@ -372,67 +373,68 @@ export function CalendarPage() {
     // `full` — a phone agenda spans the screen. The gutter is the container's now;
     // each of these three children used to carry its own `px-4`.
     <PageContainer width="full">
-      <div className="flex items-center justify-between gap-3 pb-3">
-        <h1 className="text-page-title text-foreground">
-          {onActivities ? 'Activities' : 'Calendar'}
-        </h1>
-        {canManage && (
-          <Button
-            size="sm"
-            className="h-10 shrink-0"
-            onClick={onActivities ? () => openCreateActivity() : () => openCreate(null)}
-          >
-            <Plus className="mr-1 h-4 w-4" /> {onActivities ? 'Add activity' : 'Add event'}
-          </Button>
-        )}
-      </div>
-      <TabBar
-        aria-label="Calendar surface"
-        idBase="calendar-surface-m"
-        options={LENS_TABS}
-        value={lens}
-        onChange={setLens}
+      <PageHeader
+        title={onActivities ? 'Activities' : 'Calendar'}
+        action={
+          canManage && (
+            <Button
+              size="sm"
+              className="h-10"
+              onClick={onActivities ? () => openCreateActivity() : () => openCreate(null)}
+            >
+              <Plus className="mr-1 h-4 w-4" /> {onActivities ? 'Add activity' : 'Add event'}
+            </Button>
+          )
+        }
+        nav={
+          <TabBar
+            aria-label="Calendar surface"
+            idBase="calendar-surface-m"
+            options={LENS_TABS}
+            value={lens}
+            onChange={setLens}
+          />
+        }
       />
-      <div className="pt-4" role="tabpanel" aria-labelledby={`calendar-surface-m-tab-${lens}`}>
+      <div role="tabpanel" aria-labelledby={`calendar-surface-m-tab-${lens}`}>
         {onActivities ? activitiesBody : agendaBody}
       </div>
     </PageContainer>
   )
 
   // The time grid (month/week/day) — the calendar lens's chrome + body.
+  /* Time-nav, zoom and add, as one right-aligned cluster. The chevrons used to
+     hug the title; the title is `PageHeader`'s now, and a control cannot sit
+     inside an `h1`. They wrap as a unit at the widths that force it. */
+  const calendarActions = (
+    <div className="flex flex-wrap items-center justify-end gap-2">
+      <div className="flex items-center gap-1">
+        <Button variant="ghost" size="icon" aria-label="Previous" onClick={() => step(-1)}>
+          <ChevronLeft className="h-5 w-5" />
+        </Button>
+        <Button variant="ghost" size="icon" aria-label="Next" onClick={() => step(1)}>
+          <ChevronRight className="h-5 w-5" />
+        </Button>
+        <Button variant="ghost" size="sm" onClick={() => setCursor(new Date())}>
+          Today
+        </Button>
+      </div>
+      <SegmentedControl
+        aria-label="Calendar view"
+        options={VIEW_OPTIONS}
+        value={view}
+        onChange={setView}
+      />
+      {canManage && (
+        <Button size="sm" onClick={() => openCreate(headerAddDate)}>
+          <Plus className="mr-1 h-4 w-4" /> Add event
+        </Button>
+      )}
+    </div>
+  )
+
   const calendarLens = (
     <>
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <div className="flex items-center gap-2">
-          <h1 className="text-page-title text-foreground">{title}</h1>
-          <div className="ml-1 flex items-center gap-1">
-            <Button variant="ghost" size="icon" aria-label="Previous" onClick={() => step(-1)}>
-              <ChevronLeft className="h-5 w-5" />
-            </Button>
-            <Button variant="ghost" size="icon" aria-label="Next" onClick={() => step(1)}>
-              <ChevronRight className="h-5 w-5" />
-            </Button>
-            <Button variant="ghost" size="sm" onClick={() => setCursor(new Date())}>
-              Today
-            </Button>
-          </div>
-        </div>
-
-        <div className="flex items-center gap-2">
-          <SegmentedControl
-            aria-label="Calendar view"
-            options={VIEW_OPTIONS}
-            value={view}
-            onChange={setView}
-          />
-          {canManage && (
-            <Button size="sm" onClick={() => openCreate(headerAddDate)}>
-              <Plus className="mr-1 h-4 w-4" /> Add event
-            </Button>
-          )}
-        </div>
-      </div>
-
       {isLoading ? (
         <MonthSkeleton />
       ) : eventsQuery.isError ? (
@@ -469,36 +471,35 @@ export function CalendarPage() {
   )
 
   // The Activities lens (story #5) — grouped by owner, no time-nav (it isn't a range).
-  const activitiesLens = (
-    <>
-      <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
-        <h1 className="text-page-title text-foreground">Activities</h1>
-        {canManage && (
-          <Button size="sm" onClick={() => openCreateActivity()}>
-            <Plus className="mr-1 h-4 w-4" /> Add activity
-          </Button>
-        )}
-      </div>
-      {activitiesBody}
-    </>
+  const activitiesActions = canManage && (
+    <Button size="sm" onClick={() => openCreateActivity()}>
+      <Plus className="mr-1 h-4 w-4" /> Add activity
+    </Button>
   )
 
   const tabletSurface = (
     // `wide` — a 7-column month grid needs canvas, not a reading column.
     <PageContainer width="wide">
       {/* Primary tier — Calendar ⇄ Activities (design.md §4), set apart from the
-          Month/Week/Day sub-switch so the lens never reads as a fourth zoom level. */}
-      <TabBar
-        aria-label="Calendar surface"
-        idBase="calendar-surface"
-        className="mb-4"
-        options={LENS_TABS}
-        value={lens}
-        onChange={setLens}
+          Month/Week/Day sub-switch so the lens never reads as a fourth zoom level.
+          It reads BELOW the title now (2026-09-04): it used to be the one strip in
+          the house that outranked its own page name. */}
+      <PageHeader
+        title={onActivities ? 'Activities' : title}
+        action={onActivities ? activitiesActions : calendarActions}
+        nav={
+          <TabBar
+            aria-label="Calendar surface"
+            idBase="calendar-surface"
+            options={LENS_TABS}
+            value={lens}
+            onChange={setLens}
+          />
+        }
       />
 
       <div role="tabpanel" aria-labelledby={`calendar-surface-tab-${lens}`}>
-        {lens === 'activities' ? activitiesLens : calendarLens}
+        {onActivities ? activitiesBody : calendarLens}
       </div>
     </PageContainer>
   )

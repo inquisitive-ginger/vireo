@@ -87,8 +87,11 @@ export function FocusView({
 
   return (
     <PageContainer width="list">
-      <PageHeader title="Chores" action={<ScorePlate ref={plateRef} value={lifetime} />} />
-      {tabBar}
+      <PageHeader
+        title="Chores"
+        action={<ScorePlate ref={plateRef} value={lifetime} />}
+        nav={tabBar}
+      />
 
       {/* Progress line + bar (design §1 taskee header — shared with Agency). */}
       <div className="mb-5">

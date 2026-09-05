@@ -2013,6 +2013,37 @@ labels appear; splitting them would widen the gap 128px before it has anything t
 hold. A spacing step that serves nothing but roominess is chrome, and steps at
 `md:`.
 
+### The page header
+
+**Settled** — spacing contract, 2026-09-04. Component: `PageHeader`
+(`@family-os/ui`). See ADR 074.
+
+| Relationship               | Utility        | px   |
+| -------------------------- | -------------- | ---- |
+| Header lead                | `pt-2 md:pt-4` | 8/16 |
+| Title → nav strip          | `mt-4`         | 16   |
+| Title (or strip) → content | `mb-6`         | 24   |
+
+**Never hand-roll a page title.** Compose `PageHeader` inside `PageContainer`.
+Six surfaces had six title→content gaps (12, 16, 20, 24, 28) because there was no
+one place to change it.
+
+**The nav strip is the header's, not the caller's.** A `TabBar` that switches the
+panel below goes in the `nav` slot. It binds to what it switches, so the header's
+own `mb-6` is the strip's bottom margin and no caller does the arithmetic. A
+strip reads **below** the page title on every surface — the calendar's tablet lens
+was the one exception and stopped being one (2026-09-04).
+
+**`text-page-title` is `PageHeader`'s type token.** Four surfaces may still use it
+directly, and none of them is a page header:
+
+| Surface                 | What it is                                       |
+| ----------------------- | ------------------------------------------------ |
+| `FocusView` task title  | The one task on the surface, not the page's name |
+| `TonightView` (compact) | A widget's meal name at the small density        |
+| `WalletChooser`         | A centred chooser prompt with no page frame      |
+| `DemoPage`              | The plugin-loader story's placeholder slot       |
+
 > **Why this exists.** Six surfaces had six recipes. Chores and the feed matched at
 > 680px only by coincidence; the calendar hardcoded `max-w-[1100px]` next to a token
 > that existed to prevent exactly that; the calendar's mobile agenda re-declared

@@ -102,8 +102,7 @@ export function PunchCardsTab({ tabBar }: { tabBar: ReactNode }) {
 
   return (
     <PageContainer width="list">
-      <PageHeader title="Chores" />
-      {tabBar}
+      <PageHeader title="Chores" nav={tabBar} />
 
       {cards.isError ? (
         <ErrorCard moduleName="Punch cards" onRetry={() => cards.refetch()} />
