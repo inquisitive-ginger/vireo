@@ -35,6 +35,20 @@ const meta: Meta<typeof ShoppingPageView> = {
   title: 'Shopping/ShoppingPageView',
   component: ShoppingPageView,
   parameters: { layout: 'fullscreen' },
+  /* The shell's own frame (`App.tsx`): a definite height, with `main` scrolling
+     inside it. The capture layout fills that height rather than computing one,
+     so without this the story has nothing for `h-full` to resolve against and
+     collapses to its content — an artifact that reads exactly like a regression.
+     Every list story wants the same frame anyway; it is what the app does. */
+  decorators: [
+    (Story) => (
+      <div className="flex h-dvh flex-col overflow-hidden bg-background">
+        <div className="min-h-0 flex-1 overflow-auto">
+          <Story />
+        </div>
+      </div>
+    ),
+  ],
   args: {
     lists: [
       { id: 'grocery', name: 'Grocery', kind: 'permanent', groupByAisle: true, itemCount: 14 },

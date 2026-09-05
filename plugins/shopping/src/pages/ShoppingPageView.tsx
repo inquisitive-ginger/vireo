@@ -186,7 +186,12 @@ export function ShoppingPageView({
     // either: unmeasured at 1280 the rows run 1232px, so a name at the left edge
     // and its aisle at the right are a head-turn apart. The wide layout earns its
     // presence with type size, not with span.
-    <PageContainer width="list">
+    /* The capture layout fills the shell's `main` and does not scroll —
+       `design.md` §"One surface, two layouts" says the block fills the screen,
+       and a screen that scrolls is not filled. `className`, never padding:
+       `PageContainer`'s gutters are not a prop (CLAUDE.md). The LIST layout at
+       either width keeps scrolling; it is a long list and always was. */
+    <PageContainer width="list" className={capturing ? 'h-full' : undefined}>
       {capturing ? (
         <ShoppingCaptureHero
           openCount={totalOpenCount}

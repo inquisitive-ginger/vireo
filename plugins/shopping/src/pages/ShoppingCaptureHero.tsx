@@ -50,16 +50,29 @@ export function ShoppingCaptureHero({
   canAdd,
 }: ShoppingCaptureHeroProps) {
   return (
-    // Fills the screen, so what a person walks up to is the field and nothing
-    // else. `4.5rem` is `PageContainer`'s own `pt-6 pb-12` — subtracted rather
-    // than guessed, so the block ends exactly where the viewport does instead of
-    // leaving a short scroll to nothing.
-    <div className="flex min-h-[calc(100svh-4.5rem)] flex-col">
+    /* Fills the screen, so what a person walks up to is the field and nothing
+       else — and it FILLS ITS PARENT rather than computing against the viewport.
+
+       It used to subtract `4.5rem`, a copy of `PageContainer`'s `pt-6 pb-12`.
+       That was right until the container gained `sm:pt-10` the same day, and
+       then the copy was 16px short at every size ≥640px — measured, not
+       guessed: `main` reported `scrollHeight − clientHeight = 16` at both
+       1024×768 and 768×1024. A surface that says "fills the screen" was
+       overflowing it by a rounding error in a duplicated constant.
+
+       `h-full` has no constant to drift. The shell already owns the height
+       (`App.tsx`: `h-dvh` outside, `flex-1 overflow-auto` on `main`), so this
+       inherits `dvh` — which is also the right answer for a tablet's browser
+       chrome and its on-screen keyboard, neither of which `svh` tracked.
+
+       `overflow-hidden` states the consequence: with no scroll, a notice stack
+       that outgrows the space is CLIPPED rather than scrolled to. */
+    <div className="flex h-full flex-col overflow-hidden">
       {/* Centred in what is left above the seam, rather than hung from the top.
           With the strip gone the wall is mostly empty, and SH-14's finding is
           answered by rebalancing what is there — nothing is added to fill it,
           and nothing reaches for `--surface-sunken` (ADR 040). */}
-      <div className="flex flex-1 flex-col justify-center">
+      <div className="flex min-h-0 flex-1 flex-col justify-center">
         {/* What centres is the VISIBLE block — headline, field, pills. The report
             slot hangs out of flow below it (Zach, live pass): counted in, its
             empty 40px reserve pushed everything ~20px above optical centre, so

@@ -294,6 +294,25 @@ describe('ShoppingPageView — the capture layout', () => {
     expect(screen.queryByText(/speak/i)).not.toBeInTheDocument()
   })
 
+  /* `design.md` §"One surface, two layouts": the block fills the screen, and a
+     screen that scrolls is not filled. It fills the shell's `main` rather than
+     computing against the viewport — the arithmetic it used to do was a copy of
+     `PageContainer`'s padding, and it went 16px stale the day the container
+     gained `sm:pt-10`.
+
+     jsdom has no layout, so what is pinned here is the SHAPE: the capture layout
+     is height-bound and the list layout is not. The 0px overflow itself was
+     measured in a real frame. */
+  it('binds the capture layout to its parent’s height, and leaves the list free to scroll', () => {
+    const { container, unmount } = renderView({ layout: 'capture' })
+    expect(container.querySelector('.max-w-list')).toHaveClass('h-full')
+    unmount()
+
+    // The list is long and always scrolled — at either width.
+    renderView({ layout: 'list' })
+    expect(document.body.querySelector('.max-w-list')?.className.includes('h-full')).toBe(false)
+  })
+
   it('keeps the house-wide seam count — one number, at the scope it states (D6)', () => {
     renderView({ layout: 'capture', totalOpenCount: 19 })
     expect(screen.getByText('19 things to get')).toBeInTheDocument()
