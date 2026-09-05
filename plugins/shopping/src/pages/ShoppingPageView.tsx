@@ -16,6 +16,7 @@ import { ReportLine } from '../components/ReportLine'
 import { ShoppingCaptureHero } from './ShoppingCaptureHero'
 import { RowActionsPanel, RowActionsSheet } from './RowActionsSheet'
 import { ClearListMenu, type ClearScope } from './ClearListMenu'
+import { removalVerb } from '../lib/removal-verb'
 
 export interface AisleGroup {
   aisle: string
@@ -653,17 +654,20 @@ function Row({
   onFinishRename,
 }: RowProps) {
   const got = item.status === 'got'
-  /* Two verbs, two endpoints, and they read differently to the person holding
-     the phone: `manage` REMOVES anyone's row and is tier 4, while `retract` takes
-     back your own recent add and is tier 1 (ADR 073). Eligibility for the second
-     is the payload's `canRetract` — the server owns the clock and `added_by`
-     never reaches the client — never a client clock and never a position in a
-     strip (ADR 073 §2). The left edge binds nothing when neither is permitted. */
-  const quick = canManage
-    ? { label: 'Remove', onFire: onRemove }
-    : canRetract && item.canRetract
-      ? { label: 'Take it back', onFire: onRetract }
-      : undefined
+  /* ONE removal verb, never two: `manage` wins over `retract` because they are
+     the same act to the person holding the phone. The decision lives in
+     `removalVerb` and the row's SHEET reads it from the same place —
+     deliberately, not by coincidence. It was stated twice before this, and the
+     copy in the sheet was the one that was wrong. Labels stay local, because the
+     two surfaces say it differently; only the decision is shared. The edge binds
+     nothing when neither verb is permitted. */
+  const verb = removalVerb(item, canManage, canRetract)
+  const quick =
+    verb === 'remove'
+      ? { label: 'Remove', onFire: onRemove }
+      : verb === 'retract'
+        ? { label: 'Take it back', onFire: onRetract }
+        : undefined
 
   /* While renaming, the row is a field and nothing else: no gesture, no check.
      A drag or a whole-row tap on a row you are editing is a mis-tap every time. */

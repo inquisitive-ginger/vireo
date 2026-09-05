@@ -583,6 +583,53 @@ describe('ShoppingPageView — the row’s verbs', () => {
     expect(screen.queryByTitle(/Remove “/)).toBeNull()
   })
 
+  /* THE ONE THIS MISSED. `Take it back` and `Remove from the list` are the same
+     act — both hard-delete the row — differing only in endpoint, permission and
+     the `reason` on the event: real to the server, invisible to someone looking
+     at two buttons with one outcome. The sheet ORed the two conditions while the
+     edge had the precedence, so a tier-4 parent looking at their own recent add
+     saw both. An assertion about what should NOT be there. */
+  it('offers exactly one removal verb, even when both would work', () => {
+    renderView({
+      canManage: true,
+      canRetract: true,
+      groups: [
+        { aisle: 'Produce', items: [item({ id: '1', name: 'snap peas', canRetract: true })] },
+      ],
+    })
+    openSheet('snap peas')
+    expect(screen.getByRole('button', { name: 'Remove from the list' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Take it back' })).not.toBeInTheDocument()
+  })
+
+  /* `retract` is for the tiers that do NOT hold `manage` — ADR 073 created it so
+     the wall and a kid could undo a typo without being handed delete-the-list. */
+  it('gives the lower tier `Take it back` where a parent gets `Remove`', () => {
+    renderView({
+      canManage: false,
+      canRetract: true,
+      groups: [
+        { aisle: 'Produce', items: [item({ id: '1', name: 'snap peas', canRetract: true })] },
+      ],
+    })
+    openSheet('snap peas')
+    expect(screen.getByRole('button', { name: 'Take it back' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Remove from the list' })).not.toBeInTheDocument()
+  })
+
+  /* The edge and the sheet read one rule from one place. If these two ever
+     disagree again, one of them has restated it. */
+  it('gives the quick edge the same verb the sheet offers', () => {
+    const { unmount } = renderView({ canManage: true, canRetract: true })
+    expect(screen.getAllByTitle(/Remove “/).length).toBeGreaterThan(0)
+    expect(screen.queryByTitle(/Take it back “/)).toBeNull()
+    unmount()
+
+    renderView({ canManage: false, canRetract: true })
+    expect(screen.getAllByTitle(/Take it back “/).length).toBeGreaterThan(0)
+    expect(screen.queryByTitle(/Remove “/)).toBeNull()
+  })
+
   it('binds no quick edge when a row is past its retract window', () => {
     const { container } = renderView({
       canRetract: true,

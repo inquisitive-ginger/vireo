@@ -3,6 +3,7 @@ import { Check, ChevronLeft } from 'lucide-react'
 import { SHOPPING_AISLES, type ShoppingAisle } from '@family-os/schemas'
 import { Sheet, cn } from '@family-os/ui'
 import type { ShoppingItem } from '../types'
+import { removalVerb } from '../lib/removal-verb'
 
 export interface RowActionsProps {
   /** Null closes it. The row it was opened from restores focus. */
@@ -69,7 +70,11 @@ export function RowActionsPanel({
 
   if (!item) return null
 
-  const retractable = canRetract && item.canRetract
+  /* ONE removal verb, never two. `Take it back` and `Remove from the list` both
+     hard-delete the row; a reader who holds `manage` gets the unconditional one
+     and never sees a second button with the same outcome. The quick edge reads
+     the same rule from the same place — deliberately, not by coincidence. */
+  const verb = removalVerb(item, canManage, canRetract)
 
   return (
     <div
@@ -120,7 +125,7 @@ export function RowActionsPanel({
               }}
             />
           )}
-          {retractable && (
+          {verb === 'retract' && (
             <SheetAction
               label="Take it back"
               onSelect={() => {
@@ -129,7 +134,7 @@ export function RowActionsPanel({
               }}
             />
           )}
-          {canManage && (
+          {verb === 'remove' && (
             <SheetAction
               label="Remove from the list"
               destructive
