@@ -35,7 +35,11 @@ Two databases are maintained locally inside the same Docker PostgreSQL container
 | `familyos`      | Dev server |
 | `familyos_test` | Test suite |
 
-Tests never touch the dev database. Both databases are migrated and seeded identically. `beforeEach` hooks truncate test-relevant tables between runs.
+Tests never touch the dev database — `apps/api/src/test.setup.ts` refuses to run against a database whose name does not end in `_test`. `beforeEach` hooks truncate test-relevant tables between runs.
+
+`prisma/reset.ts` (`pnpm db:reset`) takes **no default target** — `DATABASE_URL` is required and it exits 1 without one. It cannot demand a `*_test` name the way `test.setup.ts` does, because resetting the dev database is its actual purpose; a fallback URL would silently substitute dev for the `familyos_test` you meant and delete real member profiles.
+
+Both databases take the same migrations, but **not the same seed**. `prisma/seed.ts` creates the `seed-parent-1` / `seed-child-1` fixture profiles only when `DATABASE_URL` names a `*_test` database; everything else (the `family` pseudo-profile, the starter reward catalog) seeds everywhere. The seed defaults to the dev URL, so seeding them unconditionally put two fake tier-4/tier-1 people into `familyos` — where a tier 4 draws the dinner nudge and every other parent fan-out.
 
 To set up the test database from scratch:
 

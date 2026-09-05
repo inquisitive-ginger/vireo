@@ -2,7 +2,9 @@
  * db:reset — wipes all non-family data and returns the system to zero state.
  * Safe to run any time during development. Preserves default widget layouts.
  *
- * Usage:
+ * DATABASE_URL is required — there is no default. See the note above `connectionString`.
+ *
+ * Usage (DATABASE_URL=... omitted below for width):
  *   pnpm db:reset                             # platform core only
  *   pnpm db:reset --module family-feed        # platform + named plugin
  *   pnpm db:reset --module chores       # platform + named plugin
@@ -46,8 +48,21 @@ function parseArgs(): Options {
   return { modules, platformOnly: only, keepProfiles }
 }
 
-const connectionString =
-  process.env.DATABASE_URL ?? 'postgresql://familyos:familyos@localhost:5432/familyos'
+/* No `?? <dev url>` fallback on purpose. This script deletes every profile, and the
+   accident it has to survive is meaning `familyos_test` and forgetting the variable —
+   a default would silently substitute the dev database and wipe real member profiles,
+   avatars, the PIN and the layouts (it did, 2026-07-13; there are no dumps). Unlike
+   apps/api/src/test.setup.ts this cannot demand a *_test name — resetting dev is the
+   job — so the target has to be stated instead of validated. */
+const connectionString = process.env.DATABASE_URL
+if (!connectionString) {
+  console.error(
+    'DATABASE_URL is required — db:reset has no default target and deletes every profile.\n' +
+      '  dev:  DATABASE_URL=postgresql://familyos:familyos@localhost:5432/familyos pnpm db:reset\n' +
+      '  test: DATABASE_URL=postgresql://familyos:familyos@localhost:5432/familyos_test pnpm db:reset'
+  )
+  process.exit(1)
+}
 
 const pool = new Pool({ connectionString })
 const adapter = new PrismaPg(pool)

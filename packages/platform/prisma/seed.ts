@@ -2,12 +2,21 @@ import { Pool } from 'pg'
 import { PrismaPg } from '@prisma/adapter-pg'
 import { PrismaClient } from '../src/generated/prisma'
 
-const pool = new Pool({
-  connectionString:
-    process.env.DATABASE_URL ?? 'postgresql://familyos:familyos@localhost:5432/familyos',
-})
+const connectionString =
+  process.env.DATABASE_URL ?? 'postgresql://familyos:familyos@localhost:5432/familyos'
+
+const pool = new Pool({ connectionString })
 const adapter = new PrismaPg(pool)
 const prisma = new PrismaClient({ adapter })
+
+/* `seed-parent-1` / `seed-child-1` are fixtures the API suite hard-codes (a tier-4 and a
+   tier-1 it never deletes in its beforeEach), not members of any household. They belong
+   only in a *_test database — seeded into dev they become real people: tier 4 means the
+   dinner nudge and every parent fan-out addresses them, and they occupy identity hues.
+   This file defaults to the DEV url, so the target has to be checked, not assumed.
+   Same predicate as apps/api/src/test.setup.ts. */
+const dbName = connectionString.split('/').pop()?.split('?')[0] ?? ''
+const isTestDatabase = /(^|_)test$/.test(dbName)
 
 /* The widget layouts are NOT seeded. `src/home-layout.ts` is the one definition and
    the API serves it whenever no `default_layout_*` config row exists; this file used
@@ -23,17 +32,19 @@ async function main() {
     create: { id: 'family', name: 'Family', tier: 1, avatarUrl: null },
   })
 
-  await prisma.profile.upsert({
-    where: { id: 'seed-parent-1' },
-    update: {},
-    create: { id: 'seed-parent-1', name: 'Parent', tier: 4, avatarUrl: null },
-  })
+  if (isTestDatabase) {
+    await prisma.profile.upsert({
+      where: { id: 'seed-parent-1' },
+      update: {},
+      create: { id: 'seed-parent-1', name: 'Parent', tier: 4, avatarUrl: null },
+    })
 
-  await prisma.profile.upsert({
-    where: { id: 'seed-child-1' },
-    update: {},
-    create: { id: 'seed-child-1', name: 'Child', tier: 1, avatarUrl: null },
-  })
+    await prisma.profile.upsert({
+      where: { id: 'seed-child-1' },
+      update: {},
+      create: { id: 'seed-child-1', name: 'Child', tier: 1, avatarUrl: null },
+    })
+  }
 
   // Starter reward catalog (M4/5) — DEV SEED ONLY (spec §Seed catalog). A fresh family
   // gets these nine to edit or retire; prod is seeded separately. Written as raw SQL
@@ -70,7 +81,11 @@ async function main() {
     console.log('Rewards catalog already has rows — skipping starter seed')
   }
 
-  console.log('Seeded: profiles')
+  console.log(
+    isTestDatabase
+      ? `Seeded: profiles + test fixtures ("${dbName}")`
+      : `Seeded: profiles ("${dbName}")`
+  )
 }
 
 main()

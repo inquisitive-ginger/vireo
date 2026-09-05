@@ -24,9 +24,9 @@ before it reads anything else, and it is size-capped — see
 - **Deployment:** 🟢 live at `https://vireohome.app` — Pi 5 (192.168.0.42, pinned
   in NetworkManager 2026-09-02; eth0 `88:a2:9e:d4:e7:33`, router reservation still
   owed); auto-deploy + Tailscale + restic→R2 + watchdog intact. Runbook Part F/G.
-- **Last session:** 2026-09-04 — the spacing contract (PR #139): the frame insets and
-  `PageHeader` leads (ADR 074), `SectionLabel`, and `check-spacing.sh` guards it in CI.
-  `logs/2026-09-04-dev-spacing-contract.md`.
+- **Last session:** 2026-09-05 — the dev seed was installing the API suite's `Parent` /
+  `Child` fixtures into the dev DB; both now name their target (`db:reset` requires
+  `DATABASE_URL`). `logs/2026-09-05-fix-seed-target-guards.md`.
 - **What's next and everything outstanding:** `docs/sessions/queue.md` — the one
   index. M5.5/6 (offline) or M4.5/3 next.
 
