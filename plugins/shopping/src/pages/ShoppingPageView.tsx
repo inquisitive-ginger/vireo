@@ -323,6 +323,7 @@ export function ShoppingPageView({
               hasSheetVerb={canFile || canManage || canRetract}
               onToggle={onToggle}
               onOpenSheet={setSheetItem}
+              onDismissActions={() => setSheetItem(null)}
               onRemove={onRemove}
               onRowRetract={onRowRetract}
               sheetItemId={sheetItem?.id ?? null}
@@ -446,6 +447,9 @@ interface ItemListProps {
   hasSheetVerb: boolean
   onToggle: (item: ShoppingItem) => void
   onOpenSheet: (item: ShoppingItem) => void
+  /** A drag starting anywhere in the list closes whatever is standing open —
+      reaching for another row is the moment the reader left the one they had. */
+  onDismissActions: () => void
   onRemove: (item: ShoppingItem) => void
   onRowRetract: (item: ShoppingItem) => void
   sheetItemId: string | null
@@ -474,6 +478,7 @@ function ItemList({
   hasSheetVerb,
   onToggle,
   onOpenSheet,
+  onDismissActions,
   onRemove,
   onRowRetract,
   sheetItemId,
@@ -580,6 +585,7 @@ function ItemList({
                     onToggle(item)
                   }}
                   onOpenSheet={() => onOpenSheet(item)}
+                  onDismissActions={onDismissActions}
                   onRemove={() => onRemove(item)}
                   onRetract={() => onRowRetract(item)}
                   renaming={renamingId === item.id}
@@ -605,6 +611,7 @@ interface RowProps {
   error?: string
   onToggle: () => void
   onOpenSheet: () => void
+  onDismissActions: () => void
   onRemove: () => void
   onRetract: () => void
   renaming: boolean
@@ -621,6 +628,7 @@ function Row({
   error,
   onToggle,
   onOpenSheet,
+  onDismissActions,
   onRemove,
   onRetract,
   renaming,
@@ -657,6 +665,7 @@ function Row({
       quick={quick}
       onOpenActions={hasSheetVerb ? onOpenSheet : undefined}
       actionsOpen={sheetOpen}
+      onGestureStart={onDismissActions}
     >
       <ListRow
         leading={<Ring checked={got} />}

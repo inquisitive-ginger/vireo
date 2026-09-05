@@ -45,6 +45,11 @@ export interface RowSwipeProps {
   /** Whether that sheet is open, so focus returns to the row when it closes.
       The sheet itself belongs to the caller — it is the permission filter. */
   actionsOpen?: boolean
+  /** A drag has STARTED on this row — past the axis lock, so a tap never fires
+      it. It reports the reach, not the outcome: the caller uses it to dismiss
+      whatever another row has standing open, because someone dragging here has
+      already moved on from there. */
+  onGestureStart?: () => void
   /** Word on the right edge's revealed strip. */
   actionsLabel?: string
   children: ReactNode
@@ -71,6 +76,7 @@ export function RowSwipe({
   onOpenActions,
   actionsOpen = false,
   actionsLabel = 'Edit',
+  onGestureStart,
   children,
 }: RowSwipeProps) {
   const [offset, setOffset] = useState(0)
@@ -140,6 +146,10 @@ export function RowSwipe({
         setDragging(true)
         if (longPressRef.current) clearTimeout(longPressRef.current)
         if (openRow && openRow !== closeRef.current) openRow()
+        // Fired at the START, not at the threshold: reaching for another row is
+        // the moment the reader left the one they had open, whether or not this
+        // drag goes anywhere.
+        onGestureStart?.()
       }
       const width = boxRef.current?.offsetWidth ?? MORE_THRESHOLD
       const moreThreshold = Math.min(MORE_THRESHOLD, width * MORE_THRESHOLD_FRACTION)

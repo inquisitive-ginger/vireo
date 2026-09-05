@@ -17,6 +17,10 @@ function row(props: Partial<Parameters<typeof RowSwipe>[0]> = {}, onActivate = v
   )
 }
 
+/* What jsdom cannot reach: it implements no `PointerEvent`, so `@use-gesture`
+   never starts a drag here — the thresholds, the axis lock, the snap-back and
+   `onGestureStart` are all verified by reading and on a real screen, not below.
+   Everything these tests cover is reachable without a drag. */
 describe('RowSwipe (SH-09)', () => {
   /* The whole point of both edges being the same permission check: the left edge
      must never reveal a button that will 403, and a row nobody may act on has no
