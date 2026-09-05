@@ -23,7 +23,7 @@ Environment variables are managed via `.env` files at the repository root.
 **Loading:**
 
 - **API dev server** (`apps/api`): `tsx watch --env-file ../../.env src/index.ts` in the `dev` script. Uses Node 22's native `--env-file` flag — no `dotenv` dependency. `--env-file` does not override vars already set in the process environment.
-- **Vitest** (`apps/api`): `envDir: '../../'` in `vitest.config.ts` causes Vitest to load `.env.test` after `.env`, overriding `DATABASE_URL` with `familyos_test`. `src/test.setup.ts` uses `??=` as a fallback guard in case Vitest is invoked outside the normal script.
+- **Vitest** (`apps/api`): `envDir: '../../'` in `vitest.config.ts` causes Vitest to load `.env.test` after `.env`, overriding `DATABASE_URL` with `familyos_test`. `src/test.setup.ts` uses `??=` as a fallback guard in case Vitest is invoked outside the normal script. `src/test.globalSetup.ts` then upserts the suite's persistent fixtures (`family`, `seed-parent-1`, `seed-child-1`) before any test file runs, and carries the same non-`_test` refusal because it writes.
 - **Playwright E2E** (`packages/e2e`): `node --env-file ../../.env.test` in the `e2e` and `e2e:ui` scripts loads `DATABASE_URL=familyos_test` and `E2E=true` into the Playwright process. Child processes (including the spawned API server) inherit these vars; tsx's own `--env-file ../../.env` does not override them.
 
 **Database separation:**
@@ -37,9 +37,13 @@ Two databases are maintained locally inside the same Docker PostgreSQL container
 
 Tests never touch the dev database — `apps/api/src/test.setup.ts` refuses to run against a database whose name does not end in `_test`. `beforeEach` hooks truncate test-relevant tables between runs.
 
-`prisma/reset.ts` (`pnpm db:reset`) takes **no default target** — `DATABASE_URL` is required and it exits 1 without one. It cannot demand a `*_test` name the way `test.setup.ts` does, because resetting the dev database is its actual purpose; a fallback URL would silently substitute dev for the `familyos_test` you meant and delete real member profiles.
+**Every script that writes names its target.** Three rules, each from a different way the dev database got hit:
 
-Both databases take the same migrations, but **not the same seed**. `prisma/seed.ts` creates the `seed-parent-1` / `seed-child-1` fixture profiles only when `DATABASE_URL` names a `*_test` database; everything else (the `family` pseudo-profile, the starter reward catalog) seeds everywhere. The seed defaults to the dev URL, so seeding them unconditionally put two fake tier-4/tier-1 people into `familyos` — where a tier 4 draws the dinner nudge and every other parent fan-out.
+- `prisma/reset.ts` requires `DATABASE_URL` and exits 1 without one. It cannot demand a `*_test` name — resetting dev is its purpose — so the target is stated, not validated.
+- `prisma/seed.ts` creates the `seed-parent-1` / `seed-child-1` fixtures only against a `*_test` target. Everything else (`family`, the reward catalog) seeds everywhere. It defaults to the dev URL, so seeding them unconditionally put two fake people into `familyos`, the tier-4 one drawing every parent fan-out.
+- The API suite provisions those fixtures itself (`globalSetup`), rather than inheriting them from `db:seed` where E2E's `POST /api/dev/reset` could delete them out from under it.
+
+Both databases take the same migrations; only the test one takes the fixtures.
 
 To set up the test database from scratch:
 

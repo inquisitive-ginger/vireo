@@ -55,3 +55,31 @@ Family, Hallie, Teddy, Zach, Zoë. The reset/reseed round-trip also cleared a st
 `familyos_render` carries the same two stale rows. Nothing in the repo references that
 database — it is a scratch copy from some earlier session. Not deleted; worth confirming
 it is disposable and then dropping it.
+
+## Follow-on: the API suite owns its fixtures
+
+`familyos_render` turned out to be referenced **nowhere** — not in the tree, not in any
+script, not in git history on any branch. A hand-made `pg_dump | psql` copy of dev from
+around 2026-08-25, strictly older than dev (39 migrations vs 42, no `shopping` schema)
+and holding no row dev lacked. Dumped to `~/vireo-familyos_render-20260905.sql.gz`, then
+dropped. Two databases remain.
+
+Chasing whether it was the E2E database surfaced the real defect. It is not — Playwright
+uses `familyos_test` — but **both suites share that one database and step on each other**.
+E2E's `onboarding.spec.ts` opens with `POST /api/dev/reset`, which deletes every profile
+but `family`. That takes `seed-parent-1` and `seed-child-1` with it, and nothing in the
+API suite recreates them: the `beforeEach` hooks preserve those ids but only `db:seed`
+ever created them. So an E2E run left the API suite failing until someone re-seeded by
+hand. CI never saw it (it seeds fresh and does not run both); locally it looked like
+mystery failures.
+
+`apps/api/src/test.globalSetup.ts` now upserts `family`, `seed-parent-1` and
+`seed-child-1` before any test file runs, wired via `globalSetup` in `vitest.config.ts`.
+It carries the same non-`_test` refusal as `test.setup.ts`, since unlike that file it
+writes. The two suites still share the database — this makes the API suite self-repairing
+rather than separating them.
+
+**Verified:** deleted every row from `platform.profiles` in `familyos_test`, then ran the
+suite cold — **593/593**, fixtures rebuilt. With `DATABASE_URL` forced at the dev database
+it refuses (`Refusing to provision test fixtures in non-test database "familyos"`) and dev
+still has its five profiles.
