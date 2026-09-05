@@ -450,6 +450,98 @@ describe('DELETE /api/shopping/items/:id', () => {
   })
 })
 
+// ─── PATCH /api/shopping/items/:id ────────────────────────────────────────────
+
+function rename(cookie: string, itemId: string, payload: Record<string, unknown>) {
+  return app.inject({
+    method: 'PATCH',
+    url: `/api/shopping/items/${itemId}`,
+    headers: { cookie },
+    payload,
+  })
+}
+
+describe('PATCH /api/shopping/items/:id', () => {
+  it('fixes the word on the row', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const item = await addItem(cookie, await groceryListId(), { name: 'mikk' })
+
+    const res = await rename(cookie, item.json().item.id, { name: 'milk' })
+    expect(res.statusCode).toBe(200)
+    expect(res.json()).toMatchObject({ id: item.json().item.id, name: 'milk' })
+  })
+
+  it('refuses a tier-3 teen — no new key, so a kid retypes instead (D5)', async () => {
+    const parent = await getCookieForProfile(PARENT_ID)
+    const item = await addItem(parent, await groceryListId(), { name: 'mikk' })
+
+    const teen = await getCookieForProfile(TEEN_ID)
+    expect((await rename(teen, item.json().item.id, { name: 'milk' })).statusCode).toBe(403)
+
+    const kid = await getCookieForProfile(KID_ID)
+    expect((await rename(kid, item.json().item.id, { name: 'milk' })).statusCode).toBe(403)
+
+    const stored = await shoppingPrisma.item.findUnique({ where: { id: item.json().item.id } })
+    expect(stored?.name).toBe('mikk')
+  })
+
+  it('does not re-file the aisle — that is `file`, its own key (ADR 071)', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const item = await addItem(cookie, await groceryListId(), { name: 'milk' })
+    expect(item.json().item.category).toBe('Dairy')
+
+    const res = await rename(cookie, item.json().item.id, { name: 'bananas' })
+    expect(res.json().category).toBe('Dairy')
+  })
+
+  it('does not teach the dictionary — a rename corrects one row (ADR 073 §4)', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const item = await addItem(cookie, await groceryListId(), { name: 'flibbertigibbet' })
+
+    await rename(cookie, item.json().item.id, { name: 'Flibbertigibbets' })
+    expect(
+      await shoppingPrisma.entry.findUnique({ where: { normalizedName: 'flibbertigibbets' } })
+    ).toBeNull()
+    expect(
+      (await shoppingPrisma.entry.findUnique({ where: { normalizedName: 'flibbertigibbet' } }))
+        ?.name
+    ).toBe('flibbertigibbet')
+  })
+
+  it('announces the rename — the stale word otherwise stands on every other screen', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const listId = await groceryListId()
+    const item = await addItem(cookie, listId, { name: 'mikk' })
+
+    const seen: Record<string, unknown>[] = []
+    app.eventBus.on('shopping.item.renamed', (p) => seen.push(p as Record<string, unknown>))
+    await rename(cookie, item.json().item.id, { name: 'milk' })
+
+    expect(seen).toHaveLength(1)
+    expect(seen[0]).toMatchObject({
+      itemId: item.json().item.id,
+      listId,
+      name: 'milk',
+      renamedBy: PARENT_ID,
+    })
+  })
+
+  it('rejects an empty name with a 400, on the same constraints as the add', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const item = await addItem(cookie, await groceryListId(), { name: 'milk' })
+    expect((await rename(cookie, item.json().item.id, { name: '  ' })).statusCode).toBe(400)
+    expect((await rename(cookie, item.json().item.id, { name: 'x'.repeat(121) })).statusCode).toBe(
+      400
+    )
+  })
+
+  it('404s on an unknown item', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const res = await rename(cookie, '00000000-0000-4000-8000-000000000000', { name: 'milk' })
+    expect(res.statusCode).toBe(404)
+  })
+})
+
 // ─── GET /api/shopping/recent ─────────────────────────────────────────────────
 
 describe('GET /api/shopping/recent', () => {

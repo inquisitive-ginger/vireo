@@ -268,6 +268,17 @@ export const ShoppingItemCreateSchema = z.object({
 
 export type ShoppingItemCreateInput = z.infer<typeof ShoppingItemCreateSchema>
 
+// Fixing the word on a row someone already added. Deliberately the same
+// constraints as the create — a rename that could write a name the add would
+// have rejected is a second spelling rule. It carries only the name: a rename
+// does not re-file the aisle and does not teach `Entry` (D5, and the asymmetry
+// ADR 073 §4 records for retract).
+export const ShoppingItemRenameSchema = z.object({
+  name: z.string().trim().min(1, 'name is required').max(120),
+})
+
+export type ShoppingItemRenameInput = z.infer<typeof ShoppingItemRenameSchema>
+
 // A correction re-files this item and teaches a family-wide override for the
 // next add of the same normalized name.
 export const ShoppingAisleCorrectionSchema = z.object({

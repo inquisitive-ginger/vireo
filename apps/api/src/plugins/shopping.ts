@@ -7,6 +7,7 @@ import { shoppingPrisma } from '@family-os/plugin-shopping/db'
 import { fileAisle, normalizeItemName, aisleSortIndex } from '@family-os/plugin-shopping/lib/filing'
 import {
   ShoppingItemCreateSchema,
+  ShoppingItemRenameSchema,
   ShoppingAisleCorrectionSchema,
   ShoppingCheckSchema,
   ShoppingListCreateSchema,
@@ -470,6 +471,48 @@ const shoppingPlugin: FastifyPluginAsync = async (fastify) => {
     // showing it, because invalidation is same-client and this is two clients.
     announceRemoval(fastify.eventBus, existing, request.profile.id, 'managed')
     return reply.status(204).send()
+  })
+
+  // PATCH /shopping/items/:id — fixing the word on a row (SH-06). `manage`, and
+  // no new key: "let a lower tier fix their own row" is a product decision this
+  // session does not make (D5), so a kid who typed `mikk` takes it back and adds
+  // it again.
+  //
+  // It changes the name and nothing else. It does NOT re-file `category` — the
+  // aisle is `file`'s job, tier 4 and grantable separately (ADR 071) — and it
+  // does NOT `remember()`: the same asymmetry ADR 073 §4 records for retract. A
+  // rename corrects one row; teaching the dictionary from it would let a
+  // one-off spelling become what the next add of that word is called.
+  fastify.patch('/shopping/items/:id', async (request, reply) => {
+    if (!request.ability.can('manage', 'shopping.Item')) {
+      return reply.status(403).send({ error: 'Permission denied' })
+    }
+
+    const { id } = request.params as { id: string }
+    const existing = await shoppingPrisma.item.findUnique({ where: { id } })
+    if (!existing) return reply.status(404).send({ error: 'Item not found' })
+
+    const parsed = ShoppingItemRenameSchema.safeParse(request.body ?? {})
+    if (!parsed.success) {
+      return reply.status(400).send({ error: parsed.error.flatten() })
+    }
+
+    const item = await shoppingPrisma.item.update({
+      where: { id },
+      data: { name: parsed.data.name },
+    })
+
+    // ADR 073's live-staleness argument, unchanged: invalidation is
+    // same-client, and a rename on one phone leaves the old word standing on
+    // every other screen in the house.
+    fastify.eventBus.emit('shopping.item.renamed', {
+      itemId: item.id,
+      listId: item.listId,
+      name: item.name,
+      renamedBy: request.profile.id,
+    })
+
+    return serializeItem(item, request.profile.id)
   })
 
   // POST /shopping/items/:id/retract — taking back YOUR OWN add, within fifteen
