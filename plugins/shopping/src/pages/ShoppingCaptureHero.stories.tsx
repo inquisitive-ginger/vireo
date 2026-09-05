@@ -33,7 +33,7 @@ const meta: Meta<typeof ShoppingCaptureHero> = {
     loading: false,
     destination: 'Grocery',
     onAdd: () => {},
-    report: null,
+    reports: [],
     canAdd: true,
   },
 }
@@ -49,24 +49,59 @@ export const NothingYet: Story = { args: { openCount: 0 } }
    thing standing between the person and a word they think they said. */
 export const AddFailed: Story = {
   args: {
-    report: {
-      tone: 'error',
-      message: 'Couldn’t add “oat milk”',
-      actions: [],
+    reports: [
+      { tone: 'error', message: 'Couldn’t add “oat milk”', actions: [], onDismiss: () => {} },
+    ],
+  },
+}
+
+/* Three names on one Enter, all three already on the list. The stack grows
+   DOWNWARD into the empty space under the pills and moves nothing above it —
+   and each line names itself, because with three submitted the reader cannot
+   tell which one collided. */
+export const DuplicatesStacked: Story = {
+  args: {
+    reports: ['milk', 'eggs', 'bread'].map((name) => ({
+      tone: 'notice' as const,
+      message: `“${name}” already on Grocery.`,
+      actions: [{ label: 'Take it back?', onSelect: () => {} }],
       onDismiss: () => {},
-    },
+    })),
+  },
+}
+
+/* An error and its notices share the slot: the counted error line keeps the top,
+   the collisions stack under it. */
+export const ErrorOverNotices: Story = {
+  args: {
+    reports: [
+      {
+        tone: 'error' as const,
+        message: 'Couldn’t add “chicken thighs”',
+        actions: [],
+        onDismiss: () => {},
+      },
+      {
+        tone: 'notice' as const,
+        message: '“milk” already on Grocery.',
+        actions: [{ label: 'Take it back?', onSelect: () => {} }],
+        onDismiss: () => {},
+      },
+    ],
   },
 }
 
 /* SH-03 — the collision, in the one report slot. */
 export const Duplicate: Story = {
   args: {
-    report: {
-      tone: 'notice',
-      message: 'Already on Grocery.',
-      actions: [{ label: 'Take it back?', onSelect: () => {} }],
-      onDismiss: () => {},
-    },
+    reports: [
+      {
+        tone: 'notice',
+        message: 'Already on Grocery.',
+        actions: [{ label: 'Take it back?', onSelect: () => {} }],
+        onDismiss: () => {},
+      },
+    ],
   },
 }
 
@@ -77,11 +112,13 @@ export const AddingRevoked: Story = { args: { canAdd: false } }
 /* The window closed between fetches. Expected, and shown. */
 export const RetractRefused: Story = {
   args: {
-    report: {
-      tone: 'error',
-      message: 'Too late to take back “snap peas” — it has been on the list a while.',
-      actions: [],
-      onDismiss: () => {},
-    },
+    reports: [
+      {
+        tone: 'error',
+        message: 'Too late to take back “snap peas” — it has been on the list a while.',
+        actions: [],
+        onDismiss: () => {},
+      },
+    ],
   },
 }

@@ -22,9 +22,9 @@ export interface ShoppingPageViewProps {
       is a claim about the house, and it must not be made before the answer is in. */
   loading: boolean
   onAdd: (name: string) => void
-  /** The one report slot's contents, already ranked: error > duplicate notice
-      (D4). Null and the slot falls back to what the surface itself has to say. */
-  report: CaptureReport | null
+  /** The report slot's stack, already ranked (D4): one error line, then one
+      notice per collision. Empty and the slot says what the surface itself has. */
+  reports: CaptureReport[]
   /** `shopping.item.add` is revoked for this profile — the one lever that closes
       the field (ADR 072 §6). The house itself adds; the wide layout needs it. */
   canAdd: boolean
@@ -84,7 +84,7 @@ export function ShoppingPageView({
   groups,
   loading,
   onAdd,
-  report,
+  reports,
   canAdd,
   layout,
   totalOpenCount,
@@ -163,7 +163,7 @@ export function ShoppingPageView({
           loading={loading}
           destination={selected?.name ?? null}
           onAdd={onAdd}
-          report={report}
+          reports={reports}
           canAdd={canAdd}
         />
       ) : (
@@ -207,7 +207,7 @@ export function ShoppingPageView({
               that reserves its height — mounted on the first keystroke it shoves
               the list down and back on Enter. */}
           <ReportLine
-            report={report}
+            reports={reports}
             idle={
               !canAdd
                 ? 'Adding to the list is turned off for this profile.'

@@ -17,8 +17,8 @@ export interface CaptureWidgetViewProps {
   error: boolean
   destination: string | null
   onAdd: (name: string) => void
-  /** The one report slot's contents, already ranked (D4). */
-  report: CaptureReport | null
+  /** The report slot's stack, already ranked (D4). */
+  reports: CaptureReport[]
   canAdd: boolean
 }
 
@@ -34,7 +34,7 @@ export function CaptureWidgetView({
   error,
   destination,
   onAdd,
-  report,
+  reports,
   canAdd,
 }: CaptureWidgetViewProps) {
   const { boxRef, listRef, shown, measuring } = useFitRows(items, MORE_RESERVE)
@@ -81,7 +81,7 @@ export function CaptureWidgetView({
           comes back on Enter. */}
       <ReportLine
         className="shrink-0"
-        report={report}
+        reports={reports}
         idle={!canAdd ? 'Adding is turned off.' : composing ? 'Enter to add' : undefined}
       />
 

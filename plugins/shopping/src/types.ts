@@ -48,6 +48,19 @@ export interface AddItemResponse {
   duplicateOf: { id: string; name: string } | null
 }
 
+/** One name's outcome in a batch. Discriminated by `item`: a name that landed
+    carries its row and any collision, a name that did not carries why. */
+export type BatchAddResult =
+  | { name: string; item: ShoppingItem; duplicateOf: { id: string; name: string } | null }
+  | { name: string; error: string }
+
+/** `POST /shopping/lists/:id/items/batch`, in submitted order and NOT atomic —
+    one bad name does not cost the good ones, which is the whole reason a comma
+    list is safe to type. */
+export interface BatchAddResponse {
+  results: BatchAddResult[]
+}
+
 /** A row read across every destination — the wide layout's `Just added` and
     the Home widget's list. Both span all lists, so each row names the one it
     landed on; the aisle list below does not, because it shows one list already. */
@@ -60,17 +73,21 @@ export interface RecentResponse {
   items: RecentItem[]
 }
 
-/** What the one-line report slot is saying (D4). Modelled as a message plus a
-    LIST of actions rather than a message-and-a-button, because the duplicate
-    notice is permanent: duplicates carry a count rather than merging (E4), so
-    the quantity session's `Make it ×2` lands beside `Take it back?` here without
-    reshaping the slot. It still draws one line and never resizes. */
+/** ONE line in the report slot (D4). A message plus a LIST of actions rather
+    than a message-and-a-button, because the duplicate notice is permanent —
+    duplicates carry a count rather than merging (E4), so the quantity session's
+    `Make it ×2` lands beside `Take it back?` without reshaping the line.
+
+    The slot holds an ordered stack of these: one error line at the top, then one
+    notice per collision. It reserves a line's height from first paint and never
+    moves while someone is typing — it grows only in answer to an Enter, which is
+    the reader's own act. */
 export interface CaptureReport {
-  /** `error` outranks `notice` outranks idle — a lost item is worse news than a
-      doubled one. */
+  /** `error` outranks `notice` — a lost item is worse news than a doubled one. */
   tone: 'error' | 'notice'
   message: string
   actions: { label: string; onSelect: () => void }[]
-  /** The `✕`. Nothing else clears the line — least of all a later success. */
+  /** The `✕`, which sits just after the action: the line reads as one object —
+      notice, verb, dismiss. It clears THIS line and nothing else. */
   onDismiss: () => void
 }

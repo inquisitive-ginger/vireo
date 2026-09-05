@@ -11,10 +11,29 @@ import {
 } from '@family-os/platform'
 import { ErrorCard } from '@family-os/ui'
 import type { ShoppingAisle } from '@family-os/schemas'
-import type { AddItemResponse, ListResponse, ListsResponse, ShoppingItem } from '../types'
+import type {
+  AddItemResponse,
+  BatchAddResponse,
+  ListResponse,
+  ListsResponse,
+  ShoppingItem,
+} from '../types'
 import { aisleSortIndex } from '../lib/filing'
-import { EMPTY_CAPTURE, buildReport, dismissReport, type CaptureState } from '../lib/capture-report'
-import { retractMessage } from '../lib/use-ambient-capture'
+import {
+  EMPTY_CAPTURE,
+  buildReport,
+  clearErrors,
+  dismissNotice,
+  type CaptureState,
+} from '../lib/capture-report'
+import { MAX_NAMES, parseNames } from '../lib/parse-names'
+import {
+  collisions,
+  failedNames,
+  retractMessage,
+  tooMany,
+  toDuplicate,
+} from '../lib/use-ambient-capture'
 import { useWideLayout } from '../lib/use-wide-layout'
 import { ShoppingPageView, type AisleGroup } from './ShoppingPageView'
 
@@ -183,15 +202,10 @@ export function ShoppingPage() {
       // A success does NOT clear a standing error (D4): "milk" failing and then
       // "eggs" landing must not erase the record that milk was lost. Only the
       // `✕` on the line clears it.
+      const listName = lists.find((l) => l.id === variables.listId)?.name ?? 'the list'
       setCapture((state) => ({
         ...state,
-        duplicate: data.duplicateOf
-          ? {
-              listName: lists.find((l) => l.id === variables.listId)?.name ?? 'the list',
-              name: data.item.name,
-              retractId: canRetract && data.item.canRetract ? data.item.id : null,
-            }
-          : null,
+        duplicates: data.duplicateOf ? [toDuplicate(listName, data.item, canRetract)] : [],
       }))
       void queryClient.invalidateQueries({ queryKey: ['shopping/list'] })
     },
@@ -200,6 +214,31 @@ export function ShoppingPage() {
       // failure has to name it back or the person never learns what was lost.
       console.error('[shopping] could not add %s', variables.name, err)
       setCapture((state) => ({ ...state, addErrors: [variables.name, ...state.addErrors] }))
+    },
+  })
+
+  /* `milk, cereal, chicken thighs` on one Enter. The route is NOT atomic, so this
+     reads per-name results: what landed reports its collisions, what did not
+     joins the sticky error line, and neither costs the other. */
+  const addBatch = useMutation({
+    mutationFn: ({ listId, names }: { listId: string; names: string[] }) =>
+      fetch(`/api/shopping/lists/${listId}/items/batch`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ names }),
+      }).then(json<BatchAddResponse>),
+    onSuccess: (data, variables) => {
+      const listName = lists.find((l) => l.id === variables.listId)?.name ?? 'the list'
+      setCapture((state) => ({
+        ...state,
+        addErrors: [...failedNames(data), ...state.addErrors],
+        duplicates: collisions(data, listName, canRetract),
+      }))
+      void queryClient.invalidateQueries({ queryKey: ['shopping/list'] })
+    },
+    onError: (err, variables) => {
+      console.error('[shopping] could not add %d things', variables.names.length, err)
+      setCapture((state) => ({ ...state, addErrors: [...variables.names, ...state.addErrors] }))
     },
   })
 
@@ -311,7 +350,12 @@ export function ShoppingPage() {
     },
     onSuccess: (_data, { itemId, onRow }) => {
       if (onRow) clearRowError(itemId)
-      else setCapture((state) => ({ ...state, duplicate: null, actionError: null }))
+      else
+        setCapture((state) => ({
+          ...state,
+          actionError: null,
+          duplicates: state.duplicates.filter((d) => d.retractId !== itemId),
+        }))
       void queryClient.invalidateQueries({ queryKey: ['shopping/list'] })
     },
     onError: (err, { itemId, name, onRow }) => {
@@ -410,16 +454,26 @@ export function ShoppingPage() {
         setRowErrors({})
       }}
       groups={groups}
-      onAdd={(name) => {
+      onAdd={(input) => {
         if (!activeListId) return
-        addItem.mutate({ listId: activeListId, name })
+        const names = parseNames(input)
+        if (names.length === 0) return
+        if (names.length > MAX_NAMES) {
+          setCapture((state) => ({ ...state, actionError: tooMany(names.length) }))
+          return
+        }
+        // One word keeps the single route it has always had, envelope and all —
+        // the common case does not pay for the feature.
+        if (names.length === 1) addItem.mutate({ listId: activeListId, name: names[0] })
+        else addBatch.mutate({ listId: activeListId, names })
       }}
-      report={buildReport(capture, {
-        onDismiss: () => setCapture(dismissReport),
+      reports={buildReport(capture, {
+        onClearErrors: () => setCapture(clearErrors),
+        onDismissNotice: (index) => setCapture((state) => dismissNotice(state, index)),
         onRetract: (itemId) =>
           retractItem.mutate({
             itemId,
-            name: capture.duplicate?.name ?? 'that',
+            name: capture.duplicates.find((d) => d.retractId === itemId)?.name ?? 'that',
             onRow: false,
           }),
       })}

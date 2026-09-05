@@ -62,7 +62,7 @@ const meta: Meta<typeof ShoppingPageView> = {
     ],
     loading: false,
     onAdd: () => {},
-    report: null,
+    reports: [],
     canAdd: true,
     canCheck: true,
     canFile: false,
@@ -153,12 +153,14 @@ export const Empty: Story = {
 
 export const AddFailed: Story = {
   args: {
-    report: {
-      tone: 'error',
-      message: 'Couldn’t add “bread” · 1 more',
-      actions: [],
-      onDismiss: () => {},
-    },
+    reports: [
+      {
+        tone: 'error',
+        message: 'Couldn’t add “bread” · 1 more',
+        actions: [],
+        onDismiss: () => {},
+      },
+    ],
   },
 }
 
@@ -166,12 +168,14 @@ export const AddFailed: Story = {
    only thing to do about it. */
 export const Duplicate: Story = {
   args: {
-    report: {
-      tone: 'notice',
-      message: 'Already on Grocery.',
-      actions: [{ label: 'Take it back?', onSelect: () => {} }],
-      onDismiss: () => {},
-    },
+    reports: [
+      {
+        tone: 'notice',
+        message: 'Already on Grocery.',
+        actions: [{ label: 'Take it back?', onSelect: () => {} }],
+        onDismiss: () => {},
+      },
+    ],
   },
 }
 
@@ -180,6 +184,23 @@ export const Duplicate: Story = {
    only when asked for. Compare against artifact frame W2. */
 export const Wide: Story = {
   args: { layout: 'capture' },
+}
+
+/* Three names on one Enter, all three already on the list. The stack grows
+   DOWNWARD into the space under the pills and moves nothing above it — the slot
+   hangs out of flow, so a notice cannot shift the field. Each line names itself,
+   because with three submitted the reader cannot tell which one collided. */
+export const WideDuplicatesStacked: Story = {
+  name: 'Wide — three collisions at once',
+  args: {
+    layout: 'capture',
+    reports: ['milk', 'eggs', 'bread'].map((name) => ({
+      tone: 'notice' as const,
+      message: `“${name}” already on Grocery.`,
+      actions: [{ label: 'Take it back?', onSelect: () => {} }],
+      onDismiss: () => {},
+    })),
+  },
 }
 
 /* After `Show lists` — the same list, in place, with the hero still above it so

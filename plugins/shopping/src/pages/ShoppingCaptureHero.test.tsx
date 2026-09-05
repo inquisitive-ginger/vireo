@@ -19,7 +19,7 @@ function renderView(over: Partial<ShoppingCaptureHeroProps> = {}) {
     loading: false,
     destination: 'Grocery',
     onAdd: vi.fn(),
-    report: null,
+    reports: [],
     canAdd: true,
     ...over,
   }
@@ -79,7 +79,7 @@ describe('ShoppingCaptureHero', () => {
     // The window closes between fetches by design, so this is an expected
     // outcome on a screen with no devtools behind it (ADR 073 §2). It lands in
     // the one report slot, because the chip it was tapped from is gone.
-    renderView({ report: report({ message: 'Too late to take back “milk”.' }) })
+    renderView({ reports: [report({ message: 'Too late to take back “milk”.' })] })
     expect(screen.getByRole('alert')).toHaveTextContent('Too late to take back')
   })
 
@@ -88,6 +88,12 @@ describe('ShoppingCaptureHero', () => {
   it('carries the Enter hint in the field, persistently, in place of the voice slot', () => {
     renderView()
     expect(screen.queryByText(/speak/i)).not.toBeInTheDocument()
+    // The placeholder DEMONSTRATES the comma rather than describing the field —
+    // it is the only thing on a wall that can teach the syntax.
+    expect(screen.getByLabelText('Add to Grocery')).toHaveAttribute(
+      'placeholder',
+      'milk, eggs, bread'
+    )
     // Persistent, not a thing that appears mid-word: it replaces chrome that was
     // always there, and on a screen someone walks up to it IS the instruction.
     expect(screen.getByText('Enter to add')).toBeInTheDocument()
@@ -119,18 +125,42 @@ describe('ShoppingCaptureHero', () => {
   })
 
   it('names the word that failed, because the field already cleared', () => {
-    renderView({ report: report() })
+    renderView({ reports: [report()] })
     expect(screen.getByRole('alert')).toHaveTextContent('oat milk')
+  })
+
+  /* Several collisions stack, growing DOWNWARD into the empty space below the
+     pills — the slot hangs out of flow there, so a notice arriving cannot move
+     the field someone is typing into. */
+  it('stacks one line per collision, each naming itself and carrying its own verb', () => {
+    const onSelect = vi.fn()
+    renderView({
+      reports: [
+        report({ tone: 'notice', message: '“milk” already on Grocery.', actions: [] }),
+        report({
+          tone: 'notice',
+          message: '“bread” already on Grocery.',
+          actions: [{ label: 'Take it back?', onSelect }],
+        }),
+      ],
+    })
+    expect(screen.getByText('“milk” already on Grocery.')).toBeInTheDocument()
+    expect(screen.getByText('“bread” already on Grocery.')).toBeInTheDocument()
+    expect(screen.getAllByRole('button', { name: 'Dismiss' })).toHaveLength(2)
+    fireEvent.click(screen.getByRole('button', { name: 'Take it back?' }))
+    expect(onSelect).toHaveBeenCalledOnce()
   })
 
   it('states the collision in two clauses and offers the one verb', () => {
     const onSelect = vi.fn()
     renderView({
-      report: report({
-        tone: 'notice',
-        message: 'Already on Grocery.',
-        actions: [{ label: 'Take it back?', onSelect }],
-      }),
+      reports: [
+        report({
+          tone: 'notice',
+          message: 'Already on Grocery.',
+          actions: [{ label: 'Take it back?', onSelect }],
+        }),
+      ],
     })
     fireEvent.click(screen.getByRole('button', { name: 'Take it back?' }))
     expect(onSelect).toHaveBeenCalledOnce()

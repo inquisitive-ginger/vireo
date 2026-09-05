@@ -25,7 +25,7 @@ export default function CaptureWidget() {
       error={capture.error && !capture.data}
       destination={capture.destination}
       onAdd={capture.add}
-      report={capture.report}
+      reports={capture.reports}
       canAdd={capture.canAdd}
     />
   )

@@ -30,6 +30,14 @@ afterEach(() => {
   vi.unstubAllGlobals()
 })
 
+/** Some of these mocks declare no arguments, so their call tuple types as empty.
+    The URL is always the first one. */
+function hitBatch(fetchMock: { mock: { calls: unknown[] } }): boolean {
+  return (fetchMock.mock.calls as unknown as [string][]).some(([url]) =>
+    String(url).endsWith('/batch')
+  )
+}
+
 function renderWidget(fetchImpl?: ReturnType<typeof vi.fn>) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
   const profile = { id: 'parent-1', name: 'Zach', tier: 4 } as Profile
@@ -145,6 +153,93 @@ describe('CaptureWidget', () => {
         method: 'POST',
       })
     )
+  })
+
+  /* `milk, cereal, chicken thighs` on one Enter. The batch route is NOT atomic,
+     so the client reads per-name results: what landed reports its collisions,
+     what did not joins the sticky error line, and neither costs the other. */
+  it('sends a comma list to the batch route, and reports each name’s own outcome', async () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const fetchMock = vi.fn((url: string, init?: RequestInit) =>
+      init?.method === 'POST' && String(url).endsWith('/items/batch')
+        ? Promise.resolve({
+            ok: true,
+            json: () =>
+              Promise.resolve({
+                results: [
+                  {
+                    name: 'milk',
+                    item: { ...RECENT.items[0], id: 'c1', name: 'milk' },
+                    duplicateOf: { id: 'p1', name: 'milk' },
+                  },
+                  {
+                    name: 'cereal',
+                    item: { ...RECENT.items[0], id: 'c2', name: 'cereal' },
+                    duplicateOf: null,
+                  },
+                  { name: 'chicken thighs', error: 'Something went wrong' },
+                ],
+              }),
+          } as Response)
+        : Promise.resolve({ ok: true, json: () => Promise.resolve(RECENT) } as Response)
+    )
+    renderWidget(fetchMock as unknown as ReturnType<typeof vi.fn>)
+    await screen.findByText('snap peas')
+
+    const field = screen.getByLabelText('Add to Grocery')
+    fireEvent.change(field, { target: { value: 'milk, cereal, chicken thighs' } })
+    fireEvent.submit(field.closest('form')!)
+
+    await waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith(
+        '/api/shopping/lists/grocery/items/batch',
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({ names: ['milk', 'cereal', 'chicken thighs'] }),
+        })
+      )
+    )
+    // The one that failed takes the error line; the one that collided takes a
+    // notice under it. One collision, so it stays unnamed.
+    expect(await screen.findByRole('alert')).toHaveTextContent('Couldn’t add “chicken thighs”')
+    expect(screen.getByText('Already on Grocery.')).toBeInTheDocument()
+    consoleError.mockRestore()
+  })
+
+  it('keeps a single word on the single-add route — the common case pays nothing', async () => {
+    const fetchMock = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ item: RECENT.items[0], duplicateOf: null, ...RECENT }),
+      } as Response)
+    )
+    renderWidget(fetchMock as unknown as ReturnType<typeof vi.fn>)
+    await screen.findByText('snap peas')
+
+    const field = screen.getByLabelText('Add to Grocery')
+    fireEvent.change(field, { target: { value: 'tortillas' } })
+    fireEvent.submit(field.closest('form')!)
+
+    await waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith(
+        '/api/shopping/lists/grocery/items',
+        expect.objectContaining({ method: 'POST' })
+      )
+    )
+    expect(hitBatch(fetchMock)).toBe(false)
+  })
+
+  it('refuses more than twenty before sending, and says so in the slot', async () => {
+    const { fetchMock } = renderWidget()
+    await screen.findByText('snap peas')
+
+    const field = screen.getByLabelText('Add to Grocery')
+    const many = Array.from({ length: 21 }, (_, i) => `thing ${i}`).join(', ')
+    fireEvent.change(field, { target: { value: many } })
+    fireEvent.submit(field.closest('form')!)
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('21 things at once')
+    expect(hitBatch(fetchMock)).toBe(false)
   })
 
   /* SH-13. The echo says the field is live and Enter commits, and nothing about

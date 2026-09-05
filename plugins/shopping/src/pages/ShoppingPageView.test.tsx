@@ -34,7 +34,7 @@ function renderView(over: Partial<ShoppingPageViewProps> = {}) {
     ],
     loading: false,
     onAdd: vi.fn(),
-    report: null,
+    reports: [],
     canAdd: true,
     layout: 'list',
     totalOpenCount: 3,
@@ -166,18 +166,18 @@ describe('ShoppingPageView — the echo names no aisle', () => {
    landing must not erase the record that milk was lost. */
 describe('ShoppingPageView — the report slot', () => {
   it('hands the typed word back when the add fails, so it is not silently lost', () => {
-    renderView({ report: report() })
+    renderView({ reports: [report()] })
     expect(screen.getByRole('alert')).toHaveTextContent('tortillas')
   })
 
   it('names the newest failure and counts the rest', () => {
-    renderView({ report: report({ message: 'Couldn’t add “bread” · 1 more' }) })
+    renderView({ reports: [report({ message: 'Couldn’t add “bread” · 1 more' })] })
     expect(screen.getByRole('alert')).toHaveTextContent('Couldn’t add “bread” · 1 more')
   })
 
   it('clears on the ✕ and on nothing else', () => {
     const onDismiss = vi.fn()
-    renderView({ report: report({ onDismiss }) })
+    renderView({ reports: [report({ onDismiss })] })
     fireEvent.click(screen.getByRole('button', { name: 'Dismiss' }))
     expect(onDismiss).toHaveBeenCalledOnce()
   })
@@ -185,11 +185,13 @@ describe('ShoppingPageView — the report slot', () => {
   it('states the collision in two clauses and offers the one verb, with no aisle', () => {
     const onSelect = vi.fn()
     renderView({
-      report: report({
-        tone: 'notice',
-        message: 'Already on Grocery.',
-        actions: [{ label: 'Take it back?', onSelect }],
-      }),
+      reports: [
+        report({
+          tone: 'notice',
+          message: 'Already on Grocery.',
+          actions: [{ label: 'Take it back?', onSelect }],
+        }),
+      ],
     })
     expect(screen.getByText('Already on Grocery.')).toBeInTheDocument()
     expect(screen.queryByText(/added anyway|files under/)).not.toBeInTheDocument()
@@ -197,8 +199,26 @@ describe('ShoppingPageView — the report slot', () => {
     expect(onSelect).toHaveBeenCalledOnce()
   })
 
+  it('dismisses one notice without touching its neighbours', () => {
+    const first = vi.fn()
+    const second = vi.fn()
+    renderView({
+      reports: [
+        report({ tone: 'notice', message: '“milk” already on Grocery.', onDismiss: first }),
+        report({ tone: 'notice', message: '“bread” already on Grocery.', onDismiss: second }),
+      ],
+    })
+    const dismissers = screen.getAllByRole('button', { name: 'Dismiss' })
+    expect(dismissers).toHaveLength(2)
+    fireEvent.click(dismissers[0])
+    expect(first).toHaveBeenCalledOnce()
+    expect(second).not.toHaveBeenCalled()
+  })
+
   it('drops the action when the add it would undo is not retract-eligible', () => {
-    renderView({ report: report({ tone: 'notice', message: 'Already on Grocery.', actions: [] }) })
+    renderView({
+      reports: [report({ tone: 'notice', message: 'Already on Grocery.', actions: [] })],
+    })
     expect(screen.getByText('Already on Grocery.')).toBeInTheDocument()
     expect(screen.queryByRole('button', { name: 'Take it back?' })).not.toBeInTheDocument()
   })
@@ -206,7 +226,7 @@ describe('ShoppingPageView — the report slot', () => {
   /* A report outranks the echo, and an error outranks a notice — the container
      ranks them, the slot draws one line. */
   it('outranks the echo rather than sitting beside it', () => {
-    renderView({ report: report() })
+    renderView({ reports: [report()] })
     fireEvent.change(screen.getByLabelText('Add to Grocery'), { target: { value: 'x' } })
     expect(screen.queryByText('Enter to add')).not.toBeInTheDocument()
   })

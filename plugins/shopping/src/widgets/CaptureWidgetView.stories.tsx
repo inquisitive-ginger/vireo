@@ -44,7 +44,7 @@ const meta: Meta<typeof CaptureWidgetView> = {
     error: false,
     destination: 'Grocery',
     onAdd: () => {},
-    report: null,
+    reports: [],
     canAdd: true,
   },
 }
@@ -75,6 +75,6 @@ export const ReadFailed: Story = { args: { items: [], error: true } }
 
 export const AddFailed: Story = {
   args: {
-    report: { tone: 'error', message: 'Couldn’t add “milk”', actions: [], onDismiss: () => {} },
+    reports: [{ tone: 'error', message: 'Couldn’t add “milk”', actions: [], onDismiss: () => {} }],
   },
 }

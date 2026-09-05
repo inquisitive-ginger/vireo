@@ -27,7 +27,7 @@ function renderView(over: Partial<CaptureWidgetViewProps> = {}) {
     error: false,
     destination: 'Grocery',
     onAdd: vi.fn(),
-    report: null,
+    reports: [],
     canAdd: true,
     ...over,
   }
@@ -92,7 +92,7 @@ describe('CaptureWidgetView', () => {
       actions: [],
       onDismiss: vi.fn(),
     }
-    renderView({ report: failed })
+    renderView({ reports: [failed] })
     expect(screen.getByRole('alert')).toHaveTextContent('milk')
   })
 })

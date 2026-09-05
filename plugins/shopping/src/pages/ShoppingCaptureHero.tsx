@@ -19,8 +19,9 @@ export interface ShoppingCaptureHeroProps {
   loading: boolean
   destination: string | null
   onAdd: (name: string) => void
-  /** The one report slot's contents, already ranked (D4). */
-  report: CaptureReport | null
+  /** The report slot's stack, already ranked (D4): one error line, then one
+      notice per collision, growing downward into the space below the pills. */
+  reports: CaptureReport[]
   canAdd: boolean
 }
 
@@ -45,7 +46,7 @@ export function ShoppingCaptureHero({
   loading,
   destination,
   onAdd,
-  report,
+  reports,
   canAdd,
 }: ShoppingCaptureHeroProps) {
   return (
@@ -59,37 +60,43 @@ export function ShoppingCaptureHero({
           answered by rebalancing what is there — nothing is added to fill it,
           and nothing reaches for `--surface-sunken` (ADR 040). */}
       <div className="flex flex-1 flex-col justify-center">
-        <h1 className="text-display-xl text-foreground">What do we need?</h1>
+        {/* What centres is the VISIBLE block — headline, field, pills. The report
+            slot hangs out of flow below it (Zach, live pass): counted in, its
+            empty 40px reserve pushed everything ~20px above optical centre, so
+            the block measured centred and did not look it. Out of flow it also
+            means a notice arriving cannot move the field someone is typing into. */}
+        <div className="relative">
+          <h1 className="text-display-xl text-foreground">What do we need?</h1>
 
-        <CaptureField
-          size="wall"
-          className="mt-6"
-          // No autofocus, at any width (ADR 070, amended 2026-09-04). A screen
-          // left on in a kitchen is not a screen someone walked up to, and it must
-          // not hold the keyboard on the chance that they did.
-          placeholder="Type it, or say it"
-          label={destination ? `Add to ${destination}` : 'Add to the shopping list'}
-          disabled={!canAdd || !destination}
-          onSubmit={onAdd}
-          trailing={canAdd && destination ? <EnterHint /> : undefined}
-        />
+          <CaptureField
+            size="wall"
+            className="mt-6"
+            // No autofocus, at any width (ADR 070, amended 2026-09-04). A screen
+            // left on in a kitchen is not a screen someone walked up to, and it
+            // must not hold the keyboard on the chance that they did.
+            //
+            // The placeholder DEMONSTRATES rather than describes: it is the only
+            // thing on the wall that can teach the comma (Zach, live pass), and
+            // a wall has no other place to put an instruction.
+            placeholder="milk, eggs, bread"
+            label={destination ? `Add to ${destination}` : 'Add to the shopping list'}
+            disabled={!canAdd || !destination}
+            onSubmit={onAdd}
+            trailing={canAdd && destination ? <EnterHint /> : undefined}
+          />
 
-        {/* Tight to the field, because these ARE the field's destination control
-            and proximity is the only thing that says so — at a larger gap they
-            read as a field and then some unrelated filters. */}
-        <div className="mt-3">{destinations}</div>
+          {/* Tight to the field, because these ARE the field's destination control
+              and proximity is the only thing that says so — at a larger gap they
+              read as a field and then some unrelated filters. */}
+          <div className="mt-3">{destinations}</div>
 
-        {/* The reserve stays: it still holds errors and the duplicate notice, and
-            it is what stops the first keystroke shoving the layout. What it lost
-            here is its IDLE line — `Enter to add` moved into the field, where it
-            is persistent rather than a thing that appears mid-word. The phone
-            page and the widget keep theirs. */}
-        <ReportLine
-          className="mt-2"
-          size="body"
-          report={report}
-          idle={canAdd ? undefined : 'Adding to the list is turned off for this profile.'}
-        />
+          <ReportLine
+            className="absolute inset-x-0 top-full mt-2"
+            size="body"
+            reports={reports}
+            idle={canAdd ? undefined : 'Adding to the list is turned off for this profile.'}
+          />
+        </div>
       </div>
 
       {/* The seam between catching and shopping, pinned to the bottom edge. */}
