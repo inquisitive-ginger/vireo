@@ -44,6 +44,9 @@ function renderView(over: Partial<ShoppingPageViewProps> = {}) {
     canFile: false,
     canManage: false,
     canRetract: false,
+    // The narrow default: the suite drives the phone path unless a test says
+    // otherwise, since that is the one with the bottom sheet.
+    inlineActions: false,
     onToggle: vi.fn(),
     onRefile: vi.fn(),
     onRename: vi.fn(),
@@ -560,6 +563,51 @@ describe('ShoppingPageView — the row’s verbs', () => {
       ],
     })
     expect(container.querySelector('[data-row-swipe-quick]')).toBeNull()
+  })
+
+  /* Tablet and up gets the verbs INLINE, anchored to the row and pushing the rows
+     below it down (E1 panel 3, Zach's call on the list pass) — a bottom sheet on
+     a screen with this much room travels its whole height to answer a question
+     about a row near the top. */
+  it('renders the verbs inline at tablet width, in the row’s own place in the list', () => {
+    const { container } = renderView({ inlineActions: true, canManage: true })
+    openSheet('snap peas')
+
+    expect(container.querySelector('[role="dialog"]')).toBeNull()
+    const panel = screen.getByRole('button', { name: 'Remove from the list' }).closest('div')!
+    // In the list flow, after its own row and before the next one.
+    const text = container.textContent!
+    expect(text.indexOf('Remove from the list')).toBeGreaterThan(text.indexOf('snap peas'))
+    expect(text.indexOf('Remove from the list')).toBeLessThan(text.indexOf('bananas'))
+    expect(panel).toBeInTheDocument()
+  })
+
+  it('closes the inline panel on Escape', () => {
+    renderView({ inlineActions: true, canManage: true })
+    openSheet('snap peas')
+    expect(screen.getByRole('button', { name: 'Remove from the list' })).toBeInTheDocument()
+
+    fireEvent.keyDown(screen.getByRole('button', { name: 'Remove from the list' }), {
+      key: 'Escape',
+    })
+    expect(screen.queryByRole('button', { name: 'Remove from the list' })).not.toBeInTheDocument()
+  })
+
+  it('opens one row’s verbs at a time — another row replaces it', () => {
+    renderView({ inlineActions: true, canManage: true })
+    openSheet('snap peas')
+    openSheet('bananas')
+    const text = document.body.textContent!
+    expect(text.indexOf('Remove from the list')).toBeGreaterThan(text.indexOf('bananas'))
+    expect(screen.getAllByRole('button', { name: 'Remove from the list' })).toHaveLength(1)
+  })
+
+  /* A phone keeps the bottom sheet: a panel that pushes rows there moves the row
+     being acted on off the screen. */
+  it('keeps the bottom sheet below tablet width', () => {
+    renderView({ inlineActions: false, canManage: true })
+    openSheet('snap peas')
+    expect(document.querySelector('[role="dialog"]')).not.toBeNull()
   })
 
   it('removes a row through the sheet, under `manage`', () => {

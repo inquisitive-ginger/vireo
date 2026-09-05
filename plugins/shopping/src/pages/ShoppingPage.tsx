@@ -483,6 +483,10 @@ export function ShoppingPage() {
       canFile={canFile}
       canManage={canManage}
       canRetract={canRetract}
+      // The same 768px split the layout itself uses — a row's verbs render
+      // inline where there is room for them, and in a bottom sheet where there
+      // is not (Zach, live pass on the list surface).
+      inlineActions={wide}
       onToggle={(item) =>
         checkItem.mutate({ item, status: item.status === 'got' ? 'needed' : 'got' })
       }

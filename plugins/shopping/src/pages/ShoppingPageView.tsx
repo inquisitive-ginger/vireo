@@ -1,11 +1,11 @@
-import { useEffect, useRef, useState } from 'react'
+import { Fragment, useEffect, useRef, useState, type ReactNode } from 'react'
 import { Check, ChevronDown, ChevronLeft, Loader2 } from 'lucide-react'
 import type { ShoppingAisle } from '@family-os/schemas'
 import { CaptureField, Chip, ListRow, PageContainer, PageHeader, RowSwipe, cn } from '@family-os/ui'
 import type { CaptureReport, ShoppingItem, ShoppingList } from '../types'
 import { ReportLine } from '../components/ReportLine'
 import { ShoppingCaptureHero } from './ShoppingCaptureHero'
-import { RowActionsSheet } from './RowActionsSheet'
+import { RowActionsPanel, RowActionsSheet } from './RowActionsSheet'
 
 export interface AisleGroup {
   aisle: string
@@ -53,6 +53,11 @@ export interface ShoppingPageViewProps {
   /** `shopping.item.retract`, tier 1 (ADR 073) — held by the profile; the row's
       own eligibility rides on the payload's `canRetract`. */
   canRetract: boolean
+  /** Tablet and up: the row's verbs render INLINE, anchored to the row and
+      pushing the rows below it down (E1 panel 3). A phone keeps the bottom
+      sheet — a panel that pushes rows there moves the row being acted on off
+      the screen. */
+  inlineActions: boolean
   onToggle: (item: ShoppingItem) => void
   onRefile: (item: ShoppingItem, category: ShoppingAisle) => void
   onRename: (item: ShoppingItem, name: string) => void
@@ -94,6 +99,7 @@ export function ShoppingPageView({
   canFile,
   canManage,
   canRetract,
+  inlineActions,
   onToggle,
   onRefile,
   onRename,
@@ -294,22 +300,43 @@ export function ShoppingPageView({
               onRowRetract={onRowRetract}
               sheetItemId={sheetItem?.id ?? null}
               rowErrors={rowErrors}
+              actionsPanel={
+                inlineActions
+                  ? (item) => (
+                      <RowActionsPanel
+                        item={item}
+                        onClose={() => setSheetItem(null)}
+                        canFile={canFile}
+                        canManage={canManage}
+                        canRetract={canRetract}
+                        onRefile={onRefile}
+                        onRename={onRename}
+                        onRemove={onRemove}
+                        onRetract={onRowRetract}
+                      />
+                    )
+                  : undefined
+              }
             />
           )}
         </div>
       )}
 
-      <RowActionsSheet
-        item={sheetItem}
-        onClose={() => setSheetItem(null)}
-        canFile={canFile}
-        canManage={canManage}
-        canRetract={canRetract}
-        onRefile={onRefile}
-        onRename={onRename}
-        onRemove={onRemove}
-        onRetract={onRowRetract}
-      />
+      {/* Narrow only — the wide layout renders the same body inline, in the row's
+          own place in the list. */}
+      {!inlineActions && (
+        <RowActionsSheet
+          item={sheetItem}
+          onClose={() => setSheetItem(null)}
+          canFile={canFile}
+          canManage={canManage}
+          canRetract={canRetract}
+          onRefile={onRefile}
+          onRename={onRename}
+          onRemove={onRemove}
+          onRetract={onRowRetract}
+        />
+      )}
     </PageContainer>
   )
 }
@@ -363,6 +390,9 @@ interface ItemListProps {
   onRowRetract: (item: ShoppingItem) => void
   sheetItemId: string | null
   rowErrors: Record<string, string>
+  /** Tablet and up — renders the open row's verbs directly under it. Undefined
+      on a phone, where the bottom sheet carries them instead. */
+  actionsPanel?: (item: ShoppingItem) => ReactNode
 }
 
 /* Keyed on the destination by its caller, so swapping lists resets which aisles
@@ -383,6 +413,7 @@ function ItemList({
   onRowRetract,
   sheetItemId,
   rowErrors,
+  actionsPanel,
 }: ItemListProps) {
   // An aisle you have touched stays open. That is what reconciles the two rules
   // that otherwise fight: a cleared aisle collapses so the walk keeps moving,
@@ -443,23 +474,27 @@ function ItemList({
               </div>
             )}
             {group.items.map((item) => (
-              <Row
-                key={item.id}
-                item={item}
-                canCheck={canCheck}
-                canManage={canManage}
-                canRetract={canRetract}
-                hasSheetVerb={hasSheetVerb}
-                sheetOpen={sheetItemId === item.id}
-                error={rowErrors[item.id]}
-                onToggle={() => {
-                  setOpened((open) => (open.includes(group.aisle) ? open : [...open, group.aisle]))
-                  onToggle(item)
-                }}
-                onOpenSheet={() => onOpenSheet(item)}
-                onRemove={() => onRemove(item)}
-                onRetract={() => onRowRetract(item)}
-              />
+              <Fragment key={item.id}>
+                <Row
+                  item={item}
+                  canCheck={canCheck}
+                  canManage={canManage}
+                  canRetract={canRetract}
+                  hasSheetVerb={hasSheetVerb}
+                  sheetOpen={sheetItemId === item.id}
+                  error={rowErrors[item.id]}
+                  onToggle={() => {
+                    setOpened((open) =>
+                      open.includes(group.aisle) ? open : [...open, group.aisle]
+                    )
+                    onToggle(item)
+                  }}
+                  onOpenSheet={() => onOpenSheet(item)}
+                  onRemove={() => onRemove(item)}
+                  onRetract={() => onRowRetract(item)}
+                />
+                {sheetItemId === item.id && actionsPanel?.(item)}
+              </Fragment>
             ))}
           </div>
         )

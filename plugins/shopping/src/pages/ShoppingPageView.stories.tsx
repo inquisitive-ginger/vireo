@@ -1,5 +1,7 @@
 import type { Meta, StoryObj } from '@storybook/react'
+import { ListRow } from '@family-os/ui'
 import { ShoppingPageView } from './ShoppingPageView'
+import { RowActionsPanel } from './RowActionsSheet'
 import type { ShoppingItem } from '../types'
 
 /* The /shopping surface — design.md §Anatomy, artifact frames S1 and S2. */
@@ -24,6 +26,10 @@ const item = (
 
 const gotItem = (id: string, name: string, category: string): ShoppingItem =>
   item(id, name, category, undefined, 'got')
+
+const Ring = () => (
+  <span className="size-6 shrink-0 rounded-full border-2 border-input" aria-hidden />
+)
 
 const meta: Meta<typeof ShoppingPageView> = {
   title: 'Shopping/ShoppingPageView',
@@ -68,6 +74,7 @@ const meta: Meta<typeof ShoppingPageView> = {
     canFile: false,
     canManage: false,
     canRetract: false,
+    inlineActions: true,
     onToggle: () => {},
     onRefile: () => {},
     onRename: () => {},
@@ -114,7 +121,8 @@ export const Cleared: Story = {
 }
 
 /* Every verb permitted, so both edges bind. A reader with none of the three gets
-   no gesture on either edge. */
+   no gesture on either edge. Both reveal strips are `invisible` until their own
+   row is offset, so a list at rest shows none of them. */
 export const AllVerbs: Story = {
   name: 'Tier 4 — both edges bind',
   args: { canFile: true, canManage: true, canRetract: true },
@@ -274,4 +282,68 @@ export const CheckFailed: Story = {
 /* `shopping.item.check` revoked: the list still reads, it just does not move. */
 export const CheckRevoked: Story = {
   args: { canCheck: false },
+}
+
+/* The revealed quick verb, at rest in its opened state — the geometry E1
+   specified (112px of travel, fired at 56px) with the gap that keeps the check
+   ring reading as part of the row rather than part of the button. Storybook
+   cannot drive a drag, so this frame is drawn by hand from the same tokens. */
+export const RevealedQuickVerb: Story = {
+  name: 'The left edge, revealed',
+  render: () => (
+    <div className="mx-auto w-full max-w-list px-4 pt-6">
+      <div className="relative overflow-hidden">
+        <div className="absolute inset-y-0 left-0 flex pr-3" style={{ width: 112 }} aria-hidden>
+          <span className="text-sm-token flex w-full items-center justify-center rounded-r-panel bg-error px-2 text-center font-medium text-error-foreground">
+            Remove
+          </span>
+        </div>
+        <div className="relative bg-background" style={{ transform: 'translateX(112px)' }}>
+          <ListRow leading={<Ring />}>
+            <div className="min-w-0 flex-1">
+              <span className="text-card-title block truncate text-foreground">cilantro</span>
+            </div>
+          </ListRow>
+        </div>
+      </div>
+      <ListRow leading={<Ring />}>
+        <div className="min-w-0 flex-1">
+          <span className="text-card-title block truncate text-foreground">bananas</span>
+        </div>
+      </ListRow>
+    </div>
+  ),
+}
+
+/* Tablet and up: the row's verbs render in the list flow, anchored to the row
+   and pushing the rows below it down (E1 panel 3). The real `RowActionsPanel`,
+   placed where `ItemList` places it — Storybook cannot drive the gesture that
+   opens it. */
+export const InlineRowActions: Story = {
+  name: 'The row’s verbs, inline (tablet+)',
+  render: () => (
+    <div className="mx-auto w-full max-w-list px-4 pt-6">
+      <ListRow leading={<Ring />}>
+        <div className="min-w-0 flex-1">
+          <span className="text-card-title block truncate text-foreground">snap peas</span>
+        </div>
+      </ListRow>
+      <RowActionsPanel
+        item={item('1', 'cilantro', 'Produce')}
+        onClose={() => {}}
+        canFile
+        canManage
+        canRetract
+        onRefile={() => {}}
+        onRename={() => {}}
+        onRemove={() => {}}
+        onRetract={() => {}}
+      />
+      <ListRow leading={<Ring />}>
+        <div className="min-w-0 flex-1">
+          <span className="text-card-title block truncate text-foreground">bananas</span>
+        </div>
+      </ListRow>
+    </div>
+  ),
 }

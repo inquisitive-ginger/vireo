@@ -28,6 +28,30 @@ describe('RowSwipe (SH-09)', () => {
     expect(container.querySelector('[data-row-swipe-quick]')).toBeNull()
   })
 
+  /* The bleed Zach saw on a tablet: a strip painting on rows nobody was touching.
+     The container clips and the moving layer is opaque, so at rest they were
+     already covered — but a covered strip is a consequence of two guesses about
+     what is painted around the row, and this makes it an invariant. */
+  it('keeps both strips invisible until its own row is actually offset', () => {
+    const { container } = row({
+      quick: { label: 'Remove', onFire: vi.fn() },
+      onOpenActions: vi.fn(),
+    })
+    const strips = container.querySelectorAll('[aria-hidden="true"].absolute')
+    expect(strips).toHaveLength(2)
+    for (const strip of strips) expect(strip.className).toContain('invisible')
+  })
+
+  /* The gap lives inside the reveal, so the geometry E1 specified is untouched:
+     112px of travel, fired at 56px. Flush against the content, the check ring
+     read as part of the red button rather than part of the row. */
+  it('leaves a gap between the strip and the row content, without moving the reveal', () => {
+    const { container } = row({ quick: { label: 'Remove', onFire: vi.fn() } })
+    const strip = container.querySelector('[aria-hidden="true"].absolute') as HTMLElement
+    expect(strip.className).toContain('pr-3')
+    expect(strip.style.width).toBe('112px')
+  })
+
   it('binds only the edge whose verb is permitted', () => {
     const { rerender } = row({ quick: { label: 'Remove', onFire: vi.fn() } })
     expect(screen.getByTitle('Remove “milk”')).toBeInTheDocument()

@@ -235,11 +235,26 @@ export function RowSwipe({
         }
       }}
     >
-      {/* Both strips are `aria-hidden`, and neither is reachable by keyboard: they
-          are pointer shortcuts for verbs the sheet already offers, and a verb in
-          the tab order twice is the second API E1 declines to build. */}
+      {/* A strip is visible ONLY while its own row is offset. The container clips
+          and the moving layer is opaque, so at rest they were already covered —
+          but both of those are guesses about what is painted around the row, and
+          a strip bleeding onto a row nobody is touching is the worst kind of
+          wrong: it advertises a destructive verb on the wrong item. `invisible`
+          makes it an invariant rather than a consequence.
+
+          Both are `aria-hidden` and neither is reachable by keyboard: they are
+          pointer shortcuts for verbs the sheet already offers, and a verb in the
+          tab order twice is the second API E1 declines to build. */}
       {quick && (
-        <div className="absolute inset-y-0 left-0 flex" style={{ width: QUICK_REVEAL }} aria-hidden>
+        <div
+          // The gap is INSIDE the reveal, not a change to it: the strip still
+          // travels 112px and still fires at 56px, but the block stops short of
+          // the row's own content. Flush, the check ring read as part of the
+          // button rather than part of the row.
+          className={cn('absolute inset-y-0 left-0 flex pr-3', offset === 0 && 'invisible')}
+          style={{ width: QUICK_REVEAL }}
+          aria-hidden
+        >
           <button
             type="button"
             // Revealed, not fired — one drag plus one tap, no dialog.
@@ -250,7 +265,7 @@ export function RowSwipe({
               close()
               quick.onFire()
             }}
-            className="text-sm-token flex w-full cursor-pointer items-center justify-center bg-error px-2 text-center font-medium text-error-foreground"
+            className="text-sm-token flex w-full cursor-pointer items-center justify-center rounded-r-panel bg-error px-2 text-center font-medium text-error-foreground"
           >
             {quick.label}
           </button>
@@ -258,11 +273,11 @@ export function RowSwipe({
       )}
       {onOpenActions && (
         <div
-          className="absolute inset-y-0 right-0 flex items-center justify-center bg-secondary"
+          className={cn('absolute inset-y-0 right-0 flex pl-3', offset === 0 && 'invisible')}
           style={{ width: MORE_REVEAL }}
           aria-hidden
         >
-          <span className="text-sm-token font-medium text-secondary-foreground">
+          <span className="text-sm-token flex w-full items-center justify-center rounded-l-panel bg-secondary font-medium text-secondary-foreground">
             {actionsLabel}
           </span>
         </div>
