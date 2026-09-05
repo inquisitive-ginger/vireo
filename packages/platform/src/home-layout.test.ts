@@ -75,4 +75,37 @@ describe('default layouts + widget prominence (ADR 039)', () => {
     expect(prominenceFor('default_layout_tier_3_4', 'unknown.widget')).toBe('card')
     expect(prominenceFor('nonexistent_key', 'calendar.up-next')).toBe('card')
   })
+
+  /* Shopping's tile is OFF every default layout (Zach, 2026-09-04, reversing D3).
+     The plugin is announced, the widget is built and `WIDGET_META.shopping` is
+     registered — it is simply not placed, which is the reversible half of that
+     pair. Which six widgets deserve four cells is a composition session, not a
+     line in a layout file. */
+  it('places no shopping tile on any default layout', () => {
+    for (const [key, items] of Object.entries(DEFAULT_LAYOUTS)) {
+      expect(
+        items.some((i) => i.widgetId === 'shopping.capture'),
+        key
+      ).toBe(false)
+    }
+  })
+
+  it('keeps the feed on all three, at the cell D3 briefly took from it', () => {
+    for (const [key, items] of Object.entries(DEFAULT_LAYOUTS)) {
+      const feed = items.find((i) => i.widgetId === 'family-feed.feed')
+      expect(feed, key).toMatchObject({ x: 2, w: 2, h: 1, prominence: 'quiet' })
+    }
+  })
+
+  /* Stated as a number rather than loosened, because the number is the point:
+     the grid is back to exactly its pre-M5.5 geometry, which is the last state
+     the elevation ladder reasoned about. A future composition change has to come
+     back here and say what it costs. */
+  it('holds the right column at its pre-M5.5 height', () => {
+    const columnHeight = (key: string) =>
+      Math.max(...DEFAULT_LAYOUTS[key].filter((i) => i.x === 2).map((i) => i.y + i.h))
+    expect(columnHeight('default_layout_tier_1_2')).toBe(3)
+    expect(columnHeight('default_layout_tier_3')).toBe(3)
+    expect(columnHeight('default_layout_tier_3_4')).toBe(4)
+  })
 })

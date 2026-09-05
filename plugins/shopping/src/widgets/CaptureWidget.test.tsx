@@ -21,14 +21,22 @@ const RECENT = {
       listId: 'grocery',
       addedAt: '2026-09-04T12:00:00.000Z',
       note: null,
+      canRetract: true,
     },
   ],
-  overrides: { 'snap peas': 'Produce' },
 }
 
 afterEach(() => {
   vi.unstubAllGlobals()
 })
+
+/** Some of these mocks declare no arguments, so their call tuple types as empty.
+    The URL is always the first one. */
+function hitBatch(fetchMock: { mock: { calls: unknown[] } }): boolean {
+  return (fetchMock.mock.calls as unknown as [string][]).some(([url]) =>
+    String(url).endsWith('/batch')
+  )
+}
 
 function renderWidget(fetchImpl?: ReturnType<typeof vi.fn>) {
   const client = new QueryClient({ defaultOptions: { queries: { retry: false } } })
@@ -112,13 +120,154 @@ describe('CaptureWidget', () => {
     consoleError.mockRestore()
   })
 
-  it('states the filing the server will pick, corrections included', async () => {
+  /* The add is an ENVELOPE, not a row — `{ item, duplicateOf }` — so this is the
+     one place the widget's whole add path is read against the shape the server
+     actually sends. The assertion that matters is the ID: `Take it back?` undoes
+     the row the add JUST CREATED, never the pre-existing one it collided with.
+     On a shared list those are two different people's rows. */
+  it('reads the add envelope, and takes back the row it created — not the one it doubled', async () => {
+    const fetchMock = vi.fn((url: string, init?: RequestInit) =>
+      init?.method === 'POST' && String(url).endsWith('/items')
+        ? Promise.resolve({
+            ok: true,
+            json: () =>
+              Promise.resolve({
+                item: { ...RECENT.items[0], id: 'created-1', name: 'milk', canRetract: true },
+                duplicateOf: { id: 'pre-existing-1', name: 'milk' },
+              }),
+          } as Response)
+        : Promise.resolve({ ok: true, json: () => Promise.resolve(RECENT) } as Response)
+    )
+    renderWidget(fetchMock as unknown as ReturnType<typeof vi.fn>)
+    await screen.findByText('snap peas')
+
+    const field = screen.getByLabelText('Add to Grocery')
+    fireEvent.change(field, { target: { value: 'milk' } })
+    fireEvent.submit(field.closest('form')!)
+
+    // Two clauses, verbatim, list name interpolated — and no aisle clause.
+    expect(await screen.findByText('Already on Grocery.')).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Take it back?' }))
+    await waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith('/api/shopping/items/created-1/retract', {
+        method: 'POST',
+      })
+    )
+  })
+
+  /* `milk, cereal, chicken thighs` on one Enter. The batch route is NOT atomic,
+     so the client reads per-name results: what landed reports its collisions,
+     what did not joins the sticky error line, and neither costs the other. */
+  it('sends a comma list to the batch route, and reports each name’s own outcome', async () => {
+    const consoleError = vi.spyOn(console, 'error').mockImplementation(() => {})
+    const fetchMock = vi.fn((url: string, init?: RequestInit) =>
+      init?.method === 'POST' && String(url).endsWith('/items/batch')
+        ? Promise.resolve({
+            ok: true,
+            json: () =>
+              Promise.resolve({
+                results: [
+                  {
+                    name: 'milk',
+                    item: { ...RECENT.items[0], id: 'c1', name: 'milk' },
+                    duplicateOf: { id: 'p1', name: 'milk' },
+                  },
+                  {
+                    name: 'cereal',
+                    item: { ...RECENT.items[0], id: 'c2', name: 'cereal' },
+                    duplicateOf: null,
+                  },
+                  // Zod's own message, which is exactly what the route sends.
+                  {
+                    name: 'chicken thighs',
+                    error: 'String must contain at most 120 character(s)',
+                  },
+                ],
+              }),
+          } as Response)
+        : Promise.resolve({ ok: true, json: () => Promise.resolve(RECENT) } as Response)
+    )
+    renderWidget(fetchMock as unknown as ReturnType<typeof vi.fn>)
+    await screen.findByText('snap peas')
+
+    const field = screen.getByLabelText('Add to Grocery')
+    fireEvent.change(field, { target: { value: 'milk, cereal, chicken thighs' } })
+    fireEvent.submit(field.closest('form')!)
+
+    await waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith(
+        '/api/shopping/lists/grocery/items/batch',
+        expect.objectContaining({
+          method: 'POST',
+          body: JSON.stringify({ names: ['milk', 'cereal', 'chicken thighs'] }),
+        })
+      )
+    )
+    // The one that failed takes the error line; the one that collided takes a
+    // notice under it. One collision, so it stays unnamed.
+    expect(await screen.findByRole('alert')).toHaveTextContent('Couldn’t add “chicken thighs”')
+    expect(screen.getByText('Already on Grocery.')).toBeInTheDocument()
+
+    /* THE TRAP: `error` is Zod's raw message — developer copy. It must never
+       reach a family member at the wall, and it must not be swallowed either.
+       The slot says it in the surface's own voice; the reason goes to the
+       console, where ADR 046's ring buffer can have it. */
+    expect(document.body.textContent).not.toContain('String must contain')
+    expect(consoleError).toHaveBeenCalledWith(
+      expect.stringContaining('could not add'),
+      'chicken thighs',
+      'String must contain at most 120 character(s)'
+    )
+    consoleError.mockRestore()
+  })
+
+  it('keeps a single word on the single-add route — the common case pays nothing', async () => {
+    const fetchMock = vi.fn(() =>
+      Promise.resolve({
+        ok: true,
+        json: () => Promise.resolve({ item: RECENT.items[0], duplicateOf: null, ...RECENT }),
+      } as Response)
+    )
+    renderWidget(fetchMock as unknown as ReturnType<typeof vi.fn>)
+    await screen.findByText('snap peas')
+
+    const field = screen.getByLabelText('Add to Grocery')
+    fireEvent.change(field, { target: { value: 'tortillas' } })
+    fireEvent.submit(field.closest('form')!)
+
+    await waitFor(() =>
+      expect(fetchMock).toHaveBeenCalledWith(
+        '/api/shopping/lists/grocery/items',
+        expect.objectContaining({ method: 'POST' })
+      )
+    )
+    expect(hitBatch(fetchMock)).toBe(false)
+  })
+
+  it('refuses more than twenty before sending, and says so in the slot', async () => {
+    const { fetchMock } = renderWidget()
+    await screen.findByText('snap peas')
+
+    const field = screen.getByLabelText('Add to Grocery')
+    const many = Array.from({ length: 21 }, (_, i) => `thing ${i}`).join(', ')
+    fireEvent.change(field, { target: { value: many } })
+    fireEvent.submit(field.closest('form')!)
+
+    expect(await screen.findByRole('alert')).toHaveTextContent('21 things at once')
+    expect(hitBatch(fetchMock)).toBe(false)
+  })
+
+  /* SH-13. The echo says the field is live and Enter commits, and nothing about
+     an aisle: correcting one is `file`, tier 4, and the dashboard is where the
+     tiers that cannot correct do most of their capturing. */
+  it('says Enter commits, and names no aisle', async () => {
     renderWidget()
     await screen.findByText('snap peas')
 
     fireEvent.change(screen.getByLabelText('Add to Grocery'), {
       target: { value: 'snap peas' },
     })
-    expect(await screen.findByText('files under Produce')).toBeInTheDocument()
+    expect(await screen.findByText('Enter to add')).toBeInTheDocument()
+    expect(screen.queryByText(/files under/)).not.toBeInTheDocument()
   })
 })

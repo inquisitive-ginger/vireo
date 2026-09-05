@@ -37,9 +37,9 @@ family** — the plugin is fully working and reachable only by typed URL today.
 2. **One counting scheme ships** (SH-10/SH-11). The design session did not tell the two numbers
    apart — it **deleted** the cumulative cross-list count from the title strip, because nobody
    acts on a total across lists. What remains counts one thing, "what's left": the pill is
-   remaining on that list, and the sticky bar reads `{list} · {n} left` — the same figure, so
-   they cannot disagree. The sticky bar also picks up the list name, which design.md specified
-   and the build dropped. **`design.md` §Anatomy item 1 is amended in this PR**; it specifies the
+   remaining on that list, and the sticky bar reads `{n} items left` — the same figure, so
+   they cannot disagree. (Zach's live pass dropped the list name from that line, 2026-09-04;
+   `design.md` and ADR 043 amended in this PR.) **`design.md` §Anatomy item 1 is amended in this PR**; it specifies the
    cumulative count deliberately, and a doc left describing it is how the next session restores
    it. Check the widget and the Home tile, which print the same counts, and the singular case.
 3. **A failed add survives a later success.** `setAddError(null)` on success

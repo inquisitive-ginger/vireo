@@ -10,6 +10,8 @@
       "shopping.item.added",
       "shopping.item.checked",
       "shopping.item.removed",
+      "shopping.item.renamed",
+      "shopping.list.cleared",
       "shopping.list.created"
     ],
     "subscribes": ["meals.needs.pushed"]
@@ -25,5 +27,11 @@
       "requiredPermission": "shopping.item.view",
       "description": "Add to the list without leaving the dashboard, and what is waiting."
     }
-  ]
+  ],
+  "navItem": {
+    "label": "Shopping",
+    "route": "/shopping",
+    "icon": "shopping-cart",
+    "minTier": 1
+  }
 }

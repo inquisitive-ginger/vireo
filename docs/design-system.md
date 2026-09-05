@@ -1,11 +1,13 @@
 # Design System
 
-> Last updated: 2026-09-03 — **ADR 068** (`ListRow` lands; row height belongs to
-> the primitive) ([The scanned-list primitive](#the-scanned-list-primitive--listrow)),
-> **ADR 070** (`CaptureField` beside `ComposeForm`)
-> ([Capture primitives](#capture-primitives--capturefield-and-composeform)).
+> Last updated: 2026-09-04 — **`--input` is the interactive-control outline, at 3:1**
+> (shopping polish, D2) ([Core tokens](#core-tokens--light-mode)).
 >
-> Prior: 2026-08-20 — ADR 063 (ListRow), ADR 064 (identity-hue trigger narrowed); 2026-07-28 — ADR 057, daily time-window recurrence
+> Prior: 2026-09-03 — ADR 068 (`ListRow` lands; row height belongs to
+> the primitive) ([The scanned-list primitive](#the-scanned-list-primitive--listrow)),
+> ADR 070 (`CaptureField` beside `ComposeForm`)
+> ([Capture primitives](#capture-primitives--capturefield-and-composeform));
+> 2026-08-20 — ADR 063 (ListRow), ADR 064 (identity-hue trigger narrowed); 2026-07-28 — ADR 057, daily time-window recurrence
 > ([Daily time-window series](#daily-time-window-series--a-condition-with-a-clock-settled--2026-07-28));
 > 2026-07-24 — ADR 054, currency named Pritchett Bucks
 > ([Currency marks](modules/rewards/design.md#currency-marks)); 2026-07-22 — ADR 051, gold and coin to
@@ -117,9 +119,10 @@ The rule used to name **widgets** as the across-the-room category, which was too
 
 **Structural labels have their own floor, and it is not 18px (settled — 2026-09-04, M5.5/5).** The distance rule above floors _primary content_; it used to say nothing about the labels that name it, which is why `section-label` at 11px went to the wall tablet unreadable at six feet while the rows beside it cleared 18px. The answer is a distance variant, `section-label-lg` — **not** promotion to `heading`:
 
-- **The family is the meaning.** Uppercase, 700, 0.1em tracked, muted — that is what says _this names a group, it is not part of one_. `heading` is sentence-case content type; a label promoted to it stops reading as structure and starts competing with the surface's actual subject. On the wall, `Just added` at `heading` would sit one step under `What do we need?` and read as a second question.
+- **The family is the meaning.** Uppercase, 700, 0.1em tracked, muted — that is what says _this names a group, it is not part of one_. `heading` is sentence-case content type; a label promoted to it stops reading as structure and starts competing with the surface's actual subject. On the wall, a structural label at `heading` would sit one step under `What do we need?` and read as a second question.
 - **14px, because optical size is what the distance floor is really about.** All-caps has no descenders and no x-height gap — cap height is the whole glyph — so uppercase 700 at 0.1em reads roughly one step larger than its px suggests: 14px here carries the optical size of 18px lowercase regular. Taking labels to a literal 18px would size them level with the content they subordinate, which inverts the hierarchy the token exists to state.
 - **Where it applies:** any surface under the across-the-room rule — the wall tablet, the family pseudo-profile, an always-on ambient screen. `section-label` stays 11px everywhere you are holding or sitting at. A component does not choose between them; the **surface** does, the same way autofocus does (§Capture primitives).
+- **It has no call site today** (2026-09-04, shopping polish): the wall's `Just added` strip that motivated it was deleted, and capture mode now carries no structural label at all. Kept deliberately — the distance problem it answers is unchanged, and the next across-the-room label needs the token to exist rather than the argument re-run.
 
 **This does not soften the wall tablet.** If anything it sharpens it: the family-profile surface is now the _named_ place the 18px floor applies, rather than one instance of a vaguer rule (see [Tablet — Primary Hub](#tablet--primary-hub)). A widget that renders on both surfaces should scale its type with its prominence — which is what [Widget prominence](#widget-prominence) already gives it.
 
@@ -184,8 +187,31 @@ semantic tokens only — never raw oklch values.
 | `--muted-foreground`     | `oklch(0.52 0.035 100)`  | Subdued labels, timestamps                                             |
 | `--accent`               | `oklch(0.47 0.07 185)`   | Muted sage-teal — module identity only (see Accent scope below)        |
 | `--accent-foreground`    | `oklch(0.99 0 0)`        | Text on accent                                                         |
-| `--border` / `--input`   | `oklch(0.88 0.02 100)`   | Borders and input outlines                                             |
+| `--border`               | `oklch(0.88 0.02 100)`   | Hairlines and dividers — the edge _between_ things                     |
+| `--input`                | `oklch(0.62 0.02 100)`   | The outline of an interactive control, ≥3:1 (see below)                |
 | `--ring`                 | `oklch(0.5 0.11 122)`    | Focus ring (matches primary)                                           |
+
+#### `--border` and `--input` are not the same value (settled — 2026-09-04)
+
+They shipped identical, which is how the check ring came to fail contrast without
+anything being obviously wrong: whoever read the tokens saw one colour with two
+names.
+
+- **`--border`** is a hairline **between** things — a row separator, a card edge, a
+  section rule. It carries no contrast floor, because nothing is aimed at it.
+- **`--input`** is the **outline of an interactive control** — a field, a chip, a
+  check ring. It is what tells a person where to press, so **WCAG 1.4.11 applies to
+  it: ≥3:1 against the surface behind it.**
+
+Re-measured against `--background` at the polish session: light went 1.37:1 →
+**3.48:1** (`oklch(0.88 0.02 100)` → `oklch(0.62 0.02 100)`), dark 1.45:1 →
+**3.58:1** (`oklch(0.3 0.018 105)` → `oklch(0.52 0.018 105)`). On `--card`, where
+the widget tile draws its rings, the shipped values measure 3.62:1 light and
+3.22:1 dark. `--border` is unchanged.
+
+Its blast radius is every form field and `CompletionToggle`, which is to say all
+of chores — that is the point, not a side effect: the same defect was on all of
+them.
 
 ### Surface elevation
 
@@ -523,17 +549,18 @@ to maintain contrast against dark surfaces.
 > OS-preference dark screenshots all looked correct. If you add a token, grep for
 > all three.
 
-| Token                  | Light                    | Dark                    |
-| ---------------------- | ------------------------ | ----------------------- |
-| `--background`         | `oklch(0.985 0.008 100)` | `oklch(0.15 0.018 105)` |
-| `--foreground`         | `oklch(0.18 0.03 100)`   | `oklch(0.92 0.012 100)` |
-| `--primary`            | `oklch(0.5 0.11 122)`    | `oklch(0.62 0.11 122)`  |
-| `--accent`             | `oklch(0.47 0.07 185)`   | `oklch(0.56 0.08 185)`  |
-| `--secondary`          | `oklch(0.93 0.02 100)`   | `oklch(0.22 0.016 105)` |
-| `--muted`              | `oklch(0.93 0.016 100)`  | `oklch(0.2 0.014 105)`  |
-| `--muted-foreground`   | `oklch(0.52 0.035 100)`  | `oklch(0.56 0.02 100)`  |
-| `--border` / `--input` | `oklch(0.88 0.02 100)`   | `oklch(0.3 0.018 105)`  |
-| `--error`              | `oklch(0.50 0.17 12)`    | `oklch(0.62 0.17 12)`   |
+| Token                | Light                    | Dark                    |
+| -------------------- | ------------------------ | ----------------------- |
+| `--background`       | `oklch(0.985 0.008 100)` | `oklch(0.15 0.018 105)` |
+| `--foreground`       | `oklch(0.18 0.03 100)`   | `oklch(0.92 0.012 100)` |
+| `--primary`          | `oklch(0.5 0.11 122)`    | `oklch(0.62 0.11 122)`  |
+| `--accent`           | `oklch(0.47 0.07 185)`   | `oklch(0.56 0.08 185)`  |
+| `--secondary`        | `oklch(0.93 0.02 100)`   | `oklch(0.22 0.016 105)` |
+| `--muted`            | `oklch(0.93 0.016 100)`  | `oklch(0.2 0.014 105)`  |
+| `--muted-foreground` | `oklch(0.52 0.035 100)`  | `oklch(0.56 0.02 100)`  |
+| `--border`           | `oklch(0.88 0.02 100)`   | `oklch(0.3 0.018 105)`  |
+| `--input`            | `oklch(0.62 0.02 100)`   | `oklch(0.52 0.018 105)` |
+| `--error`            | `oklch(0.50 0.17 12)`    | `oklch(0.62 0.17 12)`   |
 
 A manual dark mode toggle is available to all tiers in display preferences.
 The preference is stored per-profile and overrides `prefers-color-scheme` on
@@ -1185,10 +1212,19 @@ phone dashboard 1272 px to a tile nobody asked for, and the same widget on the f
 profile made an always-on kitchen display hold the keyboard. **A screen left on in a room
 is not a screen someone walked up to.**
 
-**State the filing before the commit.** Where a capture files what it catches somewhere
-derived (shopping's aisle), say so in one `sm` line under the field while composing —
-`Enter to add · files under Pantry`. A mis-file is then caught by the person who caused
-it, at the one moment they still know what they meant.
+**A placeholder does not carry the field's weight at wall size** (2026-09-04). `wall` sets
+its text to `heading`, whose 600 exists to carry **content** across a room — a placeholder
+is instruction, and wearing that weight it reads as something already typed. Drop it to
+`font-normal`; the colour is not the lever and stays `--muted-foreground` (5.23:1 on
+`--background`, measured off the render). The case that forced it: a placeholder that
+_demonstrates_ a syntax rather than describing the field — shopping's `milk, eggs, bread`
+— looks most like a value exactly when the surface is answering about milk, eggs and bread.
+
+**Reserve the report line, and keep it still.** A capture surface owes one line under the
+field for what it has to say back — a failure, a collision. Its height is reserved from
+first paint, because a line that mounts on the first keystroke shoves the page down and
+Enter shoves it back. It may grow in answer to a submit, which is the reader's own act;
+it must never move while someone is typing.
 
 ### Widget prominence — the elevation ladder
 

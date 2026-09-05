@@ -18,12 +18,6 @@ const meta: Meta<typeof ShoppingCaptureHero> = {
     ),
   ],
   args: {
-    justAdded: [
-      { id: '1', name: 'snap peas', canRetract: true },
-      { id: '2', name: 'tortillas', canRetract: true },
-      { id: '3', name: 'milk', canRetract: false },
-      { id: '4', name: 'wood screws', canRetract: false },
-    ],
     openCount: 19,
     destinations: (
       <div className="flex gap-2">
@@ -35,15 +29,11 @@ const meta: Meta<typeof ShoppingCaptureHero> = {
         </span>
       </div>
     ),
-    onRetract: () => {},
-    retractError: null,
     onShowLists: () => {},
     loading: false,
     destination: 'Grocery',
     onAdd: () => {},
-    onDraftChange: () => {},
-    draftAisle: null,
-    addError: null,
+    reports: [],
     canAdd: true,
   },
 }
@@ -52,33 +42,83 @@ type Story = StoryObj<typeof ShoppingCaptureHero>
 
 export const AtRest: Story = {}
 
-/* The filing echo, stated before the commit — the one moment a mis-file is
-   catchable by the person who caused it. */
-export const Composing: Story = { args: { draftAisle: 'Pantry' } }
-
-/* The short memory is empty. Not a gap — a wall nobody has walked up to today. */
-export const NothingYet: Story = { args: { justAdded: [], openCount: 0 } }
+/* Nothing waiting anywhere. The seam still states it rather than going blank. */
+export const NothingYet: Story = { args: { openCount: 0 } }
 
 /* The add did not land. The field cleared on Enter, so this line is the only
    thing standing between the person and a word they think they said. */
-export const AddFailed: Story = { args: { addError: 'oat milk' } }
+export const AddFailed: Story = {
+  args: {
+    reports: [
+      { tone: 'error', message: 'Couldn’t add “oat milk”', actions: [], onDismiss: () => {} },
+    ],
+  },
+}
+
+/* Three names on one Enter, all three already on the list. The stack grows
+   DOWNWARD into the empty space under the pills and moves nothing above it —
+   and each line names itself, because with three submitted the reader cannot
+   tell which one collided. */
+export const DuplicatesStacked: Story = {
+  args: {
+    reports: ['milk', 'eggs', 'bread'].map((name) => ({
+      tone: 'notice' as const,
+      message: `“${name}” already on Grocery.`,
+      actions: [{ label: 'Take it back?', onSelect: () => {} }],
+      onDismiss: () => {},
+    })),
+  },
+}
+
+/* An error and its notices share the slot: the counted error line keeps the top,
+   the collisions stack under it. */
+export const ErrorOverNotices: Story = {
+  args: {
+    reports: [
+      {
+        tone: 'error' as const,
+        message: 'Couldn’t add “chicken thighs”',
+        actions: [],
+        onDismiss: () => {},
+      },
+      {
+        tone: 'notice' as const,
+        message: '“milk” already on Grocery.',
+        actions: [{ label: 'Take it back?', onSelect: () => {} }],
+        onDismiss: () => {},
+      },
+    ],
+  },
+}
+
+/* SH-03 — the collision, in the one report slot. */
+export const Duplicate: Story = {
+  args: {
+    reports: [
+      {
+        tone: 'notice',
+        message: 'Already on Grocery.',
+        actions: [{ label: 'Take it back?', onSelect: () => {} }],
+        onDismiss: () => {},
+      },
+    ],
+  },
+}
 
 /* `shopping.item.add` revoked for this profile (ADR 072 §6) — the one lever that
    closes the wall's field. */
 export const AddingRevoked: Story = { args: { canAdd: false } }
 
-/* Past the fifteen-minute window, or somebody else's adds: `canRetract` is false
-   and the chips carry no way back (ADR 073). */
-export const NothingRetractable: Story = {
-  args: {
-    justAdded: [
-      { id: '1', name: 'snap peas', canRetract: false },
-      { id: '2', name: 'tortillas', canRetract: false },
-    ],
-  },
-}
-
 /* The window closed between fetches. Expected, and shown. */
 export const RetractRefused: Story = {
-  args: { retractError: 'Too late to take back “snap peas” — it has been on the list a while.' },
+  args: {
+    reports: [
+      {
+        tone: 'error',
+        message: 'Too late to take back “snap peas” — it has been on the list a while.',
+        actions: [],
+        onDismiss: () => {},
+      },
+    ],
+  },
 }

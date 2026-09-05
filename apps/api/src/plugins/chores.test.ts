@@ -38,6 +38,48 @@ async function getCookieForProfile(profileId: string): Promise<string> {
   return getCookie(res)
 }
 
+/** Re-read until the read satisfies `ok`, or fail saying what never arrived.
+
+    The XP and notification subscribers are fire-and-forget: the route returns
+    before the handler has written, so a fixed sleep is a race, and on a loaded
+    runner it is a race the test loses. It also loses BADLY — the old shape slept
+    50ms and then indexed `[0]` on an empty array, so "the notification never
+    arrived" surfaced as `Cannot read properties of undefined`, which reads as a
+    broken assertion rather than a missing write.
+
+    Only for waits that expect something TO happen. A negative assertion cannot be
+    polled — see `settle`. */
+async function waitFor<T>(
+  what: string,
+  read: () => Promise<T>,
+  ok: (value: T) => boolean,
+  timeoutMs = 2000
+): Promise<T> {
+  const deadline = Date.now() + timeoutMs
+  for (;;) {
+    const value = await read()
+    if (ok(value)) return value
+    if (Date.now() >= deadline) {
+      let seen: string
+      try {
+        seen = JSON.stringify(value)
+      } catch {
+        seen = String(value)
+      }
+      throw new Error(`timed out after ${timeoutMs}ms waiting for ${what} — last read: ${seen}`)
+    }
+    await new Promise((resolve) => setTimeout(resolve, 10))
+  }
+}
+
+/** The counterpart for a NEGATIVE assertion — "no notification for the actor",
+    "the tier-1 creator is skipped". This stays a fixed delay ON PURPOSE: polling
+    until something appears inverts the test, and polling that gives up quietly
+    makes it vacuous. There is nothing to wait FOR, only room to give. */
+function settle() {
+  return new Promise((resolve) => setTimeout(resolve, 50))
+}
+
 async function clearTasks() {
   // Clear chores tables so count assertions stay deterministic across suites.
   await chorePrisma.xpBalance.deleteMany({})
@@ -656,8 +698,11 @@ describe('GET /api/chores/xp', () => {
       headers: { cookie },
     })
 
-    // XP subscriber is async (fire-and-forget) — wait briefly for it to settle.
-    await new Promise((resolve) => setTimeout(resolve, 50))
+    await waitFor(
+      'the XP subscriber to credit both completions',
+      () => chorePrisma.xpBalance.findUnique({ where: { profileId: KID_ID } }),
+      (balance) => balance?.totalXp === 25
+    )
 
     const res = await app.inject({
       method: 'GET',
@@ -1153,9 +1198,11 @@ describe('XP event subscriber', () => {
       headers: { cookie },
     })
 
-    await new Promise((resolve) => setTimeout(resolve, 50))
-
-    const balance = await chorePrisma.xpBalance.findUnique({ where: { profileId: KID_ID } })
+    const balance = await waitFor(
+      "the assignee's XP balance",
+      () => chorePrisma.xpBalance.findUnique({ where: { profileId: KID_ID } }),
+      (row) => row?.totalXp === 20
+    )
     expect(balance?.totalXp).toBe(20)
   })
 
@@ -1180,9 +1227,11 @@ describe('XP event subscriber', () => {
       headers: { cookie },
     })
 
-    await new Promise((resolve) => setTimeout(resolve, 50))
-
-    const balance = await chorePrisma.xpBalance.findUnique({ where: { profileId: KID_ID } })
+    const balance = await waitFor(
+      'both completions to be credited',
+      () => chorePrisma.xpBalance.findUnique({ where: { profileId: KID_ID } }),
+      (row) => row?.totalXp === 15
+    )
     expect(balance?.totalXp).toBe(15)
   })
 
@@ -1208,7 +1257,8 @@ describe('XP event subscriber', () => {
       createdBy: task.createdBy,
     })
 
-    await new Promise((resolve) => setTimeout(resolve, 50))
+    // Negative: nothing should ever be written, so there is nothing to poll for.
+    await settle()
 
     const balance = await chorePrisma.xpBalance.findUnique({ where: { profileId: KID_ID } })
     expect(balance).toBeNull()
@@ -1236,12 +1286,20 @@ describe('XP event subscriber', () => {
       })
 
     await complete()
-    await new Promise((r) => setTimeout(r, 40))
+    // The first award must land BEFORE the first reopen, or the cycle this test
+    // describes never happens.
+    await waitFor(
+      'the first completion to be awarded',
+      () => chorePrisma.xpBalance.findUnique({ where: { profileId: KID_ID } }),
+      (row) => row?.totalXp === 20
+    )
     await reopen()
     await complete()
     await reopen()
     await complete()
-    await new Promise((r) => setTimeout(r, 60))
+    // A second award would move it off 20, so settling is the only honest wait
+    // here — there is no arrival to poll for, only the absence of one.
+    await settle()
 
     // Three completions, one award.
     const balance = await chorePrisma.xpBalance.findUnique({ where: { profileId: KID_ID } })
@@ -1264,9 +1322,11 @@ describe('XP event subscriber', () => {
       headers: { cookie: parentCookie },
     })
 
-    await new Promise((resolve) => setTimeout(resolve, 50))
-
-    const kidBalance = await chorePrisma.xpBalance.findUnique({ where: { profileId: KID_ID } })
+    const kidBalance = await waitFor(
+      "the assignee's balance (not the completing parent's)",
+      () => chorePrisma.xpBalance.findUnique({ where: { profileId: KID_ID } }),
+      (row) => row?.totalXp === 15
+    )
     const parentBalance = await chorePrisma.xpBalance.findUnique({
       where: { profileId: PARENT_ID },
     })
@@ -1299,9 +1359,11 @@ describe('parent notification subscriber', () => {
       headers: { cookie: kidCookie },
     })
 
-    await new Promise((resolve) => setTimeout(resolve, 50))
-
-    const notifications = await prisma.notification.findMany({ where: { profileId: PARENT_ID } })
+    const notifications = await waitFor(
+      "the creator's completion notification",
+      () => prisma.notification.findMany({ where: { profileId: PARENT_ID } }),
+      (rows) => rows.length > 0
+    )
     expect(notifications).toHaveLength(1)
     expect(notifications[0].title).toBe('Kid completed Take out trash')
     expect(notifications[0].body).toBe('Earned 10 XP')
@@ -1328,7 +1390,8 @@ describe('parent notification subscriber', () => {
       headers: { cookie: parentCookie },
     })
 
-    await new Promise((resolve) => setTimeout(resolve, 50))
+    // Negative: the suppression is the assertion, so this waits rather than polls.
+    await settle()
 
     const notifications = await prisma.notification.findMany({ where: { profileId: PARENT_ID } })
     expect(notifications).toHaveLength(0)
@@ -1348,9 +1411,11 @@ describe('parent notification subscriber', () => {
       headers: { cookie: kidCookie },
     })
 
-    await new Promise((resolve) => setTimeout(resolve, 50))
-
-    const notifications = await prisma.notification.findMany({ where: { profileId: PARENT_ID } })
+    const notifications = await waitFor(
+      'the creator to be notified by a different completer',
+      () => prisma.notification.findMany({ where: { profileId: PARENT_ID } }),
+      (rows) => rows.length > 0
+    )
     expect(notifications).toHaveLength(1)
     expect(notifications[0].title).toBe('Kid completed Kid completes')
   })
@@ -1369,7 +1434,11 @@ describe('parent notification subscriber', () => {
         headers: { cookie: kidCookie },
       })
 
-      await new Promise((resolve) => setTimeout(resolve, 50))
+      await waitFor(
+        'a Web Push dispatch to the tier-4 creator',
+        async () => pushSpy.mock.calls.length,
+        (calls) => calls > 0
+      )
 
       // The notification is priority 'alert' and the creator is tier 4, so the
       // shared notify() path must fire a push (regression guard: the subscriber
@@ -1398,7 +1467,11 @@ describe('parent notification subscriber', () => {
         headers: { cookie: kidCookie },
       })
 
-      await new Promise((resolve) => setTimeout(resolve, 50))
+      await waitFor(
+        'platform.notification.created for the creator',
+        async () => events,
+        (seen) => seen.length > 0
+      )
 
       expect(events).toContainEqual(expect.objectContaining({ profileId: PARENT_ID }))
     } finally {
@@ -1418,9 +1491,12 @@ describe('parent notification subscriber', () => {
       headers: { cookie: teenCookie },
     })
 
-    await new Promise((resolve) => setTimeout(resolve, 50))
-
-    const notifications = await prisma.notification.findMany({ where: { profileId: PARENT_ID } })
+    const notifications = await waitFor(
+      "the creator's notification for the teen's completion",
+      () => prisma.notification.findMany({ where: { profileId: PARENT_ID } }),
+      (rows) => rows.length > 0
+    )
+    expect(notifications).toHaveLength(1)
     expect(notifications[0].title).toBe('Teen completed Clean room')
     expect(notifications[0].body).toBe('Earned 20 XP')
   })
@@ -1436,7 +1512,8 @@ describe('parent notification subscriber', () => {
       createdBy: KID_ID,
     })
 
-    await new Promise((resolve) => setTimeout(resolve, 50))
+    // Negative: same reason — the skip is what is being asserted.
+    await settle()
 
     const notifications = await prisma.notification.findMany({ where: { profileId: KID_ID } })
     expect(notifications).toHaveLength(0)

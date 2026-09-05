@@ -1,6 +1,7 @@
 # ADR 043 — Identity takes the edge; status takes the field
 
-**Status** — Decided (2026-07-12, Chores Overhaul design + dev session)
+**Status** — Decided (2026-07-12, Chores Overhaul design + dev session) ·
+**Amended 2026-09-04** (shopping polish) — one named meter exception; see Consequences
 **Amends** — [ADR 030](030-member-identity-colors.md) (member identity colors),
 [ADR 042](042-avatar-images.md) (avatar images), and the "Status vs identity
 colour" section of `design-system.md` (settled M2 Design: Chores, 2026-06-15)
@@ -130,11 +131,22 @@ skeleton.
 - **A meter is a comparison; at zero it must not render.** An empty bar with
   "0 tasks · 0 XP load" is not a quiet meter, it is a meter claiming to have data —
   and a minimum-width floor will even paint a stub of load that does not exist.
+
+  **Amended 2026-09-04 (shopping polish, live pass).** **This rule stands
+  everywhere except one surface.** On the shopping list's sticky line the meter
+  renders from first paint whenever the list has items, filling from zero, because
+  there it is doing a second job: the `⋯` list menu sits on that line, and a control
+  with nothing under it reads as floating. The bar is its anchor. The reasoning above
+  is unchanged and still binds every other meter — a bar with no comparison to make
+  is a bar claiming data it does not have, and gating on `> 0` remains the default.
+  What this exception rests on is that the shopping bar is **not** at zero-with-no-data:
+  the list has items, the comparison is real, and zero-got is a true reading of it.
+  A meter with genuinely nothing to compare still must not render. Do not read this
+  as a licence to always-render; it is one surface, for a structural reason, named.
+
 - **Single-person surfaces are unchanged** — the taskee views' status spines are
   still correct, and still the reference case for the original rule.
 - **Identity hues are now load-bearing on a denser surface than before.**
-  `getIdentityHue` hashes a name into six buckets, so a household can collide —
-  "Zach" and "Emma" already do. Two same-hued members in adjacent groups is the
-  one case this board's colour language cannot survive. Assigning a hue explicitly
-  at profile creation (first-free from `IDENTITY_HUES`, hash only as fallback) is
-  queued as a follow-up.
+  hashing a name into six buckets let a household collide, and two same-hued members
+  in adjacent groups is the one case this board's colour language cannot survive.
+  **ADR 044 settled it**: the hue is assigned at profile creation and persisted.

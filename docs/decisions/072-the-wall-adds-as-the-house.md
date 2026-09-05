@@ -26,8 +26,7 @@ The wall adds **as the family pseudo-profile**, and the add is attributed to it.
    `resolveHue(name)`, which hashes `Family` into a member's colour and points
    "colour = person" at two things (ADR 044).
 4. ~~**"Just added" keeps its promise** — `oat milk · the house`.~~ **Withdrawn
-   2026-09-04.** Whether W2's chip strip names an adder is M5.5/5's; it inherits the
-   same answer: it should not.
+   2026-09-04** — W2's chip strip inherits §3's answer: it should not.
 5. **One event.** A wall add emits the same `shopping.item.added`, `addedBy` set to
    `'family'`. A consumer that cares tests the value; a second name makes every
    consumer subscribe twice and eventually forget one.
@@ -36,8 +35,8 @@ The wall adds **as the family pseudo-profile**, and the add is attributed to it.
    not want anonymous wall adds revokes that key for the `family` profile: one row
    on an existing lever.
 
-M5.5/5 owes `design.md` §W2 one edit: its chip strip still says "with who added
-them".
+Discharged with the element: the chip strip went in the 2026-09-04 polish pass,
+take-back having moved onto the rows (SH-09/SH-02).
 
 ## Amendment — 2026-09-04, M5.5/2 live review
 

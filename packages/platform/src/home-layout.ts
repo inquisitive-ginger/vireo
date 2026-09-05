@@ -35,8 +35,8 @@ export type LayoutDefault = {
    they must not disagree. */
 export const DEFAULT_LAYOUTS: Record<string, LayoutDefault[]> = {
   /* Kids (and teens below) rank by what a kid actually opens the app for:
-     wallet > chores > feed = calendar = meals. The wallet leads by position and
-     its feature elevation, chores beside it as the way to fill it; the calendar
+     wallet > chores > feed = calendar = meals. The wallet leads by position and its
+     feature elevation, chores beside it as the way to fill it; the calendar
      takes the 2×2 under the wallet and the quiet peers stack the right column
      (auto-bug #118, gated 2026-08-20 — the old paired grid left an empty slot
      beside meals on any desktop-width screen). Chores stays atop the right
@@ -47,20 +47,16 @@ export const DEFAULT_LAYOUTS: Record<string, LayoutDefault[]> = {
     { widgetId: 'calendar.up-next', x: 0, y: 1, w: 2, h: 2, prominence: 'quiet' },
     { widgetId: 'chores.today-summary', x: 2, y: 0, w: 2, h: 1, prominence: 'card' },
     { widgetId: 'meals.tonight', x: 2, y: 1, w: 2, h: 1, prominence: 'quiet' },
+    /* NO `shopping.capture` here, deliberately (Zach, 2026-09-04, reversing D3).
+       The plugin is announced and its widget is built, exposed and registered in
+       `WIDGET_META` — it is simply not in a default layout, which is the
+       reversible half of that pair. D3 had it displace the feed; that traded a
+       settled widget for an unsettled one to avoid growing the grid, and the
+       real question underneath — which six widgets deserve four cells — is a
+       composition session, not a line in this file. The grid is back to exactly
+       its pre-M5.5 geometry, which is the last state the elevation ladder
+       reasoned about. */
     { widgetId: 'family-feed.feed', x: 2, y: 2, w: 2, h: 1, prominence: 'quiet' },
-    /* Shopping capture (M5.5/5) — the zero-navigation add, which is the whole
-       Keep comparison (design.md §"Adding from anywhere in the house"). `quiet`
-       and last in the column: it is a doing surface, not one of the "what needs
-       me" answers the rungs above it carry, and it stays useful at whatever
-       height it is dealt because `useFitRows` states the remainder rather than
-       cropping. h=2 for the same reason `meals.tonight` is: `ListRow`'s 56px
-       floor is not overridable (ADR 068), so a 2×1 slot fits the field and no
-       whole row at all, and a shopping tile showing no shopping is not the
-       artifact's widget. NOTE — this grows the grid by TWO rows on every layout,
-       which is the first composition change since the elevation ladder and makes
-       the desktop dashboard scroll; the placement and the cost are the live
-       review's to confirm. */
-    { widgetId: 'shopping.capture', x: 2, y: 3, w: 2, h: 2, prominence: 'quiet' },
   ],
   /* Teens — the same kid grid, one register down: no feature (a teen's surface
      declines to shout, same as the parent's), so the wallet leads by position, not
@@ -71,7 +67,6 @@ export const DEFAULT_LAYOUTS: Record<string, LayoutDefault[]> = {
     { widgetId: 'chores.today-summary', x: 2, y: 0, w: 2, h: 1, prominence: 'card' },
     { widgetId: 'meals.tonight', x: 2, y: 1, w: 2, h: 1, prominence: 'quiet' },
     { widgetId: 'family-feed.feed', x: 2, y: 2, w: 2, h: 1, prominence: 'quiet' },
-    { widgetId: 'shopping.capture', x: 2, y: 3, w: 2, h: 2, prominence: 'quiet' },
   ],
   /* Parents / the family pseudo-profile — NO feature (ADR 039, amended). A parent
      (or the unattended fridge tablet, sitting on the family profile) triages, and
@@ -93,7 +88,6 @@ export const DEFAULT_LAYOUTS: Record<string, LayoutDefault[]> = {
     { widgetId: 'meals.tonight', x: 2, y: 0, w: 2, h: 2, prominence: 'card' },
     { widgetId: 'chores.today-summary', x: 2, y: 2, w: 2, h: 1, prominence: 'card' },
     { widgetId: 'family-feed.feed', x: 2, y: 3, w: 2, h: 1, prominence: 'quiet' },
-    { widgetId: 'shopping.capture', x: 2, y: 4, w: 2, h: 2, prominence: 'quiet' },
   ],
 }
 

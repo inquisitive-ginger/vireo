@@ -8,7 +8,12 @@ import { CaptureWidgetView } from './CaptureWidgetView'
    no error anywhere. */
 export default function CaptureWidget() {
   const ability = usePermissions()
-  const capture = useAmbientCapture(ability.can('create', 'shopping.Item'))
+  const capture = useAmbientCapture(
+    ability.can('create', 'shopping.Item'),
+    // Whether `Take it back?` is offered beside a duplicate notice at all; the
+    // just-created row's own eligibility is the server's `canRetract` (ADR 073).
+    ability.can('retract', 'shopping.Item')
+  )
 
   return (
     <CaptureWidgetView
@@ -20,9 +25,7 @@ export default function CaptureWidget() {
       error={capture.error && !capture.data}
       destination={capture.destination}
       onAdd={capture.add}
-      onDraftChange={capture.onDraftChange}
-      draftAisle={capture.draftAisle}
-      addError={capture.addError}
+      reports={capture.reports}
       canAdd={capture.canAdd}
     />
   )

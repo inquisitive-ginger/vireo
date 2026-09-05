@@ -239,7 +239,12 @@
     --accent: oklch(0.47 0.07 185);
     --accent-foreground: oklch(0.99 0 0);
     --border: oklch(0.88 0.02 100);
-    --input: oklch(0.88 0.02 100);
+    /* The outline of an interactive control, and NOT the same value as
+       `--border` (D2, polish session): at 0.88 the check ring measured 1.37:1 on
+       `--background` and failed WCAG 1.4.11's 3:1 for a non-text control. 0.62
+       measures 3.48:1. `--border` is a hairline BETWEEN things and carries no
+       such floor, so it stays where it is. */
+    --input: oklch(0.62 0.02 100);
     --ring: oklch(0.5 0.11 122);
 
     /* Surface elevation — cards lift toward warm white, above --background */
@@ -349,7 +354,7 @@
       --accent: oklch(0.56 0.08 185);
       --accent-foreground: oklch(0.99 0 0);
       --border: oklch(0.3 0.018 105);
-      --input: oklch(0.3 0.018 105);
+      --input: oklch(0.52 0.018 105); /* 3.58:1 on --background (D2) */
       --ring: oklch(0.62 0.11 122);
 
       --card: oklch(0.21 0.018 105);
@@ -428,7 +433,7 @@
     --accent: oklch(0.56 0.08 185);
     --accent-foreground: oklch(0.99 0 0);
     --border: oklch(0.3 0.018 105);
-    --input: oklch(0.3 0.018 105);
+    --input: oklch(0.52 0.018 105); /* 3.58:1 on --background (D2) */
     --ring: oklch(0.62 0.11 122);
 
     --card: oklch(0.21 0.018 105);

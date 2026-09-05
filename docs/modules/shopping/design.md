@@ -30,27 +30,66 @@ reverse-chronological is the worst order in an aisle).
 
 `PageContainer width="list"`. Top to bottom:
 
-1. **Title row** — `PageHeader`-shaped: `Shopping` (page-title) with the count strip
-   (`19 things to get`) on the trailing edge. The count is `sm` and muted; it never
-   shouts, and it is **cumulative across every destination** — the pills beside it
-   already give the per-list split, so the one number that could answer "how much is
-   waiting in total" must not repeat a pill.
+1. **Title row** — `PageHeader`-shaped: `Shopping` (page-title), and **nothing on the
+   trailing edge**.
+
+   **Amended 2026-09-04 (SH-10, polish session).** This item used to specify a count
+   strip (`19 things to get`), **cumulative across every destination**, on the argument
+   that the one number answering "how much is waiting in total" must not repeat a pill.
+   The strip is **deleted, not relabelled** — the argument held and the number still
+   failed, because nobody acts on a total across lists: you shop one destination, so a
+   figure spanning all of them names no trip. It also put a third arithmetic on a screen
+   that already had two, and three numbers in the same visual register that count
+   different things read as one number disagreeing with itself.
+
+   **One scheme remains, "what's left."** The pill is what is remaining on that list;
+   the in-shop sticky bar reads `{n} items left` (`1 item left` in the singular). They
+   count the same thing over the same rows, so they cannot disagree — which is the
+   property deleting the third one bought. The Home widget's header keeps a house-wide
+   figure on the same arithmetic (D6): its rows are cross-list and each names its list,
+   so the figure and what it counts share a screen.
+
+   **Amended again 2026-09-04 (Zach's live pass): the sticky line drops the list name.**
+   It read `{list} · {n} left` for most of this session — SH-11 put the name there
+   deliberately, because the destination pills scroll away in a shop and the line is
+   then the only thing on screen saying **which list you are shopping**. That signal is
+   **spent, not overlooked.** Zach traded it for a quieter line, and the cost is real:
+   a shopper deep in a long list has no on-screen answer to "which list is this?"
+   without scrolling back to the pills. Recorded so the next session weighs it as a
+   trade already made rather than a defect to fix — if list identity has to return, it
+   needs a home that is not this line.
+
 2. **The capture field** — `CaptureField` (ADR 070), 56 px, the first thing under the
    title. It does **not** autofocus, and nothing else does either (ADR 070, amended
    2026-09-04). Its trailing slot is **empty**: the destination is the selected pill, not
    a second control in the field (see 4).
-3. **The filing echo** — one `sm` line under the field while composing:
-   `Enter to add · files under Pantry`. The aisle is stated **before** the commit, so a
-   mis-file is caught by the person who caused it. On submit the field clears and stays
-   open; the new row appears in its aisle.
+3. **The echo** — one `sm` line under the field while composing: `Enter to add`. On
+   submit the field clears and stays open; the new row appears in its aisle.
+
+   **Amended 2026-09-04 (SH-13, polish session): capture no longer names an aisle.** The
+   line used to read `Enter to add · files under Pantry`, stating the aisle **before** the
+   commit so a mis-file was caught by the person who caused it. It reported a problem to
+   an audience that could not act on it: correcting an aisle is `file`, tier 4 (ADR 071),
+   and the tiers doing most of the capturing — a kid, and the unattended wall, which adds
+   as tier 1 (ADR 072) — cannot correct one at all. What they got was a fact about
+   somebody else's job, on the one line whose whole budget is speed.
+
+   **Filing is list-view work, done once before a trip**, by the tier that can actually
+   re-file. The echo's remaining job is to say the field is live and Enter commits.
+
+   The server still resolves the aisle the same way (override → dictionary → `Other`), and
+   the list read still carries the family's corrections — the echo's disappearance is a
+   surface change, not a filing one. See ADR 070's 2026-09-04 amendment.
+
 4. **The destination strip** — `Chip` pills, one per list, with counts
    (`Grocery 14 · Costco 3 · Hardware 2`). **One control, two jobs** (Zach, 2026-09-04):
    the selected pill is both the list you are looking at and where an add lands.
 
    It used to be a filter only, with a separate destination chip inside the field —
    two controls in similar clothes answering "which list?" differently. Collapsing them
-   is what makes Costco reachable from the capture layout, which has `Hold to speak` in
-   that trailing slot and so had no way to any list but the default.
+   is what makes Costco reachable from the capture layout, whose trailing slot is spoken
+   for — `Hold to speak` when this was written, `Enter to add` since (see §"One surface,
+   two layouts") — and which so had no way to any list but the default.
 
    It is still never a screen you land on. It **stays visible while composing**: it says
    where the word being typed will land, and that is the moment the fact matters most.
@@ -82,8 +121,20 @@ reverse-chronological is the worst order in an aisle).
 ### In a shop
 
 The same screen scrolled. Above the fold once the hero has gone: a compacted status line
-(`Grocery · 6 of 14` + the destination chip) and the **progress meter**
-(`--spacing-meter`, `--primary` on `--muted`). A **cleared aisle collapses** to one muted
+(`8 items left` + the destination chip — the same arithmetic as the pill, amended
+2026-09-04 with item 1; `6 of 14` was the third count, and `Grocery · 8 left` the
+list-named form item 1 records trading away) and the **progress meter**
+(`--spacing-meter`, `--primary` on `--muted`).
+
+**The meter renders from first paint** whenever the list has items, filling from zero —
+it is not gated on anything having been checked yet (Zach's live pass, 2026-09-04). It
+is doing a second job here: the `⋯` list menu sits on its line, and a control with
+nothing under it reads as floating. This is a **named exception** to ADR 043's "a meter
+is a comparison; at zero it must not render", amended there rather than overridden, and
+it does not travel: the general rule still binds every other meter, and a list with no
+items has no comparison to draw and no bar.
+
+A **cleared aisle collapses** to one muted
 summary row (`Produce · 3 in the cart ›`) so the walk keeps moving. Checked rows dim to
 `0.66` with a strikethrough on the name.
 
@@ -100,22 +151,37 @@ draws is chosen by the **viewport**, at the shell's canonical `md:` (768 px) spl
 never by the profile, and never by a control on screen.
 
 - **Tablet and up — capture, and only capture.** `What do we need?` at `display-xl`,
-  a 76 px `CaptureField` below it, a **Hold to speak** affordance reserved in the
-  trailing slot (**voice is not M5.5 scope** — the slot is reserved, nothing
-  implements it), a **Just added** strip of the last few items as chips naming
-  **what** was added, never who (§Anatomy 5; ADR 072 §3/§4 withdrawn), the destination
-  pills (§Anatomy 4 — without them an add here could only ever land on the default
-  list), and a rule stating the cumulative total (`19 things to get`). The block fills
-  the screen. **The lists themselves are not on it** — a `Show lists` control swaps to
-  them at `/shopping/lists`, and `Back to adding` at the top of that view swaps back.
+  a 76 px `CaptureField` below it with `Enter to add` in the trailing slot (a return
+  icon inline), the destination pills (§Anatomy 4 — without them an add here could
+  only ever land on the default list), and a rule stating the cumulative total
+  (`19 things to get`). The block fills the screen. **The lists themselves are not on
+  it** — a `Show lists` control swaps to them at `/shopping/lists`, and `Back to
+adding` at the top of that view swaps back.
 
-  **Each `Just added` chip carries a remove.** Taking back a typo you made two seconds
-  ago is a different act from checking something off in a shop: one says "this was never
-  needed", the other "this is in the cart". It is gated on `manage`, which ADR 071 puts
-  at **tier 4** while adding is tier 1 — so **a kid, and the unattended wall, can put a
-  typo on the list and cannot take it off.** They see chips with no remove. Whether that
-  split is right is a permission question, raised at the M5.5/5 review and deliberately
-  not answered by widening a check in a component.
+  **Amended 2026-09-04 (polish session, Zach's live pass).** Two things this bullet
+  reserved are gone from it.
+
+  **The `Just added` strip is removed.** It was the last few adds as chips naming what
+  was added, never who (§Anatomy 5; ADR 072 §3/§4 withdrawn), and **each chip carried a
+  remove** — which was the wall's only take-back surface, and the one ADR 073 §3 prices
+  the fifteen-minute window against (everyone at W2 is `family`, so anyone there
+  retracts what the wall added in the window). It is removable **now and not before**
+  because SH-09/SH-02 put the two-edge row affordance on the rows themselves and made
+  the list view reachable at every width: take-back **moved**, it did not disappear.
+  Deleting the strip before that would have left the one surface never logged in as the
+  one that could never undo. What it also retires is the M5.5/5 permission question the
+  chips raised — `manage` being tier 4 while adding is tier 1, so a kid or the wall
+  could put a typo on and not take it off. ADR 073's `retract` key answered it, and the
+  answer lives on the row.
+
+  **The voice slot is no longer reserved.** The trailing slot held a **Hold to speak**
+  affordance that nothing implemented; `Enter to add` takes it instead — a real hint
+  for a real control, rather than screen given to a capability that does not exist.
+  **Voice is still out of M5.5 scope**; what changed is that it no longer has a
+  parking space waiting for it. **Owed: whenever voice is scoped, it owes a placement
+  decision** — the trailing slot is occupied now, and taking it back means displacing
+  the hint or finding voice another home. That is a design question, not a slot to
+  reclaim silently.
 
 - **Below tablet — the list.** §Anatomy exactly as shipped: compact title row, 56 px
   field, destination strip, aisle list.
@@ -187,7 +253,9 @@ shows has no separate identity and carries no separate name.
 
 **The distance-label decision this surface owed is settled** (2026-09-04): structural
 labels get a distance variant, `section-label-lg`, rather than promotion to `heading` —
-see `design-system.md` §Type scale. `Just added` uses it.
+see `design-system.md` §Type scale. `Just added` was its call site; the strip went in
+the same session's polish pass (§"One surface, two layouts") and the variant stands on
+its own argument — a structural label read at distance is still not a `heading`.
 
 ## Adding from anywhere in the house
 
@@ -219,6 +287,7 @@ Additive later; neither is a bug when it is missing.
   "anything else while I'm here?" stays a text message.
 - **A whole-house glance** (direction C) — "do we need anything anywhere?" means reading
   three pill counts, not one list.
-- **Voice capture** — the wall reserves the slot; nothing implements it.
+- **Voice capture** — nothing implements it, and since 2026-09-04 nothing reserves it
+  either: scoping voice owes a placement decision (§"One surface, two layouts").
 - **Offline** — M5.5/4, and it is real: the SW is network-first for `/api`, so the list
   fails where it is used. Nothing above assumes a live connection to be _legible_.

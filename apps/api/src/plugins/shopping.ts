@@ -7,8 +7,12 @@ import { shoppingPrisma } from '@family-os/plugin-shopping/db'
 import { fileAisle, normalizeItemName, aisleSortIndex } from '@family-os/plugin-shopping/lib/filing'
 import {
   ShoppingItemCreateSchema,
+  ShoppingItemNameSchema,
+  ShoppingItemBatchCreateSchema,
+  ShoppingItemRenameSchema,
   ShoppingAisleCorrectionSchema,
   ShoppingCheckSchema,
+  ShoppingListClearSchema,
   ShoppingListCreateSchema,
   NeedsPushedPayloadSchema,
 } from '@family-os/schemas'
@@ -157,6 +161,20 @@ async function announceItem(bus: EventBus, item: ItemRow) {
     addedBy: item.addedBy,
     sourceType: item.sourceType,
   })
+}
+
+/** The open row this name would double, on this list. Matched on
+    `normalizeItemName` — the key the dictionary and the overrides already use,
+    so `Milk` and `milk,` are one thing and `mikk` is not. Read in JS rather than
+    SQL because the normalization is ours and no column carries it; `fileNeeds`
+    dedupes the same way. */
+async function findDuplicate(listId: string, name: string) {
+  const normalizedName = normalizeItemName(name)
+  if (!normalizedName) return null
+
+  const open = await shoppingPrisma.item.findMany({ where: { listId, status: 'needed' } })
+  const match = open.find((item) => normalizeItemName(item.name) === normalizedName)
+  return match ? { id: match.id, name: match.name } : null
 }
 
 async function fileItem(bus: EventBus, input: FileItemInput): Promise<ItemRow> {
@@ -417,6 +435,12 @@ const shoppingPlugin: FastifyPluginAsync = async (fastify) => {
     }
     const { name, quantity } = parsed.data
 
+    // Read the collision BEFORE the insert, so the row about to be created can
+    // never be its own duplicate. `needed` only: something already in the cart
+    // being asked for again is a real second-trip item, not a mistake. Same
+    // list only — two destinations wanting milk is two shops.
+    const duplicateOf = await findDuplicate(listId, name)
+
     const item = await fileItem(fastify.eventBus, {
       listId,
       name,
@@ -425,7 +449,53 @@ const shoppingPlugin: FastifyPluginAsync = async (fastify) => {
       sourceType: 'manual',
     })
 
-    return reply.status(201).send(serializeItem(item, request.profile.id))
+    // The add always completes; the collision rides back with it so the surface
+    // needs no second read to say `Already on Grocery.`
+    return reply.status(201).send({ item: serializeItem(item, request.profile.id), duplicateOf })
+  })
+
+  // POST /shopping/lists/:id/clear — how a paper list ends. `checked` recycles it
+  // (what was in the cart stops existing and has to be re-originated, which is the
+  // point: a list that keeps its history is a receipt, not a list), `all` throws it
+  // away mid-trip.
+  //
+  // `manage` for BOTH scopes (Zach, 2026-09-04), and no new key: if you cannot
+  // delete one row you cannot delete twelve. A teen who shops hands the recycling
+  // to a parent, or is granted `manage` through the override lever ADR 071 already
+  // provides. `ability.can`, never a tier read (ADR 018).
+  fastify.post('/shopping/lists/:id/clear', async (request, reply) => {
+    if (!request.ability.can('manage', 'shopping.Item')) {
+      return reply.status(403).send({ error: 'Permission denied' })
+    }
+
+    const { id: listId } = request.params as { id: string }
+    const list = await shoppingPrisma.list.findUnique({ where: { id: listId } })
+    if (!list) return reply.status(404).send({ error: 'List not found' })
+
+    const parsed = ShoppingListClearSchema.safeParse(request.body ?? {})
+    if (!parsed.success) {
+      return reply.status(400).send({ error: parsed.error.flatten() })
+    }
+    const { scope } = parsed.data
+
+    const { count: removed } = await shoppingPrisma.item.deleteMany({
+      where: scope === 'checked' ? { listId, status: 'got' } : { listId },
+    })
+
+    // ONE event for one act. Seventeen `shopping.item.removed`s would have every
+    // consumer invalidate seventeen times for a single gesture, and nothing today
+    // cares which rows went — only that the list changed. This is the same
+    // reasoning ADR 072 §5 applies to naming, one step up: one transition, one
+    // event, whatever its cardinality.
+    //
+    // Emitted even at zero, so a consumer's refetch does not depend on whether the
+    // list happened to be empty.
+    fastify.eventBus.emit('shopping.list.cleared', { listId, scope, removed })
+
+    // Deliberately does NOT un-teach `Entry` — the same accepted residue ADR 073 §4
+    // records for retract: `remember()` overwrote the prior spelling on the way in,
+    // so there is nothing un-teaching would restore.
+    return { removed }
   })
 
   // DELETE /shopping/items/:id — taking back something that should never have
@@ -448,6 +518,101 @@ const shoppingPlugin: FastifyPluginAsync = async (fastify) => {
     // showing it, because invalidation is same-client and this is two clients.
     announceRemoval(fastify.eventBus, existing, request.profile.id, 'managed')
     return reply.status(204).send()
+  })
+
+  // POST /shopping/lists/:id/items/batch — one field's worth of typing, split on
+  // commas by the CLIENT (the field has to show what it is about to do) and posted
+  // once so three items cost one round trip and their duplicate answers come back
+  // from one consistent read.
+  //
+  // NOT ATOMIC, deliberately. Each name is validated, filed and reported on its own,
+  // in submitted order: a 121-char third entry is that entry's error and does not
+  // cost the two good ones in front of it. The whole request still 400s on a
+  // malformed ARRAY — empty, oversized, or not strings — because that is a client
+  // that did not parse, not a person who typed something odd.
+  //
+  // Sequential rather than batched for the same reason: `findDuplicate` re-reads
+  // per item, so a row created earlier in this batch is visible to the ones behind
+  // it, and `milk, milk` reports the second against the first. That is the point —
+  // the check runs per parsed item, exactly as if they had been typed one at a
+  // time. The input is never pre-deduplicated.
+  fastify.post('/shopping/lists/:id/items/batch', async (request, reply) => {
+    if (!request.ability.can('create', 'shopping.Item')) {
+      return reply.status(403).send({ error: 'Permission denied' })
+    }
+
+    const { id: listId } = request.params as { id: string }
+    const list = await shoppingPrisma.list.findUnique({ where: { id: listId } })
+    if (!list) return reply.status(404).send({ error: 'List not found' })
+
+    const parsed = ShoppingItemBatchCreateSchema.safeParse(request.body ?? {})
+    if (!parsed.success) {
+      return reply.status(400).send({ error: parsed.error.flatten() })
+    }
+
+    const results = []
+    for (const submitted of parsed.data.names) {
+      const name = ShoppingItemNameSchema.safeParse(submitted)
+      if (!name.success) {
+        // The name as SUBMITTED, not as trimmed — it is what the person typed and
+        // what the surface has to point at.
+        results.push({ name: submitted, error: name.error.issues[0].message })
+        continue
+      }
+
+      const duplicateOf = await findDuplicate(listId, name.data)
+      const item = await fileItem(fastify.eventBus, {
+        listId,
+        name: name.data,
+        addedBy: request.profile.id,
+        sourceType: 'manual',
+      })
+      results.push({ name: name.data, item: serializeItem(item, request.profile.id), duplicateOf })
+    }
+
+    return reply.status(201).send({ results })
+  })
+
+  // PATCH /shopping/items/:id — fixing the word on a row (SH-06). `manage`, and
+  // no new key: "let a lower tier fix their own row" is a product decision this
+  // session does not make (D5), so a kid who typed `mikk` takes it back and adds
+  // it again.
+  //
+  // It changes the name and nothing else. It does NOT re-file `category` — the
+  // aisle is `file`'s job, tier 4 and grantable separately (ADR 071) — and it
+  // does NOT `remember()`: the same asymmetry ADR 073 §4 records for retract. A
+  // rename corrects one row; teaching the dictionary from it would let a
+  // one-off spelling become what the next add of that word is called.
+  fastify.patch('/shopping/items/:id', async (request, reply) => {
+    if (!request.ability.can('manage', 'shopping.Item')) {
+      return reply.status(403).send({ error: 'Permission denied' })
+    }
+
+    const { id } = request.params as { id: string }
+    const existing = await shoppingPrisma.item.findUnique({ where: { id } })
+    if (!existing) return reply.status(404).send({ error: 'Item not found' })
+
+    const parsed = ShoppingItemRenameSchema.safeParse(request.body ?? {})
+    if (!parsed.success) {
+      return reply.status(400).send({ error: parsed.error.flatten() })
+    }
+
+    const item = await shoppingPrisma.item.update({
+      where: { id },
+      data: { name: parsed.data.name },
+    })
+
+    // ADR 073's live-staleness argument, unchanged: invalidation is
+    // same-client, and a rename on one phone leaves the old word standing on
+    // every other screen in the house.
+    fastify.eventBus.emit('shopping.item.renamed', {
+      itemId: item.id,
+      listId: item.listId,
+      name: item.name,
+      renamedBy: request.profile.id,
+    })
+
+    return serializeItem(item, request.profile.id)
   })
 
   // POST /shopping/items/:id/retract — taking back YOUR OWN add, within fifteen

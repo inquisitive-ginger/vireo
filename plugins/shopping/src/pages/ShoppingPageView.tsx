@@ -1,20 +1,28 @@
-import { useState } from 'react'
-import { Check, ChevronDown, ChevronLeft, FolderInput, Loader2 } from 'lucide-react'
-import { SHOPPING_AISLES, type ShoppingAisle } from '@family-os/schemas'
+import { Fragment, useEffect, useRef, useState, type ReactNode } from 'react'
+import { Check, ChevronDown, ChevronLeft, ChevronUp, Loader2, ShoppingCart } from 'lucide-react'
+import { ShoppingItemNameSchema, type ShoppingAisle } from '@family-os/schemas'
 import {
-  Button,
   CaptureField,
   Chip,
+  EmptyState,
   ListRow,
   PageContainer,
   PageHeader,
-  Popover,
-  PopoverContent,
-  PopoverTrigger,
+  RowSwipe,
   cn,
+  useReducedMotion,
 } from '@family-os/ui'
-import type { ShoppingItem, ShoppingList } from '../types'
+import type { CaptureReport, ShoppingItem, ShoppingList } from '../types'
+import { ReportLine } from '../components/ReportLine'
 import { ShoppingCaptureHero } from './ShoppingCaptureHero'
+import { RowActionsPanel, RowActionsSheet } from './RowActionsSheet'
+import { ClearListMenu, type ClearScope } from './ClearListMenu'
+import { removalVerb } from '../lib/removal-verb'
+
+/** Long enough for the check's own motion to land before the aisle folds. Must
+    track `--duration-fast`, which is what the ring's fill and its 1 → 1.08 → 1
+    pop both run at; the extra is the eye catching up with it. */
+const FOLD_AFTER_MS = 220
 
 export interface AisleGroup {
   aisle: string
@@ -31,12 +39,9 @@ export interface ShoppingPageViewProps {
       is a claim about the house, and it must not be made before the answer is in. */
   loading: boolean
   onAdd: (name: string) => void
-  onDraftChange: (draft: string) => void
-  /** What the current draft would file under. Null while the field is empty —
-      the echo only exists between typing and committing. */
-  draftAisle: string | null
-  /** The name that failed to land, so the word is not silently lost. */
-  addError: string | null
+  /** The report slot's stack, already ranked (D4): one error line, then one
+      notice per collision. Empty and the slot says what the surface itself has. */
+  reports: CaptureReport[]
   /** `shopping.item.add` is revoked for this profile — the one lever that closes
       the field (ADR 072 §6). The house itself adds; the wide layout needs it. */
   canAdd: boolean
@@ -44,32 +49,45 @@ export interface ShoppingPageViewProps {
       reader switches — the viewport picks it, and both draw the same list from
       the same data. Wide DOES have capture/list modes inside it, which is what
       W2 always was; the no-mode rule is the narrow layout's (design.md
-      §"The no-mode principle is scoped to narrow"). */
+      §"One surface, two layouts"). */
   layout: 'capture' | 'list'
-  /** Wide only — the hero's short memory of what landed, anywhere. */
-  justAdded: { id: string; name: string; canRetract: boolean }[]
-  /** Wide only — everything waiting across every destination. */
+  /** Wide only — everything waiting across every destination, on the same "what's
+      left" arithmetic as everywhere else (D6). */
   totalOpenCount: number
   /** `capture` only — swaps to the list at its own URL. */
   onShowLists: () => void
   /** The way back, offered ONLY on the wide list view. Undefined on a phone,
       which has no dedicated capture view to return to. */
   onBackToCapture?: () => void
-  /** Taking back your own recent add (ADR 073, tier 1). Undefined when the
-      profile lacks the key; per-row eligibility is the server's `canRetract`. */
-  onRetract?: (id: string, name: string) => void
-  retractError: string | null
   /** `shopping.item.check`, tier 2 (ADR 071) — the ring AND the whole-row tap,
       in both directions. Without it the rows are still readable, just inert. */
   canCheck: boolean
   /** `shopping.item.file`, tier 4 (ADR 071) — the aisle correction, which writes
-      a family-wide override. Below tier 4 the control is simply absent. */
+      a family-wide override. Below tier 4 the verb is simply absent from the sheet. */
   canFile: boolean
+  /** `shopping.item.manage`, tier 4 — rename and remove (D5). */
+  canManage: boolean
+  /** `shopping.item.retract`, tier 1 (ADR 073) — held by the profile; the row's
+      own eligibility rides on the payload's `canRetract`. */
+  canRetract: boolean
+  /** Tablet and up: the row's verbs render INLINE, anchored to the row and
+      pushing the rows below it down (E1 panel 3). A phone keeps the bottom
+      sheet — a panel that pushes rows there moves the row being acted on off
+      the screen. */
+  inlineActions: boolean
   onToggle: (item: ShoppingItem) => void
   onRefile: (item: ShoppingItem, category: ShoppingAisle) => void
+  onRename: (item: ShoppingItem, name: string) => void
+  onRemove: (item: ShoppingItem) => void
+  onRowRetract: (item: ShoppingItem) => void
+  /** Recycling the list or throwing it away — both `manage`, both hard deletes.
+      A profile without the key sees no menu at all, rather than one that 403s. */
+  onClear: (scope: ClearScope) => void
   /** Row-scoped failures, keyed by item id. A check that did not reach the
       server is a person in an aisle believing a thing is in the cart, so it
-      reports on the row they tapped, never in the page chrome (M5.5/3). */
+      reports on the row they tapped, never in the page chrome (M5.5/3). A
+      retract refused at the boundary lands here too — the row is still there to
+      carry the message (ADR 073 §2). */
   rowErrors: Record<string, string>
 }
 
@@ -77,8 +95,13 @@ export interface ShoppingPageViewProps {
    field is the hero at rest and the aisle-ordered list is the page; neither is a
    mode, and the field simply scrolls away under the thumb in a shop. There is no
    index of lists and no drill-in — the destination strip both swaps the list in
-   place and says where an add will land, which is one control, not two. No spine, no hue, no avatar (ADR 064): "who added the milk"
-   is not a question this list answers, so provenance is a text fact. */
+   place and says where an add will land, which is one control, not two. No spine,
+   no hue, no avatar (ADR 064): "who added the milk" is not a question this list
+   answers, so provenance is a text fact.
+
+   Row chrome is exactly leading ring, `card-title` name, optional `sm` note —
+   nothing else, at any tier (SH-08). Every other verb is behind the row's own
+   gesture. */
 export function ShoppingPageView({
   lists,
   selectedListId,
@@ -86,29 +109,40 @@ export function ShoppingPageView({
   groups,
   loading,
   onAdd,
-  onDraftChange,
-  draftAisle,
-  addError,
+  reports,
   canAdd,
   layout,
-  justAdded,
   totalOpenCount,
   onShowLists,
   onBackToCapture,
-  onRetract,
-  retractError,
   canCheck,
   canFile,
+  canManage,
+  canRetract,
+  inlineActions,
   onToggle,
   onRefile,
+  onRename,
+  onRemove,
+  onRowRetract,
+  onClear,
   rowErrors,
 }: ShoppingPageViewProps) {
+  // Local to the view since SH-13: the echo says the field is live and Enter
+  // commits, which is a fact about THIS field. Nothing above needs the draft, so
+  // nothing above holds it.
+  const [composing, setComposing] = useState(false)
+  const [sheetItem, setSheetItem] = useState<ShoppingItem | null>(null)
+  // Renaming happens on the ROW, at both widths (Zach, list pass). On a phone the
+  // browser scrolls a focused input above the keyboard the way it does for every
+  // other field on the page, which is the actual fix for the occlusion a sheet
+  // field had; on a tablet it means the inline panel never has to host one.
+  const [renamingId, setRenamingId] = useState<string | null>(null)
   const selected = lists.find((l) => l.id === selectedListId)
   const destination = selected?.name ?? 'the list'
   // Aisles belong to the LIST, not to the app — a hardware run has none of ours,
   // so it renders flat rather than filing every screw under Other.
   const showAisles = selected?.groupByAisle ?? true
-  const composing = draftAisle !== null
   const capturing = layout === 'capture'
 
   // Derived from what is actually drawn, never from the index count — the two
@@ -116,12 +150,17 @@ export function ShoppingPageView({
   // rows on screen.
   const total = groups.reduce((n, g) => n + g.items.length, 0)
   const got = groups.reduce((n, g) => n + g.items.filter((i) => i.status === 'got').length, 0)
+  const needed = total - got
+  const cleared = total > 0 && needed === 0
 
   /* ONE control, not two (Zach, 2026-09-04). The field used to carry a
      destination chip while this row filtered the list — two controls in similar
      clothes answering "which list?" differently. The selected pill is now both:
      what you are looking at, and where an add goes. That is also what makes
-     Costco reachable from the capture screen, which had no way to it at all. */
+     Costco reachable from the capture screen, which had no way to it at all.
+
+     Its count is what is LEFT on that list, which is the same arithmetic the
+     sticky line below reports (SH-10) — the two cannot disagree. */
   const destinations = (
     <div className="flex gap-2 overflow-hidden py-0.5">
       {lists.map((list) => (
@@ -147,21 +186,21 @@ export function ShoppingPageView({
     // either: unmeasured at 1280 the rows run 1232px, so a name at the left edge
     // and its aisle at the right are a head-turn apart. The wide layout earns its
     // presence with type size, not with span.
-    <PageContainer width="list">
+    /* The capture layout fills the shell's `main` and does not scroll —
+       `design.md` §"One surface, two layouts" says the block fills the screen,
+       and a screen that scrolls is not filled. `className`, never padding:
+       `PageContainer`'s gutters are not a prop (CLAUDE.md). The LIST layout at
+       either width keeps scrolling; it is a long list and always was. */
+    <PageContainer width="list" className={capturing ? 'h-full' : undefined}>
       {capturing ? (
         <ShoppingCaptureHero
-          justAdded={justAdded}
           openCount={totalOpenCount}
-          onRetract={onRetract}
-          retractError={retractError}
           destinations={destinations}
           onShowLists={onShowLists}
           loading={loading}
           destination={selected?.name ?? null}
           onAdd={onAdd}
-          onDraftChange={onDraftChange}
-          draftAisle={draftAisle}
-          addError={addError}
+          reports={reports}
           canAdd={canAdd}
         />
       ) : (
@@ -177,32 +216,22 @@ export function ShoppingPageView({
             </button>
           )}
 
-          {/* The count rides the title's own baseline and the field sits 14px
-              under it (artifact S1), so the primitive's `items-start` / `mb-6`
-              are the two things overridden — not the header. */}
-          <PageHeader
-            className="mb-0 items-baseline"
-            title="Shopping"
-            // Cumulative across every destination — the pills beside it already
-            // give the per-list split, so the one number on the page that could
-            // answer "how much is waiting in total" should not repeat a pill.
-            action={
-              <span className="text-sm-token text-muted-foreground">
-                {totalOpenCount} thing{totalOpenCount === 1 ? '' : 's'} to get
-              </span>
-            }
-          />
+          {/* Nothing on the trailing edge (design.md §Anatomy 1, amended
+              2026-09-04). The cumulative cross-list count that lived here is
+              deleted, not relabelled: you shop one destination, so a figure
+              spanning all of them names no trip — and it put a third arithmetic
+              on a screen that already had two. */}
+          <PageHeader className="mb-0 items-baseline" title="Shopping" />
 
           <CaptureField
             size="hero"
             className="mt-3.5"
             // Deliberately NOT autofocused (ADR 070): an unrequested keyboard on
-            // a route you opened to read is hostile. The wide layout is a screen
-            // you walked up to in order to type, so it focuses; this is not.
+            // a route you opened to read is hostile.
             placeholder={`Add to ${destination}`}
             label={`Add to ${destination}`}
             disabled={!canAdd}
-            onValueChange={onDraftChange}
+            onValueChange={(value) => setComposing(value.trim().length > 0)}
             onSubmit={onAdd}
           />
 
@@ -214,63 +243,85 @@ export function ShoppingPageView({
           {/* Everything that reports on the field sits under the pair, in a slot
               that reserves its height — mounted on the first keystroke it shoves
               the list down and back on Enter. */}
-          <div className="min-h-7 pt-1.5">
-            {addError ? (
-              <p role="alert" className="text-sm-token px-1 text-error">
-                Couldn&rsquo;t add &ldquo;{addError}&rdquo; — check your connection and try again.
-              </p>
-            ) : !canAdd ? (
-              <p className="text-sm-token px-1 text-muted-foreground">
-                Adding to the list is turned off for this profile.
-              </p>
-            ) : composing ? (
-              <p className="text-sm-token px-1 text-muted-foreground">
-                Enter to add · files under{' '}
-                <span className="font-medium text-foreground">{draftAisle}</span>
-              </p>
-            ) : null}
-          </div>
+          <ReportLine
+            reports={reports}
+            idle={
+              !canAdd
+                ? 'Adding to the list is turned off for this profile.'
+                : composing
+                  ? 'Enter to add'
+                  : undefined
+            }
+          />
         </>
       )}
 
       {/* Artifact S3, the same screen scrolled. It sticks rather than switching —
           the hero goes under the thumb and this is what is left above the fold,
-          so the shopper never scrolls up to ask how far along they are. It shows
-          when there is progress to report and not before: S1 draws neither line
-          nor meter, and a meter reading 0 of 14 is a third count of a number
-          already on screen twice. Data, not a scroll threshold — mid-shop is
-          when the page is SHORTEST, because every cleared aisle folds to one
-          row, so the hero often never scrolls away at all. */}
-      {!capturing && got > 0 && (
-        <div className="sticky top-0 z-30 bg-background pt-2.5 pb-2">
-          {/* The count is the reason the block exists, so it takes `heading` — a
-              rung of its own between the page title and the row names. Drawn at
-              `section-label` it was the same ink and size as the word DAIRY, and
-              a status line that reads as an aisle header has no rank left when
-              it is NOT at the top of a scrolled screen.
+          so the shopper never scrolls up to ask how far along they are.
 
-              It does NOT name the destination. The artifact pairs this line with
-              a second `Grocery ▾` chip because in S3 the pill strip has scrolled
-              away and that chip is the switcher standing in for it. The strip
-              now stays put and carries the destination itself, so a label here
-              repeats the control directly above it — and a region that repeats
-              its neighbour is a region people stop reading. */}
-          <span className="text-heading block text-foreground">
-            {got} of {total}
-          </span>
-          <div
-            className="h-meter mt-2 overflow-hidden rounded-full bg-muted"
-            role="progressbar"
-            aria-label={`${got} of ${total} in the cart`}
-            aria-valuenow={got}
-            aria-valuemin={0}
-            aria-valuemax={total}
-          >
-            <div
-              className="h-full rounded-full bg-primary transition-[width] duration-[var(--duration-slow)]"
-              style={{ width: `${total === 0 ? 0 : Math.round((got / total) * 100)}%` }}
+          Its height is reserved from the first paint (SH-12). It used to mount on
+          the first check, which shoved the row the thumb was still over down ~58px
+          mid-interaction. ADR 043's rule — no comparison until there is progress
+          to compare — is about what the block SAYS, so the block goes quiet
+          rather than absent. */}
+      {!capturing && total > 0 && (
+        // Sticky while there is a walk left to follow. The finish is not: it is
+        // read once, and a block this tall following the scroll would take the
+        // aisles the shopper is unchecking from with it.
+        <div className={cn('bg-background pt-2.5 pb-2', !cleared && 'sticky top-0 z-30')}>
+          {cleared ? (
+            <ClearedList
+              destination={destination}
+              total={total}
+              aisles={groups.length}
+              showAisles={showAisles}
+              onRecycle={canManage ? () => onClear('checked') : undefined}
             />
-          </div>
+          ) : (
+            <>
+              <div className="flex items-center justify-between gap-3">
+                {/* `{n} items left` — the figure at `heading`, the words at `sm`,
+                    so what is LEFT reads first. It carries no list name: the
+                    destination pills sit directly above and a line that repeats
+                    its neighbour is a line people stop reading. This reverses
+                    SH-11, which put the name here; the pills had not yet been
+                    settled as the permanent thing above it.
+
+                    The block paints from first paint rather than waiting for a
+                    check, because the menu beside it needs an anchor — a `⋯`
+                    hovering against nothing reads as a mis-render. ADR 043's
+                    "no meter at zero" is amended for this surface in the same
+                    PR; the general rule stands elsewhere. SH-12 is untouched:
+                    the height was already reserved, and now it is also drawn. */}
+                <span>
+                  <span className="text-heading text-foreground">{needed}</span>
+                  <span className="text-sm-token text-muted-foreground">
+                    {' '}
+                    item{needed === 1 ? '' : 's'} left
+                  </span>
+                </span>
+                {/* On the sticky line rather than beside the destination pills
+                    (Zach's correction): the moment you want to bin a list is the
+                    moment you are at the bottom of a long one, and only this
+                    block is still on screen there. */}
+                {canManage && <ClearListMenu got={got} total={total} onClear={onClear} />}
+              </div>
+              <div
+                className="h-meter mt-2 overflow-hidden rounded-full bg-muted"
+                role="progressbar"
+                aria-label={`${got} of ${total} in the cart`}
+                aria-valuenow={got}
+                aria-valuemin={0}
+                aria-valuemax={total}
+              >
+                <div
+                  className="h-full rounded-full bg-primary transition-[width] duration-[var(--duration-slow)]"
+                  style={{ width: `${total === 0 ? 0 : Math.round((got / total) * 100)}%` }}
+                />
+              </div>
+            </>
+          )}
         </div>
       )}
 
@@ -281,24 +332,137 @@ export function ShoppingPageView({
               <Loader2 className="size-5 animate-spin text-muted-foreground" aria-label="Loading" />
             </div>
           ) : groups.length === 0 ? (
-            <p className="text-body px-1 pt-6 text-muted-foreground">
-              Nothing on {destination} yet.
-            </p>
+            /* The zero-items case, which is NOT the cleared state (SH-07) —
+               that one is a finish, this one is a beginning. No `action`: the
+               capture field is directly above and is the action, and a CTA that
+               focuses it would be the autofocus ADR 070 withdrew. */
+            <EmptyState
+              icon={ShoppingCart}
+              heading={`Nothing on ${destination} yet.`}
+              body="Add something in the field above."
+            />
           ) : (
             <ItemList
               key={selectedListId}
               groups={groups}
               showAisles={showAisles}
               canCheck={canCheck}
-              canFile={canFile}
+              canManage={canManage}
+              canRetract={canRetract}
+              hasSheetVerb={canFile || canManage || canRetract}
               onToggle={onToggle}
-              onRefile={onRefile}
+              onOpenSheet={setSheetItem}
+              onDismissActions={() => setSheetItem(null)}
+              onRemove={onRemove}
+              onRowRetract={onRowRetract}
+              sheetItemId={sheetItem?.id ?? null}
+              renamingId={renamingId}
+              onFinishRename={(item, name) => {
+                setRenamingId(null)
+                if (name && name !== item.name) onRename(item, name)
+              }}
               rowErrors={rowErrors}
+              actionsPanel={
+                inlineActions
+                  ? (item) => (
+                      <RowActionsPanel
+                        inline
+                        item={item}
+                        onClose={() => setSheetItem(null)}
+                        canFile={canFile}
+                        canManage={canManage}
+                        canRetract={canRetract}
+                        onRefile={onRefile}
+                        onStartRename={() => {
+                          setSheetItem(null)
+                          setRenamingId(item.id)
+                        }}
+                        onRemove={onRemove}
+                        onRetract={onRowRetract}
+                      />
+                    )
+                  : undefined
+              }
             />
           )}
         </div>
       )}
+
+      {/* Narrow only — the wide layout renders the same body inline, in the row's
+          own place in the list. */}
+      {!inlineActions && (
+        <RowActionsSheet
+          item={sheetItem}
+          onClose={() => setSheetItem(null)}
+          canFile={canFile}
+          canManage={canManage}
+          canRetract={canRetract}
+          onRefile={onRefile}
+          onStartRename={(item: ShoppingItem) => {
+            setSheetItem(null)
+            setRenamingId(item.id)
+          }}
+          onRemove={onRemove}
+          onRetract={onRowRetract}
+        />
+      )}
     </PageContainer>
+  )
+}
+
+/* The walk gets an ending (SH-07, artifact E6). It replaces the meter and
+   NOTHING else: the field, the destination pills and every aisle summary stay
+   mounted and interactive, because ADR 071 §2 requires the uncheck to be
+   reachable by the person standing in the aisle. Adding an item or unchecking a
+   row returns the list to its normal shape in the same render — there is no
+   dismissal and no state to get stuck in.
+
+   Per-list: clearing Grocery says nothing about Costco, and the pills keep their
+   own counts. */
+function ClearedList({
+  destination,
+  total,
+  aisles,
+  showAisles,
+  onRecycle,
+}: {
+  destination: string
+  total: number
+  aisles: number
+  showAisles: boolean
+  /** Undefined below `manage` — the button is absent rather than refused. */
+  onRecycle?: () => void
+}) {
+  return (
+    <div className="flex flex-col items-center gap-2 pt-2 pb-1">
+      {/* The ring is the product's own mark — the thing you pressed seventeen
+          times, once at size. No new iconography. */}
+      <span className="grid size-9 shrink-0 place-items-center rounded-full border-2 border-primary bg-primary text-primary-foreground">
+        <Check size={20} strokeWidth={3} aria-hidden />
+      </span>
+      <p className="text-heading text-foreground">That&rsquo;s everything.</p>
+      <p className="text-sm-token text-center text-muted-foreground">
+        {total} thing{total === 1 ? '' : 's'}
+        {showAisles && `, ${aisles} aisle${aisles === 1 ? '' : 's'}`}, {destination} is clear.
+      </p>
+      {/* Finishing a shop is exactly when you bin a paper list, so the recycle
+          gets a real button here rather than staying behind the menu. Same
+          two-step confirmation, naming the same count — there is no undo. */}
+      {/* NO confirmation here, unlike the menu's two verbs. Everything on this
+          list is already bought, so there is nothing to lose by removing it, and
+          a confirm on the one action that is unambiguously good news is friction
+          for its own sake. Mid-shop is the opposite case: unchecked rows are
+          still on screen and the count is the warning. */}
+      {onRecycle && (
+        <button
+          type="button"
+          onClick={onRecycle}
+          className="text-body min-h-touch mt-1 cursor-pointer rounded-panel border border-border px-4 font-medium text-foreground hover:bg-secondary"
+        >
+          Start a fresh list
+        </button>
+      )}
+    </div>
   )
 }
 
@@ -306,10 +470,26 @@ interface ItemListProps {
   groups: AisleGroup[]
   showAisles: boolean
   canCheck: boolean
-  canFile: boolean
+  canManage: boolean
+  canRetract: boolean
+  hasSheetVerb: boolean
   onToggle: (item: ShoppingItem) => void
-  onRefile: (item: ShoppingItem, category: ShoppingAisle) => void
+  onOpenSheet: (item: ShoppingItem) => void
+  /** A drag starting anywhere in the list closes whatever is standing open —
+      reaching for another row is the moment the reader left the one they had. */
+  onDismissActions: () => void
+  onRemove: (item: ShoppingItem) => void
+  onRowRetract: (item: ShoppingItem) => void
+  sheetItemId: string | null
+  /** The row currently being renamed in place, if any. */
+  renamingId: string | null
+  /** Empty or unchanged name means cancel — the caller decides, so Escape and a
+      blur that changed nothing take the same path. */
+  onFinishRename: (item: ShoppingItem, name: string | null) => void
   rowErrors: Record<string, string>
+  /** Tablet and up — renders the open row's verbs directly under it. Undefined
+      on a phone, where the bottom sheet carries them instead. */
+  actionsPanel?: (item: ShoppingItem) => ReactNode
 }
 
 /* Keyed on the destination by its caller, so swapping lists resets which aisles
@@ -321,27 +501,50 @@ function ItemList({
   groups,
   showAisles,
   canCheck,
-  canFile,
+  canManage,
+  canRetract,
+  hasSheetVerb,
   onToggle,
-  onRefile,
+  onOpenSheet,
+  onDismissActions,
+  onRemove,
+  onRowRetract,
+  sheetItemId,
+  renamingId,
+  onFinishRename,
   rowErrors,
+  actionsPanel,
 }: ItemListProps) {
-  // An aisle you have touched stays open. That is what reconciles the two rules
-  // that otherwise fight: a cleared aisle collapses so the walk keeps moving,
-  // but the row you just tapped must not vanish from under your thumb. An aisle
-  // cleared by someone else, or already cleared when the page loaded, arrives
-  // collapsed; the one you are standing in does not close on you.
-  const [opened, setOpened] = useState<string[]>([])
+  /* A complete aisle collapses, including the one you just completed. The fold IS
+     the message — clearing an aisle is the one moment in a shop that says "done
+     here, move on", and holding it open makes the shopper learn that by reading a
+     summary that has not changed.
+
+     It waits for the check's own motion first: the ring fills and pops, THEN the
+     aisle closes, so the fold reads as a consequence of the tap rather than as
+     the tap having done something else. Under `prefers-reduced-motion` there is
+     nothing to wait for and it folds at once.
+
+     ADR 071 §2 still binds and still holds: the uncheck is one tap on the
+     summary away. "The aisle collapsed and took the row with it" is a bug report
+     someone will file about correct behaviour — the reopen is the answer.
+
+     Overrides are SESSION-ONLY, deliberately: nothing is stored and nothing
+     syncs, so a fresh arrival always sees the shop in its truthful state. */
+  const [openOverride, setOpenOverride] = useState<Record<string, boolean>>({})
+  const [folding, setFolding] = useState<string | null>(null)
+  const reducedMotion = useReducedMotion()
 
   return (
     <>
       {groups.map((group, i) => {
-        const cleared = group.items.every((item) => item.status === 'got')
+        const complete = group.items.every((item) => item.status === 'got')
         // A flat list has no aisles of ours, so it has no cleared aisle either —
         // collapsing its single pseudo-group would hide the whole list behind a
         // summary of a grouping its shopper cannot see. The meter still works
         // there; only the collapse is aisle-coupled.
-        const collapsed = showAisles && cleared && !opened.includes(group.aisle)
+        const collapsed =
+          showAisles && complete && openOverride[group.aisle] !== true && folding !== group.aisle
 
         if (collapsed) {
           return (
@@ -353,7 +556,7 @@ function ItemList({
             <ListRow
               key={group.aisle}
               className="text-muted-foreground"
-              onActivate={() => setOpened((open) => [...open, group.aisle])}
+              onActivate={() => setOpenOverride((o) => ({ ...o, [group.aisle]: true }))}
               activateLabel={`Open ${group.aisle} — ${group.items.length} in the cart`}
             >
               {/* The chevron rides the label, not the far margin: it is the only
@@ -372,31 +575,73 @@ function ItemList({
 
         return (
           <div key={group.aisle}>
-            {showAisles && (
-              <div
-                className={cn(
-                  // A section label binds to what is BELOW it, so the gap above
-                  // stays the larger of the two (live review, 2026-09-04).
-                  'text-section-label pb-2 text-muted-foreground',
-                  i === 0 ? 'pt-4' : 'pt-7'
-                )}
-              >
-                {group.aisle}
-              </div>
-            )}
+            {showAisles &&
+              // A complete aisle that is open was opened by hand (or by the check
+              // that completed it), so its header is the way back to closed —
+              // tapping reopens, tapping again closes. An incomplete aisle has
+              // nothing to collapse and stays a label.
+              (complete ? (
+                <button
+                  type="button"
+                  onClick={() => setOpenOverride((o) => ({ ...o, [group.aisle]: false }))}
+                  aria-expanded
+                  className={cn(
+                    'text-section-label min-h-touch flex w-full cursor-pointer items-center gap-1.5 pb-2 text-left text-muted-foreground',
+                    i === 0 ? 'pt-4' : 'pt-7'
+                  )}
+                >
+                  {group.aisle}
+                  <ChevronUp size={14} aria-hidden />
+                </button>
+              ) : (
+                <div
+                  className={cn(
+                    // A section label binds to what is BELOW it, so the gap above
+                    // stays the larger of the two (live review, 2026-09-04).
+                    'text-section-label pb-2 text-muted-foreground',
+                    i === 0 ? 'pt-4' : 'pt-7'
+                  )}
+                >
+                  {group.aisle}
+                </div>
+              ))}
             {group.items.map((item) => (
-              <Row
-                key={item.id}
-                item={item}
-                canCheck={canCheck}
-                canFile={canFile}
-                error={rowErrors[item.id]}
-                onToggle={() => {
-                  setOpened((open) => (open.includes(group.aisle) ? open : [...open, group.aisle]))
-                  onToggle(item)
-                }}
-                onRefile={(category) => onRefile(item, category)}
-              />
+              <Fragment key={item.id}>
+                <Row
+                  item={item}
+                  canCheck={canCheck}
+                  canManage={canManage}
+                  canRetract={canRetract}
+                  hasSheetVerb={hasSheetVerb}
+                  sheetOpen={sheetItemId === item.id}
+                  error={rowErrors[item.id]}
+                  onToggle={() => {
+                    /* Any toggle drops a manual override: a check that completes
+                       the aisle folds it, and an uncheck makes it incomplete so
+                       it stays open on its own. Neither needs the override. */
+                    setOpenOverride((o) => {
+                      if (!(group.aisle in o)) return o
+                      const next = { ...o }
+                      delete next[group.aisle]
+                      return next
+                    })
+                    // Held open just long enough for the ring to finish, so the
+                    // fold reads as the consequence of a check that landed.
+                    if (!reducedMotion) {
+                      setFolding(group.aisle)
+                      window.setTimeout(() => setFolding(null), FOLD_AFTER_MS)
+                    }
+                    onToggle(item)
+                  }}
+                  onOpenSheet={() => onOpenSheet(item)}
+                  onDismissActions={onDismissActions}
+                  onRemove={() => onRemove(item)}
+                  onRetract={() => onRowRetract(item)}
+                  renaming={renamingId === item.id}
+                  onFinishRename={(name) => onFinishRename(item, name)}
+                />
+                {sheetItemId === item.id && actionsPanel?.(item)}
+              </Fragment>
             ))}
           </div>
         )
@@ -408,119 +653,198 @@ function ItemList({
 interface RowProps {
   item: ShoppingItem
   canCheck: boolean
-  canFile: boolean
+  canManage: boolean
+  canRetract: boolean
+  hasSheetVerb: boolean
+  sheetOpen: boolean
   error?: string
   onToggle: () => void
-  onRefile: (category: ShoppingAisle) => void
+  onOpenSheet: () => void
+  onDismissActions: () => void
+  onRemove: () => void
+  onRetract: () => void
+  renaming: boolean
+  onFinishRename: (name: string | null) => void
 }
 
-function Row({ item, canCheck, canFile, error, onToggle, onRefile }: RowProps) {
+function Row({
+  item,
+  canCheck,
+  canManage,
+  canRetract,
+  hasSheetVerb,
+  sheetOpen,
+  error,
+  onToggle,
+  onOpenSheet,
+  onDismissActions,
+  onRemove,
+  onRetract,
+  renaming,
+  onFinishRename,
+}: RowProps) {
   const got = item.status === 'got'
-  return (
-    <ListRow
-      leading={<Ring checked={got} />}
-      dimmed={got}
-      onActivate={canCheck ? onToggle : undefined}
-      activateLabel={got ? `Put “${item.name}” back on the list` : `Mark “${item.name}” as got`}
-      trailing={canFile ? <AisleCorrection item={item} onRefile={onRefile} /> : undefined}
-    >
-      <div className="min-w-0 flex-1">
-        <span
-          className={cn('text-card-title block truncate text-foreground', got && 'line-through')}
-        >
-          {item.name}
-        </span>
-        {/* Producer words only ("for Thursday"). Per-row attribution is not
-            rendered here in either direction — not who added (ADR 072 §3/§4) and
-            not who checked (ADR 064, amended 2026-09-04). A shared list does not
-            answer whose milk it is, and thirty rows of it sit between the
-            shopper and the next word they have to read. `added_by` and `got_by`
-            are stored for permissions and audit; neither reaches the wire.
+  /* ONE removal verb, never two: `manage` wins over `retract` because they are
+     the same act to the person holding the phone. The decision lives in
+     `removalVerb` and the row's SHEET reads it from the same place —
+     deliberately, not by coincidence. It was stated twice before this, and the
+     copy in the sheet was the one that was wrong. Labels stay local, because the
+     two surfaces say it differently; only the decision is shared. The edge binds
+     nothing when neither verb is permitted. */
+  const verb = removalVerb(item, canManage, canRetract)
+  const quick =
+    verb === 'remove'
+      ? { label: 'Remove', onFire: onRemove }
+      : verb === 'retract'
+        ? { label: 'Take it back', onFire: onRetract }
+        : undefined
 
-            Two shoppers converge on the row's STATE — dimmed, struck through, in
-            place — which is the thing either of them acts on. */}
-        {item.note && (
-          <span className="text-sm-token block truncate text-muted-foreground">{item.note}</span>
-        )}
-        {/* The tap failed, so the answer lands where the tap did. A page-scoped
-            line names no row when thirty of them look alike. */}
-        {error && (
-          <span role="alert" className="text-sm-token block text-error">
-            {error}
+  /* While renaming, the row is a field and nothing else: no gesture, no check.
+     A drag or a whole-row tap on a row you are editing is a mis-tap every time. */
+  if (renaming) {
+    return (
+      <ListRow leading={<Ring checked={got} />}>
+        <div className="min-w-0 flex-1 py-1.5">
+          <RenameField name={item.name} onFinish={onFinishRename} />
+        </div>
+      </ListRow>
+    )
+  }
+
+  return (
+    <RowSwipe
+      label={item.name}
+      quick={quick}
+      onOpenActions={hasSheetVerb ? onOpenSheet : undefined}
+      actionsOpen={sheetOpen}
+      onGestureStart={onDismissActions}
+    >
+      <ListRow
+        leading={<Ring checked={got} />}
+        dimmed={got}
+        onActivate={canCheck ? onToggle : undefined}
+        activateLabel={got ? `Put “${item.name}” back on the list` : `Mark “${item.name}” as got`}
+      >
+        <div className="min-w-0 flex-1">
+          <span
+            className={cn('text-card-title block truncate text-foreground', got && 'line-through')}
+          >
+            {item.name}
           </span>
-        )}
-      </div>
-    </ListRow>
+          {/* Producer words only ("for Thursday"). Per-row attribution is not
+              rendered here in either direction — not who added (ADR 072 §3/§4) and
+              not who checked (ADR 064, amended 2026-09-04). A shared list does not
+              answer whose milk it is, and thirty rows of it sit between the
+              shopper and the next word they have to read. `added_by` and `got_by`
+              are stored for permissions and audit; neither reaches the wire.
+
+              Two shoppers converge on the row's STATE — dimmed, struck through, in
+              place — which is the thing either of them acts on. */}
+          {item.note && (
+            <span className="text-sm-token block truncate text-muted-foreground">{item.note}</span>
+          )}
+          {/* The tap failed, so the answer lands where the tap did. A page-scoped
+              line names no row when thirty of them look alike. */}
+          {error && (
+            <span role="alert" className="text-sm-token block text-error">
+              {error}
+            </span>
+          )}
+        </div>
+      </ListRow>
+    </RowSwipe>
+  )
+}
+
+/* Renaming happens where the row already is, at BOTH widths (Zach, list pass).
+   A field inside a bottom sheet on a phone sat under the keyboard; a field on the
+   row is scrolled above it by the browser, the same as every other input on the
+   page. Enter commits, Escape cancels, blur commits — a rename is one word, and
+   a person who taps away from it has finished, not abandoned it. The cap is the
+   schema's own, never a copy of the number. */
+function RenameField({
+  name,
+  onFinish,
+}: {
+  name: string
+  onFinish: (name: string | null) => void
+}) {
+  const [draft, setDraft] = useState(name)
+  const cancelled = useRef(false)
+
+  return (
+    <input
+      autoFocus
+      value={draft}
+      maxLength={ShoppingItemNameSchema.maxLength ?? undefined}
+      aria-label={`Rename “${name}”`}
+      enterKeyHint="done"
+      onChange={(e) => setDraft(e.target.value)}
+      onKeyDown={(e) => {
+        if (e.key === 'Enter') {
+          e.preventDefault()
+          onFinish(draft.trim() || null)
+        } else if (e.key === 'Escape') {
+          e.preventDefault()
+          // Marked before blur so the blur that follows does not commit it.
+          cancelled.current = true
+          onFinish(null)
+        }
+      }}
+      onBlur={() => {
+        if (cancelled.current) return
+        onFinish(draft.trim() || null)
+      }}
+      className="text-card-title min-h-touch w-full rounded-lg border border-input bg-card px-2 text-foreground outline-none focus-visible:border-primary focus-visible:ring-1 focus-visible:ring-primary"
+    />
   )
 }
 
 /* The leading slot ListRow renders but does not define (ADR 063). It is
    deliberately NOT a button: the whole row is the target, and a control sitting
    above the activation overlay would carve a hole in it exactly where the eye
-   aims. `ListRow` makes the slot inert on an activatable row for that reason. */
-function Ring({ checked }: { checked: boolean }) {
-  return (
-    <span
-      aria-hidden
-      className={cn(
-        'grid size-6 shrink-0 place-items-center rounded-full border-2',
-        checked ? 'border-primary bg-primary text-primary-foreground' : 'border-border'
-      )}
-    >
-      {checked && <Check size={14} strokeWidth={3} />}
-    </span>
-  )
-}
+   aims. `ListRow` makes the slot inert on an activatable row for that reason.
 
-/* AC9. `POST /items/:id/aisle` shipped in M5.5/2 with nothing reaching it, so a
-   mis-filed item sat in Other forever and the override table was dead code. The
-   correction is not a per-row preference: it teaches a family-wide override that
-   refiles the NEXT add of that name for everyone, which is why it is `file`
-   (tier 4) and why the sentence over the aisles says so out loud. */
-function AisleCorrection({
-  item,
-  onRefile,
-}: {
-  item: ShoppingItem
-  onRefile: (category: ShoppingAisle) => void
-}) {
-  const [open, setOpen] = useState(false)
+   SH-14 is motion and nothing else (D7): the fill takes `--duration-fast` and the
+   ring goes 1 → 1.08 → 1, once, on the transition into checked. No bounce, and
+   nothing at all under `prefers-reduced-motion`. A page arriving with rows
+   already checked does not pop them — the animation is a receipt for an act, so
+   it runs on the act. */
+function Ring({ checked }: { checked: boolean }) {
+  const [popping, setPopping] = useState(false)
+  const was = useRef(checked)
+
+  useEffect(() => {
+    if (checked && !was.current) setPopping(true)
+    was.current = checked
+  }, [checked])
+
   return (
-    <Popover open={open} onOpenChange={setOpen}>
-      <PopoverTrigger asChild>
-        <Button
-          variant="ghost"
-          size="icon"
-          aria-label={`Move “${item.name}” to another aisle`}
-          title="Move to another aisle"
-          className="h-11 w-11 text-muted-foreground"
-        >
-          <FolderInput className="size-3.5" aria-hidden />
-        </Button>
-      </PopoverTrigger>
-      <PopoverContent align="end" className="w-56 p-1.5">
-        <p className="text-sm-token mb-1.5 border-b border-border px-2 pt-1 pb-2 text-muted-foreground">
-          Files every future <span className="font-medium text-foreground">{item.name}</span> here.
-        </p>
-        {SHOPPING_AISLES.map((aisle) => (
-          <button
-            key={aisle}
-            type="button"
-            onClick={() => {
-              setOpen(false)
-              if (aisle !== item.category) onRefile(aisle)
-            }}
-            aria-current={aisle === item.category}
-            className={cn(
-              'min-h-touch text-body flex w-full items-center justify-between rounded-lg px-2 text-left hover:bg-secondary focus-visible:ring-2 focus-visible:ring-ring focus-visible:outline-none',
-              aisle === item.category && 'font-semibold text-primary'
-            )}
-          >
-            {aisle}
-            {aisle === item.category && <Check size={14} aria-hidden />}
-          </button>
-        ))}
-      </PopoverContent>
-    </Popover>
+    <>
+      <style href="shopping-ring" precedence="default">{`
+        @keyframes shoppingRingPop {
+          0%   { transform: scale(1); }
+          50%  { transform: scale(1.08); }
+          100% { transform: scale(1); }
+        }
+        [data-shopping-ring='popping'] {
+          animation: shoppingRingPop var(--duration-fast) var(--ease-out);
+        }
+        @media (prefers-reduced-motion: reduce) {
+          [data-shopping-ring='popping'] { animation: none; }
+        }
+      `}</style>
+      <span
+        aria-hidden
+        data-shopping-ring={popping ? 'popping' : 'idle'}
+        onAnimationEnd={() => setPopping(false)}
+        className={cn(
+          'grid size-6 shrink-0 place-items-center rounded-full border-2 transition-colors duration-[var(--duration-fast)]',
+          checked ? 'border-primary bg-primary text-primary-foreground' : 'border-input'
+        )}
+      >
+        {checked && <Check size={14} strokeWidth={3} />}
+      </span>
+    </>
   )
 }

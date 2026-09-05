@@ -1,6 +1,14 @@
 import { type ReactNode, useCallback, useState } from 'react'
 import { useQuery } from '@tanstack/react-query'
-import { Loader2, Users, ClipboardList, CalendarDays, Wallet, Utensils } from 'lucide-react'
+import {
+  Loader2,
+  Users,
+  ClipboardList,
+  CalendarDays,
+  Wallet,
+  Utensils,
+  ShoppingCart,
+} from 'lucide-react'
 import type { LucideIcon } from 'lucide-react'
 import { WidgetGrid, PlaceholderCard, PageContainer } from '@family-os/ui'
 import type { WidgetLayoutItem } from '@family-os/ui'
@@ -37,11 +45,11 @@ const WIDGET_META: Record<string, WidgetMeta> = {
     description: "What's for dinner, who's got it, and tonight's try bite.",
     icon: Utensils,
   },
-  // `shopping` is deliberately absent until the polish session announces it —
-  // see the commit that removed it. `home-layout.ts` still places
-  // `shopping.capture` in the default layouts; the loop below drops any id with
-  // no meta from the LAYOUT as well as from the children, so no cell is
-  // reserved for it.
+  shopping: {
+    moduleName: 'Shopping',
+    description: 'Add to the list without leaving the dashboard, and what is waiting.',
+    icon: ShoppingCart,
+  },
 }
 
 function moduleFromWidgetId(widgetId: string): string {

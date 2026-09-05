@@ -11,14 +11,27 @@ import {
 } from '@family-os/platform'
 import { ErrorCard } from '@family-os/ui'
 import type { ShoppingAisle } from '@family-os/schemas'
-import type { ListResponse, ListsResponse, RecentResponse, ShoppingItem } from '../types'
-import { aisleSortIndex, fileAisle, normalizeItemName } from '../lib/filing'
+import type {
+  AddItemResponse,
+  BatchAddResponse,
+  ListResponse,
+  ListsResponse,
+  ShoppingItem,
+} from '../types'
+import { aisleSortIndex } from '../lib/filing'
+import {
+  EMPTY_CAPTURE,
+  buildReport,
+  clearErrors,
+  dismissNotice,
+  type CaptureState,
+} from '../lib/capture-report'
+import { MAX_NAMES, parseNames } from '../lib/parse-names'
+import { collisions, failedNames, toDuplicate, tooMany } from '../lib/batch-results'
+import { retractMessage } from '../lib/use-ambient-capture'
 import { useWideLayout } from '../lib/use-wide-layout'
 import { ShoppingPageView, type AisleGroup } from './ShoppingPageView'
-
-/** How many chips the wide layout's short memory holds. More than a row's worth
-    stops being a memory and starts being the list it sits above. */
-const JUST_ADDED = 5
+import type { ClearScope } from './ClearListMenu'
 
 const CHECK_MUTATION = ['shopping/check'] as const
 
@@ -62,9 +75,7 @@ export function ShoppingPage() {
   const queryClient = useQueryClient()
   const { subscribe } = useEventBus()
   const [selectedListId, setSelectedListId] = useState<string | null>(null)
-  const [draft, setDraft] = useState('')
-  const [addError, setAddError] = useState<string | null>(null)
-  const [retractError, setRetractError] = useState<string | null>(null)
+  const [capture, setCapture] = useState<CaptureState>(EMPTY_CAPTURE)
   const [rowErrors, setRowErrors] = useState<Record<string, string>>({})
 
   // A retry that works has to clear what the failure said, or the row keeps
@@ -93,6 +104,10 @@ export function ShoppingPage() {
   // Tier 4, and its own action rather than `manage` (ADR 071 §3), so a house can
   // hand a shopping teen the correction without also handing over delete.
   const canFile = ability.can('file', 'shopping.Item')
+  // Tier 4, and the same key for rename and remove (D5). No new permission key —
+  // "let a lower tier fix their own row" is a product decision (SH-05), not a
+  // check widened in a component.
+  const canManage = ability.can('manage', 'shopping.Item')
 
   // Profile-scoped, under one `shopping/list` prefix the M5.5/5 widget reuses,
   // so a single invalidation refreshes the page and the widget together.
@@ -116,15 +131,6 @@ export function ShoppingPage() {
     queryKey: keyFor(activeListId),
     queryFn: () => fetch(`/api/shopping/lists/${activeListId}`).then(json<ListResponse>),
     enabled: activeListId !== null,
-    retry: 1,
-  })
-
-  // Wide only: what landed lately, anywhere. Same key the Home widget reads, so
-  // the two share one cache entry and one invalidation.
-  const recentQuery = useQuery<RecentResponse>({
-    queryKey: ['shopping/list', id, 'recent'],
-    queryFn: () => fetch('/api/shopping/recent').then(json<RecentResponse>),
-    enabled: capturing,
     retry: 1,
   })
 
@@ -165,22 +171,26 @@ export function ShoppingPage() {
       }
       void queryClient.invalidateQueries({ queryKey: ['shopping/list'] })
     }
-    const offChecked = subscribe('shopping.item.checked', refresh)
-    const offAdded = subscribe('shopping.item.added', refresh)
-    return () => {
-      offChecked()
-      offAdded()
-    }
+    // Every transition a second shopper can cause. `removed` and `renamed` were
+    // both emitted with nothing listening: ADR 073 §5 added the first one FOR
+    // live staleness, and a rename lands on the same argument — one client fixes
+    // `mikk` and every other screen keeps reading the typo until something
+    // unrelated refetches.
+    const offs = (
+      [
+        'shopping.item.checked',
+        'shopping.item.added',
+        'shopping.item.removed',
+        'shopping.item.renamed',
+        // A clear emits ONE event for the whole act and no per-row `removed`
+        // (backend, pinned by a test), so this subscription is the only thing
+        // that refreshes the other shopper's screen. It fires even when nothing
+        // was removed, so the refetch does not depend on the list's contents.
+        'shopping.list.cleared',
+      ] as const
+    ).map((event) => subscribe(event, refresh))
+    return () => offs.forEach((off) => off())
   }, [subscribe, queryClient])
-
-  // The echo has to state the aisle the SERVER will pick, so it reads the
-  // family's corrections, not the bare dictionary.
-  const draftAisle = useMemo(() => {
-    const trimmed = draft.trim()
-    if (!trimmed) return null
-    const overrides = listQuery.data?.overrides ?? {}
-    return String(fileAisle(trimmed, overrides[normalizeItemName(trimmed)] ?? null))
-  }, [draft, listQuery.data])
 
   const addItem = useMutation({
     mutationFn: ({ listId, name }: { listId: string; name: string }) =>
@@ -188,16 +198,48 @@ export function ShoppingPage() {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ name }),
-      }).then(json<ShoppingItem>),
-    onSuccess: () => {
-      setAddError(null)
+      }).then(json<AddItemResponse>),
+    onSuccess: (data, variables) => {
+      // A success does NOT clear a standing error (D4): "milk" failing and then
+      // "eggs" landing must not erase the record that milk was lost. Only the
+      // `✕` on the line clears it.
+      const listName = lists.find((l) => l.id === variables.listId)?.name ?? 'the list'
+      setCapture((state) => ({
+        ...state,
+        duplicates: data.duplicateOf ? [toDuplicate(listName, data.item, canRetract)] : [],
+      }))
       void queryClient.invalidateQueries({ queryKey: ['shopping/list'] })
     },
     onError: (err, variables) => {
       // The field already cleared — the word is gone from the screen, so the
       // failure has to name it back or the person never learns what was lost.
       console.error('[shopping] could not add %s', variables.name, err)
-      setAddError(variables.name)
+      setCapture((state) => ({ ...state, addErrors: [variables.name, ...state.addErrors] }))
+    },
+  })
+
+  /* `milk, cereal, chicken thighs` on one Enter. The route is NOT atomic, so this
+     reads per-name results: what landed reports its collisions, what did not
+     joins the sticky error line, and neither costs the other. */
+  const addBatch = useMutation({
+    mutationFn: ({ listId, names }: { listId: string; names: string[] }) =>
+      fetch(`/api/shopping/lists/${listId}/items/batch`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ names }),
+      }).then(json<BatchAddResponse>),
+    onSuccess: (data, variables) => {
+      const listName = lists.find((l) => l.id === variables.listId)?.name ?? 'the list'
+      setCapture((state) => ({
+        ...state,
+        addErrors: [...failedNames(data), ...state.addErrors],
+        duplicates: collisions(data, listName, canRetract),
+      }))
+      void queryClient.invalidateQueries({ queryKey: ['shopping/list'] })
+    },
+    onError: (err, variables) => {
+      console.error('[shopping] could not add %d things', variables.names.length, err)
+      setCapture((state) => ({ ...state, addErrors: [...variables.names, ...state.addErrors] }))
     },
   })
 
@@ -284,8 +326,19 @@ export function ShoppingPage() {
     },
   })
 
+  /* Two verbs on two endpoints, and they read differently to the person holding
+     the phone: `retract` takes back YOUR OWN recent add and is tier 1, `manage`
+     removes anyone's row and is tier 4 (ADR 073 §1). Both hard-delete, both emit
+     `shopping.item.removed`; neither is an undo, which is why the gesture reveals
+     rather than fires (D1).
+
+     Where the failure lands is decided by where the tap was. A row's verb reports
+     on the row (M5.5/3) — the row is still there to carry the message, and a
+     page-scoped line names no row when thirty of them look alike. The wide hero's
+     chip and the duplicate notice's `Take it back?` have no row on screen, so
+     they report in the one slot they were tapped from. */
   const retractItem = useMutation({
-    mutationFn: async ({ itemId }: { itemId: string; name: string }) => {
+    mutationFn: async ({ itemId }: { itemId: string; name: string; onRow: boolean }) => {
       const res = await fetch(`/api/shopping/items/${itemId}/retract`, { method: 'POST' })
       if (!res.ok) {
         // The window closes between fetches by design (ADR 073 §2), so this 403
@@ -296,17 +349,91 @@ export function ShoppingPage() {
         throw new Error(body?.error ?? String(res.status))
       }
     },
-    onSuccess: () => {
-      setRetractError(null)
+    onSuccess: (_data, { itemId, onRow }) => {
+      if (onRow) clearRowError(itemId)
+      else
+        setCapture((state) => ({
+          ...state,
+          actionError: null,
+          duplicates: state.duplicates.filter((d) => d.retractId !== itemId),
+        }))
       void queryClient.invalidateQueries({ queryKey: ['shopping/list'] })
     },
-    onError: (err, variables) => {
-      console.error('[shopping] could not take back %s', variables.name, err)
-      setRetractError(
-        /too old/i.test(String(err))
-          ? `Too late to take back “${variables.name}” — it has been on the list a while.`
-          : `Couldn’t take back “${variables.name}”.`
-      )
+    onError: (err, { itemId, name, onRow }) => {
+      console.error('[shopping] could not take back %s', name, err)
+      const message = retractMessage(err, name)
+      if (onRow) setRowErrors((errors) => ({ ...errors, [itemId]: message }))
+      else setCapture((state) => ({ ...state, actionError: message }))
+    },
+  })
+
+  const removeItem = useMutation({
+    mutationFn: async ({ item }: { item: ShoppingItem }) => {
+      const res = await fetch(`/api/shopping/items/${item.id}`, { method: 'DELETE' })
+      if (!res.ok) {
+        const body = (await res.json().catch(() => null)) as { error?: string } | null
+        throw new Error(body?.error ?? String(res.status))
+      }
+    },
+    onMutate: ({ item }) => clearRowError(item.id),
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['shopping/list'] }),
+    onError: (err, { item }) => {
+      console.error('[shopping] could not remove %s', item.name, err)
+      setRowErrors((errors) => ({
+        ...errors,
+        [item.id]: `Couldn’t remove “${item.name}” — check your connection and try again.`,
+      }))
+    },
+  })
+
+  /* Recycling the list, or throwing it away. One route, two scopes, because the
+     acts differ in which rows they name and not in what they do — both are hard
+     deletes with no undo, which is why the confirmation names the count. */
+  const clearList = useMutation({
+    mutationFn: async ({ listId, scope }: { listId: string; scope: ClearScope }) => {
+      const res = await fetch(`/api/shopping/lists/${listId}/clear`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ scope }),
+      })
+      if (!res.ok) {
+        const body = (await res.json().catch(() => null)) as { error?: string } | null
+        throw new Error(body?.error ?? String(res.status))
+      }
+    },
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['shopping/list'] }),
+    onError: (err, { scope }) => {
+      /* Page-scoped because the rows it names are gone or were never named — the
+         one failure on this surface with no row to report on.
+
+         It claims ONLY what it knows. A 403, a 404 on a list someone else just
+         deleted and a dropped connection all land here, and only one of them is
+         a connection problem: telling someone to check their wifi when their
+         permission was revoked sends them to fix the wrong thing. The reason
+         goes to the console, same rule as the server's Zod string — contained,
+         not swallowed. */
+      console.error('[shopping] could not clear the list (%s)', scope, err)
+      setCapture((state) => ({ ...state, actionError: 'Couldn’t clear the list.' }))
+    },
+  })
+
+  // A rename fixes a typo. It does not re-file the aisle and it does not teach
+  // the dictionary (D5) — the asymmetry ADR 073 §4 already recorded for retract.
+  const renameItem = useMutation({
+    mutationFn: ({ item, name }: { item: ShoppingItem; name: string }) =>
+      fetch(`/api/shopping/items/${item.id}`, {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ name }),
+      }).then(json<ShoppingItem>),
+    onMutate: ({ item }) => clearRowError(item.id),
+    onSuccess: () => void queryClient.invalidateQueries({ queryKey: ['shopping/list'] }),
+    onError: (err, { item, name }) => {
+      console.error('[shopping] could not rename %s to %s', item.name, name, err)
+      setRowErrors((errors) => ({
+        ...errors,
+        [item.id]: `Couldn’t rename this to “${name}” — check your connection and try again.`,
+      }))
     },
   })
 
@@ -354,36 +481,59 @@ export function ShoppingPage() {
       selectedListId={activeListId ?? ''}
       onSelectList={(listId) => {
         setSelectedListId(listId)
-        setAddError(null)
+        // The report line is NOT cleared here (D4): a lost word stays reported
+        // until the `✕` says otherwise, whichever list is on screen.
         setRowErrors({})
       }}
       groups={groups}
-      onAdd={(name) => {
+      onAdd={(input) => {
         if (!activeListId) return
-        addItem.mutate({ listId: activeListId, name })
-        setDraft('')
+        const names = parseNames(input)
+        if (names.length === 0) return
+        if (names.length > MAX_NAMES) {
+          setCapture((state) => ({ ...state, actionError: tooMany(names.length) }))
+          return
+        }
+        // One word keeps the single route it has always had, envelope and all —
+        // the common case does not pay for the feature.
+        if (names.length === 1) addItem.mutate({ listId: activeListId, name: names[0] })
+        else addBatch.mutate({ listId: activeListId, names })
       }}
-      onDraftChange={setDraft}
-      draftAisle={draftAisle}
-      addError={addError}
+      reports={buildReport(capture, {
+        onClearErrors: () => setCapture(clearErrors),
+        onDismissNotice: (index) => setCapture((state) => dismissNotice(state, index)),
+        onRetract: (itemId) =>
+          retractItem.mutate({
+            itemId,
+            name: capture.duplicates.find((d) => d.retractId === itemId)?.name ?? 'that',
+            onRow: false,
+          }),
+      })}
       canAdd={canAdd}
       layout={capturing ? 'capture' : 'list'}
       // Only the wide list view offers the way back; a phone has no dedicated
       // capture view to return to (Zach, 2026-09-04).
       onBackToCapture={wide && onListsRoute ? () => void navigate('/shopping') : undefined}
-      justAdded={(recentQuery.data?.items ?? [])
-        .slice(0, JUST_ADDED)
-        .map((i) => ({ id: i.id, name: i.name, canRetract: i.canRetract }))}
       totalOpenCount={lists.reduce((sum, l) => sum + l.itemCount, 0)}
       onShowLists={() => void navigate('/shopping/lists')}
-      onRetract={canRetract ? (itemId, name) => retractItem.mutate({ itemId, name }) : undefined}
-      retractError={retractError}
       canCheck={canCheck}
       canFile={canFile}
+      canManage={canManage}
+      canRetract={canRetract}
+      // The same 768px split the layout itself uses — a row's verbs render
+      // inline where there is room for them, and in a bottom sheet where there
+      // is not (Zach, live pass on the list surface).
+      inlineActions={wide}
       onToggle={(item) =>
         checkItem.mutate({ item, status: item.status === 'got' ? 'needed' : 'got' })
       }
       onRefile={(item, category) => refileItem.mutate({ item, category })}
+      onRename={(item, name) => renameItem.mutate({ item, name })}
+      onRemove={(item) => removeItem.mutate({ item })}
+      onRowRetract={(item) => retractItem.mutate({ itemId: item.id, name: item.name, onRow: true })}
+      onClear={(scope) => {
+        if (activeListId) clearList.mutate({ listId: activeListId, scope })
+      }}
       rowErrors={rowErrors}
     />
   )
