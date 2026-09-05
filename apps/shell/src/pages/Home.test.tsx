@@ -59,9 +59,11 @@ describe('Home — the layout the grid is handed', () => {
      would reserve an empty bordered region and grow the dashboard for a widget
      that is not there. Regressed once — `shopping.capture` stayed in
      `DEFAULT_LAYOUTS` while its `WIDGET_META` entry was removed to hide the
-     plugin, and the hole shipped to a live review. */
+     plugin, and the hole shipped to a live review. Shopping is registered again
+     (the polish session announced it), so the fixture is a widget nothing
+     registers rather than that one. */
   it('drops an entry with no WIDGET_META rather than reserving a cell for it', async () => {
-    renderHome([cell('calendar.up-next'), cell('shopping.capture'), cell('chores.today-summary')])
+    renderHome([cell('calendar.up-next'), cell('retired.widget'), cell('chores.today-summary')])
     await waitFor(() => expect(screen.getByTestId('grid')).toBeInTheDocument())
     expect(received.map((l) => l.widgetId)).toEqual(['calendar.up-next', 'chores.today-summary'])
   })
