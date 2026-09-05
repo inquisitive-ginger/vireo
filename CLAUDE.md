@@ -24,9 +24,9 @@ before it reads anything else, and it is size-capped — see
 - **Deployment:** 🟢 live at `https://vireohome.app` — Pi 5 (192.168.0.42, pinned
   in NetworkManager 2026-09-02; eth0 `88:a2:9e:d4:e7:33`, router reservation still
   owed); auto-deploy + Tailscale + restic→R2 + watchdog intact. Runbook Part F/G.
-- **Last session:** 2026-09-04 — the Shopping polish (PR #138): SH-01…SH-14, a long live
-  pass, five docs amended (ADR 043 narrowly, ADR 070, design.md ×3).
-  `logs/2026-09-04-dev-shopping-polish.md`.
+- **Last session:** 2026-09-04 — the spacing contract (PR #139): the frame insets and
+  `PageHeader` leads (ADR 074), `SectionLabel`, and `check-spacing.sh` guards it in CI.
+  `logs/2026-09-04-dev-spacing-contract.md`.
 - **What's next and everything outstanding:** `docs/sessions/queue.md` — the one
   index. M5.5/6 (offline) or M4.5/3 next.
 
@@ -127,10 +127,13 @@ outranks any milestone number found in an older doc or log.
   row the spine is the identity hue in every state and status goes to the field
   (wash, badge, red meta, dim + strikethrough, check). On a single-person surface
   the spine encodes status. See `design-system.md` §"Status vs identity colour".
-- **Never hand-roll a row or a page frame.** `ItemCard` owns the row skeleton and
-  its affordances (`onActivate`, `RowActions`, `MemberGroupHeader`); pages compose
-  `PageContainer width="prose|list|wide|full"` and padding is not a prop. A list is
-  not prose.
+- **Never hand-roll a row, a page frame, or a page title.** `ItemCard` owns the row
+  skeleton and its affordances (`onActivate`, `RowActions`, `MemberGroupHeader`);
+  pages compose `PageContainer width="prose|list|wide|full"` and padding is not a
+  prop. A list is not prose. The frame insets and budgets for nothing it cannot
+  see; `PageHeader` owns the title, its lead and its nav strip, and `SectionLabel`
+  the space around a group label (ADR 074). `scripts/check-spacing.sh` enforces the
+  token layer in CI — raw type, raw radii, bracket spacing that derives from neither.
 - **A widget list fits its slot, it does not crop** — `useFitRows` (whole rows +
   `+N more`). It is height-based, so it needs a height-constrained flex child; a
   document-scrolled page clamps by count instead.

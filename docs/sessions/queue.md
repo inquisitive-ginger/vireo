@@ -132,13 +132,6 @@ Rewrite concise — same arguments, fewer words; never cut reasoning, never rais
 (Zach, 2026-09-04). 042 (9704), 044, 043, 031, 035, 046, 041, 022, 040, 057. Grandfathered:
 the check reads only changed files.
 
-### Docs: `section-label` has no block-spacing rule
-
-**Type:** design-system · **Kickoff:** _to be written_ · **stays open** — the shopping critique
-never reached it. The token says nothing about the space around it, so four call sites hand-roll
-four answers (`ui/widget-header.tsx`, `family-feed`, `meals/TonightView.tsx`,
-`shopping/ShoppingPageView.tsx`). Found in M5.5/5.
-
 ### Platform: family-feed test addendum
 
 **Type:** development (test addendum) · **Kickoff:** _to be written_
@@ -231,6 +224,9 @@ Stand up an RTL suite mirroring chores/calendar. See also the Deferred CI-glob g
 > recent first, nothing older than the current milestone's start. `docs/sessions/logs/` is
 > date-ordered and holds the record. Do not restore entries pruned from here.
 
+- **2026-09-04 — Dev: the page frame insets, the header leads** (PR #139) — the spacing audit's
+  contract, ADR 074, a `SectionLabel` primitive, and `check-spacing.sh` in CI. Closes the
+  `section-label` block-spacing entry. _[log](logs/2026-09-04-dev-spacing-contract.md)_
 - **2026-09-04 — Dev: the Shopping polish, and the plugin is announced** (PR #138) — the
   critique's SH-01…SH-14 plus a long live pass; nav entry yes, Home tile pulled (one revert).
   Five docs amended, three pre-existing defects found. _[log](logs/2026-09-04-dev-shopping-polish.md)_
