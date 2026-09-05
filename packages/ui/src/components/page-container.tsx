@@ -35,13 +35,15 @@ const WIDTH_CLASS: Record<PageWidth, string> = {
  * route is the point. A surface that needs to break the gutter (a full-bleed
  * month grid) does it on its own child, not by re-negotiating the page frame.
  *
- * The TOP gutter varies by breakpoint for the same reason the side gutters do
- * (`sm:pt-10`, 2026-09-04): 24px reads tight under a title on a screen you stand
- * back from, and generous on a phone where vertical space is the scarce axis.
+ * The inset is symmetric on three sides and steps at `md:`, with the shell
+ * chrome. The air above a TITLE is `PageHeader`'s, not the frame's (ADR 074):
+ * Home, the calendar's tablet surface and the shopping hero render no title into
+ * that slot, and were paying for a header they do not have. The bottom is
+ * shorter on a phone because the shell already reserves the tab bar beneath it.
  */
 export function PageContainer({ width, className, children }: PageContainerProps) {
   return (
-    <div className={cn(WIDTH_CLASS[width], 'px-4 pt-6 pb-12 sm:px-6 sm:pt-10', className)}>
+    <div className={cn(WIDTH_CLASS[width], 'px-4 pt-4 pb-6 md:px-6 md:pt-6 md:pb-12', className)}>
       {children}
     </div>
   )

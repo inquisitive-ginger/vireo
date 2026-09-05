@@ -603,17 +603,23 @@ grid (2026-07-10 decision a).
 
 Defined in `packages/ui/src/styles.css` (`@theme`).
 
-| Token                  | Value | Utility                          | Role                                                           |
-| ---------------------- | ----- | -------------------------------- | -------------------------------------------------------------- |
-| `--spacing-touch`      | 48px  | `min-h-touch`/`min-w-touch`      | Minimum touch target                                           |
-| `--spacing-card-touch` | 64px  | —                                | `ItemCard`'s floor per ADR 068 — **declared, not yet applied** |
-| `--spacing-list-touch` | 56px  | (primitive only, arbitrary form) | `ListRow`'s floor, applied unconditionally (ADR 068)           |
-| `--spacing-tab-bar`    | 56px  | `h-tab-bar`, safe-area calc      | Mobile bottom tab bar + anything anchored to it                |
-| `--spacing-top-bar`    | 52px  | `min-h-top-bar`                  | Mobile brand top bar                                           |
-| `--spacing-sidebar`    | 220px | `w-sidebar`                      | Tablet sidebar (ADR 022)                                       |
-| `--spacing-meter`      | 6px   | `h-meter`                        | Progress-meter bar height                                      |
-| `--container-content`  | 680px | `max-w-content`                  | Single-column content pages                                    |
-| `--container-drawer`   | 440px | `md:w-drawer`                    | Side-drawer width                                              |
+| Token                    | Value | Utility                          | Role                                                           |
+| ------------------------ | ----- | -------------------------------- | -------------------------------------------------------------- |
+| `--spacing-touch`        | 48px  | `min-h-touch`/`min-w-touch`      | Minimum touch target                                           |
+| `--spacing-card-touch`   | 64px  | —                                | `ItemCard`'s floor per ADR 068 — **declared, not yet applied** |
+| `--spacing-list-touch`   | 56px  | (primitive only, arbitrary form) | `ListRow`'s floor, applied unconditionally (ADR 068)           |
+| `--spacing-tab-bar`      | 56px  | `h-tab-bar`, safe-area calc      | Mobile bottom tab bar + anything anchored to it                |
+| `--spacing-top-bar`      | 52px  | `min-h-top-bar`                  | Mobile brand top bar                                           |
+| `--spacing-sidebar`      | 220px | `w-sidebar`                      | Tablet sidebar (ADR 022)                                       |
+| `--spacing-meter`        | 6px   | `h-meter`                        | Progress-meter bar height                                      |
+| `--page-frame-x`         | 16px  | (frame declaration is `px-4`)    | `PageContainer` side gutter, phone                             |
+| `--page-frame-x-md`      | 24px  | (`md:px-6`)                      | `PageContainer` side gutter, ≥ 768                             |
+| `--page-frame-top`       | 16px  | (`pt-4`)                         | `PageContainer` top inset, phone                               |
+| `--page-frame-top-md`    | 24px  | (`md:pt-6`)                      | `PageContainer` top inset, ≥ 768                               |
+| `--page-frame-bottom`    | 24px  | (`pb-6`)                         | `PageContainer` bottom inset, phone                            |
+| `--page-frame-bottom-md` | 48px  | (`md:pb-12`)                     | `PageContainer` bottom inset, ≥ 768                            |
+| `--container-content`    | 680px | `max-w-content`                  | Single-column content pages                                    |
+| `--container-drawer`     | 440px | `md:w-drawer`                    | Side-drawer width                                              |
 
 ### Radius family
 
@@ -1959,9 +1965,30 @@ A **list is not prose.** 680px is a reading measure; a list row carries a spine,
 title, badges and controls, so it needs more room than a sentence does. Splitting
 the two is the point of having roles rather than one shared width.
 
-**Padding is not a prop.** Every role gets the same rhythm (`px-4 sm:px-6 pt-6
-pb-12`) so the gutter never jumps between routes. A surface that must break the
-gutter does it on a **child**, not by renegotiating the page frame.
+**Padding is not a prop.** Every role gets the same rhythm so the gutter never
+jumps between routes. A surface that must break the gutter does it on a **child**,
+not by renegotiating the page frame.
+
+| Side   | Utility         | Phone | ≥ `md:` | Token                                            |
+| ------ | --------------- | ----- | ------- | ------------------------------------------------ |
+| Sides  | `px-4 md:px-6`  | 16    | 24      | `--page-frame-x` / `--page-frame-x-md`           |
+| Top    | `pt-4 md:pt-6`  | 16    | 24      | `--page-frame-top` / `--page-frame-top-md`       |
+| Bottom | `pb-6 md:pb-12` | 24    | 48      | `--page-frame-bottom` / `--page-frame-bottom-md` |
+
+**The frame carries no allowance for a title** (ADR 074). Three surfaces render
+none into that slot — Home's widget grid, the calendar's tablet lens strip, the
+shopping hero — and a frame that budgets for a header charges them for one they
+do not have. The title's air is `PageHeader`'s: `pt-2 md:pt-4` above it, `mb-6`
+below, so a titled route sits exactly where it always did (16 + 8, 24 + 16).
+
+**The bottom is shorter on a phone** because the shell already reserves the tab
+bar underneath it (`App.tsx`, `--spacing-tab-bar` + safe area). 24 above that is
+the gap you see; stacking a full 48 on top of it put 104px of nothing under the
+last row of every mobile list.
+
+**A surface that sizes itself against the frame subtracts the tokens**, never the
+sum. The shopping hero wrote `calc(100svh - 4.5rem)` and that literal was stale
+within a day of the frame moving — on the wall tablet the hero exists for.
 
 > **Why this exists.** Six surfaces had six recipes. Chores and the feed matched at
 > 680px only by coincidence; the calendar hardcoded `max-w-[1100px]` next to a token

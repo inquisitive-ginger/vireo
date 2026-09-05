@@ -15,12 +15,15 @@ export interface PageHeaderProps {
 
 /* The shared page header for plugin/route pages: an optional eyebrow, the page
    title, an optional subtitle line, and a trailing action — on one consistent
-   baseline so every page (Family Feed, Chores, …) aligns. Pair it with the
-   standard page column: `max-width` ~680px, `padding: 28px 24px 48px`, so the
-   header and the content below share the same 24px inset. */
+   baseline so every page (Family Feed, Chores, …) aligns. Compose it inside
+   `PageContainer`, which owns the gutter.
+
+   The header owns the air on BOTH sides of its title (ADR 074) — `pt-2 md:pt-4`
+   above, on top of the frame's inset, and `mb-6` below. A surface that renders
+   no title pays neither. */
 export function PageHeader({ title, eyebrow, subtitle, action, className }: PageHeaderProps) {
   return (
-    <header className={cn('mb-6 flex items-start justify-between gap-4', className)}>
+    <header className={cn('mb-6 flex items-start justify-between gap-4 pt-2 md:pt-4', className)}>
       <div className="min-w-0">
         {eyebrow && <div className="text-section-label mb-1.5 text-accent">{eyebrow}</div>}
         <h1 className="text-page-title m-0 text-foreground">{title}</h1>
