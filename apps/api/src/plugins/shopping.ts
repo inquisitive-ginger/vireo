@@ -159,6 +159,20 @@ async function announceItem(bus: EventBus, item: ItemRow) {
   })
 }
 
+/** The open row this name would double, on this list. Matched on
+    `normalizeItemName` — the key the dictionary and the overrides already use,
+    so `Milk` and `milk,` are one thing and `mikk` is not. Read in JS rather than
+    SQL because the normalization is ours and no column carries it; `fileNeeds`
+    dedupes the same way. */
+async function findDuplicate(listId: string, name: string) {
+  const normalizedName = normalizeItemName(name)
+  if (!normalizedName) return null
+
+  const open = await shoppingPrisma.item.findMany({ where: { listId, status: 'needed' } })
+  const match = open.find((item) => normalizeItemName(item.name) === normalizedName)
+  return match ? { id: match.id, name: match.name } : null
+}
+
 async function fileItem(bus: EventBus, input: FileItemInput): Promise<ItemRow> {
   const item = await createItem(shoppingPrisma, input)
   await announceItem(bus, item)
@@ -417,6 +431,12 @@ const shoppingPlugin: FastifyPluginAsync = async (fastify) => {
     }
     const { name, quantity } = parsed.data
 
+    // Read the collision BEFORE the insert, so the row about to be created can
+    // never be its own duplicate. `needed` only: something already in the cart
+    // being asked for again is a real second-trip item, not a mistake. Same
+    // list only — two destinations wanting milk is two shops.
+    const duplicateOf = await findDuplicate(listId, name)
+
     const item = await fileItem(fastify.eventBus, {
       listId,
       name,
@@ -425,7 +445,9 @@ const shoppingPlugin: FastifyPluginAsync = async (fastify) => {
       sourceType: 'manual',
     })
 
-    return reply.status(201).send(serializeItem(item, request.profile.id))
+    // The add always completes; the collision rides back with it so the surface
+    // needs no second read to say `Already on Grocery.`
+    return reply.status(201).send({ item: serializeItem(item, request.profile.id), duplicateOf })
   })
 
   // DELETE /shopping/items/:id — taking back something that should never have
