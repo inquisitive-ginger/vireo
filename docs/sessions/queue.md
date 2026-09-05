@@ -63,16 +63,13 @@ _`logs/2026-09-03-product-shopping-boundary.md`._
 from `docs/modules/shopping/design.md` **and its artifact**, never from #127. The plugin is
 **built and reachable by URL but announced nowhere** until the dev polish session. _`docs/modules/shopping/{spec,salvage}.md` · ADR 069–073._
 
-### Shopping polish — **two sessions, next in the milestone** (Zach, 2026-09-04)
+### Shopping polish — **running now** (Zach, 2026-09-04)
 
-**1. Design: the critique** · `kickoffs/design-shopping-polish.md` · _ready._ The built surface
-judged whole, with Zach adding items in concert. Settles the check-ring contrast (a shared token —
-chores fails identically), the widget's 2×2 footprint (an elevation-ladder call), the colliding
-`14`s, `addError` erased by a later success, `section-label` spacing.
-_`logs/2026-09-04-dev-shopping-{shop-context,capture-surfaces}.md`._
-
-**2. Dev: the build** · `kickoffs/dev-shopping-polish.md` · _depends on the critique._ Builds the
-decision set and **announces the plugin** — the `navItem` and `WIDGET_META` entry come back last.
+The critique landed as two artifacts (`artifacts/2026-09-04-shopping-polish-critique.{md,html}`);
+its four unanswered questions plus the check-ring token, the 2×2 tile and the report slot were
+settled before the build in `kickoffs/shopping-polish-decision-set.md`. The dev session
+(`kickoffs/dev-shopping-polish.md`) builds SH-01…SH-14 and **announces the plugin** — the
+`navItem` and `WIDGET_META` entry come back last. `section-label` spacing did **not** fold in.
 
 ### M5.5/6 — Dev: offline — _the last story in the milestone_
 
@@ -80,14 +77,25 @@ decision set and **announces the plugin** — the `navItem` and `WIDGET_META` en
 polish sessions._
 The list renders and checks replay with no signal, without staling the shell or `/api`.
 
+### Out of the polish critique — scoped by Zach 2026-09-04, not open
+
+_`kickoffs/shopping-polish-decision-set.md` · `artifacts/2026-09-04-shopping-polish-critique.md`._
+
+- **Product: a Household aisle (SH-04)** — **one** aisle, after `Frozen`, before `Other`. Enum
+  order is walk order, so the insertion reorders every list; dictionary + `Other` rows migrate.
+- **Product: who may correct an aisle (SH-05)** — the verb is **moving a row**; per-list aisle
+  reorder stays a non-goal. Splitting "move this row" off `file` is a **new** key (ADR 071 §3).
+- **Design: shopping quantity** — schema, the meals push, check semantics. Settled going in:
+  duplicates do **not** merge, so SH-03's notice is permanent.
+- **Design: the Home dashboard composition** — six widgets, one grid; polish took a holding
+  position (feed yields its cell). Whose cell, at what rung, what a 2×1 holds (ADR 068).
+
 ---
 
-### Fix: auto-bug #135 — calendar widget day labels
+### Owed: auto-bug #135's `deployed` flip
 
-**Type:** fix · **Kickoff:** _to be written_
-Reported 2026-09-04, `fixing` in `platform.bug_reports` (`69863d86`) — the home dashboard's
-calendar widget puts its day labels on the wrong edge. `docs/fix-it-playbook.md`; the report
-owes a `deployed` flip after the fix ships (tier-4 PIN, only Zach).
+The fix shipped (PR #137). `platform.bug_reports` `69863d86` still reads `fixing` — tier-4 PIN,
+only Zach. _[log](logs/2026-09-04-dev-calendar-day-headings.md)_
 
 ### Prod storage off USB: NVMe HAT for the Pi 5
 
@@ -120,10 +128,10 @@ the check reads only changed files.
 
 ### Docs: `section-label` has no block-spacing rule
 
-**Type:** design-system · **Kickoff:** _to be written_ · **the shopping design critique decides
-whether it folds in there** — if it does, this entry closes with it. The token says nothing about the space
-around it, so four call sites hand-roll four answers (`ui/widget-header.tsx`, `family-feed`,
-`meals/TonightView.tsx`, `shopping/ShoppingPageView.tsx`). Found in M5.5/5.
+**Type:** design-system · **Kickoff:** _to be written_ · **stays open** — the shopping critique
+never reached it. The token says nothing about the space around it, so four call sites hand-roll
+four answers (`ui/widget-header.tsx`, `family-feed`, `meals/TonightView.tsx`,
+`shopping/ShoppingPageView.tsx`). Found in M5.5/5.
 
 ### Platform: family-feed test addendum
 
@@ -242,15 +250,6 @@ Stand up an RTL suite mirroring chores/calendar. See also the Deferred CI-glob g
 - **2026-09-02 — Infra: the Pi's LAN address, pinned** — a reboot moved the Pi to
   `.43` while DNS and the Tailscale /32 still said `.42`; router reservation owed.
   _[log](logs/2026-09-02-infra-pi-static-ip.md)_
-- **2026-08-23 — Dev: Calendar Day Marks** (M5/4, PR #125) — ADR 050's provider contract at
-  platform level, ADR 066's two gates server-side; marks are today-forward only.
-  _[log](logs/2026-08-23-dev-calendar-day-marks.md)_
-- **2026-08-23 — Dev: Who's Got Dinner** (M5/3, PR #124) — the 16:00 nudge poll on a
-  `(date, audience)` ledger; a standing convention (`console.error` on every catch)
-  overruled an ADR 045 precedent. _[log](logs/2026-08-23-dev-meals-whos-got-dinner.md)_
-- **2026-08-23 — Fix: mobile nav active-tab wash** (auto-bug #123, PR #126) — one
-  active-nav recipe with the sidebar; verified live, reporter notified.
-  _[log](logs/2026-08-23-dev-mobile-nav-tab-wash.md)_
 - **2026-08-22 — Design+dev: the app icon set** (PR #122) — a vireo family in a lit
   birdhouse, generated then traced to vector. **e2e unrun; unseen on a real phone.**
   _[log](logs/2026-08-22-design-dev-brand-icon-set.md)_
