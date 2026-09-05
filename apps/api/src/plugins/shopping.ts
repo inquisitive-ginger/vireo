@@ -7,6 +7,8 @@ import { shoppingPrisma } from '@family-os/plugin-shopping/db'
 import { fileAisle, normalizeItemName, aisleSortIndex } from '@family-os/plugin-shopping/lib/filing'
 import {
   ShoppingItemCreateSchema,
+  ShoppingItemNameSchema,
+  ShoppingItemBatchCreateSchema,
   ShoppingItemRenameSchema,
   ShoppingAisleCorrectionSchema,
   ShoppingCheckSchema,
@@ -471,6 +473,59 @@ const shoppingPlugin: FastifyPluginAsync = async (fastify) => {
     // showing it, because invalidation is same-client and this is two clients.
     announceRemoval(fastify.eventBus, existing, request.profile.id, 'managed')
     return reply.status(204).send()
+  })
+
+  // POST /shopping/lists/:id/items/batch — one field's worth of typing, split on
+  // commas by the CLIENT (the field has to show what it is about to do) and posted
+  // once so three items cost one round trip and their duplicate answers come back
+  // from one consistent read.
+  //
+  // NOT ATOMIC, deliberately. Each name is validated, filed and reported on its own,
+  // in submitted order: a 121-char third entry is that entry's error and does not
+  // cost the two good ones in front of it. The whole request still 400s on a
+  // malformed ARRAY — empty, oversized, or not strings — because that is a client
+  // that did not parse, not a person who typed something odd.
+  //
+  // Sequential rather than batched for the same reason: `findDuplicate` re-reads
+  // per item, so a row created earlier in this batch is visible to the ones behind
+  // it, and `milk, milk` reports the second against the first. That is the point —
+  // the check runs per parsed item, exactly as if they had been typed one at a
+  // time. The input is never pre-deduplicated.
+  fastify.post('/shopping/lists/:id/items/batch', async (request, reply) => {
+    if (!request.ability.can('create', 'shopping.Item')) {
+      return reply.status(403).send({ error: 'Permission denied' })
+    }
+
+    const { id: listId } = request.params as { id: string }
+    const list = await shoppingPrisma.list.findUnique({ where: { id: listId } })
+    if (!list) return reply.status(404).send({ error: 'List not found' })
+
+    const parsed = ShoppingItemBatchCreateSchema.safeParse(request.body ?? {})
+    if (!parsed.success) {
+      return reply.status(400).send({ error: parsed.error.flatten() })
+    }
+
+    const results = []
+    for (const submitted of parsed.data.names) {
+      const name = ShoppingItemNameSchema.safeParse(submitted)
+      if (!name.success) {
+        // The name as SUBMITTED, not as trimmed — it is what the person typed and
+        // what the surface has to point at.
+        results.push({ name: submitted, error: name.error.issues[0].message })
+        continue
+      }
+
+      const duplicateOf = await findDuplicate(listId, name.data)
+      const item = await fileItem(fastify.eventBus, {
+        listId,
+        name: name.data,
+        addedBy: request.profile.id,
+        sourceType: 'manual',
+      })
+      results.push({ name: name.data, item: serializeItem(item, request.profile.id), duplicateOf })
+    }
+
+    return reply.status(201).send({ results })
   })
 
   // PATCH /shopping/items/:id — fixing the word on a row (SH-06). `manage`, and

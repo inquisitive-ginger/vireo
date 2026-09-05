@@ -258,23 +258,37 @@ export type ShoppingAisle = (typeof SHOPPING_AISLES)[number]
 
 export const ShoppingAisleSchema = z.enum(SHOPPING_AISLES)
 
+// One spelling rule, shared by every route that writes a name — a single add, one
+// name inside a batch, and a rename. A route that could write a name another route
+// would have rejected is a second rule wearing the first one's clothes.
+export const ShoppingItemNameSchema = z.string().trim().min(1, 'name is required').max(120)
+
 // category is never client-set on create — the server files it (dictionary or
 // override) so a producer's push, which creates items with no UI in the loop at
 // all, gets the exact same filing a manual add does.
 export const ShoppingItemCreateSchema = z.object({
-  name: z.string().trim().min(1, 'name is required').max(120),
+  name: ShoppingItemNameSchema,
   quantity: OptionalText,
 })
 
 export type ShoppingItemCreateInput = z.infer<typeof ShoppingItemCreateSchema>
 
-// Fixing the word on a row someone already added. Deliberately the same
-// constraints as the create — a rename that could write a name the add would
-// have rejected is a second spelling rule. It carries only the name: a rename
+// One field's worth of typing, split on commas by the client (the field has to show
+// what it is about to do) and posted as one round trip. Loose at the array level and
+// strict per name: the route reports a bad entry as that entry's result, so a 121-char
+// third name does not cost the two good ones in front of it. The cap is a paste guard,
+// not a product limit.
+export const ShoppingItemBatchCreateSchema = z.object({
+  names: z.array(z.string()).min(1, 'at least one name is required').max(20),
+})
+
+export type ShoppingItemBatchCreateInput = z.infer<typeof ShoppingItemBatchCreateSchema>
+
+// Fixing the word on a row someone already added. It carries only the name: a rename
 // does not re-file the aisle and does not teach `Entry` (D5, and the asymmetry
 // ADR 073 §4 records for retract).
 export const ShoppingItemRenameSchema = z.object({
-  name: z.string().trim().min(1, 'name is required').max(120),
+  name: ShoppingItemNameSchema,
 })
 
 export type ShoppingItemRenameInput = z.infer<typeof ShoppingItemRenameSchema>

@@ -450,6 +450,147 @@ describe('DELETE /api/shopping/items/:id', () => {
   })
 })
 
+// ─── POST /api/shopping/lists/:id/items/batch ─────────────────────────────────
+
+function addBatch(cookie: string, listId: string, names: unknown) {
+  return app.inject({
+    method: 'POST',
+    url: `/api/shopping/lists/${listId}/items/batch`,
+    headers: { cookie },
+    payload: { names },
+  })
+}
+
+describe('POST /api/shopping/lists/:id/items/batch', () => {
+  it('files every name and answers in submitted order', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const listId = await groceryListId()
+
+    const res = await addBatch(cookie, listId, ['milk', 'cereal', 'chicken thighs'])
+    expect(res.statusCode).toBe(201)
+
+    const { results } = res.json()
+    expect(results.map((r: { name: string }) => r.name)).toEqual([
+      'milk',
+      'cereal',
+      'chicken thighs',
+    ])
+    expect(results.map((r: { item: { category: string } }) => r.item.category)).toEqual([
+      'Dairy',
+      'Pantry',
+      'Meat',
+    ])
+    expect(await shoppingPrisma.item.count({ where: { listId } })).toBe(3)
+  })
+
+  it('reports one bad name as that name, and keeps the good ones', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const listId = await groceryListId()
+
+    const { results } = (await addBatch(cookie, listId, ['milk', 'cereal', 'x'.repeat(121)])).json()
+    expect(results[0].item.name).toBe('milk')
+    expect(results[1].item.name).toBe('cereal')
+    expect(results[2]).toMatchObject({ name: 'x'.repeat(121) })
+    expect(results[2].error).toBeTruthy()
+    expect(results[2].item).toBeUndefined()
+
+    // The batch is not atomic: a bad entry does not roll back what landed ahead of it.
+    expect(await shoppingPrisma.item.count({ where: { listId } })).toBe(2)
+  })
+
+  it('sees rows created earlier in the same batch — the check is per parsed item', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const listId = await groceryListId()
+
+    const { results } = (await addBatch(cookie, listId, ['Milk', 'milk'])).json()
+    expect(results[0].duplicateOf).toBeNull()
+    expect(results[1].duplicateOf).toEqual({ id: results[0].item.id, name: 'Milk' })
+
+    // Reported, never pre-deduplicated: two rows, exactly as typing it twice would.
+    expect(await shoppingPrisma.item.count({ where: { listId } })).toBe(2)
+  })
+
+  it('collides against a row that was already on the list', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const listId = await groceryListId()
+    const first = await addItem(cookie, listId, { name: 'Milk' })
+
+    const { results } = (await addBatch(cookie, listId, ['bananas', 'milk'])).json()
+    expect(results[0].duplicateOf).toBeNull()
+    expect(results[1].duplicateOf).toEqual({ id: first.json().item.id, name: 'Milk' })
+  })
+
+  it('ignores a checked row here too', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const listId = await groceryListId()
+    const first = await addItem(cookie, listId, { name: 'milk' })
+    await check(cookie, first.json().item.id, 'got')
+
+    const { results } = (await addBatch(cookie, listId, ['milk'])).json()
+    expect(results[0].duplicateOf).toBeNull()
+  })
+
+  it('never collides across destinations here either', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    await addItem(cookie, await groceryListId(), { name: 'milk' })
+
+    const other = await app.inject({
+      method: 'POST',
+      url: '/api/shopping/lists',
+      headers: { cookie },
+      payload: { name: 'Corner shop' },
+    })
+    const { results } = (await addBatch(cookie, other.json().id, ['milk'])).json()
+    expect(results[0].duplicateOf).toBeNull()
+  })
+
+  it('emits one add event per row that was actually created', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const listId = await groceryListId()
+
+    const seen: Record<string, unknown>[] = []
+    app.eventBus.on('shopping.item.added', (p) => seen.push(p as Record<string, unknown>))
+    await addBatch(cookie, listId, ['milk', 'cereal', '  '])
+
+    expect(seen).toHaveLength(2)
+    expect(seen.map((e) => e.name)).toEqual(['milk', 'cereal'])
+  })
+
+  it('teaches the dictionary once per created row, as a single add does', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    await addBatch(cookie, await groceryListId(), ['Chicken Thighs', 'Snap Peas'])
+
+    expect(
+      (await shoppingPrisma.entry.findUnique({ where: { normalizedName: 'chicken thighs' } }))?.name
+    ).toBe('Chicken Thighs')
+    expect(
+      (await shoppingPrisma.entry.findUnique({ where: { normalizedName: 'snap peas' } }))?.name
+    ).toBe('Snap Peas')
+  })
+
+  it('400s on a malformed array — that is a client that did not parse', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const listId = await groceryListId()
+
+    expect((await addBatch(cookie, listId, [])).statusCode).toBe(400)
+    expect((await addBatch(cookie, listId, Array(21).fill('milk'))).statusCode).toBe(400)
+    expect((await addBatch(cookie, listId, ['milk', 7])).statusCode).toBe(400)
+    expect(await shoppingPrisma.item.count({ where: { listId } })).toBe(0)
+  })
+
+  it('404s on an unknown list', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const res = await addBatch(cookie, '00000000-0000-4000-8000-000000000000', ['milk'])
+    expect(res.statusCode).toBe(404)
+  })
+
+  it('lets a tier-1 kid batch-add — the same key as a single add', async () => {
+    const cookie = await getCookieForProfile(KID_ID)
+    const res = await addBatch(cookie, await groceryListId(), ['milk', 'cereal'])
+    expect(res.statusCode).toBe(201)
+  })
+})
+
 // ─── PATCH /api/shopping/items/:id ────────────────────────────────────────────
 
 function rename(cookie: string, itemId: string, payload: Record<string, unknown>) {
