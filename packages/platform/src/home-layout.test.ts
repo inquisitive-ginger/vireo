@@ -11,7 +11,7 @@ describe('default layouts + widget prominence (ADR 039)', () => {
     expect(defaultLayoutKey('p', 4)).toBe('default_layout_tier_3_4')
   })
 
-  /* The kid surfaces rank wallet > chores > calendar = meals. A teen gets the same
+  /* The kid surfaces rank wallet > chores > feed = calendar. A teen gets the same
      order without a feature (their surface declines to shout, like the parent's);
      the parent layout stays wallet-free. */
   it('leads both kid surfaces with the wallet, and gives a parent none', () => {
@@ -70,42 +70,42 @@ describe('default layouts + widget prominence (ADR 039)', () => {
   it('resolves prominence by (key, widgetId), defaulting to card', () => {
     expect(prominenceFor('default_layout_tier_1_2', 'rewards.wallet')).toBe('feature')
     expect(prominenceFor('default_layout_tier_3_4', 'calendar.up-next')).toBe('card')
-    expect(prominenceFor('default_layout_tier_3_4', 'shopping.capture')).toBe('quiet')
+    expect(prominenceFor('default_layout_tier_3_4', 'family-feed.feed')).toBe('quiet')
     expect(prominenceFor('default_layout_tier_3_4', 'chores.today-summary')).toBe('card')
     expect(prominenceFor('default_layout_tier_3_4', 'unknown.widget')).toBe('card')
     expect(prominenceFor('nonexistent_key', 'calendar.up-next')).toBe('card')
   })
 
-  /* D3 — shopping's 2×2 DISPLACES the feed rather than extending the column.
-     Added on top it grew every grid by two rows and made the desktop dashboard
-     scroll; the feed yields its cell because its page is a scroll of the same
-     rows the tile shows, so a nav tap loses nothing. The Feed route is untouched
-     — this is a dashboard composition, not a removal. */
-  it('gives shopping a 2×2 in the right column, on every default layout', () => {
-    for (const [key, items] of Object.entries(DEFAULT_LAYOUTS)) {
-      const shopping = items.find((i) => i.widgetId === 'shopping.capture')
-      expect(shopping, key).toMatchObject({ x: 2, w: 2, h: 2, prominence: 'quiet' })
-    }
-  })
-
-  it('has taken the feed off all three, and paid for shopping with its cell', () => {
+  /* Shopping's tile is OFF every default layout (Zach, 2026-09-04, reversing D3).
+     The plugin is announced, the widget is built and `WIDGET_META.shopping` is
+     registered — it is simply not placed, which is the reversible half of that
+     pair. Which six widgets deserve four cells is a composition session, not a
+     line in a layout file. */
+  it('places no shopping tile on any default layout', () => {
     for (const [key, items] of Object.entries(DEFAULT_LAYOUTS)) {
       expect(
-        items.some((i) => i.widgetId === 'family-feed.feed'),
+        items.some((i) => i.widgetId === 'shopping.capture'),
         key
       ).toBe(false)
     }
   })
 
-  /* The cost, stated as an assertion so the next composition change has to look
-     at it: shopping's h=2 grows the right column by one row over the pre-M5.5
-     grid, not two. `ListRow`'s 56px floor is not overridable (ADR 068), so a 2×1
-     shopping tile fits the field and no whole row at all. */
-  it('grows the right column by one row, not two', () => {
+  it('keeps the feed on all three, at the cell D3 briefly took from it', () => {
+    for (const [key, items] of Object.entries(DEFAULT_LAYOUTS)) {
+      const feed = items.find((i) => i.widgetId === 'family-feed.feed')
+      expect(feed, key).toMatchObject({ x: 2, w: 2, h: 1, prominence: 'quiet' })
+    }
+  })
+
+  /* Stated as a number rather than loosened, because the number is the point:
+     the grid is back to exactly its pre-M5.5 geometry, which is the last state
+     the elevation ladder reasoned about. A future composition change has to come
+     back here and say what it costs. */
+  it('holds the right column at its pre-M5.5 height', () => {
     const columnHeight = (key: string) =>
       Math.max(...DEFAULT_LAYOUTS[key].filter((i) => i.x === 2).map((i) => i.y + i.h))
-    expect(columnHeight('default_layout_tier_1_2')).toBe(4)
-    expect(columnHeight('default_layout_tier_3')).toBe(4)
-    expect(columnHeight('default_layout_tier_3_4')).toBe(5)
+    expect(columnHeight('default_layout_tier_1_2')).toBe(3)
+    expect(columnHeight('default_layout_tier_3')).toBe(3)
+    expect(columnHeight('default_layout_tier_3_4')).toBe(4)
   })
 })
