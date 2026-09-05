@@ -20,7 +20,8 @@ export interface ShoppingItem {
 }
 
 /** A destination. Permanent lists stay in the strip at zero; a runtime one is
-    there only while it holds something. */
+    there only while it holds something. `itemCount` is what is still NEEDED on
+    that list — the one arithmetic the whole module counts by (SH-10). */
 export interface ShoppingList {
   id: string
   name: string
@@ -36,9 +37,15 @@ export interface ListsResponse {
 export interface ListResponse {
   list: ShoppingList
   items: ShoppingItem[]
-  /** Family-wide corrections, keyed by normalized name — what the filing echo
-      reads so it states the aisle the server will actually pick. */
-  overrides: Record<string, string>
+}
+
+/** An add is an ENVELOPE, not a row: the collision rides back with the item so
+    the surface can say `Already on Grocery.` without a second read. `duplicateOf`
+    is the pre-existing UNCHECKED row on the same list matching by
+    `normalizeItemName` — never the row just created. The add always completes. */
+export interface AddItemResponse {
+  item: ShoppingItem
+  duplicateOf: { id: string; name: string } | null
 }
 
 /** A row read across every destination — the wide layout's `Just added` and
@@ -51,7 +58,19 @@ export interface RecentItem extends ShoppingItem {
 export interface RecentResponse {
   lists: ShoppingList[]
   items: RecentItem[]
-  /** Same corrections the page's read carries — the filing echo has to be true
-      wherever the field lives, not only on the route. */
-  overrides: Record<string, string>
+}
+
+/** What the one-line report slot is saying (D4). Modelled as a message plus a
+    LIST of actions rather than a message-and-a-button, because the duplicate
+    notice is permanent: duplicates carry a count rather than merging (E4), so
+    the quantity session's `Make it ×2` lands beside `Take it back?` here without
+    reshaping the slot. It still draws one line and never resizes. */
+export interface CaptureReport {
+  /** `error` outranks `notice` outranks idle — a lost item is worse news than a
+      doubled one. */
+  tone: 'error' | 'notice'
+  message: string
+  actions: { label: string; onSelect: () => void }[]
+  /** The `✕`. Nothing else clears the line — least of all a later success. */
+  onDismiss: () => void
 }

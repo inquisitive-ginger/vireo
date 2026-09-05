@@ -1,7 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent, within } from '@testing-library/react'
 import { ShoppingPageView, type ShoppingPageViewProps } from './ShoppingPageView'
-import type { ShoppingItem } from '../types'
+import type { CaptureReport, ShoppingItem } from '../types'
 
 const item = (over: Partial<ShoppingItem> & { id: string; name: string }): ShoppingItem => ({
   category: 'Produce',
@@ -34,30 +34,49 @@ function renderView(over: Partial<ShoppingPageViewProps> = {}) {
     ],
     loading: false,
     onAdd: vi.fn(),
-    onDraftChange: vi.fn(),
-    draftAisle: null,
-    addError: null,
+    report: null,
     canAdd: true,
     layout: 'list',
     justAdded: [],
     totalOpenCount: 3,
     onShowLists: vi.fn(),
-    retractError: null,
     canCheck: true,
     canFile: false,
+    canManage: false,
+    canRetract: false,
     onToggle: vi.fn(),
     onRefile: vi.fn(),
+    onRename: vi.fn(),
+    onRemove: vi.fn(),
+    onRowRetract: vi.fn(),
     rowErrors: {},
     ...over,
   }
   return { props, ...render(<ShoppingPageView {...props} />) }
 }
 
+/** Shift+F10 is the sheet's keyboard route (E1). There is deliberately no
+    keyboard route to the quick path, so the sheet is how a test reaches a row's
+    verbs. */
+const openSheet = (name: string) =>
+  fireEvent.keyDown(screen.getAllByText(name)[0], { key: 'F10', shiftKey: true })
+
+const report = (over: Partial<CaptureReport> = {}): CaptureReport => ({
+  tone: 'error',
+  message: 'Couldn’t add “tortillas”',
+  actions: [],
+  onDismiss: vi.fn(),
+  ...over,
+})
+
 describe('ShoppingPageView', () => {
-  it('leads with the title and a muted count strip, never a shout', () => {
-    renderView()
+  /* SH-10. The strip counted every destination, which names no trip — you shop
+     one list. Deleted, not relabelled. */
+  it('leads with the title and NOTHING on its trailing edge', () => {
+    renderView({ totalOpenCount: 19 })
     expect(screen.getByRole('heading', { name: 'Shopping' })).toBeInTheDocument()
-    expect(screen.getByText('3 things to get')).toBeInTheDocument()
+    expect(screen.queryByText(/things to get/)).not.toBeInTheDocument()
+    expect(screen.queryByText('19')).not.toBeInTheDocument()
   })
 
   it('puts the capture field first under the title and does NOT steal the keyboard', () => {
@@ -92,7 +111,7 @@ describe('ShoppingPageView', () => {
     expect(screen.queryByText(/added/i)).not.toBeInTheDocument()
   })
 
-  it('shows one pill per destination with its count, and swaps the list in place', () => {
+  it('shows one pill per destination with what is LEFT on it, and swaps the list in place', () => {
     const { props } = renderView()
     const costco = screen.getByRole('button', { name: /Costco 1/ })
     expect(screen.getByRole('button', { name: /Grocery 3/ })).toHaveAttribute(
@@ -101,21 +120,6 @@ describe('ShoppingPageView', () => {
     )
     fireEvent.click(costco)
     expect(props.onSelectList).toHaveBeenCalledWith('costco')
-  })
-
-  it('states the aisle BEFORE the commit, beside the strip that says where it lands', () => {
-    renderView({ draftAisle: 'Pantry' })
-    const echo = screen.getByText(/Enter to add/)
-    expect(within(echo).getByText('Pantry')).toBeInTheDocument()
-    // The strip used to give way to this line. It stays now, because it carries
-    // the destination — hiding where a word lands while it is being typed is the
-    // one moment that fact matters most.
-    expect(screen.getByRole('button', { name: /Costco/ })).toBeInTheDocument()
-  })
-
-  it('hands the typed word back when the add fails, so it is not silently lost', () => {
-    renderView({ addError: 'tortillas' })
-    expect(screen.getByRole('alert')).toHaveTextContent('tortillas')
   })
 
   it('reports a submit up with the caught word', () => {
@@ -135,6 +139,77 @@ describe('ShoppingPageView', () => {
   it('has no index of lists and no drill-in — a pill is a filter, not a link', () => {
     const { container } = renderView()
     expect(container.querySelector('a')).toBeNull()
+  })
+})
+
+/* SH-13. The echo used to read `Enter to add · files under Pantry`, reporting a
+   problem to an audience that cannot act on it: correcting an aisle is `file`,
+   tier 4, and most capture is tier 1 and the wall. The slot and its reserve
+   stay — they are what stops the first keystroke shoving the layout. */
+describe('ShoppingPageView — the echo names no aisle', () => {
+  it('says the field is live and Enter commits, and nothing about filing', () => {
+    renderView()
+    const field = screen.getByLabelText('Add to Grocery')
+    fireEvent.change(field, { target: { value: 'tortillas' } })
+    expect(screen.getByText('Enter to add')).toBeInTheDocument()
+    expect(screen.queryByText(/files under/)).not.toBeInTheDocument()
+    expect(screen.queryByText(/Pantry|Produce ·/)).not.toBeInTheDocument()
+  })
+
+  it('keeps the pills visible while composing — they say where the word lands', () => {
+    renderView()
+    fireEvent.change(screen.getByLabelText('Add to Grocery'), { target: { value: 'x' } })
+    expect(screen.getByRole('button', { name: /Grocery/ })).toBeInTheDocument()
+  })
+})
+
+/* D4. One line, and a success never clears it — "milk" failing then "eggs"
+   landing must not erase the record that milk was lost. */
+describe('ShoppingPageView — the report slot', () => {
+  it('hands the typed word back when the add fails, so it is not silently lost', () => {
+    renderView({ report: report() })
+    expect(screen.getByRole('alert')).toHaveTextContent('tortillas')
+  })
+
+  it('names the newest failure and counts the rest', () => {
+    renderView({ report: report({ message: 'Couldn’t add “bread” · 1 more' }) })
+    expect(screen.getByRole('alert')).toHaveTextContent('Couldn’t add “bread” · 1 more')
+  })
+
+  it('clears on the ✕ and on nothing else', () => {
+    const onDismiss = vi.fn()
+    renderView({ report: report({ onDismiss }) })
+    fireEvent.click(screen.getByRole('button', { name: 'Dismiss' }))
+    expect(onDismiss).toHaveBeenCalledOnce()
+  })
+
+  it('states the collision in two clauses and offers the one verb, with no aisle', () => {
+    const onSelect = vi.fn()
+    renderView({
+      report: report({
+        tone: 'notice',
+        message: 'Already on Grocery.',
+        actions: [{ label: 'Take it back?', onSelect }],
+      }),
+    })
+    expect(screen.getByText('Already on Grocery.')).toBeInTheDocument()
+    expect(screen.queryByText(/added anyway|files under/)).not.toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Take it back?' }))
+    expect(onSelect).toHaveBeenCalledOnce()
+  })
+
+  it('drops the action when the add it would undo is not retract-eligible', () => {
+    renderView({ report: report({ tone: 'notice', message: 'Already on Grocery.', actions: [] }) })
+    expect(screen.getByText('Already on Grocery.')).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: 'Take it back?' })).not.toBeInTheDocument()
+  })
+
+  /* A report outranks the echo, and an error outranks a notice — the container
+     ranks them, the slot draws one line. */
+  it('outranks the echo rather than sitting beside it', () => {
+    renderView({ report: report() })
+    fireEvent.change(screen.getByLabelText('Add to Grocery'), { target: { value: 'x' } })
+    expect(screen.queryByText('Enter to add')).not.toBeInTheDocument()
   })
 })
 
@@ -170,10 +245,16 @@ describe('ShoppingPageView — the capture layout', () => {
     expect(props.onShowLists).toHaveBeenCalled()
   })
 
-  it('names what was just added, never who', () => {
+  it('names what was just added, never who and never where it filed', () => {
     renderView({ layout: 'capture', justAdded: [{ id: '1', name: 'oat milk', canRetract: true }] })
     expect(screen.getByText('oat milk')).toBeInTheDocument()
     expect(screen.queryByText(/Emma|the house|added by/i)).not.toBeInTheDocument()
+    expect(screen.queryByText(/Dairy|files under/)).not.toBeInTheDocument()
+  })
+
+  it('keeps the house-wide seam count — one number, at the scope it states (D6)', () => {
+    renderView({ layout: 'capture', totalOpenCount: 19 })
+    expect(screen.getByText('19 things to get')).toBeInTheDocument()
   })
 })
 
@@ -200,25 +281,6 @@ describe('ShoppingPageView — one control for "which list?"', () => {
     renderView()
     const field = screen.getByLabelText('Add to Grocery')
     expect(within(field.closest('form')!).queryByText(/Grocery/)).not.toBeInTheDocument()
-  })
-
-  it('keeps the pills visible while composing — they say where the word lands', () => {
-    // They used to give way to the filing echo. Now they carry the destination,
-    // which must not vanish mid-word.
-    renderView({ draftAisle: 'Pantry' })
-    expect(screen.getByRole('button', { name: /Grocery/ })).toBeInTheDocument()
-    expect(screen.getByText(/files under/)).toBeInTheDocument()
-  })
-
-  it('reports the cumulative count, not the selected list', () => {
-    renderView({ totalOpenCount: 19 })
-    expect(screen.getByText('19 things to get')).toBeInTheDocument()
-    expect(screen.queryByText('3 things to get')).not.toBeInTheDocument()
-  })
-
-  it('says "1 thing to get" rather than "1 things"', () => {
-    renderView({ totalOpenCount: 1 })
-    expect(screen.getByText('1 thing to get')).toBeInTheDocument()
   })
 })
 
@@ -269,22 +331,31 @@ describe('ShoppingPageView — in a shop', () => {
     expect(screen.getByText('butter')).toBeInTheDocument()
   })
 
-  it('shows the compacted status line and the meter once anything is in the cart', () => {
+  /* SH-10 / SH-11. One arithmetic — what's LEFT — so the pill and the line count
+     the same rows and cannot disagree, and the line carries the list name design.md
+     specified and the build dropped. */
+  it('reads `{list} · {n} left`, the same figure the pill reports', () => {
     shopping()
-    // The count leads at its own rank, and the line does NOT name the
-    // destination — the pill row above it carries that now, and a region that
-    // repeats its neighbour is one people stop reading.
-    const line = screen.getByText('3 of 4')
-    expect(line).toBeInTheDocument()
-    expect(line).not.toHaveTextContent('Grocery')
+    expect(screen.getByRole('progressbar').previousElementSibling).toHaveTextContent(
+      'Grocery · 1 left'
+    )
     const meter = screen.getByRole('progressbar')
     expect(meter).toHaveAttribute('aria-valuenow', '3')
     expect(meter).toHaveAttribute('aria-valuemax', '4')
   })
 
-  it('keeps the meter off a list nobody has started — there is no progress to report', () => {
-    renderView()
+  it('says `1 left`, not `1 lefts`', () => {
+    shopping()
+    expect(screen.queryByText(/lefts/)).not.toBeInTheDocument()
+  })
+
+  /* SH-12. It used to MOUNT on the first check, shoving the row the thumb was
+     still over down ~58px mid-interaction. ADR 043's "no comparison until there
+     is progress" is about what the block says, so it goes quiet, not absent. */
+  it('reserves the meter’s height from first paint and only goes quiet', () => {
+    const { container } = renderView()
     expect(screen.queryByRole('progressbar')).not.toBeInTheDocument()
+    expect(container.querySelector('.invisible')).not.toBeNull()
   })
 
   it('never switches the hero off — the capture field is present in a shop too', () => {
@@ -347,7 +418,7 @@ describe('ShoppingPageView — in a shop', () => {
     const meter = screen.getByRole('progressbar')
     expect(meter).toHaveAttribute('aria-valuenow', '1')
     expect(meter).toHaveAttribute('aria-valuemax', '2')
-    expect(screen.getByText('1 of 2')).toBeInTheDocument()
+    expect(meter.previousElementSibling).toHaveTextContent('Hardware · 1 left')
   })
 
   it('reports a failed check on the row that was tapped, not in the page chrome', () => {
@@ -371,18 +442,179 @@ describe('ShoppingPageView — in a shop', () => {
   })
 })
 
-/* AC9 — the aisle correction. `file` is tier 4 and its own action (ADR 071). */
-describe('ShoppingPageView — the aisle correction', () => {
-  it('is simply absent below tier 4', () => {
-    renderView({ canFile: false })
+/* SH-07 — the walk gets an ending. It replaces the meter and NOTHING else. */
+describe('ShoppingPageView — the cleared list', () => {
+  const cleared = (over: Partial<ShoppingPageViewProps> = {}) =>
+    renderView({
+      groups: [
+        { aisle: 'Produce', items: [item({ id: '1', name: 'snap peas', status: 'got' })] },
+        {
+          aisle: 'Dairy',
+          items: [item({ id: '2', name: 'milk', category: 'Dairy', status: 'got' })],
+        },
+      ],
+      ...over,
+    })
+
+  it('names the count, the aisles and the list, in place of the meter', () => {
+    cleared()
+    expect(screen.getByText('That’s everything.')).toBeInTheDocument()
+    expect(screen.getByText('2 things, 2 aisles, Grocery is clear.')).toBeInTheDocument()
+    expect(screen.queryByRole('progressbar')).not.toBeInTheDocument()
+  })
+
+  it('is not the empty state — that one is a claim about a list with nothing on it', () => {
+    renderView({ groups: [] })
+    expect(screen.getByText('Nothing on Grocery yet.')).toBeInTheDocument()
+    expect(screen.queryByText('That’s everything.')).not.toBeInTheDocument()
+  })
+
+  /* ADR 071 §2 — the uncheck has to stay reachable by the person standing in the
+     aisle, and remembering one more thing at the register is exactly when this
+     screen is on. */
+  it('leaves the field, the pills and every aisle summary live', () => {
+    const { props } = cleared()
+    expect(screen.getByLabelText('Add to Grocery')).not.toBeDisabled()
+    expect(screen.getByRole('button', { name: /Costco 1/ })).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: /Open Produce/ }))
+    fireEvent.click(screen.getByRole('button', { name: /Put .snap peas. back on the list/ }))
+    expect(props.onToggle).toHaveBeenCalledWith(expect.objectContaining({ id: '1' }))
+  })
+
+  it('is per-list — clearing Grocery says nothing about Costco', () => {
+    cleared()
+    expect(screen.getByRole('button', { name: /Costco 1/ })).toBeInTheDocument()
+  })
+
+  it('returns to the normal shape in the same render once a row is unchecked', () => {
+    const { rerender, props } = cleared()
+    rerender(
+      <ShoppingPageView
+        {...props}
+        groups={[
+          { aisle: 'Produce', items: [item({ id: '1', name: 'snap peas', status: 'needed' })] },
+          {
+            aisle: 'Dairy',
+            items: [item({ id: '2', name: 'milk', category: 'Dairy', status: 'got' })],
+          },
+        ]}
+      />
+    )
+    expect(screen.queryByText('That’s everything.')).not.toBeInTheDocument()
+    expect(screen.getByRole('progressbar')).toBeInTheDocument()
+  })
+})
+
+/* SH-08 / SH-09 / SH-01 / SH-02 / SH-06. Row chrome is leading ring, name,
+   optional note — nothing else, at any tier. Every verb is behind the gesture,
+   filtered by permission BEFORE it is drawn. */
+describe('ShoppingPageView — the row’s verbs', () => {
+  it('carries no permanent trailing control, at any tier', () => {
+    renderView({ canFile: true, canManage: true, canRetract: true })
     expect(
       screen.queryByRole('button', { name: /Move .* to another aisle/ })
     ).not.toBeInTheDocument()
   })
 
-  it('opens the walk order from the row and says the correction teaches the next add', () => {
+  it('binds no gesture at all for a reader with none of the three verbs', () => {
+    const { container } = renderView({ canFile: false, canManage: false, canRetract: false })
+    expect(container.querySelector('[data-row-swipe-quick]')).toBeNull()
+    expect(screen.queryByText('Edit')).toBeNull()
+  })
+
+  it('offers `Remove` on the quick edge under `manage`, and `Take it back` without it', () => {
+    const { unmount } = renderView({ canManage: true })
+    expect(screen.getAllByTitle(/Remove “/).length).toBeGreaterThan(0)
+    expect(screen.queryByTitle(/Take it back “/)).toBeNull()
+    unmount()
+
+    renderView({ canManage: false, canRetract: true })
+    expect(screen.getAllByTitle(/Take it back “/).length).toBeGreaterThan(0)
+    expect(screen.queryByTitle(/Remove “/)).toBeNull()
+  })
+
+  it('binds no quick edge when a row is past its retract window', () => {
+    const { container } = renderView({
+      canRetract: true,
+      groups: [
+        { aisle: 'Produce', items: [item({ id: '1', name: 'snap peas', canRetract: false })] },
+      ],
+    })
+    expect(container.querySelector('[data-row-swipe-quick]')).toBeNull()
+  })
+
+  it('removes a row through the sheet, under `manage`', () => {
+    const { props } = renderView({ canManage: true })
+    openSheet('snap peas')
+    fireEvent.click(screen.getByRole('button', { name: 'Remove from the list' }))
+    expect(props.onRemove).toHaveBeenCalledWith(expect.objectContaining({ id: '1' }))
+  })
+
+  /* SH-02. Retract reaches the phone, and eligibility is the payload's — never a
+     client clock and never a position in the Just-added strip (ADR 073 §2). */
+  it('offers `Take it back` in the sheet only for a row the server says is eligible', () => {
+    const { props } = renderView({
+      canRetract: true,
+      groups: [
+        {
+          aisle: 'Produce',
+          items: [
+            item({ id: '1', name: 'snap peas', canRetract: true }),
+            item({ id: '2', name: 'bananas', canRetract: false }),
+          ],
+        },
+      ],
+    })
+    openSheet('bananas')
+    expect(screen.queryByRole('button', { name: 'Take it back' })).not.toBeInTheDocument()
+
+    openSheet('snap peas')
+    fireEvent.click(screen.getByRole('button', { name: 'Take it back' }))
+    expect(props.onRowRetract).toHaveBeenCalledWith(expect.objectContaining({ id: '1' }))
+  })
+
+  it('reports a retract the server refused on the row, rather than swallowing it', () => {
+    renderView({
+      canRetract: true,
+      rowErrors: { '1': 'Too late to take back “snap peas” — it has been on the list a while.' },
+    })
+    expect(screen.getByRole('alert')).toHaveTextContent(/Too late to take back/)
+  })
+
+  /* SH-06 / D5. Rename is `manage` and nothing more: no new key, no re-file, no
+     teaching the dictionary. */
+  it('renames under `manage`, and offers nothing to rename with below it', () => {
+    const { props, unmount } = renderView({ canManage: true })
+    openSheet('snap peas')
+    fireEvent.click(screen.getByRole('button', { name: 'Rename' }))
+    const field = screen.getByLabelText('Rename “snap peas”')
+    fireEvent.change(field, { target: { value: 'sugar snap peas' } })
+    fireEvent.submit(field.closest('form')!)
+    expect(props.onRename).toHaveBeenCalledWith(
+      expect.objectContaining({ id: '1' }),
+      'sugar snap peas'
+    )
+    unmount()
+
+    renderView({ canManage: false, canFile: true })
+    openSheet('snap peas')
+    expect(screen.queryByRole('button', { name: 'Rename' })).not.toBeInTheDocument()
+  })
+})
+
+/* AC9 — the aisle correction. `file` is tier 4 and its own action (ADR 071). It
+   moved behind the sheet in SH-08; its family-wide warning copy did not change. */
+describe('ShoppingPageView — the aisle correction', () => {
+  it('is simply absent below tier 4', () => {
+    renderView({ canFile: false, canManage: true })
+    openSheet('snap peas')
+    expect(screen.queryByRole('button', { name: 'Move to another aisle' })).not.toBeInTheDocument()
+  })
+
+  it('opens the walk order from the sheet and says the correction teaches the next add', () => {
     const { props } = renderView({ canFile: true })
-    fireEvent.click(screen.getByRole('button', { name: /Move .snap peas. to another aisle/ }))
+    openSheet('snap peas')
+    fireEvent.click(screen.getByRole('button', { name: 'Move to another aisle' }))
     expect(screen.getByText(/Files every future/)).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Pantry' }))
     expect(props.onRefile).toHaveBeenCalledWith(expect.objectContaining({ id: '1' }), 'Pantry')
@@ -390,7 +622,8 @@ describe('ShoppingPageView — the aisle correction', () => {
 
   it('does not fire a correction that changes nothing', () => {
     const { props } = renderView({ canFile: true })
-    fireEvent.click(screen.getByRole('button', { name: /Move .snap peas. to another aisle/ }))
+    openSheet('snap peas')
+    fireEvent.click(screen.getByRole('button', { name: 'Move to another aisle' }))
     fireEvent.click(screen.getByRole('button', { name: /^Produce/ }))
     expect(props.onRefile).not.toHaveBeenCalled()
   })

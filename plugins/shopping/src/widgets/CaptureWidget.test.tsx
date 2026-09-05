@@ -112,13 +112,17 @@ describe('CaptureWidget', () => {
     consoleError.mockRestore()
   })
 
-  it('states the filing the server will pick, corrections included', async () => {
+  /* SH-13. The echo says the field is live and Enter commits, and nothing about
+     an aisle: correcting one is `file`, tier 4, and the dashboard is where the
+     tiers that cannot correct do most of their capturing. */
+  it('says Enter commits, and names no aisle', async () => {
     renderWidget()
     await screen.findByText('snap peas')
 
     fireEvent.change(screen.getByLabelText('Add to Grocery'), {
       target: { value: 'snap peas' },
     })
-    expect(await screen.findByText('files under Produce')).toBeInTheDocument()
+    expect(await screen.findByText('Enter to add')).toBeInTheDocument()
+    expect(screen.queryByText(/files under/)).not.toBeInTheDocument()
   })
 })

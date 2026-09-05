@@ -1,6 +1,15 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { ShoppingCaptureHero, type ShoppingCaptureHeroProps } from './ShoppingCaptureHero'
+import type { CaptureReport } from '../types'
+
+const report = (over: Partial<CaptureReport> = {}): CaptureReport => ({
+  tone: 'error',
+  message: 'Couldn’t add “oat milk”',
+  actions: [],
+  onDismiss: vi.fn(),
+  ...over,
+})
 
 function renderView(over: Partial<ShoppingCaptureHeroProps> = {}) {
   const props: ShoppingCaptureHeroProps = {
@@ -12,13 +21,10 @@ function renderView(over: Partial<ShoppingCaptureHeroProps> = {}) {
     openCount: 19,
     destinations: <div>Grocery 14 · Costco 3</div>,
     onShowLists: vi.fn(),
-    retractError: null,
     loading: false,
     destination: 'Grocery',
     onAdd: vi.fn(),
-    onDraftChange: vi.fn(),
-    draftAisle: null,
-    addError: null,
+    report: null,
     canAdd: true,
     ...over,
   }
@@ -42,10 +48,13 @@ describe('ShoppingCaptureHero', () => {
     expect(field).toHaveFocus()
   })
 
-  it('states the filing before the commit, not after it', () => {
-    renderView({ draftAisle: 'Pantry' })
-    expect(screen.getByText(/files under/)).toBeInTheDocument()
-    expect(screen.getByText('Pantry')).toBeInTheDocument()
+  /* SH-13. The echo says the field is live and Enter commits, and nothing about
+     an aisle — the wall adds as tier 1 (ADR 072) and cannot re-file at all. */
+  it('says Enter commits, and names no aisle', () => {
+    renderView()
+    fireEvent.change(screen.getByLabelText('Add to Grocery'), { target: { value: 'oat milk' } })
+    expect(screen.getByText('Enter to add')).toBeInTheDocument()
+    expect(screen.queryByText(/files under/)).not.toBeInTheDocument()
   })
 
   it('names what was just added, never who added it', () => {
@@ -88,8 +97,9 @@ describe('ShoppingCaptureHero', () => {
 
   it('SHOWS a refused retract rather than swallowing it', () => {
     // The window closes between fetches by design, so this is an expected
-    // outcome on a screen with no devtools behind it (ADR 073 §2).
-    renderView({ retractError: 'Too late to take back “milk”.' })
+    // outcome on a screen with no devtools behind it (ADR 073 §2). It lands in
+    // the one report slot, because the chip it was tapped from is gone.
+    renderView({ report: report({ message: 'Too late to take back “milk”.' }) })
     expect(screen.getByRole('alert')).toHaveTextContent('Too late to take back')
   })
 
@@ -109,8 +119,21 @@ describe('ShoppingCaptureHero', () => {
   })
 
   it('names the word that failed, because the field already cleared', () => {
-    renderView({ addError: 'oat milk' })
+    renderView({ report: report() })
     expect(screen.getByRole('alert')).toHaveTextContent('oat milk')
+  })
+
+  it('states the collision in two clauses and offers the one verb', () => {
+    const onSelect = vi.fn()
+    renderView({
+      report: report({
+        tone: 'notice',
+        message: 'Already on Grocery.',
+        actions: [{ label: 'Take it back?', onSelect }],
+      }),
+    })
+    fireEvent.click(screen.getByRole('button', { name: 'Take it back?' }))
+    expect(onSelect).toHaveBeenCalledOnce()
   })
 
   it('says so when adding is revoked rather than failing silently on submit', () => {

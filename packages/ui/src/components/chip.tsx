@@ -11,7 +11,13 @@ import { cn } from '../lib/utils'
 
 export interface ChipProps {
   selected: boolean
-  onClick: () => void
+  /** Omitted, the chip STATES rather than toggles and renders a `span` — no
+      button, no `aria-pressed`, nothing to tab to. */
+  onClick?: () => void
+  /** An accessible name of its own, for a chip whose visible text is not the
+      whole act ("Take back broccoli" on a chip reading `broccoli ×`). A chip
+      with one is an action, not a toggle, so it drops `aria-pressed`. */
+  label?: string
   children: ReactNode
   /** Leading dot or icon. */
   leading?: ReactNode
@@ -28,6 +34,7 @@ export interface ChipProps {
 export function Chip({
   selected,
   onClick,
+  label,
   children,
   leading,
   selectedClassName,
@@ -35,13 +42,16 @@ export function Chip({
   idleClassName,
   className,
 }: ChipProps) {
+  const Tag = onClick ? 'button' : 'span'
   return (
-    <button
-      type="button"
+    <Tag
+      type={onClick ? 'button' : undefined}
       onClick={onClick}
-      aria-pressed={selected}
+      aria-label={label}
+      aria-pressed={onClick && !label ? selected : undefined}
       className={cn(
-        'text-sm-token inline-flex cursor-pointer items-center gap-1.5 rounded-full border-2 px-3.5 py-1.5 transition-colors',
+        'text-sm-token inline-flex items-center gap-1.5 rounded-full border-2 px-3.5 py-1.5 transition-colors',
+        onClick && 'cursor-pointer',
         selected
           ? cn('font-semibold', selectedClassName)
           : cn('border-border font-normal text-foreground', idleClassName),
@@ -51,7 +61,7 @@ export function Chip({
     >
       {leading}
       {children}
-    </button>
+    </Tag>
   )
 }
 

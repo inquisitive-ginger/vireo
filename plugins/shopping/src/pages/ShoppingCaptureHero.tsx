@@ -1,35 +1,34 @@
+import { useState, type ReactNode } from 'react'
 import { ChevronRight, Loader2, Mic, X } from 'lucide-react'
-import type { ReactNode } from 'react'
-import { CaptureField, cn } from '@family-os/ui'
+import { CaptureField, Chip } from '@family-os/ui'
+import type { CaptureReport } from '../types'
+import { ReportLine } from '../components/ReportLine'
 
 export interface ShoppingCaptureHeroProps {
   /** The last few things that landed, anywhere. Names only — never who added
-      them (ADR 072 §4, withdrawn 2026-09-04). Ids because a house adds milk
-      twice in a week and two chips must not collide. */
+      them (ADR 072 §4, withdrawn 2026-09-04), and never the aisle they filed
+      under (SH-13). Ids because a house adds milk twice in a week and two chips
+      must not collide. */
   justAdded: { id: string; name: string; canRetract: boolean }[]
   /** Taking back a typo you made two seconds ago (ADR 073, tier 1). Undefined
       when the profile lacks the key at all; per-CHIP eligibility is the server's
-      `canRetract`, which folds in both "yours" and the fifteen-minute window. */
+      `canRetract`, which folds in both "yours" and the fifteen-minute window —
+      never a position in this strip (ADR 073 §2). */
   onRetract?: (id: string, name: string) => void
-  /** A retract the server refused — most often the window closing between
-      fetches, which is expected and must be shown rather than swallowed. */
-  retractError: string | null
   /** The destination pills. Rendered here rather than built here so ONE strip
       serves both layouts — it is the same control, in the same component, just
       placed differently. */
   destinations: ReactNode
-  /** Everything waiting across every destination — one number. The per-list
-      split lives on the pills, which are also the control that picks where an
-      add lands. */
+  /** Everything waiting across every destination — one number, the same "what's
+      left" arithmetic the pills use (D6). */
   openCount: number
   /** Swaps to the list, at its own URL. */
   onShowLists: () => void
   loading: boolean
   destination: string | null
   onAdd: (name: string) => void
-  onDraftChange: (draft: string) => void
-  draftAisle: string | null
-  addError: string | null
+  /** The one report slot's contents, already ranked (D4). */
+  report: CaptureReport | null
   canAdd: boolean
 }
 
@@ -44,19 +43,16 @@ export interface ShoppingCaptureHeroProps {
 export function ShoppingCaptureHero({
   justAdded,
   onRetract,
-  retractError,
   destinations,
   openCount,
   onShowLists,
   loading,
   destination,
   onAdd,
-  onDraftChange,
-  draftAisle,
-  addError,
+  report,
   canAdd,
 }: ShoppingCaptureHeroProps) {
-  const composing = draftAisle !== null
+  const [composing, setComposing] = useState(false)
 
   return (
     // Fills the screen, so what a person walks up to is the field and nothing
@@ -75,7 +71,7 @@ export function ShoppingCaptureHero({
         placeholder="Type it, or say it"
         label={destination ? `Add to ${destination}` : 'Add to the shopping list'}
         disabled={!canAdd || !destination}
-        onValueChange={onDraftChange}
+        onValueChange={(value) => setComposing(value.trim().length > 0)}
         onSubmit={onAdd}
         trailing={<HoldToSpeak />}
       />
@@ -85,61 +81,50 @@ export function ShoppingCaptureHero({
           read as a field and then some unrelated filters. */}
       <div className="mt-3">{destinations}</div>
 
-      {/* Reports on the field, under the pair. Tall enough for the line it
-          reserves — `pt-2` plus one `text-body` line is 37px, and a short
-          reserve lets the first keystroke shove everything below it down and
-          Enter shove it back. */}
-      <div className="min-h-10 pt-2">
-        {addError ? (
-          <p role="alert" className="text-body px-1 text-error">
-            Couldn&rsquo;t add &ldquo;{addError}&rdquo; &mdash; it is not on the list. Try again.
-          </p>
-        ) : !canAdd ? (
-          <p className="text-body px-1 text-muted-foreground">
-            Adding to the list is turned off for this profile.
-          </p>
-        ) : composing ? (
-          <p className="text-body px-1 text-muted-foreground">
-            Enter to add · files under{' '}
-            <span className="font-medium text-foreground">{draftAisle}</span>
-          </p>
-        ) : null}
-      </div>
+      {/* Reports on the field, under the pair, height reserved either way — a
+          slot mounted on the first keystroke shoves everything below it down and
+          Enter shoves it back. */}
+      <ReportLine
+        className="mt-2"
+        size="body"
+        report={report}
+        idle={
+          !canAdd
+            ? 'Adding to the list is turned off for this profile.'
+            : composing
+              ? 'Enter to add'
+              : undefined
+        }
+      />
 
       <div className="mt-7">
         <div className="text-section-label-lg text-muted-foreground">Just added</div>
-        {retractError && (
-          <p role="alert" className="text-body px-1 pt-2 text-error">
-            {retractError}
-          </p>
-        )}
         <div className="flex flex-wrap gap-2.5 pt-3">
           {loading ? (
             <Loader2 className="size-6 animate-spin text-muted-foreground" aria-label="Loading" />
           ) : justAdded.length === 0 ? (
             <span className="text-body text-muted-foreground">Nothing yet.</span>
           ) : (
-            justAdded.map((chip) => (
-              <span
-                key={chip.id}
-                className={cn(
-                  'text-body flex items-center gap-2 rounded-full border-2 border-border py-2 pl-4.5 text-foreground',
-                  onRetract && chip.canRetract ? 'pr-2' : 'pr-4.5'
-                )}
-              >
-                {chip.name}
-                {onRetract && chip.canRetract && (
-                  <button
-                    type="button"
-                    onClick={() => onRetract(chip.id, chip.name)}
-                    aria-label={`Take back ${chip.name}`}
-                    className="flex size-7 cursor-pointer items-center justify-center rounded-full text-muted-foreground hover:bg-secondary hover:text-foreground"
-                  >
-                    <X size={18} aria-hidden />
-                  </button>
-                )}
-              </span>
-            ))
+            justAdded.map((chip) => {
+              const retractable = onRetract !== undefined && chip.canRetract
+              // A name and a way to undo it — no hue, no avatar, no adder
+              // (ADR 072 §3, ADR 064), and no aisle (SH-13). The whole chip is
+              // the take-back target where one is offered, which is what puts it
+              // over the 48px floor; where it is not, the chip states and does
+              // not pretend to act.
+              return (
+                <Chip
+                  key={chip.id}
+                  selected={false}
+                  label={retractable ? `Take back ${chip.name}` : undefined}
+                  onClick={retractable ? () => onRetract(chip.id, chip.name) : undefined}
+                  className="text-body min-h-touch gap-2 py-2 pr-3 pl-4.5"
+                >
+                  {chip.name}
+                  {retractable && <X size={18} aria-hidden />}
+                </Chip>
+              )
+            })
           )}
         </div>
       </div>
@@ -152,7 +137,7 @@ export function ShoppingCaptureHero({
             about the house, read from across the room by someone who will not
             look twice. */}
         <span className="text-body text-muted-foreground">
-          {loading ? '\u00a0' : `${openCount} thing${openCount === 1 ? '' : 's'} to get`}
+          {loading ? ' ' : `${openCount} thing${openCount === 1 ? '' : 's'} to get`}
         </span>
         {/* Swaps to the list, at its own URL. The way back is `Back to adding`
             at the top of that view AND the browser's own back gesture — which is

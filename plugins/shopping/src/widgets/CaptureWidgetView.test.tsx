@@ -1,7 +1,7 @@
 import { describe, it, expect, vi, beforeAll } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
 import { CaptureWidgetView, type CaptureWidgetViewProps } from './CaptureWidgetView'
-import type { RecentItem } from '../types'
+import type { CaptureReport, RecentItem } from '../types'
 
 const ROW_HEIGHT = 56
 const BOX_HEIGHT = 2 * ROW_HEIGHT + 10
@@ -27,9 +27,7 @@ function renderView(over: Partial<CaptureWidgetViewProps> = {}) {
     error: false,
     destination: 'Grocery',
     onAdd: vi.fn(),
-    onDraftChange: vi.fn(),
-    draftAisle: null,
-    addError: null,
+    report: null,
     canAdd: true,
     ...over,
   }
@@ -56,9 +54,11 @@ describe('CaptureWidgetView', () => {
     expect(field).toHaveValue('')
   })
 
-  it('states the filing before the commit here too', () => {
-    renderView({ draftAisle: 'Pantry' })
-    expect(screen.getByText('files under Pantry')).toBeInTheDocument()
+  it('says Enter commits, and names no aisle here either (SH-13)', () => {
+    renderView()
+    fireEvent.change(screen.getByLabelText('Add to Grocery'), { target: { value: 'milk' } })
+    expect(screen.getByText('Enter to add')).toBeInTheDocument()
+    expect(screen.queryByText(/files under/)).not.toBeInTheDocument()
   })
 
   it('names the destination only for a row that is not on the default list', () => {
@@ -67,6 +67,8 @@ describe('CaptureWidgetView', () => {
     expect(screen.queryByText('Grocery')).not.toBeInTheDocument()
   })
 
+  /* D6 — the header stays HOUSE-WIDE. These rows are cross-list and each names
+     its list, so the figure and what it counts share a screen. */
   it('shows what is waiting everywhere, not just the rows that fit', () => {
     renderView()
     expect(screen.getByText('19')).toBeInTheDocument()
@@ -84,7 +86,13 @@ describe('CaptureWidgetView', () => {
   })
 
   it('surfaces the word that failed — nobody at a dashboard has devtools open', () => {
-    renderView({ addError: 'milk' })
+    const failed: CaptureReport = {
+      tone: 'error',
+      message: 'Couldn’t add “milk”',
+      actions: [],
+      onDismiss: vi.fn(),
+    }
+    renderView({ report: failed })
     expect(screen.getByRole('alert')).toHaveTextContent('milk')
   })
 })

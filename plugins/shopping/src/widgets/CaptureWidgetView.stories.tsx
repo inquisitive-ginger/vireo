@@ -44,9 +44,7 @@ const meta: Meta<typeof CaptureWidgetView> = {
     error: false,
     destination: 'Grocery',
     onAdd: () => {},
-    onDraftChange: () => {},
-    draftAisle: null,
-    addError: null,
+    report: null,
     canAdd: true,
   },
 }
@@ -70,11 +68,13 @@ export const Standard: Story = {
    it. */
 export const Short: Story = {}
 
-export const Composing: Story = { args: { draftAisle: 'Pantry' } }
-
 export const NothingWaiting: Story = { args: { items: [], openCount: 0 } }
 
 /* The read failed. "Nothing waiting" would be a false claim about the house. */
 export const ReadFailed: Story = { args: { items: [], error: true } }
 
-export const AddFailed: Story = { args: { addError: 'milk' } }
+export const AddFailed: Story = {
+  args: {
+    report: { tone: 'error', message: 'Couldn’t add “milk”', actions: [], onDismiss: () => {} },
+  },
+}

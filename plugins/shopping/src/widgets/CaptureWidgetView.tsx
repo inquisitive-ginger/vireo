@@ -1,6 +1,8 @@
+import { useState } from 'react'
 import { ShoppingCart } from 'lucide-react'
 import { CaptureField, ListRow, WidgetHeader, WIDGET_INSET, cn, useFitRows } from '@family-os/ui'
-import type { RecentItem } from '../types'
+import type { CaptureReport, RecentItem } from '../types'
+import { ReportLine } from '../components/ReportLine'
 
 /* Reserve for the "+N more" line when the list is clamped. */
 const MORE_RESERVE = 22
@@ -15,9 +17,8 @@ export interface CaptureWidgetViewProps {
   error: boolean
   destination: string | null
   onAdd: (name: string) => void
-  onDraftChange: (draft: string) => void
-  draftAisle: string | null
-  addError: string | null
+  /** The one report slot's contents, already ranked (D4). */
+  report: CaptureReport | null
   canAdd: boolean
 }
 
@@ -33,27 +34,21 @@ export function CaptureWidgetView({
   error,
   destination,
   onAdd,
-  onDraftChange,
-  draftAisle,
-  addError,
+  report,
   canAdd,
 }: CaptureWidgetViewProps) {
   const { boxRef, listRef, shown, measuring } = useFitRows(items, MORE_RESERVE)
-  // While composing, the echo takes the line — the filing is the one thing worth
-  // reading between typing and Enter, on every surface the field appears on.
-  const note = addError
-    ? { role: 'alert' as const, className: 'text-error', body: `Couldn’t add “${addError}”` }
-    : !canAdd
-      ? { role: undefined, className: 'text-muted-foreground', body: 'Adding is turned off.' }
-      : draftAisle
-        ? { role: undefined, className: 'text-muted-foreground', body: `files under ${draftAisle}` }
-        : null
+  const [composing, setComposing] = useState(false)
 
   return (
     <div className={cn('flex h-full flex-col', WIDGET_INSET.standard)}>
       <WidgetHeader
         icon={ShoppingCart}
         label="Shopping"
+        // House-wide, and it stays that way (D6): these rows are cross-list and
+        // each names its list, so the figure and what it counts share a screen.
+        // Same arithmetic as everywhere else — what's left.
+        //
         // Blank rather than 0 until the read lands: the count is a claim about
         // the house and must not be made before the answer is in.
         trailing={
@@ -76,21 +71,19 @@ export function CaptureWidgetView({
         placeholder={destination ? `Add to ${destination}` : 'Add something'}
         label={destination ? `Add to ${destination}` : 'Add to the shopping list'}
         disabled={!canAdd || !destination}
-        onValueChange={onDraftChange}
+        onValueChange={(value) => setComposing(value.trim().length > 0)}
         onSubmit={onAdd}
       />
 
       {/* Reserved whether or not it has a line to draw. Mounting it on the first
-          keystroke inserts ~25px, `useFitRows` re-clamps on the shrunken box,
+          keystroke inserts a line, `useFitRows` re-clamps on the shrunken box,
           and a row disappears while the user is still typing the word — then
-          comes back on Enter. Same defect the wide hero reserves `min-h-11` for. */}
-      <div className="min-h-5 shrink-0">
-        {note && (
-          <p role={note.role} className={cn('text-sm-token truncate px-1', note.className)}>
-            {note.body}
-          </p>
-        )}
-      </div>
+          comes back on Enter. */}
+      <ReportLine
+        className="shrink-0"
+        report={report}
+        idle={!canAdd ? 'Adding is turned off.' : composing ? 'Enter to add' : undefined}
+      />
 
       {/* The measured box: `min-h-0 flex-1` is what gives `useFitRows` a height
           to clamp against. Without the height-constrained flex child it measures

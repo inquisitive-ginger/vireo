@@ -22,6 +22,9 @@ const item = (
   canRetract: true,
 })
 
+const gotItem = (id: string, name: string, category: string): ShoppingItem =>
+  item(id, name, category, undefined, 'got')
+
 const meta: Meta<typeof ShoppingPageView> = {
   title: 'Shopping/ShoppingPageView',
   component: ShoppingPageView,
@@ -59,21 +62,23 @@ const meta: Meta<typeof ShoppingPageView> = {
     ],
     loading: false,
     onAdd: () => {},
-    onDraftChange: () => {},
-    draftAisle: null,
-    addError: null,
+    report: null,
     canAdd: true,
     canCheck: true,
     canFile: false,
+    canManage: false,
+    canRetract: false,
     onToggle: () => {},
     onRefile: () => {},
+    onRename: () => {},
+    onRemove: () => {},
+    onRowRetract: () => {},
     rowErrors: {},
     layout: 'list',
     justAdded: [],
     totalOpenCount: 19,
     onShowLists: () => {},
     onRetract: () => {},
-    retractError: null,
   },
 }
 export default meta
@@ -83,9 +88,38 @@ export const AtRest: Story = {
   name: 'S1 — at rest',
 }
 
-export const Typing: Story = {
-  name: 'S2 — typing (the filing stated before the commit)',
-  args: { draftAisle: 'Pantry' },
+/* Mid-shop — one arithmetic, `{list} · {n} left`, the same figure the pill
+   above reports over the same rows (SH-10/11). */
+export const MidShop: Story = {
+  name: 'S3 — in a shop',
+  args: {
+    groups: [
+      { aisle: 'Produce', items: [gotItem('1', 'snap peas', 'Produce')] },
+      {
+        aisle: 'Dairy',
+        items: [gotItem('4', 'milk', 'Dairy'), item('5', 'greek yogurt', 'Dairy')],
+      },
+    ],
+  },
+}
+
+/* The walk gets an ending (SH-07). It replaces the meter and nothing else — the
+   field, the pills and every aisle summary stay live. */
+export const Cleared: Story = {
+  name: 'The list is clear',
+  args: {
+    groups: [
+      { aisle: 'Produce', items: [gotItem('1', 'snap peas', 'Produce')] },
+      { aisle: 'Dairy', items: [gotItem('4', 'milk', 'Dairy')] },
+    ],
+  },
+}
+
+/* Every verb permitted, so both edges bind. A reader with none of the three gets
+   no gesture on either edge. */
+export const AllVerbs: Story = {
+  name: 'Tier 4 — both edges bind',
+  args: { canFile: true, canManage: true, canRetract: true },
 }
 
 // A destination with no aisles of ours renders flat — one group, no headers.
@@ -120,7 +154,27 @@ export const Empty: Story = {
 }
 
 export const AddFailed: Story = {
-  args: { addError: 'tortillas' },
+  args: {
+    report: {
+      tone: 'error',
+      message: 'Couldn’t add “bread” · 1 more',
+      actions: [],
+      onDismiss: () => {},
+    },
+  },
+}
+
+/* SH-03 — the collision caught where it happens. Two clauses: the fact, and the
+   only thing to do about it. */
+export const Duplicate: Story = {
+  args: {
+    report: {
+      tone: 'notice',
+      message: 'Already on Grocery.',
+      actions: [{ label: 'Take it back?', onSelect: () => {} }],
+      onDismiss: () => {},
+    },
+  },
 }
 
 /* The SAME component at tablet width and up — one surface, two layouts, picked
@@ -136,10 +190,6 @@ export const Wide: Story = {
       { id: 'r4', name: 'wood screws', canRetract: true },
     ],
   },
-}
-
-export const WideComposing: Story = {
-  args: { ...Wide.args, draftAisle: 'Pantry' },
 }
 
 /* After `Show lists` — the same list, in place, with the hero still above it so

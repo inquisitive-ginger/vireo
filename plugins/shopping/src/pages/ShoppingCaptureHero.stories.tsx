@@ -36,14 +36,11 @@ const meta: Meta<typeof ShoppingCaptureHero> = {
       </div>
     ),
     onRetract: () => {},
-    retractError: null,
     onShowLists: () => {},
     loading: false,
     destination: 'Grocery',
     onAdd: () => {},
-    onDraftChange: () => {},
-    draftAisle: null,
-    addError: null,
+    report: null,
     canAdd: true,
   },
 }
@@ -52,16 +49,33 @@ type Story = StoryObj<typeof ShoppingCaptureHero>
 
 export const AtRest: Story = {}
 
-/* The filing echo, stated before the commit — the one moment a mis-file is
-   catchable by the person who caused it. */
-export const Composing: Story = { args: { draftAisle: 'Pantry' } }
-
 /* The short memory is empty. Not a gap — a wall nobody has walked up to today. */
 export const NothingYet: Story = { args: { justAdded: [], openCount: 0 } }
 
 /* The add did not land. The field cleared on Enter, so this line is the only
    thing standing between the person and a word they think they said. */
-export const AddFailed: Story = { args: { addError: 'oat milk' } }
+export const AddFailed: Story = {
+  args: {
+    report: {
+      tone: 'error',
+      message: 'Couldn’t add “oat milk”',
+      actions: [],
+      onDismiss: () => {},
+    },
+  },
+}
+
+/* SH-03 — the collision, in the one report slot. */
+export const Duplicate: Story = {
+  args: {
+    report: {
+      tone: 'notice',
+      message: 'Already on Grocery.',
+      actions: [{ label: 'Take it back?', onSelect: () => {} }],
+      onDismiss: () => {},
+    },
+  },
+}
 
 /* `shopping.item.add` revoked for this profile (ADR 072 §6) — the one lever that
    closes the wall's field. */
@@ -80,5 +94,12 @@ export const NothingRetractable: Story = {
 
 /* The window closed between fetches. Expected, and shown. */
 export const RetractRefused: Story = {
-  args: { retractError: 'Too late to take back “snap peas” — it has been on the list a while.' },
+  args: {
+    report: {
+      tone: 'error',
+      message: 'Too late to take back “snap peas” — it has been on the list a while.',
+      actions: [],
+      onDismiss: () => {},
+    },
+  },
 }
