@@ -3,6 +3,10 @@ import { render, screen, fireEvent } from '@testing-library/react'
 import { ListRow } from './list-row'
 import { RowSwipe } from './row-swipe'
 
+/** E1's pointer timing. Mirrored here rather than exported — a test that reads
+    the component's own constant cannot catch the constant changing. */
+const LONG_PRESS_MS = 500
+
 function row(props: Partial<Parameters<typeof RowSwipe>[0]> = {}, onActivate = vi.fn()) {
   return render(
     <RowSwipe label="milk" {...props}>
@@ -69,6 +73,39 @@ describe('RowSwipe (SH-09)', () => {
     row({ quick: { label: 'Remove', onFire: vi.fn() } }, onActivate)
     fireEvent.click(screen.getByRole('button', { name: 'Mark “milk” as got' }))
     expect(onActivate).toHaveBeenCalledOnce()
+  })
+
+  /* The wall tablet has no keyboard and no right-click, so long-press is its ONLY
+     route to a row's verbs. The guard is written as an exclusion — a mouse is
+     skipped because it has `contextmenu`, everything else arms — so that a
+     pointer type nobody anticipated falls on the side that still works.
+
+     jsdom implements no `PointerEvent` at all, so `pointerType` arrives
+     `undefined` no matter what `fireEvent` is handed: the mouse half of that rule
+     is NOT expressible here, and this covers only the arming. */
+  it('arms the long press for a pointer that does not identify itself as a mouse', async () => {
+    vi.useFakeTimers()
+    const onOpenActions = vi.fn()
+    const { container } = row({ onOpenActions })
+    const box = container.firstElementChild!
+
+    fireEvent.pointerDown(box, { pointerType: 'touch' })
+    await vi.advanceTimersByTimeAsync(LONG_PRESS_MS)
+    expect(onOpenActions).toHaveBeenCalledOnce()
+    vi.useRealTimers()
+  })
+
+  it('drops the long press when the pointer leaves or is cancelled', async () => {
+    vi.useFakeTimers()
+    const onOpenActions = vi.fn()
+    const { container } = row({ onOpenActions })
+    const box = container.firstElementChild!
+
+    fireEvent.pointerDown(box, { pointerType: 'touch' })
+    fireEvent.pointerUp(box)
+    await vi.advanceTimersByTimeAsync(LONG_PRESS_MS)
+    expect(onOpenActions).not.toHaveBeenCalled()
+    vi.useRealTimers()
   })
 
   it('reaches the sheet by Shift+F10 and the context-menu key, and by right-click', () => {

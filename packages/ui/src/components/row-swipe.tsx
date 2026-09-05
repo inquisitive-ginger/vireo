@@ -205,7 +205,13 @@ export function RowSwipe({
         // one — a touch released off the row — would otherwise leave the flag set
         // and swallow the next honest tap.
         draggedRef.current = false
-        if (e.pointerType !== 'touch' || !onOpenActions) return
+        // Anything that is NOT a mouse arms the long press — touch, pen, and a
+        // pointer that declines to say. A mouse is the only one excluded, and
+        // only because it has `contextmenu`, which is the better route when it
+        // exists. Written as an exclusion on purpose: on a wall tablet this is
+        // the ONLY way to a row's verbs — no keyboard, no right-click — so a
+        // pointer type nobody anticipated must fall on the side that still works.
+        if (e.pointerType === 'mouse' || !onOpenActions) return
         longPressRef.current = setTimeout(openActions, LONG_PRESS_MS)
       }}
       onPointerUp={cancelLongPress}

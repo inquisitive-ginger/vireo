@@ -1,5 +1,5 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen, fireEvent, within } from '@testing-library/react'
+import { act, render, screen, fireEvent, within } from '@testing-library/react'
 import { ShoppingPageView, type ShoppingPageViewProps } from './ShoppingPageView'
 import type { CaptureReport, ShoppingItem } from '../types'
 
@@ -571,6 +571,35 @@ describe('ShoppingPageView — the row’s verbs', () => {
     openSheet('snap peas')
     fireEvent.click(screen.getByRole('button', { name: 'Take it back' }))
     expect(props.onRowRetract).toHaveBeenCalledWith(expect.objectContaining({ id: '1' }))
+  })
+
+  /* THE WALL'S ONLY RETRACT SURFACE, once the hero's `Just added` strip is gone.
+     At W2 everyone is the `family` profile, tier 1 (ADR 072): no `check`, no
+     `manage`, no `file` — `retract` is the one verb it holds, and there is no
+     keyboard and no right-click on a wall tablet. So the touch long-press has to
+     reach the sheet on a row whose `ListRow` is not even activatable, and the
+     sheet has to offer Take it back. If this breaks, the wall loses its undo. */
+  it('reaches Take it back by touch long-press alone, on an uncheckable row', async () => {
+    vi.useFakeTimers()
+    const onRowRetract = vi.fn()
+    renderView({
+      canCheck: false,
+      canFile: false,
+      canManage: false,
+      canRetract: true,
+      onRowRetract,
+      groups: [{ aisle: 'Produce', items: [item({ id: '1', name: 'mikk', canRetract: true })] }],
+    })
+
+    // No overlay to press: `check` is tier 2 and the wall is tier 1.
+    expect(screen.queryByRole('button', { name: /as got/ })).not.toBeInTheDocument()
+
+    fireEvent.pointerDown(screen.getByText('mikk'), { pointerType: 'touch' })
+    await act(() => vi.advanceTimersByTimeAsync(500))
+    vi.useRealTimers()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Take it back' }))
+    expect(onRowRetract).toHaveBeenCalledWith(expect.objectContaining({ id: '1' }))
   })
 
   it('reports a retract the server refused on the row, rather than swallowing it', () => {
