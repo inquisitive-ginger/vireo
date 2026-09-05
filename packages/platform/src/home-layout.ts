@@ -35,8 +35,8 @@ export type LayoutDefault = {
    they must not disagree. */
 export const DEFAULT_LAYOUTS: Record<string, LayoutDefault[]> = {
   /* Kids (and teens below) rank by what a kid actually opens the app for:
-     wallet > chores > feed = calendar = meals. The wallet leads by position and
-     its feature elevation, chores beside it as the way to fill it; the calendar
+     wallet > chores > calendar = meals. The wallet leads by position and its
+     feature elevation, chores beside it as the way to fill it; the calendar
      takes the 2×2 under the wallet and the quiet peers stack the right column
      (auto-bug #118, gated 2026-08-20 — the old paired grid left an empty slot
      beside meals on any desktop-width screen). Chores stays atop the right
@@ -47,7 +47,6 @@ export const DEFAULT_LAYOUTS: Record<string, LayoutDefault[]> = {
     { widgetId: 'calendar.up-next', x: 0, y: 1, w: 2, h: 2, prominence: 'quiet' },
     { widgetId: 'chores.today-summary', x: 2, y: 0, w: 2, h: 1, prominence: 'card' },
     { widgetId: 'meals.tonight', x: 2, y: 1, w: 2, h: 1, prominence: 'quiet' },
-    { widgetId: 'family-feed.feed', x: 2, y: 2, w: 2, h: 1, prominence: 'quiet' },
     /* Shopping capture (M5.5/5) — the zero-navigation add, which is the whole
        Keep comparison (design.md §"Adding from anywhere in the house"). `quiet`
        and last in the column: it is a doing surface, not one of the "what needs
@@ -56,11 +55,18 @@ export const DEFAULT_LAYOUTS: Record<string, LayoutDefault[]> = {
        cropping. h=2 for the same reason `meals.tonight` is: `ListRow`'s 56px
        floor is not overridable (ADR 068), so a 2×1 slot fits the field and no
        whole row at all, and a shopping tile showing no shopping is not the
-       artifact's widget. NOTE — this grows the grid by TWO rows on every layout,
-       which is the first composition change since the elevation ladder and makes
-       the desktop dashboard scroll; the placement and the cost are the live
-       review's to confirm. */
-    { widgetId: 'shopping.capture', x: 2, y: 3, w: 2, h: 2, prominence: 'quiet' },
+       artifact's widget.
+
+       IT DISPLACES `family-feed.feed` RATHER THAN EXTENDING THE COLUMN (D3,
+       polish session). Added on top, the 2×2 grew every grid by two rows and
+       made the desktop dashboard scroll — the first composition change since the
+       elevation ladder, paid for by all six widgets. The feed yields its cell
+       because it is the one widget whose page is a scroll of the same rows the
+       tile shows, so a nav tap loses nothing; shopping's tile does something its
+       page cannot (add without navigating). The grid grows by ONE row, not two.
+       Queued, not decided: a dedicated Home-dashboard composition session, now
+       that six widgets compete for four cells. */
+    { widgetId: 'shopping.capture', x: 2, y: 2, w: 2, h: 2, prominence: 'quiet' },
   ],
   /* Teens — the same kid grid, one register down: no feature (a teen's surface
      declines to shout, same as the parent's), so the wallet leads by position, not
@@ -70,13 +76,12 @@ export const DEFAULT_LAYOUTS: Record<string, LayoutDefault[]> = {
     { widgetId: 'calendar.up-next', x: 0, y: 1, w: 2, h: 2, prominence: 'quiet' },
     { widgetId: 'chores.today-summary', x: 2, y: 0, w: 2, h: 1, prominence: 'card' },
     { widgetId: 'meals.tonight', x: 2, y: 1, w: 2, h: 1, prominence: 'quiet' },
-    { widgetId: 'family-feed.feed', x: 2, y: 2, w: 2, h: 1, prominence: 'quiet' },
-    { widgetId: 'shopping.capture', x: 2, y: 3, w: 2, h: 2, prominence: 'quiet' },
+    { widgetId: 'shopping.capture', x: 2, y: 2, w: 2, h: 2, prominence: 'quiet' },
   ],
   /* Parents / the family pseudo-profile — NO feature (ADR 039, amended). A parent
      (or the unattended fridge tablet, sitting on the family profile) triages, and
-     the calendar, the chores and the feed are all live answers to "what needs me" —
-     there is no one thing they came for. The calendar still leads by size and
+     the calendar and the chores are both live answers to "what needs me" — there
+     is no one thing they came for. The calendar still leads by size and
      position (the 2×2, the first column); elevation just declines to overstate a
      dominance this surface doesn't have. (The key name predates the tier-3 split —
      it stays because deployed `system_config` overrides are looked up by it.) */
@@ -92,8 +97,7 @@ export const DEFAULT_LAYOUTS: Record<string, LayoutDefault[]> = {
        whole rows and state the remainder at any height a 2×1 deals them. */
     { widgetId: 'meals.tonight', x: 2, y: 0, w: 2, h: 2, prominence: 'card' },
     { widgetId: 'chores.today-summary', x: 2, y: 2, w: 2, h: 1, prominence: 'card' },
-    { widgetId: 'family-feed.feed', x: 2, y: 3, w: 2, h: 1, prominence: 'quiet' },
-    { widgetId: 'shopping.capture', x: 2, y: 4, w: 2, h: 2, prominence: 'quiet' },
+    { widgetId: 'shopping.capture', x: 2, y: 3, w: 2, h: 2, prominence: 'quiet' },
   ],
 }
 
