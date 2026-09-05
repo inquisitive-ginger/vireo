@@ -146,5 +146,5 @@ export function CaptureWidgetView({
    the shop surface's job, not the dashboard's — a ring that looks tappable and
    is not would be worse than one that plainly is not yet. */
 function Ring() {
-  return <span className="size-5 shrink-0 rounded-full border-2 border-border" aria-hidden />
+  return <span className="size-5 shrink-0 rounded-full border-2 border-input" aria-hidden />
 }

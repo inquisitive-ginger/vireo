@@ -1,11 +1,13 @@
 # Design System
 
-> Last updated: 2026-09-03 — **ADR 068** (`ListRow` lands; row height belongs to
-> the primitive) ([The scanned-list primitive](#the-scanned-list-primitive--listrow)),
-> **ADR 070** (`CaptureField` beside `ComposeForm`)
-> ([Capture primitives](#capture-primitives--capturefield-and-composeform)).
+> Last updated: 2026-09-04 — **`--input` is the interactive-control outline, at 3:1**
+> (shopping polish, D2) ([Core tokens](#core-tokens--light-mode)).
 >
-> Prior: 2026-08-20 — ADR 063 (ListRow), ADR 064 (identity-hue trigger narrowed); 2026-07-28 — ADR 057, daily time-window recurrence
+> Prior: 2026-09-03 — ADR 068 (`ListRow` lands; row height belongs to
+> the primitive) ([The scanned-list primitive](#the-scanned-list-primitive--listrow)),
+> ADR 070 (`CaptureField` beside `ComposeForm`)
+> ([Capture primitives](#capture-primitives--capturefield-and-composeform));
+> 2026-08-20 — ADR 063 (ListRow), ADR 064 (identity-hue trigger narrowed); 2026-07-28 — ADR 057, daily time-window recurrence
 > ([Daily time-window series](#daily-time-window-series--a-condition-with-a-clock-settled--2026-07-28));
 > 2026-07-24 — ADR 054, currency named Pritchett Bucks
 > ([Currency marks](modules/rewards/design.md#currency-marks)); 2026-07-22 — ADR 051, gold and coin to
@@ -184,8 +186,31 @@ semantic tokens only — never raw oklch values.
 | `--muted-foreground`     | `oklch(0.52 0.035 100)`  | Subdued labels, timestamps                                             |
 | `--accent`               | `oklch(0.47 0.07 185)`   | Muted sage-teal — module identity only (see Accent scope below)        |
 | `--accent-foreground`    | `oklch(0.99 0 0)`        | Text on accent                                                         |
-| `--border` / `--input`   | `oklch(0.88 0.02 100)`   | Borders and input outlines                                             |
+| `--border`               | `oklch(0.88 0.02 100)`   | Hairlines and dividers — the edge _between_ things                     |
+| `--input`                | `oklch(0.62 0.02 100)`   | The outline of an interactive control, ≥3:1 (see below)                |
 | `--ring`                 | `oklch(0.5 0.11 122)`    | Focus ring (matches primary)                                           |
+
+#### `--border` and `--input` are not the same value (settled — 2026-09-04)
+
+They shipped identical, which is how the check ring came to fail contrast without
+anything being obviously wrong: whoever read the tokens saw one colour with two
+names.
+
+- **`--border`** is a hairline **between** things — a row separator, a card edge, a
+  section rule. It carries no contrast floor, because nothing is aimed at it.
+- **`--input`** is the **outline of an interactive control** — a field, a chip, a
+  check ring. It is what tells a person where to press, so **WCAG 1.4.11 applies to
+  it: ≥3:1 against the surface behind it.**
+
+Re-measured against `--background` at the polish session: light went 1.37:1 →
+**3.48:1** (`oklch(0.88 0.02 100)` → `oklch(0.62 0.02 100)`), dark 1.45:1 →
+**3.58:1** (`oklch(0.3 0.018 105)` → `oklch(0.52 0.018 105)`). On `--card`, where
+the widget tile draws its rings, the shipped values measure 3.62:1 light and
+3.22:1 dark. `--border` is unchanged.
+
+Its blast radius is every form field and `CompletionToggle`, which is to say all
+of chores — that is the point, not a side effect: the same defect was on all of
+them.
 
 ### Surface elevation
 
@@ -523,17 +548,18 @@ to maintain contrast against dark surfaces.
 > OS-preference dark screenshots all looked correct. If you add a token, grep for
 > all three.
 
-| Token                  | Light                    | Dark                    |
-| ---------------------- | ------------------------ | ----------------------- |
-| `--background`         | `oklch(0.985 0.008 100)` | `oklch(0.15 0.018 105)` |
-| `--foreground`         | `oklch(0.18 0.03 100)`   | `oklch(0.92 0.012 100)` |
-| `--primary`            | `oklch(0.5 0.11 122)`    | `oklch(0.62 0.11 122)`  |
-| `--accent`             | `oklch(0.47 0.07 185)`   | `oklch(0.56 0.08 185)`  |
-| `--secondary`          | `oklch(0.93 0.02 100)`   | `oklch(0.22 0.016 105)` |
-| `--muted`              | `oklch(0.93 0.016 100)`  | `oklch(0.2 0.014 105)`  |
-| `--muted-foreground`   | `oklch(0.52 0.035 100)`  | `oklch(0.56 0.02 100)`  |
-| `--border` / `--input` | `oklch(0.88 0.02 100)`   | `oklch(0.3 0.018 105)`  |
-| `--error`              | `oklch(0.50 0.17 12)`    | `oklch(0.62 0.17 12)`   |
+| Token                | Light                    | Dark                    |
+| -------------------- | ------------------------ | ----------------------- |
+| `--background`       | `oklch(0.985 0.008 100)` | `oklch(0.15 0.018 105)` |
+| `--foreground`       | `oklch(0.18 0.03 100)`   | `oklch(0.92 0.012 100)` |
+| `--primary`          | `oklch(0.5 0.11 122)`    | `oklch(0.62 0.11 122)`  |
+| `--accent`           | `oklch(0.47 0.07 185)`   | `oklch(0.56 0.08 185)`  |
+| `--secondary`        | `oklch(0.93 0.02 100)`   | `oklch(0.22 0.016 105)` |
+| `--muted`            | `oklch(0.93 0.016 100)`  | `oklch(0.2 0.014 105)`  |
+| `--muted-foreground` | `oklch(0.52 0.035 100)`  | `oklch(0.56 0.02 100)`  |
+| `--border`           | `oklch(0.88 0.02 100)`   | `oklch(0.3 0.018 105)`  |
+| `--input`            | `oklch(0.62 0.02 100)`   | `oklch(0.52 0.018 105)` |
+| `--error`            | `oklch(0.50 0.17 12)`    | `oklch(0.62 0.17 12)`   |
 
 A manual dark mode toggle is available to all tiers in display preferences.
 The preference is stored per-profile and overrides `prefers-color-scheme` on

@@ -464,7 +464,7 @@ function Ring({ checked }: { checked: boolean }) {
       aria-hidden
       className={cn(
         'grid size-6 shrink-0 place-items-center rounded-full border-2',
-        checked ? 'border-primary bg-primary text-primary-foreground' : 'border-border'
+        checked ? 'border-primary bg-primary text-primary-foreground' : 'border-input'
       )}
     >
       {checked && <Check size={14} strokeWidth={3} />}
