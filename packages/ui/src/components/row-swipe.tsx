@@ -174,6 +174,10 @@ export function RowSwipe({
     }
   )
 
+  function cancelLongPress() {
+    if (longPressRef.current) clearTimeout(longPressRef.current)
+  }
+
   if (!bound) return <>{children}</>
 
   return (
@@ -197,13 +201,20 @@ export function RowSwipe({
         openActions()
       }}
       onPointerDown={(e) => {
+        // Cleared here rather than in the click handler: a drag that ends without
+        // one — a touch released off the row — would otherwise leave the flag set
+        // and swallow the next honest tap.
+        draggedRef.current = false
         if (e.pointerType !== 'touch' || !onOpenActions) return
         longPressRef.current = setTimeout(openActions, LONG_PRESS_MS)
       }}
-      onPointerUp={() => {
-        if (longPressRef.current) clearTimeout(longPressRef.current)
-      }}
+      onPointerUp={cancelLongPress}
+      onPointerCancel={cancelLongPress}
+      onPointerLeave={cancelLongPress}
       onClickCapture={(e) => {
+        // The revealed control is the one thing a tap must always reach — it IS
+        // the affordance the drag opened.
+        if ((e.target as HTMLElement).closest('[data-row-swipe-quick]')) return
         // The drag's trailing click, or a tap on a row that is standing open —
         // neither is a check. The second closes instead, which is the cheapest
         // way out of a reveal nobody meant to open.

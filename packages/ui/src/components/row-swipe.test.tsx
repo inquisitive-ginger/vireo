@@ -49,6 +49,18 @@ describe('RowSwipe (SH-09)', () => {
     expect(onFire).toHaveBeenCalledOnce()
   })
 
+  /* The guard that closes an open row on a stray tap must never close over the
+     revealed control itself — it is the affordance the drag opened, and a
+     capture-phase stop there would make one drag plus one tap do nothing. */
+  it('lets a tap reach the revealed control even while the row is standing open', () => {
+    const onFire = vi.fn()
+    const { container } = row({ quick: { label: 'Remove', onFire } })
+    const box = container.firstElementChild as HTMLElement
+    fireEvent.click(screen.getByTitle('Remove “milk”'))
+    expect(onFire).toHaveBeenCalledOnce()
+    expect(box).toBeInTheDocument()
+  })
+
   /* ADR 068 §3: the row primitive's activation overlay is the target the thumb
      aims for, and the gesture layer wraps the row rather than reaching into it —
      so the overlay keeps its full width and stays live at any offset. */
