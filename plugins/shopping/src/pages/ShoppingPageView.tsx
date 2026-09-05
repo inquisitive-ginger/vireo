@@ -9,6 +9,7 @@ import {
   PageContainer,
   PageHeader,
   RowSwipe,
+  SectionLabel,
   cn,
   useReducedMotion,
 } from '@family-os/ui'
@@ -580,30 +581,27 @@ function ItemList({
               // that completed it), so its header is the way back to closed —
               // tapping reopens, tapping again closes. An incomplete aisle has
               // nothing to collapse and stays a label.
+              //
+              // Both are `SectionLabel`: the two states differ in what they DO,
+              // never in where they sit, and they alternate down one list where
+              // a step between them would read as a mistake. `px-4` is the edge
+              // `ListRow` holds (F-10), which a collapsed aisle also sits on.
               (complete ? (
-                <button
+                <SectionLabel
+                  as="button"
                   type="button"
+                  leading={i === 0}
                   onClick={() => setOpenOverride((o) => ({ ...o, [group.aisle]: false }))}
                   aria-expanded
-                  className={cn(
-                    'text-section-label min-h-touch flex w-full cursor-pointer items-center gap-1.5 pb-2 text-left text-muted-foreground',
-                    i === 0 ? 'pt-4' : 'pt-7'
-                  )}
+                  className="min-h-touch flex w-full cursor-pointer items-center gap-1.5 px-4 text-left text-muted-foreground"
                 >
                   {group.aisle}
                   <ChevronUp size={14} aria-hidden />
-                </button>
+                </SectionLabel>
               ) : (
-                <div
-                  className={cn(
-                    // A section label binds to what is BELOW it, so the gap above
-                    // stays the larger of the two (live review, 2026-09-04).
-                    'text-section-label pb-2 text-muted-foreground',
-                    i === 0 ? 'pt-4' : 'pt-7'
-                  )}
-                >
+                <SectionLabel leading={i === 0} className="px-4 text-muted-foreground">
                   {group.aisle}
-                </div>
+                </SectionLabel>
               ))}
             {group.items.map((item) => (
               <Fragment key={item.id}>

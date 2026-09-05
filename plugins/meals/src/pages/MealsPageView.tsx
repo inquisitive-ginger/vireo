@@ -122,7 +122,7 @@ export function MealsPageView({
         }
       />
 
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-3">
         {days.map((day) => (
           <DayRow
             key={day.key}

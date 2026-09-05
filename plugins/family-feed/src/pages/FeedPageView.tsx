@@ -1,5 +1,5 @@
 import type { ReactNode } from 'react'
-import { Button, PageContainer, PageHeader, relativeDayLabel } from '@family-os/ui'
+import { Button, PageContainer, PageHeader, SectionLabel, relativeDayLabel } from '@family-os/ui'
 import type { FeedPost } from '../types'
 import { FeedPostCard } from '../components/FeedPostCard'
 import { FeedEmptyState } from '../components/FeedEmptyState'
@@ -66,10 +66,12 @@ export function FeedPageView({
         <div className="flex flex-col gap-7">
           {groupByDay(posts).map((group) => (
             <section key={group.label} aria-label={group.label}>
-              <div className="mb-3 flex items-center gap-3">
-                <span className="text-section-label text-accent">{group.label}</span>
-                <span aria-hidden className="h-px flex-1 bg-border" />
-              </div>
+              <SectionLabel
+                leading
+                className="flex items-center gap-3 text-accent after:h-px after:flex-1 after:bg-border"
+              >
+                {group.label}
+              </SectionLabel>
               <div className="flex flex-col gap-3">
                 {group.posts.map((post) => (
                   <FeedPostCard key={post.id} post={post} />

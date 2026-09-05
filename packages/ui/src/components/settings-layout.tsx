@@ -39,7 +39,7 @@ export function SettingsLayout({ children }: SettingsLayoutProps) {
     // while every sibling route sat centred.
     <PageContainer width="list">
       <PageHeader title="Settings" />
-      <div className="flex flex-col gap-4 md:gap-5">{children}</div>
+      <div className="flex flex-col gap-7">{children}</div>
     </PageContainer>
   )
 }

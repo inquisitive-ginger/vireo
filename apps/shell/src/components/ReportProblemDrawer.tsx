@@ -1,7 +1,7 @@
 import { useState } from 'react'
 import { useLocation } from 'react-router-dom'
 import { useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query'
-import { Drawer, Textarea, Button, FieldLabel } from '@family-os/ui'
+import { Drawer, Textarea, Button, FieldLabel, SectionLabel } from '@family-os/ui'
 import type { BugReportStatus } from '@family-os/schemas'
 import { captureContext, getBuildHash } from '@/lib/report-context'
 import { BugStatusPill } from './BugStatusPill'
@@ -83,7 +83,9 @@ export function ReportProblemDrawer({ open, onClose }: { open: boolean; onClose:
             about to hand over. It is also the fastest way to explain why they don't
             have to describe their device. */}
         <div className="rounded-panel bg-surface-sunken px-3.5 py-3 shadow-[var(--shadow-inset)]">
-          <p className="text-section-label mb-2.5 text-muted-foreground">Attached automatically</p>
+          <SectionLabel leading as="p" className="text-muted-foreground">
+            Attached automatically
+          </SectionLabel>
           <div className="flex flex-wrap gap-1.5">
             <ContextTag label="page" value={pathname} />
             <ContextTag label="screen" value={`${window.innerWidth}×${window.innerHeight}`} />
@@ -100,7 +102,9 @@ export function ReportProblemDrawer({ open, onClose }: { open: boolean; onClose:
 
         {reports.length > 0 && (
           <div className="border-t border-border pt-5">
-            <p className="text-section-label mb-3 text-muted-foreground">Your reports</p>
+            <SectionLabel leading as="p" className="text-muted-foreground">
+              Your reports
+            </SectionLabel>
             <ul className="flex flex-col gap-2.5">
               {reports.map((report) => (
                 <li key={report.id} className="flex items-start justify-between gap-3">

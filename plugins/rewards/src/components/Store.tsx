@@ -122,10 +122,10 @@ export function StoreTab({
           body="Ask a parent to add things you can spend your P-Bucks on."
         />
       ) : (
-        <div className="flex flex-col gap-6">
+        <div className="flex flex-col gap-7">
           {now.length > 0 && (
             <Shelf label="Get it now">
-              <div className="flex flex-col gap-2.5">
+              <div className="flex flex-col gap-3">
                 {visibleNow.map((r) => (
                   <StoreTicket
                     key={r.id}

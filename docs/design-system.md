@@ -2044,6 +2044,46 @@ directly, and none of them is a page header:
 | `WalletChooser`         | A centred chooser prompt with no page frame      |
 | `DemoPage`              | The plugin-loader story's placeholder slot       |
 
+### The rhythm of a page's body
+
+**Settled** — spacing contract, 2026-09-04. One value per relationship, and where
+a primitive owns it, the caller does not write it.
+
+| Relationship                        | Owner                | px  | Utility            |
+| ----------------------------------- | -------------------- | --- | ------------------ |
+| Section group → section group       | caller's stack       | 28  | `gap-7`            |
+| Row → row inside a group            | caller's stack       | 12  | `gap-3`            |
+| Section label → its content         | `SectionLabel`       | 8   | `mb-2`             |
+| Group above → a section label       | `SectionLabel`       | 28  | `pt-7`             |
+| The surface above → the first label | `SectionLabel`       | 16  | `pt-4` (`leading`) |
+| Row inner padding                   | `ItemCard`/`ListRow` | 16  | `px-4`             |
+
+`gap-7` and `gap-3` had 28/24/16/8 and 12/10/8 in use for the same two
+relationships. The winners are the ones the codebase reached independently on
+five surfaces — consistency should cost the fewest diffs.
+
+**`SectionLabel` owns the space around a group label; it does not own the type
+token.** Pass `leading` when something else already separates the label from what
+precedes it — the first group in a stack, or a group inside a `gap-7` stack that
+already holds the 28. Colour (`text-accent`, `text-primary`) and a trailing rule
+stay the caller's: those are token choices, not rhythm. A caller that wants a
+different _gap_ wants a different primitive — say so in the session log rather
+than passing a number.
+
+**`text-section-label` stays the type token, and these surfaces use it as one.** A
+label is only `SectionLabel`'s business when it opens a group of content in a
+page's flow. These do not, and their own container owns their space:
+
+| Surface                                                                | Who owns the space                          |
+| ---------------------------------------------------------------------- | ------------------------------------------- |
+| `WidgetHeader`, `PageHeader` eyebrow                                   | The primitive itself                        |
+| `SettingsSection` panel head                                           | The panel's `px-6 py-4`                     |
+| `Disclosure` trigger                                                   | The trigger's own `py-2`                    |
+| `EmojiPicker` group + sticky category                                  | Picker-internal chrome                      |
+| `SpanBand`, `MonthGrid` weekday cells                                  | Dense component geometry                    |
+| `NextEventHero`, `TonightView`, `UpNextView`, `GrabsTray`, `FocusView` | Inline meta inside a card, not a group head |
+| `ActivitiesView` timeline months                                       | An axis label, not a group                  |
+
 > **Why this exists.** Six surfaces had six recipes. Chores and the feed matched at
 > 680px only by coincidence; the calendar hardcoded `max-w-[1100px]` next to a token
 > that existed to prevent exactly that; the calendar's mobile agenda re-declared

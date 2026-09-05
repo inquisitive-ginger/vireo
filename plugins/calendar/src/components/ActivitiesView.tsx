@@ -150,7 +150,7 @@ export function ActivitiesView({
   }
 
   return (
-    <div className="flex flex-col gap-6">
+    <div className="flex flex-col gap-7">
       <div className="flex flex-wrap items-center gap-2.5">
         <SegmentedControl
           aria-label="Activities lens"
@@ -230,7 +230,7 @@ function OwnerRoster({
           ) : undefined
         }
       />
-      <div className="flex flex-col gap-2">
+      <div className="flex flex-col gap-3">
         {group.activities.map((activity) => (
           <ActivityRow
             key={activity.seriesId}
@@ -413,7 +413,7 @@ function SeasonTimeline({ groups, now }: { groups: OwnerGroup[]; now: Date }) {
           </div>
         </div>
 
-        <div className="relative flex flex-col gap-2.5">
+        <div className="relative flex flex-col gap-3">
           {bars.map((b) => {
             const ongoing = !b.recurrenceUntil
             const end = ongoing

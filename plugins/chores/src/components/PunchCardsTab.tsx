@@ -12,6 +12,7 @@ import {
   PageContainer,
   PageHeader,
   PunchCard,
+  SectionLabel,
   TicketFrame,
   bucks,
   bucksSpoken,
@@ -255,7 +256,9 @@ function Rail({ washed = false, children }: { washed?: boolean; children: ReactN
         washed ? 'rounded-lg bg-[color-mix(in_oklab,var(--primary)_5%,transparent)] p-3' : ''
       }`}
     >
-      <p className="text-section-label mb-2 text-muted-foreground">Your prize</p>
+      <SectionLabel leading as="p" className="text-muted-foreground">
+        Your prize
+      </SectionLabel>
       {children}
     </div>
   )
@@ -487,10 +490,13 @@ function FinishedShelf({ finished }: { finished: FinishedCards[] }) {
     .slice(0, 3)
   const total = finished.reduce((n, f) => n + f.count, 0)
   return (
-    <div className="mt-8">
-      <h2 className="text-section-label mb-3 flex items-center gap-3 text-muted-foreground after:h-px after:flex-1 after:bg-border">
+    <div>
+      <SectionLabel
+        as="h2"
+        className="flex items-center gap-3 text-muted-foreground after:h-px after:flex-1 after:bg-border"
+      >
         Cards you&rsquo;ve finished
-      </h2>
+      </SectionLabel>
       <div className="flex flex-wrap items-center gap-2.5">
         {latest.map((f) => (
           <FinishedStub key={f.templateId} f={f} />

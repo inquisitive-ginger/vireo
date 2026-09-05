@@ -329,7 +329,7 @@ function Shelf({ label, children }: { label: string; children: React.ReactNode }
         <span className="text-section-label text-muted-foreground">{label}</span>
         <span className="h-px flex-1 bg-border" />
       </div>
-      <div className="flex flex-col gap-2">{children}</div>
+      <div className="flex flex-col gap-3">{children}</div>
     </section>
   )
 }
