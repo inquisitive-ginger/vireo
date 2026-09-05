@@ -77,8 +77,9 @@ reverse-chronological is the worst order in an aisle).
 
    It used to be a filter only, with a separate destination chip inside the field —
    two controls in similar clothes answering "which list?" differently. Collapsing them
-   is what makes Costco reachable from the capture layout, which has `Hold to speak` in
-   that trailing slot and so had no way to any list but the default.
+   is what makes Costco reachable from the capture layout, whose trailing slot is spoken
+   for — `Hold to speak` when this was written, `Enter to add` since (see §"One surface,
+   two layouts") — and which so had no way to any list but the default.
 
    It is still never a screen you land on. It **stays visible while composing**: it says
    where the word being typed will land, and that is the moment the fact matters most.
@@ -129,22 +130,37 @@ draws is chosen by the **viewport**, at the shell's canonical `md:` (768 px) spl
 never by the profile, and never by a control on screen.
 
 - **Tablet and up — capture, and only capture.** `What do we need?` at `display-xl`,
-  a 76 px `CaptureField` below it, a **Hold to speak** affordance reserved in the
-  trailing slot (**voice is not M5.5 scope** — the slot is reserved, nothing
-  implements it), a **Just added** strip of the last few items as chips naming
-  **what** was added, never who (§Anatomy 5; ADR 072 §3/§4 withdrawn), the destination
-  pills (§Anatomy 4 — without them an add here could only ever land on the default
-  list), and a rule stating the cumulative total (`19 things to get`). The block fills
-  the screen. **The lists themselves are not on it** — a `Show lists` control swaps to
-  them at `/shopping/lists`, and `Back to adding` at the top of that view swaps back.
+  a 76 px `CaptureField` below it with `Enter to add` in the trailing slot (a return
+  icon inline), the destination pills (§Anatomy 4 — without them an add here could
+  only ever land on the default list), and a rule stating the cumulative total
+  (`19 things to get`). The block fills the screen. **The lists themselves are not on
+  it** — a `Show lists` control swaps to them at `/shopping/lists`, and `Back to
+adding` at the top of that view swaps back.
 
-  **Each `Just added` chip carries a remove.** Taking back a typo you made two seconds
-  ago is a different act from checking something off in a shop: one says "this was never
-  needed", the other "this is in the cart". It is gated on `manage`, which ADR 071 puts
-  at **tier 4** while adding is tier 1 — so **a kid, and the unattended wall, can put a
-  typo on the list and cannot take it off.** They see chips with no remove. Whether that
-  split is right is a permission question, raised at the M5.5/5 review and deliberately
-  not answered by widening a check in a component.
+  **Amended 2026-09-04 (polish session, Zach's live pass).** Two things this bullet
+  reserved are gone from it.
+
+  **The `Just added` strip is removed.** It was the last few adds as chips naming what
+  was added, never who (§Anatomy 5; ADR 072 §3/§4 withdrawn), and **each chip carried a
+  remove** — which was the wall's only take-back surface, and the one ADR 073 §3 prices
+  the fifteen-minute window against (everyone at W2 is `family`, so anyone there
+  retracts what the wall added in the window). It is removable **now and not before**
+  because SH-09/SH-02 put the two-edge row affordance on the rows themselves and made
+  the list view reachable at every width: take-back **moved**, it did not disappear.
+  Deleting the strip before that would have left the one surface never logged in as the
+  one that could never undo. What it also retires is the M5.5/5 permission question the
+  chips raised — `manage` being tier 4 while adding is tier 1, so a kid or the wall
+  could put a typo on and not take it off. ADR 073's `retract` key answered it, and the
+  answer lives on the row.
+
+  **The voice slot is no longer reserved.** The trailing slot held a **Hold to speak**
+  affordance that nothing implemented; `Enter to add` takes it instead — a real hint
+  for a real control, rather than screen given to a capability that does not exist.
+  **Voice is still out of M5.5 scope**; what changed is that it no longer has a
+  parking space waiting for it. **Owed: whenever voice is scoped, it owes a placement
+  decision** — the trailing slot is occupied now, and taking it back means displacing
+  the hint or finding voice another home. That is a design question, not a slot to
+  reclaim silently.
 
 - **Below tablet — the list.** §Anatomy exactly as shipped: compact title row, 56 px
   field, destination strip, aisle list.
@@ -216,7 +232,9 @@ shows has no separate identity and carries no separate name.
 
 **The distance-label decision this surface owed is settled** (2026-09-04): structural
 labels get a distance variant, `section-label-lg`, rather than promotion to `heading` —
-see `design-system.md` §Type scale. `Just added` uses it.
+see `design-system.md` §Type scale. `Just added` was its call site; the strip went in
+the same session's polish pass (§"One surface, two layouts") and the variant stands on
+its own argument — a structural label read at distance is still not a `heading`.
 
 ## Adding from anywhere in the house
 
@@ -248,6 +266,7 @@ Additive later; neither is a bug when it is missing.
   "anything else while I'm here?" stays a text message.
 - **A whole-house glance** (direction C) — "do we need anything anywhere?" means reading
   three pill counts, not one list.
-- **Voice capture** — the wall reserves the slot; nothing implements it.
+- **Voice capture** — nothing implements it, and since 2026-09-04 nothing reserves it
+  either: scoping voice owes a placement decision (§"One surface, two layouts").
 - **Offline** — M5.5/4, and it is real: the SW is network-first for `/api`, so the list
   fails where it is used. Nothing above assumes a live connection to be _legible_.
