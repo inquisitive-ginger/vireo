@@ -57,24 +57,30 @@ _`logs/2026-09-03-product-shopping-boundary.md`._
 
 ---
 
-### M5.5 — Shopping: five of six shipped; **polish (design → dev), then /6 offline**
+### M5.5 — Shopping: polished and announced; **/6 offline is all that is left**
 
 **PR #127 closed unmerged**; the two 2026-08-23 artifacts are banner-marked SUPERSEDED — build
-from `docs/modules/shopping/design.md` **and its artifact**, never from #127. The plugin is
-**built and reachable by URL but announced nowhere** until the dev polish session. _`docs/modules/shopping/{spec,salvage}.md` · ADR 069–073._
+from `docs/modules/shopping/design.md` **and its artifact**, never from #127.
+_`docs/modules/shopping/{spec,salvage}.md` · ADR 069–073._
 
-### Shopping polish — **running now** (Zach, 2026-09-04)
+### Owed from the polish: three test/tooling findings
 
-The critique landed as two artifacts (`artifacts/2026-09-04-shopping-polish-critique.{md,html}`);
-its four unanswered questions plus the check-ring token, the 2×2 tile and the report slot were
-settled before the build in `kickoffs/shopping-polish-decision-set.md`. The dev session
-(`kickoffs/dev-shopping-polish.md`) builds SH-01…SH-14 and **announces the plugin** — the
-`navItem` and `WIDGET_META` entry come back last. `section-label` spacing did **not** fold in.
+- **The hollow-test shape, outside shopping** — a test that mocks a handler then asserts on
+  state that handler would change can only pass. Shopping's seven suites are clean; **calendar
+  (0/6), meals (0/2) and shell (0/3) have never used `rerender`**, so the shape would be
+  invisible exactly there. One shape, one area at a time.
+- **`chores.test.ts:1460` may be vacuous** — `resolves.toBeUndefined()` resolves unconditionally;
+  an async throw would not reject it.
+- **The per-file budget caps are not enforced in CI** — `check-context-budget.sh` reads
+  `git diff HEAD` + untracked, and CI's tree is clean, so only the four pinned files are
+  checked. ADR 043 is 8743 bytes against a 6000 cap and sailed through.
+- **A producer can hand `fileItem` an unparsed string** — the meals needs-push files whatever
+  name it is sent, so `milk, eggs` becomes one row and no client parse reaches it.
 
 ### M5.5/6 — Dev: offline — _the last story in the milestone_
 
-**Kickoff:** `kickoffs/dev-shopping-offline.md` · dev · _depends on /4 ✅; runs after both
-polish sessions._
+**Kickoff:** `kickoffs/dev-shopping-offline.md` · dev · _depends on /4 ✅ and the polish ✅
+(PR #138) — **ready, and the last story in M5.5**._
 The list renders and checks replay with no signal, without staling the shell or `/api`.
 
 ### Out of the polish critique — scoped by Zach 2026-09-04, not open
@@ -180,6 +186,9 @@ Stand up an RTL suite mirroring chores/calendar. See also the Deferred CI-glob g
 
 ### Tooling / tech debt
 
+- **The app icon set is unseen on a real phone** — shipped 2026-08-22 (PR #122), e2e unrun.
+  _`logs/2026-08-22-design-dev-brand-icon-set.md`._
+
 - **Pin `name: family-os` in `docker-compose.yml`** — with no `name:`, compose derives the
   project from the directory, so since the `vireo` rename a plain `docker compose up` builds
   an **empty** `vireo_postgres_data` volume and the API boots against a blank dev DB.
@@ -222,6 +231,9 @@ Stand up an RTL suite mirroring chores/calendar. See also the Deferred CI-glob g
 > recent first, nothing older than the current milestone's start. `docs/sessions/logs/` is
 > date-ordered and holds the record. Do not restore entries pruned from here.
 
+- **2026-09-04 — Dev: the Shopping polish, and the plugin is announced** (PR #138) — the
+  critique's SH-01…SH-14 plus a long live pass; nav entry yes, Home tile pulled (one revert).
+  Five docs amended, three pre-existing defects found. _[log](logs/2026-09-04-dev-shopping-polish.md)_
 - **2026-09-04 — Fix: the up-next widget's day labels lead their events** (auto-bug #135, PR #137) —
   the stacked anatomy #117 built for the narrow slot is now the only one, and `DayHeading` is
   shared with the mobile agenda. _[log](logs/2026-09-04-dev-calendar-day-headings.md)_
@@ -244,15 +256,9 @@ Stand up an RTL suite mirroring chores/calendar. See also the Deferred CI-glob g
 - **2026-09-03 — Design: the shopping surface** (M5.5/1, ADR 070) — capture field as the
   hero on a walk-order list, no mode; the wall only takes things in; Shopping takes a phone
   tab from `chores`. _[log](logs/2026-09-03-design-shopping-surface.md)_
-- **2026-09-02 — Fix: calendar "Add event" date prefill** (auto-bug #128, PR #130) —
-  the chrome CTA passed a null prefill while the three per-day affordances passed
-  theirs. _[log](logs/2026-09-02-dev-calendar-add-event-date.md)_
 - **2026-09-02 — Infra: the Pi's LAN address, pinned** — a reboot moved the Pi to
   `.43` while DNS and the Tailscale /32 still said `.42`; router reservation owed.
   _[log](logs/2026-09-02-infra-pi-static-ip.md)_
-- **2026-08-22 — Design+dev: the app icon set** (PR #122) — a vireo family in a lit
-  birdhouse, generated then traced to vector. **e2e unrun; unseen on a real phone.**
-  _[log](logs/2026-08-22-design-dev-brand-icon-set.md)_
 
 Everything before 2026-08-22 (M0 through M4, deployment Parts A–F): see
 `docs/sessions/logs/` and `docs/roadmap.md`.

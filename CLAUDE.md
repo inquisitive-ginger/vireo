@@ -16,16 +16,17 @@ before it reads anything else, and it is size-capped — see
 
 - **Milestone:** M4.5 — Companion (M4.5/3 next); **M5/3 + M5/4 done 2026-08-23,
   PRs #124/#125** — the 16:00 dinner nudge and calendar day marks (ADR 050/066).
-- **Active stories:** **M5.5 — Shopping** — five of six shipped; **/6 offline is the
+- **Active stories:** **M5.5 — Shopping** — polished and announced; **/6 offline is the
   last one**. Beacon due in December.
-- **Shopping ships dark:** built and reachable by URL, but the nav item and Home widget
-  are off (one revertable commit) until Zach's polish session — see the queue.
+- **Shopping is announced:** nav entry at every breakpoint since PR #138. The Home tile
+  is deliberately **not** in the default layouts — Zach pulled it, one revert to restore,
+  and the queued dashboard-composition session decides where it belongs.
 - **Deployment:** 🟢 live at `https://vireohome.app` — Pi 5 (192.168.0.42, pinned
   in NetworkManager 2026-09-02; eth0 `88:a2:9e:d4:e7:33`, router reservation still
   owed); auto-deploy + Tailscale + restic→R2 + watchdog intact. Runbook Part F/G.
-- **Last session:** 2026-09-04 — auto-bug #135 (PR #137): the up-next widget's day labels
-  lead their events, and `DayHeading` is shared with the mobile agenda.
-  `logs/2026-09-04-dev-calendar-day-headings.md`.
+- **Last session:** 2026-09-04 — the Shopping polish (PR #138): SH-01…SH-14, a long live
+  pass, five docs amended (ADR 043 narrowly, ADR 070, design.md ×3).
+  `logs/2026-09-04-dev-shopping-polish.md`.
 - **What's next and everything outstanding:** `docs/sessions/queue.md` — the one
   index. M5.5/6 (offline) or M4.5/3 next.
 
