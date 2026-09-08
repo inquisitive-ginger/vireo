@@ -14,6 +14,7 @@ import {
   useReducedMotion,
 } from '@family-os/ui'
 import type { CaptureReport, ShoppingItem, ShoppingList } from '../types'
+import { OfflinePill } from '../components/OfflinePill'
 import { ReportLine } from '../components/ReportLine'
 import { ShoppingCaptureHero } from './ShoppingCaptureHero'
 import { RowActionsPanel, RowActionsSheet } from './RowActionsSheet'
@@ -46,6 +47,10 @@ export interface ShoppingPageViewProps {
   /** `shopping.item.add` is revoked for this profile — the one lever that closes
       the field (ADR 072 §6). The house itself adds; the wide layout needs it. */
   canAdd: boolean
+  /** No route to the server. It closes the field and raises the pill; it does
+      NOT touch the rows, which is the whole point — checking is what still
+      works. */
+  offline: boolean
   /** Which arrangement of THIS surface to draw. Not a route and not something a
       reader switches — the viewport picks it, and both draw the same list from
       the same data. Wide DOES have capture/list modes inside it, which is what
@@ -112,6 +117,7 @@ export function ShoppingPageView({
   onAdd,
   reports,
   canAdd,
+  offline,
   layout,
   totalOpenCount,
   onShowLists,
@@ -203,6 +209,7 @@ export function ShoppingPageView({
           onAdd={onAdd}
           reports={reports}
           canAdd={canAdd}
+          offline={offline}
         />
       ) : (
         <>
@@ -224,6 +231,8 @@ export function ShoppingPageView({
               on a screen that already had two. */}
           <PageHeader className="mb-0 items-baseline" title="Shopping" />
 
+          <OfflinePill offline={offline} />
+
           <CaptureField
             size="hero"
             className="mt-3.5"
@@ -231,7 +240,13 @@ export function ShoppingPageView({
             // a route you opened to read is hostile.
             placeholder={`Add to ${destination}`}
             label={`Add to ${destination}`}
-            disabled={!canAdd}
+            // An add needs the server: it resolves the aisle against the family's
+            // overrides and it is what finds the duplicate. A queued one would
+            // land in an aisle nobody chose and report a collision long after the
+            // person who caused it walked away — so the field REFUSES rather than
+            // promising something it cannot keep. Checking is unaffected, which is
+            // what the line below says.
+            disabled={!canAdd || offline}
             onValueChange={(value) => setComposing(value.trim().length > 0)}
             onSubmit={onAdd}
           />
@@ -249,9 +264,11 @@ export function ShoppingPageView({
             idle={
               !canAdd
                 ? 'Adding to the list is turned off for this profile.'
-                : composing
-                  ? 'Enter to add'
-                  : undefined
+                : offline
+                  ? 'Adding needs a connection. Checking things off still works.'
+                  : composing
+                    ? 'Enter to add'
+                    : undefined
             }
           />
         </>
