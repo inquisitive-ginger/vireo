@@ -8,7 +8,7 @@ import type { ComponentType } from 'react'
  *  its own entry here, not an import there. */
 export const DAY_MARK_GLYPHS: Record<
   string,
-  ComponentType<{ className?: string; 'aria-hidden'?: boolean }>
+  ComponentType<{ className?: string; 'aria-hidden'?: boolean; strokeWidth?: number }>
 > = {
   utensils: Utensils,
 }

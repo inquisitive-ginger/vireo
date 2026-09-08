@@ -144,6 +144,13 @@ describe the plate, the try bite is the ask.
   (`aria-hidden`; owner name in the cell's accessible text) + utensils glyph at
   a **3px** gap, glyph at ~75% muted so the pair reads as **one object**. Max
   two marks per cell (school will be the second consumer).
+  - Glyph is **14px at `strokeWidth` 2.5** (was 12px / 2, corrected 2026-09-08).
+    A lucide stroke scales with its box: at 12px the 24-unit viewBox's stroke-2
+    renders as a 1 CSS px hairline on fractional coordinates, which a **1x
+    (non-HiDPI) display** antialiases across two pixels before the 75% mute
+    fades it again — the mark read as missing on ordinary 1080p/1440p monitors.
+    Any glyph added here inherits this: small stroked icons need a _relatively_
+    thicker stroke, not the same ratio.
 - Never hue-only (ADR 044): the initial is the required second channel. A photo
   avatar is **not** used at 16px — it carries neither hue nor letter at distance.
 - **Agenda day header label:** _"Zach's got dinner"_ — the module's own voice,

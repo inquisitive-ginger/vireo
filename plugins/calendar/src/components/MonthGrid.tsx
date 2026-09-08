@@ -135,7 +135,20 @@ export function MonthGrid({
                               >
                                 {owner && <DayMarkOwnerDot member={owner} />}
                                 {Glyph && (
-                                  <Glyph aria-hidden className="h-3 w-3 shrink-0 opacity-75" />
+                                  // 14px, not 12: a lucide glyph's stroke scales
+                                  // with the box, and at 12px the 24-unit
+                                  // viewBox's stroke-2 lands on 1 CSS px of
+                                  // unaligned hairline — which a 1x (non-HiDPI)
+                                  // external monitor antialiases into a smudge,
+                                  // then opacity-75 fades further. strokeWidth
+                                  // 2.5 restores the ink small icons need. Size
+                                  // still reads under the 16px owner dot, so the
+                                  // pair is one object (design.md M5/4).
+                                  <Glyph
+                                    aria-hidden
+                                    strokeWidth={2.5}
+                                    className="h-3.5 w-3.5 shrink-0 opacity-75"
+                                  />
                                 )}
                               </div>
                             )
