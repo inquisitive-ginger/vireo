@@ -17,20 +17,17 @@
 M4/9 when the XP sink outgrew a single session). Sessions 1–2 (style bible +
 duotone proof; gear taxonomy + asset library) shipped 2026-08-07/08; **M4.5/3
 Feature UX is next**, then dev foundation and surfaces. See
-`docs/modules/companion/spec.md`.
-
-**Also in flight: M5.5 — Shopping** — five stories plus the polish shipped
-2026-09-03/04 (ADR 069–074); **M5.5/6 offline is the last one**. See
-`docs/modules/shopping/spec.md`.
+`docs/modules/companion/spec.md`. It is the only milestone in flight.
 
 ## Completed
 
 **M0 — Foundation** · ✅ Done (2026-06-01)
 **M1 — Platform Shell** · ✅ Done (2026-06-15)
 **M2 — Chores** · ✅ Done (2026-06-20)
-**M3 — Calendar** · ✅ Done (2026-07-19)
+**M3 — Calendar** · ✅ Done (stories shipped 2026-07-19; milestone closed 2026-09-07 when story 8 was recycled)
 **M4 — Rewards & Wallet** · ✅ Done (2026-07-26, live in prod PR #75) — the XP sink split out as M4.5
 **M5 — Meals** · ✅ Done (2026-09-07) — try bites recycled unbuilt; the `try_bite` field ships
+**M5.5 — Shopping** · ✅ Done (2026-09-07, PR #144) — six stories plus the polish (ADR 069–074)
 
 ---
 
@@ -170,8 +167,8 @@ than Keep means unused.
 - **Capture** in one gesture from anywhere in the house
 - **Filing** — items sort into walk order _inside one list_; unknown words land in
   Other and a correction teaches a family-wide override
-- **Shop mode** — one-handed, moving, and **offline** (the SW is network-first for
-  `/api`, so offline is its own reviewable chunk)
+- **Shop mode** — one-handed, moving, and **offline** — shipped 2026-09-07 as its own
+  chunk (snapshot-seeded reads + a durable check queue; the service worker is untouched)
 - **Meals is a producer, not an owner** — the `needs` push crosses a contract
   (ADR 050's provider pattern), not a shared table
 
@@ -182,7 +179,7 @@ meals. Four of the six models in the `meals` schema were already grocery models,
 push function.
 
 **Done when:** The family shops off this list instead of Keep, including with no
-signal in the store.
+signal in the store. ✅
 
 _Overview + session plan: `docs/modules/shopping/spec.md`_
 

@@ -53,6 +53,10 @@ Stand up an RTL suite mirroring chores/calendar.
 > recent first, nothing older than the current milestone's start. `docs/sessions/logs/` is
 > date-ordered and holds the record. Do not restore entries pruned from here.
 
+- **2026-09-07 — Audit: the standing docs against the code** — `architecture.md`'s Platform
+  API described a package that no longer exists (`createEventBusPlugin`/`getEventBus`, no
+  `emitAndAwait`, no Query re-exports). Everything else was clean.
+  _[log](logs/2026-09-07-audit-stale-docs.md)_
 - **2026-09-07 — Dev: offline** (M5.5/6, PR #144) — **M5.5 closes.** Snapshot-seeded reads and
   a durable check queue replayed on reconnect; the service worker is untouched, which is how the
   deploy AC is held. Adds are refused offline, not queued.

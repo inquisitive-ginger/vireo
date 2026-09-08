@@ -1,6 +1,6 @@
 # Architecture
 
-> Last updated: 2026-08-20 — settled-decisions table extended through ADR 064; `bug_reports` added to the platform schema (ADR 046).
+> Last updated: 2026-09-07 — settled-decisions table extended through ADR 074; the Platform API section re-read against `packages/platform` (the bus, the exports, the manifest, the schema tables).
 
 ---
 
@@ -70,72 +70,82 @@ All decisions below are locked. See `docs/decisions/` for full
 rationale. Do not re-litigate — flag in session notes if revisit
 is warranted.
 
-| ADR | Decision                                                                                                                                                                                                                                                                                                                                                         |
-| --- | ---------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-| 001 | Plugin-native micro-frontend — first-party and community plugins share the same API and load path                                                                                                                                                                                                                                                                |
-| 002 | Two-layer currency — XP (gamification, never converts) and P-Bucks (earnable, redeemable, real-money path)                                                                                                                                                                                                                                                       |
-| 003 | Age-tiered agency — four trust levels, parent-assigned, capability rules bound to levels not names                                                                                                                                                                                                                                                               |
-| 004 | WebSocket-first internally; Web Push for mobile parents; polling for external APIs                                                                                                                                                                                                                                                                               |
-| 005 | Allowance as ledger — system tracks balances, never moves real money; cashout is a parent-confirmed event                                                                                                                                                                                                                                                        |
-| 006 | TypeScript end-to-end — React shell, Node.js/Fastify plugin services                                                                                                                                                                                                                                                                                             |
-| 007 | Vite Module Federation for plugin loading — each plugin publishes a remoteEntry.js and manifest                                                                                                                                                                                                                                                                  |
-| 008 | In-process EventEmitter + @fastify/websocket bridge; MQTT bridge is a defined extension point for M6+                                                                                                                                                                                                                                                            |
-| 009 | PostgreSQL (Docker), single instance, per-plugin schemas; JSONB for semi-structured config                                                                                                                                                                                                                                                                       |
-| 010 | PWA for mobile (Android); Web Push for out-of-home notifications; no native app planned                                                                                                                                                                                                                                                                          |
-| 011 | Shell home surface is a composable, role-aware widget grid; M0 must not foreclose this model; implementation deferred to M1                                                                                                                                                                                                                                      |
-| 012 | shadcn/ui + Tailwind CSS v4 — component library and styling                                                                                                                                                                                                                                                                                                      |
-| 013 | State in layers: React Context (auth/tier), Zustand (shell), TanStack Query (server/plugin data)                                                                                                                                                                                                                                                                 |
-| 014 | Plugin design contract is import-based from `@family-os/ui` and `@family-os/platform`                                                                                                                                                                                                                                                                            |
-| 015 | Permissions layer on top of tier: effective permissions = tier baseline + grants − revocations; `TierGate` for coarse gating, `PermissionGate` for fine-grained                                                                                                                                                                                                  |
-| 016 | Monorepo tooling: pnpm workspaces + Turborepo; `apps/` for runnable services, `packages/` for shared libraries                                                                                                                                                                                                                                                   |
-| 017 | Auth session mechanism: `@fastify/session` + `connect-pg-simple`; cookie-based, server-side sessions; session stores active `profileId`                                                                                                                                                                                                                          |
-| 018 | CASL `(action, subject)` model for permission checks (extends ADR 015); `PERMISSION_REGISTRY` const for compile-time types + runtime enumeration; `@casl/prisma` `accessibleBy()` for row-level DB filtering                                                                                                                                                     |
-| 019 | ORM: Prisma; per-plugin `schema.prisma` files; `accessibleBy()` drives automatic row-level filtering in every module route                                                                                                                                                                                                                                       |
-| 020 | Plugin dev toolchain: Turborepo generator (`pnpm turbo gen plugin`); per-plugin Vite dev servers; no custom CLI                                                                                                                                                                                                                                                  |
-| 021 | Global family PIN stored in `system_config` (`key = 'family_pin_hash'`); family pseudo-profile is unattended default state                                                                                                                                                                                                                                       |
-| 022 | Widget system: React Grid Layout, six named sizes, widget manifest extends ADR 007/014, two-level role model (shell + widget), per-user layout as `{widgetId, x, y, w, h}[]`                                                                                                                                                                                     |
-| 023 | Test runner: Vitest (shares Vite pipeline); component tests: `@testing-library/react` + jsdom; route tests: `fastify.inject()`                                                                                                                                                                                                                                   |
-| 024 | E2E: Playwright; deferred to M0 shell-skeleton story; lives in `packages/e2e`                                                                                                                                                                                                                                                                                    |
-| 025 | Component catalog: Storybook 10 in `packages/ui`; ships in M0 dev-environment story                                                                                                                                                                                                                                                                              |
-| 026 | Test conventions: colocated test files; no enforced coverage thresholds; real PostgreSQL for integration tests (`familyos_test` DB separate from dev); shared test utils in `packages/test-utils`                                                                                                                                                                |
-| 027 | Environment configuration: `.env` files at repo root; `NODE_OPTIONS --env-file` for dev server; Vitest `envDir` for tests; `familyos` / `familyos_test` database separation                                                                                                                                                                                      |
-| 028 | Home surface default layouts: three tier-appropriate defaults (family pseudo-profile, tiers 1–2, tiers 3–4); Family Feed, Chores, Calendar are reserved modules; absent reserved slots render a placeholder card                                                                                                                                                 |
-| 029 | All notifications flow through `platform.notify()`; platform routes to toast, tray, or Web Push based on priority and active profile tier; plugins never render their own toasts or push payloads                                                                                                                                                                |
-| 030 | Member identity colors — six fixed palette hues; every family member maps to one hue used everywhere; `getIdentityHue` / `identityToken` / `identityColor` helpers; plugins never invent member colors                                                                                                                                                           |
-| 031 | Interaction-state language — `--primary` owns active/hover/selected across the app; `--accent` locked to module identity only; sidebar uses lightness delta, no hairlines                                                                                                                                                                                        |
-| 032 | Plugin nav-item registration — plugins declare a `navItem` (`label`, `route`, `icon`, `minTier`) in `manifest.json`; the sidebar renders tier-filtered nav from the registry                                                                                                                                                                                     |
-| 033 | Mobile nav pattern — nav-only bottom tab bar below the `md:` breakpoint (avatar/bell live in ADR 034's brand top bar); since 2026-08-17 capped at 5 tabs — Home + three pinned + a **More** sheet; single-column widget reflow; `env(safe-area-inset-*)`                                                                                                         |
-| 034 | Mobile brand top bar — avatar · wordmark · bell on mobile; bottom bar is nav-only. Supersedes the "profile chip on mobile" / no-top-bar clauses of ADR 033                                                                                                                                                                                                       |
-| 035 | Plugin styling — first-party plugins styled utility-first like the shell; shell `@source`-scans `plugins/*/src`. Third-party per-plugin build deferred (Option 2)                                                                                                                                                                                                |
-| 036 | Focus Mode — per-profile `focus_mode` setting (null = derive from tier) selects the chores taskee variant                                                                                                                                                                                                                                                        |
-| 037 | Date inputs — react-day-picker v10 themed by token; `Calendar`/`Popover`/`DatePicker`/`DateRangePicker` in `@family-os/ui`                                                                                                                                                                                                                                       |
-| 038 | Calendar recurrence storage — one canonical event row, weekly and daily time-window (ADR 057) expansion computed-on-read; per-occurrence skip via `event_exceptions`; attendees via join; `is_activity` derived (widened to shared events 2026-08-19)                                                                                                            |
-| 039 | Widget prominence — three elevation rungs (feature/card/quiet) resolved on read per profile (`GET /home/layout` carries `prominence`); at most one feature per surface; not a persisted column                                                                                                                                                                   |
-| 040 | Sunken surface plane — `--surface-sunken` + `--shadow-inset` as the one step down; only inside a card, near-achromatic so it never reads as an identity fill                                                                                                                                                                                                     |
-| 041 | Family identity hue — reserved `family` ("Hearth") entry excluded from `IDENTITY_HUES`; `--secondary` is chrome again; `huesForEvent([])` → `[FAMILY_HUE]`                                                                                                                                                                                                       |
-| 042 | Avatar images — a photo is a face, not an identity token; avatar wears no hue ring, chrome beside it carries identity; client-side crop→WebP, bytes in `platform.profile_images`. Amends ADR 030                                                                                                                                                                 |
-| 043 | Identity takes the edge, status takes the field — on a multi-person row the spine is always the identity hue; status moves to the row's field. `ItemCard` owns row affordances (AdminBoard exception withdrawn)                                                                                                                                                  |
-| 044 | Member hue is assigned, not derived — persisted `Profile.identityHue`, unique across the family (palette size caps household size); `resolveHue` canonical, `getIdentityHue` a fallback; palette grows to eight. Amends ADR 030                                                                                                                                  |
-| 045 | Reminder scheduling — a 60s in-process poll computes due reminders ON READ and dedupes via a sparse `calendar.reminder_log` ledger (a record of the past, never a materialized future), so ADR 038's no-occurrences-table invariant holds                                                                                                                        |
-| 046 | In-situ bug reporting — a report is a CAPTURE (route, build hash, viewport, UA, error ring) not a complaint; every tier reports, so below tier 2 the control takes the bell's slot; the `auto-bug` GitHub issue is a best-effort bridge; only `deployed` pings. `reporterId` carries no FK                                                                       |
-| 047 | The P-Bucks ledger is append-only and the balance is a derived cache — corrections are compensating entries, `(source_type, source_id)` is UNIQUE so idempotency lives in the schema                                                                                                                                                                             |
-| 048 | Earning is contributed, not owned — `rewards` never imports another plugin; the earner owns the amount (`coinReward`), `rewards` owns the ledger, and an earn source is a manifest line plus a handler                                                                                                                                                           |
-| 049 | Punch cards are a `rewards` primitive, not a `meals` one — template → per-profile card → punches, payout in P-Bucks or a catalog reward, and the kid punches their own card                                                                                                                                                                                      |
-| 050 | A day mark is a property of a day, not an event — dinner has no time a family can honour to ±30 min, so a provider returns at most one small mark per day; plugins never write `calendar.events`                                                                                                                                                                 |
-| 051 | The coin belongs to the currency that buys things — P-Bucks takes gold, the disc and the coin glyph; XP demotes to a quiet star. Coin gold moves off `--identity-marigold` to brass, and separation from a member's hue rests on FORM (one struck disc: never a disc-in-a-ring, never milled)                                                                    |
-| 052 | The economy is priced from a weekly earn rate (~10 P-Bucks/week) — chores opt IN to paying (`coinReward` default 0), small reward ≈1 week, big ≈1 month; repricing after launch is a household event, never a silent re-basing                                                                                                                                   |
-| 053 | A balance belongs to a person — the `family` pseudo-profile never holds P-Bucks (a household pot is a second balance by another name), and tier 1 holds a wallet, amending the tier table's "no financial data" to mean the household's money (M8)                                                                                                               |
-| 054 | The currency is named **Pritchett Bucks** — the coin bears a struck **P-mark** (0.66 of the face, stroke 2.5) replacing ADR 051's placeholder `Coins` glyph, and the name has FOUR registers (mark · `P$` · `P-Bucks` · `Pritchett Bucks`), one per medium, chosen by naming an export in `packages/ui/src/lib/currency.ts` rather than by typing two characters |
-| 055 | A redemption is a ticket — buy debits the wallet once with no parent gate; the owned ticket waits in the kid's pocket; `requiresApproval` gates USE, not purchase; a decline is "not now", never confiscation; used is fulfilment; tier-4 revoke-and-refund is the administrative exception                                                                      |
-| 056 | XP is derived from P-Bucks — `xp = 5 + coinReward × 10`, server-derived on create and every edit (client `xpReward` ignored); the XP picker is gone, legacy values drain rather than migrate, and this is not conversion (ADR 002 holds). Amends ADR 052                                                                                                         |
-| 057 | Daily time-window recurrence — a third event shape (date range + weekday set + one clock window per day) stored ADR 038's way: one canonical row, occurrences computed on read via `recurrence_day_offsets`; one shared expansion module serves the events route and the reminder scheduler. Amends ADR 038                                                      |
-| 058 | Chore routines materialize real tasks — a `chores.routines` row holds the rule; occurrences are ordinary `Task` rows spawned lazily on read (no scheduler), at most one open row per routine, `(routine_id, due_date)` unique so spawning is idempotent                                                                                                          |
-| 059 | Up-for-grabs chores are claimed, then done — a null-assignee chore belongs to the household (Hearth identity) until an explicit claim makes it an ordinary assigned task; completing an unclaimed task is refused so the economy never learns a new earner                                                                                                       |
-| 060 | The network is the boundary for the family pseudo-profile — the unauthenticated family dashboard stays as ADR 021 designed it, with no app-side gating by source network; exposure is home LAN + enrolled tailnet, verified rather than code-gated                                                                                                               |
-| 061 | The XP sink is a companion — a per-kid critter hatched once, grown by XP earned since hatch (unlock, never spend), dressed by 1-of-3 milestone picks; a new `companion` plugin owns it and never touches the `rewards` ledger; gear renders on the critter only                                                                                                  |
-| 062 | Companion art is a generated, curated library — image-model output at build time, human-curated, shipped as static plugin assets; bodies are neutral grayscale hued at runtime by the owner's identity triplet; the kid loop never calls a generation API                                                                                                        |
-| 063 | `ListRow` joins `ItemCard` — cards when items are independent objects with several actions, rows when items are a set you scan and act on one way; "never hand-roll a row" now means compose one of the two primitives                                                                                                                                           |
-| 064 | Identity hue appears where the person is the answer to the surface's question — meals keep spines (an unclaimed day renders a dashed one), groceries carry no identity chrome (text notes instead); narrows the application of ADR 043/044                                                                                                                       |
+| ADR | Decision                                                                                                                                                                                                                                          |
+| --- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 001 | Plugin-native micro-frontend — first-party and community plugins share the same API and load path                                                                                                                                                 |
+| 002 | Two-layer currency — XP (gamification, never converts) and P-Bucks (earnable, redeemable, real-money path)                                                                                                                                        |
+| 003 | Age-tiered agency — four trust levels, parent-assigned, capability rules bound to levels not names                                                                                                                                                |
+| 004 | WebSocket-first internally; Web Push for mobile parents; polling for external APIs                                                                                                                                                                |
+| 005 | Allowance as ledger — system tracks balances, never moves real money; cashout is a parent-confirmed event                                                                                                                                         |
+| 006 | TypeScript end-to-end — React shell, Node.js/Fastify plugin services                                                                                                                                                                              |
+| 007 | Vite Module Federation for plugin loading — each plugin publishes a remoteEntry.js and manifest                                                                                                                                                   |
+| 008 | In-process EventEmitter + @fastify/websocket bridge; MQTT bridge is a defined extension point for M6+                                                                                                                                             |
+| 009 | PostgreSQL (Docker), single instance, per-plugin schemas; JSONB for semi-structured config                                                                                                                                                        |
+| 010 | PWA for mobile (Android); Web Push for out-of-home notifications; no native app planned                                                                                                                                                           |
+| 011 | Shell home surface is a composable, role-aware widget grid; M0 must not foreclose this model; implementation deferred to M1                                                                                                                       |
+| 012 | shadcn/ui + Tailwind CSS v4 — component library and styling                                                                                                                                                                                       |
+| 013 | State in layers: React Context (auth/tier), Zustand (shell), TanStack Query (server/plugin data)                                                                                                                                                  |
+| 014 | Plugin design contract is import-based from `@family-os/ui` and `@family-os/platform`                                                                                                                                                             |
+| 015 | Permissions layer on top of tier: effective permissions = tier baseline + grants − revocations; `TierGate` for coarse gating, `PermissionGate` for fine-grained                                                                                   |
+| 016 | Monorepo tooling: pnpm workspaces + Turborepo; `apps/` for runnable services, `packages/` for shared libraries                                                                                                                                    |
+| 017 | Auth session mechanism: `@fastify/session` + `connect-pg-simple`; cookie-based, server-side sessions; session stores active `profileId`                                                                                                           |
+| 018 | CASL `(action, subject)` model for permission checks (extends ADR 015); `PERMISSION_REGISTRY` const for compile-time types + runtime enumeration; `@casl/prisma` `accessibleBy()` for row-level DB filtering                                      |
+| 019 | ORM: Prisma; per-plugin `schema.prisma` files; `accessibleBy()` drives automatic row-level filtering in every module route                                                                                                                        |
+| 020 | Plugin dev toolchain: Turborepo generator (`pnpm turbo gen plugin`); per-plugin Vite dev servers; no custom CLI                                                                                                                                   |
+| 021 | Global family PIN stored in `system_config` (`key = 'family_pin_hash'`); family pseudo-profile is unattended default state                                                                                                                        |
+| 022 | Widget system: React Grid Layout, six named sizes, widget manifest extends ADR 007/014, two-level role model (shell + widget), per-user layout as `{widgetId, x, y, w, h}[]`                                                                      |
+| 023 | Test runner: Vitest (shares Vite pipeline); component tests: `@testing-library/react` + jsdom; route tests: `fastify.inject()`                                                                                                                    |
+| 024 | E2E: Playwright; deferred to M0 shell-skeleton story; lives in `packages/e2e`                                                                                                                                                                     |
+| 025 | Component catalog: Storybook 10 in `packages/ui`; ships in M0 dev-environment story                                                                                                                                                               |
+| 026 | Test conventions: colocated test files; no enforced coverage thresholds; real PostgreSQL for integration tests (`familyos_test` DB separate from dev); shared test utils in `packages/test-utils`                                                 |
+| 027 | Environment configuration: `.env` files at repo root; `NODE_OPTIONS --env-file` for dev server; Vitest `envDir` for tests; `familyos` / `familyos_test` database separation                                                                       |
+| 028 | Home surface default layouts: three tier-appropriate defaults (family pseudo-profile, tiers 1–2, tiers 3–4); Family Feed, Chores, Calendar are reserved modules; absent reserved slots render a placeholder card                                  |
+| 029 | All notifications flow through `platform.notify()`; platform routes to toast, tray, or Web Push based on priority and active profile tier; plugins never render their own toasts or push payloads                                                 |
+| 030 | Member identity colors — six fixed palette hues; every family member maps to one hue used everywhere; `getIdentityHue` / `identityToken` / `identityColor` helpers; plugins never invent member colors                                            |
+| 031 | Interaction-state language — `--primary` owns active/hover/selected across the app; `--accent` locked to module identity only; sidebar uses lightness delta, no hairlines                                                                         |
+| 032 | Plugin nav-item registration — plugins declare a `navItem` (`label`, `route`, `icon`, `minTier`) in `manifest.json`; the sidebar renders tier-filtered nav from the registry                                                                      |
+| 033 | Mobile nav pattern — nav-only bottom tab bar below `md:` (avatar/bell live in ADR 034's top bar); capped at 5 tabs since 2026-08-17 — Home + three pinned + a **More** sheet; single-column widget reflow; `env(safe-area-inset-*)`               |
+| 034 | Mobile brand top bar — avatar · wordmark · bell on mobile; bottom bar is nav-only. Supersedes the "profile chip on mobile" / no-top-bar clauses of ADR 033                                                                                        |
+| 035 | Plugin styling — first-party plugins styled utility-first like the shell; shell `@source`-scans `plugins/*/src`. Third-party per-plugin build deferred (Option 2)                                                                                 |
+| 036 | Focus Mode — per-profile `focus_mode` setting (null = derive from tier) selects the chores taskee variant                                                                                                                                         |
+| 037 | Date inputs — react-day-picker v10 themed by token; `Calendar`/`Popover`/`DatePicker`/`DateRangePicker` in `@family-os/ui`                                                                                                                        |
+| 038 | Calendar recurrence storage — one canonical event row; weekly and daily time-window (ADR 057) expansion computed on read; per-occurrence skip via `event_exceptions`; attendees via join; `is_activity` derived (widened 2026-08-19)              |
+| 039 | Widget prominence — three elevation rungs (feature/card/quiet) resolved on read per profile (`GET /home/layout` carries `prominence`); at most one feature per surface; not a persisted column                                                    |
+| 040 | Sunken surface plane — `--surface-sunken` + `--shadow-inset` as the one step down; only inside a card, near-achromatic so it never reads as an identity fill                                                                                      |
+| 041 | Family identity hue — reserved `family` ("Hearth") entry excluded from `IDENTITY_HUES`; `--secondary` is chrome again; `huesForEvent([])` → `[FAMILY_HUE]`                                                                                        |
+| 042 | Avatar images — a photo is a face, not an identity token; avatar wears no hue ring, chrome beside it carries identity; client-side crop→WebP, bytes in `platform.profile_images`. Amends ADR 030                                                  |
+| 043 | Identity takes the edge, status takes the field — on a multi-person row the spine is always the identity hue; status moves to the row's field. `ItemCard` owns row affordances (AdminBoard exception withdrawn)                                   |
+| 044 | Member hue is assigned, not derived — persisted `Profile.identityHue`, unique across the family (palette size caps household size); `resolveHue` canonical, `getIdentityHue` a fallback; palette grows to eight. Amends ADR 030                   |
+| 045 | Reminder scheduling — a 60s in-process poll computes due reminders ON READ and dedupes via a sparse `calendar.reminder_log` ledger (a record of the past, never a materialized future), holding ADR 038's no-occurrences-table invariant          |
+| 046 | In-situ bug reporting — a report is a CAPTURE (route, build hash, viewport, UA, error ring), not a complaint; every tier reports, so below tier 2 the control takes the bell's slot; the `auto-bug` bridge is best-effort; only `deployed` pings  |
+| 047 | The P-Bucks ledger is append-only and the balance is a derived cache — corrections are compensating entries, `(source_type, source_id)` is UNIQUE so idempotency lives in the schema                                                              |
+| 048 | Earning is contributed, not owned — `rewards` never imports another plugin; the earner owns the amount (`coinReward`), `rewards` owns the ledger, and an earn source is a manifest line plus a handler                                            |
+| 049 | Punch cards are a `rewards` primitive, not a `meals` one — template → per-profile card → punches, payout in P-Bucks or a catalog reward, and the kid punches their own card                                                                       |
+| 050 | A day mark is a property of a day, not an event — dinner has no time a family can honour to ±30 min, so a provider returns at most one small mark per day; plugins never write `calendar.events`                                                  |
+| 051 | The coin belongs to the currency that buys things — P-Bucks takes gold, the disc and the coin glyph; XP demotes to a quiet star. Coin gold moves to brass, and separation from a member's hue rests on FORM (one struck disc)                     |
+| 052 | The economy is priced from a weekly earn rate (~10 P-Bucks/week) — chores opt IN to paying (`coinReward` default 0), small reward ≈1 week, big ≈1 month; repricing after launch is a household event, never a silent re-basing                    |
+| 053 | A balance belongs to a person — the `family` pseudo-profile never holds P-Bucks (a household pot is a second balance by another name), and tier 1 holds a wallet, narrowing the tier table's "no financial data" to the household's money (M8)    |
+| 054 | The currency is named **Pritchett Bucks** — the coin bears a struck **P-mark**, replacing ADR 051's placeholder glyph, and the name has four registers (mark · `P$` · `P-Bucks` · `Pritchett Bucks`), one per medium, chosen by naming an export  |
+| 055 | A redemption is a ticket — buy debits the wallet once with no parent gate; the ticket waits in the kid's pocket; `requiresApproval` gates USE, not purchase; a decline is "not now"; tier-4 revoke-and-refund is the administrative exception     |
+| 056 | XP is derived from P-Bucks — `xp = 5 + coinReward × 10`, server-derived on create and every edit (client `xpReward` ignored); the XP picker is gone, legacy values drain rather than migrate. Not conversion (ADR 002 holds). Amends ADR 052      |
+| 057 | Daily time-window recurrence — a third event shape (date range + weekday set + one clock window a day) stored ADR 038's way: one row, occurrences computed on read via `recurrence_day_offsets`; one expansion module serves both callers         |
+| 058 | Chore routines materialize real tasks — a `chores.routines` row holds the rule; occurrences are ordinary `Task` rows spawned lazily on read (no scheduler), at most one open row per routine, `(routine_id, due_date)` unique so it is idempotent |
+| 059 | Up-for-grabs chores are claimed, then done — a null-assignee chore belongs to the household (Hearth identity) until a claim makes it an ordinary assigned task; completing an unclaimed task is refused so the economy learns no new earner       |
+| 060 | The network is the boundary for the family pseudo-profile — the unauthenticated dashboard stays as ADR 021 designed it, with no app-side gating by source network; exposure is home LAN + enrolled tailnet, verified rather than code-gated       |
+| 061 | The XP sink is a companion — a per-kid critter hatched once, grown by XP earned since hatch (unlock, never spend), dressed by 1-of-3 milestone picks; a new `companion` plugin owns it and never touches the `rewards` ledger                     |
+| 062 | Companion art is a generated, curated library — image-model output at build time, human-curated, shipped as static plugin assets; bodies are grayscale, hued at runtime by the owner's identity triplet; the kid loop calls no generation API     |
+| 063 | `ListRow` joins `ItemCard` — cards when items are independent objects with several actions, rows when items are a set you scan and act on one way; "never hand-roll a row" now means compose one of the two primitives                            |
+| 064 | Identity hue appears where the person is the answer to the surface's question — meals keep spines (an unclaimed day renders a dashed one), groceries carry no identity chrome (text notes instead); narrows the application of ADR 043/044        |
+| 065 | `--primary` and `--ring` are deep olive, and the warm neutrals rotate with them — the palette is **Olive & Teal**; identity hues, `--accent`, coin brass and the status colours are unchanged                                                     |
+| 066 | Day-mark visibility belongs to the provider — the surface gate (`calendar.event.view`) and the provider's own `(action, subject)` apply conjunctively, and a provider the caller cannot see is skipped before `fetch` runs. Extends ADR 050       |
+| 067 | A list is its own subject, not an item — creating one is a separate action and key, but reading one is covered by reading its items. Superseded in part by ADR 069, which moved the subjects to `shopping`                                        |
+| 068 | Row height belongs to the primitive — `ItemCard` 64px (`--spacing-card-touch`), `ListRow` 56px (`--spacing-list-touch`); you pick a primitive by ADR 063's rule and never pick a number. Refines ADR 063                                          |
+| 069 | Groceries leaves `meals` and becomes the `shopping` plugin — own schema, nav entry and API routes; subjects are `shopping.List` / `shopping.Item`; `meals` is a producer that pushes `needs` across a contract, never a shared table              |
+| 070 | `CaptureField` joins `ComposeForm` — compose when the thing is **authored** (an author, a second draft, submitting ends the act); capture when it is **caught** (one noun, no author worth showing, submitting leaves you ready for the next)     |
+| 071 | Checking an item off is its own action — `shopping.Item` carries four actions (`view`/`create`/`check`/`file`) plus `manage`; `check` is baseline tier 2 so a kid can shop without being able to file                                             |
+| 072 | The wall adds as the house — `added_by` holds the requesting profile id, `'family'` from the wall; the profile-referencing columns are `text`, not `uuid`, to match `platform.profiles.id`                                                        |
+| 073 | You can take back your own add — `retract shopping.Item` scoped by CASL condition to `addedBy: profile.id`, for fifteen minutes from `added_at`, checked in the route; a stale client's 403 must be shown, never swallowed                        |
+| 074 | The frame insets, the header leads — `PageContainer` budgets for no content it cannot see and steps once at `md:`; `PageHeader` owns the air on both sides of its title, and `SectionLabel` the space around a group label                        |
 
 ---
 
@@ -168,8 +178,8 @@ API** — a typed SDK injected at mount time. Plugins may not:
 {
   "name": "chores",
   "version": "1.0.0",
-  "remoteEntry": "http://localhost:3012/remoteEntry.js",
-  "exposes": ["./ChoreModule"],
+  "remoteEntry": "http://localhost:3012/assets/remoteEntry.js",
+  "exposes": ["./Plugin", "./widgets/TodaySummary"],
   "routes": ["/chores"],
   "schema": "chores",
   "events": {
@@ -187,11 +197,17 @@ API** — a typed SDK injected at mount time. Plugins may not:
       "requiredPermission": "chores.task.view",
       "description": "Shows the current user's tasks due today."
     }
-  ]
+  ],
+  "navItem": {
+    "label": "Chores",
+    "route": "/chores",
+    "icon": "check-square",
+    "minTier": 1
+  }
 }
 ```
 
-The `widgets` field is optional — plugins that only add routes do not need it. See ADR 022 for full widget manifest field rules, slot taxonomy, and role-aware composition model.
+The `widgets` field is optional — plugins that only add routes do not need it. See ADR 022 for full widget manifest field rules, slot taxonomy, and role-aware composition model. `navItem` is the plugin's one sidebar entry (ADR 032); its `icon` is a string resolved through the shell's `ICON_MAP`.
 
 ### Day-mark provider contract (ADR 050, ADR 066)
 
@@ -281,10 +297,15 @@ flowchart LR
 ### Client exports (`@family-os/platform`)
 
 ```typescript
-export function useAuth(): { id: string; name: string; tier: TierLevel }
+// AuthUser: id, name, tier, avatarUrl, identityHue, darkMode, focusMode,
+// pushEnabled, familyName — resolved from /auth/me, not just the session triple.
+export function useAuth(): AuthUser
 export function useTier(): TierLevel
 export function usePermissions(): AppAbility
+export function useNotify(): (payload: NotifyPayload) => void
+export function usePushSubscription(): PushSubscriptionState
 export function AuthProvider(props: { children: ReactNode }): ReactElement
+export { AuthContext, MockAuthProvider } // MockAuthProvider is for tests
 
 export function TierGate(props: {
   min: TierLevel
@@ -302,20 +323,41 @@ export function useEventBus(): {
   publish(event: EventName, payload: unknown): void
   subscribe(event: EventName, handler: (payload: unknown) => void): () => void
 }
+
+// TanStack Query is re-exported through this entry point on purpose (ADR 013):
+// plugins import the hooks from here so they share the shell's QueryClient
+// rather than resolving a second copy of react-query.
+export { useQuery, useInfiniteQuery, useMutation, useQueryClient } from '@tanstack/react-query'
+export { QueryClient, QueryClientProvider } from '@tanstack/react-query'
 ```
+
+`createAbility` and `PERMISSION_REGISTRY` are re-exported here too, so a plugin
+never reaches past the entry point for them.
 
 ### Server exports (`@family-os/platform/server`)
 
 ```typescript
-export function createEventBusPlugin(): FastifyPlugin
-export function getEventBus(fastify: FastifyInstance): EventBus
+export function createEventBus(): EventBus
 export function createAbility(profile: Profile, overrides: PermissionOverride[]): AppAbility
+export function createDayMarkRegistry(): DayMarkRegistry
+export { prisma } // the platform-schema Prisma client
 
-export interface EventBus {
+export type EventBus = {
   emit(event: EventName, payload: unknown): void
-  on(event: EventName, handler: (payload: unknown) => void): void
+  /** ADR 069 §4 — dispatches like `emit`, then awaits every handler and hands
+      back what each returned, so a producer whose user is standing there can
+      say what the consumer did. Notifications keep `emit`: a failed XP award
+      must never fail the chore completion that triggered it. */
+  emitAndAwait(event: EventName, payload: unknown): Promise<unknown[]>
+  on(event: EventName, handler: (payload: unknown) => unknown): () => void
+  onAny(handler: (message: BusMessage) => void): () => void
 }
 ```
+
+**The bus is wired by the API, not by this package.** `apps/api` registers its own
+`plugins/event-bus` (the WebSocket bridge) and decorates the instance as
+`app.eventBus`; `@family-os/platform/server` supplies the implementation and the
+type. There is no `createEventBusPlugin` and no `getEventBus`.
 
 ### Shared types (`@family-os/platform/types`)
 
@@ -323,49 +365,13 @@ export interface EventBus {
 export type TierLevel = 1 | 2 | 3 | 4
 export type EventName = `${string}.${string}.${string}`
 
-export const PERMISSION_REGISTRY = {
-  'platform.profile.view': {
-    label: 'View profiles',
-    module: 'platform',
-    action: 'view',
-    subject: 'platform.Profile',
-  },
-  'platform.profile.switch': {
-    label: 'Switch active profile',
-    module: 'platform',
-    action: 'switch',
-    subject: 'platform.Profile',
-  },
-  'platform.plugin.view': {
-    label: 'Use plugins',
-    module: 'platform',
-    action: 'view',
-    subject: 'platform.Plugin',
-  },
-  // Plugin modules extend the registry. Chores (M2 Task Model + Creation):
-  'chores.task.view': {
-    label: 'View chores',
-    module: 'chores',
-    action: 'view',
-    subject: 'chores.Task',
-  },
-  'chores.task.create': {
-    label: 'Create and assign chores',
-    module: 'chores',
-    action: 'create',
-    subject: 'chores.Task',
-  },
-  'chores.task.complete': {
-    label: 'Complete chores',
-    module: 'chores',
-    action: 'complete',
-    subject: 'chores.Task',
-  },
-} as const
+export const FAMILY_PROFILE_ID = 'family' // ADR 021 — the reserved pseudo-profile id
+export function resolveFocusMode(focusMode: boolean | null | undefined, tier: number): boolean
 
+export const PERMISSION_REGISTRY = { ... } as const
 export type PermissionString = keyof typeof PERMISSION_REGISTRY
 
-export interface PluginManifest {
+export type PluginManifest = {
   name: string
   version: string
   remoteEntry: string
@@ -373,9 +379,17 @@ export interface PluginManifest {
   routes: string[]
   schema: string
   events: { publishes: EventName[]; subscribes: EventName[] }
-  widgets?: WidgetManifest[]
+  widgets?: unknown[]
+  navItem?: NavItemManifest // ADR 032 — one sidebar nav entry per plugin
 }
 ```
+
+**`PERMISSION_REGISTRY` is not reproduced here.** It is one `as const` literal in
+`packages/platform/src/types.ts` and it grows with every module — read it there.
+Its shape is `{ label, module, action, subject }` per key, and a module contributes
+keys under its own name: `platform` (profile view/switch/avatar/colour, plugin view,
+bug-report create), `family-feed`, `chores`, `rewards`, `calendar`, `meals`, and
+`shopping`. Adding a key is ADR 018's registration step, not a doc edit.
 
 ### Fastify plugin scoping
 
@@ -443,6 +457,29 @@ bug_reports                               -- in-app problem reports (ADR 046)
   created_at          timestamptz
   updated_at          timestamptz
 
+push_subscriptions                        -- Web Push endpoints, one row per device (M1 web-push)
+  id           uuid  PK
+  profile_id   uuid  FK → profiles.id (ON DELETE CASCADE)
+  endpoint     text  UNIQUE
+  p256dh       text
+  auth         text
+  created_at   timestamptz
+
+notifications                             -- the tray's backing store (ADR 029)
+  id           uuid  PK
+  profile_id   uuid  FK → profiles.id (ON DELETE CASCADE)
+  title        text
+  body         text     nullable
+  variant      text                       -- success | info | warning | error
+  priority     text                       -- info | alert
+  is_read      boolean  default false
+  created_at   timestamptz
+
+sessions                                  -- connect-pg-simple's table (ADR 017)
+  sid          text  PK
+  sess         jsonb
+  expire       timestamptz
+
 permission_overrides
   id           uuid  PK
   profile_id   uuid  FK → profiles.id
@@ -482,13 +519,14 @@ Effective ability = `createAbility(profile, overrides)` — tier baseline rules 
 
 | File                                  | Purpose                                                                                  |
 | ------------------------------------- | ---------------------------------------------------------------------------------------- |
+| `plugins/[name]/package.json`         | Workspace manifest — name, port, scripts                                                 |
 | `plugins/[name]/vite.config.ts`       | Module Federation config; `@family-os/ui` and `@family-os/platform` as shared singletons |
 | `plugins/[name]/public/manifest.json` | Stub matching `PluginManifest` type; served at `/manifest.json` by Vite                  |
 | `plugins/[name]/tsconfig.json`        | Extends workspace root config                                                            |
 | `plugins/[name]/src/index.ts`         | Barrel — exposes the plugin module                                                       |
 | `plugins/[name]/src/Plugin.tsx`       | Minimal example using platform hooks                                                     |
 
-`pnpm-workspace.yaml` is updated automatically. Each plugin runs its own Vite dev server; `pnpm dev` starts everything in parallel via Turborepo's task graph.
+The generator also appends the plugin to `plugins.json` (name + dev `baseUrl`) so the shell Vite config picks it up. `pnpm-workspace.yaml` is updated automatically. Each plugin runs its own Vite dev server; `pnpm dev` starts everything in parallel via Turborepo's task graph.
 
 ---
 

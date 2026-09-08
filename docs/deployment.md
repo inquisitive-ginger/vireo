@@ -4,8 +4,8 @@
 > 2026-08-16** (LAN IP 192.168.0.42; migrated after the 3B's USB power budget
 > killed the SSD twice — see `logs/2026-08-16-infra-offsite-backups.md`; SSD in
 > an Insignia NS-PC25HDE USB 3 enclosure, memory `project-poc-hardware`).
-> Originally brought up 2026-07-20 on a **Pi 3B v1.2 (1 GB RAM)**, not the Pi 4
-> in the title. Docker Compose (postgres + api + Caddy), GHCR images,
+> Originally brought up 2026-07-20 on a **Pi 3B v1.2 (1 GB RAM)**.
+> Docker Compose (postgres + api + Caddy), GHCR images,
 > Cloudflare DNS-01 Let's Encrypt cert, PWA installed. Deviations from the runbook
 > below, all intentional: **the API runs via `tsx`, not `node dist`** (imports
 > workspace TS at runtime; no `pnpm deploy --prod` stage — the Part B code samples
