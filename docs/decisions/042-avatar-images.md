@@ -1,173 +1,104 @@
 # ADR 042 — Avatar Images
 
 **Status** — Decided (2026-07-11, Avatar Images design + dev session)
-**Amends** — [ADR 030](030-member-identity-colors.md) (member identity colors)
+**Amends** — [ADR 030](030-member-identity-colors.md)
 
 ## Decision
 
-Profiles get **uploadable photographs**. Four parts:
+Profiles get uploadable photographs.
 
-### 1. The spine carries the identity; the avatar carries the face
+1. **The spine carries the identity; the avatar carries the face.** ADR 030 stands — spines,
+   dots, chips and calendar fills stay hue-driven. A photo appears only in the avatar
+   circle, the one element big enough for a face, and fills it. **No hue band:** identity
+   colour goes on the chrome beside it, so the two never contest the same pixels. Tinted
+   initials are the fallback, not the signal.
 
-The **hue remains the identity carrier** (ADR 030 is upheld, not overturned).
-Spines, dots, chips, calendar fills and split fills stay hue-driven and **never
-become photos**. A photo appears in exactly one place: inside the avatar circle —
-the only element in the system large enough to carry a face.
+   > An avatar is not a colour signal. Any surface showing more than one person at once
+   > must carry a hue element of its own.
 
-**A photo fills the circle. The avatar wears no hue band.** The identity colour is
-carried by the chrome _beside_ the avatar — the `ItemCard` spine, an identity wash,
-a hue pill — so a photograph and the identity system never compete for the same
-pixels. (The tinted-initials fill remains underneath as the no-photo fallback, but
-it is a fallback, not the system's colour signal.)
+2. **The switcher and the Settings member list are the legend.** `ProfileGrid` and
+   `ProfileListItem` alone pair a face with a name — the one place the hue→person code is
+   learnable; elsewhere colour is nameless. Both keep an identity **spine**: once a photo
+   replaces the tinted circle, it is all that still teaches the code.
 
-The corollary is binding on every surface:
+3. **Bytes in Postgres, behind an immutable URL.** `platform.profile_images` (`bytea` + mime
+   - hash), 1:1 with the profile. `Profile.avatarUrl` (there since the initial migration)
+     holds `/api/profiles/:id/avatar?v={hash}` at `max-age=31536000, immutable`; the hash
+     busts the cache. **`Profile`'s schema does not change.**
 
-> **An avatar is not a colour signal. Any surface that shows more than one person
-> at once must carry a hue element of its own.**
-
-### 2. The switcher and the settings list are the KEY
-
-The profile switcher (`ProfileGrid`) and the Settings member list
-(`ProfileListItem`) are the only two surfaces in the app that show every member's
-**face and name together**. That makes them the one place the hue→person code can
-be _learned_ — everywhere else (calendar chips, spines, split fills) colour appears
-with **no name attached** and only works if you already know the mapping.
-
-Both therefore carry an identity **spine**. This is not consistency for its own
-sake: a legend needs the symbol beside the label, and once a photo replaces the
-tinted initials circle, that spine is the only thing still teaching the code the
-rest of the app depends on.
-
-### 3. Storage — bytes in Postgres, behind an immutable URL
-
-A `platform.profile_images` table (`bytea` + mime + content hash), 1:1 with the
-profile. `Profile.avatarUrl` — which has existed since the initial migration — holds
-`/api/profiles/:id/avatar?v={hash}`, served with
-`Cache-Control: public, max-age=31536000, immutable`. The hash busts the cache on
-change. **`Profile`'s schema does not change.**
-
-### 4. Permissions
-
-A new `profile.avatar` CASL subject: **`update` own in the baseline for every
-tier; `manage` all at tier 4.** The Family pseudo-profile's photo is tier-4 only.
+4. **Permissions.** `profile.avatar`: `update` own in the baseline at every tier, `manage`
+   all at tier 4. The Family pseudo-profile's photo is tier-4 only.
 
 ## Why
 
-**The problem a photo creates.** A member's photo has its own dominant colour, and
-that colour is not their hue. A terracotta-hued member photographed against a teal
-background renders as a **teal** avatar — teal being _another member's_ hue. If the
-avatar is the surface's colour signal, the colour is not merely absent: it **points
-at the wrong person.** That is the exact failure ADR 030 was written to prevent,
-relocated from the name-hash to the camera.
+**A photo's dominant colour is not its owner's hue.** A terracotta member shot against teal
+renders as a teal avatar — another member's hue. Colour is not absent; it points at the
+wrong person. ADR 030's failure, moved from the name-hash to the camera.
 
-**Why a band on the avatar was the wrong answer.** The first pass solved this by
-ringing the photo in the owner's hue. It was built, and it was wrong — for a reason
-that only became visible on a real screen: on a feed post card, the `ItemCard`
-**spine already paints the very same hue two millimetres to the left of the
-avatar.** The band was saying the same thing twice, louder.
+**The band was the wrong fix.** The first pass ringed the photo in the owner's hue; on a
+feed post card the `ItemCard` spine already paints that hue two millimetres to the left.
+The band was redundant wherever a hue carrier existed (feed card, activities roster) and
+load-bearing on the four that had none (the up-next widget's day rows, span rows, the
+switcher, the Settings list) — evidence those four were **under-built**, not that the band
+was right. Fixed, it has no job, and photo-only is simpler _and_ more correct: one hue per
+row, on the chrome, never on the face. The band also taxed a face already marginal at size
+(3px leaves 26px of a 32px avatar) and forced a second concentric ring into `active`.
 
-An audit of every `ProfileAvatar` call site then showed the band was:
+**The bug that audit surfaced.** ADR 040 deliberately deleted the `<Spine>` from the
+widget's day rows, recording that _"the avatar already IS the identity hue a spine would
+paint."_ True of a tinted circle, false of a photograph. The spine returns there and on
+`SpanBand`'s rows, and the comment is corrected.
 
-- **redundant** on the two surfaces that already had a hue carrier (feed post card,
-  activities roster) — and
-- **load-bearing** on four that had none (the up-next widget's day rows, the
-  multi-day span rows, the profile switcher, the Settings member list).
+**Bytes in Postgres:** ADR 009 bought a single backup operation. Disk uploads split it into
+a volume that must survive container recreation and a restore that silently leaves every
+profile a broken image — `docker compose down -v` deletes every face in the house. The
+usual objection to blobs is scale, and there is none (≤ ~8 profiles × ~40KB). `/api` also
+rides the existing Vite dev proxy; `/uploads` would not.
 
-Which is not an argument for the band. It is an argument that **those four surfaces
-were under-built**, and the band was papering over it. Fix the surfaces and the
-band has no job left. Photo-only is then the simpler system _and_ the more correct
-one: one hue per row, in one place, on the chrome — never on the face.
+**Client-side crop.** The browser re-encodes to WebP on a `<canvas>`, so the server needs no
+`sharp` (a native binary, painful across Docker architectures) and gets ~40KB, not 4MB — and
+still does not trust the client.
 
-**The bug the audit surfaced.** The up-next density session (ADR 040) had
-**deliberately deleted** the `<Spine>` from the widget's day rows, on this recorded
-premise: _"the avatar already IS the identity hue a spine would paint, plus the
-initial that disambiguates it."_ That was true of a tinted initials circle. It is
-false of a photograph. The spine is restored on those rows and on `SpanBand`'s span
-rows, and the comment asserting the false premise is corrected in place.
+**Self-serve**, because a teen picking their own picture is the humane default and `PUT
+/preferences/dark-mode` already establishes self-acting-on-`request.profile.id`. Abuse is
+answered by the existing per-profile override revoking `profile.avatar`. Tier-4-only would
+match `PATCH /profiles/:id`, but that route _administers_; choosing a face does not.
 
-**Why the switcher and the settings list get a spine.** The tempting argument is
-that they don't need one — both render the person's full name in text, so colour
-saves you no reading. That gets it backwards. Those two lists are the **only**
-surfaces pairing a face with a name, which makes them the app's **legend**. Colour
-is used _without_ a name everywhere it actually matters (a calendar chip is a
-coloured pill and nothing else); it only works because the code is learnable
-somewhere. Remove the tinted circle and put nothing in its place, and you delete
-the legend while keeping every surface that depends on it.
+## Security constraints (binding)
 
-**Why bytes in Postgres.** ADR 009 chose a single Postgres explicitly so that
-"backup and restore [is] a single operation." Uploads on disk split that in two:
-a volume that must survive container recreation, and a restore that forgets it
-leaves every profile with a broken image — a `docker compose down -v` silently
-deletes every face in the house. The usual objection to blobs-in-a-database is
-scale, and this dataset has none: **a household is ≤ ~8 profiles × ~40KB ≈ under
-half a megabyte, permanently.** Serving under `/api` also means the existing Vite
-dev proxy already covers it; a new `/uploads` path would not be proxied.
-
-**Why the crop is client-side.** The browser crops and re-encodes to WebP on a
-`<canvas>`, so the server never needs `sharp` (a native binary, painful to build
-across Docker architectures) and receives ~40KB rather than a 4MB phone photo. The
-server still does not trust the client — see below.
-
-**Why self-serve.** A teen picking their own picture is the humane default, and
-`PUT /preferences/dark-mode` already establishes the self-acting-on-
-`request.profile.id` route pattern. If a child abuses it, the **existing
-per-profile permission-override system revokes `profile.avatar` for that profile** —
-which is precisely what that system is for. Tier-4-only would have been consistent
-with `PATCH /profiles/:id`, but that route is about _administering_ a profile;
-choosing your own face is not administration.
-
-## Security constraints (binding on the implementation)
-
-- **Whitelist by magic bytes, not by extension or client-declared type.** Accept
-  WebP / PNG / JPEG only.
-- **Never accept SVG.** An SVG can carry script; served inline from our own origin
-  it is a stored-XSS vector.
-- Serve with a **server-derived** `Content-Type` and `X-Content-Type-Options:
-nosniff`.
-- Enforce a hard byte cap at the route (`bodyLimit`), not just in the client.
+- **Whitelist by magic bytes**, never extension or declared type: WebP / PNG / JPEG only.
+- **Never accept SVG** — it can carry script; served inline from our origin it is stored XSS.
+- Serve a **server-derived** `Content-Type` plus `X-Content-Type-Options: nosniff`.
+- Hard byte cap at the route (`bodyLimit`), not just in the client.
 
 ## Alternatives considered
 
-- **An identity band around the photo** — **built, then rejected.** It double-encodes
-  the hue on every surface that already has a spine, and it only looked necessary on
-  the four surfaces that were missing one. Fixing those surfaces removes its
-  purpose. It also taxes the face at exactly the sizes where the face is already
-  marginal (a 3px band leaves 26px of a 32px avatar), and it forces a second
-  concentric ring into the `active` state.
-- **A halo (band + a card-coloured gap)** — rejected with the band, and worse: ~2×
-  the face-pixel cost for the same signal.
-- **An adaptive band** (band when small, bare when large) — rejected: the same person
-  renders under a different rule depending on where they appear, and it degrades to
-  the bare-photo failure at exactly the up-close sizes. Two components in a trenchcoat.
-- **Leaving the switcher and settings list without a hue** (on the grounds that the
-  name is right there) — rejected: that is what makes them the legend, not what makes
-  colour redundant. See above.
-- **Filesystem + `@fastify/static`** — rejected: splits the ADR-009 backup
-  guarantee, needs a persistent volume, orphans files on profile delete.
-- **Server-side resize with `sharp`** — rejected: a native binary dependency to
-  solve a problem the client has already solved for free.
-- **`react-easy-crop`** — rejected: `@use-gesture/react` is already a dependency of
-  `@family-os/ui`, and the differentiated part of a cropper is the frame, not the
-  pan math.
+- **A halo** (band + card-coloured gap) — the band's costs at ~2× the face-pixel price, for
+  the same signal.
+- **An adaptive band** (band when small, bare when large) — one person under two rules, and
+  it degrades to the bare-photo failure at the up-close sizes.
+- **No hue on the switcher and Settings list** (the name is right there) — being the legend
+  is what makes them need it.
+- **Filesystem + `@fastify/static`** — splits the ADR-009 backup guarantee, needs a
+  persistent volume, orphans files on profile delete.
+- **Server-side `sharp`** — a native dependency for what the client solves free.
+- **`react-easy-crop`** — `@use-gesture/react` is already a `@family-os/ui` dependency, and
+  a cropper's differentiated part is the frame, not the pan math.
 
 ## Do not revisit unless
 
-- Profiles gain a use for images beyond the avatar circle (e.g. cover photos), at
-  which point a general asset table — not `profile_images` — is the right shape.
-- A household's image data outgrows a Postgres backup, which for avatars alone
-  will not happen.
-- Photographs are shown to be _more_ reliable identity carriers than hue at 32px
-  across the room, which would reopen ADR 030 itself rather than this amendment.
+- Images are wanted beyond the avatar circle (cover photos) — then a general asset table,
+  not `profile_images`, is the shape.
+- A household's image data outgrows a Postgres backup, which for avatars will not happen.
+- Photographs prove _more_ reliable than hue at 32px across the room — which reopens ADR
+  030 itself, not this amendment.
 
-## Consequences for future work
+## Consequences
 
-- **Never delete a row's spine because the row has an avatar.** That trade was made
-  once (ADR 040, the up-next day rows) and this ADR reverses it.
-- **A new surface showing several people at once owes a hue element.** The avatar
-  does not count.
-- **`chores` does not use `ProfileAvatar`** — `TodaySummaryView`'s `PersonTile`
-  hand-rolls its own initials circle, so chores will silently never show photos.
-  Queued as a follow-up; the module wants a broader overhaul. Note also that its
-  `TaskRow` spine is a **status** colour, not identity — so "a spine means who" is
-  not universally true, and the status-vs-identity rule in `design-system.md` still
-  governs.
+- **Never delete a row's spine because the row has an avatar** — that trade was made once
+  (ADR 040's up-next day rows) and this ADR reverses it.
+- **A new surface showing several people at once owes a hue element** — the avatar does not
+  count.
+- **`chores` hand-rolls its initials circle** (`PersonTile`), so it silently never shows
+  photos; queued with that module's overhaul. Its `TaskRow` spine is a **status** colour, so
+  "a spine means who" is not universal — `design-system.md`'s rule governs.

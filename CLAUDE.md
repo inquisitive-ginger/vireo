@@ -17,14 +17,14 @@ before it reads anything else, and it is size-capped — see
 - **Milestone:** M4.5 — Companion (M4.5/3 next). **M3 and M5 closed 2026-09-07**;
   **M5.5 — Shopping** has one story left, **/6 offline**.
 - **The queue was audited 2026-09-07** — four kickoffs, three story specs and the whole
-  Deferred Backlog were recycled unbuilt. Four items remain; don't restore from a log.
+  Deferred Backlog were recycled unbuilt. Three items remain; don't restore from a log.
 - **Shopping is announced:** nav entry at every breakpoint since PR #138. The Home tile
   is deliberately **not** in the default layouts — Zach pulled it, one revert to restore.
 - **Deployment:** 🟢 live at `https://vireohome.app` — Pi 5 (192.168.0.42, pinned
   in NetworkManager 2026-09-02; eth0 `88:a2:9e:d4:e7:33`, router reservation still
   owed); auto-deploy + Tailscale + restic→R2 + watchdog intact. Runbook Part F/G.
-- **Last session:** 2026-09-07 — the queue/kickoff/spec audit.
-  `logs/2026-09-07-audit-queue-recycle.md`.
+- **Last session:** 2026-09-07 — ten over-cap ADRs rewritten concise (042/044/043/031/035/
+  046/041/022/040/057). `logs/2026-09-07-docs-adr-cap.md`.
 - **What's next and everything outstanding:** `docs/sessions/queue.md` — the one
   index. M4.5/3 or M5.5/6 next.
 

@@ -48,13 +48,6 @@ _`docs/modules/shopping/spec.md` · ADR 069–073._
 
 ---
 
-### Docs: ten ADRs are over the 6000-byte cap
-
-**Type:** docs · **Kickoff:** _to be written_
-Rewrite concise — same arguments, fewer words; never cut reasoning, never raise the cap
-(Zach, 2026-09-04). 042 (9704), 044, 043, 031, 035, 046, 041, 022, 040, 057. Grandfathered:
-the check reads only changed files.
-
 ### Platform: family-feed test addendum
 
 **Type:** development (test addendum) · **Kickoff:** _to be written_
@@ -69,6 +62,9 @@ Stand up an RTL suite mirroring chores/calendar.
 > recent first, nothing older than the current milestone's start. `docs/sessions/logs/` is
 > date-ordered and holds the record. Do not restore entries pruned from here.
 
+- **2026-09-07 — Docs: ten ADRs rewritten under the 6000-byte cap** — 042/044/043/031/035/046/
+  041/022/040/057, all now 5939–5997 bytes; arguments intact, restatement and superseded
+  clauses gone. _[log](logs/2026-09-07-docs-adr-cap.md)_
 - **2026-09-07 — Audit: the queue, the kickoffs and the specs** — every queued item was put
   to a build/recycle call. Four kickoffs, three story specs and the shopping salvage
   inventory deleted; the whole Deferred Backlog recycled; M3 and M5 closed.
