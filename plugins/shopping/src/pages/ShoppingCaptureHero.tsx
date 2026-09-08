@@ -23,6 +23,10 @@ export interface ShoppingCaptureHeroProps {
       notice per collision, growing downward into the space below the pills. */
   reports: CaptureReport[]
   canAdd: boolean
+  /** No route to the server. The wall is capture and nothing else, so offline it
+      has nothing it can do — and it says that rather than taking words it will
+      drop. */
+  offline: boolean
 }
 
 /* `/shopping` at tablet width and up (design.md §"One surface, two layouts",
@@ -48,6 +52,7 @@ export function ShoppingCaptureHero({
   onAdd,
   reports,
   canAdd,
+  offline,
 }: ShoppingCaptureHeroProps) {
   return (
     /* Fills the screen, so what a person walks up to is the field and nothing
@@ -93,9 +98,9 @@ export function ShoppingCaptureHero({
             // a wall has no other place to put an instruction.
             placeholder="milk, eggs, bread"
             label={destination ? `Add to ${destination}` : 'Add to the shopping list'}
-            disabled={!canAdd || !destination}
+            disabled={!canAdd || !destination || offline}
             onSubmit={onAdd}
-            trailing={canAdd && destination ? <EnterHint /> : undefined}
+            trailing={canAdd && destination && !offline ? <EnterHint /> : undefined}
           />
 
           {/* Tight to the field, because these ARE the field's destination control
@@ -107,7 +112,13 @@ export function ShoppingCaptureHero({
             className="absolute inset-x-0 top-full mt-2"
             size="body"
             reports={reports}
-            idle={canAdd ? undefined : 'Adding to the list is turned off for this profile.'}
+            idle={
+              !canAdd
+                ? 'Adding to the list is turned off for this profile.'
+                : offline
+                  ? 'Offline — adding needs a connection.'
+                  : undefined
+            }
           />
         </div>
       </div>

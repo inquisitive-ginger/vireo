@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useRef, useState } from 'react'
+import { useCallback, useEffect, useMemo, useRef, useState } from 'react'
 import { useLocation, useNavigate } from 'react-router-dom'
 import { Loader2 } from 'lucide-react'
 import {
@@ -9,6 +9,7 @@ import {
   useQuery,
   useQueryClient,
 } from '@family-os/platform'
+import type { QueryClient } from '@family-os/platform'
 import { ErrorCard } from '@family-os/ui'
 import type { ShoppingAisle } from '@family-os/schemas'
 import type {
@@ -30,10 +31,36 @@ import { MAX_NAMES, parseNames } from '../lib/parse-names'
 import { collisions, failedNames, toDuplicate, tooMany } from '../lib/batch-results'
 import { retractMessage } from '../lib/use-ambient-capture'
 import { useWideLayout } from '../lib/use-wide-layout'
+import { useOffline } from '../lib/use-offline'
+import {
+  OfflineError,
+  abandonedChecks,
+  drainQueue,
+  pruneQueue,
+  queueCheck,
+  sendCheck,
+  type QueuedCheck,
+} from '../lib/offline-checks'
+import { readQueue, readSnapshot, saveLists, saveListItems, saveQueue } from '../lib/offline-store'
+import { OfflinePill } from '../components/OfflinePill'
 import { ShoppingPageView, type AisleGroup } from './ShoppingPageView'
 import type { ClearScope } from './ClearListMenu'
 
 const CHECK_MUTATION = ['shopping/check'] as const
+
+/** The optimistic row write, shared by the three things that move a row without
+    the server having said so: the online mutation's `onMutate`, the offline tap
+    that never reaches it, and the rollback when a replay is refused. */
+function setRowStatus(
+  queryClient: QueryClient,
+  key: readonly unknown[],
+  itemId: string,
+  status: ShoppingItem['status']
+) {
+  queryClient.setQueryData<ListResponse>(key, (old) =>
+    old ? { ...old, items: old.items.map((i) => (i.id === itemId ? { ...i, status } : i)) } : old
+  )
+}
 
 function json<T>(res: Response): Promise<T> {
   if (!res.ok) throw new Error(String(res.status))
@@ -77,6 +104,12 @@ export function ShoppingPage() {
   const [selectedListId, setSelectedListId] = useState<string | null>(null)
   const [capture, setCapture] = useState<CaptureState>(EMPTY_CAPTURE)
   const [rowErrors, setRowErrors] = useState<Record<string, string>>({})
+  const [offline, setOffline] = useOffline()
+  // A ref, not state: nothing on screen is derived from the queue — the pill
+  // reports the CONNECTION, and the rows report themselves. Keeping it out of
+  // state also keeps the drain reading the queue as it is now rather than as it
+  // was when the callback was made.
+  const queueRef = useRef<QueuedCheck[]>([])
 
   // A retry that works has to clear what the failure said, or the row keeps
   // reporting a problem it no longer has for the rest of the session.
@@ -109,12 +142,25 @@ export function ShoppingPage() {
   // check widened in a component.
   const canManage = ability.can('manage', 'shopping.Item')
 
+  /* The last thing this device saw, so a shop with no signal opens on rows
+     rather than on a Retry button. Only these two reads get a copy: they are the
+     ones a person is standing in front of a shelf reading, and every other read
+     on this surface is an answer to an act that cannot happen offline anyway.
+
+     It seeds `initialData` and it is dated when it was SAVED, never now — so the
+     query is stale on arrival and refetches the instant there is a network. That
+     is what keeps AC5 whole: the service worker's network-first `/api` rule is
+     untouched, and nothing here can outlive a deploy. */
+  const snapshot = useMemo(() => (id ? readSnapshot(id) : null), [id])
+
   // Profile-scoped, under one `shopping/list` prefix the M5.5/5 widget reuses,
   // so a single invalidation refreshes the page and the widget together.
   const listsQuery = useQuery<ListsResponse>({
     queryKey: ['shopping/list', id, 'index'],
     queryFn: () => fetch('/api/shopping/lists').then(json<ListsResponse>),
     retry: 1,
+    initialData: snapshot?.lists?.data,
+    initialDataUpdatedAt: snapshot?.lists?.savedAt,
   })
 
   const lists = useMemo(() => listsQuery.data?.lists ?? [], [listsQuery.data])
@@ -127,12 +173,99 @@ export function ShoppingPage() {
   // catches up.
   const keyFor = (listId: string | null) => ['shopping/list', id, listId]
 
+  const cachedList = activeListId ? snapshot?.items[activeListId] : undefined
+
   const listQuery = useQuery<ListResponse>({
     queryKey: keyFor(activeListId),
     queryFn: () => fetch(`/api/shopping/lists/${activeListId}`).then(json<ListResponse>),
     enabled: activeListId !== null,
     retry: 1,
+    initialData: cachedList?.data,
+    initialDataUpdatedAt: cachedList?.savedAt,
   })
+
+  /* Saved from the CACHE rather than from the response, so an offline check is
+     written down twice: as the row it drew, and as the queue entry that will
+     send it. If only the queue survived a reload the row would flip back under
+     the shopper on reopening, which is the thing they would notice and not
+     believe. */
+  useEffect(() => {
+    if (id && listsQuery.data) saveLists(id, listsQuery.data)
+  }, [id, listsQuery.data])
+
+  useEffect(() => {
+    if (id && activeListId && listQuery.data) saveListItems(id, activeListId, listQuery.data)
+  }, [id, activeListId, listQuery.data])
+
+  const enqueue = (
+    item: ShoppingItem,
+    status: ShoppingItem['status'],
+    was: ShoppingItem['status'] = item.status
+  ) => {
+    const next = queueCheck(queueRef.current, {
+      itemId: item.id,
+      listId: item.listId,
+      name: item.name,
+      status,
+      was,
+      queuedAt: Date.now(),
+    })
+    queueRef.current = next
+    if (id) saveQueue(id, next)
+  }
+
+  const drain = useCallback(async () => {
+    if (queueRef.current.length === 0) return
+    const result = await drainQueue(queueRef.current, (entry) =>
+      sendCheck(entry.itemId, entry.status)
+    )
+    queueRef.current = result.remaining
+    if (id) saveQueue(id, result.remaining)
+    // Anything left means the drain hit a request that never left the device —
+    // `drainQueue` stops there rather than burning the tail against a dead
+    // radio. The pill goes back up on that evidence, whatever `navigator.onLine`
+    // believes about the supermarket's captive wifi.
+    setOffline(result.remaining.length > 0)
+
+    for (const { entry, reason } of result.refused) {
+      /* The one case where the row on screen is genuinely wrong: the server
+         answered, and the answer was no. Put it back where it was and say so —
+         without claiming which of a 403, a 404 on a row someone else cleared and
+         a 400 it was, since only one of those is worth telling them to retry.
+         The reason goes to the console, same rule as the clear-list failure. */
+      console.error('[shopping] the list refused a queued check on %s', entry.name, reason)
+      setRowStatus(queryClient, ['shopping/list', id, entry.listId], entry.itemId, entry.was)
+      setRowErrors((errors) => ({
+        ...errors,
+        [entry.itemId]: `“${entry.name}” didn’t sync — it’s back the way it was.`,
+      }))
+    }
+
+    if (result.sent.length > 0 || result.refused.length > 0) {
+      await queryClient.invalidateQueries({ queryKey: ['shopping/list'] })
+    }
+  }, [id, queryClient, setOffline])
+
+  /* What the last trip could not send. Loaded once per profile, pruned before it
+     is trusted, and replayed straight away — reopening the app IS the reconnect
+     for a phone that was closed in the shop and opened in the car. */
+  useEffect(() => {
+    if (!id) return
+    const { kept, stale } = pruneQueue(readQueue(id), Date.now())
+    queueRef.current = kept
+    if (stale.length > 0) {
+      saveQueue(id, kept)
+      console.error('[shopping] gave up on %d unsent check(s)', stale.length, stale)
+      setCapture((state) => ({ ...state, actionError: abandonedChecks(stale) }))
+    }
+    void drain()
+  }, [id, drain])
+
+  useEffect(() => {
+    const onReconnect = () => void drain()
+    window.addEventListener('online', onReconnect)
+    return () => window.removeEventListener('online', onReconnect)
+  }, [drain])
 
   // Checked rows stay in the list, in their place (M5.5/4) — the server's order
   // is walk order and a check does not move a row out of it. An item never
@@ -249,22 +382,14 @@ export function ShoppingPage() {
   const checkItem = useMutation({
     mutationKey: CHECK_MUTATION,
     mutationFn: ({ item, status }: { item: ShoppingItem; status: ShoppingItem['status'] }) =>
-      fetch(`/api/shopping/items/${item.id}/check`, {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ status }),
-      }).then(json<ShoppingItem>),
+      sendCheck(item.id, status),
     onMutate: async ({ item, status }) => {
       // A shop is where the signal is worst and the thumb is fastest. The row
       // answers immediately and the server confirms behind it.
       const key = keyFor(item.listId)
       inFlightChecks.current.set(item.id, (inFlightChecks.current.get(item.id) ?? 0) + 1)
       await queryClient.cancelQueries({ queryKey: key })
-      queryClient.setQueryData<ListResponse>(key, (old) =>
-        old
-          ? { ...old, items: old.items.map((i) => (i.id === item.id ? { ...i, status } : i)) }
-          : old
-      )
+      setRowStatus(queryClient, key, item.id, status)
       clearRowError(item.id)
       // The row's OWN prior status, not a snapshot of the list. Restoring a whole
       // snapshot would undo whatever else landed while this request was in the
@@ -274,15 +399,18 @@ export function ShoppingPage() {
       return { key, was: item.status }
     },
     onError: (err, { item, status }, context) => {
-      if (context)
-        queryClient.setQueryData<ListResponse>(context.key, (old) =>
-          old
-            ? {
-                ...old,
-                items: old.items.map((i) => (i.id === item.id ? { ...i, status: context.was } : i)),
-              }
-            : old
-        )
+      /* Signal died between the thumb and the server. The row is not WRONG, it
+         is unsent — rolling it back would undo a check in front of the person
+         who just made it, and throw away the only record that they made it. So
+         the optimistic row stands, the tap joins the queue, and the pill says
+         why. This is the whole difference between a refusal and a dropout. */
+      if (err instanceof OfflineError) {
+        console.error('[shopping] queued a check on %s — no signal', item.name, err)
+        setOffline(true)
+        enqueue(item, status, context?.was ?? item.status)
+        return
+      }
+      if (context) setRowStatus(queryClient, context.key, item.id, context.was)
       // The row goes back to what it was, and says why. Silence here is a person
       // walking away from a shelf believing the thing is in the cart.
       console.error('[shopping] could not mark %s as %s', item.name, status, err)
@@ -456,6 +584,11 @@ export function ShoppingPage() {
   if (readFailed) {
     return (
       <div className="p-6">
+        {/* Nothing cached to fall back to — a device that has never read this
+            list with a signal. The card is right, and it cannot say why on its
+            own: "Shopping couldn't load" sends someone looking for a broken app
+            instead of a bar of signal. */}
+        <OfflinePill offline={offline} />
         <ErrorCard
           moduleName="Shopping"
           onRetry={() => {
@@ -524,9 +657,20 @@ export function ShoppingPage() {
       // inline where there is room for them, and in a bottom sheet where there
       // is not (Zach, live pass on the list surface).
       inlineActions={wide}
-      onToggle={(item) =>
-        checkItem.mutate({ item, status: item.status === 'got' ? 'needed' : 'got' })
-      }
+      offline={offline}
+      onToggle={(item) => {
+        const status = item.status === 'got' ? 'needed' : 'got'
+        // Known to be offline before the tap: draw the row and write the tap
+        // down, rather than spending a request the radio will not carry and
+        // making the person wait for it to time out.
+        if (offline) {
+          setRowStatus(queryClient, keyFor(item.listId), item.id, status)
+          clearRowError(item.id)
+          enqueue(item, status)
+          return
+        }
+        checkItem.mutate({ item, status })
+      }}
       onRefile={(item, category) => refileItem.mutate({ item, category })}
       onRename={(item, name) => renameItem.mutate({ item, name })}
       onRemove={(item) => removeItem.mutate({ item })}

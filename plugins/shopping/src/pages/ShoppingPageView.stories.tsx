@@ -84,6 +84,7 @@ const meta: Meta<typeof ShoppingPageView> = {
     onAdd: () => {},
     reports: [],
     canAdd: true,
+    offline: false,
     canCheck: true,
     canFile: false,
     canManage: false,
@@ -381,3 +382,9 @@ export const InlineRowActions: Story = {
     </div>
   ),
 }
+
+/** In the aisle with no signal (frame S3). The pill is muted rather than amber —
+    offline is expected here — the field is closed because an add needs the
+    server to file it, and the rows still check off, which is the half that
+    matters. The count and the meter are untouched. */
+export const Offline: Story = { args: { offline: true } }

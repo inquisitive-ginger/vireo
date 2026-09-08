@@ -21,6 +21,7 @@ function renderView(over: Partial<ShoppingCaptureHeroProps> = {}) {
     onAdd: vi.fn(),
     reports: [],
     canAdd: true,
+    offline: false,
     ...over,
   }
   return { props, ...render(<ShoppingCaptureHero {...props} />) }

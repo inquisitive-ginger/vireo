@@ -35,6 +35,7 @@ const meta: Meta<typeof ShoppingCaptureHero> = {
     onAdd: () => {},
     reports: [],
     canAdd: true,
+    offline: false,
   },
 }
 export default meta
@@ -108,6 +109,10 @@ export const Duplicate: Story = {
 /* `shopping.item.add` revoked for this profile (ADR 072 §6) — the one lever that
    closes the wall's field. */
 export const AddingRevoked: Story = { args: { canAdd: false } }
+
+/** The wall is capture and nothing else, so with no route to the server it has
+    nothing it can do — and it says that rather than taking words it will drop. */
+export const Offline: Story = { args: { offline: true } }
 
 /* The window closed between fetches. Expected, and shown. */
 export const RetractRefused: Story = {

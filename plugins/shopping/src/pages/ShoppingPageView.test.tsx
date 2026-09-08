@@ -37,6 +37,7 @@ function renderView(over: Partial<ShoppingPageViewProps> = {}) {
     onAdd: vi.fn(),
     reports: [],
     canAdd: true,
+    offline: false,
     layout: 'list',
     totalOpenCount: 3,
     onShowLists: vi.fn(),
@@ -1141,5 +1142,42 @@ describe('ShoppingPageView — the aisle correction', () => {
     fireEvent.click(screen.getByRole('button', { name: 'Move to another aisle' }))
     fireEvent.click(screen.getByRole('button', { name: /^Produce/ }))
     expect(props.onRefile).not.toHaveBeenCalled()
+  })
+})
+
+describe('offline', () => {
+  it('says so in a quiet pill under the title, and nowhere else', () => {
+    renderView({ offline: true })
+    const pill = screen.getByRole('status')
+    expect(pill).toHaveTextContent('Offline — checks will sync')
+    // Muted, not amber: offline in a shop is expected, and there is nothing to
+    // act on. `--destructive` and `--warning` are what a banner would reach for.
+    expect(pill.className).toContain('text-muted-foreground')
+    expect(pill.className).not.toMatch(/destructive|warning|amber/)
+  })
+
+  it('leaves the count and the meter exactly where they were', () => {
+    renderView({ offline: true })
+    expect(screen.getByRole('progressbar')).toBeInTheDocument()
+    expect(screen.getByText('3')).toBeInTheDocument()
+  })
+
+  it('says nothing at all when there is a connection', () => {
+    renderView()
+    expect(screen.queryByRole('status')).not.toBeInTheDocument()
+  })
+
+  it('closes the field rather than taking a word it cannot file, and says why', () => {
+    renderView({ offline: true })
+    expect(screen.getByLabelText('Add to Grocery')).toBeDisabled()
+    expect(
+      screen.getByText('Adding needs a connection. Checking things off still works.')
+    ).toBeInTheDocument()
+  })
+
+  it('still checks rows off — that is the half that works', () => {
+    const { props } = renderView({ offline: true })
+    fireEvent.click(screen.getByRole('button', { name: /Mark “milk” as got/ }))
+    expect(props.onToggle).toHaveBeenCalledWith(expect.objectContaining({ id: '3' }))
   })
 })
