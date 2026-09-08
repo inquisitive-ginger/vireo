@@ -153,16 +153,6 @@ describe the plate, the try bite is the ask.
 
 ---
 
-## M5/5 — Try Bites
-
-- On meals surfaces the try bite is a quiet **accent chip**: `Try bite · the
-veggies` (accent at 12% wash, accent ink). No gold — gold is XP/reward only.
-- The **stamp/punch vocabulary** (dashed square, sunken plane, slam animation)
-  belongs to the table-time surface where the kid actually taps — design it in
-  this story against the chores punch wall, not on the widget.
-
----
-
 ## M5/6 + M5/7 — moved to `shopping`
 
 > **Both sections were removed 2026-09-03 (ADR 069).** Groceries left `meals` and

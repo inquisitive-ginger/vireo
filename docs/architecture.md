@@ -262,10 +262,9 @@ flowchart LR
 ## Hosting
 
 - **Runtime:** Docker Compose on Raspberry Pi OS Lite (64-bit, Debian 13 trixie)
-- **Hardware:** Raspberry Pi 5 (4 GB) at `192.168.0.42` — eth0 `88:a2:9e:d4:e7:33`, address pinned statically in NetworkManager (2026-09-02, no router reservation in effect); SD-card boot, data on a USB SSD (ext4, `/mnt/data`); NVMe HAT queued. Runbook: `docs/deployment.md`
+- **Hardware:** Raspberry Pi 5 (4 GB) at `192.168.0.42` — eth0 `88:a2:9e:d4:e7:33`, address pinned statically in NetworkManager (2026-09-02, no router reservation in effect); SD-card boot, data on a USB SSD (ext4, `/mnt/data`). Runbook: `docs/deployment.md`
 - **Images:** multi-arch (`linux/amd64` + `linux/arm64`) from day one so dev machines and the Pi pull the same images
 - **Networking:** wired Ethernet preferred; server exposed on local network only
-- **Future edge devices:** Pi Zero 2 Ws for the queued beacon build
 
 ---
 

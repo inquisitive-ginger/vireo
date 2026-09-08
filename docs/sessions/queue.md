@@ -6,27 +6,18 @@
 >
 > **Authoring rule (applies at every closeout):** an **Up Next** or **Recently Completed**
 > entry is **at most two or three concise lines** — the headline + a pointer to its session
-> log, where the detail lives. **Deferred** entries are one line: what it is · why it waits ·
-> a pointer. Never paste a summary. The log is the record; this file is the index.
+> log, where the detail lives. Never paste a summary. The log is the record; this file is
+> the index.
 
 ---
 
 ## Up Next
 
-> **M4.5 — Companion is the active milestone** (M4.5/3 next). M5 runs alongside: /2 shipped
-> 2026-08-13, /3 and /4 on 2026-08-23; **groceries left M5 on 2026-09-03** and is now
-> **M5.5 — Shopping** (ADR 069), five of six shipped by 2026-09-04. Part F offsite backups
-> went live 2026-08-16, so the remaining infra items are improvements, not risks.
+> **M4.5 — Companion is the active milestone** (M4.5/3 next). **M5.5 — Shopping** runs
+> alongside with one story left. Everything not listed below was recycled in the
+> 2026-09-07 queue audit and is not coming back — do not restore it from a log.
 
-### Beacon — Product+Design: paired friend lamps (deadline: the friends' December visit)
-
-**Type:** product + design · **Kickoff:** `kickoffs/product-design-beacon.md`
-LuvLink lamps covered the goodbye; the custom build — 4 paired Pi Zero 2 W beacons, tap → glow
-
-- voice, a `beacon` plugin — is gifted at the December visit.
-  _`logs/2026-07-29-product-beacon-concept.md`._
-
-### M4.5 — Companion: five sessions, strictly sequenced
+### M4.5 — Companion: three sessions left, strictly sequenced
 
 **Direction settled 2026-08-07** (ADR 061/062, `artifacts/2026-08-07-xp-sink-direction.html`,
 `logs/2026-08-07-design-xp-sink-direction.md`). Sequencing: `docs/modules/companion/spec.md`.
@@ -48,84 +39,14 @@ is the working register).
 
 ---
 
-### M5/5 — Dev: Try Bites — the last M5 story (groceries went to M5.5, ADR 069)
-
-**Kickoff:** `kickoffs/dev-try-bites.md` · dev · _depends on M5/2, M4/6_
-`meals.trybite.taken` → punches a `rewards` card, replacing the paper sheet (15 squares →
-small reward → reset). `meals` knows nothing about cards.
-_`logs/2026-09-03-product-shopping-boundary.md`._
-
----
-
-### M5.5 — Shopping: polished and announced; **/6 offline is all that is left**
-
-**PR #127 closed unmerged**; the two 2026-08-23 artifacts are banner-marked SUPERSEDED — build
-from `docs/modules/shopping/design.md` **and its artifact**, never from #127.
-_`docs/modules/shopping/{spec,salvage}.md` · ADR 069–073._
-
-### Owed from the polish: three test/tooling findings
-
-- **The hollow-test shape, outside shopping** — a test that mocks a handler then asserts on
-  state that handler would change can only pass. Shopping's seven suites are clean; **calendar
-  (0/6), meals (0/2) and shell (0/3) have never used `rerender`**, so the shape would be
-  invisible exactly there. One shape, one area at a time.
-- **`chores.test.ts:1460` may be vacuous** — `resolves.toBeUndefined()` resolves unconditionally;
-  an async throw would not reject it.
-- **The per-file budget caps are not enforced in CI** — `check-context-budget.sh` reads
-  `git diff HEAD` + untracked, and CI's tree is clean, so only the four pinned files are
-  checked. ADR 043 is 8743 bytes against a 6000 cap and sailed through.
-- **A producer can hand `fileItem` an unparsed string** — the meals needs-push files whatever
-  name it is sent, so `milk, eggs` becomes one row and no client parse reaches it.
-
 ### M5.5/6 — Dev: offline — _the last story in the milestone_
 
 **Kickoff:** `kickoffs/dev-shopping-offline.md` · dev · _depends on /4 ✅ and the polish ✅
-(PR #138) — **ready, and the last story in M5.5**._
+(PR #138) — **ready**._
 The list renders and checks replay with no signal, without staling the shell or `/api`.
-
-### Out of the polish critique — scoped by Zach 2026-09-04, not open
-
-_`kickoffs/shopping-polish-decision-set.md` · `artifacts/2026-09-04-shopping-polish-critique.md`._
-
-- **Product: a Household aisle (SH-04)** — **one** aisle, after `Frozen`, before `Other`. Enum
-  order is walk order, so the insertion reorders every list; dictionary + `Other` rows migrate.
-- **Product: who may correct an aisle (SH-05)** — the verb is **moving a row**; per-list aisle
-  reorder stays a non-goal. Splitting "move this row" off `file` is a **new** key (ADR 071 §3).
-- **Design: shopping quantity** — schema, the meals push, check semantics. Settled going in:
-  duplicates do **not** merge, so SH-03's notice is permanent.
-- **Design: the Home dashboard composition** — six widgets, one grid; polish took a holding
-  position (feed yields its cell). Whose cell, at what rung, what a 2×1 holds (ADR 068).
+_`docs/modules/shopping/spec.md` · ADR 069–073._
 
 ---
-
-### Owed: four auto-bug `deployed` flips
-
-All four fixes shipped. The flip notifies the reporter, from the API handler and not the
-database — `psql` cannot do it. **Settings → Reported problems**, tier-4 PIN, only Zach.
-`69863d86` · `95872941` · `42a1d6f2` · `13b72a22`.
-_[log](logs/2026-09-05-fix-auto-bugs-140-142.md)_
-
-### Prod storage off USB: NVMe HAT for the Pi 5
-
-**Type:** infra (small, needs a purchase) · **Kickoff:** _to be written_
-**An upgrade, not a rescue** (2026-08-22) — the slowness was a bad cable. Buy HAT + drive,
-rsync the storage roots (runbook Part C9), swap fstab, retire the enclosure.
-_`logs/2026-08-22-infra-watchdog-quiescence.md`. Depends on: none._
-
-### Retire the Pi 3B: second-copy backup puller
-
-**Type:** infra (small) · **Kickoff:** _to be written_
-Wipe the 3B's stale docker/tailscale/runner state, then give it a weekly `restic copy` pull of
-the R2 repo. Also owed: live-test the backup failure hook.
-_`logs/2026-08-16-infra-offsite-backups.md`. Depends on: none._
-
-### Deployment: shrink the api image
-
-**Type:** infra/tooling · **Kickoff:** _to be written_
-The api image is **2.09 GB** and every source change rebuilds the `pnpm install` layer (~6 min
-Pi deploy) — split `node_modules` off the source layer. **Boot-test against a real DB in CI
-first** (this class of change took the API down 2026-07-21); no `pnpm fetch` + `--offline`.
-_`docs/deployment.md` E2/E3, `logs/2026-07-21-infra-deploy-hardening.md`. Depends on: none._
 
 ### Docs: ten ADRs are over the 6000-byte cap
 
@@ -138,85 +59,7 @@ the check reads only changed files.
 
 **Type:** development (test addendum) · **Kickoff:** _to be written_
 `family-feed` has a `test` script and **zero test files** — silently "passing" its whole life.
-Stand up an RTL suite mirroring chores/calendar. See also the Deferred CI-glob gap.
-
----
-
-## Deferred Backlog
-
-> Real, scoped work that isn't pressing. Grouped by kind; one-lined until it is picked up
-> and a kickoff is written.
-
-### Owed ADRs — settled-but-unscoped, scope when the dependent work starts
-
-- **External-ingest / suggested-events extension point** — the source-agnostic contract by
-  which an external source lands events as `status:'suggested'` with a `source` provenance.
-  Columns shipped in story #1; scope it when story #8 (Suggested Events Inbox) is scheduled.
-  _Reads: calendar `spec.md` north star, `stories/suggested-events-inbox.md`, ADR 008/029._
-- **A second day mark has nowhere to go** — the month cell's date row fits exactly one mark
-  (83px min-content vs ~77px at the 768px breakpoint; the deficit lands on the quick-add
-  button). Deferred by the user until a second provider exists; **M7 School owes the
-  decision**. _Reads: `logs/2026-08-23-dev-calendar-day-marks.md`._
-- **Member capacity** — where per-member capacity lives and who sets it. Gates the
-  capacity-aware chores workload meter (chores 1.5); blocks no MVP story.
-  _`docs/modules/chores/design.md` §1._
-
-### Platform v2 — post-M3 platform/mobile follow-ons
-
-- **Bug-report screenshots (ADR 046 v2)** — strongest signal for visual bugs; waits on a client
-  capture dep + image storage (reuse ADR 042's bytes-in-Postgres). _ADR 046 §"Why not"._
-- **Autonomous fix agent (ADR 046)** — Action on `auto-bug` open that patches and opens a **PR
-  only**; needs `ANTHROPIC_API_KEY`, must not run on the Pi runner. _`fix-it-playbook.md`._
-- **Push subscription reconciliation** — `db:reset` drops `push_subscriptions` while the phone
-  keeps its local one, so the toggle reads ON with no server row. Reconcile on load.
-  _`apps/api/src/plugins/push.ts`._
-- **Offline plugin render (optional)** — a plugin renders offline only if its chunks were
-  fetched online first; moot for a LAN appliance. _`apps/shell/public/sw.js`._
-- **Family Profile Notifications** — M1-scoped, deferred as a Platform v2 extra: surface
-  shape + `FamilyNotificationStrip` + ADR 029 `audience`.
-  _Kickoff: `kickoffs/design-family-profile-notifications.md`._
-- **Push Multi-Profile Device** — M1-scoped, deferred likewise: a composite-key migration so
-  one device holds subscriptions for several profiles.
-  _Kickoff: `kickoffs/dev-push-multi-profile-device.md`._
-
-### Tooling / tech debt
-
-- **The app icon set is unseen on a real phone** — shipped 2026-08-22 (PR #122), e2e unrun.
-  _`logs/2026-08-22-design-dev-brand-icon-set.md`._
-
-- **Pin `name: family-os` in `docker-compose.yml`** — with no `name:`, compose derives the
-  project from the directory, so since the `vireo` rename a plain `docker compose up` builds
-  an **empty** `vireo_postgres_data` volume and the API boots against a blank dev DB.
-  Workaround: `COMPOSE_PROJECT_NAME=family-os`. _Hit 2026-09-02 —
-  `logs/2026-09-02-dev-calendar-add-event-date.md`._
-- **Permission overrides drop their conditions** — `ability.ts` replays overrides as
-  `can(action, subject)` unconditioned, so revoke-then-regrant of any conditioned key returns it
-  **unscoped**; already true of shipped `rewards.{Wallet,Redemption,PunchCard}`. Found writing
-  ADR 073, which works around it with a route-side ownership check.
-- **Validation audit — align routes to shared Zod schemas** — every API route that hand-rolls
-  body validation moves onto a `@family-os/schemas` schema (`safeParse` → 400 flatten);
-  `chores` tasks was migrated 2026-07-30, the rest is a sweep. _Reads:
-  `packages/schemas/src/index.ts`, `apps/api/src/plugins/chores.ts` as an aligned example._
-- **Harden the plugin generator (`turbo gen plugin`)** — scaffolds a frontend-only remote, so
-  every data-backed plugin hand-patches it: no data layer, `shared` in array not singleton form,
-  `dev` can't serve a remote, backend wiring manual. _`turbo/generators/`._
-- **Plugin test suites never run in CI** — `vitest.workspace.ts` globs only `packages/*` and
-  `apps/*`, so every `plugins/*` suite (shopping's 28 included) passes locally and CI runs
-  none of them. Widen the globs, then fix whatever the first honest run exposes.
-- **`@db.Uuid` on profile-referencing columns is wrong platform-wide** (ADR 072) — `posts
-.author_id`, `events.created_by`, `planned_meals.owner_id` declare `uuid` while
-  `platform.profiles.id` is text holding `'family'`; each grew a hand-written 403 to hide it.
-  **Latent** — urgent the day a surface lets the family profile write one.
-- **`Profile` literals that drop `identityHue`** — `synthesizeHousehold`
-  (`apps/api/src/plugins/auth.ts:79`) rebuilds a profile without the hue: the exact ADR 044
-  silent failure CLAUDE.md names. Benign only while nothing calls `resolveHue(name)` on the
-  family profile — ADR 072 §3 forbids that for shopping and nowhere else. Audit every
-  `Profile` construction site.
-- **Storybook stories → Tailwind utilities** — legacy inline-`style` layout in ui stories moves
-  to Tailwind (ADR 035); inline `style` only for dynamic token values. `color-tokens` first.
-- **Family-wall feed typography** — the family banner wants across-room `text-prose` (18px); the
-  robust fix passes prominence in via `useWidgetProminence()`. Polish.
-  _`plugins/family-feed/src/widgets/FeedWidgetView.tsx`, ADR 039._
+Stand up an RTL suite mirroring chores/calendar.
 
 ---
 
@@ -226,9 +69,14 @@ Stand up an RTL suite mirroring chores/calendar. See also the Deferred CI-glob g
 > recent first, nothing older than the current milestone's start. `docs/sessions/logs/` is
 > date-ordered and holds the record. Do not restore entries pruned from here.
 
+- **2026-09-07 — Audit: the queue, the kickoffs and the specs** — every queued item was put
+  to a build/recycle call. Four kickoffs, three story specs and the shopping salvage
+  inventory deleted; the whole Deferred Backlog recycled; M3 and M5 closed.
+  _[log](logs/2026-09-07-audit-queue-recycle.md)_
 - **2026-09-05 — Fix: four auto-bug reports** (#140–#142, PR #143) — the XP plate reaches Punch
   cards (`chores/xp` was never invalidated), the rename and its inline panel each get a visible
-  way out, the last title-cased labels go. _[log](logs/2026-09-05-fix-auto-bugs-140-142.md)_
+  way out, the last title-cased labels go. All four `deployed` flips landed.
+  _[log](logs/2026-09-05-fix-auto-bugs-140-142.md)_
 - **2026-09-04 — Dev: the page frame insets, the header leads** (PR #139) — the spacing audit's
   contract, ADR 074, a `SectionLabel` primitive, and `check-spacing.sh` in CI. Closes the
   `section-label` block-spacing entry. _[log](logs/2026-09-04-dev-spacing-contract.md)_

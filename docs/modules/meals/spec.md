@@ -115,12 +115,11 @@ menu has a home that isn't the title — and a standing helper line does the res
 | `meals.dinner.planned`   | POST/PATCH planned meal | `{ mealId, date, title, kind, ownerId, tryBite }` |
 | `meals.dinner.claimed`   | owner set on a meal     | `{ mealId, date, ownerId }`                       |
 | `meals.dinner.fulfilled` | meal marked done        | `{ mealId, date, ownerId }`                       |
-| `meals.trybite.taken`    | a kid taps their bite   | `{ mealId, date, profileId, tryBite }`            |
 | `meals.grocery.added`    | POST grocery item       | `{ itemId, name, addedBy, sourceType }`           |
 
-`meals.trybite.taken` is the module's contribution to the earn contract (ADR 048) —
-`meals` knows nothing about ledgers or punch cards. The cook award was retired in
-M5/2 (2026-08-13); a paid dinner is a dedicated chore.
+`meals` publishes nothing into the earn contract (ADR 048) and knows nothing about
+ledgers or punch cards. The cook award was retired in M5/2 (2026-08-13); a paid dinner
+is a dedicated chore.
 
 ---
 
@@ -130,7 +129,6 @@ M5/2 (2026-08-13); a paid dinner is a dedicated chore.
 | -------------------- | ------------------------------------ | ----------------------------------- |
 | `meals.plan.view`    | `can('view', 'meals.PlannedMeal')`   | Tier 1+                             |
 | `meals.dinner.claim` | `can('update', 'meals.PlannedMeal')` | Tier 3+ (claim an unclaimed dinner) |
-| `meals.trybite.take` | `can('take', 'meals.TryBite')`       | Tier 1+ (row-level: own)            |
 
 The claim row is `update` on `meals.PlannedMeal`, not `claim` on `meals.Meal` — the
 route narrows `update` to claim-only, and full edits stay behind `manage`.
@@ -144,9 +142,9 @@ see `docs/modules/shopping/spec.md` §Permissions namespace.
 
 > **Kids adding to the shopping list is deliberate**, and it is the loop that ties the
 > two modules together: a kid adds a vegetable they want to try → it lands on the meal
-> plan → it's flagged as the try bite → they get the punch. The kid started it. That
-> loop crosses a plugin boundary now; it is a reason the contract has to be good, not a
-> reason to have kept one module.
+> plan → it's the try bite that night. The kid started it. That loop crosses a plugin
+> boundary now; it is a reason the contract has to be good, not a reason to have kept
+> one module.
 
 ---
 

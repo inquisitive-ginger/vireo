@@ -102,7 +102,6 @@ P-Bucks against cash later and nothing in M4 assumes it will.
 | `chores.task.completed`  | credit `coinReward`                              |
 | `chores.task.reopened`   | debit `coinReward` (symmetric reversal)          |
 | `meals.dinner.fulfilled` | credit the cook's award, if the meal carries one |
-| `meals.trybite.taken`    | punch the taker's try-bite card                  |
 
 ---
 
@@ -231,7 +230,7 @@ punch_cards
 punches
   id            uuid  PK
   card_id       uuid
-  source_type   text                  -- 'meals.trybite' | 'manual'
+  source_type   text                  -- 'manual' (the only producer today)
   source_id     text  nullable
   created_by    uuid
   created_at    timestamptz

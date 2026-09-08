@@ -1,8 +1,9 @@
 # Shopping — Module Spec
 
 **Status:** Originated 2026-09-03 (product session on the groceries boundary).
-Split out of `meals` by **ADR 069**. Nothing has shipped — PR #127 was closed
-unmerged, and its work below the data layer is salvage, not a baseline.
+Split out of `meals` by **ADR 069**. M5.5/1–/5 plus the polish shipped 2026-09-03/04;
+**M5.5/6 offline is the one story left**. PR #127 was closed unmerged and its salvage
+inventory was retired 2026-09-07 — every row it listed had already landed.
 
 ## What it is
 

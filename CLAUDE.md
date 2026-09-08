@@ -14,21 +14,19 @@ before it reads anything else, and it is size-capped — see
 > **At most six one-line bullets.** Update at the end of every session. If a
 > session's detail doesn't fit on one line it belongs in the session log.
 
-- **Milestone:** M4.5 — Companion (M4.5/3 next); **M5/3 + M5/4 done 2026-08-23,
-  PRs #124/#125** — the 16:00 dinner nudge and calendar day marks (ADR 050/066).
-- **Active stories:** **M5.5 — Shopping** — polished and announced; **/6 offline is the
-  last one**. Beacon due in December.
+- **Milestone:** M4.5 — Companion (M4.5/3 next). **M3 and M5 closed 2026-09-07**;
+  **M5.5 — Shopping** has one story left, **/6 offline**.
+- **The queue was audited 2026-09-07** — four kickoffs, three story specs and the whole
+  Deferred Backlog were recycled unbuilt. Four items remain; don't restore from a log.
 - **Shopping is announced:** nav entry at every breakpoint since PR #138. The Home tile
-  is deliberately **not** in the default layouts — Zach pulled it, one revert to restore,
-  and the queued dashboard-composition session decides where it belongs.
+  is deliberately **not** in the default layouts — Zach pulled it, one revert to restore.
 - **Deployment:** 🟢 live at `https://vireohome.app` — Pi 5 (192.168.0.42, pinned
   in NetworkManager 2026-09-02; eth0 `88:a2:9e:d4:e7:33`, router reservation still
   owed); auto-deploy + Tailscale + restic→R2 + watchdog intact. Runbook Part F/G.
-- **Last session:** 2026-09-05 — four auto-bug reports (PR #143): the kid's XP plate reaches
-  Punch cards, the shopping rename and its inline panel each get a visible way out, the last
-  title-cased labels go. Four `deployed` flips owed. `logs/2026-09-05-fix-auto-bugs-140-142.md`.
+- **Last session:** 2026-09-07 — the queue/kickoff/spec audit.
+  `logs/2026-09-07-audit-queue-recycle.md`.
 - **What's next and everything outstanding:** `docs/sessions/queue.md` — the one
-  index. M5.5/6 (offline) or M4.5/3 next.
+  index. M4.5/3 or M5.5/6 next.
 
 ---
 

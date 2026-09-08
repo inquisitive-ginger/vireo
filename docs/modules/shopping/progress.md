@@ -1,7 +1,7 @@
 # Shopping — Progress
 
 Split out of `meals` 2026-09-03 by ADR 069. See `docs/modules/meals/progress.md`
-for the M5 grocery rows this replaces. Salvage inventory: `salvage.md`.
+for the M5 grocery rows this replaces.
 
 ## M5.5 — Shopping
 

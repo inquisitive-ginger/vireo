@@ -48,8 +48,8 @@ Resets on tray **close** (not open — unread state must be visible during revie
    correct. The family profile is an ambient display surface, not a user
    reviewing notification history. It receives toasts for modules it has
    access to (unchanged). A dedicated notification surface for shared/TV
-   devices is a separate open question — see
-   `docs/modules/platform/stories/family-profile-notifications.md`.
+   devices was carried as an open question until 2026-09-07, when it was
+   recycled unbuilt; toasts remain the tier-1 surface.
 
 4. **Per-profile read state** — marking notifications as read for one profile
    does not affect other profiles. Implemented correctly; confirmed settled.

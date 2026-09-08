@@ -19,20 +19,18 @@ duotone proof; gear taxonomy + asset library) shipped 2026-08-07/08; **M4.5/3
 Feature UX is next**, then dev foundation and surfaces. See
 `docs/modules/companion/spec.md`.
 
-**Also in flight: M5 — Meals & Groceries** — design gate closed 2026-08-11
-(M5/1, ADRs 063/064); **M5/2 shipped 2026-08-13 (PR #105)**, **M5/3 Who's Got
-Dinner and M5/4 Calendar Day Marks shipped 2026-08-23 (PRs #124/#125)**. **M5/6
-The Grocery List was closed unmerged 2026-09-03** — groceries split out to
-**M5.5 — Shopping** (ADR 069) and returns to a fresh design exploration. M5/5 Try
-Bites is the last M5 story.
+**Also in flight: M5.5 — Shopping** — five stories plus the polish shipped
+2026-09-03/04 (ADR 069–074); **M5.5/6 offline is the last one**. See
+`docs/modules/shopping/spec.md`.
 
 ## Completed
 
 **M0 — Foundation** · ✅ Done (2026-06-01)
 **M1 — Platform Shell** · ✅ Done (2026-06-15)
 **M2 — Chores** · ✅ Done (2026-06-20)
-**M3 — Calendar** · ✅ MVP-complete (2026-07-19) — story 8 (Suggested Events Inbox) deferred
+**M3 — Calendar** · ✅ Done (2026-07-19)
 **M4 — Rewards & Wallet** · ✅ Done (2026-07-26, live in prod PR #75) — the XP sink split out as M4.5
+**M5 — Meals** · ✅ Done (2026-09-07) — try bites recycled unbuilt; the `try_bite` field ships
 
 ---
 
@@ -145,11 +143,16 @@ Two jobs that turn out to be one module: **nobody gets ambushed by dinner**, and
   first-class state**, and at 4pm on a Thursday it is the most valuable one
 - Calendar presence as a **day mark**, not an event (**ADR 050**) — a small platform
   story shared with M7 School
-- **Try bites** — punches a rewards card (**ADR 049**; punch cards shipped M4/6, 2026-08-01)
+- **Try bites** — a free-text field on the planned meal, surfaced on the widget and the
+  week page. The queued punch-card half was **recycled unbuilt 2026-09-07**
 - ~~**Grocery list**~~ — moved to **M5.5 — Shopping** (ADR 069)
 
 **Deferred deliberately:** the recipe bank. A free-text `needs` field on the planned
 meal pushes to `shopping` and removes the reason to build ingredient parsing.
+
+**Done when:** Nobody has to ask what's for dinner or who's making it. ✅
+
+_Spec: `docs/modules/meals/spec.md`_
 
 ---
 
@@ -182,11 +185,6 @@ push function.
 signal in the store.
 
 _Overview + session plan: `docs/modules/shopping/spec.md`_
-
-**Done when:** Nobody has to ask what's for dinner or who's making it, and the week's
-shopping happens off the list in the app.
-
-_Spec: `docs/modules/meals/spec.md`_
 
 ---
 
@@ -277,8 +275,7 @@ the first module anchors the home screen.
 **Done when:** A family can set up the system, see a meaningful home screen, and post to a shared feed. ✅
 
 > Two M1-scoped sessions (Family Profile Notifications, Push Multi-Profile Device) were
-> deferred as Platform v2 extras — they fall outside M1's done-when criteria. See the
-> queue's "Deferred — Platform v2" section.
+> deferred as Platform v2 extras and then **recycled unbuilt 2026-09-07**.
 
 ### M0 — Foundation · ✅ Done (2026-06-01)
 

@@ -70,9 +70,8 @@ paper beautifully + capture-once + remind_, not a from-scratch interaction model
 ## Explicitly deferred
 
 - **Email / newsletter / provider-reminder parsing** → suggested events. The
-  **model is reserved now** (the `suggested` status + a `source` field); the
-  ingest + extraction build is a later story (north star). _Owed ADR: external-ingest
-  extension point._
+  **model is reserved** (the `suggested` status + a `source` field); the ingest +
+  extraction build was **recycled unbuilt 2026-09-07**.
 - **Per-occurrence recurrence edits/moves** (move just this week's practice) —
   per-occurrence **skips** shipped (`event_exceptions`, ADR 038, PRs #27/#30).
 - **Complex recurrence** (every-other-week, monthly-nth-weekday, RRULE) — weekly +
@@ -83,8 +82,8 @@ paper beautifully + capture-once + remind_, not a from-scratch interaction model
   calendar in MVP.
 - **Teen self-creation / propose flow** (tier 3) — parents create in MVP, exactly
   as Chores deferred tier-3 self-assignment.
-- **External two-way sync** (Google/iCal import/export) — the suggested-events /
-  external-ingest extension point is where this eventually attaches.
+- **External two-way sync** (Google/iCal import/export) — the reserved `source`
+  column is where this would attach; no ingest story is queued.
 
 ---
 
@@ -259,7 +258,6 @@ three questions were logged as **owed ADRs** in `docs/sessions/queue.md`:
 
 1. ~~**Recurrence storage model**~~ — **resolved, ADR 038** (computed-on-read).
 2. ~~**Time-based reminder scheduling**~~ — **resolved, ADR 045** (in-process poll).
-3. **External-ingest / suggested-events extension point** — still owed; the
-   contract by which parsed email events (and, later, iCal/Google sync) land as
-   `suggested` events; gates the Suggested-Events Inbox story (and the email
-   north star).
+3. ~~**External-ingest / suggested-events extension point**~~ — **recycled
+   2026-09-07** with the Suggested-Events Inbox story. The `status` / `source`
+   columns stay; nothing writes `suggested` and no ADR is owed.
