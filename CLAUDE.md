@@ -22,8 +22,9 @@ before it reads anything else, and it is size-capped — see
 - **Deployment:** 🟢 live at `https://vireohome.app` — Pi 5 (192.168.0.42, pinned
   in NetworkManager 2026-09-02; eth0 `88:a2:9e:d4:e7:33`, router reservation still
   owed); auto-deploy + Tailscale + restic→R2 + watchdog intact. Runbook Part F/G.
-- **Last session:** 2026-09-07 — audit: the standing docs re-read against the code;
-  `architecture.md`'s Platform API had drifted. `logs/2026-09-07-audit-stale-docs.md`.
+- **Last session:** 2026-09-07 — the calendar month grid fills its frame instead of
+  scrolling it; Home's bottom inset equalised, the frame untouched. ADR 074 is owed two
+  lines. `logs/2026-09-07-fix-calendar-month-scroll.md`.
 - **What's next and everything outstanding:** `docs/sessions/queue.md` — the one
   index. M4.5/3 next.
 

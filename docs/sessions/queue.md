@@ -53,6 +53,11 @@ Stand up an RTL suite mirroring chores/calendar.
 > recent first, nothing older than the current milestone's start. `docs/sessions/logs/` is
 > date-ordered and holds the record. Do not restore entries pruned from here.
 
+- **2026-09-07 — Fix: the month grid fills its frame instead of scrolling it** — not a
+  padding bug; the calendar's tablet surface lacked Home's height contract. Home's bottom
+  inset equalised (`md:pb-6`), the frame left alone. **Owed:** two lines in ADR 074
+  recording that Home overrides the bottom inset — the ADR still reads "padding is not a
+  prop". _[log](logs/2026-09-07-fix-calendar-month-scroll.md)_
 - **2026-09-07 — Audit: the standing docs against the code** — `architecture.md`'s Platform
   API described a package that no longer exists (`createEventBusPlugin`/`getEventBus`, no
   `emitAndAwait`, no Query re-exports). Everything else was clean.
