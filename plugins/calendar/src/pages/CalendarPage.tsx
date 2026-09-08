@@ -442,6 +442,7 @@ export function CalendarPage() {
       ) : view === 'month' ? (
         <>
           <MonthGrid
+            className="min-h-0 flex-1"
             weeks={weeks}
             membersById={membersById}
             today={today}
@@ -478,8 +479,12 @@ export function CalendarPage() {
   )
 
   const tabletSurface = (
-    // `wide` — a 7-column month grid needs canvas, not a reading column.
-    <PageContainer width="wide">
+    // `wide` — a 7-column month grid needs canvas, not a reading column. The
+    // height contract is the dashboard's (`md:h-full` + a `min-h-0 flex-1`
+    // body): the month grid fills the viewport it is given and the weeks share
+    // the leftover, rather than summing a fixed cell height that overshoots the
+    // frame's own inset by a few pixels and scrolls a whole page for it.
+    <PageContainer width="wide" className="flex flex-col md:h-full">
       {/* Primary tier — Calendar ⇄ Activities (design.md §4), set apart from the
           Month/Week/Day sub-switch so the lens never reads as a fourth zoom level.
           It reads BELOW the title now (2026-09-04): it used to be the one strip in
@@ -498,7 +503,11 @@ export function CalendarPage() {
         }
       />
 
-      <div role="tabpanel" aria-labelledby={`calendar-surface-tab-${lens}`}>
+      <div
+        className="flex min-h-0 flex-1 flex-col"
+        role="tabpanel"
+        aria-labelledby={`calendar-surface-tab-${lens}`}
+      >
         {onActivities ? activitiesBody : calendarLens}
       </div>
     </PageContainer>

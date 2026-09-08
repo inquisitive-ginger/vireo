@@ -130,7 +130,12 @@ export function Home({ widgetRemotes }: HomeProps) {
 
   return (
     // `full` — the dashboard grid is meant to fill the viewport, not sit in a column.
-    <PageContainer width="full" className="flex flex-col md:h-full">
+    // `md:pb-6` overrides the frame's `md:pb-12`, the one place a page does. The
+    // frame's heavier bottom is for a phone, where the fixed tab bar borders it;
+    // above `md:` the sidebar takes over and nothing borders the bottom, so on
+    // the one surface that renders no header — and therefore shows all four
+    // gutters at once — 48 against 24 on the other three read as a mistake.
+    <PageContainer width="full" className="flex flex-col md:h-full md:pb-6">
       <WidgetGrid layout={placed} flatSlots={flatSlots} className="md:min-h-0 md:flex-1">
         {widgetChildren}
       </WidgetGrid>

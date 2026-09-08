@@ -30,6 +30,7 @@ export function MonthGrid({
   onDrillDay,
   onQuickAdd,
   marksByDate = EMPTY_MARKS,
+  className,
 }: {
   weeks: LaidOutWeek[]
   membersById: Map<string, CalendarMember>
@@ -43,11 +44,19 @@ export function MonthGrid({
       per day and permission-filtered server-side (ADR 066) — this component just
       renders what it's given. */
   marksByDate?: Map<string, DayMark[]>
+  /** The page hands it the leftover height (`min-h-0 flex-1`); the weeks then
+      share it. Standalone (stories, tests) it sizes to the cell floor. */
+  className?: string
 }) {
   return (
-    <div className="overflow-hidden rounded-panel border border-border bg-card shadow-[var(--shadow-card)]">
+    <div
+      className={cn(
+        'flex flex-col overflow-hidden rounded-panel border border-border bg-card shadow-[var(--shadow-card)]',
+        className
+      )}
+    >
       {/* Weekday header */}
-      <div className="grid grid-cols-7 border-b border-border">
+      <div className="grid shrink-0 grid-cols-7 border-b border-border">
         {WEEKDAY_LABELS.map((d) => (
           <div key={d} className="px-2 py-1.5 text-center text-section-label text-muted-foreground">
             {d}
@@ -58,7 +67,7 @@ export function MonthGrid({
       {weeks.map((week, wi) => {
         const spanBandH = week.laneCount * SPAN_LANE_H
         return (
-          <div key={wi} className="relative grid grid-cols-7">
+          <div key={wi} className="relative grid flex-1 grid-cols-7">
             {week.cells.map((cell, ci) => {
               const visible = cell.events.slice(0, MAX_CHIPS)
               const more = cell.events.length - visible.length
@@ -91,7 +100,7 @@ export function MonthGrid({
                     if (e.key === 'Enter' || e.key === ' ') onDrillDay(cell.date)
                   }}
                   className={cn(
-                    'group min-h-32 cursor-pointer border-b border-r border-border px-1.5 pb-1.5 pt-1.5 transition-colors last:border-r-0 hover:bg-muted/40 focus:outline-none focus-visible:ring-1 focus-visible:ring-ring',
+                    'group min-h-24 cursor-pointer border-b border-r border-border px-1.5 pb-1.5 pt-1.5 transition-colors last:border-r-0 hover:bg-muted/40 focus:outline-none focus-visible:ring-1 focus-visible:ring-ring',
                     ci === 6 && 'border-r-0',
                     !cell.inMonth && 'bg-muted/30'
                   )}
