@@ -13,9 +13,9 @@
 
 ## Up Next
 
-> **M4.5 — Companion is the active milestone** (M4.5/3 next). **M5.5 — Shopping** runs
-> alongside with one story left. Everything not listed below was recycled in the
-> 2026-09-07 queue audit and is not coming back — do not restore it from a log.
+> **M4.5 — Companion is the active milestone** (M4.5/3 next). **M5.5 — Shopping closed
+> 2026-09-07.** Everything not listed below was recycled in the 2026-09-07 queue audit
+> and is not coming back — do not restore it from a log.
 
 ### M4.5 — Companion: three sessions left, strictly sequenced
 
@@ -39,15 +39,6 @@ is the working register).
 
 ---
 
-### M5.5/6 — Dev: offline — _the last story in the milestone_
-
-**Kickoff:** `kickoffs/dev-shopping-offline.md` · dev · _depends on /4 ✅ and the polish ✅
-(PR #138) — **ready**._
-The list renders and checks replay with no signal, without staling the shell or `/api`.
-_`docs/modules/shopping/spec.md` · ADR 069–073._
-
----
-
 ### Platform: family-feed test addendum
 
 **Type:** development (test addendum) · **Kickoff:** _to be written_
@@ -62,6 +53,10 @@ Stand up an RTL suite mirroring chores/calendar.
 > recent first, nothing older than the current milestone's start. `docs/sessions/logs/` is
 > date-ordered and holds the record. Do not restore entries pruned from here.
 
+- **2026-09-07 — Dev: offline** (M5.5/6, PR #144) — **M5.5 closes.** Snapshot-seeded reads and
+  a durable check queue replayed on reconnect; the service worker is untouched, which is how the
+  deploy AC is held. Adds are refused offline, not queued.
+  _[log](logs/2026-09-07-dev-shopping-offline.md)_
 - **2026-09-07 — Docs: ten ADRs rewritten under the 6000-byte cap** — 042/044/043/031/035/046/
   041/022/040/057, all now 5939–5997 bytes; arguments intact, restatement and superseded
   clauses gone. _[log](logs/2026-09-07-docs-adr-cap.md)_
