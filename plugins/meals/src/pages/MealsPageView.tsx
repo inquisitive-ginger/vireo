@@ -7,7 +7,9 @@ import {
   useDroppable,
   useSensor,
   useSensors,
+  type Announcements,
   type DragEndEvent,
+  type UniqueIdentifier,
 } from '@dnd-kit/core'
 import { ChevronLeft, ChevronRight, ExternalLink, GripVertical } from 'lucide-react'
 import {
@@ -112,6 +114,23 @@ export function MealsPageView({
     if (meal && over && over.id !== meal.date) onMove(meal, String(over.id))
   }
 
+  // dnd-kit's default announcements read the raw ids — a uuid and a date key.
+  const titleOf = (id: UniqueIdentifier) => days.find((d) => d.meal?.id === id)?.meal?.title
+  const dayOf = (id: UniqueIdentifier | undefined) => {
+    const day = days.find((d) => d.key === id)
+    return day?.date.toLocaleDateString('en-US', { weekday: 'long' })
+  }
+  const announcements: Announcements = {
+    onDragStart: ({ active }) => `Picked up ${titleOf(active.id)}.`,
+    onDragOver: ({ active, over }) =>
+      over ? `${titleOf(active.id)} is over ${dayOf(over.id)}.` : undefined,
+    onDragEnd: ({ active, over }) =>
+      over
+        ? `${titleOf(active.id)} dropped on ${dayOf(over.id)}.`
+        : `${titleOf(active.id)} put back.`,
+    onDragCancel: ({ active }) => `${titleOf(active.id)} put back.`,
+  }
+
   return (
     <PageContainer width="list">
       {/* The calendar week view's title grammar (the range, no "This week").
@@ -150,7 +169,7 @@ export function MealsPageView({
         }
       />
 
-      <DndContext sensors={sensors} onDragEnd={handleDragEnd}>
+      <DndContext sensors={sensors} onDragEnd={handleDragEnd} accessibility={{ announcements }}>
         <div className="flex flex-col gap-3">
           {days.map((day) => (
             <DayRow
