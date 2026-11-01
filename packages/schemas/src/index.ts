@@ -240,6 +240,14 @@ export const MealInputSchema = z.object({
 
 export type MealInput = z.infer<typeof MealInputSchema>
 
+// Dragging a dinner onto another day: an empty day takes it, an occupied one
+// swaps (issue #146).
+export const MealMoveSchema = z.object({
+  date: IsoDateSchema,
+})
+
+export type MealMoveInput = z.infer<typeof MealMoveSchema>
+
 // ─── Shopping (M5.5) ──────────────────────────────────────────────────────────
 
 /** The fixed walk order (shopping/design.md) — never re-sorted per family. The

@@ -216,6 +216,94 @@ describe('PATCH /api/meals/plan/:id', () => {
   })
 })
 
+// ─── POST /api/meals/plan/:id/move ────────────────────────────────────────────
+
+describe('POST /api/meals/plan/:id/move', () => {
+  // Far enough out that "past" never catches up with the fixtures.
+  const TUE = '2099-06-02'
+  const WED = '2099-06-03'
+  const THU = '2099-06-04'
+
+  async function move(cookie: string, id: string, date: string) {
+    return app.inject({
+      method: 'POST',
+      url: `/api/meals/plan/${id}/move`,
+      headers: { cookie },
+      payload: { date },
+    })
+  }
+
+  async function dateOf(id: string) {
+    const row = await mealPrisma.plannedMeal.findUniqueOrThrow({ where: { id } })
+    return row.date.toISOString().slice(0, 10)
+  }
+
+  it('moves a dinner onto an empty day', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const tacos = (await planMeal(cookie, { date: WED, title: 'Tacos' })).json()
+
+    const res = await move(cookie, tacos.id, THU)
+    expect(res.statusCode).toBe(200)
+    expect(res.json().meals).toEqual([expect.objectContaining({ id: tacos.id, date: THU })])
+    expect(await dateOf(tacos.id)).toBe(THU)
+  })
+
+  it('swaps two dinners when the day is taken — and nothing else moves', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const chicken = (await planMeal(cookie, { date: TUE, title: 'Chicken' })).json()
+    const tacos = (await planMeal(cookie, { date: WED, title: 'Tacos' })).json()
+    const fish = (await planMeal(cookie, { date: THU, title: 'Fish' })).json()
+
+    const events: unknown[] = []
+    const off = app.eventBus.on('meals.dinner.planned', (p) => events.push(p))
+    const res = await move(cookie, tacos.id, TUE)
+    off()
+
+    expect(res.statusCode).toBe(200)
+    expect(await dateOf(tacos.id)).toBe(TUE)
+    expect(await dateOf(chicken.id)).toBe(WED)
+    expect(await dateOf(fish.id)).toBe(THU)
+    const slots = await mealPrisma.plannedMeal.findMany({ select: { slot: true } })
+    expect(slots.every((s) => s.slot === 'dinner')).toBe(true)
+    expect(events).toEqual([
+      expect.objectContaining({ mealId: tacos.id, date: TUE }),
+      expect.objectContaining({ mealId: chicken.id, date: WED }),
+    ])
+  })
+
+  it('refuses a past day as the source or the target', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const past = (await planMeal(cookie, { date: '2026-08-13', title: 'Old' })).json()
+    const future = (await planMeal(cookie, { date: WED, title: 'Tacos' })).json()
+
+    expect((await move(cookie, past.id, WED)).statusCode).toBe(400)
+    expect((await move(cookie, future.id, '2026-08-12')).statusCode).toBe(400)
+    expect(await dateOf(past.id)).toBe('2026-08-13')
+    expect(await dateOf(future.id)).toBe(WED)
+  })
+
+  it('404s on an unknown meal', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const res = await move(cookie, '00000000-0000-0000-0000-000000000000', WED)
+    expect(res.statusCode).toBe(404)
+  })
+
+  it('400s a body without a date', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const tacos = (await planMeal(cookie, { date: WED, title: 'Tacos' })).json()
+    const res = await move(cookie, tacos.id, 'Thursday')
+    expect(res.statusCode).toBe(400)
+  })
+
+  it('returns 403 for a tier-3 profile — moving stays behind manage', async () => {
+    const parentCookie = await getCookieForProfile(PARENT_ID)
+    const tacos = (await planMeal(parentCookie, { date: WED, title: 'Tacos' })).json()
+
+    const cookie = await getCookieForProfile(TEEN_ID)
+    expect((await move(cookie, tacos.id, THU)).statusCode).toBe(403)
+  })
+})
+
 // ─── POST /api/meals/plan/:id/claim ───────────────────────────────────────────
 
 describe('POST /api/meals/plan/:id/claim', () => {

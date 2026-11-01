@@ -182,6 +182,25 @@ export function MealsPage() {
     },
   })
 
+  // A failed move refetches as well as saying so: the likeliest cause is the
+  // week changing under this page, and the rows should show the truth.
+  const moveMeal = useMutation({
+    mutationFn: ({ meal, toKey }: { meal: PlannedMeal; toKey: string }) =>
+      fetch(`/api/meals/plan/${meal.id}/move`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ date: toKey }),
+      }).then((r) => {
+        if (!r.ok) throw new Error(String(r.status))
+      }),
+    onSuccess: (_data, { meal }) => void invalidate(meal.id),
+    onError: (err, { meal }) => {
+      console.error('[meals] move failed', err)
+      setRowNote({ mealId: meal.id, text: "Couldn't move that — try again.", failed: true })
+      void queryClient.invalidateQueries({ queryKey: ['meals/plan'] })
+    },
+  })
+
   const removeMeal = useMutation({
     mutationFn: (meal: PlannedMeal) =>
       fetch(`/api/meals/plan/${meal.id}`, { method: 'DELETE' }).then((r) => {
@@ -245,6 +264,7 @@ export function MealsPage() {
           pushNeeds.mutate(meal)
         }}
         onRemove={(meal) => setRemoveTarget(meal)}
+        onMove={(meal, toKey) => moveMeal.mutate({ meal, toKey })}
       />
       {removeTarget && (
         <ConfirmDialog

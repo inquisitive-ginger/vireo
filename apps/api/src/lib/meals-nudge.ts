@@ -16,7 +16,7 @@ type MealRow = Awaited<ReturnType<typeof mealPrisma.plannedMeal.findFirst>>
  *  deployment), the same stance the widget's `ESCALATION_HOUR`/`DINNER_DONE_HOUR`
  *  already take against `now.getHours()`. Builds the UTC-midnight `Date` the
  *  column stores for "today" in that local calendar day. */
-function todayDateOnly(now: Date): Date {
+export function todayDateOnly(now: Date): Date {
   return new Date(Date.UTC(now.getFullYear(), now.getMonth(), now.getDate()))
 }
 
