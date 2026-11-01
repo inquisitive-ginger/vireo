@@ -51,6 +51,12 @@ limitations marked fixed, offsets kept; the `recurrenceDayOffsets` schema commen
 
 **Known residual:** occurrence keys are still UTC dates.
 
+**Shipped broken, then fixed.** #150 deployed but prod stayed an hour early — the deploy job
+never copied `docker-compose.prod.yml`, so the Pi's hand-synced copy had no `TZ` and the api
+still ran UTC. PR #151 makes the deploy job sparse-checkout the compose file at the release
+SHA; its own deploy landed `TZ=America/Los_Angeles` (container `date` read PST). Lesson: a
+compose-file change is not live until the Pi's copy says so — check the container, not CI.
+
 ## #145 — not a bug (Mom, `/calendar`)
 
 A timed "Multiple days" event is a daily repeating window (ADR 057), so end-after-start is
