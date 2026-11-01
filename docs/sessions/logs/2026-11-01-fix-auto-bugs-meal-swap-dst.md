@@ -70,6 +70,5 @@ API 599/599 on each branch, meals 48/48, calendar 147/147, typecheck clean, CI g
 
 ## Owed
 
-Flip reports **d7d5701a** (#146) and **b79ebbce** (#147) to `deployed` with resolutions
-after deploy — Zach, through Settings → Reported problems (the flip notifies the reporter;
-`psql` would not).
+Nothing. Reports **d7d5701a** (#146) and **b79ebbce** (#147) were flipped to `deployed` by
+Zach through Settings → Reported problems once prod read 3:30 for French homework help.

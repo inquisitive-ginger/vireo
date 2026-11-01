@@ -62,8 +62,8 @@ Stand up an RTL suite mirroring chores/calendar.
 > date-ordered and holds the record. Do not restore entries pruned from here.
 
 - **2026-11-01 — Fix: drag a dinner to move or swap it; recurrences survive DST** (#146 PR #149,
-  #147 PR #150) — occurrences step in household-local days, the api runs in the household TZ.
-  **Owed:** `deployed` flips for d7d5701a and b79ebbce. _[log](logs/2026-11-01-fix-auto-bugs-meal-swap-dst.md)_
+  #147 PR #150, #151) — occurrences step in household-local days, the api runs in the household
+  TZ, and the deploy job now syncs the compose file. Both reports `deployed`. _[log](logs/2026-11-01-fix-auto-bugs-meal-swap-dst.md)_
 - **2026-09-07 — Fix: the month grid fills its frame instead of scrolling it** — not a
   padding bug; the calendar's tablet surface lacked Home's height contract. Home's bottom
   inset equalised (`md:pb-6`), the frame left alone. **Owed:** two lines in ADR 074

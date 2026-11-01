@@ -22,8 +22,8 @@ before it reads anything else, and it is size-capped — see
 - **Deployment:** 🟢 live at `https://vireohome.app` — Pi 5 (192.168.0.42, pinned
   in NetworkManager 2026-09-02; eth0 `88:a2:9e:d4:e7:33`, router reservation still
   owed); auto-deploy + Tailscale + restic→R2 + watchdog intact. Runbook Part F/G.
-- **Last session:** 2026-11-01 — meal drag-swap (#146) and DST recurrence (#147) fixed; two
-  `deployed` flips owed. `logs/2026-11-01-fix-auto-bugs-meal-swap-dst.md`.
+- **Last session:** 2026-11-01 — meal drag-swap (#146) and DST recurrence (#147) fixed and
+  live, reports flipped; deploy now syncs the compose file. `logs/2026-11-01-fix-auto-bugs-meal-swap-dst.md`.
 - **What's next and everything outstanding:** `docs/sessions/queue.md` — the one
   index. M4.5/3 next.
 
