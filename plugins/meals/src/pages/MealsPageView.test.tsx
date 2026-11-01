@@ -1,8 +1,24 @@
 import { describe, it, expect, vi } from 'vitest'
-import { render, screen, fireEvent } from '@testing-library/react'
+import { act, render, screen, fireEvent } from '@testing-library/react'
+import type { ComponentProps } from 'react'
+import type { DragEndEvent } from '@dnd-kit/core'
 import { MealsPageView, type WeekDay } from './MealsPageView'
 import type { MealMember, PlannedMeal } from '../types'
 import { fromDateKey } from '../lib/dates'
+
+// jsdom lays nothing out, so no sensor can carry a row onto another; the drop
+// is driven through the real DndContext's own onDragEnd.
+const dnd = vi.hoisted(() => ({ onDragEnd: undefined as ((e: DragEndEvent) => void) | undefined }))
+vi.mock('@dnd-kit/core', async (importOriginal) => {
+  const actual = await importOriginal<typeof import('@dnd-kit/core')>()
+  return {
+    ...actual,
+    DndContext: (props: ComponentProps<typeof actual.DndContext>) => {
+      dnd.onDragEnd = props.onDragEnd
+      return <actual.DndContext {...props} />
+    },
+  }
+})
 
 const DAD_ID = '00000000-0000-0000-0000-000000000001'
 const RECIPE = 'https://www.seriouseats.com/rigatoni-alla-vodka'
@@ -67,6 +83,7 @@ function renderView(props: Partial<Parameters<typeof MealsPageView>[0]> = {}) {
       onEdit={vi.fn()}
       onClaim={vi.fn()}
       onRemove={vi.fn()}
+      onMove={vi.fn()}
       {...props}
     />
   )
@@ -212,8 +229,9 @@ describe('MealsPageView', () => {
       rowNote: { mealId: 'meal-thu', text: '2 things sent to Grocery', failed: false },
     })
 
-    const note = screen.getByRole('status')
-    expect(note).toHaveTextContent('2 things sent to Grocery')
+    // By text, not role: the drag context keeps its own live region on the page.
+    const note = screen.getByText('2 things sent to Grocery')
+    expect(note).toHaveAttribute('role', 'status')
     // The outcome belongs to the meal it changed, not to the page.
     expect(note.closest('[class*="rounded-card"]')).toHaveTextContent('Rigatoni')
     expect(note.closest('[class*="rounded-card"]')).not.toHaveTextContent('Tacos')
@@ -226,7 +244,8 @@ describe('MealsPageView', () => {
       rowNote: { mealId: pushed.id, text: "Couldn't send that to the list", failed: true },
     })
 
-    const note = screen.getByRole('status')
+    const note = screen.getByText("Couldn't send that to the list")
+    expect(note).toHaveAttribute('role', 'status')
     expect(note).toHaveClass('text-destructive')
     expect(note.closest('[class*="rounded-card"]')).toHaveTextContent('Rigatoni')
     expect(screen.getByRole('button', { name: '2 things needed' })).toBeInTheDocument()
@@ -237,7 +256,7 @@ describe('MealsPageView', () => {
       days: weekOf({ '2026-08-13': meal({ needs: 'chicken thighs' }) }),
       rowNote: { mealId: 'some-other-meal', text: '1 thing sent to Grocery', failed: false },
     })
-    expect(screen.queryByRole('status')).not.toBeInTheDocument()
+    expect(screen.queryByText('1 thing sent to Grocery')).not.toBeInTheDocument()
   })
 
   it('goes inert while its own push is in flight — a second tap would file twice', () => {
@@ -264,5 +283,49 @@ describe('MealsPageView', () => {
     })
 
     expect(screen.getByRole('button', { name: '1 thing needed' })).toBeEnabled()
+  })
+})
+
+describe('MealsPageView — moving a dinner', () => {
+  const chicken = meal({ id: 'm-tue', date: '2026-08-11', title: 'Chicken' })
+  const tacos = meal({ id: 'm-wed', date: '2026-08-12', title: 'Tacos' })
+  const old = meal({ id: 'm-mon', date: '2026-08-10', title: 'Old' })
+
+  function drop(activeId: string, overId: string | null) {
+    act(() =>
+      dnd.onDragEnd?.({
+        active: { id: activeId },
+        over: overId ? { id: overId } : null,
+      } as DragEndEvent)
+    )
+  }
+
+  it('drops a dinner onto another day and hands over the target date', () => {
+    const onMove = vi.fn()
+    renderView({ days: weekOf({ '2026-08-11': chicken, '2026-08-12': tacos }), onMove })
+
+    drop('m-wed', '2026-08-11')
+    expect(onMove).toHaveBeenCalledWith(tacos, '2026-08-11')
+  })
+
+  it('does nothing when dropped back on its own day or outside the week', () => {
+    const onMove = vi.fn()
+    renderView({ days: weekOf({ '2026-08-12': tacos }), onMove })
+
+    drop('m-wed', '2026-08-12')
+    drop('m-wed', null)
+    expect(onMove).not.toHaveBeenCalled()
+  })
+
+  it('offers a handle on planned upcoming days only — never on the past', () => {
+    renderView({ days: weekOf({ '2026-08-10': old, '2026-08-12': tacos }) })
+
+    expect(screen.getByRole('button', { name: 'Move “Tacos” to another day' })).toBeInTheDocument()
+    expect(screen.queryByRole('button', { name: /Move “Old”/ })).not.toBeInTheDocument()
+  })
+
+  it('offers no handle to a viewer who cannot plan', () => {
+    renderView({ days: weekOf({ '2026-08-12': tacos }), canManage: false })
+    expect(screen.queryByRole('button', { name: /Move “Tacos”/ })).not.toBeInTheDocument()
   })
 })

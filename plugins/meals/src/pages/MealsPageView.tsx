@@ -1,4 +1,17 @@
-import { ChevronLeft, ChevronRight, ExternalLink } from 'lucide-react'
+import {
+  DndContext,
+  KeyboardSensor,
+  MouseSensor,
+  TouchSensor,
+  useDraggable,
+  useDroppable,
+  useSensor,
+  useSensors,
+  type Announcements,
+  type DragEndEvent,
+  type UniqueIdentifier,
+} from '@dnd-kit/core'
+import { ChevronLeft, ChevronRight, ExternalLink, GripVertical } from 'lucide-react'
 import {
   Button,
   ItemCard,
@@ -51,6 +64,9 @@ export interface MealsPageViewProps {
   onClaim: (meal: PlannedMeal) => void
   onPushNeeds: (meal: PlannedMeal) => void
   onRemove: (meal: PlannedMeal) => void
+  /** Dropped on another day's row — the server moves it to an empty day or
+      swaps it with that day's dinner. */
+  onMove: (meal: PlannedMeal, toKey: string) => void
 }
 
 const DOW = ['SUN', 'MON', 'TUE', 'WED', 'THU', 'FRI', 'SAT']
@@ -83,7 +99,38 @@ export function MealsPageView({
   onClaim,
   onPushNeeds,
   onRemove,
+  onMove,
 }: MealsPageViewProps) {
+  // Mouse + Touch rather than Pointer: a PointerSensor also claims touch
+  // pointers, which would skip the touch delay that lets a phone scroll the week.
+  const sensors = useSensors(
+    useSensor(MouseSensor, { activationConstraint: { distance: 4 } }),
+    useSensor(TouchSensor, { activationConstraint: { delay: 150, tolerance: 5 } }),
+    useSensor(KeyboardSensor)
+  )
+
+  const handleDragEnd = ({ active, over }: DragEndEvent) => {
+    const meal = days.find((d) => d.meal?.id === active.id)?.meal
+    if (meal && over && over.id !== meal.date) onMove(meal, String(over.id))
+  }
+
+  // dnd-kit's default announcements read the raw ids — a uuid and a date key.
+  const titleOf = (id: UniqueIdentifier) => days.find((d) => d.meal?.id === id)?.meal?.title
+  const dayOf = (id: UniqueIdentifier | undefined) => {
+    const day = days.find((d) => d.key === id)
+    return day?.date.toLocaleDateString('en-US', { weekday: 'long' })
+  }
+  const announcements: Announcements = {
+    onDragStart: ({ active }) => `Picked up ${titleOf(active.id)}.`,
+    onDragOver: ({ active, over }) =>
+      over ? `${titleOf(active.id)} is over ${dayOf(over.id)}.` : undefined,
+    onDragEnd: ({ active, over }) =>
+      over
+        ? `${titleOf(active.id)} dropped on ${dayOf(over.id)}.`
+        : `${titleOf(active.id)} put back.`,
+    onDragCancel: ({ active }) => `${titleOf(active.id)} put back.`,
+  }
+
   return (
     <PageContainer width="list">
       {/* The calendar week view's title grammar (the range, no "This week").
@@ -122,28 +169,30 @@ export function MealsPageView({
         }
       />
 
-      <div className="flex flex-col gap-3">
-        {days.map((day) => (
-          <DayRow
-            key={day.key}
-            day={day}
-            isToday={day.key === todayKey}
-            isPast={day.key < todayKey}
-            dinnerDone={dinnerDone}
-            membersById={membersById}
-            canManage={canManage}
-            canClaim={canClaim}
-            canPushNeeds={canPushNeeds}
-            note={day.meal && rowNote?.mealId === day.meal.id ? rowNote : null}
-            pushPending={day.meal != null && pushPendingMealId === day.meal.id}
-            onPlan={onPlan}
-            onEdit={onEdit}
-            onClaim={onClaim}
-            onPushNeeds={onPushNeeds}
-            onRemove={onRemove}
-          />
-        ))}
-      </div>
+      <DndContext sensors={sensors} onDragEnd={handleDragEnd} accessibility={{ announcements }}>
+        <div className="flex flex-col gap-3">
+          {days.map((day) => (
+            <DayRow
+              key={day.key}
+              day={day}
+              isToday={day.key === todayKey}
+              isPast={day.key < todayKey}
+              dinnerDone={dinnerDone}
+              membersById={membersById}
+              canManage={canManage}
+              canClaim={canClaim}
+              canPushNeeds={canPushNeeds}
+              note={day.meal && rowNote?.mealId === day.meal.id ? rowNote : null}
+              pushPending={day.meal != null && pushPendingMealId === day.meal.id}
+              onPlan={onPlan}
+              onEdit={onEdit}
+              onClaim={onClaim}
+              onPushNeeds={onPushNeeds}
+              onRemove={onRemove}
+            />
+          ))}
+        </div>
+      </DndContext>
     </PageContainer>
   )
 }
@@ -262,6 +311,21 @@ function DayRow({
 
   const needed = needsCount(meal)
 
+  // Past days are neither a source nor a target — behind today the page only
+  // records. The id is the date key, which is what `onMove` sends.
+  const { setNodeRef: setDropRef, isOver } = useDroppable({
+    id: day.key,
+    disabled: isPast || !canManage,
+  })
+  const {
+    setNodeRef: setDragRef,
+    setActivatorNodeRef,
+    listeners,
+    attributes,
+    transform,
+    isDragging,
+  } = useDraggable({ id: meal?.id ?? `empty-${day.key}`, disabled: isPast || !canManage || !meal })
+
   const trailing = isPast ? undefined : meal ? (
     <>
       {!isCovered(meal) && canClaim && (
@@ -277,6 +341,22 @@ function DayRow({
           onRemove={() => onRemove(meal)}
         />
       )}
+      {canManage && (
+        <Button
+          ref={setActivatorNodeRef}
+          variant="ghost"
+          size="icon"
+          aria-label={`Move “${meal.title}” to another day`}
+          title="Drag to another day"
+          // Narrower below `sm`: at 390px an unclaimed row already carries the
+          // claim button and the trash, and every pixel here comes off the title.
+          className="h-11 w-7 cursor-grab touch-none active:cursor-grabbing sm:w-11"
+          {...listeners}
+          {...attributes}
+        >
+          <GripVertical className="size-3.5" aria-hidden />
+        </Button>
+      )}
     </>
   ) : canManage ? (
     <Button variant="outline" size="sm" onClick={() => onPlan(day)}>
@@ -287,97 +367,119 @@ function DayRow({
   const canActivate = canManage && !isPast
 
   return (
-    <ItemCard
-      spine={spine}
-      spineDashed={!(meal && isCovered(meal))}
-      align="center"
-      dimmed={isPast}
-      className={cn(!meal && 'border-dashed shadow-none', note && 'flex-wrap')}
-      onActivate={canActivate ? () => (meal ? onEdit(day) : onPlan(day)) : undefined}
-      activateLabel={
-        canActivate ? (meal ? `Edit “${meal.title}”` : `Plan ${DOW[day.date.getDay()]}`) : undefined
-      }
-      trailing={trailing}
+    <div
+      ref={(el) => {
+        setDropRef(el)
+        setDragRef(el)
+      }}
+      style={transform ? { transform: `translate3d(0, ${transform.y}px, 0)` } : undefined}
+      className={cn(
+        'rounded-card',
+        isDragging && 'relative z-30',
+        isOver && !isDragging && 'ring-2 ring-primary'
+      )}
     >
-      <div className="w-11 shrink-0 text-center">
-        <div
-          className={cn('text-section-label', isToday ? 'text-primary' : 'text-muted-foreground')}
-        >
-          {DOW[day.date.getDay()]}
+      <ItemCard
+        spine={spine}
+        spineDashed={!(meal && isCovered(meal))}
+        align="center"
+        dimmed={isPast}
+        className={cn(
+          !meal && 'border-dashed shadow-none',
+          note && 'flex-wrap',
+          isDragging && 'shadow-[var(--shadow-raised)]'
+        )}
+        onActivate={canActivate ? () => (meal ? onEdit(day) : onPlan(day)) : undefined}
+        activateLabel={
+          canActivate
+            ? meal
+              ? `Edit “${meal.title}”`
+              : `Plan ${DOW[day.date.getDay()]}`
+            : undefined
+        }
+        trailing={trailing}
+      >
+        <div className="w-11 shrink-0 text-center">
+          <div
+            className={cn('text-section-label', isToday ? 'text-primary' : 'text-muted-foreground')}
+          >
+            {DOW[day.date.getDay()]}
+          </div>
+          <div
+            className={cn(
+              'text-card-title tabular-nums',
+              isToday ? 'text-primary' : 'text-foreground'
+            )}
+          >
+            {day.date.getDate()}
+          </div>
         </div>
-        <div
-          className={cn(
-            'text-card-title tabular-nums',
-            isToday ? 'text-primary' : 'text-foreground'
-          )}
-        >
-          {day.date.getDate()}
-        </div>
-      </div>
 
-      {/* min-h-14 = the two-line planned block (title + 32px avatar rail), so
+        {/* min-h-14 = the two-line planned block (title + 32px avatar rail), so
           out/unclaimed/empty rows hold the same height — seven equal day slots,
           not rows that shrink with their state. */}
-      <div className="flex min-h-14 min-w-0 flex-1 flex-col justify-center">
-        {meal ? (
-          <>
-            <div className="truncate">
-              <span className="text-card-title text-foreground">{meal.title}</span>
-              {meal.sides && (
-                <span className="text-base-token text-muted-foreground"> · {meal.sides}</span>
-              )}
-            </div>
-            {/* Wraps rather than shrinks: at 390px the day column, the verb and
+        <div className="flex min-h-14 min-w-0 flex-1 flex-col justify-center">
+          {meal ? (
+            <>
+              <div className="truncate">
+                <span className="text-card-title text-foreground">{meal.title}</span>
+                {meal.sides && (
+                  <span className="text-base-token text-muted-foreground"> · {meal.sides}</span>
+                )}
+              </div>
+              {/* Wraps rather than shrinks: at 390px the day column, the verb and
                 a text affordance do not fit on one line, and squeezing them
                 truncated "planned — nobody's on it yet" down to "p.". The
                 affordances drop to their own line there — the same rule the
                 header cluster follows, and the same one that says nothing gets
                 hidden on the phone, which is the primary device. */}
-            <div className="mt-0.5 flex min-w-0 flex-wrap items-center gap-x-1.5">
-              {owner ? (
-                <>
-                  <ProfileAvatar
-                    name={owner.name}
-                    size="sm"
-                    avatarUrl={owner.avatarUrl}
-                    identity={resolveHue(owner.name, owner.identityHue)}
-                  />
+              <div className="mt-0.5 flex min-w-0 flex-wrap items-center gap-x-1.5">
+                {owner ? (
+                  <>
+                    <ProfileAvatar
+                      name={owner.name}
+                      size="sm"
+                      avatarUrl={owner.avatarUrl}
+                      identity={resolveHue(owner.name, owner.identityHue)}
+                    />
+                    <span className="text-sm-token truncate text-muted-foreground">
+                      {kindVerb(meal.kind, owner.name, false, spoken)}
+                      {meal.tryBite && ` · try bite: ${meal.tryBite}`}
+                    </span>
+                  </>
+                ) : isCovered(meal) ? (
                   <span className="text-sm-token truncate text-muted-foreground">
-                    {kindVerb(meal.kind, owner.name, false, spoken)}
+                    {kindVerb(meal.kind, '', false, spoken)}
                     {meal.tryBite && ` · try bite: ${meal.tryBite}`}
                   </span>
-                </>
-              ) : isCovered(meal) ? (
-                <span className="text-sm-token truncate text-muted-foreground">
-                  {kindVerb(meal.kind, '', false, spoken)}
-                  {meal.tryBite && ` · try bite: ${meal.tryBite}`}
-                </span>
-              ) : (
-                <span className="text-sm-token truncate text-muted-foreground">
-                  {spoken ? 'planned — nobody claimed it' : "planned — nobody's on it yet"}
-                  {meal.tryBite && ` · try bite: ${meal.tryBite}`}
-                </span>
-              )}
-              {/* Both hidden on past days with the rest of the row's affordances
+                ) : (
+                  <span className="text-sm-token truncate text-muted-foreground">
+                    {spoken ? 'planned — nobody claimed it' : "planned — nobody's on it yet"}
+                    {meal.tryBite && ` · try bite: ${meal.tryBite}`}
+                  </span>
+                )}
+                {/* Both hidden on past days with the rest of the row's affordances
                   — behind today the page only records (design.md §M5/2). */}
-              {needed > 0 && canPushNeeds && !isPast && (
-                <NeedsPushLink
-                  count={needed}
-                  pending={pushPending}
-                  onPush={() => onPushNeeds(meal)}
-                />
-              )}
-              {meal.recipeUrl && !isPast && <RecipeLink url={meal.recipeUrl} title={meal.title} />}
-            </div>
-          </>
-        ) : (
-          <span className="text-base-token text-muted-foreground/70 italic">
-            {isPast ? 'No dinner was planned' : 'Nothing planned'}
-          </span>
-        )}
-      </div>
+                {needed > 0 && canPushNeeds && !isPast && (
+                  <NeedsPushLink
+                    count={needed}
+                    pending={pushPending}
+                    onPush={() => onPushNeeds(meal)}
+                  />
+                )}
+                {meal.recipeUrl && !isPast && (
+                  <RecipeLink url={meal.recipeUrl} title={meal.title} />
+                )}
+              </div>
+            </>
+          ) : (
+            <span className="text-base-token text-muted-foreground/70 italic">
+              {isPast ? 'No dinner was planned' : 'Nothing planned'}
+            </span>
+          )}
+        </div>
 
-      {/* The push outcome, on the row it changed — a row-scoped action states
+        {/* The push outcome, on the row it changed — a row-scoped action states
           its result on the row, not under the page title where it names no meal
           and can sit a screen away from the finger.
 
@@ -393,17 +495,18 @@ function DayRow({
           and only the tapped row grows. Medium weight on a failure so it can't
           read as one more muted meta fragment; `pl-14` sets it under the title
           rather than under the day column. */}
-      {note && (
-        <p
-          role="status"
-          className={cn(
-            'text-sm-token order-last w-full pl-14 leading-snug',
-            note.failed ? 'font-medium text-destructive' : 'text-muted-foreground'
-          )}
-        >
-          {note.text}
-        </p>
-      )}
-    </ItemCard>
+        {note && (
+          <p
+            role="status"
+            className={cn(
+              'text-sm-token order-last w-full pl-14 leading-snug',
+              note.failed ? 'font-medium text-destructive' : 'text-muted-foreground'
+            )}
+          >
+            {note.text}
+          </p>
+        )}
+      </ItemCard>
+    </div>
   )
 }

@@ -3,9 +3,9 @@ import type { FastifyPluginAsync } from 'fastify'
 import { prisma } from '@family-os/platform/server'
 import { FAMILY_PROFILE_ID } from '@family-os/platform/types'
 import { mealPrisma } from '@family-os/plugin-meals/db'
-import { MealInputSchema, NeedsPushSchema } from '@family-os/schemas'
+import { MealInputSchema, MealMoveSchema, NeedsPushSchema } from '@family-os/schemas'
 import type { NeedsPushResult } from '@family-os/schemas'
-import { startMealsNudgeScheduler } from '../lib/meals-nudge'
+import { startMealsNudgeScheduler, todayDateOnly } from '../lib/meals-nudge'
 
 type PlannedMealRow = Awaited<ReturnType<typeof mealPrisma.plannedMeal.create>>
 
@@ -153,6 +153,61 @@ const mealsPlugin: FastifyPluginAsync = async (fastify) => {
     fastify.eventBus.emit('meals.dinner.planned', plannedPayload(meal))
 
     return serializeMeal(meal)
+  })
+
+  // Drag a dinner onto another day (issue #146): an empty day takes it, an
+  // occupied one swaps — nothing else moves. Past days are history, neither a
+  // source nor a target, matching the week page's inert past rows.
+  fastify.post('/meals/plan/:id/move', async (request, reply) => {
+    if (!request.ability.can('manage', 'meals.PlannedMeal')) {
+      return reply.status(403).send({ error: 'Permission denied' })
+    }
+
+    const { id } = request.params as { id: string }
+    const existing = await mealPrisma.plannedMeal.findUnique({ where: { id } })
+    if (!existing) return reply.status(404).send({ error: 'Meal not found' })
+
+    const parsed = MealMoveSchema.safeParse(request.body ?? {})
+    if (!parsed.success) {
+      return reply.status(400).send({ error: parsed.error.flatten() })
+    }
+    const target = new Date(parsed.data.date)
+
+    const today = todayDateOnly(new Date())
+    if (existing.date < today || target < today) {
+      return reply.status(400).send({ error: "Past dinners can't be moved" })
+    }
+
+    let moved: PlannedMealRow[]
+    try {
+      moved = await mealPrisma.$transaction(async (tx) => {
+        const occupant = await tx.plannedMeal.findUnique({
+          where: { date_slot: { date: target, slot: existing.slot } },
+        })
+        if (occupant?.id === id) return []
+        if (!occupant) {
+          return [await tx.plannedMeal.update({ where: { id }, data: { date: target } })]
+        }
+        // UNIQUE (date, slot) is checked per row, not per statement, so a swap
+        // first parks the occupant on a slot only it can hold — its own id.
+        await tx.plannedMeal.update({ where: { id: occupant.id }, data: { slot: occupant.id } })
+        const meal = await tx.plannedMeal.update({ where: { id }, data: { date: target } })
+        const swapped = await tx.plannedMeal.update({
+          where: { id: occupant.id },
+          data: { date: existing.date, slot: occupant.slot },
+        })
+        return [meal, swapped]
+      })
+    } catch (err) {
+      if ((err as { code?: string }).code === 'P2002') {
+        return reply.status(409).send({ error: 'That day just changed — try again' })
+      }
+      throw err
+    }
+
+    for (const meal of moved) fastify.eventBus.emit('meals.dinner.planned', plannedPayload(meal))
+
+    return { meals: moved.map(serializeMeal) }
   })
 
   // One-tap claim (design.md §M5/2/3: claim = set owner_id, no drawer). `update`
