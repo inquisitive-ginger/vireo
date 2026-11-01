@@ -39,6 +39,14 @@ is the working register).
 
 ---
 
+### Calendar: one continuous timed multi-day event (#145, Mom)
+
+**Blocked on** Zach checking with Mom. Then either copy clarification within ADR 057, or revisit
+ADR 057 for a continuous timed span (architect pass + design gate). Report 71114625 stays
+`triaged`. _[log](logs/2026-11-01-fix-auto-bugs-meal-swap-dst.md)_
+
+---
+
 ### Platform: family-feed test addendum
 
 **Type:** development (test addendum) · **Kickoff:** _to be written_
@@ -53,6 +61,9 @@ Stand up an RTL suite mirroring chores/calendar.
 > recent first, nothing older than the current milestone's start. `docs/sessions/logs/` is
 > date-ordered and holds the record. Do not restore entries pruned from here.
 
+- **2026-11-01 — Fix: drag a dinner to move or swap it; recurrences survive DST** (#146 PR #149,
+  #147 PR #150) — occurrences step in household-local days, the api runs in the household TZ.
+  **Owed:** `deployed` flips for d7d5701a and b79ebbce. _[log](logs/2026-11-01-fix-auto-bugs-meal-swap-dst.md)_
 - **2026-09-07 — Fix: the month grid fills its frame instead of scrolling it** — not a
   padding bug; the calendar's tablet surface lacked Home's height contract. Home's bottom
   inset equalised (`md:pb-6`), the frame left alone. **Owed:** two lines in ADR 074

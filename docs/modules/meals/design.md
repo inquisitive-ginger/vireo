@@ -95,6 +95,10 @@ did tacos"_. Do **not** build history infra for it.
 - Row actions: nothing-planned → **Plan it** only (one-tap "I've got it" on an
   unplanned day needs M5/3's semantics); unclaimed → single ghost **I've got
   it**. Remove lives in `RowActions` and **the page confirms** (`ConfirmDialog`).
+- **Drag grip** (2026-11-01, #146): a row grip moves a dinner to another day — empty
+  day → move, occupied → swap; past days are neither source nor target. Drag, not a "Move
+  to…" menu; swap, not insert-and-shift. 28px (`w-7`) below `sm`, under the 44px rule, so
+  titles don't truncate at 390px.
 - The page is **calm** — no amber ever. The widget and the nudge do the shouting.
 
 ### The editor drawer (440px, RHF + Zod)

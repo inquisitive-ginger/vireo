@@ -31,10 +31,9 @@ computed on read.** Still no materialized occurrences table.
 ### Why offsets, not weekdays
 
 The obvious column — absolute weekdays `[1..5]` for M–F — needs someone to answer "which
-weekday is this timestamp?", and the server cannot: timestamps are stored UTC, the
-household's timezone is not known server-side, and an evening event's UTC weekday is not its
-local weekday. Every absolute-weekday scheme either assumes UTC≈local (breaking evening
-events) or needs a household-timezone setting the deployment doesn't have.
+weekday is this timestamp?", and the server could not: timestamps are stored UTC and an
+evening event's UTC weekday is not its local weekday. _Amended 2026-11-01: the api now runs in
+the household TZ (see limitations); offsets were left as they are, still correct._
 
 Offsets sidestep the question: membership is `k % 7`, pure arithmetic on the step count, with
 **no weekday computed anywhere on the server**. The client, which knows local time, maps
@@ -45,13 +44,10 @@ isn't a member, and the first occurrence is Monday.
 
 ### Known limitations, inherited on purpose
 
-- **DST wall-clock drift.** Occurrences step in absolute milliseconds, so a series crossing a
-  DST change shifts an hour on the wall — the limitation weekly has had since ADR 038. Fixing
-  it needs a household timezone the server doesn't know; if that setting lands, both kinds get
-  fixed together.
-- **Late-evening `recurrence_until` clipping.** An occurrence starting late enough to land on
-  the next UTC date can be excluded by the inclusive-until check — the same edge weekly has.
-  Daytime events, the entire reported use case, are unaffected.
+- ~~DST wall-clock drift~~ and ~~late-evening `recurrence_until` clipping~~ — **fixed
+  2026-11-01** (auto-bug #147, PR #150): both kinds step in household-local calendar days,
+  `recurrence_until` cuts off at local end-of-day, and the api runs in the household zone (`TZ`
+  in `docker-compose.prod.yml`). Residual: occurrence keys are still UTC dates.
 
 ## Rendering (design gates, 2026-07-28 — all taken as recommended)
 
@@ -86,6 +82,7 @@ isn't a member, and the first occurrence is Monday.
 ## Do not revisit unless
 
 The same triggers as ADR 038 (per-occurrence field edits, profiling), **or** a
-household-timezone setting lands (revisit the offset encoding alongside the DST fix), **or** a
+household-timezone setting lands (revisit the offset encoding alongside the DST fix — fired
+2026-11-01 via the api's `TZ`; offsets kept), **or** a
 third recurrence kind appears (every-other-week, monthly-nth) — at which point RRULE-shaped
 storage earns its complexity and this column folds into it.

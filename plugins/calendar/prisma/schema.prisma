@@ -24,7 +24,7 @@ model Event {
   recurrence      String? // 'weekly' | 'daily' | null (ADR 038, ADR 057)
   // Weekday set for a 'daily' series, as day OFFSETS from starts_at's weekday
   // mod 7 (ADR 057) — candidate day k occurs iff k % 7 is a member. Offsets, not
-  // absolute weekdays: the server has no timezone to resolve a weekday in.
+  // absolute weekdays: chosen before the api ran in the household TZ (2026-11-01).
   recurrenceDayOffsets Int[] @default([]) @map("recurrence_day_offsets")
   recurrenceUntil DateTime? @map("recurrence_until") @db.Date
   isActivity      Boolean   @default(false) @map("is_activity")
