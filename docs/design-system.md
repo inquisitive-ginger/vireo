@@ -1643,6 +1643,8 @@ Modules write two copy variants — one for tier 1, one for tier 2+.
 The CTA is always wrapped in `PermissionGate` — if the profile cannot
 create, the button is absent entirely (no locked/disabled state).
 
+UI labels — buttons, menu items, dialog titles, aria-labels — are sentence case: capitalise only the first word and proper nouns (people, module names like Family Feed). A create action reads `Add <noun>` (`Add task`, `Add event`), not `New <Noun>`.
+
 ### Compact variant — widget slots
 
 Inside 1-row widget slots (~180px) the full anatomy doesn't fit. Widgets

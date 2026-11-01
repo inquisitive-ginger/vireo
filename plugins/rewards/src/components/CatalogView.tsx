@@ -79,7 +79,7 @@ export function CatalogView() {
         <div className="flex items-center justify-between">
           <h2 className="text-heading">Rewards</h2>
           <Button size="sm" onClick={openCreate}>
-            <Plus className="mr-1 size-4" /> New reward
+            <Plus className="mr-1 size-4" /> Add reward
           </Button>
         </div>
 
@@ -94,7 +94,7 @@ export function CatalogView() {
             body="Add the first thing a kid can spend Pritchett Bucks on."
             action={
               <Button size="sm" onClick={openCreate}>
-                <Plus className="mr-1 size-4" /> New reward
+                <Plus className="mr-1 size-4" /> Add reward
               </Button>
             }
           />
@@ -119,7 +119,7 @@ export function CatalogView() {
         <div className="flex items-center justify-between">
           <h2 className="text-heading">Punch cards</h2>
           <Button size="sm" onClick={openCardCreate}>
-            <Plus className="mr-1 size-4" /> New card
+            <Plus className="mr-1 size-4" /> Add card
           </Button>
         </div>
 

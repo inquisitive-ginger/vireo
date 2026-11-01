@@ -94,7 +94,7 @@ export function RewardDrawer({
   const shownError = localError ?? error
 
   return (
-    <Drawer open={open} onClose={onClose} title={editing ? 'Edit reward' : 'New reward'}>
+    <Drawer open={open} onClose={onClose} title={editing ? 'Edit reward' : 'Add reward'}>
       <form onSubmit={submit} className="flex h-full flex-col">
         <div className="flex-1 overflow-y-auto p-6">
           <div className="flex flex-col gap-6">

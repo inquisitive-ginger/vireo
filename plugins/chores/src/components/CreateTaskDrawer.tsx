@@ -180,7 +180,7 @@ export function CreateTaskDrawer({
   })
 
   return (
-    <Drawer open={open} onClose={onClose} title={isEdit ? 'Edit task' : 'New task'}>
+    <Drawer open={open} onClose={onClose} title={isEdit ? 'Edit task' : 'Add task'}>
       <form onSubmit={submit} className="flex h-full flex-col">
         <div className="flex-1 overflow-y-auto p-6">
           <div className="flex flex-col gap-6">

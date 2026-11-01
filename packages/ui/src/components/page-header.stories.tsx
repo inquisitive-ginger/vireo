@@ -27,7 +27,7 @@ export const WithEyebrowAndAction: Story = {
   args: {
     title: 'Family Feed',
     eyebrow: 'The family bulletin',
-    action: <Button>New post</Button>,
+    action: <Button>Add post</Button>,
   },
 }
 
