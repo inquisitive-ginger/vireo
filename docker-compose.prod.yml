@@ -30,6 +30,9 @@ services:
       SESSION_SECRET: ${SESSION_SECRET}
       VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY}
       VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY}
+      # The household's timezone. Recurrence expansion, the meals nudge hour and
+      # notification times all read server-local time; unset, the container is UTC.
+      TZ: ${TZ:-America/Los_Angeles}
       # Bug-report → GitHub issue bridge (ADR 046). Both optional: unset, the report
       # still saves and only the issue is skipped. Defaulted so compose doesn't warn
       # on a host that hasn't configured the bridge.
