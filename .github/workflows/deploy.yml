@@ -18,12 +18,20 @@ jobs:
       # unauthorized. The job's GITHUB_TOKEN already has Packages: read.
       - name: Log in to GHCR
         run: echo "${{ secrets.GITHUB_TOKEN }}" | docker login ghcr.io -u ${{ github.actor }} --password-stdin
+      # Without this the Pi kept a hand-copied compose file and the TZ added in
+      # #150 never reached the api container.
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.workflow_run.head_sha }}
+          sparse-checkout: docker-compose.prod.yml
+          sparse-checkout-cone-mode: false
       - name: Pull the release images and restart the stack
         working-directory: /opt/family-os
         env:
           TAG: ${{ github.event.workflow_run.head_sha }}
         run: |
           set -e
+          cp "$GITHUB_WORKSPACE/docker-compose.prod.yml" docker-compose.prod.yml
           if grep -q '^TAG=' .env; then
             sed -i "s/^TAG=.*/TAG=$TAG/" .env
           else

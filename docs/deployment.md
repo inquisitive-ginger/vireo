@@ -501,8 +501,7 @@ After=time-sync.target
 
 plus `sudo systemctl enable systemd-time-wait-sync.service` — **both halves are
 load-bearing.** Without that service enabled, `time-sync.target` is reached
-immediately and the gate is decorative. Like the watchdog script and
-`docker-compose.prod.yml`, this drop-in lives only on the Pi; nothing deploys it.
+immediately and the gate is decorative. Like the watchdog script, this drop-in lives only on the Pi; nothing deploys it.
 
 Docker and Postgres ride the same skew harmlessly — the only symptom is
 `docker compose ps` reporting a nonsense `Up 2 hours` on a box that booted ten
@@ -511,8 +510,9 @@ minutes ago, because `StartedAt` was stamped before the jump. Trust `uptime`.
 The shipped job adds `concurrency: { group: deploy, cancel-in-progress: false }`
 to the sample below — **keep it**. Two releases finishing close together will
 otherwise race the same `.env` and compose stack; queueing them is what made the
-first live run safe. The job takes no `actions/checkout` — it only touches
-`/opt/family-os`.
+first live run safe. Its only `actions/checkout` is a sparse one of
+`docker-compose.prod.yml` at the release SHA, copied into `/opt/family-os` before
+`pull` — a hand-synced copy is how #150's `TZ` never reached prod.
 
 The Pi is behind NAT (no inbound), so it _pulls_:
 
@@ -620,8 +620,8 @@ family-os-postgres-1 psql -U familyos -d <target-db>` — verified
   - **The script lives in the repo** at `scripts/vireo-watchdog.sh`, but nothing
     deploys it — after editing, install it by hand:
     `sudo install -m 755 scripts/vireo-watchdog.sh /usr/local/sbin/vireo-watchdog.sh`.
-    Same for `docker-compose.prod.yml`: the Pi's copy at `/opt/family-os/` is
-    hand-synced, the deploy job only rewrites `TAG=` in `.env`.
+    (`docker-compose.prod.yml` is the exception: the deploy job copies it from the
+    release commit.)
   - **It was the USB cable (2026-08-22).** Everything above — the "enclosure UAS
     hang", the 92 s fsync, the 25-minute boots, multi-second API responses — traces
     to one bad cable that negotiated 5 Gbps and could not carry it. Same disk, same
