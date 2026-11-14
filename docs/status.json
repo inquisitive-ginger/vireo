@@ -5,15 +5,15 @@
   "approvers": [
     "Zach"
   ],
-  "generatedAt": "2026-11-14T19:34:04.967Z",
-  "current": "ideate",
+  "generatedAt": "2026-11-14T19:43:46.560Z",
+  "current": "plan",
   "preview": null,
   "stages": [
     {
       "key": "ideate",
       "label": "Ideate",
       "total": 1,
-      "locked": 0
+      "locked": 1
     },
     {
       "key": "plan",
@@ -37,20 +37,17 @@
       "features": [],
       "approver": "Zach",
       "depends": [],
-      "status": "in review",
-      "url": "https://claude.ai/artifact/LKfV2cfMwoYqz2sZC7Y1v6",
-      "sent": "2026-11-14",
+      "status": "locked",
+      "url": null,
+      "sent": null,
       "responded": null,
       "file": "docs/sessions/00-idea.md",
       "started": "2026-11-14 11:32",
-      "minutes": null,
-      "waited": null,
+      "minutes": 2,
+      "waited": 9,
       "approx": false,
       "rounds": 1,
-      "waiting": {
-        "on": "Zach",
-        "why": "review"
-      }
+      "waiting": null
     },
     {
       "n": "1",
@@ -73,8 +70,8 @@
       "approx": false,
       "rounds": 0,
       "waiting": {
-        "on": null,
-        "why": "blocked by #0"
+        "on": "Zach",
+        "why": "ready to start"
       }
     },
     {
@@ -214,16 +211,32 @@
       }
     }
   ],
-  "waiting": [
-    {
-      "n": "0",
-      "name": "Idea one-pager (adopted)",
+  "waiting": [],
+  "next": {
+    "n": "1",
+    "stage": "plan",
+    "name": "Roadmap",
+    "type": "decide",
+    "features": [],
+    "approver": "Zach",
+    "depends": [
+      "0"
+    ],
+    "status": "todo",
+    "url": null,
+    "sent": null,
+    "responded": null,
+    "file": null,
+    "started": null,
+    "minutes": null,
+    "waited": null,
+    "approx": false,
+    "rounds": 0,
+    "waiting": {
       "on": "Zach",
-      "why": "review",
-      "url": "https://claude.ai/artifact/LKfV2cfMwoYqz2sZC7Y1v6"
+      "why": "ready to start"
     }
-  ],
-  "next": null,
+  },
   "features": [
     {
       "id": "F-001",
@@ -557,8 +570,13 @@
     "untested": []
   },
   "decisions": {
-    "count": 77,
+    "count": 78,
     "recent": [
+      {
+        "id": "D-078",
+        "date": "2026-11-14",
+        "title": "The adopted idea locks as written"
+      },
       {
         "id": "D-077",
         "date": "2026-09-04",
@@ -593,11 +611,6 @@
         "id": "D-071",
         "date": "2026-09-03",
         "title": "Checking Off Is Its Own Action, at Tier 2"
-      },
-      {
-        "id": "D-070",
-        "date": "2026-09-03",
-        "title": "CaptureField joins ComposeForm, with a rule for choosing"
       }
     ]
   },
@@ -609,8 +622,8 @@
   ],
   "report": null,
   "time": {
-    "sessions": 0,
-    "total": 0,
+    "sessions": 1,
+    "total": 2,
     "approx": false,
     "over": []
   }

@@ -1,6 +1,6 @@
 # Session 00 — Idea one-pager (adopted)
 
-Type: decide · Approver: Zach · Status: in progress · Started: 2026-11-14 11:32 · Ended: —
+Type: decide · Approver: Zach · Status: locked · Started: 2026-11-14 11:32 · Ended: 2026-11-14 11:43
 
 ## Goal
 
@@ -28,4 +28,6 @@ Every item reviewed. At lock-in: `idea.md` Status stays `locked`; cuts become re
 
 ## Outcome
 
-Round 1, 2026-11-14 · Sent 2026-11-14 11:34
+Round 1, 2026-11-14 · Sent 2026-11-14 11:34 · Back 2026-11-14 11:43
+
+All 13 items reviewed and approved with no comments: problem, users, non-goals and success as written; all 40 features kept at their listed priorities; nothing missing. Locked as D-078. No files changed beyond the decision, roadmap and this file. Carried forward: session 1 (Roadmap) is unblocked.

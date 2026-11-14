@@ -310,3 +310,8 @@ Owed since 2026-09-07 (`logs/2026-09-07-fix-calendar-month-scroll.md`): ADR 074 
 ## D-077 · 2026-09-04 · The Shopping tile stays out of Home's default layouts
 
 Shopping is announced through its nav entry at every breakpoint (PR #138); Zach pulled the Home tile from the default layouts. One revert restores it. Recorded at adoption from `CLAUDE.md`'s status block. Features: F-004, F-035. Approved: Zach.
+
+## D-078 · 2026-11-14 · The adopted idea locks as written
+
+`docs/idea.md` stands: problem, users, non-goals and success as drafted at adoption, and all 40 features (F-001–F-040) kept at their listed priorities. Options: approve each part or ask for changes; keep or cut each feature. Approved: Zach, every item, no comments. Board: https://claude.ai/artifact/LKfV2cfMwoYqz2sZC7Y1v6
+Features: F-001–F-040.
