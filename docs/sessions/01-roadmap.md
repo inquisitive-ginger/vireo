@@ -1,6 +1,6 @@
 # Session 01 — Roadmap
 
-Type: decide · Approver: Zach · Status: in progress · Started: 2026-11-14 11:49 · Ended: —
+Type: decide · Approver: Zach · Status: locked · Started: 2026-11-14 11:49 · Ended: 2026-11-14 12:19
 
 ## Goal
 
@@ -28,4 +28,6 @@ Both approve items reviewed. At lock-in: a D-### records the plan; any changes g
 
 ## Outcome
 
-Round 1, 2026-11-14 · Sent 2026-11-14 11:49
+Round 1, 2026-11-14 · Sent 2026-11-14 11:49 · Back 2026-11-14 12:19
+
+Build stage: changes requested, "put the enhancements and family feed up next then companion sequence." Taken as Zach's own edit and locked without a second round: sessions renumbered 2 Enhancements, 3 Family feed: test suite, 4–6 Companion. Queued fix and enhancements approved as they were. No comment on anything missing. Locked as D-079. Files: `docs/roadmap.md`, `docs/decisions.md`, `docs/reference/README.md`, `docs/modules/companion/spec.md`.

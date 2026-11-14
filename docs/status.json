@@ -5,8 +5,8 @@
   "approvers": [
     "Zach"
   ],
-  "generatedAt": "2026-11-14T19:49:50.467Z",
-  "current": "plan",
+  "generatedAt": "2026-11-14T20:19:47.351Z",
+  "current": "build",
   "preview": null,
   "stages": [
     {
@@ -19,7 +19,7 @@
       "key": "plan",
       "label": "Plan",
       "total": 1,
-      "locked": 0
+      "locked": 1
     },
     {
       "key": "build",
@@ -59,28 +59,26 @@
       "depends": [
         "0"
       ],
-      "status": "in review",
+      "status": "locked",
       "url": "https://claude.ai/artifact/RkjwctcWZouyTntvNZ8SxW",
       "sent": "2026-11-14",
-      "responded": null,
+      "responded": "2026-11-14",
       "file": "docs/sessions/01-roadmap.md",
       "started": "2026-11-14 11:49",
-      "minutes": null,
-      "waited": null,
+      "minutes": 0,
+      "waited": 30,
       "approx": false,
       "rounds": 1,
-      "waiting": {
-        "on": "Zach",
-        "why": "review"
-      }
+      "waiting": null
     },
     {
       "n": "2",
       "stage": "build",
-      "name": "Companion: feature UX",
-      "type": "decide",
+      "name": "Enhancements",
+      "type": "build",
       "features": [
-        "F-040"
+        "F-008",
+        "F-004"
       ],
       "approver": "Zach",
       "depends": [
@@ -97,17 +95,17 @@
       "approx": false,
       "rounds": 0,
       "waiting": {
-        "on": null,
-        "why": "blocked by #1"
+        "on": "Zach",
+        "why": "ready to start"
       }
     },
     {
       "n": "3",
       "stage": "build",
-      "name": "Companion: foundation",
+      "name": "Family feed: test suite",
       "type": "build",
       "features": [
-        "F-040"
+        "F-011"
       ],
       "approver": "Zach",
       "depends": [
@@ -131,8 +129,8 @@
     {
       "n": "4",
       "stage": "build",
-      "name": "Companion: surfaces",
-      "type": "build",
+      "name": "Companion: feature UX",
+      "type": "decide",
       "features": [
         "F-040"
       ],
@@ -158,14 +156,14 @@
     {
       "n": "5",
       "stage": "build",
-      "name": "Family feed: test suite",
+      "name": "Companion: foundation",
       "type": "build",
       "features": [
-        "F-011"
+        "F-040"
       ],
       "approver": "Zach",
       "depends": [
-        "1"
+        "4"
       ],
       "status": "todo",
       "url": null,
@@ -179,21 +177,20 @@
       "rounds": 0,
       "waiting": {
         "on": null,
-        "why": "blocked by #1"
+        "why": "blocked by #4"
       }
     },
     {
       "n": "6",
       "stage": "build",
-      "name": "Enhancements",
+      "name": "Companion: surfaces",
       "type": "build",
       "features": [
-        "F-008",
-        "F-004"
+        "F-040"
       ],
       "approver": "Zach",
       "depends": [
-        "1"
+        "5"
       ],
       "status": "todo",
       "url": null,
@@ -207,20 +204,39 @@
       "rounds": 0,
       "waiting": {
         "on": null,
-        "why": "blocked by #1"
+        "why": "blocked by #5"
       }
     }
   ],
-  "waiting": [
-    {
-      "n": "1",
-      "name": "Roadmap",
+  "waiting": [],
+  "next": {
+    "n": "2",
+    "stage": "build",
+    "name": "Enhancements",
+    "type": "build",
+    "features": [
+      "F-008",
+      "F-004"
+    ],
+    "approver": "Zach",
+    "depends": [
+      "1"
+    ],
+    "status": "todo",
+    "url": null,
+    "sent": null,
+    "responded": null,
+    "file": null,
+    "started": null,
+    "minutes": null,
+    "waited": null,
+    "approx": false,
+    "rounds": 0,
+    "waiting": {
       "on": "Zach",
-      "why": "review",
-      "url": "https://claude.ai/artifact/RkjwctcWZouyTntvNZ8SxW"
+      "why": "ready to start"
     }
-  ],
-  "next": null,
+  },
   "features": [
     {
       "id": "F-001",
@@ -554,8 +570,13 @@
     "untested": []
   },
   "decisions": {
-    "count": 78,
+    "count": 79,
     "recent": [
+      {
+        "id": "D-079",
+        "date": "2026-11-14",
+        "title": "The roadmap after adoption"
+      },
       {
         "id": "D-078",
         "date": "2026-11-14",
@@ -590,15 +611,11 @@
         "id": "D-072",
         "date": "2026-09-03",
         "title": "The Wall Adds As the House"
-      },
-      {
-        "id": "D-071",
-        "date": "2026-09-03",
-        "title": "Checking Off Is Its Own Action, at Tier 2"
       }
     ]
   },
   "changes": [
+    "2026-11-14 · Reordered: Enhancements is now 2 and Family feed: test suite 3, then the Companion sequence as 4–6 (each depends on the one before) · Zach on the session 01 board: \"put the enhancements and family feed up next then companion sequence.\" (D-079)",
     "2026-11-14 · Adopted Throughline: sessions 2–4 carry the M4.5 Companion plan (`docs/reference/companion/`), 5 the family-feed test addendum, 6 the bridge token and an owed ADR line · the queue and kickoffs retire"
   ],
   "fixes": [
@@ -606,7 +623,7 @@
   ],
   "report": null,
   "time": {
-    "sessions": 1,
+    "sessions": 2,
     "total": 2,
     "approx": false,
     "over": []

@@ -315,3 +315,8 @@ Shopping is announced through its nav entry at every breakpoint (PR #138); Zach 
 
 `docs/idea.md` stands: problem, users, non-goals and success as drafted at adoption, and all 40 features (F-001–F-040) kept at their listed priorities. Options: approve each part or ask for changes; keep or cut each feature. Approved: Zach, every item, no comments. Board: https://claude.ai/artifact/LKfV2cfMwoYqz2sZC7Y1v6
 Features: F-001–F-040.
+
+## D-079 · 2026-11-14 · The roadmap after adoption
+
+Next: 2 Enhancements (D-075, D-076), 3 Family feed: test suite, then the Companion sequence: 4 feature UX, 5 foundation, 6 surfaces, each depending on the one before. #145 stays under Fixes as needs-info. Each Companion session keeps the old plan's size and is split into lettered sessions when it starts if it runs over an hour. Options: the Companion sequence first, as drafted, or the smaller sessions first (chosen). Approved: Zach, with his reorder taken as written: "put the enhancements and family feed up next then companion sequence." Board: https://claude.ai/artifact/RkjwctcWZouyTntvNZ8SxW
+Features: F-004, F-008, F-011, F-040.
