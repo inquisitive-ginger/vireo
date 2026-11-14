@@ -1,0 +1,631 @@
+{
+  "project": "Vireo",
+  "mode": "solo",
+  "operator": "Zach",
+  "approvers": [
+    "Zach"
+  ],
+  "generatedAt": "2026-11-14T19:23:59.837Z",
+  "current": "ideate",
+  "preview": null,
+  "stages": [
+    {
+      "key": "ideate",
+      "label": "Ideate",
+      "total": 1,
+      "locked": 0
+    },
+    {
+      "key": "plan",
+      "label": "Plan",
+      "total": 1,
+      "locked": 0
+    },
+    {
+      "key": "build",
+      "label": "Build",
+      "total": 5,
+      "locked": 0
+    }
+  ],
+  "sessions": [
+    {
+      "n": "0",
+      "stage": "ideate",
+      "name": "Idea one-pager (adopted)",
+      "type": "decide",
+      "features": [],
+      "approver": "Zach",
+      "depends": [],
+      "status": "todo",
+      "url": null,
+      "sent": null,
+      "responded": null,
+      "file": null,
+      "started": null,
+      "minutes": null,
+      "waited": null,
+      "approx": false,
+      "rounds": 0,
+      "waiting": {
+        "on": "Zach",
+        "why": "ready to start"
+      }
+    },
+    {
+      "n": "1",
+      "stage": "plan",
+      "name": "Roadmap",
+      "type": "decide",
+      "features": [],
+      "approver": "Zach",
+      "depends": [
+        "0"
+      ],
+      "status": "todo",
+      "url": null,
+      "sent": null,
+      "responded": null,
+      "file": null,
+      "started": null,
+      "minutes": null,
+      "waited": null,
+      "approx": false,
+      "rounds": 0,
+      "waiting": {
+        "on": null,
+        "why": "blocked by #0"
+      }
+    },
+    {
+      "n": "2",
+      "stage": "build",
+      "name": "Companion: feature UX",
+      "type": "decide",
+      "features": [
+        "F-040"
+      ],
+      "approver": "Zach",
+      "depends": [
+        "1"
+      ],
+      "status": "todo",
+      "url": null,
+      "sent": null,
+      "responded": null,
+      "file": null,
+      "started": null,
+      "minutes": null,
+      "waited": null,
+      "approx": false,
+      "rounds": 0,
+      "waiting": {
+        "on": null,
+        "why": "blocked by #1"
+      }
+    },
+    {
+      "n": "3",
+      "stage": "build",
+      "name": "Companion: foundation",
+      "type": "build",
+      "features": [
+        "F-040"
+      ],
+      "approver": "Zach",
+      "depends": [
+        "2"
+      ],
+      "status": "todo",
+      "url": null,
+      "sent": null,
+      "responded": null,
+      "file": null,
+      "started": null,
+      "minutes": null,
+      "waited": null,
+      "approx": false,
+      "rounds": 0,
+      "waiting": {
+        "on": null,
+        "why": "blocked by #2"
+      }
+    },
+    {
+      "n": "4",
+      "stage": "build",
+      "name": "Companion: surfaces",
+      "type": "build",
+      "features": [
+        "F-040"
+      ],
+      "approver": "Zach",
+      "depends": [
+        "3"
+      ],
+      "status": "todo",
+      "url": null,
+      "sent": null,
+      "responded": null,
+      "file": null,
+      "started": null,
+      "minutes": null,
+      "waited": null,
+      "approx": false,
+      "rounds": 0,
+      "waiting": {
+        "on": null,
+        "why": "blocked by #3"
+      }
+    },
+    {
+      "n": "5",
+      "stage": "build",
+      "name": "Family feed: test suite",
+      "type": "build",
+      "features": [
+        "F-011"
+      ],
+      "approver": "Zach",
+      "depends": [
+        "1"
+      ],
+      "status": "todo",
+      "url": null,
+      "sent": null,
+      "responded": null,
+      "file": null,
+      "started": null,
+      "minutes": null,
+      "waited": null,
+      "approx": false,
+      "rounds": 0,
+      "waiting": {
+        "on": null,
+        "why": "blocked by #1"
+      }
+    },
+    {
+      "n": "6",
+      "stage": "build",
+      "name": "Enhancements",
+      "type": "build",
+      "features": [
+        "F-008",
+        "F-004"
+      ],
+      "approver": "Zach",
+      "depends": [
+        "1"
+      ],
+      "status": "todo",
+      "url": null,
+      "sent": null,
+      "responded": null,
+      "file": null,
+      "started": null,
+      "minutes": null,
+      "waited": null,
+      "approx": false,
+      "rounds": 0,
+      "waiting": {
+        "on": null,
+        "why": "blocked by #1"
+      }
+    }
+  ],
+  "waiting": [],
+  "next": {
+    "n": "0",
+    "stage": "ideate",
+    "name": "Idea one-pager (adopted)",
+    "type": "decide",
+    "features": [],
+    "approver": "Zach",
+    "depends": [],
+    "status": "todo",
+    "url": null,
+    "sent": null,
+    "responded": null,
+    "file": null,
+    "started": null,
+    "minutes": null,
+    "waited": null,
+    "approx": false,
+    "rounds": 0,
+    "waiting": {
+      "on": "Zach",
+      "why": "ready to start"
+    }
+  },
+  "features": [
+    {
+      "id": "F-001",
+      "name": "A parent sets up the household and each member's profile and trust tier",
+      "priority": "must",
+      "status": "built",
+      "adopted": true,
+      "tests": 0
+    },
+    {
+      "id": "F-002",
+      "name": "A member picks their profile and signs in with a PIN; the wall signs in as the house",
+      "priority": "must",
+      "status": "built",
+      "adopted": true,
+      "tests": 0
+    },
+    {
+      "id": "F-003",
+      "name": "Every member has an assigned, unique identity colour that follows them everywhere",
+      "priority": "must",
+      "status": "built",
+      "adopted": true,
+      "tests": 0
+    },
+    {
+      "id": "F-004",
+      "name": "Each member and the wall see a home screen of widgets from every module",
+      "priority": "must",
+      "status": "built",
+      "adopted": true,
+      "tests": 0
+    },
+    {
+      "id": "F-005",
+      "name": "A parent adjusts what each profile is allowed to do",
+      "priority": "must",
+      "status": "built",
+      "adopted": true,
+      "tests": 0
+    },
+    {
+      "id": "F-006",
+      "name": "Members get notifications in the app and as web push",
+      "priority": "must",
+      "status": "built",
+      "adopted": true,
+      "tests": 0
+    },
+    {
+      "id": "F-007",
+      "name": "Vireo installs as an app on the tablet and phones, with a mobile nav",
+      "priority": "must",
+      "status": "built",
+      "adopted": true,
+      "tests": 0
+    },
+    {
+      "id": "F-008",
+      "name": "Anyone reports a problem from the screen it happened on and hears when it's fixed",
+      "priority": "must",
+      "status": "built",
+      "adopted": true,
+      "tests": 0
+    },
+    {
+      "id": "F-009",
+      "name": "A member turns on focus mode to see only what's theirs",
+      "priority": "should",
+      "status": "built",
+      "adopted": true,
+      "tests": 0
+    },
+    {
+      "id": "F-010",
+      "name": "A member's avatar can be a photo",
+      "priority": "should",
+      "status": "built",
+      "adopted": true,
+      "tests": 0
+    },
+    {
+      "id": "F-011",
+      "name": "The family posts to and reads a shared feed",
+      "priority": "must",
+      "status": "built",
+      "adopted": true,
+      "tests": 0
+    },
+    {
+      "id": "F-012",
+      "name": "A parent assigns chores and each kid sees today's",
+      "priority": "must",
+      "status": "built",
+      "adopted": true,
+      "tests": 0
+    },
+    {
+      "id": "F-013",
+      "name": "A kid completes a chore in one tap; a parent checks it off or reopens it",
+      "priority": "must",
+      "status": "built",
+      "adopted": true,
+      "tests": 0
+    },
+    {
+      "id": "F-014",
+      "name": "A parent edits or removes a chore",
+      "priority": "must",
+      "status": "built",
+      "adopted": true,
+      "tests": 0
+    },
+    {
+      "id": "F-015",
+      "name": "Chores repeat on a routine without being re-entered",
+      "priority": "must",
+      "status": "built",
+      "adopted": true,
+      "tests": 0
+    },
+    {
+      "id": "F-016",
+      "name": "A kid claims an up-for-grabs chore, then does it",
+      "priority": "should",
+      "status": "built",
+      "adopted": true,
+      "tests": 0
+    },
+    {
+      "id": "F-017",
+      "name": "A parent hears when a chore is done",
+      "priority": "must",
+      "status": "built",
+      "adopted": true,
+      "tests": 0
+    },
+    {
+      "id": "F-018",
+      "name": "Kids earn XP for chores",
+      "priority": "must",
+      "status": "built",
+      "adopted": true,
+      "tests": 0
+    },
+    {
+      "id": "F-019",
+      "name": "The family reads the month at a glance on the wall, coloured by who",
+      "priority": "must",
+      "status": "built",
+      "adopted": true,
+      "tests": 0
+    },
+    {
+      "id": "F-020",
+      "name": "A member creates and edits events, on the wall or a phone",
+      "priority": "must",
+      "status": "built",
+      "adopted": true,
+      "tests": 0
+    },
+    {
+      "id": "F-021",
+      "name": "Activities repeat, including daily time windows",
+      "priority": "must",
+      "status": "built",
+      "adopted": true,
+      "tests": 0
+    },
+    {
+      "id": "F-022",
+      "name": "Members get reminded before an event",
+      "priority": "must",
+      "status": "built",
+      "adopted": true,
+      "tests": 0
+    },
+    {
+      "id": "F-023",
+      "name": "An Up Next widget shows what's coming",
+      "priority": "must",
+      "status": "built",
+      "adopted": true,
+      "tests": 0
+    },
+    {
+      "id": "F-024",
+      "name": "Other modules mark days on the calendar (e.g. who's got dinner)",
+      "priority": "should",
+      "status": "built",
+      "adopted": true,
+      "tests": 0
+    },
+    {
+      "id": "F-025",
+      "name": "Kids earn Pritchett Bucks for chores, held for approval where a parent wants",
+      "priority": "must",
+      "status": "built",
+      "adopted": true,
+      "tests": 0
+    },
+    {
+      "id": "F-026",
+      "name": "A kid sees their balance and where it went",
+      "priority": "must",
+      "status": "built",
+      "adopted": true,
+      "tests": 0
+    },
+    {
+      "id": "F-027",
+      "name": "A parent keeps a catalog of rewards",
+      "priority": "must",
+      "status": "built",
+      "adopted": true,
+      "tests": 0
+    },
+    {
+      "id": "F-028",
+      "name": "A kid buys a reward ticket, keeps it, and asks to use it; a parent grants or declines",
+      "priority": "must",
+      "status": "built",
+      "adopted": true,
+      "tests": 0
+    },
+    {
+      "id": "F-029",
+      "name": "Kids fill punch cards",
+      "priority": "should",
+      "status": "built",
+      "adopted": true,
+      "tests": 0
+    },
+    {
+      "id": "F-030",
+      "name": "A parent grants a bonus or corrects a ticket",
+      "priority": "should",
+      "status": "built",
+      "adopted": true,
+      "tests": 0
+    },
+    {
+      "id": "F-031",
+      "name": "The family plans the week's dinners and sees tonight's, claiming one in a tap",
+      "priority": "must",
+      "status": "built",
+      "adopted": true,
+      "tests": 0
+    },
+    {
+      "id": "F-032",
+      "name": "Whoever has dinner gets nudged in the afternoon, and parents when nobody does",
+      "priority": "must",
+      "status": "built",
+      "adopted": true,
+      "tests": 0
+    },
+    {
+      "id": "F-033",
+      "name": "A dinner links to its recipe",
+      "priority": "should",
+      "status": "built",
+      "adopted": true,
+      "tests": 0
+    },
+    {
+      "id": "F-034",
+      "name": "A dinner is dragged to another day, moving or swapping it",
+      "priority": "should",
+      "status": "built",
+      "adopted": true,
+      "tests": 0
+    },
+    {
+      "id": "F-035",
+      "name": "The family keeps one shopping list, captured fast and in walk order",
+      "priority": "must",
+      "status": "built",
+      "adopted": true,
+      "tests": 0
+    },
+    {
+      "id": "F-036",
+      "name": "Two shoppers check items off together in the store",
+      "priority": "must",
+      "status": "built",
+      "adopted": true,
+      "tests": 0
+    },
+    {
+      "id": "F-037",
+      "name": "A dinner's needs push to the shopping list",
+      "priority": "should",
+      "status": "built",
+      "adopted": true,
+      "tests": 0
+    },
+    {
+      "id": "F-038",
+      "name": "The list keeps working with no signal in the store",
+      "priority": "should",
+      "status": "built",
+      "adopted": true,
+      "tests": 0
+    },
+    {
+      "id": "F-039",
+      "name": "A member takes back their own add for fifteen minutes",
+      "priority": "should",
+      "status": "built",
+      "adopted": true,
+      "tests": 0
+    },
+    {
+      "id": "F-040",
+      "name": "Kids spend XP on a companion critter and its gear",
+      "priority": "must",
+      "status": "planned",
+      "adopted": false,
+      "tests": 0
+    }
+  ],
+  "tests": {
+    "files": 124,
+    "run": {
+      "at": "2026-11-14T19:22:34Z",
+      "command": "pnpm test",
+      "passed": 937,
+      "failed": 0
+    },
+    "untested": []
+  },
+  "decisions": {
+    "count": 77,
+    "recent": [
+      {
+        "id": "D-077",
+        "date": "2026-09-04",
+        "title": "The Shopping tile stays out of Home's default layouts"
+      },
+      {
+        "id": "D-076",
+        "date": "2026-11-14",
+        "title": "ADR 074 records Home's bottom-inset override"
+      },
+      {
+        "id": "D-075",
+        "date": "2026-11-14",
+        "title": "A maintainer token moves bug-report status"
+      },
+      {
+        "id": "D-074",
+        "date": "2026-09-04",
+        "title": "The Frame Insets, the Header Leads"
+      },
+      {
+        "id": "D-073",
+        "date": "2026-09-04",
+        "title": "Taking Back Your Own Add Is Tier 1, for Fifteen Minutes"
+      },
+      {
+        "id": "D-072",
+        "date": "2026-09-03",
+        "title": "The Wall Adds As the House"
+      },
+      {
+        "id": "D-071",
+        "date": "2026-09-03",
+        "title": "Checking Off Is Its Own Action, at Tier 2"
+      },
+      {
+        "id": "D-070",
+        "date": "2026-09-03",
+        "title": "CaptureField joins ComposeForm, with a rule for choosing"
+      }
+    ]
+  },
+  "changes": [
+    "2026-11-14 · Adopted Throughline: sessions 2–4 carry the M4.5 Companion plan (`docs/reference/companion/`), 5 the family-feed test addendum, 6 the bridge token and an owed ADR line · the queue and kickoffs retire"
+  ],
+  "fixes": [
+    "— · #145 · F-021 · One timed event that spans several days shows as one continuous span · needs info: Zach checking with Mom; may reopen D-057"
+  ],
+  "report": null,
+  "time": {
+    "sessions": 0,
+    "total": 0,
+    "approx": false,
+    "over": []
+  }
+}

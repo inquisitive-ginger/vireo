@@ -1,0 +1,216 @@
+<title>Vireo Dashboard</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: summary first (stage, waiting on, next), then the stage track, then sessions, features, decisions, roadmap changes */
+:root {
+  --bg: #f4f5f7; --surface: #ffffff; --ink: #1c2230; --muted: #5d6576; --line: #dde1e8;
+  --accent: #3d4fb8; --accent-soft: #e8ebfa;
+  --ok: #23704a; --ok-soft: #e1f2e8; --review: #8a5a00; --review-soft: #fbf0d9; --work: #3d4fb8; --work-soft: #e8ebfa;
+  --idle: #6b7280; --idle-soft: #eef0f3; --block: #a33a3a; --block-soft: #f8e4e4;
+  --sans: 'IBM Plex Sans', system-ui, -apple-system, 'Segoe UI', sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #12151c; --surface: #1a1f29; --ink: #e6e9f0; --muted: #9aa2b2; --line: #2c3342;
+    --accent: #9aa8f5; --accent-soft: #252c4a;
+    --ok: #7fd1a3; --ok-soft: #173326; --review: #f0c46b; --review-soft: #3a2e14; --work: #9aa8f5; --work-soft: #252c4a;
+    --idle: #9aa2b2; --idle-soft: #232936; --block: #f19a9a; --block-soft: #3d1f22; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #12151c; --surface: #1a1f29; --ink: #e6e9f0; --muted: #9aa2b2; --line: #2c3342;
+  --accent: #9aa8f5; --accent-soft: #252c4a;
+  --ok: #7fd1a3; --ok-soft: #173326; --review: #f0c46b; --review-soft: #3a2e14; --work: #9aa8f5; --work-soft: #252c4a;
+  --idle: #9aa2b2; --idle-soft: #232936; --block: #f19a9a; --block-soft: #3d1f22; color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--sans); font-size: 15px; line-height: 1.5; }
+.wrap { max-width: 68rem; margin: 0 auto; padding-block: 2.5rem 4rem; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); display: grid; gap: 2rem; }
+.wrap > *, .cols > * { min-width: 0; }
+header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: baseline; gap: 0.5rem 1.5rem; }
+h1 { font-size: clamp(1.6rem, 4vw, 2.2rem); font-weight: 600; margin: 0; letter-spacing: -0.01em; text-wrap: balance; }
+.meta { color: var(--muted); font-size: 0.85rem; }
+h2 { font-size: 0.75rem; font-weight: 600; letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted); margin: 0 0 0.75rem; }
+.id { font-family: var(--mono); font-size: 0.85em; color: var(--muted); font-variant-numeric: tabular-nums; }
+a { color: var(--accent); }
+a:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.summary { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 15rem), 1fr)); gap: 1rem; }
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 1rem 1.1rem; display: grid; gap: 0.5rem; align-content: start; min-width: 0; }
+.panel .big { font-size: 1.35rem; font-weight: 600; }
+.panel ul { list-style: none; margin: 0; padding: 0; display: grid; gap: 0.5rem; }
+.panel li { display: grid; gap: 0.1rem; }
+.worked { font-size: 1.1rem; font-weight: 600; font-variant-numeric: tabular-nums; }
+.worked:empty { display: none; }
+.who { font-weight: 600; }
+.why { color: var(--muted); font-size: 0.85rem; }
+
+.track { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 0.5rem; }
+.step { display: grid; gap: 0.35rem; }
+.step b { font-size: 0.85rem; font-weight: 600; }
+.step .bar { height: 6px; border-radius: 3px; background: var(--idle-soft); overflow: hidden; }
+.step .bar i { display: block; height: 100%; background: var(--ok); }
+.step.current b { color: var(--accent); }
+.step.current .bar { outline: 2px solid var(--accent-soft); }
+.step .n { font-size: 0.8rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+@media (max-width: 560px) { .track { grid-template-columns: repeat(auto-fit, minmax(5.5rem, 1fr)); } }
+
+.scroll { overflow-x: auto; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+th, td { text-align: left; padding: 0.6rem 0.8rem; border-bottom: 1px solid var(--line); vertical-align: top; }
+th { font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 600; white-space: nowrap; }
+tr:last-child td { border-bottom: 0; }
+tr.stage-row td { background: var(--bg); font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--muted); font-weight: 600; padding-block: 0.4rem; }
+td.num { font-variant-numeric: tabular-nums; white-space: nowrap; }
+.pill { display: inline-block; font-size: 0.75rem; font-weight: 500; padding: 0.1rem 0.55rem; border-radius: 999px; white-space: nowrap; }
+.s-locked, .s-verified { background: var(--ok-soft); color: var(--ok); }
+.s-in-review { background: var(--review-soft); color: var(--review); }
+.s-in-progress, .s-built { background: var(--work-soft); color: var(--work); }
+.s-todo, .s-planned { background: var(--idle-soft); color: var(--idle); }
+.s-decided { background: var(--accent-soft); color: var(--accent); }
+.s-blocked { background: var(--block-soft); color: var(--block); }
+.type { font-family: var(--mono); font-size: 0.78rem; color: var(--muted); }
+.over { color: var(--block); }
+.big.bad { color: var(--block); }
+.big.good { color: var(--ok); }
+.tcount { font-family: var(--mono); font-size: 0.78rem; color: var(--muted); white-space: nowrap; }
+.tcount.none { color: var(--block); }
+
+.cols { display: grid; grid-template-columns: repeat(auto-fit, minmax(min(100%, 22rem), 1fr)); gap: 2rem; }
+.rows { list-style: none; margin: 0; padding: 0; background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+.rows li { display: grid; grid-template-columns: auto minmax(0, 1fr) auto; gap: 0.75rem; align-items: baseline; padding: 0.55rem 0.8rem; border-bottom: 1px solid var(--line); }
+.rows li:last-child { border-bottom: 0; }
+.rows.feat li { grid-template-columns: auto minmax(0, 1fr) auto auto; }
+.rows.plain li { grid-template-columns: minmax(0, 1fr); }
+.coverage { display: flex; height: 8px; border-radius: 4px; overflow: hidden; background: var(--idle-soft); margin-bottom: 0.75rem; }
+.coverage i { display: block; }
+.empty { color: var(--muted); font-size: 0.9rem; background: var(--surface); border: 1px dashed var(--line); border-radius: 10px; padding: 1rem; }
+</style>
+
+<div class="wrap">
+  <header>
+    <h1 id="project"></h1>
+    <span class="meta" id="meta"></span>
+  </header>
+  <section class="summary" aria-label="Summary">
+    <div class="panel"><h2>Stage</h2><span class="big" id="stage"></span><span class="worked" id="worked"></span><span class="why" id="stage-note"></span></div>
+    <div class="panel"><h2>Waiting on</h2><ul id="waiting"></ul></div>
+    <div class="panel"><h2>Next up</h2><div id="next"></div></div>
+    <div class="panel"><h2>Tests</h2><span class="big" id="tests"></span><span class="why" id="tests-note"></span></div>
+  </section>
+  <section aria-labelledby="h-track"><h2 id="h-track">Lifecycle</h2><div class="track" id="track"></div></section>
+  <section aria-labelledby="h-sessions"><h2 id="h-sessions">Sessions</h2><div id="sessions"></div></section>
+  <div class="cols">
+    <section aria-labelledby="h-features"><h2 id="h-features">Features</h2><div id="features"></div></section>
+    <section aria-labelledby="h-decisions"><h2 id="h-decisions">Recent decisions</h2><div id="decisions"></div></section>
+  </div>
+  <section aria-labelledby="h-fixes" id="fixes-wrap"><h2 id="h-fixes">Open fixes</h2><div id="fixes"></div></section>
+  <section aria-labelledby="h-changes" id="changes-wrap"><h2 id="h-changes">Roadmap changes</h2><div id="changes"></div></section>
+</div>
+
+<script id="data" type="application/json">{"project":"Vireo","mode":"solo","operator":"Zach","approvers":["Zach"],"generatedAt":"2026-11-14T19:23:59.837Z","current":"ideate","preview":null,"stages":[{"key":"ideate","label":"Ideate","total":1,"locked":0},{"key":"plan","label":"Plan","total":1,"locked":0},{"key":"build","label":"Build","total":5,"locked":0}],"sessions":[{"n":"0","stage":"ideate","name":"Idea one-pager (adopted)","type":"decide","features":[],"approver":"Zach","depends":[],"status":"todo","url":null,"sent":null,"responded":null,"file":null,"started":null,"minutes":null,"waited":null,"approx":false,"rounds":0,"waiting":{"on":"Zach","why":"ready to start"}},{"n":"1","stage":"plan","name":"Roadmap","type":"decide","features":[],"approver":"Zach","depends":["0"],"status":"todo","url":null,"sent":null,"responded":null,"file":null,"started":null,"minutes":null,"waited":null,"approx":false,"rounds":0,"waiting":{"on":null,"why":"blocked by #0"}},{"n":"2","stage":"build","name":"Companion: feature UX","type":"decide","features":["F-040"],"approver":"Zach","depends":["1"],"status":"todo","url":null,"sent":null,"responded":null,"file":null,"started":null,"minutes":null,"waited":null,"approx":false,"rounds":0,"waiting":{"on":null,"why":"blocked by #1"}},{"n":"3","stage":"build","name":"Companion: foundation","type":"build","features":["F-040"],"approver":"Zach","depends":["2"],"status":"todo","url":null,"sent":null,"responded":null,"file":null,"started":null,"minutes":null,"waited":null,"approx":false,"rounds":0,"waiting":{"on":null,"why":"blocked by #2"}},{"n":"4","stage":"build","name":"Companion: surfaces","type":"build","features":["F-040"],"approver":"Zach","depends":["3"],"status":"todo","url":null,"sent":null,"responded":null,"file":null,"started":null,"minutes":null,"waited":null,"approx":false,"rounds":0,"waiting":{"on":null,"why":"blocked by #3"}},{"n":"5","stage":"build","name":"Family feed: test suite","type":"build","features":["F-011"],"approver":"Zach","depends":["1"],"status":"todo","url":null,"sent":null,"responded":null,"file":null,"started":null,"minutes":null,"waited":null,"approx":false,"rounds":0,"waiting":{"on":null,"why":"blocked by #1"}},{"n":"6","stage":"build","name":"Enhancements","type":"build","features":["F-008","F-004"],"approver":"Zach","depends":["1"],"status":"todo","url":null,"sent":null,"responded":null,"file":null,"started":null,"minutes":null,"waited":null,"approx":false,"rounds":0,"waiting":{"on":null,"why":"blocked by #1"}}],"waiting":[],"next":{"n":"0","stage":"ideate","name":"Idea one-pager (adopted)","type":"decide","features":[],"approver":"Zach","depends":[],"status":"todo","url":null,"sent":null,"responded":null,"file":null,"started":null,"minutes":null,"waited":null,"approx":false,"rounds":0,"waiting":{"on":"Zach","why":"ready to start"}},"features":[{"id":"F-001","name":"A parent sets up the household and each member's profile and trust tier","priority":"must","status":"built","adopted":true,"tests":0},{"id":"F-002","name":"A member picks their profile and signs in with a PIN; the wall signs in as the house","priority":"must","status":"built","adopted":true,"tests":0},{"id":"F-003","name":"Every member has an assigned, unique identity colour that follows them everywhere","priority":"must","status":"built","adopted":true,"tests":0},{"id":"F-004","name":"Each member and the wall see a home screen of widgets from every module","priority":"must","status":"built","adopted":true,"tests":0},{"id":"F-005","name":"A parent adjusts what each profile is allowed to do","priority":"must","status":"built","adopted":true,"tests":0},{"id":"F-006","name":"Members get notifications in the app and as web push","priority":"must","status":"built","adopted":true,"tests":0},{"id":"F-007","name":"Vireo installs as an app on the tablet and phones, with a mobile nav","priority":"must","status":"built","adopted":true,"tests":0},{"id":"F-008","name":"Anyone reports a problem from the screen it happened on and hears when it's fixed","priority":"must","status":"built","adopted":true,"tests":0},{"id":"F-009","name":"A member turns on focus mode to see only what's theirs","priority":"should","status":"built","adopted":true,"tests":0},{"id":"F-010","name":"A member's avatar can be a photo","priority":"should","status":"built","adopted":true,"tests":0},{"id":"F-011","name":"The family posts to and reads a shared feed","priority":"must","status":"built","adopted":true,"tests":0},{"id":"F-012","name":"A parent assigns chores and each kid sees today's","priority":"must","status":"built","adopted":true,"tests":0},{"id":"F-013","name":"A kid completes a chore in one tap; a parent checks it off or reopens it","priority":"must","status":"built","adopted":true,"tests":0},{"id":"F-014","name":"A parent edits or removes a chore","priority":"must","status":"built","adopted":true,"tests":0},{"id":"F-015","name":"Chores repeat on a routine without being re-entered","priority":"must","status":"built","adopted":true,"tests":0},{"id":"F-016","name":"A kid claims an up-for-grabs chore, then does it","priority":"should","status":"built","adopted":true,"tests":0},{"id":"F-017","name":"A parent hears when a chore is done","priority":"must","status":"built","adopted":true,"tests":0},{"id":"F-018","name":"Kids earn XP for chores","priority":"must","status":"built","adopted":true,"tests":0},{"id":"F-019","name":"The family reads the month at a glance on the wall, coloured by who","priority":"must","status":"built","adopted":true,"tests":0},{"id":"F-020","name":"A member creates and edits events, on the wall or a phone","priority":"must","status":"built","adopted":true,"tests":0},{"id":"F-021","name":"Activities repeat, including daily time windows","priority":"must","status":"built","adopted":true,"tests":0},{"id":"F-022","name":"Members get reminded before an event","priority":"must","status":"built","adopted":true,"tests":0},{"id":"F-023","name":"An Up Next widget shows what's coming","priority":"must","status":"built","adopted":true,"tests":0},{"id":"F-024","name":"Other modules mark days on the calendar (e.g. who's got dinner)","priority":"should","status":"built","adopted":true,"tests":0},{"id":"F-025","name":"Kids earn Pritchett Bucks for chores, held for approval where a parent wants","priority":"must","status":"built","adopted":true,"tests":0},{"id":"F-026","name":"A kid sees their balance and where it went","priority":"must","status":"built","adopted":true,"tests":0},{"id":"F-027","name":"A parent keeps a catalog of rewards","priority":"must","status":"built","adopted":true,"tests":0},{"id":"F-028","name":"A kid buys a reward ticket, keeps it, and asks to use it; a parent grants or declines","priority":"must","status":"built","adopted":true,"tests":0},{"id":"F-029","name":"Kids fill punch cards","priority":"should","status":"built","adopted":true,"tests":0},{"id":"F-030","name":"A parent grants a bonus or corrects a ticket","priority":"should","status":"built","adopted":true,"tests":0},{"id":"F-031","name":"The family plans the week's dinners and sees tonight's, claiming one in a tap","priority":"must","status":"built","adopted":true,"tests":0},{"id":"F-032","name":"Whoever has dinner gets nudged in the afternoon, and parents when nobody does","priority":"must","status":"built","adopted":true,"tests":0},{"id":"F-033","name":"A dinner links to its recipe","priority":"should","status":"built","adopted":true,"tests":0},{"id":"F-034","name":"A dinner is dragged to another day, moving or swapping it","priority":"should","status":"built","adopted":true,"tests":0},{"id":"F-035","name":"The family keeps one shopping list, captured fast and in walk order","priority":"must","status":"built","adopted":true,"tests":0},{"id":"F-036","name":"Two shoppers check items off together in the store","priority":"must","status":"built","adopted":true,"tests":0},{"id":"F-037","name":"A dinner's needs push to the shopping list","priority":"should","status":"built","adopted":true,"tests":0},{"id":"F-038","name":"The list keeps working with no signal in the store","priority":"should","status":"built","adopted":true,"tests":0},{"id":"F-039","name":"A member takes back their own add for fifteen minutes","priority":"should","status":"built","adopted":true,"tests":0},{"id":"F-040","name":"Kids spend XP on a companion critter and its gear","priority":"must","status":"planned","adopted":false,"tests":0}],"tests":{"files":124,"run":{"at":"2026-11-14T19:22:34Z","command":"pnpm test","passed":937,"failed":0},"untested":[]},"decisions":{"count":77,"recent":[{"id":"D-077","date":"2026-09-04","title":"The Shopping tile stays out of Home's default layouts"},{"id":"D-076","date":"2026-11-14","title":"ADR 074 records Home's bottom-inset override"},{"id":"D-075","date":"2026-11-14","title":"A maintainer token moves bug-report status"},{"id":"D-074","date":"2026-09-04","title":"The Frame Insets, the Header Leads"},{"id":"D-073","date":"2026-09-04","title":"Taking Back Your Own Add Is Tier 1, for Fifteen Minutes"},{"id":"D-072","date":"2026-09-03","title":"The Wall Adds As the House"},{"id":"D-071","date":"2026-09-03","title":"Checking Off Is Its Own Action, at Tier 2"},{"id":"D-070","date":"2026-09-03","title":"CaptureField joins ComposeForm, with a rule for choosing"}]},"changes":["2026-11-14 · Adopted Throughline: sessions 2–4 carry the M4.5 Companion plan (`docs/reference/companion/`), 5 the family-feed test addendum, 6 the bridge token and an owed ADR line · the queue and kickoffs retire"],"fixes":["— · #145 · F-021 · One timed event that spans several days shows as one continuous span · needs info: Zach checking with Mom; may reopen D-057"],"report":null,"time":{"sessions":0,"total":0,"approx":false,"over":[]}}</script>
+<script>
+const D = JSON.parse(document.getElementById('data').textContent);
+const $ = id => document.getElementById(id);
+function el(tag, attrs = {}, kids = []) {
+  const n = document.createElement(tag);
+  for (const [k, v] of Object.entries(attrs)) { if (v == null) continue; if (k === 'text') n.textContent = v; else n.setAttribute(k, v); }
+  for (const k of [].concat(kids)) if (k != null) n.append(k);
+  return n;
+}
+const pill = (s, text) => el('span', { class: 'pill s-' + s.replace(/\s+/g, '-'), text: text || s });
+const LABEL = Object.fromEntries(D.stages.map(s => [s.key, s.label]));
+const fmt = iso => new Date(iso).toLocaleString(undefined, { month: 'short', day: 'numeric', hour: 'numeric', minute: '2-digit' });
+const mins = m => (m == null ? '' : m >= 60 ? `${Math.floor(m / 60)}h ${m % 60}m` : `${m}m`);
+const empty = text => el('p', { class: 'empty', text });
+
+$('project').textContent = D.project;
+$('meta').textContent = `${D.mode === 'solo' ? 'Solo' : 'Approver: ' + D.approvers.join(', ')} · Updated ${fmt(D.generatedAt)}`;
+if (D.preview) $('meta').append(' · ', el('a', { href: D.preview.url, target: '_blank', rel: 'noopener', title: D.preview.branch, text: 'Open the latest preview' }));
+
+const locked = D.sessions.filter(s => s.status === 'locked').length;
+$('stage').textContent = D.current === 'done' ? 'Delivered' : LABEL[D.current] || 'Ideate';
+$('stage-note').textContent = D.sessions.length
+  ? `${locked} of ${D.sessions.length} sessions locked · ${D.decisions.count} decisions`
+  : 'No roadmap yet. Run /ideate, then /plan.';
+if (D.time.sessions) $('worked').textContent = `${D.time.approx ? '~' : ''}${mins(D.time.total)} worked · ${D.time.sessions} session${D.time.sessions === 1 ? '' : 's'}`;
+
+if (D.waiting.length) $('waiting').append(...D.waiting.map(w => el('li', {}, [
+  el('span', {}, [el('span', { class: 'who', text: w.on }), ' ', pill(w.why === 'review' ? 'in review' : 'in progress', w.why)]),
+  el('span', { class: 'why' }, [el('span', { class: 'id', text: '#' + w.n }), ' ' + w.name + ' ', w.url ? el('a', { href: w.url, target: '_blank', rel: 'noopener', text: 'Open board' }) : null]),
+])));
+else $('waiting').append(el('li', { class: 'why', text: 'Nothing open.' }));
+
+$('next').append(D.next
+  ? el('div', {}, [el('div', { class: 'big' }, [el('span', { class: 'id', text: '#' + D.next.n + ' ' }), D.next.name]), el('span', { class: 'why', text: `${D.next.type} · approver ${D.next.approver}` })])
+  : el('span', { class: 'why', text: D.sessions.length ? 'Nothing ready. Finish what is open first.' : 'Run /ideate.' }));
+
+const T = D.tests || { files: 0, run: null, untested: [] };
+const tests = $('tests');
+if (T.run) {
+  tests.textContent = T.run.failed ? `${T.run.failed} failing` : `${T.run.passed} passing`;
+  tests.className = 'big ' + (T.run.failed ? 'bad' : 'good');
+} else tests.textContent = T.files ? 'Not run yet' : 'None yet';
+$('tests-note').textContent = [
+  T.run ? `Last run ${fmt(T.run.at)}` : null,
+  `${T.files} test file${T.files === 1 ? '' : 's'}`,
+  T.untested.length ? `Built but untested: ${T.untested.join(', ')}` : null,
+].filter(Boolean).join(' · ');
+
+$('track').append(...D.stages.map(s => el('div', { class: 'step' + (s.key === D.current ? ' current' : '') }, [
+  el('b', { text: s.label }),
+  el('span', { class: 'bar', role: 'img', 'aria-label': `${s.label}: ${s.locked} of ${s.total} locked` }, [el('i', { style: `width:${s.total ? (100 * s.locked) / s.total : 0}%` })]),
+  el('span', { class: 'n', text: s.total ? `${s.locked}/${s.total}` : '—' }),
+])));
+
+if (D.sessions.length) {
+  const body = el('tbody');
+  let stage = null;
+  for (const s of D.sessions) {
+    if (s.stage !== stage) { stage = s.stage; body.append(el('tr', { class: 'stage-row' }, [el('td', { colspan: '7', text: LABEL[stage] || stage })])); }
+    const blocked = s.status === 'todo' && s.waiting?.why?.startsWith('blocked');
+    body.append(el('tr', {}, [
+      el('td', { class: 'num' }, [el('span', { class: 'id', text: '#' + s.n })]),
+      el('td', {}, [s.name, s.features.length ? el('div', { class: 'id', text: s.features.join(' ') }) : null]),
+      el('td', {}, [el('span', { class: 'type', text: s.type })]),
+      el('td', {}, [blocked ? pill('blocked', s.waiting.why) : pill(s.status)]),
+      el('td', { text: s.approver }),
+      el('td', { class: 'num' + (s.minutes > 60 ? ' over' : ''), text: (s.approx ? '~' : '') + mins(s.minutes), title: s.approx ? 'Includes review wait: no Sent/Back stamps' : s.waited ? `${mins(s.waited)} waiting on review not counted` : null }),
+      el('td', {}, [s.url ? el('a', { href: s.url, target: '_blank', rel: 'noopener', text: 'Board' }) : null]),
+    ]));
+  }
+  $('sessions').append(el('div', { class: 'scroll' }, [el('table', {}, [
+    el('thead', {}, [el('tr', {}, ['#', 'Session', 'Type', 'Status', 'Approver', 'Time', ''].map(h => el('th', { scope: 'col', text: h })))]),
+    body,
+  ])]));
+} else $('sessions').append(empty('Sessions appear here once /plan writes the roadmap.'));
+
+if (D.features.length) {
+  const order = ['verified', 'built', 'decided', 'planned'];
+  const counts = Object.fromEntries(order.map(k => [k, D.features.filter(f => f.status === k).length]));
+  const color = { verified: 'var(--ok)', built: 'var(--work)', decided: 'color-mix(in srgb, var(--accent) 45%, transparent)', planned: 'transparent' };
+  $('features').append(
+    el('div', { class: 'coverage', role: 'img', 'aria-label': order.map(k => `${counts[k]} ${k}`).join(', ') }, order.map(k => el('i', { style: `width:${(100 * counts[k]) / D.features.length}%;background:${color[k]}` }))),
+    el('ul', { class: 'rows feat' }, D.features.map(f => el('li', {}, [
+      el('span', { class: 'id', text: f.id }),
+      el('span', {}, [f.name, f.priority !== 'must' ? el('span', { class: 'why', text: ' · ' + f.priority }) : null]),
+      el('span', { class: 'tcount' + (!f.tests && ['built', 'verified'].includes(f.status) ? ' none' : ''), text: f.tests ? `${f.tests} test${f.tests === 1 ? '' : 's'}` : ['built', 'verified'].includes(f.status) ? 'no tests' : '' }),
+      pill(f.status),
+    ]))),
+  );
+} else $('features').append(empty('Features appear once /ideate writes docs/idea.md.'));
+
+$('decisions').append(D.decisions.recent.length
+  ? el('ul', { class: 'rows' }, D.decisions.recent.map(d => el('li', {}, [el('span', { class: 'id', text: d.id }), el('span', { text: d.title }), el('span', { class: 'why', text: d.date })])))
+  : empty('No decisions locked yet.'));
+
+if (D.fixes?.length) $('fixes').append(el('ul', { class: 'rows plain' }, D.fixes.map(c => el('li', { text: c }))));
+else $('fixes-wrap').hidden = true;
+if (D.report) $('meta').append(' · ', el('a', { href: D.report, target: '_blank', rel: 'noopener', text: 'Report a problem' }));
+if (D.changes.length) $('changes').append(el('ul', { class: 'rows plain' }, D.changes.map(c => el('li', { text: c }))));
+else $('changes-wrap').hidden = true;
+</script>

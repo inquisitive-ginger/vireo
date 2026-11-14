@@ -702,7 +702,7 @@ widgets at desk distance.
 ### Other Surfaces
 
 Mobile surface layout is settled — see [Mobile Surface](#mobile-surface) and ADR 033.
-TV and Pi room display layouts are deferred to their respective design sessions. See `docs/sessions/queue.md`.
+TV and Pi room display layouts are not planned: they were recycled in the 2026-09-07 queue audit.
 
 ---
 

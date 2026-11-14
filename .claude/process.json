@@ -1,0 +1,29 @@
+{
+  "project": "Vireo",
+  "boardPrefix": "Vireo",
+  "type": "web-app",
+  "operator": "Zach",
+  "approvers": ["Zach"],
+  "tokens": "packages/ui/src/styles.css",
+  "boardTheme": null,
+  "adopted": "2026-11-14",
+  "lockRouting": {
+    "strategy": "docs/brief.md",
+    "design": "docs/design-system.md",
+    "architecture": "docs/architecture.md",
+    "tokens": "packages/ui/src/styles.css"
+  },
+  "loop": {
+    "dev": "pnpm dev",
+    "build": "pnpm typecheck && pnpm build",
+    "test": "pnpm test",
+    "review": "walkthrough: the dev server from the session worktree, opened over the LAN on the wall iPad and a phone",
+    "merge": "pr",
+    "deployCheck": "scripts/deploy-check.sh"
+  },
+  "issues": {
+    "source": "github",
+    "label": "auto-bug",
+    "onStatus": null
+  }
+}
