@@ -5,3 +5,7 @@ pnpm-lock.yaml
 # Prisma emits these. Reformatting them churns every committed client and the
 # diff then has to be stripped by hand before each commit.
 **/src/generated/
+# Throughline owns these: the board runtime is synced from the kit and compared to it, the dashboard is generated.
+docs/artifacts/_kit/
+docs/artifacts/status.html
+docs/status.json

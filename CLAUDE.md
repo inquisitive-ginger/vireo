@@ -1,7 +1,7 @@
 # Vireo — Master Context
 
 A locally-hosted, plugin-native platform for family organization — chores,
-scheduling, finance, smart home, and more. See [`docs/vision.md`](docs/vision.md).
+scheduling, finance, smart home, and more. See [`docs/idea.md`](docs/idea.md).
 
 **This file is an index, not a record.** It carries only what a cold session needs
 before it reads anything else, and it is size-capped — see
@@ -9,74 +9,50 @@ before it reads anything else, and it is size-capped — see
 
 ---
 
-## Current Status
+## Process (Throughline)
 
-> **At most six one-line bullets.** Update at the end of every session. If a
-> session's detail doesn't fit on one line it belongs in the session log.
+Built through short numbered sessions. Zach operates and approves. Config and the
+loop contract: `.claude/process.json`. Where things stand: `/status`.
 
-- **Milestone:** M4.5 — Companion (M4.5/3 next). **M3, M5 and M5.5 all closed 2026-09-07.**
-- **The queue was audited 2026-09-07** — four kickoffs, three story specs and the whole
-  Deferred Backlog were recycled unbuilt. Two items remain; don't restore from a log.
-- **Shopping is announced:** nav entry at every breakpoint since PR #138. The Home tile
-  is deliberately **not** in the default layouts — Zach pulled it, one revert to restore.
-- **Deployment:** 🟢 live at `https://vireohome.app` — Pi 5 (192.168.0.42, pinned
-  in NetworkManager 2026-09-02; eth0 `88:a2:9e:d4:e7:33`, router reservation still
-  owed); auto-deploy + Tailscale + restic→R2 + watchdog intact. Runbook Part F/G.
-- **Last session:** 2026-11-01 — meal drag-swap (#146) and DST recurrence (#147) fixed and
-  live, reports flipped; deploy now syncs the compose file. `logs/2026-11-01-fix-auto-bugs-meal-swap-dst.md`.
-- **What's next and everything outstanding:** `docs/sessions/queue.md` — the one
-  index. M4.5/3 next.
+Read first, every session: `docs/idea.md`, `docs/roadmap.md`, `docs/decisions.md`
+(locked; never contradict one, reopen only when Zach asks and log the reversal as a
+new entry), `docs/brief.md`, `docs/reference/README.md`.
+
+Loop: `/session-start <n>` → decide: options on a board · build: implement the cited
+decisions, walkthrough, acceptance board · verify: checklist board → `/lock-in`
+(which replans and refreshes status). Reported problems: `/triage` routes the open
+`auto-bug` issues into the roadmap.
+
+- Features are `F-###` (`idea.md`), decisions `D-###` (`decisions.md`; D-001–D-074
+  are the ADRs, same numbers). Build sessions cite the D-IDs they implement.
+- Tests protect decisions: every machine-observable acceptance check and every
+  testable rule in a decision gets an automated test whose name cites its IDs
+  (`D-002 … [F-001]`, or the report for a fix: `#152 …`). No lock or merge on a
+  failing suite. Look, feel and wording stay human calls on the board.
+- `docs/sessions/NN-*.md`: one file per session. `docs/artifacts/`: source of every
+  board and the dashboard; `_kit/` holds the board runtime. Before 2026-11-14:
+  `docs/sessions/logs/` and `docs/history/`.
+- Locked results go to their source of truth per `lockRouting`. Don't hard-code
+  copy in components.
+- Accessibility is a requirement: WCAG 2.2 AA contrast, semantic HTML,
+  keyboard-usable.
+- Commits: the kit's messages for process commits; `[module/sNN] what changed` for
+  code inside a session.
 
 ---
 
 ## Workspace Map
 
-| Path                       | What it is                                |
-| -------------------------- | ----------------------------------------- |
-| `docs/vision.md`           | The why — stable, rarely changes          |
-| `docs/architecture.md`     | How pieces fit — living doc               |
-| `docs/design-system.md`    | Visual language and component conventions |
-| `docs/decisions/`          | ADRs — settled decisions                  |
-| `docs/modules/[name]/`     | Per-module spec + progress board          |
-| `docs/roadmap.md`          | Milestones and delivery status            |
-| `docs/deployment.md`       | The Pi / Compose / Caddy / CI-CD runbook  |
-| `docs/fix-it-playbook.md`  | Fixing a reported bug end to end          |
-| `docs/sessions/queue.md`   | What to run next — the session queue      |
-| `docs/sessions/kickoffs/`  | Pre-loaded kickoff doc per queued session |
-| `docs/sessions/templates/` | Recipes for writing kickoff docs          |
-| `docs/sessions/logs/`      | Session output artifacts                  |
-
----
-
-## Rules Every Session Follows
-
-1. **Read this file first.**
-2. **Open the kickoff doc** (`docs/sessions/kickoffs/`) — it has the pre-loaded
-   context, constraints, and scope. No kickoff (ad-hoc session)? Write a minimal
-   one before touching code.
-3. **Check `docs/decisions/` before proposing changes to settled questions.**
-4. **Do not re-litigate ADRs** — flag it in the session note; don't override.
-5. **Commit an output artifact + session note before closing.**
-6. **Delete the kickoff doc** after closing — it becomes the session log.
-7. **Planning sessions update `docs/sessions/queue.md`** before closing.
-8. **Closeout writes go to the right file** — detail to the log, next steps to the
-   queue, and only the six-bullet Current Status above to this file.
-
----
-
-## Formats
-
-- **Kickoff** (`docs/sessions/kickoffs/[name].md`) — pre-session reads, scope, ACs
-  or decisions to make, constraints, implementation notes, required outputs.
-  Written before the session, deleted after.
-- **Session note** (`docs/sessions/logs/YYYY-MM-DD-[type]-[story].md`) — what was
-  decided, what was built, what was sent back and why, open questions, what the
-  next session needs to know. This is where session detail lives.
-- **ADR** (`docs/decisions/NNN-title.md`) — Status (Decided | Superseded),
-  Decision, Why, Alternatives considered, Do not revisit unless.
-- **Story progress** (`docs/modules/[name]/progress.md`) — ⬜ Not Started ·
-  🔄 In Progress · ✅ Done · 🔙 Sent Back.
-- **Queue entries** — 2–3 lines plus a log pointer. Never paste a summary.
+| Path                      | What it is                                         |
+| ------------------------- | -------------------------------------------------- |
+| `docs/idea.md`            | Problem, users, features (F-###), non-goals        |
+| `docs/roadmap.md`         | Sessions, fixes, enhancements                      |
+| `docs/decisions.md`       | Every decision (D-###); the ADRs are the records   |
+| `docs/architecture.md`    | How pieces fit — living doc                        |
+| `docs/design-system.md`   | Visual language and component conventions          |
+| `docs/modules/[name]/`    | Per-module spec and assets                         |
+| `docs/deployment.md`      | The Pi / Compose / Caddy / CI-CD runbook           |
+| `docs/fix-it-playbook.md` | The bug-report bridge: setup, outages, what's owed |
 
 ---
 
@@ -84,11 +60,8 @@ before it reads anything else, and it is size-capped — see
 
 **Module names:** kebab-case (`chore-engine`, `calendar`, `finance`)
 **Event names:** `module.noun.verb` (`chores.task.completed`)
-**Commits:** `[module/story] what changed`
-**Sessions:** scoped to one story — "backend for chores/task-completion", not
-"backend for chores"
-**Milestones:** renumbered 2026-05-30 and again 2026-07-21; `docs/roadmap.md`
-outranks any milestone number found in an older doc or log.
+**Milestones** (before 2026-11-14) were renumbered twice;
+`docs/history/roadmap-milestones.md` outranks a milestone number in an older doc or log.
 
 ---
 
@@ -145,18 +118,14 @@ outranks any milestone number found in an older doc or log.
 - **Permissions → CASL namespaced subjects + `PERMISSION_REGISTRY`** (ADR 018).
 - **Events → `module.noun.verb`** (kebab-case segments, enforced by the bus);
   **widgets → manifest + Query cache invalidation** (ADR 022).
+- **Tests follow ADR 026**: integration tests hit the real `familyos_test` database
+  (never mock Prisma), routes test through `fastify.inject()`, interactive UI gets
+  RTL behaviour tests (no snapshots) built on `packages/test-utils`, and a new
+  end-to-end flow gets a Playwright test. Postgres must be up (`docker compose up -d postgres`).
 - **New plugin → mirror the `family-feed` structure** (db export, prisma config,
   federation singletons, manifest); register it in `plugins.json`,
   `load-plugin.ts`, `federation.d.ts`, the shell `ICON_MAP`, **and `Home.tsx`
   `WIDGET_META`** — a widget silently drops without that fifth one.
-
----
-
-## Session Templates
-
-`docs/sessions/templates/` — `product` · `design` · `architecture` ·
-`development` · `qa` · `audit`. Recipes for writing kickoff docs, not forms to
-fill out live.
 
 ---
 
@@ -170,13 +139,13 @@ Every session pays for this file before it reads anything else, so it holds
 pointers and standing rules only. When something doesn't fit, move it — never
 raise the cap:
 
-| Content                    | Home                     |
-| -------------------------- | ------------------------ |
-| What happened in a session | `docs/sessions/logs/`    |
-| What's next, what's owed   | `docs/sessions/queue.md` |
-| Why something is settled   | `docs/decisions/`        |
-| How to run or deploy       | `docs/deployment.md`     |
-| Visual language            | `docs/design-system.md`  |
+| Content                    | Home                    |
+| -------------------------- | ----------------------- |
+| What happened in a session | `docs/sessions/NN-*.md` |
+| What's next, what's owed   | `docs/roadmap.md`       |
+| Why something is settled   | `docs/decisions/`       |
+| How to run or deploy       | `docs/deployment.md`    |
+| Visual language            | `docs/design-system.md` |
 
 Adding a rule here means retiring or absorbing one. If the Standing Engineering
 Conventions can't be read in a minute, they aren't standing conventions.

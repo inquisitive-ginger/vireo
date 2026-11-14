@@ -2,7 +2,7 @@
 
 A locally-hosted, plugin-native platform for family organization — chores, scheduling, finance, smart home, and more. Designed to grow with the family that runs it.
 
-See [`docs/vision.md`](docs/vision.md) for the full picture.
+See [`docs/idea.md`](docs/idea.md) for the full picture.
 
 ---
 
@@ -61,11 +61,11 @@ turbo/
 
 ## Documentation
 
-| Doc                                              | What it covers                            |
-| ------------------------------------------------ | ----------------------------------------- |
-| [`docs/vision.md`](docs/vision.md)               | Why this exists                           |
-| [`docs/architecture.md`](docs/architecture.md)   | How pieces fit together                   |
-| [`docs/design-system.md`](docs/design-system.md) | Visual language and component conventions |
-| [`docs/roadmap.md`](docs/roadmap.md)             | Milestones and delivery status            |
-| [`docs/decisions/`](docs/decisions/)             | Architecture decision records             |
-| [`CONTRIBUTING.md`](CONTRIBUTING.md)             | Code style and git workflow               |
+| Doc                                              | What it covers                                 |
+| ------------------------------------------------ | ---------------------------------------------- |
+| [`docs/idea.md`](docs/idea.md)                   | Why this exists, and its features              |
+| [`docs/architecture.md`](docs/architecture.md)   | How pieces fit together                        |
+| [`docs/design-system.md`](docs/design-system.md) | Visual language and component conventions      |
+| [`docs/roadmap.md`](docs/roadmap.md)             | Sessions, fixes and enhancements (Throughline) |
+| [`docs/decisions/`](docs/decisions/)             | Architecture decision records                  |
+| [`CONTRIBUTING.md`](CONTRIBUTING.md)             | Code style and git workflow                    |

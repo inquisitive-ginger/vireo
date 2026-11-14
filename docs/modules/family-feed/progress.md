@@ -1,5 +1,7 @@
 # Family Feed — Progress
 
+> **Frozen 2026-11-14.** Work is tracked in `docs/roadmap.md` (sessions, fixes, enhancements) and features in `docs/idea.md`; this board is the record of what shipped before.
+
 ---
 
 ## M1 — Platform Shell · ✅ Done (2026-06-15)

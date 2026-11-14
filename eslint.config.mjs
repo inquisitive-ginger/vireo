@@ -63,7 +63,7 @@ export default [
     },
   },
   {
-    ignores: ['**/dist/**', '**/node_modules/**', '**/storybook-static/**', '**/src/generated/**'],
+    ignores: ['**/dist/**', '**/node_modules/**', '**/storybook-static/**', '**/src/generated/**', 'docs/artifacts/**'],
   },
   prettier,
 ]

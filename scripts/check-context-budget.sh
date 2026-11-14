@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 # Every doc here is a tax on some future session. CLAUDE.md is loaded before a
-# session reads anything else; the queue is read at the start of every one; a log
-# is read whenever its story comes back around. The budget is the only thing that
+# session reads anything else; an ADR is read whenever its decision comes back
+# around. The budget is the only thing that
 # keeps them indexes instead of records — the authoring rules were already
 # written in each file's header and were not enough. Raising a cap is not a fix.
 set -euo pipefail
@@ -12,7 +12,6 @@ cd "$root"
 # path : max bytes : max lines (0 = unchecked). Always enforced.
 PINNED=(
   "CLAUDE.md:12000:200"
-  "docs/sessions/queue.md:16000:0"
   "docs/architecture.md:44000:0"
   "docs/design-system.md:120000:0"
 )
@@ -20,8 +19,6 @@ PINNED=(
 # glob : max bytes. Enforced only on files changed in the working tree, so the
 # existing corpus is grandfathered and only new output is governed.
 PER_FILE=(
-  "docs/sessions/logs:6000"
-  "docs/sessions/kickoffs:6000"
   "docs/decisions:6000"
 )
 
@@ -57,8 +54,8 @@ done
 cat >&2 <<'MSG'
 
 Over budget. Cut content instead of raising the cap:
-  what happened              -> docs/sessions/logs/   (headline + outcome, not narration)
-  what is next / outstanding -> docs/sessions/queue.md (3 lines + a log pointer)
+  what happened              -> docs/sessions/NN-*.md (the session file)
+  what is next / outstanding -> docs/roadmap.md
   why something is settled   -> docs/decisions/       (one page)
   how to run or deploy       -> docs/deployment.md
   visual language            -> docs/design-system.md

@@ -1,5 +1,7 @@
 # Rewards & Wallet — Progress
 
+> **Frozen 2026-11-14.** Work is tracked in `docs/roadmap.md` (sessions, fixes, enhancements) and features in `docs/idea.md`; this board is the record of what shipped before.
+
 ---
 
 ## M4 — Rewards & Wallet · ✅ Done (2026-07-26, PR #75)
