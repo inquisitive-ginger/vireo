@@ -1,0 +1,333 @@
+<title>Vireo · Idea one-pager (adopted)</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;1,6..72,400&family=Public+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="board.css">
+<style>
+.rb-item ul { margin: 0; padding-left: 1.2rem; display: grid; gap: 0.35rem; }
+.rb-item p { margin: 0; }
+</style>
+
+<div class="rb-wrap">
+  <header>
+    <div class="rb-eyebrow">Vireo · Session 00</div>
+    <h1>Is this Vireo?</h1>
+    <p class="rb-lede">Vireo now runs on Throughline, which starts from a one-page idea with numbered features. This is that page, rebuilt from what's already shipped. What you approve becomes the reference every later session cites.</p>
+    <p class="rb-how">Approve each part or ask for changes, mark any feature to cut, then press <strong>Mark reviewed</strong> on each item. Answers save as you go.</p>
+  </header>
+  <div id="rb"></div>
+</div>
+
+<script src="board.js"></script>
+<script>
+const ITEMS = [
+ {
+  "group": "The idea",
+  "intro": "Written at adoption from vision.md and the module boards. Approve each part, or ask for changes in its comment."
+ },
+ {
+  "id": "problem",
+  "type": "approve",
+  "title": "Problem",
+  "ask": "Is this right?",
+  "body": "<p>Family life is managed across a fragmented set of apps, tools and mental overhead. Chores, schedules, money, routines and communication live in different places with no shared context, and the kids have no real part in any of them. Vireo brings these into one locally-hosted system that a family organizes, coordinates and grows with, on its own hardware.</p>"
+ },
+ {
+  "id": "users",
+  "type": "approve",
+  "title": "Users",
+  "ask": "Is this right?",
+  "body": "<ul><li><strong>Parents</strong> (tier 4): set the household up, assign and approve, plan dinners, triage reports.</li><li><strong>Kids</strong> at different ages and trust levels (tiers 1–3): see what's theirs today, do it, earn, spend. The system gives them real agency appropriate to their tier (D-003) and grows up with them.</li><li><strong>The house</strong> (the wall): the fridge iPad, signed in as the family pseudo-profile (D-021, D-060, D-072). Glanced at from arm's length, often with wet hands.</li><li>Later: any family that wants to run it, through community plugins.</li></ul>"
+ },
+ {
+  "id": "nongoals",
+  "type": "approve",
+  "title": "Non-goals",
+  "ask": "Is this right?",
+  "body": "<ul><li>Not a cloud SaaS product.</li><li>Not a replacement for specialized tools; it integrates with them.</li><li>Not built for a single age of child; it adapts by tier.</li><li>No recipe bank: the free-text needs field removes the reason for one.</li><li>Nothing recycled in the 2026-09-07 queue audit comes back without a new request.</li></ul>"
+ },
+ {
+  "id": "success",
+  "type": "approve",
+  "title": "Success",
+  "ask": "Is this right?",
+  "body": "<p>Six months on, the family still runs its week from Vireo without being reminded to, the kids open it on their own, and problems keep getting reported because reports visibly get fixed.</p>"
+ },
+ {
+  "group": "Features",
+  "intro": "40 capabilities carried over from the module boards. Everything is marked Keep; switch any you want retired to Cut. A cut retires its F-ID; it does not remove code."
+ },
+ {
+  "id": "feat-platform",
+  "type": "question",
+  "input": "scale",
+  "title": "Platform",
+  "ask": "must, should priority. Keep or cut each.",
+  "options": [
+   "Keep",
+   "Cut"
+  ],
+  "rows": [
+   [
+    "F-001",
+    "F-001 · A parent sets up the household and each member's profile and trust tier (must)"
+   ],
+   [
+    "F-002",
+    "F-002 · A member picks their profile and signs in with a PIN; the wall signs in as the house (must)"
+   ],
+   [
+    "F-003",
+    "F-003 · Every member has an assigned, unique identity colour that follows them everywhere (must)"
+   ],
+   [
+    "F-004",
+    "F-004 · Each member and the wall see a home screen of widgets from every module (must)"
+   ],
+   [
+    "F-005",
+    "F-005 · A parent adjusts what each profile is allowed to do (must)"
+   ],
+   [
+    "F-006",
+    "F-006 · Members get notifications in the app and as web push (must)"
+   ],
+   [
+    "F-007",
+    "F-007 · Vireo installs as an app on the tablet and phones, with a mobile nav (must)"
+   ],
+   [
+    "F-008",
+    "F-008 · Anyone reports a problem from the screen it happened on and hears when it's fixed (must)"
+   ],
+   [
+    "F-009",
+    "F-009 · A member turns on focus mode to see only what's theirs (should)"
+   ],
+   [
+    "F-010",
+    "F-010 · A member's avatar can be a photo (should)"
+   ]
+  ]
+ },
+ {
+  "id": "feat-family-feed",
+  "type": "question",
+  "input": "scale",
+  "title": "Family feed",
+  "ask": "must priority. Keep or cut each.",
+  "options": [
+   "Keep",
+   "Cut"
+  ],
+  "rows": [
+   [
+    "F-011",
+    "F-011 · The family posts to and reads a shared feed (must)"
+   ]
+  ]
+ },
+ {
+  "id": "feat-chores",
+  "type": "question",
+  "input": "scale",
+  "title": "Chores",
+  "ask": "must, should priority. Keep or cut each.",
+  "options": [
+   "Keep",
+   "Cut"
+  ],
+  "rows": [
+   [
+    "F-012",
+    "F-012 · A parent assigns chores and each kid sees today's (must)"
+   ],
+   [
+    "F-013",
+    "F-013 · A kid completes a chore in one tap; a parent checks it off or reopens it (must)"
+   ],
+   [
+    "F-014",
+    "F-014 · A parent edits or removes a chore (must)"
+   ],
+   [
+    "F-015",
+    "F-015 · Chores repeat on a routine without being re-entered (must)"
+   ],
+   [
+    "F-016",
+    "F-016 · A kid claims an up-for-grabs chore, then does it (should)"
+   ],
+   [
+    "F-017",
+    "F-017 · A parent hears when a chore is done (must)"
+   ],
+   [
+    "F-018",
+    "F-018 · Kids earn XP for chores (must)"
+   ]
+  ]
+ },
+ {
+  "id": "feat-calendar",
+  "type": "question",
+  "input": "scale",
+  "title": "Calendar",
+  "ask": "must, should priority. Keep or cut each.",
+  "options": [
+   "Keep",
+   "Cut"
+  ],
+  "rows": [
+   [
+    "F-019",
+    "F-019 · The family reads the month at a glance on the wall, coloured by who (must)"
+   ],
+   [
+    "F-020",
+    "F-020 · A member creates and edits events, on the wall or a phone (must)"
+   ],
+   [
+    "F-021",
+    "F-021 · Activities repeat, including daily time windows (must)"
+   ],
+   [
+    "F-022",
+    "F-022 · Members get reminded before an event (must)"
+   ],
+   [
+    "F-023",
+    "F-023 · An Up Next widget shows what's coming (must)"
+   ],
+   [
+    "F-024",
+    "F-024 · Other modules mark days on the calendar (e.g. who's got dinner) (should)"
+   ]
+  ]
+ },
+ {
+  "id": "feat-rewards",
+  "type": "question",
+  "input": "scale",
+  "title": "Rewards",
+  "ask": "must, should priority. Keep or cut each.",
+  "options": [
+   "Keep",
+   "Cut"
+  ],
+  "rows": [
+   [
+    "F-025",
+    "F-025 · Kids earn Pritchett Bucks for chores, held for approval where a parent wants (must)"
+   ],
+   [
+    "F-026",
+    "F-026 · A kid sees their balance and where it went (must)"
+   ],
+   [
+    "F-027",
+    "F-027 · A parent keeps a catalog of rewards (must)"
+   ],
+   [
+    "F-028",
+    "F-028 · A kid buys a reward ticket, keeps it, and asks to use it; a parent grants or declines (must)"
+   ],
+   [
+    "F-029",
+    "F-029 · Kids fill punch cards (should)"
+   ],
+   [
+    "F-030",
+    "F-030 · A parent grants a bonus or corrects a ticket (should)"
+   ]
+  ]
+ },
+ {
+  "id": "feat-meals",
+  "type": "question",
+  "input": "scale",
+  "title": "Meals",
+  "ask": "must, should priority. Keep or cut each.",
+  "options": [
+   "Keep",
+   "Cut"
+  ],
+  "rows": [
+   [
+    "F-031",
+    "F-031 · The family plans the week's dinners and sees tonight's, claiming one in a tap (must)"
+   ],
+   [
+    "F-032",
+    "F-032 · Whoever has dinner gets nudged in the afternoon, and parents when nobody does (must)"
+   ],
+   [
+    "F-033",
+    "F-033 · A dinner links to its recipe (should)"
+   ],
+   [
+    "F-034",
+    "F-034 · A dinner is dragged to another day, moving or swapping it (should)"
+   ]
+  ]
+ },
+ {
+  "id": "feat-shopping",
+  "type": "question",
+  "input": "scale",
+  "title": "Shopping",
+  "ask": "must, should priority. Keep or cut each.",
+  "options": [
+   "Keep",
+   "Cut"
+  ],
+  "rows": [
+   [
+    "F-035",
+    "F-035 · The family keeps one shopping list, captured fast and in walk order (must)"
+   ],
+   [
+    "F-036",
+    "F-036 · Two shoppers check items off together in the store (must)"
+   ],
+   [
+    "F-037",
+    "F-037 · A dinner's needs push to the shopping list (should)"
+   ],
+   [
+    "F-038",
+    "F-038 · The list keeps working with no signal in the store (should)"
+   ],
+   [
+    "F-039",
+    "F-039 · A member takes back their own add for fifteen minutes (should)"
+   ]
+  ]
+ },
+ {
+  "id": "feat-companion",
+  "type": "question",
+  "input": "scale",
+  "title": "Companion",
+  "ask": "must priority. Keep or cut each.",
+  "options": [
+   "Keep",
+   "Cut"
+  ],
+  "rows": [
+   [
+    "F-040",
+    "F-040 · Kids spend XP on a companion critter and its gear (must)"
+   ]
+  ]
+ },
+ {
+  "id": "missing",
+  "type": "comment",
+  "title": "Anything missing",
+  "ask": "A capability the family uses that isn’t listed, or a priority that’s wrong."
+ }
+];
+ReviewBoard.mount({ owner: 'Zach', type: 'web-app', items: ITEMS, earlier: [] });
+</script>

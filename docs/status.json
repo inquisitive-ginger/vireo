@@ -5,7 +5,7 @@
   "approvers": [
     "Zach"
   ],
-  "generatedAt": "2026-11-14T19:23:59.837Z",
+  "generatedAt": "2026-11-14T19:34:04.967Z",
   "current": "ideate",
   "preview": null,
   "stages": [
@@ -37,19 +37,19 @@
       "features": [],
       "approver": "Zach",
       "depends": [],
-      "status": "todo",
-      "url": null,
-      "sent": null,
+      "status": "in review",
+      "url": "https://claude.ai/artifact/LKfV2cfMwoYqz2sZC7Y1v6",
+      "sent": "2026-11-14",
       "responded": null,
-      "file": null,
-      "started": null,
+      "file": "docs/sessions/00-idea.md",
+      "started": "2026-11-14 11:32",
       "minutes": null,
       "waited": null,
       "approx": false,
-      "rounds": 0,
+      "rounds": 1,
       "waiting": {
         "on": "Zach",
-        "why": "ready to start"
+        "why": "review"
       }
     },
     {
@@ -214,30 +214,16 @@
       }
     }
   ],
-  "waiting": [],
-  "next": {
-    "n": "0",
-    "stage": "ideate",
-    "name": "Idea one-pager (adopted)",
-    "type": "decide",
-    "features": [],
-    "approver": "Zach",
-    "depends": [],
-    "status": "todo",
-    "url": null,
-    "sent": null,
-    "responded": null,
-    "file": null,
-    "started": null,
-    "minutes": null,
-    "waited": null,
-    "approx": false,
-    "rounds": 0,
-    "waiting": {
+  "waiting": [
+    {
+      "n": "0",
+      "name": "Idea one-pager (adopted)",
       "on": "Zach",
-      "why": "ready to start"
+      "why": "review",
+      "url": "https://claude.ai/artifact/LKfV2cfMwoYqz2sZC7Y1v6"
     }
-  },
+  ],
+  "next": null,
   "features": [
     {
       "id": "F-001",
