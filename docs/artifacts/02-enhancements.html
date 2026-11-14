@@ -1,0 +1,54 @@
+<title>Vireo · Enhancements</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;1,6..72,400&family=Public+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="board.css">
+<style>
+.rb-item ol, .rb-item ul { margin: 0; padding-left: 1.2rem; display: grid; gap: 0.4rem; }
+.rb-item p { margin: 0 0 0.5rem; }
+.rb-item pre { margin: 0; padding: 0.5rem 0.65rem; background: var(--rb-line); border-radius: 4px; overflow-x: auto; font-size: 0.85rem; }
+</style>
+
+<div class="rb-wrap">
+  <header>
+    <div class="rb-eyebrow">Vireo · Session 02</div>
+    <h1>Reports move on their own</h1>
+    <p class="rb-lede">A script holding a maintainer token can now move a bug report's status, so a fix's "Fixed and live" reaches the reporter without you flipping it in Settings. ADR 074 also gets its owed line about Home.</p>
+    <p class="rb-how">Approve the change or ask for changes, tick the checks, then press <strong>Mark reviewed</strong> on each. Answers save as you go.</p>
+  </header>
+  <div id="rb"></div>
+</div>
+
+<script src="board.js"></script>
+<script>
+const ITEMS = [
+ {
+  "id": "change",
+  "type": "approve",
+  "title": "The maintainer token (D-075) and ADR 074's line (D-076)",
+  "ask": "Ship this?",
+  "href": "https://github.com/inquisitive-ginger/vireo/compare/main...session-02-enhancements",
+  "body": "<ul><li><code>PATCH /bug-reports/:id</code> also accepts <code>Authorization: Bearer $MAINTAINER_TOKEN</code>. Only that handler checks it, so it opens nothing else; unset on the Pi, it's refused.</li><li><code>scripts/report-status.sh &lt;issue#&gt; &lt;status&gt; [\"note\"]</code> is now <code>issues.onStatus</code>. It reads the report id from the issue body; <code>shipped</code> becomes <code>deployed</code> with the note as the reporter's notification.</li><li>ADR 074: Home is the one page that overrides the frame's bottom, <code>md:pb-6</code>, and why.</li></ul><p><strong>Before merge, one step is yours:</strong></p><pre>t=$(openssl rand -hex 32); echo \"$t\"\nssh vireo-pi \"echo MAINTAINER_TOKEN=$t &gt;&gt; /opt/family-os/.env\"</pre><p>Then <code>export VIREO_MAINTAINER_TOKEN=…</code> (same value) in your shell profile. After merge and deploy, lock-in runs it live once on an open report, re-setting its current status, which notifies no one.</p><p><strong>Assumed:</strong> a fixed env token, rotated by replacing it, not a stored credential with its own UI.</p>"
+ },
+ {
+  "id": "checks",
+  "type": "checklist",
+  "title": "Acceptance checks",
+  "checks": [
+   { "id": "moves", "label": "A script holding only the token moves a report to deployed and the reporter is notified", "test": "D-075 a script holding only the token moves a report to deployed and the reporter is notified [F-008]" },
+   { "id": "scoped", "label": "The token grants no other route", "test": "D-075 the token grants no other route [F-008]" },
+   { "id": "refused", "label": "A wrong token, or none configured on the server, is refused", "test": "D-075 a wrong token, or none configured, is refused [F-008]" },
+   { "id": "adr", "label": "ADR 074 says Home overrides the bottom inset, and why it reads right to you", "hint": "Under the frame table in docs/decisions/074-the-frame-insets-the-header-leads.md (5,116 bytes, under the 6,000 cap)." },
+   { "id": "playbook", "label": "The fix-it playbook's status section reads right: who moves a report when, and where the token lives", "hint": "docs/fix-it-playbook.md, \"Status moves with the session\"." }
+  ]
+ },
+ {
+  "id": "notes",
+  "type": "comment",
+  "title": "Anything else",
+  "ask": "Anything to change before it merges."
+ }
+];
+ReviewBoard.mount({ owner: 'Zach', type: 'web-app', items: ITEMS, earlier: [] });
+</script>

@@ -16,7 +16,7 @@ D-075, D-076.
 
 ## Deliverable
 
-Branch `session-02-enhancements` as a PR: the token on `PATCH /bug-reports/:id`, `scripts/report-status.sh` wired as `issues.onStatus`, ADR 074's added line. Acceptance board with the checklist; the review surface is a live run of the script against prod once the token is set on the Pi.
+Branch `session-02-enhancements` as a PR: the token on `PATCH /bug-reports/:id`, `scripts/report-status.sh` wired as `issues.onStatus`, ADR 074's added line. Acceptance board: https://claude.ai/artifact/CT4Kk8KjrQRewiNi45eKeT (source `docs/artifacts/02-enhancements.html`), linking the branch diff; no UI changes, so no walkthrough. The live check runs at lock-in: after merge and the deploy check, `scripts/report-status.sh` re-sets an open report's current status against prod (no notification).
 
 ## Options
 
@@ -27,3 +27,5 @@ Branch `session-02-enhancements` as a PR: the token on `PATCH /bug-reports/:id`,
 Every check passes, `pnpm test` green, PR merged and `scripts/deploy-check.sh` passing. At lock-in: `.claude/process.json` (`issues.onStatus`), `docs/fix-it-playbook.md`, `docs/deployment.md`, ADR 074, the two Enhancements lines.
 
 ## Outcome
+
+Round 1, 2026-11-14 · Sent 2026-11-14 14:44

@@ -5,7 +5,7 @@
   "approvers": [
     "Zach"
   ],
-  "generatedAt": "2026-11-14T22:38:10.136Z",
+  "generatedAt": "2026-11-14T22:44:35.209Z",
   "current": "build",
   "preview": null,
   "stages": [
@@ -84,19 +84,19 @@
       "depends": [
         "1"
       ],
-      "status": "in progress",
-      "url": null,
-      "sent": null,
+      "status": "in review",
+      "url": "https://claude.ai/artifact/CT4Kk8KjrQRewiNi45eKeT",
+      "sent": "2026-11-14",
       "responded": null,
       "file": "docs/sessions/02-enhancements.md",
       "started": "2026-11-14 14:37",
       "minutes": null,
       "waited": null,
       "approx": false,
-      "rounds": 0,
+      "rounds": 1,
       "waiting": {
         "on": "Zach",
-        "why": "session open"
+        "why": "review"
       }
     },
     {
@@ -213,8 +213,8 @@
       "n": "2",
       "name": "Enhancements",
       "on": "Zach",
-      "why": "session open",
-      "url": null
+      "why": "review",
+      "url": "https://claude.ai/artifact/CT4Kk8KjrQRewiNi45eKeT"
     }
   ],
   "next": null,
@@ -281,7 +281,7 @@
       "priority": "must",
       "status": "built",
       "adopted": true,
-      "tests": 0
+      "tests": 3
     },
     {
       "id": "F-009",
@@ -543,9 +543,9 @@
   "tests": {
     "files": 124,
     "run": {
-      "at": "2026-11-14T19:22:34Z",
+      "at": "2026-11-14T22:43:03Z",
       "command": "pnpm test",
-      "passed": 937,
+      "passed": 940,
       "failed": 0
     },
     "untested": []
