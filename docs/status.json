@@ -5,7 +5,7 @@
   "approvers": [
     "Zach"
   ],
-  "generatedAt": "2026-11-14T22:44:35.209Z",
+  "generatedAt": "2026-11-14T23:03:10.245Z",
   "current": "build",
   "preview": null,
   "stages": [
@@ -25,7 +25,7 @@
       "key": "build",
       "label": "Build",
       "total": 5,
-      "locked": 0
+      "locked": 1
     }
   ],
   "sessions": [
@@ -84,20 +84,17 @@
       "depends": [
         "1"
       ],
-      "status": "in review",
+      "status": "locked",
       "url": "https://claude.ai/artifact/CT4Kk8KjrQRewiNi45eKeT",
       "sent": "2026-11-14",
-      "responded": null,
+      "responded": "2026-11-14",
       "file": "docs/sessions/02-enhancements.md",
       "started": "2026-11-14 14:37",
-      "minutes": null,
-      "waited": null,
+      "minutes": 7,
+      "waited": 19,
       "approx": false,
       "rounds": 1,
-      "waiting": {
-        "on": "Zach",
-        "why": "review"
-      }
+      "waiting": null
     },
     {
       "n": "3",
@@ -122,8 +119,8 @@
       "approx": false,
       "rounds": 0,
       "waiting": {
-        "on": null,
-        "why": "blocked by #2"
+        "on": "Zach",
+        "why": "ready to start"
       }
     },
     {
@@ -208,16 +205,34 @@
       }
     }
   ],
-  "waiting": [
-    {
-      "n": "2",
-      "name": "Enhancements",
+  "waiting": [],
+  "next": {
+    "n": "3",
+    "stage": "build",
+    "name": "Family feed: test suite",
+    "type": "build",
+    "features": [
+      "F-011"
+    ],
+    "approver": "Zach",
+    "depends": [
+      "2"
+    ],
+    "status": "todo",
+    "url": null,
+    "sent": null,
+    "responded": null,
+    "file": null,
+    "started": null,
+    "minutes": null,
+    "waited": null,
+    "approx": false,
+    "rounds": 0,
+    "waiting": {
       "on": "Zach",
-      "why": "review",
-      "url": "https://claude.ai/artifact/CT4Kk8KjrQRewiNi45eKeT"
+      "why": "ready to start"
     }
-  ],
-  "next": null,
+  },
   "features": [
     {
       "id": "F-001",
@@ -543,7 +558,7 @@
   "tests": {
     "files": 124,
     "run": {
-      "at": "2026-11-14T22:43:03Z",
+      "at": "2026-11-14T23:03:01Z",
       "command": "pnpm test",
       "passed": 940,
       "failed": 0
@@ -551,8 +566,13 @@
     "untested": []
   },
   "decisions": {
-    "count": 79,
+    "count": 80,
     "recent": [
+      {
+        "id": "D-080",
+        "date": "2026-11-14",
+        "title": "Session 02 accepted: the maintainer token and ADR 074's Home line"
+      },
       {
         "id": "D-079",
         "date": "2026-11-14",
@@ -587,11 +607,6 @@
         "id": "D-073",
         "date": "2026-09-04",
         "title": "Taking Back Your Own Add Is Tier 1, for Fifteen Minutes"
-      },
-      {
-        "id": "D-072",
-        "date": "2026-09-03",
-        "title": "The Wall Adds As the House"
       }
     ]
   },
@@ -604,8 +619,8 @@
   ],
   "report": null,
   "time": {
-    "sessions": 2,
-    "total": 2,
+    "sessions": 3,
+    "total": 9,
     "approx": false,
     "over": []
   }

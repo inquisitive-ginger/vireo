@@ -320,3 +320,8 @@ Features: F-001–F-040.
 
 Next: 2 Enhancements (D-075, D-076), 3 Family feed: test suite, then the Companion sequence: 4 feature UX, 5 foundation, 6 surfaces, each depending on the one before. #145 stays under Fixes as needs-info. Each Companion session keeps the old plan's size and is split into lettered sessions when it starts if it runs over an hour. Options: the Companion sequence first, as drafted, or the smaller sessions first (chosen). Approved: Zach, with his reorder taken as written: "put the enhancements and family feed up next then companion sequence." Board: https://claude.ai/artifact/RkjwctcWZouyTntvNZ8SxW
 Features: F-004, F-008, F-011, F-040.
+
+## D-080 · 2026-11-14 · Session 02 accepted: the maintainer token and ADR 074's Home line
+
+Implements D-075 and D-076 (PR #156). Checks: a script holding only the token moves a report to `deployed` and the reporter is notified; the token grants no other route; a wrong or unset token is refused (tests `D-075 a script holding only the token moves a report to deployed and the reporter is notified [F-008]`, `D-075 the token grants no other route [F-008]`, `D-075 a wrong token, or none configured, is refused [F-008]`). Live on prod after the deploy check: `scripts/report-status.sh 153 triaged` moved #153's row, and a wrong token got 403. `issues.onStatus` is now `scripts/report-status.sh`. The board's five checks were left blank ("I can't really check any of this can I?"); Zach agreed to count the three tested checks as passed by their tests and his approval as covering the two doc reads, with the live run gating the lock. Approved: Zach. Board: https://claude.ai/artifact/CT4Kk8KjrQRewiNi45eKeT
+Features: F-008, F-004.

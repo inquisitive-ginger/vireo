@@ -1,6 +1,6 @@
 # Session 02 — Enhancements
 
-Type: build · Approver: Zach · Status: in progress · Started: 2026-11-14 14:37 · Ended: —
+Type: build · Approver: Zach · Status: locked · Started: 2026-11-14 14:37 · Ended: 2026-11-14 15:03
 
 ## Goal
 
@@ -28,4 +28,6 @@ Every check passes, `pnpm test` green, PR merged and `scripts/deploy-check.sh` p
 
 ## Outcome
 
-Round 1, 2026-11-14 · Sent 2026-11-14 14:44
+Round 1, 2026-11-14 · Sent 2026-11-14 14:44 · Back 2026-11-14 15:03
+
+Approved the change ("I ran it.": the token is set on the Pi and in Zach's shell). Checks left blank with "I can't really check any of this can I?"; agreed to count the three tested checks as passed by their tests and the approval as covering the two doc reads. PR #156 merged, deploy check passed, live run `scripts/report-status.sh 153 triaged` moved #153 on prod and a wrong token got 403. D-080. Files: `apps/api/src/plugins/bug-reports.ts` (+ test), `scripts/report-status.sh`, `docker-compose.prod.yml`, `.claude/process.json`, `docs/fix-it-playbook.md`, ADR 074. Carried forward: a build session with no UI should show the approver the live run, not a checklist they can't observe (kit note).
