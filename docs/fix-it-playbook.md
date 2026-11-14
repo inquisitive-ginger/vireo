@@ -61,56 +61,28 @@ Add both to `/opt/family-os/.env` on the Pi (the file is `chmod 600`), then
 
 ## Running a fix session
 
-Open Claude Code in the repo and give it the issue:
-
-```
-Fix the bugs in open `auto-bug` issues. For each one: reproduce from the captured
-context, patch it, and open a PR. Do not merge — show me the diff first.
-```
-
-To find the queue by hand:
-
-```bash
-gh issue list --label auto-bug --state open
-```
+`/triage` reads the open `auto-bug` issues, checks each against current main, and
+routes it: a fix goes under `## Fixes` in `docs/roadmap.md` for a build session, an
+enhancement or new feature goes through `/feature`, and the rest are closed as
+won't-fix or asked for more information. The build session writes a failing test
+named after the issue, fixes it, and `/lock-in` merges the PR (`Fixes #N`) and waits
+on `scripts/deploy-check.sh`.
 
 Each issue body carries the capture from ADR 046: route, build hash, viewport,
 user agent, and up to ten console errors. **Start with the route and the build
 hash.** If the build hash is older than what is live, check whether the bug
 already went away — a report can outlive its cause.
 
-### While you work
-
-Move the report so the reporter sees something happen. From **Settings →
-Reported problems**, or:
-
-```bash
-curl -X PATCH https://vireohome.app/api/bug-reports/<id> \
-  -H 'Content-Type: application/json' \
-  -b <session-cookie> \
-  -d '{"status":"fixing"}'
-```
-
-### When it ships
-
-Merging to `main` triggers `release.yml` (arm64 images → GHCR, **~4–6 min**) and
-then `deploy.yml` on the Pi's self-hosted runner, which pulls and restarts
-(**~6–12 min**, dominated by pulling the 2 GB api image). Call it ~15 minutes
-merge-to-live, plus ~40 seconds of API 502 while `tsx` boots and migrations run.
-
-Then move the report to **`deployed`** — with a `resolution` if you can write one
-in the household's words, since it replaces the default notification body:
-
-```json
-{ "status": "deployed", "resolution": "The calendar picker is styled again." }
-```
-
-That fires the reporter's notification. It is the only status that does
-(ADR 046 §4), and it is the whole reason anyone will report a second bug.
+**Status is still flipped by hand** until the maintainer token (D-075) lands and
+`issues.onStatus` is wired: move the report to `fixing` when its session starts and
+to **`deployed`** once the deploy check passes, from **Settings → Reported
+problems**, with a `resolution` in the household's words — it replaces the default
+notification body, and `deployed` is the only status that notifies (ADR 046 §4).
+Merge-to-live is ~15 minutes (`release.yml` ~4–6 min, then `deploy.yml` on the Pi
+~6–12 min) plus ~40 seconds of API 502 while `tsx` boots and migrations run.
 
 If it turns out not to be a bug, move it to `wont_fix` with a resolution that
-says why. Telling someone their report was considered and declined is part of the
-promise; leaving it at `new` forever is how you teach a household to stop
+says why. Leaving it at `new` forever is how you teach a household to stop
 reporting.
 
 ---
