@@ -6,21 +6,22 @@ Status: `todo` · `in progress` · `in review` (approver has a link) · `locked`
 Every session fits in under an hour: one deliverable, inputs locked before it starts. `/replan` keeps this table true; `/status` reads it.
 Adopted 2026-11-14: Vireo was built and live before Throughline, so Scaffold and Launch count as locked. Milestones M0–M5.5 and everything before this table: `docs/history/roadmap-milestones.md` and `docs/sessions/logs/`.
 
-| #   | Stage  | Session                  | Type   | Features     | Approver | Depends | Status |
-| --- | ------ | ------------------------ | ------ | ------------ | -------- | ------- | ------ |
-| 0   | ideate | Idea one-pager (adopted) | decide | —            | Zach     | —       | locked |
-| 1   | plan   | Roadmap                  | decide | —            | Zach     | 0       | todo   |
-| 2   | build  | Companion: feature UX    | decide | F-040        | Zach     | 1       | todo   |
-| 3   | build  | Companion: foundation    | build  | F-040        | Zach     | 2       | todo   |
-| 4   | build  | Companion: surfaces      | build  | F-040        | Zach     | 3       | todo   |
-| 5   | build  | Family feed: test suite  | build  | F-011        | Zach     | 1       | todo   |
-| 6   | build  | Enhancements             | build  | F-008, F-004 | Zach     | 1       | todo   |
+| #   | Stage  | Session                  | Type   | Features     | Approver | Depends | Status    |
+| --- | ------ | ------------------------ | ------ | ------------ | -------- | ------- | --------- |
+| 0   | ideate | Idea one-pager (adopted) | decide | —            | Zach     | —       | locked    |
+| 1   | plan   | Roadmap                  | decide | —            | Zach     | 0       | in review |
+| 2   | build  | Companion: feature UX    | decide | F-040        | Zach     | 1       | todo      |
+| 3   | build  | Companion: foundation    | build  | F-040        | Zach     | 2       | todo      |
+| 4   | build  | Companion: surfaces      | build  | F-040        | Zach     | 3       | todo      |
+| 5   | build  | Family feed: test suite  | build  | F-011        | Zach     | 1       | todo      |
+| 6   | build  | Enhancements             | build  | F-008, F-004 | Zach     | 1       | todo      |
 
 ## Review links
 
 | Session | Artifact                                          | Sent       | Responded  |
 | ------- | ------------------------------------------------- | ---------- | ---------- |
 | 0       | https://claude.ai/artifact/LKfV2cfMwoYqz2sZC7Y1v6 | 2026-11-14 | 2026-11-14 |
+| 1       | https://claude.ai/artifact/RkjwctcWZouyTntvNZ8SxW | 2026-11-14 |            |
 
 ## Fixes
 

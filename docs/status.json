@@ -5,7 +5,7 @@
   "approvers": [
     "Zach"
   ],
-  "generatedAt": "2026-11-14T19:44:42.301Z",
+  "generatedAt": "2026-11-14T19:49:50.467Z",
   "current": "plan",
   "preview": null,
   "stages": [
@@ -59,19 +59,19 @@
       "depends": [
         "0"
       ],
-      "status": "todo",
-      "url": null,
-      "sent": null,
+      "status": "in review",
+      "url": "https://claude.ai/artifact/RkjwctcWZouyTntvNZ8SxW",
+      "sent": "2026-11-14",
       "responded": null,
-      "file": null,
-      "started": null,
+      "file": "docs/sessions/01-roadmap.md",
+      "started": "2026-11-14 11:49",
       "minutes": null,
       "waited": null,
       "approx": false,
-      "rounds": 0,
+      "rounds": 1,
       "waiting": {
         "on": "Zach",
-        "why": "ready to start"
+        "why": "review"
       }
     },
     {
@@ -211,32 +211,16 @@
       }
     }
   ],
-  "waiting": [],
-  "next": {
-    "n": "1",
-    "stage": "plan",
-    "name": "Roadmap",
-    "type": "decide",
-    "features": [],
-    "approver": "Zach",
-    "depends": [
-      "0"
-    ],
-    "status": "todo",
-    "url": null,
-    "sent": null,
-    "responded": null,
-    "file": null,
-    "started": null,
-    "minutes": null,
-    "waited": null,
-    "approx": false,
-    "rounds": 0,
-    "waiting": {
+  "waiting": [
+    {
+      "n": "1",
+      "name": "Roadmap",
       "on": "Zach",
-      "why": "ready to start"
+      "why": "review",
+      "url": "https://claude.ai/artifact/RkjwctcWZouyTntvNZ8SxW"
     }
-  },
+  ],
+  "next": null,
   "features": [
     {
       "id": "F-001",

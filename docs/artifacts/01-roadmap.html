@@ -1,0 +1,55 @@
+<title>Vireo · Roadmap</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;1,6..72,400&family=Public+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="board.css">
+<style>
+.rb-item ul { margin: 0; padding-left: 1.2rem; display: grid; gap: 0.5rem; }
+.rb-item p { margin: 0; }
+.rm { width: 100%; border-collapse: collapse; font-size: 0.92rem; }
+.rm th, .rm td { text-align: left; padding: 0.45rem 0.5rem; border-bottom: 1px solid var(--rb-line); vertical-align: top; }
+.rm th { font-size: 0.72rem; letter-spacing: 0.08em; text-transform: uppercase; color: var(--rb-muted); }
+.rm td:first-child, .rm td:nth-child(3), .rm td:nth-child(4), .rm td:nth-child(5) { white-space: nowrap; font-variant-numeric: tabular-nums; }
+.rb-item:has(.rm) .rm { display: block; overflow-x: auto; }
+</style>
+
+<div class="rb-wrap">
+  <header>
+    <div class="rb-eyebrow">Vireo · Session 01</div>
+    <h1>What runs next</h1>
+    <p class="rb-lede">The old queue, turned into numbered sessions of under an hour each. What you approve here is the order Throughline works through.</p>
+    <p class="rb-how">Approve each item or ask for changes, then press <strong>Mark reviewed</strong>. Answers save as you go.</p>
+  </header>
+  <div id="rb"></div>
+</div>
+
+<script src="board.js"></script>
+<script>
+const ITEMS = [
+ {
+  "group": "What runs next"
+ },
+ {
+  "id": "build",
+  "type": "approve",
+  "title": "Build stage: sessions 2–6",
+  "ask": "Are these the right sessions, in the right order?",
+  "body": "<table class=\"rm\"><thead><tr><th>#</th><th>Session</th><th>Type</th><th>Features</th><th>Depends</th></tr></thead><tbody>\n<tr><td>2</td><td>Companion: feature UX. Every companion surface, from the direction mock to a buildable design on the real art: widget states and sizes, hatch, and the rest</td><td>decide</td><td>F-040</td><td>1</td></tr>\n<tr><td>3</td><td>Companion: foundation. The plugin's schema, routes, permissions, level engine, threshold detection, portrait renderer and hatch flow</td><td>build</td><td>F-040</td><td>2</td></tr>\n<tr><td>4</td><td>Companion: surfaces. Every surface on that foundation (widget, home layout, flock strip and more): the launch PR. The family names the feature first</td><td>build</td><td>F-040</td><td>3</td></tr>\n<tr><td>5</td><td>Family feed: test suite. It has a test script and zero tests</td><td>build</td><td>F-011</td><td>1</td></tr>\n<tr><td>6</td><td>Enhancements. The two queued below</td><td>build</td><td>F-008, F-004</td><td>1</td></tr>\n</tbody></table><p>Sessions 2–4 carry the old M4.5/3–5 plan; their kickoffs are held in <code>docs/reference/companion/</code>.</p><p><strong>Assumed:</strong> each Companion session keeps the old plan's size, which is likely more than an hour. If one is, it gets split into lettered sessions (3a, 3b) when it starts rather than now.</p>"
+ },
+ {
+  "id": "queued",
+  "type": "approve",
+  "title": "Open fix and queued enhancements",
+  "ask": "Keep these as they are?",
+  "body": "<ul>\n<li><strong>#145</strong> (Mom): one timed event across several days should show as one continuous span. <em>Needs info</em> until you've checked with her; may reopen D-057.</li>\n<li><strong>Session 6 · D-075</strong>: a maintainer token so <code>/lock-in</code> can mark a report fixed and notify the reporter, instead of you flipping it in Settings.</li>\n<li><strong>Session 6 · D-076</strong>: ADR 074 records that Home overrides the frame's bottom inset (owed since 2026-09-07).</li>\n</ul>"
+ },
+ {
+  "id": "notes",
+  "type": "comment",
+  "title": "Anything missing",
+  "ask": "Work you expect next that isn’t here."
+ }
+];
+ReviewBoard.mount({ owner: 'Zach', type: 'web-app', items: ITEMS, earlier: [] });
+</script>
