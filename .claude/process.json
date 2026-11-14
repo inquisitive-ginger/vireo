@@ -24,6 +24,6 @@
   "issues": {
     "source": "github",
     "label": "auto-bug",
-    "onStatus": null
+    "onStatus": "scripts/report-status.sh"
   }
 }

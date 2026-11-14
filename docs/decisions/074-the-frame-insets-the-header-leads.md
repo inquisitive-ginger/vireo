@@ -17,6 +17,9 @@ chrome:
 | Top    | `pt-4 md:pt-6`  | 16    | 24    |
 | Bottom | `pb-6 md:pb-12` | 24    | 48    |
 
+Home is the one page that overrides it, `md:pb-6` (D-076): it renders no header, so
+it shows all four gutters at once, and above `md:` nothing borders its bottom.
+
 **2. `PageHeader` owns the air on both sides of its title** — `pt-2 md:pt-4`
 above, `mb-6` below. A titled route therefore renders exactly where it did
 before: 16 + 8 = 24 on a phone, 24 + 16 = 40 at `md:`. A route that renders no

@@ -38,6 +38,8 @@ services:
       # on a host that hasn't configured the bridge.
       GITHUB_TOKEN: ${GITHUB_TOKEN:-}
       GITHUB_REPO: ${GITHUB_REPO:-}
+      # D-075: lets scripts/report-status.sh move a report's status. Unset, only a PIN session can.
+      MAINTAINER_TOKEN: ${MAINTAINER_TOKEN:-}
     depends_on:
       postgres: { condition: service_healthy }
 

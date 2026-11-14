@@ -73,11 +73,22 @@ user agent, and up to ten console errors. **Start with the route and the build
 hash.** If the build hash is older than what is live, check whether the bug
 already went away — a report can outlive its cause.
 
-**Status is still flipped by hand** until the maintainer token (D-075) lands and
-`issues.onStatus` is wired: move the report to `fixing` when its session starts and
-to **`deployed`** once the deploy check passes, from **Settings → Reported
-problems**, with a `resolution` in the household's words — it replaces the default
-notification body, and `deployed` is the only status that notifies (ADR 046 §4).
+**Status moves with the session** (D-075). `scripts/report-status.sh` is
+`issues.onStatus`: `/triage` moves a report to `triaged`, `/session-start` to
+`fixing`, and `/lock-in` to **`deployed`** once the deploy check passes, with a
+`resolution` in the household's words — it replaces the default notification
+body, and `deployed` is the only status that notifies (ADR 046 §4). The script
+reads the report id from the issue body and PATCHes it with a bearer token that
+grants that one route and nothing else:
+
+| Where            | Variable                 | Value                  |
+| ---------------- | ------------------------ | ---------------------- |
+| `.env` on the Pi | `MAINTAINER_TOKEN`       | `openssl rand -hex 32` |
+| Zach's shell     | `VIREO_MAINTAINER_TOKEN` | the same value         |
+
+Unset on the Pi, the token is refused and **Settings → Reported problems** is the
+only way to move a report.
+
 Merge-to-live is ~15 minutes (`release.yml` ~4–6 min, then `deploy.yml` on the Pi
 ~6–12 min) plus ~40 seconds of API 502 while `tsx` boots and migrations run.
 
