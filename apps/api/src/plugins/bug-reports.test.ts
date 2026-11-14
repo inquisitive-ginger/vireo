@@ -431,6 +431,69 @@ describe('PATCH /api/bug-reports/:id', () => {
   })
 })
 
+// ─── The maintainer token (D-075) ─────────────────────────────────────────────
+
+describe('maintainer token', () => {
+  const TOKEN = 'test-maintainer-token'
+  const bearer = (token: string) => ({ authorization: `Bearer ${token}` })
+
+  beforeEach(() => {
+    process.env.MAINTAINER_TOKEN = TOKEN
+  })
+
+  afterAll(() => {
+    delete process.env.MAINTAINER_TOKEN
+  })
+
+  it('D-075 a script holding only the token moves a report to deployed and the reporter is notified [F-008]', async () => {
+    const created = (await fileReport(await getTier4Cookie())).json()
+
+    const res = await app.inject({
+      method: 'PATCH',
+      url: `/api/bug-reports/${created.id}`,
+      headers: bearer(TOKEN),
+      payload: { status: 'deployed', resolution: 'The picker opens again.' },
+    })
+
+    expect(res.statusCode).toBe(200)
+    expect(res.json().status).toBe('deployed')
+    const notifications = await prisma.notification.findMany({
+      where: { profileId: 'seed-parent-1' },
+    })
+    expect(notifications).toHaveLength(1)
+    expect(notifications[0]?.body).toBe('The picker opens again.')
+  })
+
+  it('D-075 the token grants no other route [F-008]', async () => {
+    await fileReport(await getTier4Cookie(), 'a parent report')
+
+    const list = await app.inject({
+      method: 'GET',
+      url: '/api/bug-reports',
+      headers: bearer(TOKEN),
+    })
+
+    expect(list.statusCode).toBe(200)
+    expect(list.json().reports).toHaveLength(0)
+  })
+
+  it('D-075 a wrong token, or none configured, is refused [F-008]', async () => {
+    const created = (await fileReport(await getTier4Cookie())).json()
+    const patch = (token: string) =>
+      app.inject({
+        method: 'PATCH',
+        url: `/api/bug-reports/${created.id}`,
+        headers: bearer(token),
+        payload: { status: 'fixing' },
+      })
+
+    expect((await patch('not-the-token')).statusCode).toBe(403)
+    delete process.env.MAINTAINER_TOKEN
+    expect((await patch('')).statusCode).toBe(403)
+    expect((await patch(TOKEN)).statusCode).toBe(403)
+  })
+})
+
 // ─── The GitHub bridge ────────────────────────────────────────────────────────
 
 describe('issue formatting', () => {

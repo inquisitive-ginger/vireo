@@ -1,5 +1,6 @@
+import { timingSafeEqual } from 'node:crypto'
 import fp from 'fastify-plugin'
-import type { FastifyPluginAsync } from 'fastify'
+import type { FastifyPluginAsync, FastifyRequest } from 'fastify'
 import { prisma } from '@family-os/platform/server'
 import { FAMILY_PROFILE_ID } from '@family-os/platform/types'
 import {
@@ -72,6 +73,16 @@ function deployedNotification(description: string, resolution: string | null): N
     variant: 'success',
     priority: 'info',
   }
+}
+
+/** D-075: `MAINTAINER_TOKEN` lets `scripts/report-status.sh` move a report with no PIN
+    session. Checked here and nowhere else, so it grants this one route. */
+function holdsMaintainerToken(request: FastifyRequest): boolean {
+  const token = process.env.MAINTAINER_TOKEN
+  if (!token) return false
+  const given = Buffer.from(request.headers.authorization ?? '')
+  const wanted = Buffer.from(`Bearer ${token}`)
+  return given.length === wanted.length && timingSafeEqual(given, wanted)
 }
 
 const bugReportsPlugin: FastifyPluginAsync = async (fastify) => {
@@ -187,9 +198,9 @@ const bugReportsPlugin: FastifyPluginAsync = async (fastify) => {
     }
   })
 
-  // PATCH /bug-reports/:id — move a report along. Triage is tier-4 only.
+  // PATCH /bug-reports/:id — move a report along. Tier 4, or the maintainer token.
   fastify.patch('/bug-reports/:id', async (request, reply) => {
-    if (!request.ability.can('manage', 'platform.BugReport')) {
+    if (!request.ability.can('manage', 'platform.BugReport') && !holdsMaintainerToken(request)) {
       return reply.status(403).send({ error: 'Permission denied' })
     }
 
