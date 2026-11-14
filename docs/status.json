@@ -5,7 +5,7 @@
   "approvers": [
     "Zach"
   ],
-  "generatedAt": "2026-11-14T23:03:10.245Z",
+  "generatedAt": "2026-11-14T23:08:06.771Z",
   "current": "build",
   "preview": null,
   "stages": [
@@ -108,19 +108,19 @@
       "depends": [
         "2"
       ],
-      "status": "todo",
+      "status": "in progress",
       "url": null,
       "sent": null,
       "responded": null,
-      "file": null,
-      "started": null,
+      "file": "docs/sessions/03-family-feed-test-suite.md",
+      "started": "2026-11-14 15:07",
       "minutes": null,
       "waited": null,
       "approx": false,
       "rounds": 0,
       "waiting": {
         "on": "Zach",
-        "why": "ready to start"
+        "why": "session open"
       }
     },
     {
@@ -205,34 +205,16 @@
       }
     }
   ],
-  "waiting": [],
-  "next": {
-    "n": "3",
-    "stage": "build",
-    "name": "Family feed: test suite",
-    "type": "build",
-    "features": [
-      "F-011"
-    ],
-    "approver": "Zach",
-    "depends": [
-      "2"
-    ],
-    "status": "todo",
-    "url": null,
-    "sent": null,
-    "responded": null,
-    "file": null,
-    "started": null,
-    "minutes": null,
-    "waited": null,
-    "approx": false,
-    "rounds": 0,
-    "waiting": {
+  "waiting": [
+    {
+      "n": "3",
+      "name": "Family feed: test suite",
       "on": "Zach",
-      "why": "ready to start"
+      "why": "session open",
+      "url": null
     }
-  },
+  ],
+  "next": null,
   "features": [
     {
       "id": "F-001",
