@@ -5,7 +5,7 @@
   "approvers": [
     "Zach"
   ],
-  "generatedAt": "2026-11-14T19:43:46.560Z",
+  "generatedAt": "2026-11-14T19:44:42.301Z",
   "current": "plan",
   "preview": null,
   "stages": [
@@ -38,9 +38,9 @@
       "approver": "Zach",
       "depends": [],
       "status": "locked",
-      "url": null,
-      "sent": null,
-      "responded": null,
+      "url": "https://claude.ai/artifact/LKfV2cfMwoYqz2sZC7Y1v6",
+      "sent": "2026-11-14",
+      "responded": "2026-11-14",
       "file": "docs/sessions/00-idea.md",
       "started": "2026-11-14 11:32",
       "minutes": 2,

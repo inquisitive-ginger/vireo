@@ -18,9 +18,9 @@ Adopted 2026-11-14: Vireo was built and live before Throughline, so Scaffold and
 
 ## Review links
 
-| Session   | Artifact | Sent | Responded |
-| --------- | -------- | ---- | --------- |
-| P26-11-14 |
+| Session | Artifact                                          | Sent       | Responded  |
+| ------- | ------------------------------------------------- | ---------- | ---------- |
+| 0       | https://claude.ai/artifact/LKfV2cfMwoYqz2sZC7Y1v6 | 2026-11-14 | 2026-11-14 |
 
 ## Fixes
 
