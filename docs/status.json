@@ -5,7 +5,7 @@
   "approvers": [
     "Zach"
   ],
-  "generatedAt": "2026-11-14T19:13:46.513Z",
+  "generatedAt": "2026-11-14T19:23:59.837Z",
   "current": "ideate",
   "preview": null,
   "stages": [
@@ -562,12 +562,22 @@
   ],
   "tests": {
     "files": 124,
-    "run": null,
+    "run": {
+      "at": "2026-11-14T19:22:34Z",
+      "command": "pnpm test",
+      "passed": 937,
+      "failed": 0
+    },
     "untested": []
   },
   "decisions": {
-    "count": 76,
+    "count": 77,
     "recent": [
+      {
+        "id": "D-077",
+        "date": "2026-09-04",
+        "title": "The Shopping tile stays out of Home's default layouts"
+      },
       {
         "id": "D-076",
         "date": "2026-11-14",
@@ -602,11 +612,6 @@
         "id": "D-070",
         "date": "2026-09-03",
         "title": "CaptureField joins ComposeForm, with a rule for choosing"
-      },
-      {
-        "id": "D-069",
-        "date": "2026-09-03",
-        "title": "Shopping Is Its Own Plugin, and Meals Is a Producer"
       }
     ]
   },
