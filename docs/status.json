@@ -5,7 +5,7 @@
   "approvers": [
     "Zach"
   ],
-  "generatedAt": "2026-11-14T20:19:47.351Z",
+  "generatedAt": "2026-11-14T22:38:10.136Z",
   "current": "build",
   "preview": null,
   "stages": [
@@ -84,19 +84,19 @@
       "depends": [
         "1"
       ],
-      "status": "todo",
+      "status": "in progress",
       "url": null,
       "sent": null,
       "responded": null,
-      "file": null,
-      "started": null,
+      "file": "docs/sessions/02-enhancements.md",
+      "started": "2026-11-14 14:37",
       "minutes": null,
       "waited": null,
       "approx": false,
       "rounds": 0,
       "waiting": {
         "on": "Zach",
-        "why": "ready to start"
+        "why": "session open"
       }
     },
     {
@@ -208,35 +208,16 @@
       }
     }
   ],
-  "waiting": [],
-  "next": {
-    "n": "2",
-    "stage": "build",
-    "name": "Enhancements",
-    "type": "build",
-    "features": [
-      "F-008",
-      "F-004"
-    ],
-    "approver": "Zach",
-    "depends": [
-      "1"
-    ],
-    "status": "todo",
-    "url": null,
-    "sent": null,
-    "responded": null,
-    "file": null,
-    "started": null,
-    "minutes": null,
-    "waited": null,
-    "approx": false,
-    "rounds": 0,
-    "waiting": {
+  "waiting": [
+    {
+      "n": "2",
+      "name": "Enhancements",
       "on": "Zach",
-      "why": "ready to start"
+      "why": "session open",
+      "url": null
     }
-  },
+  ],
+  "next": null,
   "features": [
     {
       "id": "F-001",
