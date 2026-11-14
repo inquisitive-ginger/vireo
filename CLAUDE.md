@@ -118,6 +118,10 @@ decisions, walkthrough, acceptance board · verify: checklist board → `/lock-i
 - **Permissions → CASL namespaced subjects + `PERMISSION_REGISTRY`** (ADR 018).
 - **Events → `module.noun.verb`** (kebab-case segments, enforced by the bus);
   **widgets → manifest + Query cache invalidation** (ADR 022).
+- **Tests follow ADR 026**: integration tests hit the real `familyos_test` database
+  (never mock Prisma), routes test through `fastify.inject()`, interactive UI gets
+  RTL behaviour tests (no snapshots) built on `packages/test-utils`, and a new
+  end-to-end flow gets a Playwright test. Postgres must be up (`docker compose up -d postgres`).
 - **New plugin → mirror the `family-feed` structure** (db export, prisma config,
   federation singletons, manifest); register it in `plugins.json`,
   `load-plugin.ts`, `federation.d.ts`, the shell `ICON_MAP`, **and `Home.tsx`

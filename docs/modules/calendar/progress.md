@@ -1,5 +1,7 @@
 # Calendar — Progress
 
+> **Frozen 2026-11-14.** Work is tracked in `docs/roadmap.md` (sessions, fixes, enhancements) and features in `docs/idea.md`; this board is the record of what shipped before.
+
 ---
 
 ## M3 — Calendar · ✅ Done (2026-07-19)

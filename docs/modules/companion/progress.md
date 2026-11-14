@@ -1,5 +1,7 @@
 # Companion (M4.5) — Progress
 
+> **Frozen 2026-11-14.** Work is tracked in `docs/roadmap.md` (sessions, fixes, enhancements) and features in `docs/idea.md`; this board is the record of what shipped before.
+
 | #      | Session                       | Status         |
 | ------ | ----------------------------- | -------------- |
 | M4.5/1 | Style Bible + duotone proof   | ✅ Done        |

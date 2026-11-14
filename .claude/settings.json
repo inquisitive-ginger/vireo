@@ -39,9 +39,9 @@
       "Bash(pnpm test *)",
       "Bash(pnpm --filter @family-os/api exec prisma migrate status *)",
       "Bash(npm info *)",
-      "Edit(docs/sessions/kickoffs/**)",
+      "Edit(docs/sessions/*.md)",
       "Edit(docs/sessions/logs/**)",
-      "Edit(docs/sessions/queue.md)",
+      "Edit(docs/roadmap.md)",
       "Edit(docs/modules/*/progress.md)"
     ]
   },

@@ -17,7 +17,7 @@ The feature's kid-facing name is **decided at the dinner table** before launch;
 
 ## Session plan
 
-Five sessions, strictly sequenced — each kickoff in `docs/sessions/kickoffs/`:
+Five sessions, strictly sequenced — each held for its session in `docs/reference/companion/` (roadmap sessions 2–4):
 
 | #      | Session                       | Type   | Produces                                                   |
 | ------ | ----------------------------- | ------ | ---------------------------------------------------------- |

@@ -1,5 +1,7 @@
 # Shopping — Progress
 
+> **Frozen 2026-11-14.** Work is tracked in `docs/roadmap.md` (sessions, fixes, enhancements) and features in `docs/idea.md`; this board is the record of what shipped before.
+
 Split out of `meals` 2026-09-03 by ADR 069. See `docs/modules/meals/progress.md`
 for the M5 grocery rows this replaces.
 
