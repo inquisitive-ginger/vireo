@@ -5,7 +5,7 @@
   "approvers": [
     "Zach"
   ],
-  "generatedAt": "2026-11-14T23:08:06.771Z",
+  "generatedAt": "2026-11-15T00:42:39.743Z",
   "current": "build",
   "preview": null,
   "stages": [
@@ -108,19 +108,19 @@
       "depends": [
         "2"
       ],
-      "status": "in progress",
-      "url": null,
-      "sent": null,
+      "status": "in review",
+      "url": "https://claude.ai/artifact/GUhbYwJzQ2jRuUQucMmdNe",
+      "sent": "2026-11-14",
       "responded": null,
       "file": "docs/sessions/03-family-feed-test-suite.md",
       "started": "2026-11-14 15:07",
       "minutes": null,
       "waited": null,
       "approx": false,
-      "rounds": 0,
+      "rounds": 1,
       "waiting": {
         "on": "Zach",
-        "why": "session open"
+        "why": "review"
       }
     },
     {
@@ -210,8 +210,8 @@
       "n": "3",
       "name": "Family feed: test suite",
       "on": "Zach",
-      "why": "session open",
-      "url": null
+      "why": "review",
+      "url": "https://claude.ai/artifact/GUhbYwJzQ2jRuUQucMmdNe"
     }
   ],
   "next": null,

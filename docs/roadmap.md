@@ -6,15 +6,15 @@ Status: `todo` · `in progress` · `in review` (approver has a link) · `locked`
 Every session fits in under an hour: one deliverable, inputs locked before it starts. `/replan` keeps this table true; `/status` reads it.
 Adopted 2026-11-14: Vireo was built and live before Throughline, so Scaffold and Launch count as locked. Milestones M0–M5.5 and everything before this table: `docs/history/roadmap-milestones.md` and `docs/sessions/logs/`.
 
-| #   | Stage  | Session                  | Type   | Features     | Approver | Depends | Status      |
-| --- | ------ | ------------------------ | ------ | ------------ | -------- | ------- | ----------- |
-| 0   | ideate | Idea one-pager (adopted) | decide | —            | Zach     | —       | locked      |
-| 1   | plan   | Roadmap                  | decide | —            | Zach     | 0       | locked      |
-| 2   | build  | Enhancements             | build  | F-008, F-004 | Zach     | 1       | locked      |
-| 3   | build  | Family feed: test suite  | build  | F-011        | Zach     | 2       | in progress |
-| 4   | build  | Companion: feature UX    | decide | F-040        | Zach     | 3       | todo        |
-| 5   | build  | Companion: foundation    | build  | F-040        | Zach     | 4       | todo        |
-| 6   | build  | Companion: surfaces      | build  | F-040        | Zach     | 5       | todo        |
+| #   | Stage  | Session                  | Type   | Features     | Approver | Depends | Status    |
+| --- | ------ | ------------------------ | ------ | ------------ | -------- | ------- | --------- |
+| 0   | ideate | Idea one-pager (adopted) | decide | —            | Zach     | —       | locked    |
+| 1   | plan   | Roadmap                  | decide | —            | Zach     | 0       | locked    |
+| 2   | build  | Enhancements             | build  | F-008, F-004 | Zach     | 1       | locked    |
+| 3   | build  | Family feed: test suite  | build  | F-011        | Zach     | 2       | in review |
+| 4   | build  | Companion: feature UX    | decide | F-040        | Zach     | 3       | todo      |
+| 5   | build  | Companion: foundation    | build  | F-040        | Zach     | 4       | todo      |
+| 6   | build  | Companion: surfaces      | build  | F-040        | Zach     | 5       | todo      |
 
 ## Review links
 
@@ -23,6 +23,7 @@ Adopted 2026-11-14: Vireo was built and live before Throughline, so Scaffold and
 | 0       | https://claude.ai/artifact/LKfV2cfMwoYqz2sZC7Y1v6 | 2026-11-14 | 2026-11-14 |
 | 1       | https://claude.ai/artifact/RkjwctcWZouyTntvNZ8SxW | 2026-11-14 | 2026-11-14 |
 | 2       | https://claude.ai/artifact/CT4Kk8KjrQRewiNi45eKeT | 2026-11-14 | 2026-11-14 |
+| 3       | https://claude.ai/artifact/GUhbYwJzQ2jRuUQucMmdNe | 2026-11-14 |            |
 
 ## Fixes
 

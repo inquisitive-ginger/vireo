@@ -1,0 +1,54 @@
+<title>Vireo · Family feed: test suite</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;1,6..72,400&family=Public+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="board.css">
+<style>
+.rb-item ul { margin: 0; padding-left: 1.2rem; display: grid; gap: 0.4rem; }
+.rb-item p { margin: 0 0 0.5rem; }
+.run { display: flex; flex-wrap: wrap; gap: 0.25rem 1.25rem; font-variant-numeric: tabular-nums; margin-bottom: 0.75rem; }
+.run b { font-size: 1.4rem; }
+.err-mock { border: 1px solid var(--rb-line); border-radius: 8px; padding: 0.75rem 0.9rem; display: grid; gap: 0.4rem; max-width: 26rem; }
+.err-mock .box { color: var(--rb-muted); font-style: italic; }
+.err-mock .msg { color: #b3261e; font-size: 0.9rem; }
+</style>
+
+<div class="rb-wrap">
+  <header>
+    <div class="rb-eyebrow">Vireo · Session 03</div>
+    <h1>The feed is tested, and so are the plugins</h1>
+    <p class="rb-lede">The family feed now has tests of its own. Adding them showed that no plugin's tests had ever run in CI, and that a failed post silently threw away what was typed. Both are fixed.</p>
+    <p class="rb-how">Approve or ask for changes on each, then press <strong>Mark reviewed</strong>. Nothing here needs the iPad: the checks are automated and their results are below.</p>
+  </header>
+  <div id="rb"></div>
+</div>
+
+<script src="board.js"></script>
+<script>
+const ITEMS = [
+ {
+  "id": "suite",
+  "type": "approve",
+  "title": "Tests for the feed, and every plugin suite in CI",
+  "ask": "Ship this?",
+  "href": "https://github.com/inquisitive-ginger/vireo/compare/main...session-03-family-feed-test-suite",
+  "body": "<div class=\"run\"><span><b>1512</b> passed</span><span><b>0</b> failed</span><span>was 940 before this session</span></div><p><strong>13 new family-feed tests</strong>, each naming the decision it protects:</p><ul><li>Post card paints the author's assigned colour, not the name hash (D-044), and keeps it when the author has a photo (D-042).</li><li>A tier-1 kid reads the feed but gets no Add post, on the page and the empty widget (D-003).</li><li>A new post appears at the top and the form closes; the widget refreshes too, because it shares the page's query (D-013).</li><li>Posts group under one day label, newest first; the empty state owns the compose button; Load more only while older posts remain; the widget opens the feed (D-022).</li></ul><p><strong>The bigger find:</strong> the root test config never listed <code>plugins/*</code>, so 572 tests in chores, calendar, meals, rewards and shopping had never run in CI or <code>pnpm test</code>. They're in now, and all pass.</p>"
+ },
+ {
+  "id": "fix",
+  "type": "approve",
+  "title": "A post that fails to save keeps its text and says so",
+  "ask": "Is this the right wording?",
+  "body": "<p>Before: if the network dropped while posting, the note vanished and nothing said why (the error was swallowed, against the no-silent-catch rule). Now the text stays and this appears under it:</p><div class=\"err-mock\"><span class=\"box\">Dentist at 3 on Tuesday</span><span class=\"msg\">Couldn't post. Try again.</span></div><p>Cancel clears the message. The failure is logged to the console, so it reaches a bug report's capture. Test: <code>F-011 a post that fails to save keeps the text and says so</code>.</p>",
+  "approveLabel": "Wording's right"
+ },
+ {
+  "id": "notes",
+  "type": "comment",
+  "title": "Anything else",
+  "ask": "Anything to change before it merges."
+ }
+];
+ReviewBoard.mount({ owner: 'Zach', type: 'web-app', items: ITEMS, earlier: [] });
+</script>
