@@ -6,15 +6,17 @@ Status: `todo` · `in progress` · `in review` (approver has a link) · `locked`
 Every session fits in under an hour: one deliverable, inputs locked before it starts. `/replan` keeps this table true; `/status` reads it.
 Adopted 2026-11-14: Vireo was built and live before Throughline, so Scaffold and Launch count as locked. Milestones M0–M5.5 and everything before this table: `docs/history/roadmap-milestones.md` and `docs/sessions/logs/`.
 
-| #   | Stage  | Session                  | Type   | Features     | Approver | Depends | Status |
-| --- | ------ | ------------------------ | ------ | ------------ | -------- | ------- | ------ |
-| 0   | ideate | Idea one-pager (adopted) | decide | —            | Zach     | —       | locked |
-| 1   | plan   | Roadmap                  | decide | —            | Zach     | 0       | locked |
-| 2   | build  | Enhancements             | build  | F-008, F-004 | Zach     | 1       | locked |
-| 3   | build  | Family feed: test suite  | build  | F-011        | Zach     | 2       | locked |
-| 4   | build  | Companion: feature UX    | decide | F-040        | Zach     | 3       | todo   |
-| 5   | build  | Companion: foundation    | build  | F-040        | Zach     | 4       | todo   |
-| 6   | build  | Companion: surfaces      | build  | F-040        | Zach     | 5       | todo   |
+| #   | Stage  | Session                        | Type   | Features     | Approver | Depends | Status |
+| --- | ------ | ------------------------------ | ------ | ------------ | -------- | ------- | ------ |
+| 0   | ideate | Idea one-pager (adopted)       | decide | —            | Zach     | —       | locked |
+| 1   | plan   | Roadmap                        | decide | —            | Zach     | 0       | locked |
+| 2   | build  | Enhancements                   | build  | F-008, F-004 | Zach     | 1       | locked |
+| 3   | build  | Family feed: test suite        | build  | F-011        | Zach     | 2       | locked |
+| 3a  | build  | Calendar: repeats (#152, #153) | decide | F-021, F-023 | Zach     | —       | todo   |
+| 3b  | build  | Calendar: repeats (#152, #153) | build  | F-021, F-023 | Zach     | 3a      | todo   |
+| 4   | build  | Companion: feature UX          | decide | F-040        | Zach     | 3       | todo   |
+| 5   | build  | Companion: foundation          | build  | F-040        | Zach     | 4       | todo   |
+| 6   | build  | Companion: surfaces            | build  | F-040        | Zach     | 5       | todo   |
 
 ## Review links
 
@@ -36,5 +38,6 @@ Adopted 2026-11-14: Vireo was built and live before Throughline, so Scaffold and
 
 ## Changes
 
+- 2026-11-14 · Added 3a, 3b Calendar: repeats (#152, #153) · Zach asked, via /triage, for monthly repeats (#152, reopens D-038) and for the all-week band to hold only what really runs most of the week (#153, reopens D-057)
 - 2026-11-14 · Reordered: Enhancements is now 2 and Family feed: test suite 3, then the Companion sequence as 4–6 (each depends on the one before) · Zach on the session 01 board: "put the enhancements and family feed up next then companion sequence." (D-079)
 - 2026-11-14 · Adopted Throughline: sessions 2–4 carry the M4.5 Companion plan (`docs/reference/companion/`), 5 the family-feed test addendum, 6 the bridge token and an owed ADR line · the queue and kickoffs retire
