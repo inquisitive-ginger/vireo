@@ -11,6 +11,8 @@ export interface ComposeFormProps {
   /** The author's assigned identity hue (ADR 044). Falls back to the name hash. */
   authorHue?: string | null
   defaultValue?: string
+  /** Why the last submit failed. A rejected `onSubmit` keeps the text. */
+  error?: string
 }
 
 export function ComposeForm({
@@ -19,6 +21,7 @@ export function ComposeForm({
   authorName = 'You',
   authorHue,
   defaultValue = '',
+  error,
 }: ComposeFormProps) {
   const [body, setBody] = useState(defaultValue)
   const [isSubmitting, setIsSubmitting] = useState(false)
@@ -30,6 +33,9 @@ export function ComposeForm({
     try {
       await onSubmit(trimmed)
       setBody('')
+    } catch (err) {
+      // Kept so nothing is retyped; the caller says so through `error`.
+      console.error('ComposeForm: submit failed', err)
     } finally {
       setIsSubmitting(false)
     }
@@ -49,6 +55,11 @@ export function ComposeForm({
           className="text-prose border-none bg-transparent shadow-none focus-visible:ring-0 px-0 py-1.5"
         />
       </div>
+      {error && (
+        <p role="alert" className="text-sm-token mt-2 text-destructive">
+          {error}
+        </p>
+      )}
       <div className="my-3 h-px bg-border" />
       <div className="flex gap-2 justify-end">
         <Button size="sm" variant="ghost" onClick={onCancel} disabled={isSubmitting}>

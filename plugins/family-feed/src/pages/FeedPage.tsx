@@ -56,8 +56,7 @@ export function FeedPage() {
   async function handlePost(body: string) {
     const result = postSchema.safeParse({ body })
     if (!result.success) return
-    // Swallow the rejection: onSuccess handles the happy path; the form stays open on failure.
-    await createPost.mutateAsync(body).catch(() => {})
+    await createPost.mutateAsync(body)
   }
 
   if (feed.isLoading) {
@@ -103,7 +102,11 @@ export function FeedPage() {
               authorName={authorName}
               authorHue={identityHue}
               onSubmit={handlePost}
-              onCancel={() => setComposing(false)}
+              onCancel={() => {
+                createPost.reset()
+                setComposing(false)
+              }}
+              error={createPost.isError ? "Couldn't post. Try again." : undefined}
             />
           ) : null
         }
