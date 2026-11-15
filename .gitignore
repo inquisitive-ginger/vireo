@@ -12,3 +12,8 @@ storybook-static/
 *.tsbuildinfo
 .dev-pids
 .preview-pids
+
+# Throughline: regenerated, untracked
+docs/artifacts/_kit/
+docs/status.json
+docs/artifacts/status.html
