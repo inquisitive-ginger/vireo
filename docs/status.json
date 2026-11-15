@@ -5,7 +5,7 @@
   "approvers": [
     "Zach"
   ],
-  "generatedAt": "2026-11-15T00:58:04.854Z",
+  "generatedAt": "2026-11-15T01:05:33.773Z",
   "current": "build",
   "preview": null,
   "stages": [
@@ -24,7 +24,7 @@
     {
       "key": "build",
       "label": "Build",
-      "total": 5,
+      "total": 7,
       "locked": 2
     }
   ],
@@ -121,6 +121,60 @@
       "waiting": null
     },
     {
+      "n": "3a",
+      "stage": "build",
+      "name": "Calendar: repeats (#152, #153)",
+      "type": "decide",
+      "features": [
+        "F-021",
+        "F-023"
+      ],
+      "approver": "Zach",
+      "depends": [],
+      "status": "todo",
+      "url": null,
+      "sent": null,
+      "responded": null,
+      "file": null,
+      "started": null,
+      "minutes": null,
+      "waited": null,
+      "approx": false,
+      "rounds": 0,
+      "waiting": {
+        "on": "Zach",
+        "why": "ready to start"
+      }
+    },
+    {
+      "n": "3b",
+      "stage": "build",
+      "name": "Calendar: repeats (#152, #153)",
+      "type": "build",
+      "features": [
+        "F-021",
+        "F-023"
+      ],
+      "approver": "Zach",
+      "depends": [
+        "3a"
+      ],
+      "status": "todo",
+      "url": null,
+      "sent": null,
+      "responded": null,
+      "file": null,
+      "started": null,
+      "minutes": null,
+      "waited": null,
+      "approx": false,
+      "rounds": 0,
+      "waiting": {
+        "on": null,
+        "why": "blocked by #3a"
+      }
+    },
+    {
       "n": "4",
       "stage": "build",
       "name": "Companion: feature UX",
@@ -204,17 +258,16 @@
   ],
   "waiting": [],
   "next": {
-    "n": "4",
+    "n": "3a",
     "stage": "build",
-    "name": "Companion: feature UX",
+    "name": "Calendar: repeats (#152, #153)",
     "type": "decide",
     "features": [
-      "F-040"
+      "F-021",
+      "F-023"
     ],
     "approver": "Zach",
-    "depends": [
-      "3"
-    ],
+    "depends": [],
     "status": "todo",
     "url": null,
     "sent": null,
@@ -608,6 +661,7 @@
     ]
   },
   "changes": [
+    "2026-11-14 · Added 3a, 3b Calendar: repeats (#152, #153) · Zach asked, via /triage, for monthly repeats (#152, reopens D-038) and for the all-week band to hold only what really runs most of the week (#153, reopens D-057)",
     "2026-11-14 · Reordered: Enhancements is now 2 and Family feed: test suite 3, then the Companion sequence as 4–6 (each depends on the one before) · Zach on the session 01 board: \"put the enhancements and family feed up next then companion sequence.\" (D-079)",
     "2026-11-14 · Adopted Throughline: sessions 2–4 carry the M4.5 Companion plan (`docs/reference/companion/`), 5 the family-feed test addendum, 6 the bridge token and an owed ADR line · the queue and kickoffs retire"
   ],
