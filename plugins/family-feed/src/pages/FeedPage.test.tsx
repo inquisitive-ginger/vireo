@@ -78,5 +78,10 @@ describe('FeedPage', () => {
       'Dentist at 3 on Tuesday'
     )
     expect(screen.getByRole('alert')).toHaveTextContent("Couldn't post. Try again.")
+    expect(console.error).toHaveBeenCalled()
+
+    fireEvent.click(screen.getByRole('button', { name: 'Cancel' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Add post' }))
+    expect(screen.queryByRole('alert')).not.toBeInTheDocument()
   })
 })

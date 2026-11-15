@@ -11,7 +11,7 @@ export interface ComposeFormProps {
   /** The author's assigned identity hue (ADR 044). Falls back to the name hash. */
   authorHue?: string | null
   defaultValue?: string
-  /** Why the last submit failed. A rejected `onSubmit` keeps the text; the caller logs. */
+  /** Why the last submit failed. A rejected `onSubmit` keeps the text. */
   error?: string
 }
 
@@ -33,8 +33,9 @@ export function ComposeForm({
     try {
       await onSubmit(trimmed)
       setBody('')
-    } catch {
-      // Kept so nothing is retyped; the caller reports the failure through `error`.
+    } catch (err) {
+      // Kept so nothing is retyped; the caller says so through `error`.
+      console.error('ComposeForm: submit failed', err)
     } finally {
       setIsSubmitting(false)
     }

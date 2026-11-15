@@ -51,7 +51,6 @@ export function FeedPage() {
       setComposing(false)
       feedRef.current?.focus()
     },
-    onError: (err) => console.error('family-feed: post failed', err),
   })
 
   async function handlePost(body: string) {
@@ -103,7 +102,10 @@ export function FeedPage() {
               authorName={authorName}
               authorHue={identityHue}
               onSubmit={handlePost}
-              onCancel={() => setComposing(false)}
+              onCancel={() => {
+                createPost.reset()
+                setComposing(false)
+              }}
               error={createPost.isError ? "Couldn't post. Try again." : undefined}
             />
           ) : null
