@@ -5,7 +5,7 @@
   "approvers": [
     "Zach"
   ],
-  "generatedAt": "2026-11-15T00:42:39.743Z",
+  "generatedAt": "2026-11-15T00:58:04.854Z",
   "current": "build",
   "preview": null,
   "stages": [
@@ -25,7 +25,7 @@
       "key": "build",
       "label": "Build",
       "total": 5,
-      "locked": 1
+      "locked": 2
     }
   ],
   "sessions": [
@@ -108,20 +108,17 @@
       "depends": [
         "2"
       ],
-      "status": "in review",
+      "status": "locked",
       "url": "https://claude.ai/artifact/GUhbYwJzQ2jRuUQucMmdNe",
       "sent": "2026-11-14",
-      "responded": null,
+      "responded": "2026-11-14",
       "file": "docs/sessions/03-family-feed-test-suite.md",
       "started": "2026-11-14 15:07",
-      "minutes": null,
-      "waited": null,
-      "approx": false,
+      "minutes": 1,
+      "waited": 11,
+      "approx": true,
       "rounds": 1,
-      "waiting": {
-        "on": "Zach",
-        "why": "review"
-      }
+      "waiting": null
     },
     {
       "n": "4",
@@ -146,8 +143,8 @@
       "approx": false,
       "rounds": 0,
       "waiting": {
-        "on": null,
-        "why": "blocked by #3"
+        "on": "Zach",
+        "why": "ready to start"
       }
     },
     {
@@ -205,16 +202,34 @@
       }
     }
   ],
-  "waiting": [
-    {
-      "n": "3",
-      "name": "Family feed: test suite",
+  "waiting": [],
+  "next": {
+    "n": "4",
+    "stage": "build",
+    "name": "Companion: feature UX",
+    "type": "decide",
+    "features": [
+      "F-040"
+    ],
+    "approver": "Zach",
+    "depends": [
+      "3"
+    ],
+    "status": "todo",
+    "url": null,
+    "sent": null,
+    "responded": null,
+    "file": null,
+    "started": null,
+    "minutes": null,
+    "waited": null,
+    "approx": false,
+    "rounds": 0,
+    "waiting": {
       "on": "Zach",
-      "why": "review",
-      "url": "https://claude.ai/artifact/GUhbYwJzQ2jRuUQucMmdNe"
+      "why": "ready to start"
     }
-  ],
-  "next": null,
+  },
   "features": [
     {
       "id": "F-001",
@@ -302,7 +317,7 @@
       "priority": "must",
       "status": "built",
       "adopted": true,
-      "tests": 0
+      "tests": 13
     },
     {
       "id": "F-012",
@@ -538,18 +553,23 @@
     }
   ],
   "tests": {
-    "files": 124,
+    "files": 128,
     "run": {
-      "at": "2026-11-14T23:03:01Z",
+      "at": "2026-11-15T00:56:15Z",
       "command": "pnpm test",
-      "passed": 940,
+      "passed": 1512,
       "failed": 0
     },
     "untested": []
   },
   "decisions": {
-    "count": 80,
+    "count": 81,
     "recent": [
+      {
+        "id": "D-081",
+        "date": "2026-11-14",
+        "title": "Session 03 accepted: the feed is tested, plugin suites run in CI, a failed post keeps its text"
+      },
       {
         "id": "D-080",
         "date": "2026-11-14",
@@ -584,11 +604,6 @@
         "id": "D-074",
         "date": "2026-09-04",
         "title": "The Frame Insets, the Header Leads"
-      },
-      {
-        "id": "D-073",
-        "date": "2026-09-04",
-        "title": "Taking Back Your Own Add Is Tier 1, for Fifteen Minutes"
       }
     ]
   },
@@ -601,9 +616,9 @@
   ],
   "report": null,
   "time": {
-    "sessions": 3,
-    "total": 9,
-    "approx": false,
+    "sessions": 4,
+    "total": 10,
+    "approx": true,
     "over": []
   }
 }

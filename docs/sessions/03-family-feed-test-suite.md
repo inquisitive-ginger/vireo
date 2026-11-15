@@ -1,6 +1,6 @@
 # Session 03 — Family feed: test suite
 
-Type: build · Approver: Zach · Status: in progress · Started: 2026-11-14 15:07 · Ended: —
+Type: build · Approver: Zach · Status: locked · Started: 2026-11-14 15:07 · Ended: 2026-11-14 16:53
 
 ## Goal
 
@@ -28,4 +28,6 @@ Branch `session-03-family-feed-test-suite` as a PR: vitest + jsdom config for th
 
 ## Outcome
 
-Round 1, 2026-11-14 · Sent 2026-11-14 16:42
+Round 1, 2026-11-14 · Sent 2026-11-14 16:42 · Back 2026-11-14 16:53
+
+Both items approved, no comments: the suite, and the failed-post fix with its wording. D-081. PR #157 merged; CI ran all 117 test files. Files: `plugins/family-feed/` (vitest config, setup, 4 test files, `test-posts.ts`, `FeedPage.tsx`), `packages/ui/src/components/compose-form.tsx` (`error` prop; a rejected submit keeps the text and logs), `vitest.workspace.ts`. Carried forward: `ComposeForm` now swallows a rejected `onSubmit` after logging it, so a future caller that wants the rejection must show `error` itself.
