@@ -51,13 +51,13 @@ export function FeedPage() {
       setComposing(false)
       feedRef.current?.focus()
     },
+    onError: (err) => console.error('family-feed: post failed', err),
   })
 
   async function handlePost(body: string) {
     const result = postSchema.safeParse({ body })
     if (!result.success) return
-    // Swallow the rejection: onSuccess handles the happy path; the form stays open on failure.
-    await createPost.mutateAsync(body).catch(() => {})
+    await createPost.mutateAsync(body)
   }
 
   if (feed.isLoading) {
@@ -104,6 +104,7 @@ export function FeedPage() {
               authorHue={identityHue}
               onSubmit={handlePost}
               onCancel={() => setComposing(false)}
+              error={createPost.isError ? "Couldn't post. Try again." : undefined}
             />
           ) : null
         }
