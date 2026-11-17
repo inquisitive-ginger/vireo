@@ -450,23 +450,22 @@ segments · the family hue for Family).
 
 #### Day marks (settled — ADR 050, ADR 066, M5/4)
 
-A day mark (a plugin's read-time contribution to the calendar — "Zach's got
-dinner", later "no school Monday") is the smallest instance of the second-channel
-rule above, and generalizes past the calendar:
+A day mark (a plugin's read-time contribution to the calendar, e.g. "Zach's got
+dinner") is the smallest instance of the second-channel rule above:
 
 - **A 16px identity-tint disc, carrying the owner's initial, `aria-hidden`.**
-  Never a photo — at 16px an avatar carries neither hue nor letter at a glance,
-  so any surface rendering identity that small takes the same disc, not
-  `ProfileAvatar` scaled down.
+  Never a photo: at 16px an avatar carries neither hue nor letter, so identity
+  that small takes the same disc, never a scaled `ProfileAvatar`.
 - **The owner's name lives in the mark's accessible text**, not the disc — a
   screen reader gets the name from the label (visible in the agenda, `sr-only`
   in the month cell), matching the initial/`aria-hidden` pattern the calendar
   chip already set.
 - **The month cell pairs the disc with a glyph** at a 3px gap, the glyph ~75%
   opacity so the two read as one object, not a disc and an unrelated icon.
-- **No owner, no mark.** A mark's entire payload is the who — an unclaimed or
-  ownerless-but-covered day (`meals`' `isCovered()` without an owner) makes
-  none, never a placeholder "someone" mark.
+- **No owner, no mark.** An unclaimed or ownerless-but-covered day makes none,
+  never a placeholder "someone" mark.
+- **Rides is the exception (D-087, D-091):** no disc, a car and the next run in
+  words, a red dot when one is open; a button that unfolds the day's runs.
 
 ### Avatar photos — the spine carries the identity, the avatar carries the face (settled — 2026-07-11)
 

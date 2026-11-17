@@ -375,3 +375,23 @@ Features: F-044.
 
 The rides sessions run before Companion: 3d decide (the mark, the sheet and the pattern editor), 3e build (school runs and the day mark), 3f build (who drives to an activity), 3g build (reminders and nudges). Companion 4–6 are `held` until Zach revives them. Zach: "put it before companion and mark companion as held until I revive it." Approved: Zach. Board: https://claude.ai/artifact/TH2aAR7Ey3Fpz7VBiuQqYT
 Features: F-041, F-042, F-043, F-044, F-040.
+
+## D-091 · 2026-11-17 · The rides mark unfolds the day's rides in place
+
+Tapping the rides mark in the agenda's day header unfolds the day's school runs, then its drives, in a recessed panel under the heading; a second tap folds it. Each line claims or swaps in a tap. A month cell stays one button that opens the day, showing only the car and the red flag. Options: the side drawer; unfolds in the day (chosen); a popover on the mark (would add a primitive). Approved: Zach, "It's fine". Board: https://claude.ai/artifact/1fQd1nRPivomZysk8Jj1Qr
+Features: F-042.
+
+## D-092 · 2026-11-17 · The usual week is set one kid at a time
+
+A new Rides page in the sidebar holds the usual week with a tab per kid; each weekday lists that kid's runs (drop-off, pickup, club pickup) with the driver beside each, tapped to change. Options: one grid for the week (rows are runs, columns are school days); one kid at a time (chosen); set it by doing (no editor, "Every Tuesday" on a claim saves to the week). Approved: Zach. Board: https://claude.ai/artifact/1fQd1nRPivomZysk8Jj1Qr
+Features: F-041.
+
+## D-093 · 2026-11-17 · A drive gets its driver from the day's rides
+
+The unfolded rides' Drives list has "+ Add a drive", which offers the day's activities for a kid with no driver, for that day or every week. The event drawer is unchanged; the calendar only shows the car and the driver's name on the event row. Options: a "Who drives" field in the event drawer (the calendar would host another plugin's field); from the day's rides (chosen). Approved: Zach. Board: https://claude.ai/artifact/1fQd1nRPivomZysk8Jj1Qr
+Features: F-044.
+
+## D-094 · 2026-11-17 · A school day that's off is cleared run by run
+
+There is no "No school" switch: a parent clears each run on that day by hand from the unfolded rides, which changes only that day. A day with no runs and no drives shows no mark. Options: "No school" clears the day's runs and keeps drives; clear each run by hand (chosen); runs stay. Approved: Zach. Board: https://claude.ai/artifact/1fQd1nRPivomZysk8Jj1Qr
+Features: F-041, F-042.

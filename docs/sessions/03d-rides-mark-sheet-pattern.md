@@ -1,6 +1,6 @@
 # Session 03d — Rides: the mark, the sheet and the pattern editor
 
-Type: decide · Approver: Zach · Status: in progress · Started: 2026-11-17 10:44 · Ended: —
+Type: decide · Approver: Zach · Status: locked · Started: 2026-11-17 10:44 · Ended: 2026-11-17 11:04
 
 ## Goal
 
@@ -41,4 +41,6 @@ A pick for each of the three choices and an answer on no-school days. At lock-in
 
 ## Outcome
 
-Round 1, 2026-11-17 · Sent 2026-11-17 10:47
+Round 1, 2026-11-17 · Sent 2026-11-17 10:47 · Back 2026-11-17 11:04
+
+Sheet B, unfolds in the day, "It's fine" (D-091). Pattern B, one kid at a time (D-092). Drive B, from the day's rides (D-093). No school: clear each run by hand (D-094). No comments. A board bug (each option card is a label, so clicks inside a preview picked that option) saved picks before Zach chose; they were cleared once, the bug persisted, and Zach confirmed all three B. Kit note logged. Files: `docs/decisions.md`, `docs/design-system.md` (day marks: the rides exception), `docs/architecture.md` (day-mark contract: rides). Carried to 3e: how the calendar hosts the unfolded runs without importing `rides` (a richer mark payload plus rides' claim endpoint, or a federated slot).
