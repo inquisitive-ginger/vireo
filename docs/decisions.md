@@ -340,3 +340,13 @@ Features: F-020, F-021.
 
 The widget's All week band and the agenda's Ongoing panel hold a span of 3+ days or a daily time-window series meeting 4+ days a week. A 1–3-day-a-week series lists each occurrence on its day with its clock and is hero-eligible; a 1–2-day span lists once on each of its days. A condition leaves the band on its last day and shows once in that day's list as "last day". Amends D-057's gate-4 rule (#153). Options: in the band while it fills 4+ consecutive days of the coming seven; by what the thing is (chosen); keep everything in a "This week" band with a day strip. The 3-day span minimum was added after the board, at Claude's suggestion, and confirmed by Zach. Approved: Zach, "It's fine". Board: https://claude.ai/artifact/VYyC3KVxToStjQHMxjZDCi
 Features: F-021, F-023.
+
+## D-084 · 2026-11-17 · Session 3b accepted: one repeat rule with monthly, and the band holds conditions by shape
+
+Implements D-082 and D-083 (PR #160, squash-merged at Zach's call so no co-author trailers reach main). Storage, Zach's call at the start of 3b: structured columns, no library (`recurrence` is the frequency, plus `recurrence_interval`, `recurrence_weekdays`, `recurrence_month_week`); `recurrence_day_offsets` migrated to weekdays in `America/Los_Angeles` and dropped. Statement, also Zach's call: every repeating agenda and drill-in row wears the Repeat glyph with the rule as its label, and the drill-in row says the rule in words. Checks passed on the board: the Repeats list, next dates, monthly by weekday and by date, yearly, edit, the glyph, skip-one, existing series unchanged, the band, French as appointments, the book fair, the Ongoing panel, and the list's look on the iPad and phone. "Every other week" was left blank and counts as passed by its test (`D-082 every other week steps fourteen days [F-021]`), at Zach's call. Tests: `D-082 …` in `recurrence.test.ts`, `calendar.test.ts`, `series.test.ts`, `CreateEventDrawer.test.tsx`, `AgendaView.test.tsx`; `D-083 …` in `week.test.ts`, `series.test.ts`, `UpNextView.test.tsx`, `AgendaView.test.tsx`, `grid.test.ts`. Approved: Zach. Board: https://claude.ai/artifact/B5wGhKbprzCQndxu8wMcry
+Features: F-020, F-021, F-023.
+
+## D-085 · 2026-11-17 · A 1–3-day-a-week series chips in the month grid
+
+The month grid draws a daily series meeting 1–3 days a week as chips on its days, like any appointment; only a condition series (4+ days a week) keeps ADR 057's span-lane bars. Amends ADR 057's month-grid gate so the grid agrees with D-083's agenda and widget. Options: leave the grid as it is; chips (chosen). Approved: Zach, on the 3b board. Board: https://claude.ai/artifact/B5wGhKbprzCQndxu8wMcry
+Features: F-019, F-021.

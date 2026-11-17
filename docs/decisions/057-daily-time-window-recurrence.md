@@ -56,7 +56,7 @@ isn't a member, and the first occurrence is Monday.
   existing span flow is untouched). Toggling All day off reveals the window, the weekday
   chips, the reminder, and a summary line stating the semantics ("Every weekday, Aug 3 – 21 ·
   15 days").
-- **Month grid:** the series renders in the **span lanes** as bars over the days it covers —
+- **Month grid** (amended by D-085: a 1–3-day-a-week series chips like an appointment; only a 4+-day series keeps bars): the series renders in the **span lanes** as bars over the days it covers —
   contiguous occurrence runs, so a skipped day is a visible hole and weekends are bare. Cells
   keep their chip slots for one-offs; the clock lives one tap down, where a span's dates do.
 - **Widget / agenda:** the series is **stated once**, grammar _day-set · window · bound_

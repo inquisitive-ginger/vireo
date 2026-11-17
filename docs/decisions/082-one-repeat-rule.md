@@ -41,11 +41,14 @@ reason offsets were stored instead of weekdays.
 - **Monthly by date or weekday**, a third kind plus a mode. Covered both monthly phrasings but kept
   one kind per request.
 
-## Left to session 3b
+## Settled in session 3b (D-084)
 
-- The column shape (structured columns or an RRULE string, and whether to use a library) and the
-  migration of existing rows. Both are Zach's call when 3b starts.
-- How the month grid and widget state a monthly or yearly event.
+- **Columns:** `recurrence` is the frequency (`daily` | `weekly` | `monthly` | `yearly`), with
+  `recurrence_interval` (2 = every other week; weekly only), `recurrence_weekdays` (a daily
+  series' local weekdays) and `recurrence_month_week` (1–4, or -1 for last; null = on the date).
+  No library. `recurrence_day_offsets` migrated to weekdays in `America/Los_Angeles` and dropped.
+- **Statement:** every repeating agenda and drill-in row wears the Repeat glyph, labelled with the
+  rule; the drill-in row says it in words. Month-grid chips are unchanged.
 
 ## Do not revisit unless
 

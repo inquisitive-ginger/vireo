@@ -298,7 +298,7 @@ ground is different. Don't "fix" the panel by sinking it; that inverts the ladde
 **The band holds conditions, not appointments** (D-083): a span of 3+ days, or a
 daily series meeting 4+ days a week. A 1–3-day-a-week series lists on its days like
 a weekly event, as does a 1–2-day span. A condition leaves the band on its last day,
-shown once as "last day".
+shown once as "last day". The grid agrees (D-085).
 
 **Both surfaces pin only what is already RUNNING** and state the rest **inline,
 once, on the day it begins** (gate 4). In the widget, an upcoming span/series takes

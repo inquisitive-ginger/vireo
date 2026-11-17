@@ -1,6 +1,6 @@
 # Session 03b — Calendar: repeats (#152, #153)
 
-Type: build · Approver: Zach · Status: in progress · Started: 2026-11-16 19:45 · Ended: —
+Type: build · Approver: Zach · Status: locked · Started: 2026-11-16 19:45 · Ended: 2026-11-17 06:15
 
 ## Goal
 
@@ -34,4 +34,6 @@ Every acceptance check passes, machine-observable ones as tests citing D-082 / D
 
 ## Outcome
 
-Round 1, 2026-11-16 · Sent 2026-11-16 20:39
+Round 1, 2026-11-16 · Sent 2026-11-16 20:39 · Back 2026-11-16 21:47
+
+Walkthrough approved; 14 of 15 checks passed, "every other week" left blank and counted as passed by its test at Zach's call. Grid question: "Draw a 1–3-day-a-week series as chips, like any appointment", built on the branch with a test (`D-083 draws a Tue · Thu series as chips …`) and locked without another round at Zach's call. No comments. D-084 (acceptance), D-085 (grid chips). PR #160, squash-merged so the branch's co-author trailers stay off main; deploy check passed for 24c5fe8. Files: `docs/decisions.md`, ADR 082 ("Settled in session 3b"), ADR 057 (month-grid gate amended), `docs/architecture.md`, `docs/design-system.md`. Test run: 1548 passed, 0 failed. Carried forward: the Pi's `TZ` wasn't verifiable before the migration (ssh unreachable); the drawer's next-dates helper mirrors the api's month stepping.
