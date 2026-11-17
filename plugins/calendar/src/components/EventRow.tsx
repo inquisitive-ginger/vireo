@@ -3,7 +3,7 @@ import { ItemCard } from '@family-os/ui'
 import type { CalendarEvent, CalendarMember } from '../types'
 import { formatTime, isMultiDay, spanEndDate } from '../lib/grid'
 import { huesForEvent, spineColorsForEvent } from '../lib/hues'
-import { repeatRuleLabel } from '../lib/series'
+import { repeatRuleLabel, repeatsAriaLabel } from '../lib/series'
 
 /* A drill-in agenda row: an owner-hue spine (split for shared, neutral for
    Family) + the time, title, and any location — the higher-density read behind
@@ -22,7 +22,7 @@ export function EventRow({
   const hues = huesForEvent(event.attendeeIds, membersById)
   const spineColors = spineColorsForEvent(hues)
   const rule = repeatRuleLabel(event)
-  const repeatsLabel = rule && `Repeats ${rule.charAt(0).toLowerCase()}${rule.slice(1)}`
+  const repeatsLabel = repeatsAriaLabel(event)
   const ownerNames = event.attendeeIds
     .map((id) => membersById.get(id)?.name)
     .filter((n): n is string => Boolean(n))

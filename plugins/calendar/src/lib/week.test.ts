@@ -458,3 +458,29 @@ describe('D-083 the Ongoing panel in buildAgenda', () => {
     expect(friday.days.flatMap((d) => d.timed.map((e) => e.id))).toContain('french:2026-11-24')
   })
 })
+
+describe('D-083 edges', () => {
+  it('D-083 a series whose until falls on a day it does not meet ends on its last real meeting [F-023]', () => {
+    // Weekdays camp, until Sun Nov 22: its last meeting is Fri Nov 20.
+    const camp = [16, 17, 18, 19, 20].map((d) =>
+      seriesOcc('camp', d, [1, 2, 3, 4, 5], [9, 0], [15, 0], '2026-11-22')
+    )
+    const friday = buildWeek(camp.slice(4), at(20, 7))
+    expect(friday.spans).toEqual([])
+    expect(friday.hero?.seriesId).toBe('camp')
+    const thursday = buildWeek(camp.slice(3), at(19, 7))
+    expect(thursday.spans.map((e) => e.seriesId)).toEqual(['camp'])
+  })
+
+  it('D-083 a timed event crossing midnight stays an appointment — hero-eligible, no "last day" [F-023]', () => {
+    const sleepover = mk({
+      id: 'sleepover',
+      title: 'Sleepover',
+      startsAt: new Date(2026, 10, 17, 20).toISOString(),
+      endsAt: new Date(2026, 10, 18, 9).toISOString(),
+    })
+    const week = buildWeek([sleepover], at(17, 18))
+    expect(week.hero?.id).toBe('sleepover')
+    expect(week.days.flatMap((d) => d.ending)).toEqual([])
+  })
+})

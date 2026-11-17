@@ -3,7 +3,7 @@ import { ItemCard } from '@family-os/ui'
 import type { CalendarEvent, CalendarMember } from '../types'
 import { agendaWhenLabel } from '../lib/grid'
 import { huesForEvent, spineColorsForEvent } from '../lib/hues'
-import { repeatRuleLabel } from '../lib/series'
+import { repeatsAriaLabel } from '../lib/series'
 
 /* A full-width agenda row on the shared `ItemCard`: owner-hue spine (split for
    shared, neutral for Family) + a leading time column + title/meta. The mobile
@@ -24,8 +24,7 @@ export function AgendaRow({
   onClick?: () => void
 }) {
   const spineColors = spineColorsForEvent(huesForEvent(event.attendeeIds, membersById))
-  const rule = repeatRuleLabel(event)
-  const repeatsLabel = rule && `Repeats ${rule.charAt(0).toLowerCase()}${rule.slice(1)}`
+  const repeatsLabel = repeatsAriaLabel(event)
   const ownerNames = event.attendeeIds
     .map((id) => membersById.get(id)?.name)
     .filter((n): n is string => Boolean(n))

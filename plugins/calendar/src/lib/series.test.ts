@@ -1,6 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import type { CalendarEvent } from '../types'
 import {
+  choiceForDate,
   choiceForEvent,
   conditionSeriesReps,
   daySetLabel,
@@ -8,6 +9,7 @@ import {
   nextDates,
   repeatChoices,
   repeatRuleLabel,
+  repeatsAriaLabel,
   ruleForChoice,
 } from './series'
 
@@ -128,7 +130,7 @@ describe('the Repeats list (D-082)', () => {
     expect(fmt(nextDates('month-week', TUE_17))).toEqual(['12/15/26', '1/19/27', '2/16/27'])
     expect(fmt(nextDates('month-date', TUE_17))).toEqual(['12/17/26', '1/17/27', '2/17/27'])
     expect(fmt(nextDates('other-week', TUE_17))).toEqual(['12/1/26', '12/15/26', '12/29/26'])
-    expect(fmt(nextDates('year', TUE_17, 1))).toEqual(['11/17/27'])
+    expect(fmt(nextDates('year', TUE_17, { count: 1 }))).toEqual(['11/17/27'])
     expect(fmt(nextDates('month-date', new Date(2027, 0, 31)))).toEqual([
       '3/31/27',
       '5/31/27',
@@ -156,5 +158,39 @@ describe('the Repeats list (D-082)', () => {
     expect(repeatRuleLabel(everyOther)).toBe('Every other week on Tuesday')
     expect(repeatRuleLabel(occ('french', '2026-11-17T15:30:00', [2, 4]))).toBe('Tue · Thu')
     expect(repeatRuleLabel({ ...monthly, recurrence: null })).toBeNull()
+  })
+})
+
+describe('the Repeats list under a moved date or an edit (D-082)', () => {
+  it('D-082 a monthly pick the new date no longer offers falls to the one it does [F-021]', () => {
+    expect(choiceForDate('month-last', new Date(2026, 10, 17))).toBe('month-week')
+    expect(choiceForDate('month-week', new Date(2026, 11, 29))).toBe('month-last')
+    expect(choiceForDate('month-week', new Date(2026, 10, 17))).toBe('month-week')
+  })
+
+  it('D-082 the next dates count from a later day and stop at until [F-021]', () => {
+    const fmt = (ds: Date[]) =>
+      ds.map((d) => `${d.getMonth() + 1}/${d.getDate()}/${d.getFullYear() % 100}`)
+    const jan2025 = new Date(2025, 0, 21) // the 3rd Tuesday of January 2025
+    expect(fmt(nextDates('month-week', jan2025, { after: new Date(2026, 10, 16) }))).toEqual([
+      '11/17/26',
+      '12/15/26',
+      '1/19/27',
+    ])
+    expect(
+      fmt(nextDates('week', new Date(2026, 10, 17), { until: new Date(2026, 10, 24) }))
+    ).toEqual(['11/24/26'])
+  })
+
+  it('D-082 the glyph says the rule: "every …" lowercased, a day set as written [F-021]', () => {
+    const monthly = {
+      ...occ('pta', '2026-11-24T19:00:00'),
+      recurrence: 'monthly',
+      recurrenceWeekdays: [],
+      recurrenceMonthWeek: -1,
+    }
+    expect(repeatRuleLabel(monthly)).toBe('Every month on the last Tuesday')
+    expect(repeatsAriaLabel(monthly)).toBe('Repeats every month on the last Tuesday')
+    expect(repeatsAriaLabel(occ('french', '2026-11-17T15:30:00', [2, 4]))).toBe('Repeats Tue · Thu')
   })
 })

@@ -7,8 +7,6 @@ import type { CalendarEvent } from '../types'
 
 export const isDailyWindow = (e: Pick<CalendarEvent, 'recurrence'>) => e.recurrence === 'daily'
 
-export const isRecurringEvent = (e: Pick<CalendarEvent, 'recurrence'>) => e.recurrence !== null
-
 /** A daily series meeting 4+ days a week is a condition: it states itself once in
  *  the All week band and the agenda's Ongoing panel. One meeting 1–3 days a week
  *  is a set of appointments, listed on its days (D-083). */
@@ -150,35 +148,62 @@ export function repeatRuleLabel(event: CalendarEvent): string | null {
   if (choice === 'month-week') {
     return `Every month on the ${ORDINAL[event.recurrenceMonthWeek! - 1]} ${DAY_NAMES[start.getDay()]}`
   }
+  if (choice === 'month-last') return `Every month on the last ${DAY_NAMES[start.getDay()]}`
   return repeatChoices(start).find((c) => c.value === choice)?.label ?? null
 }
 
-/** The next `count` dates after `date` a choice lands on — the drawer's "Next:"
- *  line. Mirrors the api's expansion (`apps/api/src/lib/recurrence.ts`) for the
- *  rules the drawer writes; the api stays the one that places occurrences. */
-export function nextDates(choice: RepeatChoice, date: Date, count = 3): Date[] {
+/** The repeat glyph's spoken label: "Repeats every month on the 3rd Tuesday",
+ *  "Repeats Tue · Thu". */
+export function repeatsAriaLabel(event: CalendarEvent): string | null {
+  const rule = repeatRuleLabel(event)
+  if (!rule) return null
+  return rule.startsWith('Every ')
+    ? `Repeats ${rule.charAt(0).toLowerCase()}${rule.slice(1)}`
+    : `Repeats ${rule}`
+}
+
+/** The choice to show for a date: a monthly pick the date no longer offers
+ *  ("3rd" on a 5th weekday, "last" off the last week) falls to the one it does. */
+export function choiceForDate(choice: RepeatChoice, date: Date): RepeatChoice {
+  const offered = new Set(repeatChoices(date).map((c) => c.value))
+  if (offered.has(choice)) return choice
+  return choice === 'month-week' ? 'month-last' : choice === 'month-last' ? 'month-week' : choice
+}
+
+/** The next `count` dates after `after` (default: the start) that a choice lands
+ *  on, through `until` — the drawer's "Next:" line. Mirrors the api's expansion
+ *  (`apps/api/src/lib/recurrence.ts`) for the rules the drawer writes; the api
+ *  stays the one that places occurrences. */
+export function nextDates(
+  choice: RepeatChoice,
+  date: Date,
+  { count = 3, after = date, until }: { count?: number; after?: Date; until?: Date } = {}
+): Date[] {
   const { recurrence, recurrenceInterval, recurrenceMonthWeek } = ruleForChoice(choice, date)
   if (!recurrence) return []
-  const out: Date[] = []
-  for (let k = 1; out.length < count && k < 60; k++) {
-    const y = date.getFullYear()
+  const y = date.getFullYear()
+  const candidate = (k: number): Date | null => {
     if (recurrence === 'weekly') {
-      out.push(new Date(y, date.getMonth(), date.getDate() + 7 * recurrenceInterval * k))
-      continue
+      return new Date(y, date.getMonth(), date.getDate() + 7 * recurrenceInterval * k)
     }
     const m = date.getMonth() + (recurrence === 'yearly' ? 12 * k : k)
     if (recurrenceMonthWeek === null) {
       const c = new Date(y, m, date.getDate())
-      if (c.getDate() === date.getDate()) out.push(c)
-    } else if (recurrenceMonthWeek === -1) {
-      const last = new Date(y, m + 1, 0)
-      out.push(new Date(y, m, last.getDate() - ((last.getDay() - date.getDay() + 7) % 7)))
-    } else {
-      const first = new Date(y, m, 1).getDay()
-      out.push(
-        new Date(y, m, 1 + ((date.getDay() - first + 7) % 7) + (recurrenceMonthWeek - 1) * 7)
-      )
+      return c.getDate() === date.getDate() ? c : null
     }
+    if (recurrenceMonthWeek === -1) {
+      const last = new Date(y, m + 1, 0)
+      return new Date(y, m, last.getDate() - ((last.getDay() - date.getDay() + 7) % 7))
+    }
+    const first = new Date(y, m, 1).getDay()
+    return new Date(y, m, 1 + ((date.getDay() - first + 7) % 7) + (recurrenceMonthWeek - 1) * 7)
+  }
+  const out: Date[] = []
+  for (let k = 1; out.length < count && k < 600; k++) {
+    const c = candidate(k)
+    if (!c) continue
+    if (until && c > until) break
+    if (c > after) out.push(c)
   }
   return out
 }

@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, onTestFinished } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import type { Profile } from '@family-os/platform/types'
 import type { CalendarEvent } from '../types'
@@ -129,6 +129,11 @@ describe('CreateEventDrawer — create', () => {
   })
 
   it('D-082 picking monthly on the 3rd Tuesday shows its next dates and submits the rule [F-021] #152', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date(2026, 10, 16, 20))
+    onTestFinished(() => {
+      vi.useRealTimers()
+    })
     const { onSubmit } = renderDrawer({ prefillDate: new Date(2026, 10, 17) })
     fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'PTA' } })
     fireEvent.click(screen.getByRole('button', { name: 'Family' }))

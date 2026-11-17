@@ -68,13 +68,6 @@ const spanDays = (e: CalendarEvent) =>
 
 export const isConditionSpan = (e: CalendarEvent) => isMultiDay(e) && spanDays(e) >= 3
 
-const lastDayOf = (e: CalendarEvent): Date | null =>
-  isDailyWindow(e)
-    ? e.recurrenceUntil
-      ? parseDateKey(e.recurrenceUntil)
-      : null
-    : startOfDay(spanEndDate(e))
-
 interface Classified {
   hero: CalendarEvent | null
   running: CalendarEvent[]
@@ -94,14 +87,24 @@ function classify(events: CalendarEvent[], now: Date, horizon: number): Classifi
     ...events.filter(isConditionSpan).filter(inWindow),
     ...conditionSeriesReps(events),
   ].sort((a, b) => a.startsAt.localeCompare(b.startsAt))
+  // A series' last day is its last real occurrence — `recurrenceUntil` can fall on
+  // a day it doesn't meet, or the final day can be cancelled. Knowable only when
+  // the bound lies inside the fetched window.
   const endsToday = (e: CalendarEvent) => {
-    const last = lastDayOf(e)
-    return last !== null && isSameDay(last, now)
+    if (!isDailyWindow(e)) return isSameDay(spanEndDate(e), now)
+    if (!e.recurrenceUntil || parseDateKey(e.recurrenceUntil) >= lastExclusive) return false
+    const last = events
+      .filter((o) => o.seriesId === e.seriesId)
+      .reduce((a, b) => (b.startsAt > a.startsAt ? b : a))
+    return isSameDay(new Date(last.startsAt), now)
   }
   const standing = conditions.filter((e) => !endsToday(e))
 
+  // A short spell of all-day days is a span; a timed event that crosses midnight
+  // (a sleepover, a red-eye) is still an appointment.
+  const isShortSpan = (e: CalendarEvent) => isMultiDay(e) && e.allDay && !isConditionSpan(e)
   const live = events
-    .filter((e) => !isMultiDay(e))
+    .filter((e) => !isConditionSpan(e) && !isShortSpan(e))
     .filter((e) => !isConditionSeries(e) || isSameDay(new Date(e.startsAt), now))
     .filter((e) => eventEnd(e) >= now)
     .sort((a, b) => a.startsAt.localeCompare(b.startsAt))
@@ -112,7 +115,7 @@ function classify(events: CalendarEvent[], now: Date, horizon: number): Classifi
     running: standing.filter((e) => startOfDay(new Date(e.startsAt)) <= first),
     upcoming: standing.filter((e) => startOfDay(new Date(e.startsAt)) > first),
     listable: live.filter((e) => !isConditionSeries(e)),
-    shortSpans: events.filter((e) => isMultiDay(e) && !isConditionSpan(e)).filter(inWindow),
+    shortSpans: events.filter(isShortSpan).filter(inWindow),
     endingToday: conditions.filter(endsToday).flatMap((e) => {
       if (!isConditionSeries(e)) return [e]
       const todays = live.find(

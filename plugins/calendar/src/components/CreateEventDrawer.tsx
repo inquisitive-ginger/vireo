@@ -19,7 +19,14 @@ import {
 import type { Profile } from '@family-os/platform/types'
 import type { CalendarEvent } from '../types'
 import { addDays, isMultiDay, localDateKey, spanEndDate, startOfDay } from '../lib/grid'
-import { choiceForEvent, daySetLabel, nextDates, repeatChoices, ruleForChoice } from '../lib/series'
+import {
+  choiceForDate,
+  choiceForEvent,
+  daySetLabel,
+  nextDates,
+  repeatChoices,
+  ruleForChoice,
+} from '../lib/series'
 
 /* The single create / edit surface for calendar events (design §2) — one reused
    right Drawer (chores `CreateTaskDrawer` pattern). Each modifier lives on the
@@ -96,6 +103,7 @@ const nextLabel = (d: Date, withYear: boolean) =>
     ...(withYear && { year: 'numeric' }),
   })
 
+const maxDate = (a: Date, b: Date) => (a > b ? a : b)
 const pad = (n: number) => String(n).padStart(2, '0')
 const toHM = (d: Date) => `${pad(d.getHours())}:${pad(d.getMinutes())}`
 const addMinutesHM = (hm: string, mins: number) => {
@@ -282,7 +290,7 @@ function toInput(v: EventForm): CreateEventInput {
       reminderMinutes: v.reminderMinutes,
     }
   }
-  const rule = ruleForChoice(v.repeat, v.date!)
+  const rule = ruleForChoice(choiceForDate(v.repeat, v.date!), v.date!)
   const recurrenceUntil = rule.recurrence && v.until ? localDateKey(v.until) : null
   if (v.allDay) {
     return {
@@ -417,14 +425,15 @@ export function CreateEventDrawer({
     setValue('family', true, { shouldValidate: true })
   }
 
-  // Worded from the date, so a moved date re-words the list; a "3rd Tuesday"
-  // picked before the date moved to a 5th weekday reads as its "last".
+  // Worded from the date, so a moved date re-words the list and a monthly pick
+  // the new date doesn't offer falls to the one it does. An edited series' next
+  // dates count from today, not from its first occurrence.
   const choices = date ? repeatChoices(date) : []
-  const shownRepeat =
-    repeat === 'month-week' && !choices.some((c) => c.value === 'month-week')
-      ? 'month-last'
-      : repeat
-  const upcoming = date ? nextDates(shownRepeat, date) : []
+  const shownRepeat = date ? choiceForDate(repeat, date) : repeat
+  const until = watch('until')
+  const upcoming = date
+    ? nextDates(shownRepeat, date, { after: maxDate(date, startOfDay(new Date())), until })
+    : []
 
   const submit = handleSubmit(async (values) => {
     await onSubmit(toInput(values))
