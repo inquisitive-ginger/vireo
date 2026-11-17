@@ -92,7 +92,13 @@ export function RidesPage() {
           aria-label="Loading"
         />
       ) : runsQuery.isError || profilesQuery.isError ? (
-        <ErrorCard moduleName="Rides" onRetry={() => runsQuery.refetch()} />
+        <ErrorCard
+          moduleName="Rides"
+          onRetry={() => {
+            runsQuery.refetch()
+            profilesQuery.refetch()
+          }}
+        />
       ) : (
         <>
           {failed && (

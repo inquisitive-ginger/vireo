@@ -97,12 +97,15 @@ export function RidesWeek({
                       </span>
                       <span className="min-w-0 flex-1 text-base-token">{runWhat(run)}</span>
                       {canEdit ? (
-                        <SegmentedControl
-                          aria-label={`Who drives ${label} ${runWhat(run).toLowerCase()}`}
-                          options={driverOptions}
-                          value={run.driverId ?? OPEN}
-                          onChange={(v) => onDriver(run, v === OPEN ? null : v)}
-                        />
+                        <span className="flex items-center gap-2">
+                          <HueDot member={drivers.find((d) => d.id === run.driverId)} />
+                          <SegmentedControl
+                            aria-label={`Who drives ${label} ${runWhat(run).toLowerCase()}`}
+                            options={driverOptions}
+                            value={run.driverId ?? OPEN}
+                            onChange={(v) => onDriver(run, v === OPEN ? null : v)}
+                          />
+                        </span>
                       ) : (
                         <DriverName
                           member={drivers.find((d) => d.id === run.driverId)}
@@ -139,16 +142,30 @@ export function RidesWeek({
   )
 }
 
-function DriverName({ member, name }: { member?: RidesMember; name: string }) {
-  if (!member) return <span className="text-sm-token text-error">{name}</span>
-  const hue = resolveHue(member.name, member.identityHue)
-  return (
-    <span className="flex items-center gap-1.5 text-sm-token">
+function HueDot({ member }: { member?: RidesMember }) {
+  if (!member) {
+    return (
       <span
         aria-hidden
-        className="h-3 w-3 rounded-full"
-        style={{ backgroundColor: identityToken(hue, 'base') }}
+        className="h-3 w-3 shrink-0 rounded-full border border-dashed border-input"
       />
+    )
+  }
+  const hue = resolveHue(member.name, member.identityHue)
+  return (
+    <span
+      aria-hidden
+      className="h-3 w-3 shrink-0 rounded-full"
+      style={{ backgroundColor: identityToken(hue, 'base') }}
+    />
+  )
+}
+
+function DriverName({ member, name }: { member?: RidesMember; name: string }) {
+  if (!member) return <span className="text-sm-token text-error">{name}</span>
+  return (
+    <span className="flex items-center gap-1.5 text-sm-token">
+      <HueDot member={member} />
       {name}
     </span>
   )

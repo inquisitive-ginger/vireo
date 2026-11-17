@@ -1,13 +1,25 @@
 import fp from 'fastify-plugin'
 import type { FastifyPluginAsync } from 'fastify'
 import { prisma } from '@family-os/platform/server'
-import type { DayMark } from '@family-os/platform/types'
+import { FAMILY_PROFILE_ID, type DayMark } from '@family-os/platform/types'
 import { ridesPrisma } from '@family-os/plugin-rides/db'
 import { dateKeys, dayRuns, runText } from '@family-os/plugin-rides/lib/runs'
 import type { RunKind, SchoolRun } from '@family-os/plugin-rides/lib/runs'
 import { RunDaySchema, SchoolRunInputSchema, SchoolRunPatchSchema } from '@family-os/schemas'
 
 const DATE_KEY = /^\d{4}-\d{2}-\d{2}$/
+
+function isRealDate(key: string) {
+  return DATE_KEY.test(key) && new Date(`${key}T00:00:00Z`).toISOString().startsWith(key)
+}
+
+/** The calendar sends range instants; the api runs in the household's zone
+ *  (docker-compose.prod.yml `TZ`), so local getters give the household date. */
+function localKey(value: string) {
+  if (DATE_KEY.test(value)) return value
+  const d = new Date(value)
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
+}
 
 type RunRow = Awaited<ReturnType<typeof ridesPrisma.schoolRun.create>>
 
@@ -31,7 +43,7 @@ async function isDriver(id: string) {
 
 async function isKid(id: string) {
   const profile = await prisma.profile.findUnique({ where: { id }, select: { tier: true } })
-  return profile !== null && profile.tier < 4
+  return id !== FAMILY_PROFILE_ID && profile !== null && profile.tier < 4
 }
 
 async function loadDays(from: string, to: string) {
@@ -110,7 +122,7 @@ const ridesPlugin: FastifyPluginAsync = async (fastify) => {
       return reply.status(403).send({ error: 'Permission denied' })
     }
     const { date } = request.params as { date: string }
-    if (!DATE_KEY.test(date)) return reply.status(400).send({ error: 'Expected YYYY-MM-DD' })
+    if (!isRealDate(date)) return reply.status(400).send({ error: 'Expected YYYY-MM-DD' })
     const parsed = RunDaySchema.safeParse(request.body ?? {})
     if (!parsed.success) return reply.status(400).send({ error: parsed.error.flatten() })
     const { lineId, ownerId, cleared } = parsed.data
@@ -144,7 +156,9 @@ const ridesPlugin: FastifyPluginAsync = async (fastify) => {
     name: 'rides',
     action: 'view',
     subject: 'rides.Run',
-    async fetch(from, to, ability) {
+    async fetch(rangeFrom, rangeTo, ability) {
+      const from = localKey(rangeFrom)
+      const to = localKey(rangeTo)
       const { runs, overrides } = await loadDays(from, to)
       if (runs.length === 0) return []
 

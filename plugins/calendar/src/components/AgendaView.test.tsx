@@ -207,7 +207,7 @@ describe('the rides mark (D-087, D-091)', () => {
     const fourPm = new Date(2026, 5, 22, 16, 0)
     render(<AgendaView events={[]} membersById={MEMBERS} now={fourPm} marksByDate={withRides()} />)
     const mark = screen.getByRole('button', {
-      name: /Next: 4:30 PM, Hallie picks up Teddy\. A run is open/,
+      name: /Next: 4:30 PM, Hallie picks up Teddy\. One is open/,
     })
     expect(mark).toHaveTextContent('4:30 PM · Hallie picks up Teddy')
   })
@@ -229,7 +229,7 @@ describe('the rides mark (D-087, D-091)', () => {
 
   it('D-091 tapping the mark unfolds the day’s runs under the heading, and again folds them [F-042]', () => {
     render(<AgendaView events={[]} membersById={MEMBERS} now={NOW} marksByDate={withRides()} />)
-    const mark = screen.getByRole('button', { name: /Show the day's runs/ })
+    const mark = screen.getByRole('button', { name: /Show the day's list/ })
     expect(mark).toHaveAttribute('aria-expanded', 'false')
     fireEvent.click(mark)
     expect(mark).toHaveAttribute('aria-expanded', 'true')
@@ -249,7 +249,7 @@ describe('the rides mark (D-087, D-091)', () => {
         onMarkAction={onMarkAction}
       />
     )
-    fireEvent.click(screen.getByRole('button', { name: /Show the day's runs/ }))
+    fireEvent.click(screen.getByRole('button', { name: /Show the day's list/ }))
     fireEvent.click(
       screen.getByRole('button', { name: 'Claim: Nobody yet picks up Zoë at yarn club' })
     )
@@ -276,7 +276,7 @@ describe('the rides mark (D-087, D-091)', () => {
         onMarkAction={vi.fn()}
       />
     )
-    const mark = screen.getByRole('button', { name: /Show the day's runs/ })
+    const mark = screen.getByRole('button', { name: /Show the day's list/ })
     expect(mark.getAttribute('aria-label')).not.toMatch(/open/)
     fireEvent.click(mark)
     expect(
@@ -295,7 +295,7 @@ describe('the rides mark (D-087, D-091)', () => {
         onMarkAction={vi.fn()}
       />
     )
-    fireEvent.click(screen.getByRole('button', { name: /Show the day's runs/ }))
+    fireEvent.click(screen.getByRole('button', { name: /Show the day's list/ }))
     expect(screen.getAllByRole('listitem')).toHaveLength(3)
     expect(screen.queryByRole('button', { name: /^(Claim|Swap|Clear)/ })).toBeNull()
   })

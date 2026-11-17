@@ -128,7 +128,7 @@ export function AgendaView({
                           type="button"
                           aria-expanded={unfolded === key}
                           aria-controls={`mark-lines-${key}`}
-                          aria-label={`${line ? `Next: ${formatMinutes(line.minutes)}, ${line.text}` : mark.label}${open ? '. A run is open' : ''}. Show the day's runs.`}
+                          aria-label={`${line ? `Next: ${formatMinutes(line.minutes)}, ${line.text}` : mark.label}${open ? '. One is open' : ''}. Show the day's list.`}
                           onClick={() => setUnfolded(unfolded === key ? null : key)}
                           className="-my-2 flex cursor-pointer items-center gap-1.5 rounded-card py-2 text-sm-token text-muted-foreground underline decoration-border underline-offset-4 hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
                         >

@@ -32,9 +32,7 @@ export function lineChange(
 ): { ownerId: string | null; cleared: boolean } {
   if (action === 'clear') return { ownerId: line.ownerId, cleared: true }
   if (action === 'restore') return { ownerId: line.ownerId, cleared: false }
-  if (action === 'claim') {
-    return { ownerId: owners.includes(viewerId) ? viewerId : (owners[0] ?? null), cleared: false }
-  }
+  if (action === 'claim') return { ownerId: viewerId, cleared: false }
   const at = owners.indexOf(line.ownerId ?? '')
   return { ownerId: owners[(at + 1) % owners.length] ?? null, cleared: false }
 }

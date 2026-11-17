@@ -34,6 +34,7 @@ describe('mark lines', () => {
   })
 
   it('D-087 claim takes the run, swap hands it to the next parent [F-042]', () => {
+    expect(lineChange(line('c', 1050, null), 'claim', ['h', 'z'], 'teen').ownerId).toBe('teen')
     expect(lineChange(line('c', 1050, null), 'claim', ['h', 'z'], 'z')).toEqual({
       ownerId: 'z',
       cleared: false,

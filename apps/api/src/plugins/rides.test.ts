@@ -195,6 +195,13 @@ describe('the rides mark', () => {
     expect(mark.label).toBe('4 school runs, 1 open')
   })
 
+  it('D-087 the calendar’s range instants still find the day’s mark [F-042]', async () => {
+    await seedTuesday()
+    const from = new Date(2026, 10, 17).toISOString()
+    const to = new Date(2026, 10, 18).toISOString()
+    expect((await marks(from, to)).map((m) => m.date)).toContain(TUE)
+  })
+
   it('D-094 a day with no runs gets no mark [F-042]', async () => {
     await seedTuesday()
     expect((await marks('2026-11-16', '2026-11-22')).map((m) => m.date)).toEqual([TUE])
@@ -260,6 +267,17 @@ describe('changing a day', () => {
   it('D-086 a day can only go to a parent [F-042]', async () => {
     const ids = await seedTuesday()
     expect((await changeDay(TUE, { lineId: ids[3], ownerId: ZOE })).statusCode).toBe(400)
+  })
+
+  it('D-087 an impossible date is refused, never rolled over [F-042]', async () => {
+    const ids = await seedTuesday()
+    expect((await changeDay('2026-02-30', { lineId: ids[0], ownerId: ZACH })).statusCode).toBe(400)
+  })
+
+  it('D-086 the family dashboard is not a kid [F-041]', async () => {
+    expect(
+      (await addRun({ kidId: 'family', weekday: 2, kind: 'pickup', minutes: 990 })).statusCode
+    ).toBe(400)
   })
 
   it('D-087 a run can only change on a day it falls on [F-042]', async () => {

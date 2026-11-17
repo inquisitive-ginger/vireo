@@ -258,10 +258,7 @@ export function CalendarPage() {
       }).then((r) => {
         if (!r.ok) throw new Error(String(r.status))
       }),
-    onSuccess: () => {
-      queryClient.invalidateQueries({ queryKey: ['calendar/day-marks'] })
-      queryClient.invalidateQueries({ queryKey: ['rides'] })
-    },
+    onSuccess: () => queryClient.invalidateQueries({ queryKey: ['calendar/day-marks'] }),
     onError: (err) => console.error('[calendar] day-mark change failed', err),
   })
 
