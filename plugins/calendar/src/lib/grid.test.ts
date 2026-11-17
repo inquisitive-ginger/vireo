@@ -264,3 +264,17 @@ describe('daily series rendering (bars, not chips)', () => {
     expect(placed[0].openEnd).toBe(true)
   })
 })
+
+describe('D-083 a 1–3-day-a-week series in the month grid', () => {
+  const french = [7, 9].map((d) => ({
+    ...dailyOcc('french', new Date(2026, 6, d)),
+    recurrenceWeekdays: [2, 4],
+  }))
+  const WEEK = buildWeek(new Date(2026, 6, 8))
+
+  it('D-083 draws a Tue · Thu series as chips on its days, not span-lane bars [F-023] #153', () => {
+    expect(eventsOnDay(french, new Date(2026, 6, 7)).map((e) => e.id)).toEqual([french[0].id])
+    expect(eventsOnDay(french, new Date(2026, 6, 8))).toEqual([])
+    expect(spansForWeek(french, WEEK)).toEqual([])
+  })
+})
