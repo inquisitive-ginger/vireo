@@ -1,0 +1,86 @@
+<title>Vireo · Calendar: repeats</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;1,6..72,400&family=Public+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="board.css">
+<style>
+.rb-item ul { margin: 0; padding-left: 1.2rem; display: grid; gap: 0.4rem; }
+.rb-item p { margin: 0 0 0.5rem; }
+.run { display: flex; flex-wrap: wrap; gap: 0.25rem 1.25rem; font-variant-numeric: tabular-nums; margin-bottom: 0.75rem; }
+.run b { font-size: 1.4rem; }
+</style>
+
+<div class="rb-wrap">
+  <header>
+    <div class="rb-eyebrow">Vireo · Session 3b</div>
+    <h1>Monthly repeats, and an All week band that holds only what runs all week</h1>
+    <p class="rb-lede">Events now repeat by one rule, so the drawer offers monthly, every other week and yearly (#152). Middle School French drops out of the All week band and lists on Tuesdays and Thursdays (#153).</p>
+    <p class="rb-how">Open the dev server on the wall iPad and a phone, tick each check you can see, then press <strong>Mark reviewed</strong>. Checks marked with a test already pass in the suite.</p>
+  </header>
+  <div id="rb"></div>
+</div>
+
+<script src="board.js"></script>
+<script>
+const ITEMS = [
+ {
+  id: 'walkthrough',
+  type: 'approve',
+  title: 'The build, on the iPad and a phone',
+  ask: 'Ship this?',
+  href: 'http://192.168.0.6:5173/calendar',
+  body: `<div class="run"><span><b>1547</b> passed</span><span><b>0</b> failed</span><span>was 1512 before this session</span></div>
+<p>The dev server runs from the session branch on the LAN. The calendar holds this week, seeded to match the 3a board:</p>
+<ul>
+<li><strong>Conditions:</strong> Grandma visiting (Sun 15 – Fri 20) and Swim clinic (weekdays 5–6, through Fri 20).</li>
+<li><strong>Appointments:</strong> Middle School French (Tue · Thu 3:30) and a Book fair (Thu 19 – Fri 20).</li>
+<li><strong>New repeats:</strong> PTA meeting (every month on the 3rd Tuesday), Book club (every month on the 17th), Recycling pickup (every other Wednesday) and Zoë's birthday (every year on Nov 21).</li>
+</ul>
+<p>Assumed:</p>
+<ul>
+<li>"Same glyph everywhere" covers the rows that already carried the repeat glyph (the agenda and the day/week drill-in). The widget rows still have none.</li>
+<li>The drill-in row also states the rule in words.</li>
+<li>Existing weekly and daily series migrated with no visible change.</li>
+</ul>`,
+ },
+ {
+  id: 'checks',
+  type: 'checklist',
+  title: 'Acceptance checks',
+  ask: 'Does each one hold in the app?',
+  checks: [
+   { id: 'list', label: 'The event drawer has a Repeats list: Doesn’t repeat, every week, every other week, monthly on the date, monthly on the nth weekday, and yearly, all worded from the event’s date.', hint: 'Add an event on Tue Nov 17.', test: 'D-082 offers every week, every other week, both monthlies and yearly, worded from the date [F-021] #152' },
+   { id: 'next', label: 'Picking a repeat shows its next three dates, and an Until field.', hint: 'Every month on the 3rd Tuesday → Next: Tue, Dec 15, Tue, Jan 19, Tue, Feb 16.', test: 'D-082 picking monthly on the 3rd Tuesday shows its next dates and submits the rule [F-021] #152' },
+   { id: 'monthly-nth', label: 'PTA meeting shows on Nov 17, Dec 15 and Jan 19 in the month grid.', test: 'D-082 a monthly event on the 3rd Tuesday stores its week of the month [F-021] #152' },
+   { id: 'monthly-date', label: 'Book club shows on the 17th of every month.', test: 'D-082 a monthly event repeats on its date and round-trips the rule [F-021] #152' },
+   { id: 'other-week', label: 'Recycling pickup shows on Wed Nov 18 and Wed Dec 2, and not on Nov 25.', test: 'D-082 every other week steps fourteen days [F-021]' },
+   { id: 'yearly', label: 'Zoë’s birthday shows on Nov 21, 2026 and Nov 21, 2027.', test: 'D-082 yearly repeats on the same date, and Feb 29 only in leap years [F-021]' },
+   { id: 'edit', label: 'Editing PTA opens with Every month on the 3rd Tuesday selected, and saving keeps it.', test: 'D-082 edit prefills the stored rule and keeps it on save [F-021] #152' },
+   { id: 'glyph', label: 'Agenda and drill-in rows for every kind of repeat carry the repeat glyph, and the drill-in row names the rule ("Every month on the 3rd Tuesday").', test: 'D-082 a monthly row wears the repeat glyph and says its rule [F-021] #152' },
+   { id: 'skip', label: 'Removing one PTA date offers "Just this one" or "All events", and Just this one removes only that date.', hint: 'A weekly event still says "Just this week".' },
+   { id: 'existing', label: 'Existing activities and camps look and land as they did before the migration.' },
+   { id: 'band', label: 'The widget’s All week band holds Grandma visiting and Swim clinic, and not Middle School French.', test: 'D-083 holds a 3+-day span and a 4+-day-a-week series, and never a Tue · Thu series [F-023] #153' },
+   { id: 'french', label: 'Middle School French lists on Tuesday and Thursday with its 3:30 clock, and becomes the hero when it is next.', test: 'D-083 lists a 1–3-day-a-week series on each of its days with its clock, hero-eligible [F-023] #153' },
+   { id: 'fair', label: 'Book fair lists on Thursday, then on Friday as "last day", and never in the band.', test: 'D-083 lists a 1–2-day span once on each of its days, never in the band [F-023]' },
+   { id: 'ongoing', label: 'On a phone, the agenda’s Ongoing panel holds the same two as the band.', test: 'D-083 Ongoing holds the same conditions as the band, with last days and short spans in the days [F-023] #153' },
+   { id: 'look', label: 'The Repeats list reads well and is easy to hit on the iPad and one-handed on a phone.' },
+  ],
+ },
+ {
+  id: 'grid',
+  type: 'question',
+  title: 'Middle School French in the month grid',
+  ask: 'The agenda and widget now list French as appointments. The month grid still draws it as one-day bars in the span lanes, the way ADR 057 draws every daily series. Should it match?',
+  input: 'radio',
+  options: ['Leave the grid as it is', 'Draw a 1–3-day-a-week series as chips, like any appointment'],
+ },
+ {
+  id: 'notes',
+  type: 'comment',
+  title: 'Anything else',
+  ask: 'Anything to change before it merges.',
+ },
+];
+ReviewBoard.mount({ owner: 'Zach', type: 'web-app', items: ITEMS, earlier: [] });
+</script>
