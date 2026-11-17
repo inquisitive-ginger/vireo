@@ -30,7 +30,7 @@ const ITEMS = [
   title: 'The build, on the iPad and a phone',
   ask: 'Ship this?',
   href: 'http://192.168.0.6:5173/calendar',
-  body: `<div class="run"><span><b>1582</b> passed</span><span><b>0</b> failed</span><span>was 1548 before this session</span></div>
+  body: `<div class="run"><span><b>1584</b> passed</span><span><b>0</b> failed</span><span>was 1548 before this session</span></div>
 <p>The dev server runs from the session branch on the LAN. The usual week is seeded: Teddy and Zoë each have a drop-off and a pickup every school day, split between Dad and Mom, and Zoë's Tuesday pickup is from yarn club at 5:30 with nobody on it yet.</p>
 <p>Your calls at the start of 3e:</p>
 <ul>
@@ -56,6 +56,7 @@ const ITEMS = [
    { id: 'add', label: 'Adding a run to a day (kind, where, time) and removing one both stick.', test: 'D-092 a run is added to a day with its kind, place and time [F-041]' },
    { id: 'next', label: 'Today’s heading names the next run in words, like “4:30 PM · Mom picks up Teddy”, with a red dot because yarn club is open.', test: 'D-087 names the next run in words and flags an open one [F-042]' },
    { id: 'later', label: 'Tomorrow’s heading names its first run.', test: 'D-087 a later day names its first run [F-042]' },
+   { id: 'ipad', label: 'On the iPad, the Day and Week views carry each day’s marks (dinner too), and the rides mark unfolds there as it does on the phone.', hint: 'The Month view shows only the car and the red dot; tap a day to open it.', test: 'D-091 the day view, even with nothing scheduled, carries the rides mark and unfolds its runs [F-042]' },
    { id: 'unfold', label: 'Tapping the mark unfolds the day’s runs under the heading, and tapping again folds them.', test: 'D-091 tapping the mark unfolds the day’s runs under the heading, and again folds them [F-042]' },
    { id: 'claim', label: 'Claiming the yarn-club pickup puts you on it and clears the red dot; next Tuesday’s is still open.', test: 'D-087 claiming an open run changes that day only, never the usual week [F-042]' },
    { id: 'swap', label: 'Swap hands a run to the other parent, and swapping back returns it.', test: 'D-087 swapping a run to the other parent, then back, leaves no change behind [F-042]' },
