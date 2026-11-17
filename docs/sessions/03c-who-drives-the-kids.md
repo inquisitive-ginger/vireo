@@ -1,6 +1,6 @@
 # Session 03c — Feature: Who drives the kids
 
-Type: feature · Approver: Zach · Status: in progress · Started: 2026-11-17 07:05 · Ended: —
+Type: feature · Approver: Zach · Status: locked · Started: 2026-11-17 07:05 · Ended: 2026-11-17 10:03
 
 ## Goal
 
@@ -50,4 +50,6 @@ Round 1, 2026-11-17 · Sent 2026-11-17 07:25 · Back 2026-11-17 09:16
 
 F-041/F-042/F-043 added at must/must/should; approach B "not quite". Zach: one entry point on agenda and grid; the H/Z initials carry no information; pills are too much on a six-ride Tuesday; drop-off/pickup and driving a kid to an activity are two distinct things, and the latter may hang off the event. Sessions and notes unanswered. Zach chose to hold everything for round 2; nothing locked.
 
-Round 2, 2026-11-17 · Sent 2026-11-17 09:21
+Round 2, 2026-11-17 · Sent 2026-11-17 09:21 · Back 2026-11-17 10:03
+
+All added: F-041 must (D-086), F-042 must with approach B, the mark names the next run (D-087), F-043 should (D-088), F-044 should (D-089). Sessions: choice blank, comment "put it before companion and mark companion as held until I revive it." So 3d–3g go next and Companion 4–6 are held (D-090). No features declined. Files: `docs/decisions.md`, `docs/idea.md`, `docs/roadmap.md`. Carried to 3d: the sheet's look, the pattern editor, where a drive's driver is set on an event, the mark on a day with no school (weekends, holidays).

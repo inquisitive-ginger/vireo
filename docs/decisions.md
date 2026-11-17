@@ -350,3 +350,28 @@ Features: F-020, F-021, F-023.
 
 The month grid draws a daily series meeting 1–3 days a week as chips on its days, like any appointment; only a condition series (4+ days a week) keeps ADR 057's span-lane bars. Amends ADR 057's month-grid gate so the grid agrees with D-083's agenda and widget. Options: leave the grid as it is; chips (chosen). Approved: Zach, on the 3b board. Board: https://claude.ai/artifact/B5wGhKbprzCQndxu8wMcry
 Features: F-019, F-021.
+
+## D-086 · 2026-11-17 · Added F-041: a parent sets each kid's usual school runs for the week, must
+
+Per kid and weekday: who drops off at school, who picks up, and from where (school or an after-school club such as yarn club), at what time. A school run is a property of a kid's day in a new `rides` plugin, never a calendar event. Round 1 offered "each kid's usual runs" covering every ride; Zach split school runs from drives to an activity (D-089). Approved: Zach. Board: https://claude.ai/artifact/TH2aAR7Ey3Fpz7VBiuQqYT
+Features: F-041.
+
+## D-087 · 2026-11-17 · Added F-042: one rides mark per day names the next school run and opens the day's rides, must
+
+One rides mark per day on the agenda and the month grid, with no driver initials. On the agenda it names the next school run in words ("4:30 pm · Hallie picks up Teddy"); a future day shows its first run. Any open run flags the mark red. The grid cell shows the car glyph, flagged when a run is open. Tapping it opens the day's sheet (school runs, then drives to activities), where anyone claims or swaps a run in a tap; that changes only the day, never the pattern, like claiming dinner. Keeps D-050 / D-066 (one mark per provider per day). Options, round 1: A one day mark with the drivers' avatars; B a runs line, one pill per run (picked, "not quite"). Round 2: A covered or not; B the next run (chosen). Zach on round 1: "I fine keeping a single entry point into drop off/pick ups on both the daily agenda and grid. Right now H+Z icons next to the car glyph don't offer any info and just take up space. I'm also working the pills under the header will become too much". Approved: Zach. Board: https://claude.ai/artifact/TH2aAR7Ey3Fpz7VBiuQqYT
+Features: F-042.
+
+## D-088 · 2026-11-17 · Added F-043: the driver is reminded, parents hear of an open run, a kid hears of a swap, should
+
+The driver gets reminders at lead times they choose, for school runs and drives alike (D-045's tick). Parents get a nudge when a school run is still open at a set time (F-032's shape). A kid gets a notice only when today's driver changes on the day, within D-003's tier gate. Approved: Zach. Board: https://claude.ai/artifact/TH2aAR7Ey3Fpz7VBiuQqYT
+Features: F-043.
+
+## D-089 · 2026-11-17 · Added F-044: an activity says who drives the kid there, should
+
+A driver is set on an activity (Break, gymnastics) for the series or for one day. The `rides` plugin stores it against the event and its date, so the calendar's tables don't change; a drive on a repeating event follows each occurrence (D-082). The event row shows the car and the driver's name, and the day's rides sheet lists it under Drives. Added in round 2 from Zach's round 1 comment: "so there's almost 2 distinct things here. Drop offs and pick ups and who is driving a kid to an activity. So maybe some of this does hang off an event". Approved: Zach. Board: https://claude.ai/artifact/TH2aAR7Ey3Fpz7VBiuQqYT
+Features: F-044.
+
+## D-090 · 2026-11-17 · Rides goes next, as 3d–3g; Companion is held
+
+The rides sessions run before Companion: 3d decide (the mark, the sheet and the pattern editor), 3e build (school runs and the day mark), 3f build (who drives to an activity), 3g build (reminders and nudges). Companion 4–6 are `held` until Zach revives them. Zach: "put it before companion and mark companion as held until I revive it." Approved: Zach. Board: https://claude.ai/artifact/TH2aAR7Ey3Fpz7VBiuQqYT
+Features: F-041, F-042, F-043, F-044, F-040.

@@ -61,6 +61,10 @@ Priority: `must` (first release) · `should` · `later`. IDs are permanent; reti
 | F-038 | The list keeps working with no signal in the store                                    | should   | Built before Throughline. shopping                            |
 | F-039 | A member takes back their own add for fifteen minutes                                 | should   | Built before Throughline. shopping; D-073                     |
 | F-040 | Kids spend XP on a companion critter and its gear                                     | must     | In flight. companion; D-061, D-062                            |
+| F-041 | A parent sets each kid's usual school runs for the week                               | must     | Added in D-086. rides                                         |
+| F-042 | One rides mark per day names the next run; anyone claims or swaps a run in a tap      | must     | Added in D-087. rides, calendar                               |
+| F-043 | The driver is reminded, parents hear of an open run, a kid hears of a swap            | should   | Added in D-088. rides                                         |
+| F-044 | An activity says who drives the kid there                                             | should   | Added in D-089. rides, calendar                               |
 
 ## Non-goals
 

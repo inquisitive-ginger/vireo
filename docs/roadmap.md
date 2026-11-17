@@ -6,18 +6,22 @@ Status: `todo` · `in progress` · `in review` (approver has a link) · `locked`
 Every session fits in under an hour: one deliverable, inputs locked before it starts. `/replan` keeps this table true; `/status` reads it.
 Adopted 2026-11-14: Vireo was built and live before Throughline, so Scaffold and Launch count as locked. Milestones M0–M5.5 and everything before this table: `docs/history/roadmap-milestones.md` and `docs/sessions/logs/`.
 
-| #   | Stage  | Session                        | Type    | Features     | Approver | Depends | Status    |
-| --- | ------ | ------------------------------ | ------- | ------------ | -------- | ------- | --------- |
-| 0   | ideate | Idea one-pager (adopted)       | decide  | —            | Zach     | —       | locked    |
-| 1   | plan   | Roadmap                        | decide  | —            | Zach     | 0       | locked    |
-| 2   | build  | Enhancements                   | build   | F-008, F-004 | Zach     | 1       | locked    |
-| 3   | build  | Family feed: test suite        | build   | F-011        | Zach     | 2       | locked    |
-| 3a  | build  | Calendar: repeats (#152, #153) | decide  | F-021, F-023 | Zach     | —       | locked    |
-| 3b  | build  | Calendar: repeats (#152, #153) | build   | F-021, F-023 | Zach     | 3a      | locked    |
-| 3c  | build  | Feature: Who drives the kids   | feature | —            | Zach     | —       | in review |
-| 4   | build  | Companion: feature UX          | decide  | F-040        | Zach     | 3       | todo      |
-| 5   | build  | Companion: foundation          | build   | F-040        | Zach     | 4       | todo      |
-| 6   | build  | Companion: surfaces            | build   | F-040        | Zach     | 5       | todo      |
+| #   | Stage  | Session                                           | Type    | Features                   | Approver | Depends | Status |
+| --- | ------ | ------------------------------------------------- | ------- | -------------------------- | -------- | ------- | ------ |
+| 0   | ideate | Idea one-pager (adopted)                          | decide  | —                          | Zach     | —       | locked |
+| 1   | plan   | Roadmap                                           | decide  | —                          | Zach     | 0       | locked |
+| 2   | build  | Enhancements                                      | build   | F-008, F-004               | Zach     | 1       | locked |
+| 3   | build  | Family feed: test suite                           | build   | F-011                      | Zach     | 2       | locked |
+| 3a  | build  | Calendar: repeats (#152, #153)                    | decide  | F-021, F-023               | Zach     | —       | locked |
+| 3b  | build  | Calendar: repeats (#152, #153)                    | build   | F-021, F-023               | Zach     | 3a      | locked |
+| 3c  | build  | Feature: Who drives the kids                      | feature | F-041, F-042, F-043, F-044 | Zach     | —       | locked |
+| 3d  | build  | Rides: the mark, the sheet and the pattern editor | decide  | F-041, F-042, F-044        | Zach     | 3c      | todo   |
+| 3e  | build  | Rides: school runs and the day mark               | build   | F-041, F-042               | Zach     | 3d      | todo   |
+| 3f  | build  | Rides: who drives to an activity                  | build   | F-044                      | Zach     | 3e      | todo   |
+| 3g  | build  | Rides: reminders and nudges                       | build   | F-043                      | Zach     | 3f      | todo   |
+| 4   | build  | Companion: feature UX                             | decide  | F-040                      | Zach     | —       | held   |
+| 5   | build  | Companion: foundation                             | build   | F-040                      | Zach     | 4       | held   |
+| 6   | build  | Companion: surfaces                               | build   | F-040                      | Zach     | 5       | held   |
 
 ## Review links
 
@@ -29,7 +33,7 @@ Adopted 2026-11-14: Vireo was built and live before Throughline, so Scaffold and
 | 3       | https://claude.ai/artifact/GUhbYwJzQ2jRuUQucMmdNe | 2026-11-14 | 2026-11-14 |
 | 3a      | https://claude.ai/artifact/VYyC3KVxToStjQHMxjZDCi | 2026-11-16 | 2026-11-16 |
 | 3b      | https://claude.ai/artifact/B5wGhKbprzCQndxu8wMcry | 2026-11-16 | 2026-11-17 |
-| 3c      | https://claude.ai/artifact/TH2aAR7Ey3Fpz7VBiuQqYT | 2026-11-17 |            |
+| 3c      | https://claude.ai/artifact/TH2aAR7Ey3Fpz7VBiuQqYT | 2026-11-17 | 2026-11-17 |
 
 ## Fixes
 
@@ -42,6 +46,7 @@ Adopted 2026-11-14: Vireo was built and live before Throughline, so Scaffold and
 
 ## Changes
 
+- 2026-11-17 · Added 3d–3g Rides (decide, then school runs, drives, reminders); Companion 4–6 held · Zach on the 3c board: "put it before companion and mark companion as held until I revive it." (D-090)
 - 2026-11-17 · Added 3c Feature: Who drives the kids · Zach asked for a dedicated answer to "who's dropping off / picking up" each kid today, on the calendar but quieter than an event chip, with reminders before
 - 2026-11-14 · Added 3a, 3b Calendar: repeats (#152, #153) · Zach asked, via /triage, for monthly repeats (#152, reopens D-038) and for the all-week band to hold only what really runs most of the week (#153, reopens D-057)
 - 2026-11-14 · Reordered: Enhancements is now 2 and Family feed: test suite 3, then the Companion sequence as 4–6 (each depends on the one before) · Zach on the session 01 board: "put the enhancements and family feed up next then companion sequence." (D-079)
