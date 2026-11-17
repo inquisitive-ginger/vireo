@@ -632,6 +632,14 @@
 <style>
 .rb-item ul { margin: 0; padding-left: 1.2rem; display: grid; gap: 0.35rem; }
 .rb-item p { margin: 0 0 0.5rem; }
+.rb-options { grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 52rem) {
+  .rb-opt { grid-template-columns: minmax(0, 444px) minmax(0, 1fr); grid-template-areas: "preview label" "preview idea" "preview dl"; column-gap: 1.5rem; align-content: start; }
+  .rb-opt > .rb-opt-label { grid-area: label; }
+  .rb-opt > .rb-idea { grid-area: idea; }
+  .rb-opt > .rb-preview { grid-area: preview; align-self: start; }
+  .rb-opt > dl { grid-area: dl; align-self: start; }
+}
 
 .v { font-family: var(--font-ui); color: var(--foreground); background: var(--background); padding: 12px; border-radius: 12px; }
 .v-switch { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 10px; font-size: 13px; color: var(--muted-foreground); }
