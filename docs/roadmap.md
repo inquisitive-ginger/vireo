@@ -6,22 +6,22 @@ Status: `todo` · `in progress` · `in review` (approver has a link) · `locked`
 Every session fits in under an hour: one deliverable, inputs locked before it starts. `/replan` keeps this table true; `/status` reads it.
 Adopted 2026-11-14: Vireo was built and live before Throughline, so Scaffold and Launch count as locked. Milestones M0–M5.5 and everything before this table: `docs/history/roadmap-milestones.md` and `docs/sessions/logs/`.
 
-| #   | Stage  | Session                                           | Type    | Features                   | Approver | Depends | Status |
-| --- | ------ | ------------------------------------------------- | ------- | -------------------------- | -------- | ------- | ------ |
-| 0   | ideate | Idea one-pager (adopted)                          | decide  | —                          | Zach     | —       | locked |
-| 1   | plan   | Roadmap                                           | decide  | —                          | Zach     | 0       | locked |
-| 2   | build  | Enhancements                                      | build   | F-008, F-004               | Zach     | 1       | locked |
-| 3   | build  | Family feed: test suite                           | build   | F-011                      | Zach     | 2       | locked |
-| 3a  | build  | Calendar: repeats (#152, #153)                    | decide  | F-021, F-023               | Zach     | —       | locked |
-| 3b  | build  | Calendar: repeats (#152, #153)                    | build   | F-021, F-023               | Zach     | 3a      | locked |
-| 3c  | build  | Feature: Who drives the kids                      | feature | F-041, F-042, F-043, F-044 | Zach     | —       | locked |
-| 3d  | build  | Rides: the mark, the sheet and the pattern editor | decide  | F-041, F-042, F-044        | Zach     | 3c      | todo   |
-| 3e  | build  | Rides: school runs and the day mark               | build   | F-041, F-042               | Zach     | 3d      | todo   |
-| 3f  | build  | Rides: who drives to an activity                  | build   | F-044                      | Zach     | 3e      | todo   |
-| 3g  | build  | Rides: reminders and nudges                       | build   | F-043                      | Zach     | 3f      | todo   |
-| 4   | build  | Companion: feature UX                             | decide  | F-040                      | Zach     | —       | held   |
-| 5   | build  | Companion: foundation                             | build   | F-040                      | Zach     | 4       | held   |
-| 6   | build  | Companion: surfaces                               | build   | F-040                      | Zach     | 5       | held   |
+| #   | Stage  | Session                                           | Type    | Features                   | Approver | Depends | Status      |
+| --- | ------ | ------------------------------------------------- | ------- | -------------------------- | -------- | ------- | ----------- |
+| 0   | ideate | Idea one-pager (adopted)                          | decide  | —                          | Zach     | —       | locked      |
+| 1   | plan   | Roadmap                                           | decide  | —                          | Zach     | 0       | locked      |
+| 2   | build  | Enhancements                                      | build   | F-008, F-004               | Zach     | 1       | locked      |
+| 3   | build  | Family feed: test suite                           | build   | F-011                      | Zach     | 2       | locked      |
+| 3a  | build  | Calendar: repeats (#152, #153)                    | decide  | F-021, F-023               | Zach     | —       | locked      |
+| 3b  | build  | Calendar: repeats (#152, #153)                    | build   | F-021, F-023               | Zach     | 3a      | locked      |
+| 3c  | build  | Feature: Who drives the kids                      | feature | F-041, F-042, F-043, F-044 | Zach     | —       | locked      |
+| 3d  | build  | Rides: the mark, the sheet and the pattern editor | decide  | F-041, F-042, F-044        | Zach     | 3c      | in progress |
+| 3e  | build  | Rides: school runs and the day mark               | build   | F-041, F-042               | Zach     | 3d      | todo        |
+| 3f  | build  | Rides: who drives to an activity                  | build   | F-044                      | Zach     | 3e      | todo        |
+| 3g  | build  | Rides: reminders and nudges                       | build   | F-043                      | Zach     | 3f      | todo        |
+| 4   | build  | Companion: feature UX                             | decide  | F-040                      | Zach     | —       | held        |
+| 5   | build  | Companion: foundation                             | build   | F-040                      | Zach     | 4       | held        |
+| 6   | build  | Companion: surfaces                               | build   | F-040                      | Zach     | 5       | held        |
 
 ## Review links
 
