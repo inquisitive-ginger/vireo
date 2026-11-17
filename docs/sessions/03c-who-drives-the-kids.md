@@ -20,14 +20,23 @@ Assumed: a run is a property of a kid's day, not a calendar event, so it never w
 
 ## Deliverable
 
-A feature board: the new F-IDs with priorities, the approach, Touches, and the proposed sessions. Board and source path filled in when published.
+A feature board: the new F-IDs with priorities, the approach, Touches, and the proposed sessions. Board: https://claude.ai/artifact/TH2aAR7Ey3Fpz7VBiuQqYT (source `docs/artifacts/03c-who-drives-the-kids.html`). Priorities seeded as drafts: F-041 must, F-042 must, F-043 should.
 
 ## Options
 
-—
+Features: F-041 a parent sets each kid's usual runs for the week; F-042 the family sees today's runs on the calendar and claims or swaps one in a tap; F-043 the driver is reminded, parents hear of an open run, a kid hears of a swap.
+
+`approach`, round 1:
+
+- A · One day mark: runs are a day-mark provider like dinner (car glyph + drivers' avatars); times and kids one tap down. Gives up: one mark per day can't say which run or when.
+- B · A runs line: one pill per run under each day heading (driver, time, kids); a hairline tick per run in the month cell. Gives up: a new calendar surface, reopens D-050's two-mark cap.
+
+Sessions proposed: 7 decide (how runs read and swap), 8 build (patterns and today's runs), 9 build (reminders and nudges), after the Companion sessions.
 
 ## Exit criteria
 
 Each proposed F-ID added or not, its priority set, an approach picked, and the sessions approved. At lock-in: the F-IDs in `docs/idea.md`, a D-### per added feature, the sessions in `docs/roadmap.md`.
 
 ## Outcome
+
+Round 1, 2026-11-17 · Sent 2026-11-17 07:25
