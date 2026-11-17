@@ -1,6 +1,7 @@
 # ADR 057 — Daily Time-Window Recurrence (Calendar)
 
-**Status:** Decided — 2026-07-28 · Amends ADR 038
+**Status:** Decided — 2026-07-28 · Amends ADR 038 · Storage replaced by ADR 082 (2026-11-16); band
+membership amended by D-083
 
 ## Decision
 

@@ -1,6 +1,6 @@
 # Session 03a — Calendar: repeats (#152, #153)
 
-Type: decide · Approver: Zach · Status: in progress · Started: 2026-11-16 19:03 · Ended: —
+Type: decide · Approver: Zach · Status: locked · Started: 2026-11-16 19:03 · Ended: 2026-11-16 19:33
 
 ## Goal
 
@@ -40,4 +40,6 @@ Both items picked. At lock-in: a new D-### per item reversing or amending D-038 
 
 ## Outcome
 
-Round 1, 2026-11-16 · Sent 2026-11-16 19:09
+Round 1, 2026-11-16 · Sent 2026-11-16 19:09 · Back 2026-11-16 19:31
+
+`monthly`: C, one repeat rule for everything ("Love it"), D-082, ADR 082. `band`: B, by what the thing is ("It's fine"), D-083, locked with a 3-day minimum for spans that Claude suggested in chat after the board and Zach confirmed at lock-in. No comments; the assumption that Middle School French is a Tue · Thu daily series stands. Files: `docs/decisions.md`, `docs/decisions/082-one-repeat-rule.md` (new), ADR 038 and 057 status lines, `docs/architecture.md` (ADR table), `docs/design-system.md` (span band rule). Carried forward to 3b: the rule's column shape and the migration of existing rows, and how the grid and widget state a monthly event, both Zach's call.

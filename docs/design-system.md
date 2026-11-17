@@ -295,22 +295,25 @@ The `panel` exists **because** of the rule above: a recess is illegal on
 one. Same primitive, same anatomy — a different claim about depth, because the
 ground is different. Don't "fix" the panel by sinking it; that inverts the ladder.
 
+**The band holds conditions, not appointments** (D-083): a span of 3+ days, or a
+daily series meeting 4+ days a week. A 1–3-day-a-week series lists on its days like
+a weekly event, as does a 1–2-day span. A condition leaves the band on its last day,
+shown once as "last day".
+
 **Both surfaces pin only what is already RUNNING** and state the rest **inline,
-once, on the day it begins** (revised 2026-07-28, gate 4 — the widget used to pin
-everything overlapping its week, and a real summer week put five rows in the band
-with camps that were next week's wearing the "All week" label). In the widget, an
-upcoming span/series takes a day-list row whose time slot carries its range
-("Aug 3 – 7"); in the agenda it joins its start day's section, as it always has.
+once, on the day it begins** (gate 4). In the widget, an upcoming span/series takes
+a day-list row whose time slot carries its range ("Aug 3 – 7"); in the agenda, its
+start day's section.
 
 **Date grammar is decided by distance, never mixed in one label:** a date within
 the next seven days keeps the weekday form ("through Fri 31"); anything past that
-takes the month ("Aug 3 – 7", "through Aug 21"). Bare day-of-month across a month
-boundary made the reader do month arithmetic.
+takes the month ("Aug 3 – 7", "through Aug 21").
 
 #### Daily time-window series — a condition with a clock (settled — 2026-07-28)
 
-A **daily time-window series** (ADR 057 — "M–F 9:30–3:30, Aug 3–21") is a
-condition **and** an appointment, so it takes the span rule with one carve-out:
+A **daily time-window series** (ADR 057 — "M–F 9:30–3:30, Aug 3–21") meeting 4+
+days a week is a condition **and** an appointment, so it takes the span rule with
+one carve-out:
 
 - **Stated once**, in the `SpanBand` / Ongoing panel, with its own "when" grammar:
   **day-set · window · bound** — `Weekdays 9:30 – 3:30 · through Fri 21`. Day-set
