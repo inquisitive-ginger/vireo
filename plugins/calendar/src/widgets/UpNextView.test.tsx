@@ -32,7 +32,9 @@ function mk(
     allDay: false,
     location: null,
     recurrence: null,
-    recurrenceDayOffsets: [],
+    recurrenceInterval: 1,
+    recurrenceWeekdays: [],
+    recurrenceMonthWeek: null,
     recurrenceUntil: null,
     isActivity: false,
     status: 'confirmed',
@@ -246,5 +248,40 @@ describe('UpNextView', () => {
     const link = screen.getByRole('link', { name: 'Open Calendar' })
     expect(link).toHaveAttribute('href', '/calendar')
     expect(within(link).getByText('Karate')).toBeInTheDocument()
+  })
+})
+
+describe('D-083 the All week band, rendered', () => {
+  // Fri Jul 17: the camp's last day, and a Tue · Thu series that is just appointments.
+  const FRIDAY = new Date('2026-07-17T08:45:00')
+  const french = (day: number) =>
+    mk({
+      id: `french:2026-07-${day}`,
+      seriesId: 'french',
+      title: 'Middle School French',
+      startsAt: `2026-07-${day}T15:30:00`,
+      endsAt: `2026-07-${day}T16:30:00`,
+      attendeeIds: ['zoe'],
+      recurrence: 'daily',
+      recurrenceWeekdays: [2, 4],
+    })
+  const pickup = mk({
+    id: 'pickup',
+    title: 'Early pickup',
+    startsAt: '2026-07-17T12:00:00',
+    attendeeIds: ['teddy'],
+  })
+
+  it('D-083 a condition on its last day leaves the band and reads "last day" in today’s list [F-023] #153', () => {
+    renderWidget({ events: [...EVENTS, pickup], now: FRIDAY })
+    expect(screen.queryByText('All week')).not.toBeInTheDocument()
+    const row = screen.getByText('FISW Camp').closest('div')!
+    expect(within(row).getByText('last day')).toBeInTheDocument()
+  })
+
+  it('D-083 a Tue · Thu series never wears the band; each occurrence lists with its clock [F-023] #153', () => {
+    renderWidget({ events: [french(21), french(23)], now: new Date('2026-07-20T08:45:00') })
+    expect(screen.queryByText('All week')).not.toBeInTheDocument()
+    expect(screen.getAllByText('Middle School French')).toHaveLength(2)
   })
 })

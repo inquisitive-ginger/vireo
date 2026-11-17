@@ -15,6 +15,7 @@ import {
 import type { CalendarEvent, CalendarMember } from '../types'
 import { agendaWhenLabel } from '../lib/grid'
 import {
+  LAST_DAY_LABEL,
   buildWeek,
   spanWhenLabel,
   startingWhenLabel,
@@ -203,13 +204,16 @@ interface Row {
   /** A span / daily series stated once on its start day — the time slot carries
    *  its range instead of a clock (gate 4). */
   starting?: boolean
+  /** Stated once on its last day (D-083) — the time slot says so. */
+  ending?: boolean
 }
 
 function buildRows(days: WeekDay[], now: Date): Row[] {
   const rows: Row[] = []
-  for (const { date, events, starting } of days) {
+  for (const { date, events, starting, ending } of days) {
     const today = isSameDay(date, now)
     const dayRows: Row[] = [
+      ...ending.map((event) => ({ key: `${event.id}:last`, event, ending: true })),
       ...starting.map((event) => ({ key: event.id, event, starting: true })),
       ...events.map((event) => ({ key: event.id, event })),
     ]
@@ -261,7 +265,13 @@ function DayList({
         membersById={membersById}
         framing={framing}
         showOwners={showOwners}
-        whenLabel={row.starting ? startingWhenLabel(row.event, now) : undefined}
+        whenLabel={
+          row.ending
+            ? LAST_DAY_LABEL.toLowerCase()
+            : row.starting
+              ? startingWhenLabel(row.event, now)
+              : undefined
+        }
       />
     ) : (
       <div className={cn(ROW_BAND, 'text-sm-token text-muted-foreground/70')}>
@@ -321,6 +331,7 @@ function AllClear({ withBody = false }: { withBody?: boolean }) {
 function Compact({ week, membersById, now, framing }: ZoneProps) {
   const { hero, spans, days } = week
   const rest = days.flatMap((d) => [
+    ...d.ending.map((e) => ({ e, when: LAST_DAY_LABEL })),
     ...d.starting.map((e) => ({ e, when: startingWhenLabel(e, now) })),
     ...d.events.map((e) => ({ e, when: agendaWhenLabel(e) })),
   ])
@@ -440,7 +451,9 @@ export function UpNextView({ events, membersById, now, framing, size }: UpNextVi
 
   // Nothing at all this week — not even a running span or one about to start.
   const empty =
-    !week.hero && week.spans.length === 0 && week.days.every((d) => d.starting.length === 0)
+    !week.hero &&
+    week.spans.length === 0 &&
+    week.days.every((d) => d.starting.length === 0 && d.ending.length === 0)
 
   let inner: ReactNode
   if (empty) {

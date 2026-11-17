@@ -1,7 +1,7 @@
 import { addDays, dayDiff, isSameDay, startOfDay } from '@family-os/ui'
 import type { CalendarEvent } from '../types'
 import { formatChipTime, isMultiDay, localDateKey, spanEndDate } from './grid'
-import { daySetLabel, dailySeriesReps, isDailyWindow, windowWeekdays } from './series'
+import { conditionSeriesReps, daySetLabel, isConditionSeries, isDailyWindow } from './series'
 
 /* The `calendar.up-next` week model. Pure (no React, no hue) so it unit-tests
    cleanly — the rendering lives in `widgets/UpNextView.tsx`.
@@ -18,21 +18,24 @@ export const WEEK_WINDOW_DAYS = 7
 
 export interface WeekDay {
   date: Date
-  /** Single-day events starting on this date. Spans never appear here. */
+  /** Appointments starting on this date, plus a 1–2-day span on its first day
+   *  (D-083). Conditions never appear here. */
   events: CalendarEvent[]
-  /** Spans / daily series that BEGIN here — stated once, on their start day
-   *  (design gate 4, 2026-07-28: a camp starting Monday is Monday's news). */
+  /** Conditions that BEGIN here — stated once, on their start day (design gate 4,
+   *  2026-07-28: a camp starting Monday is Monday's news). */
   starting: CalendarEvent[]
+  /** Things on their last day, stated once as "last day" (D-083): a condition
+   *  leaving the band today, or a 1–2-day span's final day. */
+  ending: CalendarEvent[]
 }
 
 export interface WeekModel {
-  /** The next single-day event still live — the hero. Spans are never the hero:
+  /** The next appointment still live — the hero. Spans are never the hero:
    *  "FISW Camp, day 3 of 5" is not what's happening next. */
   hero: CalendarEvent | null
-  /** Multi-day events / daily series already RUNNING — the "all week" band's
-   *  feed. One that starts later in the window is not "all week": it states
-   *  itself once in its start day's `starting` list instead (gate 4 — the same
-   *  rule the agenda has always followed). */
+  /** Conditions already RUNNING — the "all week" band's feed (D-083). One that
+   *  starts later in the window is not "all week": it states itself once in its
+   *  start day's `starting` list instead (gate 4 — the agenda's rule too). */
   spans: CalendarEvent[]
   /** Every day in the window, including the empty ones: an empty weekday is
    *  news ("nothing else scheduled"), not nothing. */
@@ -40,6 +43,8 @@ export interface WeekModel {
   /** Live appointments starting past the window's edge — the honest "+N more". */
   beyond: number
 }
+
+export const LAST_DAY_LABEL = 'Last day'
 
 /** When an event stops being current — its end, end-of-day for a bare all-day
  *  event, or its start for a zero-length one. (Mirrors `grid.ts`'s private
@@ -50,13 +55,91 @@ function eventEnd(e: CalendarEvent): Date {
   return new Date(e.startsAt)
 }
 
-/* A daily time-window series (ADR 057) is a condition AND an appointment: it is
-   STATED once — its rep joins the spans band with the day-set·window·bound label —
-   and never repeats in the day rows, but TODAY's occurrence is hero-eligible, so
-   the 8:45 glance still says "in 45 min" (design gate 3, 2026-07-28). Occurrences
-   on later days are the band's business, not the list's. */
+/* What earns the band is the thing's shape, not where the window sits (D-083): a
+   span of 3+ days, or a daily series meeting 4+ days a week, is a CONDITION —
+   stated once, in the band while it runs, and never repeated in the day rows. A
+   condition series is still an appointment today, so today's occurrence is
+   hero-eligible and the 8:45 glance says "in 45 min" (design gate 3). A 1–3-day
+   series is just appointments, and a 1–2-day span lists on each of its days. On
+   its last day a condition leaves the band and shows once as "last day". */
 
-/** Split the forward window into spans + timed days. */
+const spanDays = (e: CalendarEvent) =>
+  dayDiff(startOfDay(new Date(e.startsAt)), startOfDay(spanEndDate(e))) + 1
+
+export const isConditionSpan = (e: CalendarEvent) => isMultiDay(e) && spanDays(e) >= 3
+
+const lastDayOf = (e: CalendarEvent): Date | null =>
+  isDailyWindow(e)
+    ? e.recurrenceUntil
+      ? parseDateKey(e.recurrenceUntil)
+      : null
+    : startOfDay(spanEndDate(e))
+
+interface Classified {
+  hero: CalendarEvent | null
+  running: CalendarEvent[]
+  upcoming: CalendarEvent[]
+  listable: CalendarEvent[]
+  shortSpans: CalendarEvent[]
+  endingToday: CalendarEvent[]
+}
+
+function classify(events: CalendarEvent[], now: Date, horizon: number): Classified {
+  const first = startOfDay(now)
+  const lastExclusive = addDays(first, horizon)
+  const inWindow = (e: CalendarEvent) =>
+    spanEndDate(e) >= first && new Date(e.startsAt) < lastExclusive
+
+  const conditions = [
+    ...events.filter(isConditionSpan).filter(inWindow),
+    ...conditionSeriesReps(events),
+  ].sort((a, b) => a.startsAt.localeCompare(b.startsAt))
+  const endsToday = (e: CalendarEvent) => {
+    const last = lastDayOf(e)
+    return last !== null && isSameDay(last, now)
+  }
+  const standing = conditions.filter((e) => !endsToday(e))
+
+  const live = events
+    .filter((e) => !isMultiDay(e))
+    .filter((e) => !isConditionSeries(e) || isSameDay(new Date(e.startsAt), now))
+    .filter((e) => eventEnd(e) >= now)
+    .sort((a, b) => a.startsAt.localeCompare(b.startsAt))
+  const hero = live[0] ?? null
+
+  return {
+    hero,
+    running: standing.filter((e) => startOfDay(new Date(e.startsAt)) <= first),
+    upcoming: standing.filter((e) => startOfDay(new Date(e.startsAt)) > first),
+    listable: live.filter((e) => !isConditionSeries(e)),
+    shortSpans: events.filter((e) => isMultiDay(e) && !isConditionSpan(e)).filter(inWindow),
+    endingToday: conditions.filter(endsToday).flatMap((e) => {
+      if (!isConditionSeries(e)) return [e]
+      const todays = live.find(
+        (l) => l.seriesId === e.seriesId && isSameDay(new Date(l.startsAt), now)
+      )
+      return todays && todays.id !== hero?.id ? [todays] : []
+    }),
+  }
+}
+
+/** Every list a day carries, from the classified window. */
+function dayLists(c: Classified, date: Date, now: Date) {
+  const covers = (e: CalendarEvent) =>
+    startOfDay(new Date(e.startsAt)) <= date && startOfDay(spanEndDate(e)) >= date
+  const shortHere = c.shortSpans.filter(covers)
+  const isLast = (e: CalendarEvent) => isSameDay(spanEndDate(e), date)
+  return {
+    events: [
+      ...shortHere.filter((e) => !isLast(e)),
+      ...c.listable.filter((e) => e.id !== c.hero?.id && isSameDay(new Date(e.startsAt), date)),
+    ],
+    starting: c.upcoming.filter((e) => isSameDay(new Date(e.startsAt), date)),
+    ending: [...(isSameDay(date, now) ? c.endingToday : []), ...shortHere.filter(isLast)],
+  }
+}
+
+/** Split the forward window into the band + the day rows. */
 export function buildWeek(
   events: CalendarEvent[],
   now: Date,
@@ -64,39 +147,13 @@ export function buildWeek(
 ): WeekModel {
   const first = startOfDay(now)
   const lastExclusive = addDays(first, windowDays)
-
-  // Spans overlapping the window (including one that started before today and is
-  // still running) + one representative occurrence per daily series — then split
-  // by whether they are already under way. Only the running ones wear the band.
-  const standing = [
-    ...events
-      .filter(isMultiDay)
-      .filter((e) => spanEndDate(e) >= first && new Date(e.startsAt) < lastExclusive),
-    ...dailySeriesReps(events),
-  ].sort((a, b) => a.startsAt.localeCompare(b.startsAt))
-  const spans = standing.filter((e) => startOfDay(new Date(e.startsAt)) <= first)
-  const upcoming = standing.filter((e) => startOfDay(new Date(e.startsAt)) > first)
-
-  const live = events
-    .filter((e) => !isMultiDay(e))
-    .filter((e) => !isDailyWindow(e) || isSameDay(new Date(e.startsAt), now))
-    .filter((e) => eventEnd(e) >= now)
-    .sort((a, b) => a.startsAt.localeCompare(b.startsAt))
-
-  const hero = live[0] ?? null
-
-  const listable = live.filter((e) => !isDailyWindow(e))
+  const c = classify(events, now, windowDays)
   const days: WeekDay[] = Array.from({ length: windowDays }, (_, i) => {
     const date = addDays(first, i)
-    return {
-      date,
-      events: listable.filter((e) => e.id !== hero?.id && isSameDay(new Date(e.startsAt), date)),
-      starting: upcoming.filter((e) => isSameDay(new Date(e.startsAt), date)),
-    }
+    return { date, ...dayLists(c, date, now) }
   })
-
-  const beyond = listable.filter((e) => new Date(e.startsAt) >= lastExclusive).length
-  return { hero, spans, days, beyond }
+  const beyond = c.listable.filter((e) => new Date(e.startsAt) >= lastExclusive).length
+  return { hero: c.hero, spans: c.running, days, beyond }
 }
 
 /* "Mon 13". Composed rather than handed to `toLocaleDateString({weekday, day})`,
@@ -132,18 +189,20 @@ function rangeLabel(start: Date, end: Date, now: Date): string {
 
 export interface AgendaDay {
   date: Date
-  /** Single-day events starting on this date. */
+  /** Appointments starting on this date, plus a 1–2-day span on its first day. */
   timed: CalendarEvent[]
-  /** Spans that START here — stated once, on the day they begin. */
+  /** Conditions that START here — stated once, on the day they begin. */
   startingSpans: CalendarEvent[]
+  /** Things on their last day, stated once as "last day" (D-083). */
+  ending: CalendarEvent[]
 }
 
 const EMPTY_MARK_DATES: ReadonlySet<string> = new Set()
 
 export interface AgendaModel {
   hero: CalendarEvent | null
-  /** Spans already under way — pinned in a band, because their start day is in the
-   *  past and there is no upcoming section left to state them in. */
+  /** Conditions already under way — pinned in a band, because their start day is
+   *  in the past and there is no upcoming section left to state them in. */
   running: CalendarEvent[]
   days: AgendaDay[]
 }
@@ -152,11 +211,11 @@ export interface AgendaModel {
    an All-week band" rule doesn't transfer: a camp three weeks out is not "all
    week", and pinning it at the top would be a lie about when it matters.
 
-   The rule that does transfer is the one that mattered: STATE A SPAN EXACTLY ONCE.
-   Here that means — pinned at the top if it is already running (its start day has
-   passed, so no section below can carry it), otherwise inline, once, in the day it
-   begins. Either way it never repeats across the days it covers, which is the bug
-   this replaces. */
+   The rule that does transfer is the one that mattered: STATE A CONDITION EXACTLY
+   ONCE (D-083 decides what is one). Here that means — pinned at the top if it is
+   already running (its start day has passed, so no section below can carry it),
+   otherwise inline, once, in the day it begins; on its last day, once, as "last
+   day". It never repeats across the days it covers. */
 export function buildAgenda(
   events: CalendarEvent[],
   now: Date,
@@ -167,42 +226,22 @@ export function buildAgenda(
   horizon: number = 42
 ): AgendaModel {
   const first = startOfDay(now)
-  const lastExclusive = addDays(first, horizon)
-
-  // Daily series take the span rule (stated once): a series already under way —
-  // or whose first visible occurrence is today — pins in Ongoing; one starting on
-  // a later day is stated inline, once, in the day it begins.
-  const reps = dailySeriesReps(events)
-  const spans = events
-    .filter(isMultiDay)
-    .filter((e) => spanEndDate(e) >= first && new Date(e.startsAt) < lastExclusive)
-    .sort((a, b) => a.startsAt.localeCompare(b.startsAt))
-
-  const running = [...spans, ...reps]
-    .filter((e) => startOfDay(new Date(e.startsAt)) <= first)
-    .sort((a, b) => a.startsAt.localeCompare(b.startsAt))
-  const upcoming = [...spans, ...reps].filter((e) => startOfDay(new Date(e.startsAt)) > first)
-
-  const live = events
-    .filter((e) => !isMultiDay(e))
-    .filter((e) => !isDailyWindow(e) || isSameDay(new Date(e.startsAt), now))
-    .filter((e) => eventEnd(e) >= now)
-    .sort((a, b) => a.startsAt.localeCompare(b.startsAt))
-
-  const hero = live[0] ?? null
-
-  const listable = live.filter((e) => !isDailyWindow(e))
+  const c = classify(events, now, horizon)
   const days: AgendaDay[] = []
   for (let i = 0; i < horizon; i++) {
     const date = addDays(first, i)
-    const timed = listable.filter((e) => e.id !== hero?.id && isSameDay(new Date(e.startsAt), date))
-    const startingSpans = upcoming.filter((e) => isSameDay(new Date(e.startsAt), date))
-    if (timed.length || startingSpans.length || markDates.has(localDateKey(date))) {
-      days.push({ date, timed, startingSpans })
+    const { events: timed, starting: startingSpans, ending } = dayLists(c, date, now)
+    if (
+      timed.length ||
+      startingSpans.length ||
+      ending.length ||
+      markDates.has(localDateKey(date))
+    ) {
+      days.push({ date, timed, startingSpans, ending })
     }
   }
 
-  return { hero, running, days }
+  return { hero: c.hero, running: c.running, days }
 }
 
 /** A span's "when" — a date range, never a clock. Once it's already running the
@@ -239,7 +278,7 @@ export function startingWhenLabel(event: CalendarEvent, now: Date): string {
 }
 
 function windowWhenLabel(event: CalendarEvent, now: Date): string {
-  const days = daySetLabel(windowWeekdays(event))
+  const days = daySetLabel(event.recurrenceWeekdays)
   const clock = event.endsAt
     ? `${formatChipTime(event.startsAt)} – ${formatChipTime(event.endsAt)}`
     : formatChipTime(event.startsAt)

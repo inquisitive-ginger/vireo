@@ -31,7 +31,9 @@ function evt(partial: { id: string; start: Date; end?: Date; allDay?: boolean })
     allDay: partial.allDay ?? false,
     location: null,
     recurrence: null,
-    recurrenceDayOffsets: [],
+    recurrenceInterval: 1,
+    recurrenceWeekdays: [],
+    recurrenceMonthWeek: null,
     recurrenceUntil: null,
     isActivity: false,
     status: 'confirmed',
@@ -212,7 +214,7 @@ function dailyOcc(seriesId: string, day: Date): CalendarEvent {
     startsAt: new Date(day.getFullYear(), day.getMonth(), day.getDate(), 9, 30).toISOString(),
     endsAt: new Date(day.getFullYear(), day.getMonth(), day.getDate(), 15, 30).toISOString(),
     recurrence: 'daily',
-    recurrenceDayOffsets: [0, 1, 2, 3, 4],
+    recurrenceWeekdays: [1, 2, 3, 4, 5],
   }
 }
 

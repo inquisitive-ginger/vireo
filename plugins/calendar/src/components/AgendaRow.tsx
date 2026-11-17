@@ -3,6 +3,7 @@ import { ItemCard } from '@family-os/ui'
 import type { CalendarEvent, CalendarMember } from '../types'
 import { agendaWhenLabel } from '../lib/grid'
 import { huesForEvent, spineColorsForEvent } from '../lib/hues'
+import { repeatRuleLabel } from '../lib/series'
 
 /* A full-width agenda row on the shared `ItemCard`: owner-hue spine (split for
    shared, neutral for Family) + a leading time column + title/meta. The mobile
@@ -12,14 +13,19 @@ import { huesForEvent, spineColorsForEvent } from '../lib/hues'
 export function AgendaRow({
   event,
   membersById,
+  whenLabel,
   onClick,
 }: {
   event: CalendarEvent
   membersById: Map<string, CalendarMember>
+  /** Replaces the time column — "Last day" for a thing stated on its final day. */
+  whenLabel?: string
   /** Tap-to-edit (tier 4). When set the row becomes a button. */
   onClick?: () => void
 }) {
   const spineColors = spineColorsForEvent(huesForEvent(event.attendeeIds, membersById))
+  const rule = repeatRuleLabel(event)
+  const repeatsLabel = rule && `Repeats ${rule.charAt(0).toLowerCase()}${rule.slice(1)}`
   const ownerNames = event.attendeeIds
     .map((id) => membersById.get(id)?.name)
     .filter((n): n is string => Boolean(n))
@@ -40,15 +46,16 @@ export function AgendaRow({
       }
     >
       <span className="w-18 shrink-0 text-sm-token font-semibold tabular-nums text-muted-foreground">
-        {agendaWhenLabel(event)}
+        {whenLabel ?? agendaWhenLabel(event)}
       </span>
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <span className="truncate text-body font-medium text-foreground">{event.title}</span>
-          {event.recurrence === 'weekly' && (
+          {repeatsLabel && (
             <Repeat
+              role="img"
               className="h-3 w-3 shrink-0 text-muted-foreground"
-              aria-label="Repeats weekly"
+              aria-label={repeatsLabel}
             />
           )}
         </div>

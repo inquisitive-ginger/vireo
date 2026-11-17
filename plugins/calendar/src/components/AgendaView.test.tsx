@@ -27,7 +27,9 @@ function mk(
     allDay: false,
     location: null,
     recurrence: null,
-    recurrenceDayOffsets: [],
+    recurrenceInterval: 1,
+    recurrenceWeekdays: [],
+    recurrenceMonthWeek: null,
     recurrenceUntil: null,
     isActivity: false,
     status: 'confirmed',
@@ -141,5 +143,41 @@ describe('AgendaView', () => {
       render(<AgendaView events={[KARATE]} membersById={MEMBERS} now={NOW} />)
       expect(screen.queryByText(/got dinner/)).not.toBeInTheDocument()
     })
+  })
+})
+
+describe('repeat glyph (D-082)', () => {
+  it('D-082 a monthly row wears the repeat glyph and says its rule [F-021] #152', () => {
+    const pta = mk({
+      id: 'pta:2026-06-23',
+      seriesId: 'pta',
+      title: 'PTA',
+      startsAt: new Date(2026, 5, 23, 19).toISOString(),
+      seriesStartsAt: new Date(2026, 4, 19, 19).toISOString(),
+      recurrence: 'monthly',
+      recurrenceInterval: 1,
+      recurrenceWeekdays: [],
+      recurrenceMonthWeek: 3,
+    })
+    render(<AgendaView events={[DOCTOR, pta]} membersById={MEMBERS} now={NOW} />)
+    expect(
+      screen.getByRole('img', { name: 'Repeats every month on the 3rd Tuesday' })
+    ).toBeInTheDocument()
+  })
+})
+
+describe('D-083 the Ongoing panel, rendered', () => {
+  it('D-083 a span on its last day leaves Ongoing and reads "Last day" in today’s section [F-023] #153', () => {
+    const camp = mk({
+      id: 'camp',
+      title: 'Swim camp',
+      allDay: true,
+      startsAt: new Date(2026, 5, 18).toISOString(),
+      endsAt: new Date(2026, 5, 23).toISOString(),
+    })
+    render(<AgendaView events={[DOCTOR, camp]} membersById={MEMBERS} now={NOW} />)
+    expect(screen.queryByText('Ongoing')).not.toBeInTheDocument()
+    expect(screen.getByText('Last day')).toBeInTheDocument()
+    expect(screen.getByText('Swim camp')).toBeInTheDocument()
   })
 })

@@ -19,10 +19,14 @@ export interface CalendarEvent {
   seriesStartsAt: string
   allDay: boolean
   location: string | null
+  /** The repeat rule (ADR 082): 'daily' | 'weekly' | 'monthly' | 'yearly' | null. */
   recurrence: string | null
-  /** A 'daily' series' weekday set, as day offsets from the series start's
-   *  weekday mod 7 (ADR 057). Empty for anything else. */
-  recurrenceDayOffsets: number[]
+  /** 2 = every other week; 1 for everything else. */
+  recurrenceInterval: number
+  /** A 'daily' series' local weekdays (0 = Sunday). Empty for anything else. */
+  recurrenceWeekdays: number[]
+  /** 'monthly' only: null = on the start's date, 1–4 = that week's weekday, -1 = last. */
+  recurrenceMonthWeek: number | null
   recurrenceUntil: string | null
   isActivity: boolean
   status: string
