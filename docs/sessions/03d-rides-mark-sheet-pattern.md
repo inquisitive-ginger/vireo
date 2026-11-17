@@ -23,12 +23,22 @@ Assumed:
 
 ## Deliverable
 
-A decision board with three choices (the sheet, the pattern editor, setting a drive) and one question (a day with no school), each previewed with Zach's Tuesday on the real tokens.
+A decision board with three choices (the sheet, the pattern editor, setting a drive) and one question (a day with no school), each previewed with Zach's Tuesday on the real tokens. Board: https://claude.ai/artifact/1fQd1nRPivomZysk8Jj1Qr (source `docs/artifacts/03d-rides-mark-sheet-pattern.html`).
 
 ## Options
+
+`sheet`: A the side drawer (the existing `Drawer`; covers the agenda on a phone) · B unfolds in the day (a sunken panel under the heading; pushes events down) · C a popover on the mark (breaks convention: a new primitive; cramped one-handed).
+
+`pattern`: A one grid for the week (rows = runs, columns = school days; tight on a phone) · B one kid at a time (tabs; can't compare the parents' load) · C set it by doing (no editor; "Every Tuesday" on claim or swap saves to the week; setup takes a pass through the week).
+
+`drive`: A in the event drawer ("Who drives" + Every week; the calendar hosts another plugin's field) · B from the day's rides ("+ Add a drive" lists undriven activities; two trips for a new activity).
+
+`noschool` (question): "No school" in the day's rides clears its runs · clear each run by hand · runs stay.
 
 ## Exit criteria
 
 A pick for each of the three choices and an answer on no-school days. At lock-in: a D-### each in `docs/decisions.md`, and the rides section of `docs/design-system.md` and `docs/architecture.md` for 3e–3f.
 
 ## Outcome
+
+Round 1, 2026-11-17 · Sent 2026-11-17 10:47
