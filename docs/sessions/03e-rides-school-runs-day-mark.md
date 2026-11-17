@@ -27,7 +27,7 @@ D-086, D-087, D-091, D-092, D-094.
 
 ## Deliverable
 
-The dev server on the LAN plus an acceptance board.
+The dev server on the LAN (http://192.168.0.6:5173/calendar, branch `session-03e-rides-school-runs`, worktree `../vireo-3e`) plus an acceptance board: https://claude.ai/artifact/KHmBN7tXS9ADkYWYbVs6hD (source `docs/artifacts/03e-rides-school-runs-day-mark.html`). Suite: 1582 passed, 0 failed (was 1548). Code review (high): 10 findings, 9 fixed — the mark never showed in the app (the provider read the calendar's range instants as dates), impossible dates rolled over, the family profile counted as a kid, claim could hand a run to another parent, retry skipped profiles, a dead invalidation, rides wording in the generic calendar, a hand-rolled row (now `ListRow`), no hue on the editing drivers. Not fixed: `formatMinutes` lives in both plugins (the calendar can't import rides). Open on the board: whether a fully cleared day keeps its mark (built: it does, to allow Restore; D-094 reads otherwise).
 
 ## Options
 
@@ -38,3 +38,5 @@ The dev server on the LAN plus an acceptance board.
 Every acceptance check passes on the board and in the suite; the branch merges by PR and the deploy check passes.
 
 ## Outcome
+
+Round 1, 2026-11-17 · Sent 2026-11-17 11:44

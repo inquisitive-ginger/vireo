@@ -1,0 +1,84 @@
+<title>Vireo · Rides: school runs and the day mark</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;1,6..72,400&family=Public+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="board.css">
+<style>
+.rb-item ul { margin: 0; padding-left: 1.2rem; display: grid; gap: 0.4rem; }
+.rb-item p { margin: 0 0 0.5rem; }
+.run { display: flex; flex-wrap: wrap; gap: 0.25rem 1.25rem; font-variant-numeric: tabular-nums; margin-bottom: 0.75rem; }
+.run b { font-size: 1.4rem; }
+</style>
+
+<div class="rb-wrap">
+  <header>
+    <div class="rb-eyebrow">Vireo · Session 3e</div>
+    <h1>School runs: a usual week per kid, and a calendar mark that names the next run</h1>
+    <p class="rb-lede">A new Rides page holds who usually drives each school run. On the calendar, each school day gets one car mark that names the next run and unfolds the day's runs, where a parent claims, swaps or clears one for that day only.</p>
+    <p class="rb-how">Open the dev server on the wall iPad and a phone, tick each check you can see, then press <strong>Mark reviewed</strong>. Checks marked with a test already pass in the suite.</p>
+  </header>
+  <div id="rb"></div>
+</div>
+
+<script src="board.js"></script>
+<script>
+const ITEMS = [
+ {
+  id: 'walkthrough',
+  type: 'approve',
+  title: 'The build, on the iPad and a phone',
+  ask: 'Ship this?',
+  href: 'http://192.168.0.6:5173/calendar',
+  body: `<div class="run"><span><b>1582</b> passed</span><span><b>0</b> failed</span><span>was 1548 before this session</span></div>
+<p>The dev server runs from the session branch on the LAN. The usual week is seeded: Teddy and Zoë each have a drop-off and a pickup every school day, split between Dad and Mom, and Zoë's Tuesday pickup is from yarn club at 5:30 with nobody on it yet.</p>
+<p>Your calls at the start of 3e:</p>
+<ul>
+<li>The calendar draws the runs from the mark's own data and calls the rides plugin's endpoint. It never imports rides.</li>
+<li>Only parents edit the week and claim, swap or clear a day. Everyone else sees the runs.</li>
+</ul>
+<p>Assumed:</p>
+<ul>
+<li>Kids are everyone below tier 4; drivers are tier 4.</li>
+<li>Rides sits last in the nav, so on a phone it is under More.</li>
+<li>Once today's runs have all passed, the mark names the last one.</li>
+<li>Drives to activities (F-044) are 3f, so the unfolded panel has no Drives section yet.</li>
+</ul>`,
+ },
+ {
+  id: 'checks',
+  type: 'checklist',
+  title: 'Acceptance checks',
+  ask: 'Does each one hold in the app?',
+  checks: [
+   { id: 'page', label: 'Rides is in the nav. Its page has a tab for Teddy and one for Zoë, and Monday to Friday under each list that kid’s runs with the driver beside each.', test: 'D-092 shows a tab per kid and each school day lists only that kid’s runs [F-041]' },
+   { id: 'driver', label: 'Changing a driver on the Rides page shows on that weekday’s calendar mark.', hint: 'Change Teddy’s Wednesday pickup, then open Wednesday.', test: 'D-092 a parent changes who usually drives a run [F-041]' },
+   { id: 'add', label: 'Adding a run to a day (kind, where, time) and removing one both stick.', test: 'D-092 a run is added to a day with its kind, place and time [F-041]' },
+   { id: 'next', label: 'Today’s heading names the next run in words, like “4:30 PM · Mom picks up Teddy”, with a red dot because yarn club is open.', test: 'D-087 names the next run in words and flags an open one [F-042]' },
+   { id: 'later', label: 'Tomorrow’s heading names its first run.', test: 'D-087 a later day names its first run [F-042]' },
+   { id: 'unfold', label: 'Tapping the mark unfolds the day’s runs under the heading, and tapping again folds them.', test: 'D-091 tapping the mark unfolds the day’s runs under the heading, and again folds them [F-042]' },
+   { id: 'claim', label: 'Claiming the yarn-club pickup puts you on it and clears the red dot; next Tuesday’s is still open.', test: 'D-087 claiming an open run changes that day only, never the usual week [F-042]' },
+   { id: 'swap', label: 'Swap hands a run to the other parent, and swapping back returns it.', test: 'D-087 swapping a run to the other parent, then back, leaves no change behind [F-042]' },
+   { id: 'clear', label: 'Clear strikes a run through and offers Restore; the heading skips it.', test: 'D-094 clearing a run takes it off that day, and restoring brings it back [F-042]' },
+   { id: 'grid', label: 'The month grid shows the car on school days, a red dot on Tuesdays, and nothing on weekends.', test: 'D-087 a rides mark shows the car, flagged when a run is open, and says so in the cell name [F-042]' },
+   { id: 'readonly', label: 'As Zoë or the Family profile, the runs unfold with no buttons, and the Rides page has no controls.', test: 'D-086 without act the runs are read-only [F-042]' },
+   { id: 'look', label: 'The mark and the unfolded runs read well beside the dinner mark, on the iPad and one-handed on a phone.' },
+  ],
+ },
+ {
+  id: 'cleared-day',
+  type: 'question',
+  title: 'A day with every run cleared',
+  ask: 'D-094 says a day with no runs shows no mark. When a parent clears every run on a day off, should the mark stay?',
+  input: 'radio',
+  options: ['Keep it, saying “School runs cleared”, so a run can be restored (as built)', 'Drop it, as D-094 reads; restoring then means un-clearing from another surface we don’t have yet'],
+ },
+ {
+  id: 'notes',
+  type: 'comment',
+  title: 'Anything else',
+  ask: 'Anything to change before it merges.',
+ },
+];
+ReviewBoard.mount({ owner: 'Zach', type: 'web-app', items: ITEMS, earlier: [] });
+</script>
