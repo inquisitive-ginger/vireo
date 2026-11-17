@@ -984,5 +984,8 @@ const ITEMS = [
   { id: 'notes', type: 'comment', title: 'Anything else', ask: 'Anything to add or change.',
     body: '<p>Assumed:</p><ul><li>A month cell stays one button that opens the day, so the grid shows only the car and the red flag, and the sheet opens from the agenda.</li><li>The pattern lives on a new Rides page in the sidebar.</li><li>Times in the week are invented except Tuesday.</li></ul>' },
 ];
+document.addEventListener('click', e => {
+  if (e.target.closest('.rb-preview') && !e.target.closest('input, select, .v-toggle')) e.preventDefault();
+}, true);
 ReviewBoard.mount({ owner: 'Zach', type: 'web-app', items: ITEMS });
 </script>
