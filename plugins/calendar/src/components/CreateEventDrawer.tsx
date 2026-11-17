@@ -19,12 +19,20 @@ import {
 import type { Profile } from '@family-os/platform/types'
 import type { CalendarEvent } from '../types'
 import { addDays, isMultiDay, localDateKey, spanEndDate, startOfDay } from '../lib/grid'
-import { daySetLabel, offsetsFromWeekdays, weekdaysFromOffsets } from '../lib/series'
+import {
+  choiceForDate,
+  choiceForEvent,
+  daySetLabel,
+  nextDates,
+  repeatChoices,
+  ruleForChoice,
+} from '../lib/series'
 
 /* The single create / edit surface for calendar events (design §2) — one reused
    right Drawer (chores `CreateTaskDrawer` pattern). Each modifier lives on the
    field it changes: "Multiple days" turns the date field into a range; "All day"
-   hides the time inputs; "Repeat weekly" reveals an optional "until". Owner is a
+   hides the time inputs; "Repeats" picks a rule worded from the event's own date
+   (ADR 082) and reveals an optional "until". Owner is a
    multi-select of members + a mutually-exclusive Family chip, and a pick is
    REQUIRED (an event always carries identity). Edit mode prefills from the event,
    swaps the header + CTA copy, and adds Remove.
@@ -32,8 +40,8 @@ import { daySetLabel, offsetsFromWeekdays, weekdaysFromOffsets } from '../lib/se
    "Multiple days" keeps its Time field (ADR 057, design gate 1): All day stays the
    default — that's the untouched span flow — and switching it off gives the range
    a daily clock window, revealing the weekday chips, the reminder, and a summary
-   line stating the semantics. The wire shape is `recurrence: 'daily'` + day
-   offsets; the range's last day becomes `recurrenceUntil`.
+   line stating the semantics. The wire shape is `recurrence: 'daily'` + the picked
+   weekdays; the range's last day becomes `recurrenceUntil`.
 
    Form state is React Hook Form + a zodResolver (the shell's form standard —
    Onboarding/Settings) over the UI-shaped `EventFormSchema`; on submit the valid
@@ -58,8 +66,10 @@ export interface CreateEventInput {
   allDay: boolean
   location: string | null
   description: string | null
-  recurrence: 'weekly' | 'daily' | null
-  recurrenceDayOffsets: number[] | null
+  recurrence: 'daily' | 'weekly' | 'monthly' | 'yearly' | null
+  recurrenceInterval: number
+  recurrenceWeekdays: number[] | null
+  recurrenceMonthWeek: number | null
   recurrenceUntil: string | null
   reminderMinutes: number | null
 }
@@ -69,7 +79,7 @@ const DAY_CHIP_LABELS = ['S', 'M', 'T', 'W', 'T', 'F', 'S']
 const DAY_NAMES = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday']
 
 /** The quiet semantics line under the day chips — "Weekdays · Aug 3 – 21 ·
- *  15 days" — the same reassurance "(Every Tuesday)" gives Repeat weekly. */
+ *  15 days" — the same reassurance the "Next:" line gives a repeat. */
 function windowSummary(from: Date, to: Date, days: number[]): string {
   const set = new Set(days)
   let count = 0
@@ -84,6 +94,16 @@ function windowSummary(from: Date, to: Date, days: number[]): string {
   return `${daySetLabel(days)} · ${span} · ${count} ${count === 1 ? 'day' : 'days'}`
 }
 
+/** "Tue Dec 15"; a yearly repeat's dates carry the year. */
+const nextLabel = (d: Date, withYear: boolean) =>
+  d.toLocaleDateString(undefined, {
+    weekday: 'short',
+    month: 'short',
+    day: 'numeric',
+    ...(withYear && { year: 'numeric' }),
+  })
+
+const maxDate = (a: Date, b: Date) => (a > b ? a : b)
 const pad = (n: number) => String(n).padStart(2, '0')
 const toHM = (d: Date) => `${pad(d.getHours())}:${pad(d.getMinutes())}`
 const addMinutesHM = (hm: string, mins: number) => {
@@ -116,7 +136,15 @@ const EventFormSchema = z
     startTime: z.string(),
     endTime: z.string(),
     days: z.array(z.number()),
-    repeatWeekly: z.boolean(),
+    repeat: z.enum([
+      'none',
+      'week',
+      'other-week',
+      'month-date',
+      'month-week',
+      'month-last',
+      'year',
+    ]),
     until: z.date().optional(),
     location: z.string(),
     description: z.string(),
@@ -174,8 +202,8 @@ function blankDefaults(opts?: {
     startTime: '09:00',
     endTime: '10:00',
     days: [0, 1, 2, 3, 4, 5, 6],
-    // An activity is a weekly commitment — repeat-weekly is implied (design.md §4).
-    repeatWeekly: Boolean(opts?.asActivity),
+    // An activity is a weekly commitment — every week is implied (design.md §4).
+    repeat: opts?.asActivity ? 'week' : 'none',
     until: undefined,
     location: '',
     description: '',
@@ -209,8 +237,8 @@ function editDefaults(event: CalendarEvent): EventForm {
     allDay: event.allDay,
     startTime: toHM(start),
     endTime: event.endsAt ? toHM(new Date(event.endsAt)) : addMinutesHM(toHM(start), 60),
-    days: daily ? weekdaysFromOffsets(event.recurrenceDayOffsets, start) : [0, 1, 2, 3, 4, 5, 6],
-    repeatWeekly: event.recurrence === 'weekly',
+    days: daily ? event.recurrenceWeekdays : [0, 1, 2, 3, 4, 5, 6],
+    repeat: choiceForEvent(event),
     until: event.recurrenceUntil ? parseDateKey(event.recurrenceUntil) : undefined,
     location: event.location ?? '',
     description: event.description ?? '',
@@ -238,14 +266,16 @@ function toInput(v: EventForm): CreateEventInput {
         endsAt: startOfDay(addDays(v.range!.to!, 1)).toISOString(),
         allDay: true,
         recurrence: null,
-        recurrenceDayOffsets: null,
+        recurrenceInterval: 1,
+        recurrenceWeekdays: null,
+        recurrenceMonthWeek: null,
         recurrenceUntil: null,
         reminderMinutes: null,
       }
     }
     // A range with a clock window is a daily series (ADR 057): the window rides
     // `startsAt`/`endsAt` on the range's FIRST day, the last day is the inclusive
-    // `recurrenceUntil`, and the picked weekdays go over the wire as offsets.
+    // `recurrenceUntil`, and the picked weekdays go over the wire as they are.
     const from = startOfDay(v.range!.from!)
     return {
       ...base,
@@ -253,21 +283,23 @@ function toInput(v: EventForm): CreateEventInput {
       endsAt: combine(from, v.endTime).toISOString(),
       allDay: false,
       recurrence: 'daily',
-      recurrenceDayOffsets: offsetsFromWeekdays(v.days, from),
+      recurrenceInterval: 1,
+      recurrenceWeekdays: [...v.days].sort((a, b) => a - b),
+      recurrenceMonthWeek: null,
       recurrenceUntil: localDateKey(startOfDay(v.range!.to!)),
       reminderMinutes: v.reminderMinutes,
     }
   }
-  const recurrence = v.repeatWeekly ? ('weekly' as const) : null
-  const recurrenceUntil = recurrence && v.until ? localDateKey(v.until) : null
+  const rule = ruleForChoice(choiceForDate(v.repeat, v.date!), v.date!)
+  const recurrenceUntil = rule.recurrence && v.until ? localDateKey(v.until) : null
   if (v.allDay) {
     return {
       ...base,
       startsAt: startOfDay(v.date!).toISOString(),
       endsAt: null,
       allDay: true,
-      recurrence,
-      recurrenceDayOffsets: null,
+      ...rule,
+      recurrenceWeekdays: null,
       recurrenceUntil,
       reminderMinutes: null,
     }
@@ -277,8 +309,8 @@ function toInput(v: EventForm): CreateEventInput {
     startsAt: combine(v.date!, v.startTime).toISOString(),
     endsAt: combine(v.date!, v.endTime).toISOString(),
     allDay: false,
-    recurrence,
-    recurrenceDayOffsets: null,
+    ...rule,
+    recurrenceWeekdays: null,
     recurrenceUntil,
     reminderMinutes: v.reminderMinutes,
   }
@@ -294,7 +326,7 @@ export interface CreateEventDrawerProps {
   /** Preselect a single owner in create mode (the roster's per-person "+ Add").
       Ignored in edit mode. */
   prefillOwnerId?: string | null
-  /** Activity framing (story #5): create seeds repeat-weekly on; the header, CTA,
+  /** Activity framing (story #5): create seeds every week; the header, CTA,
       and Remove copy swap "event" → "activity". */
   activityContext?: boolean
   /** Set → edit mode: fields prefilled, header "Edit event", CTA "Save changes",
@@ -360,7 +392,7 @@ export function CreateEventDrawer({
   const ownerIds = watch('ownerIds')
   const multiDay = watch('multiDay')
   const allDay = watch('allDay')
-  const repeatWeekly = watch('repeatWeekly')
+  const repeat = watch('repeat')
   const date = watch('date')
   const range = watch('range')
   const startTime = watch('startTime')
@@ -393,8 +425,15 @@ export function CreateEventDrawer({
     setValue('family', true, { shouldValidate: true })
   }
 
-  // The weekday label for "(Every Tuesday)" — derived from the start date.
-  const weekday = date?.toLocaleDateString(undefined, { weekday: 'long' })
+  // Worded from the date, so a moved date re-words the list and a monthly pick
+  // the new date doesn't offer falls to the one it does. An edited series' next
+  // dates count from today, not from its first occurrence.
+  const choices = date ? repeatChoices(date) : []
+  const shownRepeat = date ? choiceForDate(repeat, date) : repeat
+  const until = watch('until')
+  const upcoming = date
+    ? nextDates(shownRepeat, date, { after: maxDate(date, startOfDay(new Date())), until })
+    : []
 
   const submit = handleSubmit(async (values) => {
     await onSubmit(toInput(values))
@@ -565,23 +604,37 @@ export function CreateEventDrawer({
               </div>
             }
 
-            {/* Repeat weekly — single-day only; "(Every Tuesday)" inline + Until */}
+            {/* Repeats — single-day only; the rule worded from the date, its next
+                dates, and Until (ADR 082) */}
             {!multiDay && (
-              <div className="flex flex-col gap-3">
-                <div className="flex items-center justify-between gap-3">
-                  <Label className="cursor-default">
-                    Repeat weekly
-                    {repeatWeekly && weekday && (
-                      <span className="font-normal text-muted-foreground"> (Every {weekday})</span>
-                    )}
-                  </Label>
-                  <Switch
-                    aria-label="Repeat weekly"
-                    checked={repeatWeekly}
-                    onCheckedChange={(v) => setValue('repeatWeekly', v, { shouldValidate: true })}
-                  />
+              <fieldset className="flex flex-col gap-3">
+                <legend className="mb-2">
+                  <Label className="cursor-default">Repeats</Label>
+                </legend>
+                <div className="flex flex-col overflow-hidden rounded-card border border-border">
+                  {choices.map((c) => (
+                    <label
+                      key={c.value}
+                      className="flex min-h-11 cursor-pointer items-center border-border px-3 text-sm-token text-foreground not-first:border-t has-checked:bg-primary/10 has-checked:font-semibold has-focus-visible:outline-2 has-focus-visible:-outline-offset-2 has-focus-visible:outline-ring"
+                    >
+                      <input
+                        type="radio"
+                        name="event-repeat"
+                        value={c.value}
+                        checked={shownRepeat === c.value}
+                        onChange={() => setValue('repeat', c.value, { shouldValidate: true })}
+                        className="sr-only"
+                      />
+                      {c.label}
+                    </label>
+                  ))}
                 </div>
-                {repeatWeekly && (
+                {upcoming.length > 0 && (
+                  <p className="text-sm-token text-muted-foreground">
+                    Next: {upcoming.map((d) => nextLabel(d, shownRepeat === 'year')).join(', ')}
+                  </p>
+                )}
+                {shownRepeat !== 'none' && (
                   <div className="rounded-card bg-secondary/50 p-3">
                     <FieldLabel htmlFor="event-until" optional>
                       Until
@@ -601,7 +654,7 @@ export function CreateEventDrawer({
                     />
                   </div>
                 )}
-              </div>
+              </fieldset>
             )}
 
             {/* Reminder — timed events only (a span/all-day reminder is future) */}

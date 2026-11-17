@@ -29,7 +29,7 @@ type EventOverrides = {
   reminderMinutes?: number | null
   attendeeIds?: string[]
   recurrence?: string | null
-  recurrenceDayOffsets?: number[]
+  recurrenceWeekdays?: number[]
   recurrenceUntil?: Date | null
 }
 
@@ -42,7 +42,7 @@ async function makeEvent(o: EventOverrides = {}) {
       startsAt: o.startsAt ?? inMinutes(30),
       reminderMinutes: o.reminderMinutes === undefined ? 30 : o.reminderMinutes,
       recurrence: o.recurrence ?? null,
-      recurrenceDayOffsets: o.recurrenceDayOffsets ?? [],
+      recurrenceWeekdays: o.recurrenceWeekdays ?? [],
       recurrenceUntil: o.recurrenceUntil ?? null,
       attendees: { create: attendeeIds.map((profileId) => ({ profileId })) },
     },
@@ -189,7 +189,7 @@ describe('reminder scheduler', () => {
     await makeEvent({
       startsAt: base,
       recurrence: 'daily',
-      recurrenceDayOffsets: [0, 1, 2, 3, 4, 5, 6],
+      recurrenceWeekdays: [0, 1, 2, 3, 4, 5, 6],
       attendeeIds: [TWEEN_ID],
     })
     await runReminderTick(bus, NOW)
@@ -200,12 +200,12 @@ describe('reminder scheduler', () => {
   })
 
   it('stays silent on a day outside the daily series’ day set (ADR 057)', async () => {
-    // Today is day k=3 from the base; only offset 1 is in the set.
+    // Today is three days after the base; only the day after the base is in the set.
     const base = new Date(inMinutes(30).getTime() - 3 * 24 * 60 * 60 * 1000)
     await makeEvent({
       startsAt: base,
       recurrence: 'daily',
-      recurrenceDayOffsets: [1],
+      recurrenceWeekdays: [(base.getDay() + 1) % 7],
       attendeeIds: [TWEEN_ID],
     })
     await runReminderTick(bus, NOW)

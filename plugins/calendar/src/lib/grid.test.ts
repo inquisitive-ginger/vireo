@@ -31,7 +31,9 @@ function evt(partial: { id: string; start: Date; end?: Date; allDay?: boolean })
     allDay: partial.allDay ?? false,
     location: null,
     recurrence: null,
-    recurrenceDayOffsets: [],
+    recurrenceInterval: 1,
+    recurrenceWeekdays: [],
+    recurrenceMonthWeek: null,
     recurrenceUntil: null,
     isActivity: false,
     status: 'confirmed',
@@ -212,7 +214,7 @@ function dailyOcc(seriesId: string, day: Date): CalendarEvent {
     startsAt: new Date(day.getFullYear(), day.getMonth(), day.getDate(), 9, 30).toISOString(),
     endsAt: new Date(day.getFullYear(), day.getMonth(), day.getDate(), 15, 30).toISOString(),
     recurrence: 'daily',
-    recurrenceDayOffsets: [0, 1, 2, 3, 4],
+    recurrenceWeekdays: [1, 2, 3, 4, 5],
   }
 }
 
@@ -260,5 +262,19 @@ describe('daily series rendering (bars, not chips)', () => {
     expect(placed[0].startCol).toBe(4) // Thu 9
     expect(placed[0].endCol).toBe(6) // clipped at Sat 11
     expect(placed[0].openEnd).toBe(true)
+  })
+})
+
+describe('D-083 a 1–3-day-a-week series in the month grid', () => {
+  const french = [7, 9].map((d) => ({
+    ...dailyOcc('french', new Date(2026, 6, d)),
+    recurrenceWeekdays: [2, 4],
+  }))
+  const WEEK = buildWeek(new Date(2026, 6, 8))
+
+  it('D-083 draws a Tue · Thu series as chips on its days, not span-lane bars [F-023] #153', () => {
+    expect(eventsOnDay(french, new Date(2026, 6, 7)).map((e) => e.id)).toEqual([french[0].id])
+    expect(eventsOnDay(french, new Date(2026, 6, 8))).toEqual([])
+    expect(spansForWeek(french, WEEK)).toEqual([])
   })
 })

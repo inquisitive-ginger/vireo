@@ -3,7 +3,7 @@ import { Button, EmptyState, relativeDayLabel } from '@family-os/ui'
 import type { DayMark } from '@family-os/platform/types'
 import type { CalendarEvent, CalendarMember } from '../types'
 import { isSameDay, localDateKey } from '../lib/grid'
-import { buildAgenda } from '../lib/week'
+import { LAST_DAY_LABEL, buildAgenda } from '../lib/week'
 import { AgendaRow } from './AgendaRow'
 import { DayHeading } from './DayHeading'
 import { NextEventHero } from './NextEventHero'
@@ -135,6 +135,15 @@ export function AgendaView({
                   ))}
                 </div>
               )}
+              {day.ending.map((event) => (
+                <AgendaRow
+                  key={`${event.id}:last`}
+                  event={event}
+                  membersById={membersById}
+                  whenLabel={LAST_DAY_LABEL}
+                  onClick={onEditEvent ? () => onEditEvent(event) : undefined}
+                />
+              ))}
               {day.timed.map((event) => (
                 <AgendaRow
                   key={event.id}

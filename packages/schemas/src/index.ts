@@ -128,12 +128,14 @@ const OptionalText = z
     return trimmed && trimmed.length > 0 ? trimmed : null
   })
 
+export const RECURRENCE_FREQUENCIES = ['daily', 'weekly', 'monthly', 'yearly'] as const
+export type RecurrenceFrequency = (typeof RECURRENCE_FREQUENCIES)[number]
+
 // The create + edit drawer submits the full field set, so one schema covers both.
 // Ownership is the `attendeeIds` set (0 = Family · 1 = solo · 2+ = shared); the
 // route resolves existence (→ 404) and derives `isActivity`/`ownerId` (ADR 038).
-// A 'daily' series (ADR 057) carries its weekday set as day OFFSETS from the
-// series start's weekday, mod 7 — never absolute weekdays, which the server
-// cannot resolve without a timezone.
+// The repeat rule is ADR 082's: a frequency, an interval, a 'daily' series' local
+// weekdays, and for 'monthly' which week of the month (null = on the date).
 export const EventInputSchema = z
   .object({
     title: z.string().trim().min(1, 'title is required'),
@@ -143,8 +145,10 @@ export const EventInputSchema = z
     startsAt: IsoDateTimeSchema,
     endsAt: IsoDateTimeSchema.nullish(),
     allDay: z.boolean().optional().default(false),
-    recurrence: z.enum(['weekly', 'daily']).nullish(),
-    recurrenceDayOffsets: z.array(z.number().int().min(0).max(6)).max(7).nullish(),
+    recurrence: z.enum(RECURRENCE_FREQUENCIES).nullish(),
+    recurrenceInterval: z.number().int().min(1).max(2).nullish(),
+    recurrenceWeekdays: z.array(z.number().int().min(0).max(6)).max(7).nullish(),
+    recurrenceMonthWeek: z.union([z.literal(-1), z.number().int().min(1).max(4)]).nullish(),
     recurrenceUntil: IsoDateSchema.nullish(),
     reminderMinutes: z.number().int().min(0).nullish(),
   })
@@ -152,9 +156,17 @@ export const EventInputSchema = z
     message: 'endsAt must not be before startsAt',
     path: ['endsAt'],
   })
-  .refine((d) => d.recurrence !== 'daily' || (d.recurrenceDayOffsets?.length ?? 0) > 0, {
+  .refine((d) => d.recurrence !== 'daily' || (d.recurrenceWeekdays?.length ?? 0) > 0, {
     message: 'a daily series needs at least one day',
-    path: ['recurrenceDayOffsets'],
+    path: ['recurrenceWeekdays'],
+  })
+  .refine((d) => d.recurrenceMonthWeek == null || d.recurrence === 'monthly', {
+    message: 'a week of the month needs a monthly repeat',
+    path: ['recurrenceMonthWeek'],
+  })
+  .refine((d) => (d.recurrenceInterval ?? 1) === 1 || d.recurrence === 'weekly', {
+    message: 'only a weekly repeat can skip weeks',
+    path: ['recurrenceInterval'],
   })
   .refine((d) => d.recurrence !== 'daily' || (Boolean(d.endsAt) && !d.allDay), {
     message: 'a daily series is a timed window — endsAt required, allDay false',

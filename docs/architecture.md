@@ -146,6 +146,7 @@ is warranted.
 | 072 | The wall adds as the house — `added_by` holds the requesting profile id, `'family'` from the wall; the profile-referencing columns are `text`, not `uuid`, to match `platform.profiles.id`                                                        |
 | 073 | You can take back your own add — `retract shopping.Item` scoped by CASL condition to `addedBy: profile.id`, for fifteen minutes from `added_at`, checked in the route; a stale client's 403 must be shown, never swallowed                        |
 | 074 | The frame insets, the header leads — `PageContainer` budgets for no content it cannot see and steps once at `md:`; `PageHeader` owns the air on both sides of its title, and `SectionLabel` the space around a group label                        |
+| 082 | One repeat rule — weekly, daily time-window and monthly fold into one stored rule (how often, every how many, which days, monthly by date or weekday); still one row computed on read; replaces ADR 038's and 057's storage                       |
 
 ---
 

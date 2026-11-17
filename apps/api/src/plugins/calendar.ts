@@ -2,7 +2,7 @@ import fp from 'fastify-plugin'
 import type { FastifyPluginAsync } from 'fastify'
 import { prisma, createDayMarkRegistry } from '@family-os/platform/server'
 import type { EventBus, DayMarkRegistry } from '@family-os/platform/server'
-import { EventInputSchema, type EventInput } from '@family-os/schemas'
+import { EventInputSchema, type EventInput, type RecurrenceFrequency } from '@family-os/schemas'
 import { calendarPrisma } from '@family-os/plugin-calendar/db'
 import { notify } from '../lib/notify'
 import { startReminderScheduler } from '../lib/reminder-scheduler'
@@ -32,7 +32,9 @@ type EventRow = {
   allDay: boolean
   location: string | null
   recurrence: string | null
-  recurrenceDayOffsets: number[]
+  recurrenceInterval: number
+  recurrenceWeekdays: number[]
+  recurrenceMonthWeek: number | null
   recurrenceUntil: Date | null
   isActivity: boolean
   status: string
@@ -54,8 +56,10 @@ type ParsedEvent = {
   endsAt: Date | null
   allDay: boolean
   location: string | null
-  recurrence: 'weekly' | 'daily' | null
-  recurrenceDayOffsets: number[]
+  recurrence: RecurrenceFrequency | null
+  recurrenceInterval: number
+  recurrenceWeekdays: number[]
+  recurrenceMonthWeek: number | null
   recurrenceUntil: Date | null
   reminderMinutes: number | null
   isActivity: boolean
@@ -85,11 +89,12 @@ async function parseEventBody(body: unknown): Promise<ParseResult> {
   }
 
   const recurrence = input.recurrence ?? null
-  // Derived, never user-chosen (ADR 038, amended 2026-08-19): a weekly event with
-  // any member attendees is a standing Activity for each of them; only Family
-  // (zero-attendee) events stay out. A bounded daily window (ADR 057) is not a
-  // standing commitment and never one.
-  const isActivity = recurrence === 'weekly' && attendeeIds.length >= 1
+  const recurrenceInterval = recurrence === 'weekly' ? (input.recurrenceInterval ?? 1) : 1
+  // Derived, never user-chosen (ADR 038, amended 2026-08-19; ADR 082): an
+  // every-week event with any member attendees is a standing Activity for each of
+  // them; Family (zero-attendee) events, bounded daily windows, and every-other-week,
+  // monthly and yearly events never are.
+  const isActivity = recurrence === 'weekly' && recurrenceInterval === 1 && attendeeIds.length >= 1
 
   return {
     ok: true,
@@ -102,10 +107,12 @@ async function parseEventBody(body: unknown): Promise<ParseResult> {
       allDay: input.allDay,
       location: input.location,
       recurrence,
-      recurrenceDayOffsets:
+      recurrenceInterval,
+      recurrenceWeekdays:
         recurrence === 'daily'
-          ? [...new Set(input.recurrenceDayOffsets ?? [])].sort((a, b) => a - b)
+          ? [...new Set(input.recurrenceWeekdays ?? [])].sort((a, b) => a - b)
           : [],
+      recurrenceMonthWeek: recurrence === 'monthly' ? (input.recurrenceMonthWeek ?? null) : null,
       // recurrence_until is only meaningful for a recurring series.
       recurrenceUntil: recurrence && input.recurrenceUntil ? new Date(input.recurrenceUntil) : null,
       reminderMinutes: input.reminderMinutes ?? null,
@@ -150,7 +157,9 @@ function serializeEvent(
     allDay: event.allDay,
     location: event.location,
     recurrence: event.recurrence,
-    recurrenceDayOffsets: event.recurrenceDayOffsets ?? [],
+    recurrenceInterval: event.recurrenceInterval,
+    recurrenceWeekdays: event.recurrenceWeekdays ?? [],
+    recurrenceMonthWeek: event.recurrenceMonthWeek,
     recurrenceUntil: event.recurrenceUntil ? dateKey(event.recurrenceUntil) : null,
     isActivity: event.isActivity,
     status: event.status,
@@ -164,8 +173,8 @@ function serializeEvent(
 const overlaps = (startMs: number, endMs: number, from: Date, to: Date) =>
   startMs <= to.getTime() && endMs >= from.getTime()
 
-/** Expands a weekly or daily series into the occurrences overlapping `[from, to]`
- *  (ADR 038, ADR 057). The stepping, weekday-offset membership, `cancelled`
+/** Expands a recurring series into the occurrences overlapping `[from, to]`
+ *  (ADR 038, ADR 082). The stepping, weekday membership, `cancelled`
  *  exceptions, and `recurrenceUntil` all live in the shared `occurrenceStarts` —
  *  the reminder scheduler expands from the same module. */
 function expandRecurring(event: EventRow, from: Date, to: Date) {
@@ -358,7 +367,9 @@ const calendarPlugin: FastifyPluginAsync = async (fastify) => {
         allDay: d.allDay,
         location: d.location,
         recurrence: d.recurrence,
-        recurrenceDayOffsets: d.recurrenceDayOffsets,
+        recurrenceInterval: d.recurrenceInterval,
+        recurrenceWeekdays: d.recurrenceWeekdays,
+        recurrenceMonthWeek: d.recurrenceMonthWeek,
         recurrenceUntil: d.recurrenceUntil,
         isActivity: d.isActivity,
         reminderMinutes: d.reminderMinutes,
@@ -418,7 +429,9 @@ const calendarPlugin: FastifyPluginAsync = async (fastify) => {
         allDay: d.allDay,
         location: d.location,
         recurrence: d.recurrence,
-        recurrenceDayOffsets: d.recurrenceDayOffsets,
+        recurrenceInterval: d.recurrenceInterval,
+        recurrenceWeekdays: d.recurrenceWeekdays,
+        recurrenceMonthWeek: d.recurrenceMonthWeek,
         recurrenceUntil: d.recurrenceUntil,
         isActivity: d.isActivity,
         reminderMinutes: d.reminderMinutes,
@@ -444,7 +457,7 @@ const calendarPlugin: FastifyPluginAsync = async (fastify) => {
   })
 
   // DELETE /calendar/events/:id — delete the whole series, or with ?occurrence=
-  // YYYY-MM-DD skip just that one weekly occurrence via a cancellation exception
+  // YYYY-MM-DD skip just that one occurrence via a cancellation exception
   // (tier 4). Idempotent in both modes.
   fastify.delete('/calendar/events/:id', async (request, reply) => {
     if (!request.ability.can('delete', 'calendar.Event')) {

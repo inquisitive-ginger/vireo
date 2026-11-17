@@ -21,7 +21,9 @@ function mk(
     allDay: false,
     location: null,
     recurrence: null,
-    recurrenceDayOffsets: [],
+    recurrenceInterval: 1,
+    recurrenceWeekdays: [],
+    recurrenceMonthWeek: null,
     recurrenceUntil: null,
     isActivity: false,
     status: 'confirmed',
@@ -237,7 +239,7 @@ function campOcc(day: Date): CalendarEvent {
     endsAt: end.toISOString(),
     seriesStartsAt: SERIES_START.toISOString(),
     recurrence: 'daily',
-    recurrenceDayOffsets: [0, 1, 2, 3, 4],
+    recurrenceWeekdays: [1, 2, 3, 4, 5],
     recurrenceUntil: '2026-07-24',
   })
 }
@@ -331,5 +333,154 @@ describe('gate-4 month grammar on spans', () => {
       allDay: true,
     })
     expect(spanWhenLabel(long, NOW)).toBe('Through Aug 21')
+  })
+})
+
+// ── D-083: the band holds conditions, decided by shape ──────────────────────
+// The 03a board's week: Grandma Sat 14 – Fri 20 (7 days), a book fair Thu 19 – Fri
+// 20 (2 days), Middle School French Tue · Thu 3:30–4:30, a swim clinic M–F 5–6
+// through Fri 20, and a dentist Wed 18. November 2026.
+
+const spanOf = (id: string, title: string, from: number, toInclusive: number) =>
+  mk({
+    id,
+    title,
+    startsAt: new Date(2026, 10, from).toISOString(),
+    endsAt: new Date(2026, 10, toInclusive + 1).toISOString(),
+    allDay: true,
+  })
+
+function seriesOcc(
+  seriesId: string,
+  day: number,
+  weekdays: number[],
+  [sh, sm]: [number, number],
+  [eh, em]: [number, number],
+  until: string | null
+): CalendarEvent {
+  return mk({
+    id: `${seriesId}:2026-11-${day}`,
+    seriesId,
+    isOccurrence: true,
+    occurrenceDate: `2026-11-${day}`,
+    title: seriesId,
+    startsAt: new Date(2026, 10, day, sh, sm).toISOString(),
+    endsAt: new Date(2026, 10, day, eh, em).toISOString(),
+    seriesStartsAt: new Date(2026, 10, 3, sh, sm).toISOString(),
+    recurrence: 'daily',
+    recurrenceWeekdays: weekdays,
+    recurrenceUntil: until,
+  })
+}
+
+const GRANDMA = spanOf('grandma', 'Grandma visiting', 14, 20)
+const BOOK_FAIR = spanOf('bookfair', 'Book fair', 19, 20)
+const FRENCH = [17, 19, 24].map((d) => seriesOcc('french', d, [2, 4], [15, 30], [16, 30], null))
+const SWIM = [16, 17, 18, 19, 20].map((d) =>
+  seriesOcc('swim', d, [1, 2, 3, 4, 5], [17, 0], [18, 0], '2026-11-20')
+)
+const DENTIST = mk({
+  id: 'dentist',
+  title: "Teddy's dentist",
+  startsAt: new Date(2026, 10, 18, 10, 30).toISOString(),
+})
+const HOUSEHOLD = [GRANDMA, BOOK_FAIR, ...FRENCH, ...SWIM, DENTIST]
+const FRI_PICKUP = mk({
+  id: 'pickup',
+  title: 'Early pickup',
+  startsAt: new Date(2026, 10, 20, 12).toISOString(),
+})
+const at = (day: number, h = 8, m = 45) => new Date(2026, 10, day, h, m)
+const rowsOn = (week: ReturnType<typeof buildWeek>, day: number) => {
+  const d = week.days.find((x) => x.date.getDate() === day)!
+  return {
+    events: d.events.map((e) => e.seriesId),
+    ending: d.ending.map((e) => e.seriesId),
+    starting: d.starting.map((e) => e.seriesId),
+  }
+}
+
+describe('D-083 the All week band in buildWeek', () => {
+  it('D-083 holds a 3+-day span and a 4+-day-a-week series, and never a Tue · Thu series [F-023] #153', () => {
+    const week = buildWeek(HOUSEHOLD, at(17))
+    expect(week.spans.map((e) => e.seriesId)).toEqual(['grandma', 'swim'])
+    expect(week.spans.map((e) => e.seriesId)).not.toContain('french')
+  })
+
+  it('D-083 lists a 1–3-day-a-week series on each of its days with its clock, hero-eligible [F-023] #153', () => {
+    const week = buildWeek(HOUSEHOLD, at(17))
+    expect(week.hero?.seriesId).toBe('french')
+    expect(rowsOn(week, 19).events).toContain('french')
+    expect(rowsOn(week, 18).events).not.toContain('french')
+    expect(buildWeek(HOUSEHOLD, at(18)).days.flatMap((d) => d.events.map((e) => e.id))).toContain(
+      'french:2026-11-19'
+    )
+  })
+
+  it('D-083 lists a 1–2-day span once on each of its days, never in the band [F-023]', () => {
+    const week = buildWeek(HOUSEHOLD, at(19))
+    expect(week.spans.map((e) => e.id)).not.toContain('bookfair')
+    expect(rowsOn(week, 19).events).toContain('bookfair')
+    expect(rowsOn(week, 20).ending).toContain('bookfair')
+    expect(rowsOn(week, 20).events).not.toContain('bookfair')
+  })
+
+  it('D-083 a condition leaves the band on its last day and shows once in that day as "last day" [F-023] #153', () => {
+    const friday = buildWeek([...HOUSEHOLD, FRI_PICKUP], at(20))
+    expect(friday.spans).toEqual([])
+    expect(rowsOn(friday, 20).ending).toEqual(
+      expect.arrayContaining(['grandma', 'swim', 'bookfair'])
+    )
+    const thursday = buildWeek(HOUSEHOLD, at(19))
+    expect(thursday.spans.map((e) => e.seriesId)).toEqual(['grandma', 'swim'])
+    expect(rowsOn(thursday, 20).ending).not.toContain('grandma')
+  })
+
+  it('D-083 a condition series on its last day is still the hero when it is next [F-023]', () => {
+    const friday = buildWeek(HOUSEHOLD, at(20, 16))
+    expect(friday.hero?.seriesId).toBe('swim')
+    expect(rowsOn(friday, 20).ending).not.toContain('swim')
+  })
+})
+
+describe('D-083 the Ongoing panel in buildAgenda', () => {
+  it('D-083 Ongoing holds the same conditions as the band, with last days and short spans in the days [F-023] #153', () => {
+    const thursday = buildAgenda(HOUSEHOLD, at(19))
+    expect(thursday.running.map((e) => e.seriesId)).toEqual(['grandma', 'swim'])
+    const day19 = thursday.days.find((d) => d.date.getDate() === 19)!
+    expect(day19.timed.map((e) => e.seriesId)).toEqual(expect.arrayContaining(['bookfair']))
+    const friday = buildAgenda([...HOUSEHOLD, FRI_PICKUP], at(20))
+    expect(friday.running).toEqual([])
+    const day20 = friday.days.find((d) => d.date.getDate() === 20)!
+    expect(day20.ending.map((e) => e.seriesId)).toEqual(
+      expect.arrayContaining(['grandma', 'swim', 'bookfair'])
+    )
+    expect(friday.days.flatMap((d) => d.timed.map((e) => e.id))).toContain('french:2026-11-24')
+  })
+})
+
+describe('D-083 edges', () => {
+  it('D-083 a series whose until falls on a day it does not meet ends on its last real meeting [F-023]', () => {
+    // Weekdays camp, until Sun Nov 22: its last meeting is Fri Nov 20.
+    const camp = [16, 17, 18, 19, 20].map((d) =>
+      seriesOcc('camp', d, [1, 2, 3, 4, 5], [9, 0], [15, 0], '2026-11-22')
+    )
+    const friday = buildWeek(camp.slice(4), at(20, 7))
+    expect(friday.spans).toEqual([])
+    expect(friday.hero?.seriesId).toBe('camp')
+    const thursday = buildWeek(camp.slice(3), at(19, 7))
+    expect(thursday.spans.map((e) => e.seriesId)).toEqual(['camp'])
+  })
+
+  it('D-083 a timed event crossing midnight stays an appointment — hero-eligible, no "last day" [F-023]', () => {
+    const sleepover = mk({
+      id: 'sleepover',
+      title: 'Sleepover',
+      startsAt: new Date(2026, 10, 17, 20).toISOString(),
+      endsAt: new Date(2026, 10, 18, 9).toISOString(),
+    })
+    const week = buildWeek([sleepover], at(17, 18))
+    expect(week.hero?.id).toBe('sleepover')
+    expect(week.days.flatMap((d) => d.ending)).toEqual([])
   })
 })

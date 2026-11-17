@@ -346,14 +346,13 @@ describe('GET /calendar/events — list & weekly expansion', () => {
 
 describe('daily time-window recurrence', () => {
   // Girls-Rock-Math-shaped: M–F 9:30–15:30, Aug 3 (a Monday) through Aug 21.
-  // The start is a Monday, so offsets [0..4] are Mon–Fri.
   const DAILY = {
     title: 'Girls Rock Math',
     startsAt: '2026-08-03T09:30:00.000Z',
     endsAt: '2026-08-03T15:30:00.000Z',
     attendeeIds: [KID_ID],
     recurrence: 'daily',
-    recurrenceDayOffsets: [0, 1, 2, 3, 4],
+    recurrenceWeekdays: [1, 2, 3, 4, 5],
     recurrenceUntil: '2026-08-21',
   }
   const AUG = ['2026-08-01T00:00:00.000Z', '2026-08-31T23:59:59.000Z'] as const
@@ -381,17 +380,16 @@ describe('daily time-window recurrence', () => {
     expect(second.endsAt).toBe('2026-08-04T15:30:00.000Z')
     expect(second.allDay).toBe(false)
     expect(second.seriesStartsAt).toBe(DAILY.startsAt)
-    expect(second.recurrenceDayOffsets).toEqual([0, 1, 2, 3, 4])
+    expect(second.recurrenceWeekdays).toEqual([1, 2, 3, 4, 5])
   })
 
   it('starts on the first matching day when the range starts on an excluded one', async () => {
     const cookie = await getCookieForProfile(PARENT_ID)
-    // Range anchored on Sunday Aug 2; Sunday (offset 0) is not in the set.
+    // Range anchored on Sunday Aug 2; Sunday is not in the set.
     await createEvent(cookie, {
       ...DAILY,
       startsAt: '2026-08-02T09:30:00.000Z',
       endsAt: '2026-08-02T15:30:00.000Z',
-      recurrenceDayOffsets: [1, 2, 3, 4, 5], // Mon–Fri relative to a Sunday start
     })
     const res = await listEvents(cookie, ...AUG)
     const dates = res
@@ -454,10 +452,83 @@ describe('daily time-window recurrence', () => {
 
   it('rejects a daily series without a day set or without an end time (400)', async () => {
     const cookie = await getCookieForProfile(PARENT_ID)
-    const noDays = await createEvent(cookie, { ...DAILY, recurrenceDayOffsets: [] })
+    const noDays = await createEvent(cookie, { ...DAILY, recurrenceWeekdays: [] })
     expect(noDays.statusCode).toBe(400)
     const noEnd = await createEvent(cookie, { ...DAILY, endsAt: null })
     expect(noEnd.statusCode).toBe(400)
+  })
+})
+
+// ─── The one repeat rule (ADR 082) ───────────────────────────────────────────
+
+describe('the repeat rule (ADR 082)', () => {
+  const BOOK_CLUB = {
+    title: 'Book club',
+    startsAt: '2026-11-17T19:00:00.000Z',
+    endsAt: '2026-11-17T20:00:00.000Z',
+    attendeeIds: [KID_ID],
+    recurrence: 'monthly',
+  }
+  const occurrenceDates = async (cookie: string, title: string, from: string, to: string) =>
+    (await listEvents(cookie, from, to))
+      .json()
+      .events.filter((e: { title: string }) => e.title === title)
+      .map((e: { occurrenceDate: string }) => e.occurrenceDate)
+
+  it('D-082 a monthly event repeats on its date and round-trips the rule [F-021] #152', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const created = await createEvent(cookie, BOOK_CLUB)
+    expect(created.statusCode).toBe(201)
+    expect(created.json()).toMatchObject({
+      recurrence: 'monthly',
+      recurrenceInterval: 1,
+      recurrenceMonthWeek: null,
+      recurrenceWeekdays: [],
+      isActivity: false,
+    })
+    const dates = await occurrenceDates(
+      cookie,
+      BOOK_CLUB.title,
+      '2026-11-01T00:00:00.000Z',
+      '2027-02-28T23:59:59.000Z'
+    )
+    expect(dates).toEqual(['2026-11-17', '2026-12-17', '2027-01-17', '2027-02-17'])
+  })
+
+  it('D-082 a monthly event on the 3rd Tuesday stores its week of the month [F-021] #152', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const created = await createEvent(cookie, { ...BOOK_CLUB, recurrenceMonthWeek: 3 })
+    expect(created.json().recurrenceMonthWeek).toBe(3)
+    const dates = await occurrenceDates(
+      cookie,
+      BOOK_CLUB.title,
+      '2026-12-01T00:00:00.000Z',
+      '2027-01-31T23:59:59.000Z'
+    )
+    expect(dates).toEqual(['2026-12-15', '2027-01-19'])
+  })
+
+  it('D-082 only an every-week event is an Activity [F-021]', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const weekly = { ...BOOK_CLUB, recurrence: 'weekly' }
+    expect((await createEvent(cookie, weekly)).json().isActivity).toBe(true)
+    const everyOther = await createEvent(cookie, { ...weekly, recurrenceInterval: 2 })
+    expect(everyOther.json()).toMatchObject({ recurrenceInterval: 2, isActivity: false })
+    expect(
+      (await createEvent(cookie, { ...BOOK_CLUB, recurrence: 'yearly' })).json().isActivity
+    ).toBe(false)
+  })
+
+  it('D-082 rejects a week of the month off a monthly repeat, and skipped weeks off a weekly one (400)', async () => {
+    const cookie = await getCookieForProfile(PARENT_ID)
+    const weekWithMonthWeek = await createEvent(cookie, {
+      ...BOOK_CLUB,
+      recurrence: 'weekly',
+      recurrenceMonthWeek: 3,
+    })
+    expect(weekWithMonthWeek.statusCode).toBe(400)
+    const monthlyEveryOther = await createEvent(cookie, { ...BOOK_CLUB, recurrenceInterval: 2 })
+    expect(monthlyEveryOther.statusCode).toBe(400)
   })
 })
 

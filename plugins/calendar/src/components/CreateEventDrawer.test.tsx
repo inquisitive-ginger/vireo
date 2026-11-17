@@ -1,4 +1,4 @@
-import { describe, it, expect, vi } from 'vitest'
+import { describe, it, expect, vi, onTestFinished } from 'vitest'
 import { render, screen, fireEvent, waitFor } from '@testing-library/react'
 import type { Profile } from '@family-os/platform/types'
 import type { CalendarEvent } from '../types'
@@ -28,7 +28,9 @@ function evt(
     allDay: false,
     location: null,
     recurrence: null,
-    recurrenceDayOffsets: [],
+    recurrenceInterval: 1,
+    recurrenceWeekdays: [],
+    recurrenceMonthWeek: null,
     recurrenceUntil: null,
     isActivity: false,
     status: 'confirmed',
@@ -108,24 +110,66 @@ describe('CreateEventDrawer — create', () => {
     expect(input.reminderMinutes).toBeNull()
   })
 
-  it('repeat-weekly shows the weekday label and submits a weekly recurrence', async () => {
+  it('D-082 the Repeats list submits a weekly rule worded from the date [F-021]', async () => {
     const { onSubmit } = renderDrawer()
     fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Piano' } })
     fireEvent.click(screen.getByRole('button', { name: 'Zoe' }))
-    fireEvent.click(screen.getByRole('switch', { name: 'Repeat weekly' }))
+    expect(screen.getByRole('radio', { name: 'Doesn’t repeat' })).toBeChecked()
+    fireEvent.click(screen.getByRole('radio', { name: 'Every week on Tuesday' }))
 
-    expect(screen.getByText(/Every Tuesday/)).toBeInTheDocument()
+    expect(screen.getByLabelText(/^Until/)).toBeInTheDocument()
     fireEvent.click(screen.getByRole('button', { name: 'Add event' }))
 
     await waitFor(() => expect(onSubmit).toHaveBeenCalled())
-    expect(lastInput(onSubmit).recurrence).toBe('weekly')
+    expect(lastInput(onSubmit)).toMatchObject({
+      recurrence: 'weekly',
+      recurrenceInterval: 1,
+      recurrenceMonthWeek: null,
+    })
   })
 
-  it('activity framing seeds repeat-weekly + a preselected owner and swaps the copy', async () => {
+  it('D-082 picking monthly on the 3rd Tuesday shows its next dates and submits the rule [F-021] #152', async () => {
+    vi.useFakeTimers({ toFake: ['Date'] })
+    vi.setSystemTime(new Date(2026, 10, 16, 20))
+    onTestFinished(() => {
+      vi.useRealTimers()
+    })
+    const { onSubmit } = renderDrawer({ prefillDate: new Date(2026, 10, 17) })
+    fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'PTA' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Family' }))
+    fireEvent.click(screen.getByRole('radio', { name: 'Every month on the 3rd Tuesday' }))
+
+    expect(screen.getByText(/^Next: Tue, Dec 15, Tue, Jan 19, Tue, Feb 16$/)).toBeInTheDocument()
+    fireEvent.click(screen.getByRole('button', { name: 'Add event' }))
+
+    await waitFor(() => expect(onSubmit).toHaveBeenCalled())
+    expect(lastInput(onSubmit)).toMatchObject({
+      recurrence: 'monthly',
+      recurrenceInterval: 1,
+      recurrenceMonthWeek: 3,
+    })
+  })
+
+  it('D-082 every other week and yearly submit their rules [F-021]', async () => {
+    const { onSubmit } = renderDrawer({ prefillDate: new Date(2026, 10, 17) })
+    fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'Birthday' } })
+    fireEvent.click(screen.getByRole('button', { name: 'Family' }))
+    fireEvent.click(screen.getByRole('radio', { name: 'Every other week on Tuesday' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Add event' }))
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(1))
+    expect(lastInput(onSubmit)).toMatchObject({ recurrence: 'weekly', recurrenceInterval: 2 })
+
+    fireEvent.click(screen.getByRole('radio', { name: 'Every year on Nov 17' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Add event' }))
+    await waitFor(() => expect(onSubmit).toHaveBeenCalledTimes(2))
+    expect(lastInput(onSubmit)).toMatchObject({ recurrence: 'yearly', recurrenceInterval: 1 })
+  })
+
+  it('activity framing seeds every week + a preselected owner and swaps the copy', async () => {
     const { onSubmit } = renderDrawer({ activityContext: true, prefillOwnerId: 'p2' })
-    // Copy swaps event → activity, and repeat-weekly is implied.
+    // Copy swaps event → activity, and every week is implied.
     expect(screen.getByRole('heading', { name: 'Add activity' })).toBeInTheDocument()
-    expect(screen.getByRole('switch', { name: 'Repeat weekly' })).toBeChecked()
+    expect(screen.getByRole('radio', { name: /^Every week on/ })).toBeChecked()
 
     fireEvent.change(screen.getByLabelText('Title'), { target: { value: 'T&T' } })
     fireEvent.click(screen.getByRole('button', { name: 'Add activity' }))
@@ -196,7 +240,7 @@ describe('CreateEventDrawer — daily time window (ADR 057)', () => {
     endsAt: new Date(2026, 5, 24, 15, 30).toISOString(),
     seriesStartsAt: new Date(2026, 5, 22, 9, 30).toISOString(), // Mon Jun 22
     recurrence: 'daily',
-    recurrenceDayOffsets: [0, 1, 2, 3, 4], // Monday anchor → Mon–Fri
+    recurrenceWeekdays: [1, 2, 3, 4, 5],
     recurrenceUntil: '2026-07-03',
   })
 
@@ -220,17 +264,41 @@ describe('CreateEventDrawer — daily time window (ADR 057)', () => {
     // must not rebase the range and delete week one.
     expect(input.startsAt).toBe(new Date(2026, 5, 22, 9, 30).toISOString())
     expect(input.endsAt).toBe(new Date(2026, 5, 22, 15, 30).toISOString())
-    expect(input.recurrenceDayOffsets).toEqual([0, 1, 2, 3, 4])
+    expect(input.recurrenceWeekdays).toEqual([1, 2, 3, 4, 5])
     expect(input.recurrenceUntil).toBe('2026-07-03')
     expect(input.allDay).toBe(false)
   })
 
-  it('a day-set edit lands in the offsets', async () => {
+  it('a day-set edit lands in the weekdays', async () => {
     const { onSubmit } = renderDrawer({ editingEvent: dailyOccurrence, prefillDate: null })
     fireEvent.click(screen.getByRole('button', { name: 'Saturday' }))
     fireEvent.click(screen.getByRole('button', { name: 'Save changes' }))
     await waitFor(() => expect(onSubmit).toHaveBeenCalled())
-    expect(lastInput(onSubmit).recurrenceDayOffsets).toEqual([0, 1, 2, 3, 4, 5])
+    expect(lastInput(onSubmit).recurrenceWeekdays).toEqual([1, 2, 3, 4, 5, 6])
+  })
+})
+
+describe('CreateEventDrawer — edit a monthly event (D-082)', () => {
+  it('D-082 edit prefills the stored rule and keeps it on save [F-021] #152', async () => {
+    const pta = evt({
+      id: 'm1:2026-12-15',
+      seriesId: 'm1',
+      title: 'PTA',
+      startsAt: new Date(2026, 11, 15, 19).toISOString(),
+      endsAt: new Date(2026, 11, 15, 20).toISOString(),
+      seriesStartsAt: new Date(2026, 10, 17, 19).toISOString(),
+      recurrence: 'monthly',
+      recurrenceMonthWeek: 3,
+    })
+    const { onSubmit } = renderDrawer({ editingEvent: pta, prefillDate: null })
+    expect(screen.getByRole('radio', { name: 'Every month on the 3rd Tuesday' })).toBeChecked()
+    fireEvent.click(screen.getByRole('button', { name: 'Save changes' }))
+    await waitFor(() => expect(onSubmit).toHaveBeenCalled())
+    expect(lastInput(onSubmit)).toMatchObject({
+      recurrence: 'monthly',
+      recurrenceMonthWeek: 3,
+      startsAt: new Date(2026, 10, 17, 19).toISOString(),
+    })
   })
 })
 

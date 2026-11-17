@@ -253,7 +253,7 @@ describe('CalendarPage', () => {
       fireEvent.click(await screen.findByRole('button', { name: 'Add activity' }))
       // The reused drawer opened with the "Add activity" header + repeat-weekly on.
       expect(await screen.findByRole('heading', { name: 'Add activity' })).toBeInTheDocument()
-      expect(screen.getByRole('switch', { name: 'Repeat weekly' })).toBeChecked()
+      expect(screen.getByRole('radio', { name: /^Every week on/ })).toBeChecked()
     })
   })
 

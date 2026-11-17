@@ -19,7 +19,9 @@ type EventRow = {
   location: string | null
   startsAt: Date
   recurrence: string | null
-  recurrenceDayOffsets: number[]
+  recurrenceInterval: number
+  recurrenceWeekdays: number[]
+  recurrenceMonthWeek: number | null
   recurrenceUntil: Date | null
   reminderMinutes: number | null
   attendees: AttendeeRow[]

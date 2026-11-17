@@ -3,6 +3,7 @@ import { ItemCard } from '@family-os/ui'
 import type { CalendarEvent, CalendarMember } from '../types'
 import { formatTime, isMultiDay, spanEndDate } from '../lib/grid'
 import { huesForEvent, spineColorsForEvent } from '../lib/hues'
+import { repeatRuleLabel, repeatsAriaLabel } from '../lib/series'
 
 /* A drill-in agenda row: an owner-hue spine (split for shared, neutral for
    Family) + the time, title, and any location — the higher-density read behind
@@ -20,6 +21,8 @@ export function EventRow({
 }) {
   const hues = huesForEvent(event.attendeeIds, membersById)
   const spineColors = spineColorsForEvent(hues)
+  const rule = repeatRuleLabel(event)
+  const repeatsLabel = repeatsAriaLabel(event)
   const ownerNames = event.attendeeIds
     .map((id) => membersById.get(id)?.name)
     .filter((n): n is string => Boolean(n))
@@ -53,10 +56,11 @@ export function EventRow({
       <div className="min-w-0 flex-1">
         <div className="flex items-center gap-2">
           <span className="text-sm-token font-semibold text-foreground">{when}</span>
-          {event.recurrence === 'weekly' && (
+          {repeatsLabel && (
             <Repeat
+              role="img"
               className="h-3 w-3 shrink-0 text-muted-foreground"
-              aria-label="Repeats weekly"
+              aria-label={repeatsLabel}
             />
           )}
         </div>
@@ -74,6 +78,7 @@ export function EventRow({
               <MapPin className="h-3 w-3 shrink-0" /> {event.location}
             </span>
           )}
+          {rule && <span className="truncate">{rule}</span>}
         </div>
       </div>
     </ItemCard>

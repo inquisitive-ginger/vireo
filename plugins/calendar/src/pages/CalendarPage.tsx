@@ -550,24 +550,22 @@ export function CalendarPage() {
           // silently fall back to a series delete — collapse to a plain confirm.
           const noun = removeTarget.isActivity ? 'activity' : 'event'
           const daily = removeTarget.recurrence === 'daily'
-          const offersChoice =
-            (removeTarget.recurrence === 'weekly' || daily) && !!removeTarget.occurrenceDate
+          const weekly =
+            removeTarget.recurrence === 'weekly' && removeTarget.recurrenceInterval === 1
+          const offersChoice = !!removeTarget.recurrence && !!removeTarget.occurrenceDate
+          const one = daily ? 'day' : weekly ? 'week' : 'one'
           return (
             <ConfirmDialog
               open
               title={`Remove “${removeTarget.title}”?`}
               description={
                 offersChoice
-                  ? daily
-                    ? `This ${noun} repeats. Remove just this day, or the whole series?`
-                    : `This ${noun} repeats weekly. Remove just this week, or the whole series?`
+                  ? `This ${noun} repeats${weekly ? ' weekly' : ''}. Remove just this ${one}, or the whole series?`
                   : `This ${noun} will be permanently deleted. This can’t be undone.`
               }
               confirmLabel={offersChoice ? 'All events' : 'Remove'}
               onConfirm={() => deleteEvent.mutate({ event: removeTarget, scope: 'series' })}
-              secondaryLabel={
-                offersChoice ? (daily ? 'Just this day' : 'Just this week') : undefined
-              }
+              secondaryLabel={offersChoice ? `Just this ${one}` : undefined}
               onSecondary={
                 offersChoice
                   ? () => deleteEvent.mutate({ event: removeTarget, scope: 'occurrence' })

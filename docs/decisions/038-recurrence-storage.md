@@ -2,7 +2,7 @@
 
 **Status:** Decided — 2026-06-23 · Amended by ADR 057 (2026-07-28, daily
 time-window recurrence) · Amended 2026-08-19 (`is_activity` includes shared
-events — issue #114)
+events — issue #114) · Storage replaced by ADR 082 (2026-11-16, one repeat rule)
 
 ## Decision
 

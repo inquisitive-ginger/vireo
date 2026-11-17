@@ -1,6 +1,6 @@
 import { addDays, dayDiff, isSameDay, relativeDayLabel, startOfDay } from '@family-os/ui'
 import type { CalendarEvent } from '../types'
-import { isDailyWindow } from './series'
+import { isConditionSeries } from './series'
 
 /* Month-grid layout math, ported from the locked `calendar-month.stories.tsx`
    exploration and adapted from fixed day-of-month integers to real `Date`s + the
@@ -107,24 +107,25 @@ export interface LaidOutWeek {
 
 const byStart = (a: CalendarEvent, b: CalendarEvent) => a.startsAt.localeCompare(b.startsAt)
 
-/** Single-day events whose local start day falls on `date`, time-sorted. A daily
- *  series' occurrences render as span-lane bars, never as chips (design gate 2). */
+/** Single-day events whose local start day falls on `date`, time-sorted. A
+ *  condition series' occurrences render as span-lane bars, never as chips (design
+ *  gate 2); a 1–3-day-a-week series is appointments and chips like one (D-083). */
 export function eventsOnDay(events: CalendarEvent[], date: Date): CalendarEvent[] {
   const key = localDateKey(date)
   return events
     .filter(
-      (e) => !isMultiDay(e) && !isDailyWindow(e) && localDateKey(new Date(e.startsAt)) === key
+      (e) => !isMultiDay(e) && !isConditionSeries(e) && localDateKey(new Date(e.startsAt)) === key
     )
     .sort(byStart)
 }
 
-/** A daily series' occurrences, folded into runs of CONSECUTIVE days — the month
+/** A condition series' occurrences, folded into runs of CONSECUTIVE days — the month
  *  grid's bar unit (ADR 057). Weekend gaps and cancelled days end a run, so a
  *  skipped Wednesday is a visible hole in the bar, not painted over. */
 function dailyRuns(events: CalendarEvent[]): { event: CalendarEvent; start: Date; end: Date }[] {
   const bySeries = new Map<string, CalendarEvent[]>()
   for (const e of events) {
-    if (!isDailyWindow(e)) continue
+    if (!isConditionSeries(e)) continue
     const list = bySeries.get(e.seriesId)
     if (list) list.push(e)
     else bySeries.set(e.seriesId, [e])
