@@ -33,10 +33,21 @@ Features: F-041 a parent sets each kid's usual runs for the week; F-042 the fami
 
 Sessions proposed: 7 decide (how runs read and swap), 8 build (patterns and today's runs), 9 build (reminders and nudges), after the Companion sessions.
 
+Round 2: school runs (pattern) split from drives to an activity (hang off the event, stored by `rides` against event + date). F-041 narrowed to school runs; F-042 is one rides mark per day opening a sheet; new F-044 an activity says who drives (draft should); F-043 covers both. `approach-r2`, both one mark with no initials:
+
+- A · Covered or not: "School runs covered · 4" or "1 school run open". Gives up: never names a driver.
+- B · The next run: "4:30 pm · Hallie picks up Teddy", red flag when any run is open. Gives up: changes through the day.
+
+Sessions proposed: 7 decide (mark, sheet, pattern editor), 8 build (school runs and the mark), 9 build (drives on activities), 10 build (reminders and nudges).
+
 ## Exit criteria
 
 Each proposed F-ID added or not, its priority set, an approach picked, and the sessions approved. At lock-in: the F-IDs in `docs/idea.md`, a D-### per added feature, the sessions in `docs/roadmap.md`.
 
 ## Outcome
 
-Round 1, 2026-11-17 · Sent 2026-11-17 07:25
+Round 1, 2026-11-17 · Sent 2026-11-17 07:25 · Back 2026-11-17 09:16
+
+F-041/F-042/F-043 added at must/must/should; approach B "not quite". Zach: one entry point on agenda and grid; the H/Z initials carry no information; pills are too much on a six-ride Tuesday; drop-off/pickup and driving a kid to an activity are two distinct things, and the latter may hang off the event. Sessions and notes unanswered. Zach chose to hold everything for round 2; nothing locked.
+
+Round 2, 2026-11-17 · Sent 2026-11-17 09:21

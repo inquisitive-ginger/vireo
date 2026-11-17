@@ -669,14 +669,22 @@
 .v-sessions { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
 .v-sessions li { display: grid; grid-template-columns: 3rem minmax(0, 1fr); gap: 8px; }
 .v-sessions .n { font-variant-numeric: tabular-nums; font-weight: 600; }
+.v-sheet { background: var(--card); border: 1px solid var(--border); border-radius: 0.75rem; box-shadow: var(--shadow-raised); padding: 10px 16px; max-width: 420px; display: grid; gap: 2px; }
+.v-sheet .v-cap { padding-top: 8px; }
+.v-sheet-row { width: 100%; font: inherit; color: inherit; background: none; border: 0; border-top: 1px solid var(--border); text-align: left; cursor: pointer; }
+.v-sheet-row .act { font-size: 13px; font-weight: 600; color: var(--primary); }
+.v-sheet-row.open .t, .v-sheet-row.open .act { color: var(--destructive); }
+.v-sheet-row:focus-visible { outline: 2px solid var(--primary); outline-offset: 2px; }
+.v-drive { font-size: 13px; color: var(--muted-foreground); white-space: nowrap; }
+.v-flag { width: 8px; height: 8px; border-radius: 50%; background: var(--destructive); display: inline-block; }
 </style>
 
 <div class="rb-wrap">
   <header>
     <div class="rb-eyebrow">Vireo · Session 3c · Feature</div>
     <h1>Who's driving the kids today</h1>
-    <p class="rb-lede">A dedicated answer to "who's dropping off and picking up Zoë and Teddy today", shown on the calendar more quietly than an event, with reminders. Decide what it adds, how it shows, and which sessions build it.</p>
-    <p class="rb-how">Add or skip each feature and set its priority, pick an approach, approve the sessions, then press <strong>Mark reviewed</strong>.</p>
+    <p class="rb-lede">Round 2 splits rides in two, school runs from a weekly pattern and drives that hang off an activity, behind one rides mark per day. Round 1 is folded below.</p>
+    <p class="rb-how">Add or skip each feature and set its priority, pick what the mark says, approve the sessions, then press <strong>Mark reviewed</strong>.</p>
   </header>
   <div id="rb"></div>
 </div>
@@ -787,7 +795,7 @@ function monthGrid(kind, today) {
 }
 
 const PRIORITIES = ['must', 'should', 'later'];
-const ITEMS = [
+const EARLIER = [
   { group: 'The request', intro: '' },
   {
     id: 'request', type: 'comment', title: 'What you asked for, and what it touches',
@@ -833,5 +841,140 @@ const ITEMS = [
 <p>These go after the Companion sessions (4–6). Say so in the comment if you want them first.</p>` },
   { id: 'notes', type: 'comment', title: 'Anything else', ask: 'Anything to add or change.' },
 ];
-ReviewBoard.mount({ owner: 'Zach', type: 'web-app', items: ITEMS, earlier: [] });
+// Round 2: Zach's real Tuesday. School runs come from the pattern; drives hang off an activity.
+const SCHOOL = [
+  { id: 'td', at: '8:15', mins: 495, verb: 'drops off', kid: 'teddy', where: 'school', driver: 'hallie' },
+  { id: 'zd', at: '8:35', mins: 515, verb: 'drops off', kid: 'zoe', where: 'school', driver: 'zach' },
+  { id: 'tp', at: '4:30', mins: 990, verb: 'picks up', kid: 'teddy', where: 'school', driver: 'hallie' },
+  { id: 'zp', at: '5:30', mins: 1050, verb: 'picks up', kid: 'zoe', where: 'yarn club', driver: null },
+];
+const DRIVES = [
+  { id: 'br', at: '5:30', mins: 1050, title: 'Break', kid: 'teddy', driver: 'hallie' },
+  { id: 'gy', at: '7:00', mins: 1140, title: 'Gymnastics', kid: 'zoe', driver: 'zach' },
+];
+const NOW = 960; // 4:00 pm
+const ampm = m => (m < 720 ? ' am' : ' pm');
+const said = r => `${r.driver ? NAME[r.driver] : 'Nobody yet'} ${r.verb} ${NAME[r.kid]}${r.where === 'school' ? '' : ' at ' + r.where}`;
+
+function sheet(runs, drives, onClaim) {
+  const line = (at, text, open, onTap) => {
+    const b = el('button', { type: 'button', class: 'v-row v-sheet-row' + (open ? ' open' : ''), 'aria-label': `${at}, ${text}. Tap to ${open ? 'claim' : 'swap'}.` }, [
+      el('span', { class: 'when', text: at }),
+      el('span', { class: 't', text }),
+      el('span', { class: 'act', text: open ? 'Claim' : 'Swap' }),
+    ]);
+    b.addEventListener('click', onTap);
+    return b;
+  };
+  return el('div', { class: 'v-sheet', role: 'dialog', 'aria-label': 'Rides, Tue 17' }, [
+    el('div', { class: 'v-cap', text: 'School' }),
+    ...runs.map(r => line(r.at + ampm(r.mins), said(r), !r.driver, () => onClaim(r))),
+    el('div', { class: 'v-cap', text: 'Drives to activities' }),
+    ...drives.map(d => line(d.at + ampm(d.mins), `${NAME[d.driver]} takes ${NAME[d.kid]} to ${d.title}`, false, () => onClaim(d))),
+  ]);
+}
+
+function agendaR2(header, runs, drives) {
+  const rows = [
+    { at: '9:30 am', title: "Teddy's dentist", who: 'teddy' },
+    ...drives.map(d => ({ at: d.at + ampm(d.mins), title: d.title, who: d.kid, driver: d.driver })),
+  ];
+  return el('div', { class: 'v-agenda' }, [
+    el('div', { class: 'v-dh' }, [el('span', { class: 'd' }, ['Today', el('small', { text: 'Tue 17' })]), el('span', { class: 'v-mark' }, ['🍝 ', dot('zach'), ' Zach’s got dinner'])]),
+    header,
+    ...rows.map(e => el('div', { class: 'v-row' }, [
+      el('span', { class: 'when', text: e.at }),
+      el('span', { class: 'v-spine', style: `background:var(${HUE[e.who][0]})` }),
+      el('span', { class: 't', text: e.title }),
+      e.driver ? el('span', { class: 'v-drive', 'aria-label': `${NAME[e.driver]} drives` }, [car(), ' ' + NAME[e.driver]]) : null,
+    ])),
+  ]);
+}
+
+function gridR2(open) {
+  const days = [{ n: 16, open: false }, { n: 17, open, today: true }, { n: 18, open: false }];
+  return el('div', { class: 'v-month' }, days.map(d => el('div', { class: 'v-cell' }, [
+    el('div', { class: 'n' }, [el('span', { text: String(d.n) }), el('span', { class: 'marks', 'aria-label': d.open ? 'Rides: one open' : 'Rides: all covered' }, [d.n === 17 ? '🍝' : null, car(), d.open ? el('span', { class: 'v-flag', 'aria-hidden': 'true' }) : null])]),
+    d.n === 17 ? el('div', { class: 'v-chip', style: `background:var(${HUE.teddy[1]});color:var(${HUE.teddy[2]})`, text: "Teddy's dentist" }) : null,
+    d.n === 17 ? el('div', { class: 'v-chip', style: `background:var(${HUE.teddy[1]});color:var(${HUE.teddy[2]})`, text: 'Break' }) : null,
+    d.n === 17 ? el('div', { class: 'v-chip', style: `background:var(${HUE.zoe[1]});color:var(${HUE.zoe[2]})`, text: 'Gymnastics' }) : null,
+  ])));
+}
+
+function previewR2(kind) {
+  const runs = SCHOOL.map(r => ({ ...r }));
+  const drives = DRIVES.map(d => ({ ...d }));
+  const wrap = el('div', { class: 'v' });
+  let shown = false;
+  const paint = () => {
+    const open = runs.filter(r => !r.driver).length;
+    const next = runs.find(r => r.mins >= NOW);
+    const words = kind === 'a'
+      ? (open ? `${open} school run open` : `School runs covered · ${runs.length}`)
+      : `${next.at}${ampm(next.mins)} · ${said(next)}`;
+    const mark = el('button', { type: 'button', class: 'v-run' + (open ? ' open' : ''), 'aria-expanded': String(shown), 'aria-label': `Rides today. ${runs.map(r => `${r.at}${ampm(r.mins)}, ${said(r)}`).join('. ')}. Open the rides sheet.` }, [car(), el('span', { text: words }), kind === 'b' && open ? el('span', { class: 'v-flag', 'aria-hidden': 'true' }) : null]);
+    mark.addEventListener('click', () => { shown = !shown; paint(); });
+    const claim = r => { r.driver = r.driver ? (r.driver === 'zach' ? 'hallie' : 'zach') : 'zach'; paint(); };
+    wrap.replaceChildren(
+      el('div', { class: 'v-cap', text: `Agenda · Tuesday at 4:00 pm` }),
+      agendaR2(el('div', { class: 'v-mark' }, [mark]), runs, drives),
+      shown ? sheet(runs, drives, claim) : null,
+      el('div', { class: 'v-cap', text: 'Month grid · the car glyph, flagged when a run is open' }),
+      gridR2(open > 0),
+      el('p', { class: 'v-key', html: '<b>Tap the mark</b> to open the day’s rides, then claim the open yarn-club pickup or swap any run. Break and Gymnastics carry their driver on their own rows.' }),
+    );
+  };
+  paint();
+  return wrap;
+}
+
+const ITEMS = [
+  { group: 'What changed', intro: '' },
+  {
+    id: 'request-r2', type: 'comment', title: 'Round 2: your Tuesday, split in two',
+    ask: 'Anything missing or wrong here?',
+    body: `<p>Your busiest Tuesday has six rides: Hallie drops Teddy off at 8:15, and Zach drops Zoë off at 8:35. At 4:30 Hallie picks Teddy up. At 5:30 Zach picks Zoë up from yarn club and Hallie takes Teddy to Break. At 7:00 Zach takes Zoë to gymnastics.</p>
+<ul>
+<li><strong>School runs</strong> (drop-off, pickup, after-school club pickup) come from the weekly pattern and get one rides mark per day, on the agenda and the grid.</li>
+<li><strong>Drives to an activity</strong> (Break, gymnastics) hang off that activity's event: its row says who drives, and the rides sheet lists it too.</li>
+<li>The marks lose the drivers' initials and say something in words instead.</li>
+</ul>
+<p>Assumed: a drive is stored by the new <code>rides</code> plugin against the event and its date, so the calendar's own tables don't change. A school run is still never a calendar event.</p>
+<p><strong>Touches:</strong> D-050 / D-066 (one day mark per provider, kept), D-045 and F-032 (reminder tick, claim and nudge), D-029 and D-003 (notices and tiers), D-044 (driver hue in the sheet), D-001 / D-014 (a new plugin), D-082 (a drive on a repeating event follows each occurrence).</p>`,
+  },
+  { group: 'Features', intro: 'Re-asked because the split changes what each one covers.' },
+  { id: 'f041-r2', type: 'approve', title: 'F-041 · A parent sets each kid’s usual school runs for the week', ask: 'Add this?', approveLabel: 'Add', changesLabel: 'Don’t add',
+    body: '<p>Per kid and weekday: who drops off at school, who picks up, and from where (school or an after-school club), at what time.</p>' },
+  { id: 'f041-r2-priority', type: 'question', title: 'F-041 priority', ask: 'Priority', input: 'radio', options: PRIORITIES },
+  { id: 'f042-r2', type: 'approve', title: 'F-042 · One rides mark per day opens the day’s runs, where anyone claims or swaps one in a tap', ask: 'Add this?', approveLabel: 'Add', changesLabel: 'Don’t add',
+    body: '<p>One entry point on the agenda and the month grid. An open run flags the mark. Claiming or swapping changes only that day and leaves the pattern alone, like claiming dinner.</p>' },
+  { id: 'f042-r2-priority', type: 'question', title: 'F-042 priority', ask: 'Priority', input: 'radio', options: PRIORITIES },
+  { id: 'f044', type: 'approve', title: 'F-044 · An activity says who drives the kid there', ask: 'Add this?', approveLabel: 'Add', changesLabel: 'Don’t add',
+    body: '<p>Set a driver on an activity such as Break or gymnastics, once for the series or for one day. The event row shows the car and the driver’s name, and the day’s rides sheet lists it under Drives.</p>' },
+  { id: 'f044-priority', type: 'question', title: 'F-044 priority', ask: 'Priority', input: 'radio', options: PRIORITIES },
+  { id: 'f043-r2', type: 'approve', title: 'F-043 · The driver is reminded, parents hear about an open run, and a kid hears about a swap', ask: 'Add this?', approveLabel: 'Add', changesLabel: 'Don’t add',
+    body: '<ul><li>The driver gets reminders at lead times they choose, for school runs and drives alike.</li><li>Parents get a nudge when a school run is still open at a set time.</li><li>A kid gets a notice only when today’s driver changes on the day.</li></ul>' },
+  { id: 'f043-r2-priority', type: 'question', title: 'F-043 priority', ask: 'Priority', input: 'radio', options: PRIORITIES },
+  { group: 'Approach', intro: 'Both options use one mark per day with no initials, and the same sheet behind it. They differ in what the mark says. Each preview shows Tuesday at 4:00 pm, with Zoë’s yarn-club pickup still open.' },
+  {
+    id: 'approach-r2', type: 'choice', title: 'What the one rides mark says', ask: 'Which one?',
+    options: [
+      { name: 'Covered or not', idea: 'The mark says whether every school run has a driver: “School runs covered · 4”, or “1 school run open” in red. The grid cell shows the car glyph, with a red flag when a run is open.', preview: () => previewR2('a'),
+        why: 'The same words all day, and it answers the question that needs action: is anything open?', cost: 'It never names a driver, so “who’s getting Teddy” always takes a tap.' },
+      { name: 'The next run', idea: 'The mark names the next school run in words: “4:30 pm · Hallie picks up Teddy”, flagged red when any run is open. The grid cell is the same as in A.', preview: () => previewR2('b'),
+        why: 'The glance answers the question you asked, for the run that matters right now.', cost: 'It changes through the day, and a future day shows its first run. Telling whether a later run is open relies on the flag.' },
+    ],
+  },
+  { group: 'Sessions', intro: '' },
+  { id: 'sessions-r2', type: 'approve', title: 'The sessions that build it', ask: 'Approve this plan?',
+    body: `<ul class="v-sessions">
+<li><span class="n">7</span><span><strong>Rides: the mark, the sheet and the pattern editor</strong> · decide · F-041, F-042, F-044 · after 3c. Shown on the real components.</span></li>
+<li><span class="n">8</span><span><strong>Rides: school runs and the day mark</strong> · build · F-041, F-042 · after 7. The <code>rides</code> plugin, weekly patterns, per-day claim and swap, and the mark on the agenda and grid.</span></li>
+<li><span class="n">9</span><span><strong>Rides: who drives to an activity</strong> · build · F-044 · after 8. A driver on an event, its row and the Drives list.</span></li>
+<li><span class="n">10</span><span><strong>Rides: reminders and nudges</strong> · build · F-043 · after 9. Driver lead times, the open-run nudge and the swap notice.</span></li>
+</ul>
+<p>These go after the Companion sessions (4–6). Say so in the comment if you want them first.</p>` },
+  { id: 'notes-r2', type: 'comment', title: 'Anything else', ask: 'Anything to add or change.' },
+];
+ReviewBoard.mount({ owner: 'Zach', type: 'web-app', items: ITEMS, earlier: [{ group: 'Round 1', intro: '' }, ...EARLIER] });
 </script>
