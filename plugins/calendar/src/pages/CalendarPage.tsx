@@ -17,7 +17,8 @@ import {
   useQuery,
   useQueryClient,
 } from '@family-os/platform'
-import type { DayMark, Profile } from '@family-os/platform/types'
+import type { DayMark, DayMarkLine, Profile } from '@family-os/platform/types'
+import { lineChange, type MarkLineAction } from '../lib/mark-lines'
 import type {
   ActivitiesResponse,
   CalendarEvent,
@@ -235,6 +236,35 @@ export function CalendarPage() {
     },
   })
 
+  // A mark line's change (D-087) goes to the provider's own endpoint; the
+  // calendar never imports it. Its failure shows under the agenda.
+  const markAction = useMutation({
+    mutationFn: ({
+      mark,
+      line,
+      action,
+    }: {
+      mark: DayMark
+      line: DayMarkLine
+      action: MarkLineAction
+    }) =>
+      fetch(mark.act!.endpoint, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          lineId: line.id,
+          ...lineChange(line, action, mark.act!.owners, id),
+        }),
+      }).then((r) => {
+        if (!r.ok) throw new Error(String(r.status))
+      }),
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ['calendar/day-marks'] })
+      queryClient.invalidateQueries({ queryKey: ['rides'] })
+    },
+    onError: (err) => console.error('[calendar] day-mark change failed', err),
+  })
+
   function openCreate(date: Date | null) {
     setEditingEvent(null)
     setPrefillDate(date)
@@ -341,8 +371,15 @@ export function CalendarPage() {
         onEditEvent={canManage ? openEdit : undefined}
         onAdd={canManage ? () => openCreate(null) : undefined}
         marksByDate={marksByDate}
+        onMarkAction={(mark, line, action) => markAction.mutate({ mark, line, action })}
+        markPending={markAction.isPending}
       />
       {dayMarksErrorNote}
+      {markAction.isError && (
+        <p role="alert" className="mt-2 text-xs-token text-error">
+          That change didn't save. Try again.
+        </p>
+      )}
     </>
   )
 

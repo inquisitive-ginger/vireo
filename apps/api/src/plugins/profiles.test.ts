@@ -615,7 +615,7 @@ describe('GET /api/profiles/:id/permissions', () => {
         overrideId: string | null
       }>
     }>()
-    expect(permissions).toHaveLength(24)
+    expect(permissions).toHaveLength(26)
     expect(permissions.every((p) => p.override === null && p.overrideId === null)).toBe(true)
     // tier 1 baseline: view platform.Plugin + view chores.Task + complete
     // chores.Task (every tier can complete its own assigned task) + view
@@ -658,6 +658,9 @@ describe('GET /api/profiles/:id/permissions', () => {
     expect(permissions.find((p) => p.key === 'shopping.item.check')?.inBaseline).toBe(false)
     expect(permissions.find((p) => p.key === 'shopping.list.create')?.inBaseline).toBe(false)
     expect(permissions.find((p) => p.key === 'shopping.item.file')?.inBaseline).toBe(false)
+    // + see the school runs (D-086); claiming a day is a parent's
+    expect(permissions.find((p) => p.key === 'rides.run.view')?.inBaseline).toBe(true)
+    expect(permissions.find((p) => p.key === 'rides.run.claim')?.inBaseline).toBe(false)
     expect(permissions.find((p) => p.key === 'shopping.item.manage')?.inBaseline).toBe(false)
   })
 

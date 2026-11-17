@@ -186,6 +186,18 @@ export const PERMISSION_REGISTRY = {
     action: 'update',
     subject: 'meals.PlannedMeal',
   },
+  'rides.run.view': {
+    label: 'See the school runs',
+    module: 'rides',
+    action: 'view',
+    subject: 'rides.Run',
+  },
+  'rides.run.claim': {
+    label: 'Claim, swap or clear a school run for a day',
+    module: 'rides',
+    action: 'update',
+    subject: 'rides.Run',
+  },
   // A list is its own subject (ADR 067, renamespaced by 069) — creating one
   // commits the household to a trip, unlike adding an item to one already
   // planned. Baseline tier 4 via `manage all`.
@@ -267,6 +279,22 @@ export type DayMark = {
    *  dinner"). The month cell never renders it — that surface carries only the
    *  disc + glyph (ADR 050). */
   label: string
+  /** A mark that holds several timed facts (rides, D-087): the agenda header
+   *  names the next line and the mark unfolds them all (D-091). */
+  lines?: DayMarkLine[]
+  /** Present only when the caller may change a line: where the calendar posts
+   *  `{ lineId, ownerId, cleared }`, and who a line can be handed to. */
+  act?: { endpoint: string; owners: string[] }
+}
+
+export type DayMarkLine = {
+  id: string
+  /** Local minutes after midnight. */
+  minutes: number
+  text: string
+  /** null = open: nobody has it yet. */
+  ownerId: string | null
+  cleared: boolean
 }
 
 export type NavItemManifest = {

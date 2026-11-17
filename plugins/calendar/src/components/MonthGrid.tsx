@@ -5,6 +5,7 @@ import type { LaidOutWeek } from '../lib/grid'
 import { WEEKDAY_LABELS, isSameDay, dayDiff, localDateKey } from '../lib/grid'
 import { EventChip } from './EventChip'
 import { SpanBar } from './SpanBar'
+import { hasOpenLine } from '../lib/mark-lines'
 import { DayMarkOwnerDot } from './DayMarkOwnerDot'
 import { DAY_MARK_GLYPHS } from '../lib/day-mark-glyphs'
 import type { CalendarMember } from '../types'
@@ -157,6 +158,12 @@ export function MonthGrid({
                                     aria-hidden
                                     strokeWidth={2.5}
                                     className="h-3.5 w-3.5 shrink-0 opacity-75"
+                                  />
+                                )}
+                                {hasOpenLine(mark) && (
+                                  <span
+                                    aria-hidden
+                                    className="h-1.5 w-1.5 shrink-0 rounded-full bg-error"
                                   />
                                 )}
                               </div>

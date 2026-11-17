@@ -181,3 +181,122 @@ describe('D-083 the Ongoing panel, rendered', () => {
     expect(screen.getByText('Swim camp')).toBeInTheDocument()
   })
 })
+
+describe('the rides mark (D-087, D-091)', () => {
+  const today = localDateKey(NOW)
+  const RIDES: DayMark = {
+    date: today,
+    glyph: 'car',
+    label: '3 school runs, 1 open',
+    lines: [
+      { id: 'td', minutes: 495, text: 'Hallie drops off Teddy', ownerId: 'p1', cleared: false },
+      { id: 'tp', minutes: 990, text: 'Hallie picks up Teddy', ownerId: 'p1', cleared: false },
+      {
+        id: 'zp',
+        minutes: 1050,
+        text: 'Nobody yet picks up Zoë at yarn club',
+        ownerId: null,
+        cleared: false,
+      },
+    ],
+    act: { endpoint: `/api/rides/days/${today}`, owners: ['p1', 'p2'] },
+  }
+  const withRides = (mark: DayMark = RIDES) => new Map<string, DayMark[]>([[mark.date, [mark]]])
+
+  it('D-087 names the next run in words and flags an open one [F-042]', () => {
+    const fourPm = new Date(2026, 5, 22, 16, 0)
+    render(<AgendaView events={[]} membersById={MEMBERS} now={fourPm} marksByDate={withRides()} />)
+    const mark = screen.getByRole('button', {
+      name: /Next: 4:30 PM, Hallie picks up Teddy\. A run is open/,
+    })
+    expect(mark).toHaveTextContent('4:30 PM · Hallie picks up Teddy')
+  })
+
+  it('D-087 a later day names its first run [F-042]', () => {
+    const tomorrow = localDateKey(new Date(2026, 5, 23))
+    render(
+      <AgendaView
+        events={[]}
+        membersById={MEMBERS}
+        now={NOW}
+        marksByDate={withRides({ ...RIDES, date: tomorrow })}
+      />
+    )
+    expect(
+      screen.getByRole('button', { name: /Next: 8:15 AM, Hallie drops off Teddy/ })
+    ).toBeInTheDocument()
+  })
+
+  it('D-091 tapping the mark unfolds the day’s runs under the heading, and again folds them [F-042]', () => {
+    render(<AgendaView events={[]} membersById={MEMBERS} now={NOW} marksByDate={withRides()} />)
+    const mark = screen.getByRole('button', { name: /Show the day's runs/ })
+    expect(mark).toHaveAttribute('aria-expanded', 'false')
+    fireEvent.click(mark)
+    expect(mark).toHaveAttribute('aria-expanded', 'true')
+    expect(screen.getAllByRole('listitem')).toHaveLength(3)
+    fireEvent.click(mark)
+    expect(screen.queryAllByRole('listitem')).toHaveLength(0)
+  })
+
+  it('D-087 an open run offers Claim and a covered one Swap; both, and Clear, report the line [F-042]', () => {
+    const onMarkAction = vi.fn()
+    render(
+      <AgendaView
+        events={[]}
+        membersById={MEMBERS}
+        now={NOW}
+        marksByDate={withRides()}
+        onMarkAction={onMarkAction}
+      />
+    )
+    fireEvent.click(screen.getByRole('button', { name: /Show the day's runs/ }))
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Claim: Nobody yet picks up Zoë at yarn club' })
+    )
+    fireEvent.click(screen.getByRole('button', { name: 'Swap: Hallie picks up Teddy' }))
+    fireEvent.click(screen.getByRole('button', { name: 'Clear: Hallie drops off Teddy' }))
+    expect(onMarkAction.mock.calls.map(([, line, action]) => [line.id, action])).toEqual([
+      ['zp', 'claim'],
+      ['tp', 'swap'],
+      ['td', 'clear'],
+    ])
+  })
+
+  it('D-094 a cleared run reads struck through and offers Restore [F-042]', () => {
+    const cleared = {
+      ...RIDES,
+      lines: RIDES.lines!.map((l) => (l.id === 'zp' ? { ...l, cleared: true } : l)),
+    }
+    render(
+      <AgendaView
+        events={[]}
+        membersById={MEMBERS}
+        now={NOW}
+        marksByDate={withRides(cleared)}
+        onMarkAction={vi.fn()}
+      />
+    )
+    const mark = screen.getByRole('button', { name: /Show the day's runs/ })
+    expect(mark.getAttribute('aria-label')).not.toMatch(/open/)
+    fireEvent.click(mark)
+    expect(
+      screen.getByRole('button', { name: 'Restore: Nobody yet picks up Zoë at yarn club' })
+    ).toBeInTheDocument()
+  })
+
+  it('D-086 without act the runs are read-only [F-042]', () => {
+    const { act: _act, ...readOnly } = RIDES
+    render(
+      <AgendaView
+        events={[]}
+        membersById={MEMBERS}
+        now={NOW}
+        marksByDate={withRides(readOnly)}
+        onMarkAction={vi.fn()}
+      />
+    )
+    fireEvent.click(screen.getByRole('button', { name: /Show the day's runs/ }))
+    expect(screen.getAllByRole('listitem')).toHaveLength(3)
+    expect(screen.queryByRole('button', { name: /^(Claim|Swap|Clear)/ })).toBeNull()
+  })
+})

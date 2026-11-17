@@ -183,6 +183,39 @@ describe('MonthGrid', () => {
       expect(screen.getByLabelText(/Zoe's got dinner/)).toBeInTheDocument()
     })
 
+    it('D-087 a rides mark shows the car, flagged when a run is open, and says so in the cell name [F-042]', () => {
+      const rides = (open: boolean): DayMark => ({
+        date: dayKey,
+        glyph: 'car',
+        label: open ? '2 school runs, 1 open' : '2 school runs',
+        lines: [
+          { id: 'a', minutes: 495, text: 'Hallie drops off Teddy', ownerId: 'p1', cleared: false },
+          {
+            id: 'b',
+            minutes: 990,
+            text: 'Nobody yet picks up Teddy',
+            ownerId: open ? null : 'p1',
+            cleared: false,
+          },
+        ],
+      })
+      const grid = (mark: DayMark) => (
+        <MonthGrid
+          weeks={layoutMonth([], 2026, 5)}
+          membersById={members}
+          today={new Date(2026, 5, 22)}
+          onDrillDay={vi.fn()}
+          marksByDate={new Map([[dayKey, [mark]]])}
+        />
+      )
+      const { container, rerender } = render(grid(rides(true)))
+      expect(container.querySelector('.lucide-car')).toBeInTheDocument()
+      expect(container.querySelector('.bg-error')).toBeInTheDocument()
+      expect(screen.getByLabelText(/2 school runs, 1 open/)).toBeInTheDocument()
+      rerender(grid(rides(false)))
+      expect(container.querySelector('.bg-error')).not.toBeInTheDocument()
+    })
+
     it('renders no mark on an unmarked day', () => {
       render(
         <MonthGrid

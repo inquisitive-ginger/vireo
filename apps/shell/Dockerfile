@@ -13,7 +13,8 @@ COPY . .
 RUN pnpm install --frozen-lockfile
 RUN pnpm --filter @family-os/plugin-family-feed --filter @family-os/plugin-chores \
         --filter @family-os/plugin-calendar --filter @family-os/plugin-rewards \
-        --filter @family-os/plugin-meals --filter @family-os/plugin-shopping build
+        --filter @family-os/plugin-meals --filter @family-os/plugin-shopping \
+        --filter @family-os/plugin-rides build
 RUN pnpm --filter @family-os/shell build
 
 # Caddy with the Cloudflare DNS-01 module, cross-compiled to the target arch
@@ -32,3 +33,4 @@ COPY --from=build /repo/plugins/calendar/dist     /srv/plugins/calendar
 COPY --from=build /repo/plugins/rewards/dist      /srv/plugins/rewards
 COPY --from=build /repo/plugins/meals/dist        /srv/plugins/meals
 COPY --from=build /repo/plugins/shopping/dist     /srv/plugins/shopping
+COPY --from=build /repo/plugins/rides/dist        /srv/plugins/rides

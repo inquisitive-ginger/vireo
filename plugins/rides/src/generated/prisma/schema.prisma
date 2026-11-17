@@ -1,0 +1,46 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  schemas  = ["rides"]
+}
+
+// A school run in the usual week (D-086, D-092). Profile columns are TEXT
+// (ADR 072). `place` null = school. `minutes` is the local time of day.
+// `driverId` null = open.
+model SchoolRun {
+  id        String   @id @default(uuid()) @db.Uuid
+  kidId     String   @map("kid_id")
+  weekday   Int
+  kind      String
+  place     String?
+  minutes   Int
+  driverId  String?  @map("driver_id")
+  createdBy String   @map("created_by")
+  createdAt DateTime @default(now()) @map("created_at") @db.Timestamptz(6)
+  updatedAt DateTime @updatedAt @map("updated_at") @db.Timestamptz(6)
+  days      RunDay[]
+
+  @@index([weekday])
+  @@map("school_runs")
+  @@schema("rides")
+}
+
+// One day's change to a run (D-087, D-094): a different driver, open
+// (`driverId` null), or cleared. Never touches the usual week.
+model RunDay {
+  runId     String    @map("run_id") @db.Uuid
+  date      DateTime  @db.Date
+  driverId  String?   @map("driver_id")
+  cleared   Boolean   @default(false)
+  updatedBy String    @map("updated_by")
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  run       SchoolRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@id([runId, date])
+  @@map("run_days")
+  @@schema("rides")
+}

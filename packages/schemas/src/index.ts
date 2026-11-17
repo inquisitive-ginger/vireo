@@ -575,3 +575,38 @@ export const PunchPrizeSchema = z.object({
 export type PunchTemplateCreateInput = z.infer<typeof PunchTemplateCreateSchema>
 export type PunchTemplateUpdateInput = z.infer<typeof PunchTemplateUpdateSchema>
 export type PunchPrizeInput = z.infer<typeof PunchPrizeSchema>
+
+// ─── Rides: school runs (D-086, D-092) ────────────────────────────────────────
+
+export const RUN_KINDS = ['dropoff', 'pickup'] as const
+export type RunKind = (typeof RUN_KINDS)[number]
+
+const ProfileIdSchema = z.string().trim().min(1)
+
+// `place` null = school. `minutes` is the local time of day. Weekdays are
+// school days only, Monday (1) to Friday (5).
+export const SchoolRunInputSchema = z.object({
+  kidId: ProfileIdSchema,
+  weekday: z.number().int().min(1).max(5),
+  kind: z.enum(RUN_KINDS),
+  place: OptionalText,
+  minutes: z.number().int().min(0).max(1439),
+  driverId: ProfileIdSchema.nullish().transform((v) => v ?? null),
+})
+
+export type SchoolRunInput = z.infer<typeof SchoolRunInputSchema>
+
+export const SchoolRunPatchSchema = SchoolRunInputSchema.pick({
+  kind: true,
+  place: true,
+  minutes: true,
+  driverId: true,
+}).partial()
+
+// One day's change (D-087, D-094), in the day-mark's generic words: the line is
+// the run, the owner is the driver (null = open).
+export const RunDaySchema = z.object({
+  lineId: UuidSchema,
+  ownerId: ProfileIdSchema.nullable(),
+  cleared: z.boolean().optional().default(false),
+})

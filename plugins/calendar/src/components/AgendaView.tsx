@@ -1,6 +1,7 @@
+import { useState } from 'react'
 import { CalendarDays, Plus } from 'lucide-react'
 import { Button, EmptyState, relativeDayLabel } from '@family-os/ui'
-import type { DayMark } from '@family-os/platform/types'
+import type { DayMark, DayMarkLine } from '@family-os/platform/types'
 import type { CalendarEvent, CalendarMember } from '../types'
 import { isSameDay, localDateKey } from '../lib/grid'
 import { LAST_DAY_LABEL, buildAgenda } from '../lib/week'
@@ -9,6 +10,9 @@ import { DayHeading } from './DayHeading'
 import { NextEventHero } from './NextEventHero'
 import { SpanBand, SpanRow } from './SpanBand'
 import { DayMarkOwnerDot } from './DayMarkOwnerDot'
+import { MarkLines } from './MarkLines'
+import { DAY_MARK_GLYPHS } from '../lib/day-mark-glyphs'
+import { formatMinutes, hasOpenLine, headlineLine, type MarkLineAction } from '../lib/mark-lines'
 
 /* The mobile read surface (story #4): a forward-looking, day-grouped agenda led
    by an "Up next" hero — the one thing a parent opens the phone to check —
@@ -35,6 +39,8 @@ export function AgendaView({
   onEditEvent,
   onAdd,
   marksByDate = EMPTY_MARKS,
+  onMarkAction,
+  markPending,
 }: {
   events: CalendarEvent[]
   membersById: Map<string, CalendarMember>
@@ -48,7 +54,12 @@ export function AgendaView({
       permission-filtered server-side (ADR 066). A day with only a mark and no
       events still gets a header, so the label has somewhere to sit. */
   marksByDate?: Map<string, DayMark[]>
+  /** Claim, swap or clear one of a mark's lines (D-087). Only called for a mark
+      that carries `act`. */
+  onMarkAction?: (mark: DayMark, line: DayMarkLine, action: MarkLineAction) => void
+  markPending?: boolean
 }) {
+  const [unfolded, setUnfolded] = useState<string | null>(null)
   const markDates = new Set(marksByDate.keys())
   const { hero, running, days } = buildAgenda(events, now, markDates)
 
@@ -103,9 +114,34 @@ export function AgendaView({
             <div className="mb-2.5 flex items-baseline justify-between gap-2">
               <DayHeading lead={lead} sub={sub} today={isSameDay(day.date, now)} />
               {dayMarks.length > 0 && (
-                <div className="flex items-center gap-3">
+                <div className="flex flex-wrap items-center justify-end gap-x-3 gap-y-1">
                   {dayMarks.map((mark) => {
                     const owner = mark.ownerId ? membersById.get(mark.ownerId) : undefined
+                    if (mark.lines) {
+                      const key = `${mark.date}-${mark.glyph}`
+                      const line = headlineLine(mark, now)
+                      const open = hasOpenLine(mark)
+                      const Glyph = DAY_MARK_GLYPHS[mark.glyph]
+                      return (
+                        <button
+                          key={key}
+                          type="button"
+                          aria-expanded={unfolded === key}
+                          aria-controls={`mark-lines-${key}`}
+                          aria-label={`${line ? `Next: ${formatMinutes(line.minutes)}, ${line.text}` : mark.label}${open ? '. A run is open' : ''}. Show the day's runs.`}
+                          onClick={() => setUnfolded(unfolded === key ? null : key)}
+                          className="-my-2 flex cursor-pointer items-center gap-1.5 rounded-card py-2 text-sm-token text-muted-foreground underline decoration-border underline-offset-4 hover:text-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring"
+                        >
+                          {Glyph && <Glyph aria-hidden className="h-4 w-4 shrink-0" />}
+                          <span>
+                            {line ? `${formatMinutes(line.minutes)} · ${line.text}` : mark.label}
+                          </span>
+                          {open && (
+                            <span aria-hidden className="h-2 w-2 shrink-0 rounded-full bg-error" />
+                          )}
+                        </button>
+                      )
+                    }
                     return (
                       <div
                         key={`${mark.ownerId ?? ''}-${mark.glyph}`}
@@ -119,6 +155,17 @@ export function AgendaView({
                 </div>
               )}
             </div>
+            {dayMarks
+              .filter((mark) => mark.lines && unfolded === `${mark.date}-${mark.glyph}`)
+              .map((mark) => (
+                <MarkLines
+                  key={mark.glyph}
+                  mark={mark}
+                  membersById={membersById}
+                  onAction={onMarkAction}
+                  pending={markPending}
+                />
+              ))}
             <div className="flex flex-col gap-3">
               {/* A span begins here — stated once, in the day it starts, and never
                   again on the days it covers. */}
