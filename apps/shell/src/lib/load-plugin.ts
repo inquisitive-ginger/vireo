@@ -10,6 +10,7 @@ const pluginLoaders: Record<string, () => Promise<{ default: ComponentType }>> =
   rewards: () => import('rewards/Plugin'),
   meals: () => import('meals/Plugin'),
   shopping: () => import('shopping/Plugin'),
+  rides: () => import('rides/Plugin'),
 }
 
 const widgetLoaders: Record<string, () => Promise<{ default: ComponentType }>> = {

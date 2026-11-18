@@ -8,7 +8,7 @@ import { AgendaRow } from './AgendaRow'
 import { DayHeading } from './DayHeading'
 import { NextEventHero } from './NextEventHero'
 import { SpanBand, SpanRow } from './SpanBand'
-import { DayMarkOwnerDot } from './DayMarkOwnerDot'
+import { DayHeader, type MarkActionProps } from './DayHeader'
 
 /* The mobile read surface (story #4): a forward-looking, day-grouped agenda led
    by an "Up next" hero — the one thing a parent opens the phone to check —
@@ -35,6 +35,8 @@ export function AgendaView({
   onEditEvent,
   onAdd,
   marksByDate = EMPTY_MARKS,
+  onMarkAction,
+  markPending,
 }: {
   events: CalendarEvent[]
   membersById: Map<string, CalendarMember>
@@ -48,7 +50,7 @@ export function AgendaView({
       permission-filtered server-side (ADR 066). A day with only a mark and no
       events still gets a header, so the label has somewhere to sit. */
   marksByDate?: Map<string, DayMark[]>
-}) {
+} & MarkActionProps) {
   const markDates = new Set(marksByDate.keys())
   const { hero, running, days } = buildAgenda(events, now, markDates)
 
@@ -100,25 +102,15 @@ export function AgendaView({
         const dayMarks = marksByDate.get(localDateKey(day.date)) ?? []
         return (
           <section key={day.date.toISOString()}>
-            <div className="mb-2.5 flex items-baseline justify-between gap-2">
-              <DayHeading lead={lead} sub={sub} today={isSameDay(day.date, now)} />
-              {dayMarks.length > 0 && (
-                <div className="flex items-center gap-3">
-                  {dayMarks.map((mark) => {
-                    const owner = mark.ownerId ? membersById.get(mark.ownerId) : undefined
-                    return (
-                      <div
-                        key={`${mark.ownerId ?? ''}-${mark.glyph}`}
-                        className="flex items-center gap-1.5 text-sm-token text-muted-foreground"
-                      >
-                        {owner && <DayMarkOwnerDot member={owner} />}
-                        <span>{mark.label}</span>
-                      </div>
-                    )
-                  })}
-                </div>
-              )}
-            </div>
+            <DayHeader
+              className="mb-2.5"
+              heading={<DayHeading lead={lead} sub={sub} today={isSameDay(day.date, now)} />}
+              marks={dayMarks}
+              membersById={membersById}
+              now={now}
+              onMarkAction={onMarkAction}
+              markPending={markPending}
+            />
             <div className="flex flex-col gap-3">
               {/* A span begins here — stated once, in the day it starts, and never
                   again on the days it covers. */}

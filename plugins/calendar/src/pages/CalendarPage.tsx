@@ -18,6 +18,7 @@ import {
   useQueryClient,
 } from '@family-os/platform'
 import type { DayMark, Profile } from '@family-os/platform/types'
+import { useMarkAction } from '../lib/use-mark-action'
 import type {
   ActivitiesResponse,
   CalendarEvent,
@@ -235,6 +236,8 @@ export function CalendarPage() {
     },
   })
 
+  const markAction = useMarkAction()
+
   function openCreate(date: Date | null) {
     setEditingEvent(null)
     setPrefillDate(date)
@@ -320,6 +323,12 @@ export function CalendarPage() {
   // still renders — but it must not be SILENT (no blind catch on a path a
   // family member can reach): the queryFn above already `console.error`s it,
   // and this is the surfaced half.
+  const markActionError = markAction.isError ? (
+    <p role="alert" className="mt-2 text-xs-token text-error">
+      That change didn't save. Try again.
+    </p>
+  ) : null
+
   const dayMarksErrorNote = dayMarksQuery.isError ? (
     <p className="mt-2 text-xs-token text-muted-foreground">
       Some day marks (like who's got dinner) couldn't load.
@@ -341,8 +350,11 @@ export function CalendarPage() {
         onEditEvent={canManage ? openEdit : undefined}
         onAdd={canManage ? () => openCreate(null) : undefined}
         marksByDate={marksByDate}
+        onMarkAction={(mark, line, action) => markAction.mutate({ mark, line, action })}
+        markPending={markAction.isPending}
       />
       {dayMarksErrorNote}
+      {markActionError}
     </>
   )
 
@@ -458,15 +470,22 @@ export function CalendarPage() {
           {dayMarksErrorNote}
         </>
       ) : (
-        <DetailView
-          view={view}
-          cursor={cursor}
-          events={events}
-          membersById={membersById}
-          today={today}
-          onEditEvent={canManage ? openEdit : undefined}
-          onAddOnDay={canManage ? (date) => openCreate(date) : undefined}
-        />
+        <>
+          <DetailView
+            view={view}
+            cursor={cursor}
+            events={events}
+            membersById={membersById}
+            today={today}
+            onEditEvent={canManage ? openEdit : undefined}
+            onAddOnDay={canManage ? (date) => openCreate(date) : undefined}
+            marksByDate={marksByDate}
+            onMarkAction={(mark, line, action) => markAction.mutate({ mark, line, action })}
+            markPending={markAction.isPending}
+          />
+          {dayMarksErrorNote}
+          {markActionError}
+        </>
       )}
     </>
   )

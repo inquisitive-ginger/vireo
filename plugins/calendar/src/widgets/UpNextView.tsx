@@ -27,6 +27,9 @@ import { DayHeading } from '../components/DayHeading'
 import { EventOwners } from '../components/EventOwners'
 import { NextEventHero } from '../components/NextEventHero'
 import { SpanBand } from '../components/SpanBand'
+import { WidgetMarkLine } from '../components/WidgetMarkLine'
+import type { MarkActionProps } from '../components/DayHeader'
+import type { DayMark } from '@family-os/platform/types'
 
 /* `calendar.up-next` — the pure view (data comes from `UpNext.tsx`).
 
@@ -67,6 +70,8 @@ export interface UpNextViewProps {
   /** Explicit density override (Storybook / fixed hosts). Omitted in the shell —
       the view self-sizes to its rendered box via container queries. */
   size?: WidgetSize
+  /** Today's lines mark (rides, D-095), drawn as a line under the hero. */
+  todayMark?: DayMark
 }
 
 interface ZoneProps {
@@ -74,6 +79,7 @@ interface ZoneProps {
   membersById: Map<string, CalendarMember>
   now: Date
   framing: UpNextFraming
+  markLine?: ReactNode
 }
 
 // shared pieces
@@ -328,7 +334,7 @@ function AllClear({ withBody = false }: { withBody?: boolean }) {
 
 /* Compact (1×1): the hero and one line of what follows. The groove needs width
    this size hasn't got, so spans collapse into the same trailing line. */
-function Compact({ week, membersById, now, framing }: ZoneProps) {
+function Compact({ week, membersById, now, framing, markLine }: ZoneProps) {
   const { hero, spans, days } = week
   const rest = days.flatMap((d) => [
     ...d.ending.map((e) => ({ e, when: LAST_DAY_LABEL })),
@@ -348,6 +354,7 @@ function Compact({ week, membersById, now, framing }: ZoneProps) {
             showSoloOwner={framing === 'family'}
           />
         )}
+        {markLine}
         {spans.length > 0 ? (
           <span className="text-sm-token truncate text-muted-foreground">
             All week · {spans.map((s) => s.title).join(' · ')}
@@ -387,6 +394,7 @@ function Standard(props: ZoneProps) {
               showSoloOwner={framing === 'family'}
             />
           )}
+          {props.markLine}
           <AllWeekLine {...props} />
         </div>
         <div className="flex min-w-0 flex-1 flex-col">
@@ -414,6 +422,7 @@ function Large(props: ZoneProps) {
             showSoloOwner={framing === 'family'}
           />
         )}
+        {props.markLine}
       </div>
       <AllWeekBand {...props} />
       <div className="mt-3.5 flex min-h-0 flex-1 flex-col">
@@ -445,9 +454,29 @@ const WIDGET_STYLES = `
   }
 `
 
-export function UpNextView({ events, membersById, now, framing, size }: UpNextViewProps) {
+export function UpNextView({
+  events,
+  membersById,
+  now,
+  framing,
+  size,
+  todayMark,
+  onMarkAction,
+  markPending,
+  markFailed,
+}: UpNextViewProps & MarkActionProps) {
   const week = useMemo(() => buildWeek(events, now), [events, now])
-  const zones: ZoneProps = { week, membersById, now, framing }
+  const markLine = todayMark && (
+    <WidgetMarkLine
+      mark={todayMark}
+      membersById={membersById}
+      now={now}
+      onMarkAction={onMarkAction}
+      markPending={markPending}
+      markFailed={markFailed}
+    />
+  )
+  const zones: ZoneProps = { week, membersById, now, framing, markLine }
 
   // Nothing at all this week — not even a running span or one about to start.
   const empty =
@@ -457,7 +486,14 @@ export function UpNextView({ events, membersById, now, framing, size }: UpNextVi
 
   let inner: ReactNode
   if (empty) {
-    inner = <AllClear withBody={size === 'large' || size === undefined} />
+    inner = (
+      <div className="flex size-full flex-col">
+        <div className="min-h-0 flex-1">
+          <AllClear withBody={size === 'large' || size === undefined} />
+        </div>
+        {markLine && <div className="px-4 pb-3">{markLine}</div>}
+      </div>
+    )
   } else if (size) {
     inner =
       size === 'compact' ? (
@@ -487,8 +523,11 @@ export function UpNextView({ events, membersById, now, framing, size }: UpNextVi
   }
 
   return (
-    <Link to="/calendar" className="block size-full no-underline" aria-label="Open Calendar">
-      {inner}
-    </Link>
+    // The link sits under the content rather than around it, so the rides line
+    // can be a button of its own (a button can't nest in a link).
+    <div className="relative size-full">
+      <Link to="/calendar" className="absolute inset-0" aria-label="Open Calendar" />
+      <div className="pointer-events-none size-full">{inner}</div>
+    </div>
   )
 }

@@ -68,6 +68,12 @@ declare module 'shopping/Plugin' {
   export default Plugin
 }
 
+declare module 'rides/Plugin' {
+  import type { ComponentType } from 'react'
+  const Plugin: ComponentType
+  export default Plugin
+}
+
 declare module 'shopping/widgets/Capture' {
   import type { ComponentType } from 'react'
   const Capture: ComponentType

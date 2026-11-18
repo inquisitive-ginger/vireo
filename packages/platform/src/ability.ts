@@ -36,6 +36,7 @@ type Subjects =
   | 'meals.PlannedMeal'
   | 'shopping.List'
   | 'shopping.Item'
+  | 'rides.Run'
   | 'all'
 
 export type AppAbility = PrismaAbility<[Actions, Subjects]>
@@ -95,6 +96,7 @@ export function createAbility(profile: Profile, overrides: PermissionOverride[])
     can('view', 'chores.Task')
     can('view', 'calendar.Event')
     can('view', 'meals.PlannedMeal')
+    can('view', 'rides.Run')
     // Claiming an unclaimed dinner (spec.md: tier 3+). `update` is the capability;
     // the route narrows it to claim-only — full edits stay behind `manage`.
     can('update', 'meals.PlannedMeal')
@@ -113,6 +115,7 @@ export function createAbility(profile: Profile, overrides: PermissionOverride[])
     can('view', 'chores.Task')
     can('view', 'calendar.Event')
     can('view', 'meals.PlannedMeal')
+    can('view', 'rides.Run')
     can('view', 'shopping.Item')
     can('create', 'shopping.Item')
     // Checking off is its own action from tier 2 up (ADR 071): the partner
@@ -129,6 +132,7 @@ export function createAbility(profile: Profile, overrides: PermissionOverride[])
     can('view', 'chores.Task')
     can('view', 'calendar.Event')
     can('view', 'meals.PlannedMeal')
+    can('view', 'rides.Run')
     // Adding at tier 1 is deliberate: a kid asking for cereal is the cheapest
     // participation the house has. The toggle is NOT here (ADR 071) — the
     // four-year-old at the wall must not be able to clear a trip, and a tier-1

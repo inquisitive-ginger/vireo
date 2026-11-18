@@ -1,4 +1,4 @@
-import { Utensils } from 'lucide-react'
+import { Car, Utensils } from 'lucide-react'
 import type { ComponentType } from 'react'
 
 /** A day-mark provider's `glyph` (ADR 050 payload) names an icon; this is the only
@@ -11,4 +11,5 @@ export const DAY_MARK_GLYPHS: Record<
   ComponentType<{ className?: string; 'aria-hidden'?: boolean; strokeWidth?: number }>
 > = {
   utensils: Utensils,
+  car: Car,
 }

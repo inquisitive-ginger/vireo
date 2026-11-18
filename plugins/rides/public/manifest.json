@@ -1,0 +1,13 @@
+{
+  "name": "rides",
+  "version": "0.0.1",
+  "remoteEntry": "http://localhost:3017/assets/remoteEntry.js",
+  "exposes": ["./Plugin"],
+  "routes": ["/rides/week"],
+  "schema": "rides",
+  "events": {
+    "publishes": [],
+    "subscribes": []
+  },
+  "widgets": []
+}

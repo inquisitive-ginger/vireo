@@ -5,6 +5,7 @@ import type { LaidOutWeek } from '../lib/grid'
 import { WEEKDAY_LABELS, isSameDay, dayDiff, localDateKey } from '../lib/grid'
 import { EventChip } from './EventChip'
 import { SpanBar } from './SpanBar'
+import { headlineLine } from '../lib/mark-lines'
 import { DayMarkOwnerDot } from './DayMarkOwnerDot'
 import { DAY_MARK_GLYPHS } from '../lib/day-mark-glyphs'
 import type { CalendarMember } from '../types'
@@ -22,6 +23,12 @@ const MAX_CHIPS = 3
 // Stable empty default so an omitted `marksByDate` doesn't churn identity on
 // every render (a fresh `new Map()` default would).
 const EMPTY_MARKS: Map<string, DayMark[]> = new Map()
+
+/** A rides mark names its next line in the cell's accessible name (D-096). */
+function markText(mark: DayMark, now: Date) {
+  const line = mark.lines && headlineLine(mark, now)
+  return line ? `${mark.label}, next: ${line.text}` : mark.label
+}
 
 export function MonthGrid({
   weeks,
@@ -79,7 +86,11 @@ export function MonthGrid({
               // range (ADR 050; M7 School wants that range intact), the
               // aggregator/cap/registration shape are untouched. The month cell
               // just declines to paint what it gets for a day that's passed.
-              const dayMarks = isPast ? [] : (marksByDate.get(localDateKey(cell.date)) ?? [])
+              const dayMarks = isPast
+                ? []
+                : (marksByDate.get(localDateKey(cell.date)) ?? []).filter(
+                    (m) => !m.lines || m.lines.length > 0
+                  )
               // `role="button"` is children-presentational and an author aria-label
               // wins the accessible-name computation over any descendant text — an
               // sr-only span inside this cell would never reach assistive tech
@@ -87,7 +98,7 @@ export function MonthGrid({
               // text" means THIS string, not a node buried in the DOM under it).
               const cellLabel =
                 dayMarks.length > 0
-                  ? `View ${cell.date.toDateString()}, ${dayMarks.map((m) => m.label).join(', ')}`
+                  ? `View ${cell.date.toDateString()}, ${dayMarks.map((m) => markText(m, today)).join(', ')}`
                   : `View ${cell.date.toDateString()}`
               return (
                 <div
@@ -134,7 +145,10 @@ export function MonthGrid({
                         // marks to dim (today-forward filter, above).
                         <div className="flex items-center gap-1.5">
                           {dayMarks.map((mark) => {
-                            const owner = mark.ownerId ? membersById.get(mark.ownerId) : undefined
+                            const ownerId = mark.lines
+                              ? headlineLine(mark, today)?.ownerId
+                              : mark.ownerId
+                            const owner = ownerId ? membersById.get(ownerId) : undefined
                             const Glyph = DAY_MARK_GLYPHS[mark.glyph]
                             return (
                               <div

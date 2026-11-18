@@ -1,0 +1,62 @@
+generator client {
+  provider = "prisma-client-js"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+  schemas  = ["rides"]
+}
+
+// A school run in the seeded week (D-086, D-097). Profile columns are TEXT
+// (ADR 072). `place` null = school; `minutes` is the local time of day. It runs
+// on its weekday from `startsOn` until `endsOn` (exclusive).
+model SchoolRun {
+  id        String      @id @default(uuid()) @db.Uuid
+  kidId     String      @map("kid_id")
+  weekday   Int
+  kind      String
+  place     String?
+  minutes   Int
+  startsOn  DateTime    @map("starts_on") @db.Date
+  endsOn    DateTime?   @map("ends_on") @db.Date
+  createdBy String      @map("created_by")
+  createdAt DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
+  drivers   RunDriver[]
+  days      RunDay[]
+
+  @@index([weekday])
+  @@map("school_runs")
+  @@schema("rides")
+}
+
+// Who drives a run from a date on, as set in the week editor (D-100). The
+// driver on a date is the entry with the latest `fromDate` on or before it.
+// There is always one from `startsOn` (D-098: no open runs).
+model RunDriver {
+  runId     String    @map("run_id") @db.Uuid
+  fromDate  DateTime  @map("from_date") @db.Date
+  driverId  String    @map("driver_id")
+  updatedBy String    @map("updated_by")
+  updatedAt DateTime  @updatedAt @map("updated_at") @db.Timestamptz(6)
+  run       SchoolRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@id([runId, fromDate])
+  @@map("run_drivers")
+  @@schema("rides")
+}
+
+// One day's change (D-100): a swapped driver, "Not needed today" (D-099), or
+// both. Never carried forward.
+model RunDay {
+  runId     String    @map("run_id") @db.Uuid
+  date      DateTime  @db.Date
+  driverId  String?   @map("driver_id")
+  skipped   Boolean   @default(false)
+  updatedBy String    @map("updated_by")
+  run       SchoolRun @relation(fields: [runId], references: [id], onDelete: Cascade)
+
+  @@id([runId, date])
+  @@map("run_days")
+  @@schema("rides")
+}
