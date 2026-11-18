@@ -14,8 +14,8 @@
 <div class="rb-wrap">
   <header>
     <div class="rb-eyebrow">Vireo · Session 3e</div>
-    <h1>School runs: a usual week per kid, and a calendar mark that names the next run</h1>
-    <p class="rb-lede">A new Rides page holds who usually drives each school run. On the calendar, each school day gets one car mark that names the next run and unfolds the day's runs, where a parent claims, swaps or clears one for that day only.</p>
+    <h1>School runs from the calendar: the widget line, the driver in the month cell, and a week that carries forward</h1>
+    <p class="rb-lede">Round 2 rebuilds 3e from your 3h picks: no Rides page, today’s runs from a line in the calendar widget, every run always has a driver, and a swap carries forward. Round 1 is folded below.</p>
     <p class="rb-how">Open the dev server on the wall iPad and a phone, tick each check you can see, then press <strong>Mark reviewed</strong>. Checks marked with a test already pass in the suite.</p>
   </header>
   <div id="rb"></div>
@@ -23,7 +23,7 @@
 
 <script src="board.js"></script>
 <script>
-const ITEMS = [
+const ITEMS_R1 = [
  {
   id: 'walkthrough',
   type: 'approve',
@@ -81,5 +81,57 @@ const ITEMS = [
   ask: 'Anything to change before it merges.',
  },
 ];
-ReviewBoard.mount({ owner: 'Zach', type: 'web-app', items: ITEMS, earlier: [] });
+const ROUND1 = ITEMS_R1;
+const ITEMS = [
+ {
+  id: 'walkthrough-r2',
+  type: 'approve',
+  title: 'Round 2, on the iPad and a phone',
+  ask: 'Ship this?',
+  href: 'http://192.168.0.6:5173/',
+  body: `<div class="run"><span><b>1597</b> passed</span><span><b>0</b> failed</span><span>was 1548 before this session</span></div>
+<p>Rebuilt from your 3h picks (D-095 to D-099). The dev server runs from the session branch; the week of Nov 16 is seeded, Mom and Dad splitting each kid’s runs, and Zoë’s Tuesday pickup is from yarn club with Dad.</p>
+<p>Your calls at the restart:</p>
+<ul>
+<li>The week editor is a page with no nav item, opened from “Set the week” in a day’s runs; Done goes back.</li>
+<li>No Sunday job: a swap or an editor change holds from its day (or week) on, so every later week shows what a Sunday copy would. “Not needed today” stays on its day.</li>
+</ul>
+<p>Assumed:</p>
+<ul>
+<li>Before any run exists, a parent sees “Set up school runs” on today’s header and in the widget; nobody else sees anything.</li>
+<li>The widget unfolds today’s runs over the tile, with a Done button to close.</li>
+<li>Removing a run in the editor takes it off from that week on; earlier weeks keep it.</li>
+<li>A driver change in the editor holds from that week on, over any later swap.</li>
+<li>With one parent profile, Swap is hidden (there’s no one to hand it to).</li>
+</ul>`,
+ },
+ {
+  id: 'checks-r2',
+  type: 'checklist',
+  title: 'Acceptance checks',
+  ask: 'Does each one hold in the app?',
+  checks: [
+   { id: 'widget', label: 'On Home, the calendar widget has a car line under its hero naming the next run; tapping it unfolds today’s runs over the tile, Swap works there, and Done closes it.', test: 'D-095 a line under the hero names the next run and unfolds today’s runs to swap in place [F-042]' },
+   { id: 'nonav', label: 'There is no Rides item in the nav or the More sheet.' },
+   { id: 'next', label: 'Today’s heading, on the phone agenda and the iPad Day and Week views, names the next run in words.', test: 'D-087 names the next run in words [F-042]' },
+   { id: 'unfold', label: 'Tapping the heading’s mark unfolds the day’s runs, and tapping again folds them.', test: 'D-091 tapping the mark unfolds the day’s runs under the heading, and again folds them [F-042]' },
+   { id: 'cell', label: 'The month grid shows the car with the next driver’s initial on school days, no red dot, nothing on weekends.', test: 'D-096 a rides mark shows the car with the next driver’s disc and names them in the cell [F-042]' },
+   { id: 'swap', label: 'Swapping today’s Teddy pickup puts the other parent on it today and on next Tuesday too.', test: 'D-097 a swap holds from its day on: earlier weeks keep the old driver, later weeks take the new one [F-042]' },
+   { id: 'notneeded', label: '“Not needed today” strikes a run through with Restore; next week’s is untouched.', test: 'D-099 "Not needed today" takes a run off that day only, and Restore brings it back [F-042]' },
+   { id: 'noopen', label: 'No run ever reads as open or offers Claim; adding a run in the editor needs a driver.', test: 'D-098 every run offers Swap and never Claim; Swap and "Not needed today" report the line [F-042]' },
+   { id: 'editor', label: '“Set the week” in the unfolded runs opens the editor: a tab per kid, Monday to Friday, a driver on each run.', test: 'D-097 the unfolded runs link to the week editor [F-041]' },
+   { id: 'driver', label: 'Changing a run’s driver in the editor shows on that weekday’s mark, this week and after.', hint: 'Change Teddy’s Wednesday pickup, press Done, open Wednesday.', test: 'D-097 changing a run’s driver in the editor holds from that week on, not before [F-041]' },
+   { id: 'add', label: 'Adding a run (kind, where, driver, time) and removing one both stick.', test: 'D-098 a run is added to a day with its kind, place, driver and time [F-041]' },
+   { id: 'readonly', label: 'As Zoë or the Family profile, the runs unfold with no buttons and no “Set the week”.', test: 'D-086 without act the runs are read-only [F-042]' },
+   { id: 'look', label: 'The widget line, the unfolded runs and the editor read well on the iPad and one-handed on a phone.' },
+  ],
+ },
+ {
+  id: 'notes-r2',
+  type: 'comment',
+  title: 'Anything else',
+  ask: 'Anything to change before it merges.',
+ },
+];
+ReviewBoard.mount({ owner: 'Zach', type: 'web-app', items: ITEMS, earlier: [{ group: 'Round 1', intro: '' }, ...ROUND1] });
 </script>
