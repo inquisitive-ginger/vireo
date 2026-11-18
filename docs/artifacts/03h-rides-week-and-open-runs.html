@@ -1,0 +1,860 @@
+<title>Vireo · Rides: where the week is set</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Newsreader:ital,opsz,wght@0,6..72,400;1,6..72,400&family=Public+Sans:wght@400;500;600&family=DM+Sans:wght@400;600;700&family=Lora:wght@500&display=swap">
+<link rel="stylesheet" href="board.css">
+<style>
+/* react-day-picker's base stylesheet + our selected-day fill live here, not in
+   calendar.tsx, because a JS `import '*.css'` inside @family-os/ui gets split
+   into a federation shared-chunk CSS that the plugin runtime never links, so the
+   picker renders unstyled in prod (ADR 035's third-party-CSS gap). This stylesheet
+   is @imported by both the shell and Storybook, so routing them through it
+   guarantees they load. Order matters: rdp base first, our override second. */
+@import 'react-day-picker/style.css';
+@import './components/calendar.css';
+
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-info: var(--info);
+  --color-info-foreground: var(--info-foreground);
+  --color-success: var(--success);
+  --color-success-foreground: var(--success-foreground);
+  --color-warning: var(--warning);
+  --color-warning-foreground: var(--warning-foreground);
+  --color-error: var(--error);
+  --color-error-foreground: var(--error-foreground);
+  --color-surface-sunken: var(--surface-sunken);
+
+  /* Canonical card-row corner radius. Standardizes the drift between the feed/
+     chores 14px and the calendar 8px onto one token (→ `rounded-card`). The
+     `ItemCard` primitive and every card-chrome row use this. */
+  --radius-card: 0.5rem;
+}
+
+/* Spacing & dimension tokens (design-system.md §Spacing; settled 2026-07-10
+   design-system audit). Plain @theme (not inline) so the custom properties
+   also exist at runtime for calc() safe-area expressions. Rhythm spacing uses
+   the base-4 numeric scale (p-2, px-4, my-6, …) — these tokens name the fixed
+   UI dimensions that are not rhythm. */
+@theme {
+  /* Corner radii for surfaces larger than a row.
+     panel: panels, widget pills, compose chrome. hero: hero cards. */
+  --radius-panel: 0.75rem;
+  --radius-hero: 1rem;
+
+  --spacing-touch: 48px; /* minimum touch target */
+  /* Two floors, one per row primitive (ADR 068) — you pick a primitive, never a
+     number, and only the primitive reads these. "Row" was the ambiguous word:
+     it named the card floor while a row primitive existed with a smaller one. */
+  --spacing-card-touch: 64px; /* ItemCard, when interactive */
+  --spacing-list-touch: 56px; /* ListRow, unconditionally */
+  --spacing-tab-bar: 56px; /* mobile bottom tab bar */
+  --spacing-top-bar: 52px; /* mobile brand top bar */
+  --spacing-sidebar: 220px; /* tablet sidebar — expanded, label-beside (ADR 022/031) */
+  --spacing-sidebar-rail: 96px; /* sidebar — collapsed slim rail, label-under-icon (ADR 031) */
+  --spacing-meter: 6px; /* progress-meter bar height */
+  /* The dashboard grid's rhythm. `WidgetGrid` measures its own layout in JS, so
+     it reads these rather than carrying its own copy of the numbers — a token
+     grep never found them while they were module constants. */
+  --spacing-grid-gap: 16px;
+  --spacing-widget-row: 180px; /* row-height floor */
+
+  /* Page widths — the four page ROLES (→ `PageContainer`, design-system.md
+     §Page containers). A page picks a role, never a number; six ad-hoc recipes
+     had drifted across the modules before these were named.
+       prose — a reading column. Feed body is Lora at 18px; wider is unreadable.
+       list  — a scannable row list. Wider than prose because a row carries a
+               spine, title, badges, and controls, not a sentence.
+       wide  — a canvas that needs room (the 7-column month grid).
+       full  — no max: the home dashboard grid fills the viewport. */
+  --container-content: 680px; /* prose */
+  --container-list: 840px;
+  --container-wide: 1400px;
+  --container-drawer: 440px;
+}
+
+/* Font family utilities */
+@utility font-display {
+  font-family: var(--font-display);
+}
+
+@utility font-ui {
+  font-family: var(--font-ui);
+}
+
+/* Typography scale — major 2nd (1.125), base 16px
+   Use these token classes instead of raw size/weight utilities.
+   Lora tokens: page-title, display-lg, display-xl, prose, prose-sm  */
+@utility text-xs-token {
+  font-family: var(--font-ui);
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.4;
+}
+
+@utility text-section-label {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* The same label at across-the-room size. 14px and not 18: a structural label
+   is subordinate to the rows it names, and uppercase 700 at 0.1em reads about
+   one step larger than its px suggests — cap height is its whole height, so
+   14px here carries the optical size of 18px lowercase regular. Going to the
+   18px content floor would size labels level with the content. */
+@utility text-section-label-lg {
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 700;
+  line-height: 1.4;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+
+/* 11px regular — the settled placeholder/error-card description size,
+   which the scale previously had no token for (xs is 600-weight). */
+@utility text-xs-body {
+  font-family: var(--font-ui);
+  font-size: 11px;
+  font-weight: 400;
+  line-height: 1.4;
+}
+
+@utility text-sm-token {
+  font-family: var(--font-ui);
+  font-size: 13px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+@utility text-base-token {
+  font-family: var(--font-ui);
+  font-size: 14px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+@utility text-card-title {
+  font-family: var(--font-ui);
+  font-size: 16px;
+  font-weight: 600;
+  line-height: 1.3;
+}
+
+@utility text-body {
+  font-family: var(--font-ui);
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.6;
+}
+
+@utility text-heading {
+  font-family: var(--font-ui);
+  font-size: 20px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+@utility text-page-title {
+  font-family: var(--font-display);
+  font-size: 26px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+}
+
+@utility text-display-lg {
+  font-family: var(--font-display);
+  font-size: 29px;
+  font-weight: 600;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+}
+
+@utility text-metric {
+  font-family: var(--font-ui);
+  font-size: 32px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -0.01em;
+}
+
+@utility text-display-xl {
+  font-family: var(--font-display);
+  font-size: 36px;
+  font-weight: 400;
+  line-height: 1.15;
+  letter-spacing: -0.01em;
+}
+
+/* Prose — user-authored content (posts, notes, messages): family voice, not UI
+   chrome. Two sizes for two reading distances — `text-prose` for roomy surfaces
+   (feed page, across-room banner), `text-prose-sm` for dense widget rows. */
+@utility text-prose {
+  font-family: var(--font-display);
+  font-size: 18px;
+  font-weight: 400;
+  line-height: 1.65;
+}
+
+@utility text-prose-sm {
+  font-family: var(--font-display);
+  font-size: 15px;
+  font-weight: 400;
+  line-height: 1.5;
+}
+
+@layer base {
+  :root {
+    --font-display: 'Lora', Georgia, 'Times New Roman', serif;
+    --font-ui: 'DM Sans', 'Helvetica Neue', Arial, sans-serif;
+
+    /* Motion tokens */
+    --duration-fast: 100ms;
+    --duration-normal: 200ms;
+    --duration-slow: 300ms;
+    --ease-out: cubic-bezier(0, 0, 0.2, 1);
+    --ease-in: cubic-bezier(0.4, 0, 1, 1);
+    --ease-in-out: cubic-bezier(0.4, 0, 0.2, 1);
+
+    /* Olive & Teal — light */
+    --background: oklch(0.985 0.008 100);
+    --foreground: oklch(0.18 0.03 100);
+    --primary: oklch(0.5 0.11 122);
+    --primary-foreground: oklch(0.99 0 0);
+    --secondary: oklch(0.93 0.02 100);
+    --secondary-foreground: oklch(0.28 0.04 100);
+    --muted: oklch(0.93 0.016 100);
+    --muted-foreground: oklch(0.52 0.035 100);
+    --accent: oklch(0.47 0.07 185);
+    --accent-foreground: oklch(0.99 0 0);
+    --border: oklch(0.88 0.02 100);
+    /* The outline of an interactive control, and NOT the same value as
+       `--border` (D2, polish session): at 0.88 the check ring measured 1.37:1 on
+       `--background` and failed WCAG 1.4.11's 3:1 for a non-text control. 0.62
+       measures 3.48:1. `--border` is a hairline BETWEEN things and carries no
+       such floor, so it stays where it is. */
+    --input: oklch(0.62 0.02 100);
+    --ring: oklch(0.5 0.11 122);
+
+    /* Surface elevation — cards lift toward warm white, above --background */
+    --card: oklch(0.999 0.004 100);
+    --card-foreground: var(--foreground);
+    --shadow-card: 0 1px 2px oklch(0.35 0.05 100 / 0.06), 0 2px 10px oklch(0.35 0.05 100 / 0.07);
+    --shadow-raised: 0 2px 6px oklch(0.35 0.05 100 / 0.07), 0 10px 28px oklch(0.35 0.05 100 / 0.12);
+
+    /* The sunken plane — the ladder's one step DOWN, below --card (ADR 040).
+       Deliberately near-achromatic (chroma 0.006 against --secondary's 0.02): an
+       identity fill is always chromatic, so a desaturated plane can never be read
+       as one — which --secondary, doubling as the Family fill, could not promise.
+       Pair with --shadow-inset; the tint alone is a grey rectangle, the inner
+       shadow is what makes it a recess. */
+    --surface-sunken: oklch(0.955 0.006 100);
+    --shadow-inset:
+      inset 0 2px 3px -1px oklch(0.35 0.05 100 / 0.1), inset 0 -1px 0 0 oklch(1 0 0 / 0.55);
+
+    /* Member identity palette — EIGHT fixed hues harmonized with Olive & Teal
+       (ADR 044). base: spines, rings, markers · tint: fills · ink: text on tint.
+
+       The six original hues are unchanged — nobody's colour moved. `moss` (117) and
+       `indigo` (268) were added into the two widest usable gaps, because a hue is
+       now UNIQUE per member, which makes the palette size a hard cap on household
+       size. Red (~335°–30°) is reserved for --error and is not available to anyone.
+
+       The TINT layer was rebuilt. It used to flatten every hue to L≈0.92 / C≈0.04,
+       which put the month grid — where a chip is a coloured pill and nothing else —
+       on the one layer where all eight hues converge on off-white. It now inherits
+       the base's lightness order and carries real chroma, so the closest pair on a
+       fill is 0.046 ΔEok rather than 0.025. Judge a colour on the layer that renders
+       it (ADR 041's lesson): these are compared at `tint`, not at `base`. */
+    --identity-terracotta: oklch(0.6 0.13 35);
+    --identity-terracotta-tint: oklch(0.806 0.092 35);
+    --identity-terracotta-ink: oklch(0.36 0.09 35);
+    --identity-marigold: oklch(0.71 0.12 78);
+    --identity-marigold-tint: oklch(0.877 0.085 78);
+    --identity-marigold-ink: oklch(0.36 0.084 78);
+    --identity-moss: oklch(0.65 0.12 117);
+    --identity-moss-tint: oklch(0.838 0.085 117);
+    --identity-moss-ink: oklch(0.36 0.084 117);
+    --identity-sage: oklch(0.6 0.1 148);
+    --identity-sage-tint: oklch(0.806 0.07 148);
+    --identity-sage-ink: oklch(0.36 0.07 148);
+    --identity-teal: oklch(0.55 0.09 188);
+    --identity-teal-tint: oklch(0.773 0.063 188);
+    --identity-teal-ink: oklch(0.36 0.063 188);
+    --identity-sky: oklch(0.58 0.09 235);
+    --identity-sky-tint: oklch(0.793 0.063 235);
+    --identity-sky-ink: oklch(0.36 0.063 235);
+    --identity-indigo: oklch(0.6 0.13 268);
+    --identity-indigo-tint: oklch(0.806 0.092 268);
+    --identity-indigo-ink: oklch(0.36 0.09 268);
+    --identity-plum: oklch(0.56 0.1 330);
+    --identity-plum-tint: oklch(0.78 0.07 330);
+    --identity-plum-ink: oklch(0.36 0.07 330);
+
+    /* The household — a RESERVED seventh entry, never assigned to a person
+       (ADR 041). A warm stone: chromatic (0.035, so ADR 040's "a desaturated
+       plane is never an identity fill" still holds) but deliberately quiet — a
+       family event is the week's ground state and must not outshout a person's. */
+    /* Hearth — the household's reserved identity (ADR 041). A warm STONE, not a
+       seventh member hue: chroma sits well under the six (0.035–0.05 at the tint
+       layer), so a Family fill can never be mistaken for a person's. It is deeper
+       than `--secondary` so it never reads as a hover state, and still chromatic
+       enough that ADR 040's near-achromatic groove stays a different kind of thing. */
+    --identity-family: oklch(0.55 0.022 65);
+    --identity-family-tint: oklch(0.9 0.018 70);
+    --identity-family-ink: oklch(0.36 0.02 62);
+
+    /* The currency mark — F$ owns gold, the coin disc and the Coins glyph (ADR 051).
+       Brass (hue ~90), moved off --identity-marigold (78) so the coin is no longer a
+       member's colour doing a second job. The metal (hi/base/deep) is theme-invariant —
+       struck metal looks the same on light or dark; only the tint wash and ink text
+       take dark overrides below. XP demotes to a quiet --muted-foreground star and owns
+       no token here. */
+    --coin-hi: oklch(0.95 0.09 96);
+    --coin: oklch(0.79 0.155 90);
+    --coin-deep: oklch(0.55 0.125 74);
+    --coin-tint: oklch(0.96 0.05 95);
+    --coin-ink: oklch(0.44 0.105 78);
+
+    /* Semantic status — error is source of truth; destructive aliases it */
+    --info: oklch(0.45 0.09 200);
+    --info-foreground: oklch(0.99 0 0);
+    --success: oklch(0.44 0.1 148);
+    --success-foreground: oklch(0.99 0 0);
+    --warning: oklch(0.69 0.12 78);
+    --warning-foreground: oklch(0.15 0.04 78);
+    --error: oklch(0.5 0.17 12);
+    --error-foreground: oklch(0.99 0 0);
+    --destructive: var(--error);
+    --destructive-foreground: var(--error-foreground);
+  }
+
+  @media (prefers-color-scheme: dark) {
+    :root:not([data-theme='light']) {
+      /* Olive & Teal — dark */
+      --background: oklch(0.15 0.018 105);
+      --foreground: oklch(0.92 0.012 100);
+      --primary: oklch(0.62 0.11 122);
+      --primary-foreground: oklch(0.99 0 0);
+      --secondary: oklch(0.22 0.016 105);
+      --secondary-foreground: oklch(0.82 0.012 100);
+      --muted: oklch(0.2 0.014 105);
+      --muted-foreground: oklch(0.56 0.02 100);
+      --accent: oklch(0.56 0.08 185);
+      --accent-foreground: oklch(0.99 0 0);
+      --border: oklch(0.3 0.018 105);
+      --input: oklch(0.52 0.018 105); /* 3.58:1 on --background (D2) */
+      --ring: oklch(0.62 0.11 122);
+
+      --card: oklch(0.21 0.018 105);
+      --card-foreground: var(--foreground);
+      --shadow-card: 0 1px 2px oklch(0 0 0 / 0.3), 0 2px 10px oklch(0 0 0 / 0.35);
+      --shadow-raised: 0 2px 6px oklch(0 0 0 / 0.35), 0 10px 28px oklch(0 0 0 / 0.45);
+
+      /* Sunken plane (ADR 040) — darker than --card, toward the loam background.
+         The bottom lip lightens instead of whitening, so the recess reads without
+         a bright seam on dark. */
+      --surface-sunken: oklch(0.175 0.008 105);
+      --shadow-inset: inset 0 2px 4px -1px oklch(0 0 0 / 0.4), inset 0 -1px 0 0 oklch(1 0 0 / 0.04);
+
+      /* Eight hues (ADR 044). The dark tint is a dark chip, so the fill repair runs
+         the other way — it still inherits the base's lightness order and carries
+         real chroma, instead of collapsing every hue onto one dim wash. */
+      --identity-terracotta: oklch(0.7 0.13 35);
+      --identity-terracotta-tint: oklch(0.353 0.081 35);
+      --identity-terracotta-ink: oklch(0.9 0.049 35);
+      --identity-marigold: oklch(0.78 0.12 78);
+      --identity-marigold-tint: oklch(0.408 0.079 78);
+      --identity-marigold-ink: oklch(0.9 0.046 78);
+      --identity-moss: oklch(0.73 0.12 117);
+      --identity-moss-tint: oklch(0.374 0.079 117);
+      --identity-moss-ink: oklch(0.9 0.046 117);
+      --identity-sage: oklch(0.7 0.1 148);
+      --identity-sage-tint: oklch(0.353 0.066 148);
+      --identity-sage-ink: oklch(0.9 0.038 148);
+      --identity-teal: oklch(0.66 0.09 188);
+      --identity-teal-tint: oklch(0.325 0.059 188);
+      --identity-teal-ink: oklch(0.9 0.034 188);
+      --identity-sky: oklch(0.68 0.09 235);
+      --identity-sky-tint: oklch(0.339 0.059 235);
+      --identity-sky-ink: oklch(0.9 0.034 235);
+      --identity-indigo: oklch(0.7 0.13 268);
+      --identity-indigo-tint: oklch(0.353 0.081 268);
+      --identity-indigo-ink: oklch(0.9 0.049 268);
+      --identity-plum: oklch(0.66 0.1 330);
+      --identity-plum-tint: oklch(0.325 0.066 330);
+      --identity-plum-ink: oklch(0.9 0.038 330);
+
+      /* The household — reserved, never assigned to a person (ADR 041). */
+      /* Hearth — warm stone, desaturated well under the member hues (ADR 041). */
+      --identity-family: oklch(0.72 0.022 68);
+      --identity-family-tint: oklch(0.285 0.014 65);
+      --identity-family-ink: oklch(0.9 0.018 70);
+
+      /* Coin (ADR 051) — the metal is theme-invariant; the wash inverts to a dark
+         brass ground and the ink lightens so a value stays legible on a dark card. */
+      --coin-tint: oklch(0.32 0.06 90);
+      --coin-ink: oklch(0.86 0.09 92);
+
+      --info: oklch(0.56 0.09 200);
+      --info-foreground: oklch(0.99 0 0);
+      --success: oklch(0.57 0.1 148);
+      --success-foreground: oklch(0.99 0 0);
+      --warning: oklch(0.75 0.11 78);
+      --warning-foreground: oklch(0.15 0.04 78);
+      --error: oklch(0.62 0.17 12);
+      --error-foreground: oklch(0.99 0 0);
+      --destructive: var(--error);
+      --destructive-foreground: var(--error-foreground);
+    }
+  }
+
+  /* Manual dark mode override — per-profile preference (AC8) */
+  [data-theme='dark'] {
+    --background: oklch(0.15 0.018 105);
+    --foreground: oklch(0.92 0.012 100);
+    --primary: oklch(0.62 0.11 122);
+    --primary-foreground: oklch(0.99 0 0);
+    --secondary: oklch(0.22 0.016 105);
+    --secondary-foreground: oklch(0.82 0.012 100);
+    --muted: oklch(0.2 0.014 105);
+    --muted-foreground: oklch(0.56 0.02 100);
+    --accent: oklch(0.56 0.08 185);
+    --accent-foreground: oklch(0.99 0 0);
+    --border: oklch(0.3 0.018 105);
+    --input: oklch(0.52 0.018 105); /* 3.58:1 on --background (D2) */
+    --ring: oklch(0.62 0.11 122);
+
+    --card: oklch(0.21 0.018 105);
+    --card-foreground: var(--foreground);
+    --shadow-card: 0 1px 2px oklch(0 0 0 / 0.3), 0 2px 10px oklch(0 0 0 / 0.35);
+    --shadow-raised: 0 2px 6px oklch(0 0 0 / 0.35), 0 10px 28px oklch(0 0 0 / 0.45);
+
+    /* Sunken plane (ADR 040) — must be repeated here, not only in the
+       prefers-color-scheme block above: this is the EXPLICIT theme toggle, and a
+       token missing from it silently falls back to the light `:root` value. That
+       shipped once already — the groove rendered near-white in toggled dark mode. */
+    --surface-sunken: oklch(0.175 0.008 105);
+    --shadow-inset: inset 0 2px 4px -1px oklch(0 0 0 / 0.4), inset 0 -1px 0 0 oklch(1 0 0 / 0.04);
+
+    /* Eight hues (ADR 044) — repeated here, not only in the prefers-color-scheme
+       block above: this is the EXPLICIT theme toggle, and a token missing from it
+       silently falls back to the light `:root` value (see --surface-sunken). */
+    --identity-terracotta: oklch(0.7 0.13 35);
+    --identity-terracotta-tint: oklch(0.353 0.081 35);
+    --identity-terracotta-ink: oklch(0.9 0.049 35);
+    --identity-marigold: oklch(0.78 0.12 78);
+    --identity-marigold-tint: oklch(0.408 0.079 78);
+    --identity-marigold-ink: oklch(0.9 0.046 78);
+    --identity-moss: oklch(0.73 0.12 117);
+    --identity-moss-tint: oklch(0.374 0.079 117);
+    --identity-moss-ink: oklch(0.9 0.046 117);
+    --identity-sage: oklch(0.7 0.1 148);
+    --identity-sage-tint: oklch(0.353 0.066 148);
+    --identity-sage-ink: oklch(0.9 0.038 148);
+    --identity-teal: oklch(0.66 0.09 188);
+    --identity-teal-tint: oklch(0.325 0.059 188);
+    --identity-teal-ink: oklch(0.9 0.034 188);
+    --identity-sky: oklch(0.68 0.09 235);
+    --identity-sky-tint: oklch(0.339 0.059 235);
+    --identity-sky-ink: oklch(0.9 0.034 235);
+    --identity-indigo: oklch(0.7 0.13 268);
+    --identity-indigo-tint: oklch(0.353 0.081 268);
+    --identity-indigo-ink: oklch(0.9 0.049 268);
+    --identity-plum: oklch(0.66 0.1 330);
+    --identity-plum-tint: oklch(0.325 0.066 330);
+    --identity-plum-ink: oklch(0.9 0.038 330);
+
+    /* The household — reserved, never assigned to a person (ADR 041). */
+    /* Hearth — warm stone, desaturated well under the member hues (ADR 041). */
+    --identity-family: oklch(0.72 0.022 68);
+    --identity-family-tint: oklch(0.285 0.014 65);
+    --identity-family-ink: oklch(0.9 0.018 70);
+
+    /* Coin (ADR 051) — dark wash + light ink; metal stays theme-invariant. */
+    --coin-tint: oklch(0.32 0.06 90);
+    --coin-ink: oklch(0.86 0.09 92);
+
+    --info: oklch(0.56 0.09 200);
+    --info-foreground: oklch(0.99 0 0);
+    --success: oklch(0.57 0.1 148);
+    --success-foreground: oklch(0.99 0 0);
+    --warning: oklch(0.75 0.11 78);
+    --warning-foreground: oklch(0.15 0.04 78);
+    --error: oklch(0.62 0.17 12);
+    --error-foreground: oklch(0.99 0 0);
+    --destructive: var(--error);
+    --destructive-foreground: var(--error-foreground);
+  }
+
+  * {
+    border-color: var(--border);
+  }
+
+  body {
+    background-color: var(--background);
+    color: var(--foreground);
+    font-family: var(--font-ui);
+  }
+}
+
+/* Notification tray slide-in animation */
+@keyframes tray-in {
+  from {
+    transform: translateX(100%);
+  }
+  to {
+    transform: translateX(0);
+  }
+}
+
+@utility animate-tray-in {
+  @media (prefers-reduced-motion: no-preference) {
+    animation: tray-in var(--duration-slow) var(--ease-in-out);
+  }
+}
+
+/* The punch-card stamp (glyph + square run in sync over 420ms): the glyph drops
+   in oversized and squashes home at 55%, exactly when the square dips under the
+   impact and an ink ring washes out. The square's keyframes carry the inset
+   shadow so the pressed-paper look never flickers off mid-animation. */
+@keyframes stamp-slam {
+  0% {
+    transform: rotate(var(--stamp-rot, 0deg)) scale(2.2);
+    opacity: 0;
+  }
+  55% {
+    transform: rotate(var(--stamp-rot, 0deg)) scale(0.88);
+    opacity: 1;
+  }
+  75% {
+    transform: rotate(var(--stamp-rot, 0deg)) scale(1.08);
+  }
+  100% {
+    transform: rotate(var(--stamp-rot, 0deg)) scale(1);
+    opacity: 1;
+  }
+}
+
+@utility animate-stamp-slam {
+  @media (prefers-reduced-motion: no-preference) {
+    animation: stamp-slam 420ms cubic-bezier(0.2, 0, 0.2, 1);
+  }
+}
+
+@keyframes stamp-press {
+  0%,
+  40% {
+    transform: scale(1);
+    box-shadow: var(--shadow-inset);
+  }
+  55% {
+    transform: scale(0.93);
+    box-shadow:
+      var(--shadow-inset),
+      0 0 0 0 color-mix(in oklab, var(--primary) 30%, transparent);
+  }
+  100% {
+    transform: scale(1);
+    box-shadow:
+      var(--shadow-inset),
+      0 0 0 12px color-mix(in oklab, var(--primary) 0%, transparent);
+  }
+}
+
+@utility animate-stamp-press {
+  @media (prefers-reduced-motion: no-preference) {
+    animation: stamp-press 420ms ease-out;
+  }
+}
+
+/* The next square waits (joy rework) — a gentle breathe on the one tap target */
+@keyframes breathe {
+  50% {
+    transform: scale(1.05);
+  }
+}
+
+@utility animate-breathe {
+  @media (prefers-reduced-motion: no-preference) {
+    animation: breathe 2.6s ease-in-out infinite;
+  }
+}
+
+/* Celebration confetti — falls inside the card it belongs to, silent under
+   reduced motion */
+@keyframes confetti-fall {
+  0% {
+    transform: translateY(0) rotate(0deg);
+    opacity: 0;
+  }
+  8% {
+    opacity: 0.9;
+  }
+  70% {
+    opacity: 0.85;
+  }
+  100% {
+    transform: translateY(190px) rotate(320deg);
+    opacity: 0;
+  }
+}
+
+@utility animate-confetti-fall {
+  @media (prefers-reduced-motion: no-preference) {
+    animation: confetti-fall 2.8s ease-in infinite;
+  }
+}
+</style>
+<style>
+.rb-item ul { margin: 0; padding-left: 1.2rem; display: grid; gap: 0.35rem; }
+.rb-item p { margin: 0 0 0.5rem; }
+.rb-options { grid-template-columns: minmax(0, 1fr); }
+@media (min-width: 52rem) {
+  .rb-opt { grid-template-columns: minmax(0, 440px) minmax(0, 1fr); grid-template-areas: "preview label" "preview idea" "preview dl"; column-gap: 1.5rem; align-content: start; }
+  .rb-opt > .rb-opt-label { grid-area: label; }
+  .rb-opt > .rb-idea { grid-area: idea; }
+  .rb-opt > .rb-preview { grid-area: preview; align-self: start; }
+  .rb-opt > dl { grid-area: dl; align-self: start; }
+}
+.v { font-family: var(--font-ui); color: var(--foreground); background: var(--background); padding: 12px; border-radius: 12px; display: grid; gap: 10px; }
+.v-cap { font: 700 11px/1.4 var(--font-ui); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted-foreground); }
+.v-tile { background: var(--card); border: 1px solid var(--border); border-radius: 0.75rem; box-shadow: var(--shadow-card); padding: 12px 14px; display: grid; gap: 8px; }
+.v-tile h4 { margin: 0; font: 700 11px var(--font-ui); letter-spacing: 0.1em; text-transform: uppercase; color: var(--accent); }
+.v-hero { border-radius: 1rem; padding: 10px 12px; display: grid; gap: 2px; }
+.v-hero b { font: 600 16px var(--font-ui); }
+.v-hero small { font-size: 12px; }
+.v-line { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted-foreground); min-height: 36px; border-radius: 8px; padding: 0 6px; margin: 0 -6px; background: none; border: 0; text-align: left; cursor: pointer; width: calc(100% + 12px); font-family: inherit; }
+.v-line:hover { background: var(--secondary); }
+.v-line svg { width: 16px; height: 16px; flex-shrink: 0; }
+.v-row { display: flex; align-items: center; gap: 10px; min-height: 40px; border-top: 1px solid var(--border); font-size: 14px; }
+.v-row:first-child { border-top: 0; }
+.v-row .when { width: 62px; flex-shrink: 0; font-size: 12px; color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
+.v-row .t { flex: 1; min-width: 0; }
+.v-btn { font: 600 12px var(--font-ui); border-radius: 8px; border: 1px solid var(--input); background: var(--card); color: var(--foreground); padding: 0 10px; min-height: 32px; cursor: pointer; }
+.v-btn.primary { background: var(--primary); color: var(--primary-foreground); border-color: var(--primary); }
+.v-dot { width: 16px; height: 16px; border-radius: 50%; display: inline-grid; place-items: center; font: 700 9px var(--font-ui); flex-shrink: 0; }
+.v-month { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 1px; background: var(--border); border: 1px solid var(--border); border-radius: 0.5rem; overflow: hidden; }
+.v-month .h { background: var(--card); font: 700 10px var(--font-ui); letter-spacing: 0.1em; text-transform: uppercase; color: var(--muted-foreground); text-align: center; padding: 4px 0; }
+.v-cell { background: var(--card); min-height: 78px; padding: 5px; display: grid; align-content: start; gap: 3px; }
+.v-cell .n { display: flex; align-items: center; gap: 4px; font: 600 12px var(--font-ui); flex-wrap: wrap; }
+.v-cell .n svg { width: 13px; height: 13px; opacity: 0.75; }
+.v-cell .chip { font-size: 10px; border-radius: 4px; padding: 1px 4px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.v-cell .ride { font-size: 10px; color: var(--muted-foreground); display: flex; gap: 3px; align-items: center; white-space: nowrap; overflow: hidden; }
+.v-cell.today .n > span:first-child { background: var(--primary); color: var(--primary-foreground); border-radius: 50%; width: 20px; height: 20px; display: inline-grid; place-items: center; }
+.v-steps { display: grid; gap: 8px; margin: 0; padding: 0; list-style: none; }
+.v-steps li { display: grid; grid-template-columns: 5.5rem minmax(0, 1fr); gap: 8px; font-size: 13px; align-items: start; }
+.v-steps li b { font-weight: 600; }
+.v-steps .when { color: var(--muted-foreground); font-variant-numeric: tabular-nums; }
+.v-note { font-size: 12px; color: var(--muted-foreground); }
+.v-note b { color: var(--foreground); font-weight: 600; }
+.v-nudge { background: var(--card); border: 1px solid var(--border); border-left: 4px solid var(--accent); border-radius: 0.5rem; padding: 8px 10px; font-size: 13px; display: grid; gap: 6px; }
+.v-sunken { background: var(--surface-sunken); box-shadow: var(--shadow-inset); border-radius: 0.5rem; padding: 2px 10px; }
+.v-btn:focus-visible, .v-line:focus-visible { outline: 2px solid var(--ring); outline-offset: 2px; }
+</style>
+
+<div class="rb-wrap">
+  <header>
+    <div class="rb-eyebrow">Vireo · Session 3h · Decide</div>
+    <h1>Rides without a Rides page</h1>
+    <p class="rb-lede">Your 3e walkthrough asked for rides reached from the calendar widget and the calendar, a seeded week that carries forward, and no open or cleared runs. This board settles each before 3e is rebuilt.</p>
+    <p class="rb-how">Pick or answer each item, then press <strong>Mark reviewed</strong>. Previews respond to taps.</p>
+  </header>
+  <div id="rb"></div>
+</div>
+
+<script src="board.js"></script>
+<script>
+const { el } = ReviewBoard;
+const HUE = { dad: ['--identity-teal', '--identity-teal-tint', '--identity-teal-ink'], mom: ['--identity-plum', '--identity-plum-tint', '--identity-plum-ink'], zoe: ['--identity-marigold', '--identity-marigold-tint', '--identity-marigold-ink'], teddy: ['--identity-sky', '--identity-sky-tint', '--identity-sky-ink'] };
+const NAME = { dad: 'Dad', mom: 'Mom', zoe: 'Zoë', teddy: 'Teddy' };
+const svg = paths => { const s = document.createElementNS('http://www.w3.org/2000/svg', 'svg'); s.setAttribute('viewBox', '0 0 24 24'); s.setAttribute('fill', 'none'); s.setAttribute('stroke', 'currentColor'); s.setAttribute('stroke-width', '2'); s.setAttribute('stroke-linecap', 'round'); s.setAttribute('stroke-linejoin', 'round'); s.setAttribute('aria-hidden', 'true'); s.innerHTML = paths; return s; };
+const CAR = () => svg('<path d="M19 17h2c.6 0 1-.4 1-1v-3c0-.9-.7-1.7-1.5-1.9C18.7 10.6 16 10 16 10s-1.3-1.4-2.2-2.3c-.5-.4-1.1-.7-1.8-.7H5c-.6 0-1.1.4-1.4.9l-1.4 2.9A3.7 3.7 0 0 0 2 12v4c0 .6.4 1 1 1h2"/><circle cx="7" cy="17" r="2"/><path d="M9 17h6"/><circle cx="17" cy="17" r="2"/>');
+const FORK = () => svg('<path d="M3 2v7c0 1.1.9 2 2 2h4a2 2 0 0 0 2-2V2"/><path d="M7 2v20"/><path d="M21 15V2a5 5 0 0 0-5 5v6c0 1.1.9 2 2 2h3Zm0 0v7"/>');
+const dot = who => el('span', { class: 'v-dot', 'aria-hidden': 'true', style: `background:var(${HUE[who][1]});color:var(${HUE[who][2]})`, text: NAME[who][0] });
+const other = p => (p === 'dad' ? 'mom' : 'dad');
+
+const TODAY = () => [
+  { at: '8:15 AM', text: 'drops off Teddy', who: 'mom' },
+  { at: '8:35 AM', text: 'drops off Zoë', who: 'dad' },
+  { at: '4:30 PM', text: 'picks up Teddy', who: 'mom' },
+  { at: '5:30 PM', text: 'picks up Zoë at yarn club', who: 'dad' },
+];
+
+function runRows(runs, repaint) {
+  return runs.map(r => {
+    const b = el('button', { type: 'button', class: 'v-btn', 'aria-label': `Swap ${r.at} to ${NAME[other(r.who)]}`, text: 'Swap' });
+    b.addEventListener('click', () => { r.who = other(r.who); repaint(); });
+    return el('div', { class: 'v-row' }, [el('span', { class: 'when', text: r.at }), dot(r.who), el('span', { class: 't', text: `${NAME[r.who]} ${r.text}` }), b]);
+  });
+}
+
+function hero() {
+  return el('div', { class: 'v-hero', style: `background:var(${HUE.zoe[1]});color:var(${HUE.zoe[2]})` }, [el('small', { text: 'UP NEXT · 3:30 PM' }), el('b', { text: 'Middle School French' }), el('small', { text: 'Zoë' })]);
+}
+
+function entryWidgetLine() {
+  const runs = TODAY();
+  let open = false;
+  const wrap = el('div', { class: 'v' });
+  const paint = () => {
+    const line = el('button', { type: 'button', class: 'v-line', 'aria-expanded': String(open) }, [CAR(), el('span', { text: '4:30 PM · Mom picks up Teddy' }), el('span', { style: 'margin-left:auto', text: open ? '▴' : '▾' })]);
+    line.addEventListener('click', () => { open = !open; paint(); });
+    wrap.replaceChildren(
+      el('div', { class: 'v-cap', text: 'Home · the calendar widget' }),
+      el('div', { class: 'v-tile' }, [el('h4', { text: 'Calendar' }), hero(), line, open ? el('div', { class: 'v-sunken' }, runRows(runs, paint)) : null, el('div', { class: 'v-row' }, [el('span', { class: 'when', text: '7:00 PM' }), el('span', { class: 't', text: 'Gymnastics' })])]),
+      el('p', { class: 'v-note', html: '<b>Tap the car line</b>: the runs unfold in the widget, swap in place. The calendar’s day header works the same way.' }),
+    );
+  };
+  paint();
+  return wrap;
+}
+
+function entryOwnWidget() {
+  const runs = TODAY();
+  const wrap = el('div', { class: 'v' });
+  const paint = () => wrap.replaceChildren(
+    el('div', { class: 'v-cap', text: 'Home · a Rides widget beside the calendar' }),
+    el('div', { class: 'v-tile' }, [el('h4', { text: 'Rides today' }), ...runRows(runs, paint)]),
+    el('p', { class: 'v-note', html: '<b>Every run is on screen</b>, swap in a tap. The calendar keeps its day-header mark.' }),
+  );
+  paint();
+  return wrap;
+}
+
+function entryOpensDay() {
+  let unfolded = false;
+  const runs = TODAY();
+  const wrap = el('div', { class: 'v' });
+  const paint = () => {
+    const line = el('button', { type: 'button', class: 'v-line' }, [CAR(), el('span', { text: '4:30 PM · Mom picks up Teddy' }), el('span', { style: 'margin-left:auto', text: '→' })]);
+    line.addEventListener('click', () => { unfolded = true; paint(); });
+    wrap.replaceChildren(
+      el('div', { class: 'v-cap', text: unfolded ? 'Calendar · today, runs already open' : 'Home · the calendar widget' }),
+      unfolded
+        ? el('div', { class: 'v-tile' }, [el('div', { style: 'font:600 15px var(--font-ui)', text: 'Tuesday, November 17' }), el('div', { class: 'v-sunken' }, runRows(runs, paint))])
+        : el('div', { class: 'v-tile' }, [el('h4', { text: 'Calendar' }), hero(), line]),
+      el('p', { class: 'v-note', html: unfolded ? 'Opened on today’s Day view with the runs unfolded. A month cell with rides opens the same way.' : '<b>Tap the car line</b>: it opens the calendar on today with the runs already unfolded.' }),
+    );
+  };
+  paint();
+  return wrap;
+}
+
+function monthCells(kind) {
+  const days = [
+    { d: 'Mon', n: 16, next: ['dad', '8:15'], drivers: ['dad', 'mom'] },
+    { d: 'Tue', n: 17, today: true, next: ['mom', '4:30'], drivers: ['mom', 'dad'], dinner: 'dad', chip: ['zoe', 'French'] },
+    { d: 'Wed', n: 18, next: ['dad', '8:15'], drivers: ['dad', 'mom'], chip: ['zoe', 'Karate'] },
+    { d: 'Thu', n: 19, next: ['mom', '8:15'], drivers: ['mom', 'dad'] },
+    { d: 'Fri', n: 20, next: ['dad', '8:15'], drivers: ['dad'] },
+  ];
+  return el('div', { class: 'v-month' }, [
+    ...days.map(x => el('span', { class: 'h', text: x.d })),
+    ...days.map(x => {
+      const head = [el('span', { text: String(x.n) })];
+      if (x.dinner) head.push(dot(x.dinner), FORK());
+      if (kind === 'driver') head.push(dot(x.next[0]), CAR());
+      const body = [];
+      if (kind === 'line') body.push(el('div', { class: 'ride' }, [CAR(), `${x.next[1]} ${NAME[x.next[0]]}`]));
+      if (x.chip) body.push(el('div', { class: 'chip', style: `background:var(${HUE[x.chip[0]][1]});color:var(${HUE[x.chip[0]][2]})`, text: x.chip[1] }));
+      return el('div', { class: 'v-cell' + (x.today ? ' today' : '') }, [el('div', { class: 'n' }, head), ...body]);
+    }),
+  ]);
+}
+const monthPreview = (kind, note) => () => el('div', { class: 'v' }, [el('div', { class: 'v-cap', text: 'Month grid · iPad' }), monthCells(kind), el('p', { class: 'v-note', html: note })]);
+
+function weekFlow(kind) {
+  const steps = {
+    usual: [
+      ['Once', 'A parent sets the week, kid by kid, from “Set the usual week” in the day’s runs.'],
+      ['Every day', 'The usual week fills each school day. A swap changes that one day only.'],
+      ['To change it', '“Every Tuesday” on a swap, or edit the usual week, changes every week from then on.'],
+    ],
+    review: [
+      ['Once', 'A parent sets this week, kid by kid.'],
+      ['Sunday 6 PM', 'A parent gets “Review next week’s drivers”: next week, pre-filled from this week as it ended, swaps included.'],
+      ['One tap', '“Looks right” copies it. Change anything first, or ignore it and it copies Monday at 6 AM.'],
+    ],
+    auto: [
+      ['Once', 'A parent sets this week, kid by kid.'],
+      ['Sunday night', 'This week copies to next week as it ended, swaps included. No nudge.'],
+      ['To change it', 'Swap on any day; the swap carries forward to every later week.'],
+    ],
+  }[kind];
+  return () => el('div', { class: 'v' }, [
+    el('div', { class: 'v-cap', text: 'How a week carries forward' }),
+    el('ul', { class: 'v-steps' }, steps.map(([w, t]) => el('li', {}, [el('span', { class: 'when', text: w }), el('span', { text: t })]))),
+    kind === 'review' ? el('div', { class: 'v-nudge' }, [el('b', { text: 'Review next week’s drivers' }), el('span', { text: 'Mom has 6 runs, Dad has 14. Tuesday: Dad picks up Zoë at yarn club.' }), el('div', { style: 'display:flex;gap:6px' }, [el('button', { type: 'button', class: 'v-btn primary', text: 'Looks right' }), el('button', { type: 'button', class: 'v-btn', text: 'Change' })])]) : null,
+  ]);
+}
+
+const ITEMS = [
+  { group: 'Getting to the rides', intro: 'You found three taps on the iPad (menu, month cell, the mark). Each option gets today’s runs in one.' },
+  { id: 'entry', type: 'choice', title: 'The entry point on Home', ask: 'Which one?', options: [
+    { name: 'A line in the calendar widget', idea: 'The calendar widget gets a car line under its hero naming the next run; tapping it unfolds today’s runs in the widget, with Swap on each.', preview: entryWidgetLine,
+      why: 'One surface for the day, as the agenda already is, and rides stay part of the calendar.', cost: 'The widget grows by four rows while open, and at its compact size the line may be all there is room for.' },
+    { name: 'Its own widget', idea: 'A small Rides widget on Home lists today’s runs, each with Swap. No page; the calendar keeps its day-header mark.', preview: entryOwnWidget,
+      why: 'Every run visible without a tap, at arm’s length on the wall.', cost: 'A second tile for something that is also on the calendar, and one more widget for the home layout to place.' },
+    { name: 'A line that opens the day', idea: 'The widget’s car line opens the calendar on today with the runs already unfolded. A month cell with rides opens the same way.', preview: entryOpensDay,
+      why: 'The widget stays a glance; swapping happens where there is room.', cost: 'Two taps to a swap from Home, and a page change on the wall.' },
+  ] },
+  { group: 'The month cell', intro: 'You found the bare car unhelpful. Dinner keeps its disc and fork in every option.' },
+  { id: 'cell', type: 'choice', title: 'What a school day’s cell shows', ask: 'Which one?', options: [
+    { name: 'The next driver’s disc', idea: 'The car is paired with the disc of whoever drives the day’s next run, like dinner’s owner.', preview: monthPreview('driver', 'Today shows Mom (4:30 pickup); other days show their first run’s driver.'),
+      why: 'Matches the dinner mark exactly, so the cell reads one way.', cost: 'Two discs on a dinner day crowd the date on a narrow cell, and the time is only in the day view.' },
+    { name: 'A small line with time and name', idea: 'A muted line under the date: car, time and the next driver’s name, above the event chips.', preview: monthPreview('line', 'Today: “4:30 Mom”. It takes one of the cell’s three chip rows.'),
+      why: 'Says who and when without a tap.', cost: 'It spends a chip row, so a busy day shows one fewer event before “+N”.' },
+    { name: 'Nothing', idea: 'The month cell carries no rides at all; they live in the widget and the day view.', preview: monthPreview('none', 'Only dinner and events. A month is for planning ahead, and rides repeat.'),
+      why: 'The quietest grid, and rides are reachable from the widget in one tap.', cost: 'You can’t scan a month for who is driving.' },
+  ] },
+  { group: 'The week', intro: 'You described seeding a week and carrying it forward. Your Rides-page comment is answered here too: the week is set from the calendar, a tab per kid, in a drawer opened from the day’s runs.' },
+  { id: 'week', type: 'choice', title: 'How a seeded week carries forward', ask: 'Which one?', options: [
+    { name: 'A usual week that repeats', idea: 'What 3e built: the seed is the usual week and fills every school day; a swap changes one day; “Every Tuesday” on a swap changes the usual week.', preview: weekFlow('usual'),
+      why: 'Nothing to confirm each week, and a one-off swap can’t leak into next week.', cost: 'A lasting change takes the “Every Tuesday” choice or the editor, not just a swap.' },
+    { name: 'Copy forward after a review', idea: 'Each week is its own set of runs. Sunday evening a parent reviews next week, pre-filled from this week as it ended, and confirms; unconfirmed, it copies Monday morning.', preview: weekFlow('review'),
+      why: 'A weekly look at the load, and changes made during the week carry on by default.', cost: 'A one-off swap carries forward unless someone catches it in the review, and one more nudge a week.' },
+    { name: 'Copy forward automatically', idea: 'Each week copies to the next on Sunday night as it ended, swaps included. No review.', preview: weekFlow('auto'),
+      why: 'No editor and no nudge: the week is always what you last did.', cost: 'Every one-off swap becomes permanent until swapped back.' },
+  ] },
+  { group: 'Open runs and Clear', intro: '' },
+  { id: 'no-open', type: 'approve', title: 'No open runs', ask: 'Approve this?', approveLabel: 'Approve', changesLabel: 'Not quite',
+    body: `<p>Every run always has a driver, as you asked. That means:</p>
+<ul>
+<li>Seeding the week and adding a run both need a driver to save.</li>
+<li>Claim goes away; a run only swaps between parents.</li>
+<li>The red dot on the mark and month cell goes away (D-087).</li>
+<li>3g drops the parents’ open-run nudge (D-088 keeps the driver’s reminders and the kid’s swap notice).</li>
+</ul>` },
+  { id: 'clear', type: 'question', title: 'Clear', ask: 'Clear took a run off one day, for a holiday or a sick day, so no one is reminded to drive. Keep it?', input: 'radio',
+    options: ['Drop it: a run on a day off is just ignored, and its driver’s reminder still fires', 'Keep it, renamed “Not needed today”', 'Replace it with one “No school” switch per day that clears every run'] },
+  { id: 'notes', type: 'comment', title: 'Anything else', ask: 'And on 3e: what failed in “changing a driver shows on that weekday’s mark”?' },
+];
+document.addEventListener('click', e => {
+  if (e.target.closest('.rb-preview') && !e.target.closest('input, select')) e.preventDefault();
+}, true);
+ReviewBoard.mount({ owner: 'Zach', type: 'web-app', items: ITEMS });
+</script>
