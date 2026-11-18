@@ -39,4 +39,16 @@ Every acceptance check passes on the board and in the suite; the branch merges b
 
 ## Outcome
 
-Round 1, 2026-11-17 · Sent 2026-11-17 11:44
+Round 1, 2026-11-17 · Sent 2026-11-17 11:44 · Back 2026-11-17 18:04
+
+Not accepted. Checks: 12 pass, "changing a driver shows on that weekday's mark" fail (reason not given). Fully cleared day: keep the mark, as built. Walkthrough: changes. Zach, verbatim:
+
+> This needs some work, some items I'm mulling over:
+>
+> - On IPad and Desktop there is no entry point on the calendar widget and I need 3 taps: Menu > Month Grid Cell > Mark in header to see what the rides are for the day.
+> - Don't think the empty glyph is super useful on the month cell. Maybe it' has the next run's driver next.
+> - I don't think a dedicated Rides nav / page is adding anything here. I'd rather a entry point from the calendar widget and calendar itself. I should be able to set a week for this initial "seed" and then each week it should copy to the next and the mechanism to update becomes add new runs and swaps. Not sure if I want this to happen automatically or a "review drivers" nudge at the end of the week to copy things over.
+> - Don't really get what the clear mechanism is for
+> - There shouldn't be a "open" state for runs after the initial seed and subsequent clones to the next week. if a new one-off activity with a run is added it needs to have a driver added to get through.
+
+This reopens D-087 (grid cell), D-088 (open-run nudge), D-091 (entry point), D-092 (Rides page) and D-094 (clear). Zach chose a new decide session, 3h, before rebuilding; the branch `session-03e-rides-school-runs` (worktree `../vireo-3e`) stays unmerged. Kept from this round: the API, the day-mark lines contract, marks in the iPad day and week views.
