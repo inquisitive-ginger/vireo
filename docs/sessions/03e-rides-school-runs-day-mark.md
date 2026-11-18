@@ -31,6 +31,8 @@ The dev server on the LAN (http://192.168.0.6:5173/calendar, branch `session-03e
 
 ## Options
 
+Round 2 calls (Zach, 2026-11-17, at the restart): the seed editor stays in the rides plugin at `/rides/week` with no nav item, opened full-screen from "Set the week" in the day's runs and from the widget for a first setup. Copy-forward (D-097) needs no job: a swap or a seed edit takes effect from its day onward; "Not needed today" stays on its day.
+
 —
 
 ## Exit criteria
