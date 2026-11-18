@@ -66,3 +66,5 @@ Round 3, 2026-11-17 · Sent 2026-11-17 19:33 · Back 2026-11-17 19:41
 D-100 (a swap changes its day only; the set week carries forward) and the phone layout (run actions wrap under the text; a day heading keeps its date on one line). Suite: 1598 passed, 0 failed.
 
 Round 3 back: approved, all 4 checks pass. Zach: "last thing: run marks and dinner marks should only show on the month grid for the current week. go ahead an lock and carry it into the next build." Accepted as D-101; the month-grid change is D-102, queued for 3f. Merged by PR #161.
+
+Deployed 2026-11-17: the deploy workflow passed for 3b48d42 (after the #161 merge). The deploy check's curl timed out from this Mac's network, so the site answer was confirmed by Zach on his phone.
