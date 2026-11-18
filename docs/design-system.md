@@ -464,8 +464,8 @@ dinner") is the smallest instance of the second-channel rule above:
   opacity so the two read as one object, not a disc and an unrelated icon.
 - **No owner, no mark.** An unclaimed or ownerless-but-covered day makes none,
   never a placeholder "someone" mark.
-- **Rides is the exception (D-087, D-095–D-098):** a car and the next run in
-  words, a button that unfolds the day's runs; the cell adds the driver's disc.
+- **Rides (D-095–D-098):** a car and the next run, a button that unfolds the
+  runs; the cell adds the driver's disc. Cells mark this week only (D-102).
 
 ### Avatar photos — the spine carries the identity, the avatar carries the face (settled — 2026-07-11)
 

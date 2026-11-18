@@ -425,3 +425,13 @@ Features: F-042.
 
 A swap or "Not needed today" in a day's runs changes that day only. What carries into later weeks is the week set in "Set the week": a driver changed there, or a run added or removed there, holds from that week on. Replaces D-097's "swaps included". Options at 3h: a usual week that repeats; copy forward after a review; copy forward automatically, swaps included (chosen then, reversed here). Zach on the 3e round 2 board: "re-open D-097 switch it to swaps only affecting that day, otherwise the "default" runs set in set week are what propagate each week." Approved: Zach. Board: https://claude.ai/artifact/KHmBN7tXS9ADkYWYbVs6hD
 Features: F-041, F-042.
+
+## D-101 · 2026-11-17 · Session 3e accepted: school runs from the calendar
+
+Implements D-086, D-087, D-091, D-094, D-095, D-096, D-098, D-099 and D-100 (D-097 as amended) on PR #161, over three rounds. Round 1 built a Rides page and a mark with open runs and Clear; Zach's walkthrough sent it to session 3h (D-095–D-099). Round 2 rebuilt from those; its 13 checks passed, and Zach asked for the phone layout fixes and D-100. Round 3's 4 checks passed. Zach's calls in the session: the calendar draws the runs from generic day-mark lines and posts to the provider's endpoint, never importing rides; tier 4 edits and swaps, others read; the week editor is a nav-less `/rides/week`; the set week carries forward without a job. Tests: `D-086 …`, `D-087 …`, `D-094 …`, `D-097 …`, `D-098 …`, `D-099 …`, `D-100 …` in `apps/api/src/plugins/rides.test.ts`; `D-087 …`, `D-091 …`, `D-095 …`, `D-096 …`, `D-097 …`, `D-098 …`, `D-099 …` in the calendar's `AgendaView`, `DetailView`, `MonthGrid`, `UpNextView` and `mark-lines` tests; `D-097 …`, `D-098 …` in `RidesWeek.test.tsx`. Approved: Zach. Board: https://claude.ai/artifact/KHmBN7tXS9ADkYWYbVs6hD
+Features: F-041, F-042.
+
+## D-102 · 2026-11-17 · The month grid shows day marks for the current week only
+
+Dinner and rides marks paint in the month grid only on the days of the current week; later weeks' cells show events alone. The agenda and the day and week views keep every day's marks. Amends ADR 050's month cell (which already drops past days). Done when: a month cell outside the current week shows no dinner or rides mark. Zach on the 3e round 3 board: "last thing: run marks and dinner marks should only show on the month grid for the current week. go ahead an lock and carry it into the next build." Approved: Zach. Board: https://claude.ai/artifact/KHmBN7tXS9ADkYWYbVs6hD
+Features: F-024, F-042.

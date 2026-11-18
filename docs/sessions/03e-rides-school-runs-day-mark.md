@@ -1,6 +1,6 @@
 # Session 03e — Rides: school runs and the day mark
 
-Type: build · Approver: Zach · Status: in progress · Started: 2026-11-17 11:15 · Ended: —
+Type: build · Approver: Zach · Status: locked · Started: 2026-11-17 11:15 · Ended: 2026-11-17 19:41
 
 ## Goal
 
@@ -61,6 +61,8 @@ Rebuilt from D-095–D-099 on the same branch. Suite: 1597 passed, 0 failed. Cod
 
 Round 2 back: all 13 checks pass; walkthrough "changes". Zach: "Some minor tweaks needed on mobile to keep views from collapsing." and "Almost there. Fix the collapsing UI on mobile and also re-open D-097 switch it to swaps only affecting that day, otherwise the "default" runs set in set week are what propagate each week." Screenshots: the widget's unfolded runs squeeze the run text to one word per line; the agenda's day heading wraps its date under the marks. D-100 records the reversal; both go into round 3 on the branch.
 
-Round 3, 2026-11-17 · Sent 2026-11-17 19:33
+Round 3, 2026-11-17 · Sent 2026-11-17 19:33 · Back 2026-11-17 19:41
 
 D-100 (a swap changes its day only; the set week carries forward) and the phone layout (run actions wrap under the text; a day heading keeps its date on one line). Suite: 1598 passed, 0 failed.
+
+Round 3 back: approved, all 4 checks pass. Zach: "last thing: run marks and dinner marks should only show on the month grid for the current week. go ahead an lock and carry it into the next build." Accepted as D-101; the month-grid change is D-102, queued for 3f. Merged by PR #161.
