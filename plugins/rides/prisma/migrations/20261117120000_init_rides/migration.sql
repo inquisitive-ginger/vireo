@@ -28,12 +28,14 @@ CREATE TABLE "rides"."run_drivers" (
 );
 
 -- CreateTable
-CREATE TABLE "rides"."run_skips" (
+CREATE TABLE "rides"."run_days" (
     "run_id" UUID NOT NULL,
     "date" DATE NOT NULL,
+    "driver_id" TEXT,
+    "skipped" BOOLEAN NOT NULL DEFAULT false,
     "updated_by" TEXT NOT NULL,
 
-    CONSTRAINT "run_skips_pkey" PRIMARY KEY ("run_id","date")
+    CONSTRAINT "run_days_pkey" PRIMARY KEY ("run_id","date")
 );
 
 -- CreateIndex
@@ -43,5 +45,5 @@ CREATE INDEX "school_runs_weekday_idx" ON "rides"."school_runs"("weekday");
 ALTER TABLE "rides"."run_drivers" ADD CONSTRAINT "run_drivers_run_id_fkey" FOREIGN KEY ("run_id") REFERENCES "rides"."school_runs"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 
 -- AddForeignKey
-ALTER TABLE "rides"."run_skips" ADD CONSTRAINT "run_skips_run_id_fkey" FOREIGN KEY ("run_id") REFERENCES "rides"."school_runs"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+ALTER TABLE "rides"."run_days" ADD CONSTRAINT "run_days_run_id_fkey" FOREIGN KEY ("run_id") REFERENCES "rides"."school_runs"("id") ON DELETE CASCADE ON UPDATE CASCADE;
 

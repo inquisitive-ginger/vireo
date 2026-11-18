@@ -55,7 +55,8 @@ export function dateKeys(from: string, to: string): string[] {
   return keys
 }
 
-/** Who drives on `date` (D-097): the latest change on or before it. */
+/** Who usually drives on `date` (D-100): the latest week-editor change on or
+ *  before it. */
 export function driverOn(drivers: DriverFrom[], date: string): string | null {
   let found: DriverFrom | null = null
   for (const d of drivers) {
@@ -69,16 +70,26 @@ export function runsOn(date: string) {
     run.weekday === weekdayOf(date) && run.startsOn <= date && (!run.endsOn || date < run.endsOn)
 }
 
-/** The seeded week applied to one date (D-097, D-099). */
-export function dayRuns(runs: SchoolRunRecord[], skips: Set<string>, date: string): DayRun[] {
+export type DayChange = { driverId: string | null; skipped: boolean }
+
+/** The set week applied to one date, with that day's changes (D-099, D-100).
+ *  `changes` is keyed `runId:date`. */
+export function dayRuns(
+  runs: SchoolRunRecord[],
+  changes: Map<string, DayChange>,
+  date: string
+): DayRun[] {
   return runs
     .filter(runsOn(date))
-    .map(({ drivers, ...run }) => ({
-      ...run,
-      date,
-      driverId: driverOn(drivers, date) ?? '',
-      skipped: skips.has(`${run.id}:${date}`),
-    }))
+    .map(({ drivers, ...run }) => {
+      const change = changes.get(`${run.id}:${date}`)
+      return {
+        ...run,
+        date,
+        driverId: change?.driverId ?? driverOn(drivers, date) ?? '',
+        skipped: change?.skipped ?? false,
+      }
+    })
     .sort((a, b) => a.minutes - b.minutes)
 }
 

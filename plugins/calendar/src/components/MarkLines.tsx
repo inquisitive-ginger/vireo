@@ -30,10 +30,10 @@ export function MarkLines({
           <ListRow
             key={line.id}
             as="li"
-            className="last:border-b-0"
+            className="flex-wrap gap-y-1 py-2 last:border-b-0"
             trailing={
               act && (
-                <span className="flex items-center gap-1">
+                <span className="ml-auto flex items-center gap-1">
                   {!line.cleared && (mark.act?.owners.length ?? 0) > 1 && (
                     <Button
                       size="sm"
@@ -58,7 +58,7 @@ export function MarkLines({
               )
             }
           >
-            <div className="flex min-w-0 flex-1 items-center gap-3">
+            <div className="flex min-w-0 flex-1 basis-56 items-center gap-3">
               <span className="w-16 shrink-0 text-sm-token tabular-nums text-muted-foreground">
                 {formatMinutes(line.minutes)}
               </span>

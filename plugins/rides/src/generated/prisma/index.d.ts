@@ -1,8 +1,9 @@
+
 /**
  * Client
- **/
+**/
 
-import * as runtime from './runtime/client.js'
+import * as runtime from './runtime/client.js';
 import $Types = runtime.Types // general types
 import $Public = runtime.Types.Public
 import $Utils = runtime.Types.Utils
@@ -11,21 +12,22 @@ import $Result = runtime.Types.Result
 
 export type PrismaPromise<T> = $Public.PrismaPromise<T>
 
+
 /**
  * Model SchoolRun
- *
+ * 
  */
 export type SchoolRun = $Result.DefaultSelection<Prisma.$SchoolRunPayload>
 /**
  * Model RunDriver
- *
+ * 
  */
 export type RunDriver = $Result.DefaultSelection<Prisma.$RunDriverPayload>
 /**
- * Model RunSkip
- *
+ * Model RunDay
+ * 
  */
-export type RunSkip = $Result.DefaultSelection<Prisma.$RunSkipPayload>
+export type RunDay = $Result.DefaultSelection<Prisma.$RunDayPayload>
 
 /**
  * ##  Prisma Client ʲˢ
@@ -45,16 +47,12 @@ export type RunSkip = $Result.DefaultSelection<Prisma.$RunSkipPayload>
  */
 export class PrismaClient<
   ClientOptions extends Prisma.PrismaClientOptions = Prisma.PrismaClientOptions,
-  const U = 'log' extends keyof ClientOptions
-    ? ClientOptions['log'] extends Array<Prisma.LogLevel | Prisma.LogDefinition>
-      ? Prisma.GetEvents<ClientOptions['log']>
-      : never
-    : never,
-  ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
+  const U = 'log' extends keyof ClientOptions ? ClientOptions['log'] extends Array<Prisma.LogLevel | Prisma.LogDefinition> ? Prisma.GetEvents<ClientOptions['log']> : never : never,
+  ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs
 > {
   [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['other'] }
 
-  /**
+    /**
    * ##  Prisma Client ʲˢ
    *
    * Type-safe database client for TypeScript & Node.js
@@ -71,23 +69,20 @@ export class PrismaClient<
    * Read more in our [docs](https://pris.ly/d/client).
    */
 
-  constructor(optionsArg?: Prisma.Subset<ClientOptions, Prisma.PrismaClientOptions>)
-  $on<V extends U>(
-    eventType: V,
-    callback: (event: V extends 'query' ? Prisma.QueryEvent : Prisma.LogEvent) => void
-  ): PrismaClient
+  constructor(optionsArg ?: Prisma.Subset<ClientOptions, Prisma.PrismaClientOptions>);
+  $on<V extends U>(eventType: V, callback: (event: V extends 'query' ? Prisma.QueryEvent : Prisma.LogEvent) => void): PrismaClient;
 
   /**
    * Connect with the database
    */
-  $connect(): $Utils.JsPromise<void>
+  $connect(): $Utils.JsPromise<void>;
 
   /**
    * Disconnect from the database
    */
-  $disconnect(): $Utils.JsPromise<void>
+  $disconnect(): $Utils.JsPromise<void>;
 
-  /**
+/**
    * Executes a prepared raw query and returns the number of affected rows.
    * @example
    * ```
@@ -96,10 +91,7 @@ export class PrismaClient<
    *
    * Read more in our [docs](https://pris.ly/d/raw-queries).
    */
-  $executeRaw<T = unknown>(
-    query: TemplateStringsArray | Prisma.Sql,
-    ...values: any[]
-  ): Prisma.PrismaPromise<number>
+  $executeRaw<T = unknown>(query: TemplateStringsArray | Prisma.Sql, ...values: any[]): Prisma.PrismaPromise<number>;
 
   /**
    * Executes a raw query and returns the number of affected rows.
@@ -111,7 +103,7 @@ export class PrismaClient<
    *
    * Read more in our [docs](https://pris.ly/d/raw-queries).
    */
-  $executeRawUnsafe<T = unknown>(query: string, ...values: any[]): Prisma.PrismaPromise<number>
+  $executeRawUnsafe<T = unknown>(query: string, ...values: any[]): Prisma.PrismaPromise<number>;
 
   /**
    * Performs a prepared raw query and returns the `SELECT` data.
@@ -122,10 +114,7 @@ export class PrismaClient<
    *
    * Read more in our [docs](https://pris.ly/d/raw-queries).
    */
-  $queryRaw<T = unknown>(
-    query: TemplateStringsArray | Prisma.Sql,
-    ...values: any[]
-  ): Prisma.PrismaPromise<T>
+  $queryRaw<T = unknown>(query: TemplateStringsArray | Prisma.Sql, ...values: any[]): Prisma.PrismaPromise<T>;
 
   /**
    * Performs a raw query and returns the `SELECT` data.
@@ -137,7 +126,8 @@ export class PrismaClient<
    *
    * Read more in our [docs](https://pris.ly/d/raw-queries).
    */
-  $queryRawUnsafe<T = unknown>(query: string, ...values: any[]): Prisma.PrismaPromise<T>
+  $queryRawUnsafe<T = unknown>(query: string, ...values: any[]): Prisma.PrismaPromise<T>;
+
 
   /**
    * Allows the running of a sequence of read/write operations that are guaranteed to either succeed or fail as a whole.
@@ -149,68 +139,46 @@ export class PrismaClient<
    *   prisma.user.create({ data: { name: 'Alice' } }),
    * ])
    * ```
-   *
+   * 
    * Read more in our [docs](https://www.prisma.io/docs/orm/prisma-client/queries/transactions).
    */
-  $transaction<P extends Prisma.PrismaPromise<any>[]>(
-    arg: [...P],
-    options?: {
-      maxWait?: number
-      timeout?: number
-      isolationLevel?: Prisma.TransactionIsolationLevel
-    }
-  ): $Utils.JsPromise<runtime.Types.Utils.UnwrapTuple<P>>
+  $transaction<P extends Prisma.PrismaPromise<any>[]>(arg: [...P], options?: { maxWait?: number, timeout?: number, isolationLevel?: Prisma.TransactionIsolationLevel }): $Utils.JsPromise<runtime.Types.Utils.UnwrapTuple<P>>
 
-  $transaction<R>(
-    fn: (prisma: Omit<PrismaClient, runtime.ITXClientDenyList>) => $Utils.JsPromise<R>,
-    options?: {
-      maxWait?: number
-      timeout?: number
-      isolationLevel?: Prisma.TransactionIsolationLevel
-    }
-  ): $Utils.JsPromise<R>
+  $transaction<R>(fn: (prisma: Omit<PrismaClient, runtime.ITXClientDenyList>) => $Utils.JsPromise<R>, options?: { maxWait?: number, timeout?: number, isolationLevel?: Prisma.TransactionIsolationLevel }): $Utils.JsPromise<R>
 
-  $extends: $Extensions.ExtendsHook<
-    'extends',
-    Prisma.TypeMapCb<ClientOptions>,
-    ExtArgs,
-    $Utils.Call<
-      Prisma.TypeMapCb<ClientOptions>,
-      {
-        extArgs: ExtArgs
-      }
-    >
-  >
+  $extends: $Extensions.ExtendsHook<"extends", Prisma.TypeMapCb<ClientOptions>, ExtArgs, $Utils.Call<Prisma.TypeMapCb<ClientOptions>, {
+    extArgs: ExtArgs
+  }>>
 
-  /**
+      /**
    * `prisma.schoolRun`: Exposes CRUD operations for the **SchoolRun** model.
-   * Example usage:
-   * ```ts
-   * // Fetch zero or more SchoolRuns
-   * const schoolRuns = await prisma.schoolRun.findMany()
-   * ```
-   */
-  get schoolRun(): Prisma.SchoolRunDelegate<ExtArgs, ClientOptions>
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more SchoolRuns
+    * const schoolRuns = await prisma.schoolRun.findMany()
+    * ```
+    */
+  get schoolRun(): Prisma.SchoolRunDelegate<ExtArgs, ClientOptions>;
 
   /**
    * `prisma.runDriver`: Exposes CRUD operations for the **RunDriver** model.
-   * Example usage:
-   * ```ts
-   * // Fetch zero or more RunDrivers
-   * const runDrivers = await prisma.runDriver.findMany()
-   * ```
-   */
-  get runDriver(): Prisma.RunDriverDelegate<ExtArgs, ClientOptions>
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more RunDrivers
+    * const runDrivers = await prisma.runDriver.findMany()
+    * ```
+    */
+  get runDriver(): Prisma.RunDriverDelegate<ExtArgs, ClientOptions>;
 
   /**
-   * `prisma.runSkip`: Exposes CRUD operations for the **RunSkip** model.
-   * Example usage:
-   * ```ts
-   * // Fetch zero or more RunSkips
-   * const runSkips = await prisma.runSkip.findMany()
-   * ```
-   */
-  get runSkip(): Prisma.RunSkipDelegate<ExtArgs, ClientOptions>
+   * `prisma.runDay`: Exposes CRUD operations for the **RunDay** model.
+    * Example usage:
+    * ```ts
+    * // Fetch zero or more RunDays
+    * const runDays = await prisma.runDay.findMany()
+    * ```
+    */
+  get runDay(): Prisma.RunDayDelegate<ExtArgs, ClientOptions>;
 }
 
 export namespace Prisma {
@@ -241,6 +209,8 @@ export namespace Prisma {
   export import raw = runtime.raw
   export import Sql = runtime.Sql
 
+
+
   /**
    * Decimal.js
    */
@@ -249,8 +219,8 @@ export namespace Prisma {
   export type DecimalJsLike = runtime.DecimalJsLike
 
   /**
-   * Extensions
-   */
+  * Extensions
+  */
   export import Extension = $Extensions.UserArgs
   export import getExtensionContext = runtime.Extensions.getExtensionContext
   export import Args = $Public.Args
@@ -273,6 +243,7 @@ export namespace Prisma {
    * Utility Types
    */
 
+
   export import Bytes = runtime.Bytes
   export import JsonObject = runtime.JsonObject
   export import JsonArray = runtime.JsonArray
@@ -288,36 +259,36 @@ export namespace Prisma {
    */
   namespace NullTypes {
     /**
-     * Type of `Prisma.DbNull`.
-     *
-     * You cannot use other instances of this class. Please use the `Prisma.DbNull` value.
-     *
-     * @see https://www.prisma.io/docs/concepts/components/prisma-client/working-with-fields/working-with-json-fields#filtering-on-a-json-field
-     */
+    * Type of `Prisma.DbNull`.
+    *
+    * You cannot use other instances of this class. Please use the `Prisma.DbNull` value.
+    *
+    * @see https://www.prisma.io/docs/concepts/components/prisma-client/working-with-fields/working-with-json-fields#filtering-on-a-json-field
+    */
     class DbNull {
       private DbNull: never
       private constructor()
     }
 
     /**
-     * Type of `Prisma.JsonNull`.
-     *
-     * You cannot use other instances of this class. Please use the `Prisma.JsonNull` value.
-     *
-     * @see https://www.prisma.io/docs/concepts/components/prisma-client/working-with-fields/working-with-json-fields#filtering-on-a-json-field
-     */
+    * Type of `Prisma.JsonNull`.
+    *
+    * You cannot use other instances of this class. Please use the `Prisma.JsonNull` value.
+    *
+    * @see https://www.prisma.io/docs/concepts/components/prisma-client/working-with-fields/working-with-json-fields#filtering-on-a-json-field
+    */
     class JsonNull {
       private JsonNull: never
       private constructor()
     }
 
     /**
-     * Type of `Prisma.AnyNull`.
-     *
-     * You cannot use other instances of this class. Please use the `Prisma.AnyNull` value.
-     *
-     * @see https://www.prisma.io/docs/concepts/components/prisma-client/working-with-fields/working-with-json-fields#filtering-on-a-json-field
-     */
+    * Type of `Prisma.AnyNull`.
+    *
+    * You cannot use other instances of this class. Please use the `Prisma.AnyNull` value.
+    *
+    * @see https://www.prisma.io/docs/concepts/components/prisma-client/working-with-fields/working-with-json-fields#filtering-on-a-json-field
+    */
     class AnyNull {
       private AnyNull: never
       private constructor()
@@ -358,23 +329,22 @@ export namespace Prisma {
   /**
    * Get the type of the value, that the Promise holds.
    */
-  export type PromiseType<T extends PromiseLike<any>> = T extends PromiseLike<infer U> ? U : T
+  export type PromiseType<T extends PromiseLike<any>> = T extends PromiseLike<infer U> ? U : T;
 
   /**
    * Get the return type of a function which returns a Promise.
    */
-  export type PromiseReturnType<T extends (...args: any) => $Utils.JsPromise<any>> = PromiseType<
-    ReturnType<T>
-  >
+  export type PromiseReturnType<T extends (...args: any) => $Utils.JsPromise<any>> = PromiseType<ReturnType<T>>
 
   /**
    * From T, pick a set of properties whose keys are in the union K
    */
   type Prisma__Pick<T, K extends keyof T> = {
-    [P in K]: T[P]
-  }
+      [P in K]: T[P];
+  };
 
-  export type Enumerable<T> = T | Array<T>
+
+  export type Enumerable<T> = T | Array<T>;
 
   export type RequiredKeys<T> = {
     [K in keyof T]-?: {} extends Prisma__Pick<T, K> ? never : K
@@ -391,8 +361,8 @@ export namespace Prisma {
    * @desc From `T` pick properties that exist in `U`. Simple version of Intersection
    */
   export type Subset<T, U> = {
-    [key in keyof T]: key extends keyof U ? T[key] : never
-  }
+    [key in keyof T]: key extends keyof U ? T[key] : never;
+  };
 
   /**
    * SelectSubset
@@ -401,11 +371,12 @@ export namespace Prisma {
    */
   export type SelectSubset<T, U> = {
     [key in keyof T]: key extends keyof U ? T[key] : never
-  } & (T extends SelectAndInclude
-    ? 'Please either choose `select` or `include`.'
-    : T extends SelectAndOmit
-      ? 'Please either choose `select` or `omit`.'
-      : {})
+  } &
+    (T extends SelectAndInclude
+      ? 'Please either choose `select` or `include`.'
+      : T extends SelectAndOmit
+        ? 'Please either choose `select` or `omit`.'
+        : {})
 
   /**
    * Subset + Intersection
@@ -413,35 +384,37 @@ export namespace Prisma {
    */
   export type SubsetIntersection<T, U, K> = {
     [key in keyof T]: key extends keyof U ? T[key] : never
-  } & K
+  } &
+    K
 
-  type Without<T, U> = { [P in Exclude<keyof T, keyof U>]?: never }
+  type Without<T, U> = { [P in Exclude<keyof T, keyof U>]?: never };
 
   /**
    * XOR is needed to have a real mutually exclusive union type
    * https://stackoverflow.com/questions/42123407/does-typescript-support-mutually-exclusive-types
    */
-  type XOR<T, U> = T extends object
-    ? U extends object
-      ? (Without<T, U> & U) | (Without<U, T> & T)
-      : U
-    : T
+  type XOR<T, U> =
+    T extends object ?
+    U extends object ?
+      (Without<T, U> & U) | (Without<U, T> & T)
+    : U : T
+
 
   /**
    * Is T a Record?
    */
-  type IsObject<T extends any> =
-    T extends Array<any>
-      ? False
-      : T extends Date
-        ? False
-        : T extends Uint8Array
-          ? False
-          : T extends BigInt
-            ? False
-            : T extends object
-              ? True
-              : False
+  type IsObject<T extends any> = T extends Array<any>
+  ? False
+  : T extends Date
+  ? False
+  : T extends Uint8Array
+  ? False
+  : T extends BigInt
+  ? False
+  : T extends object
+  ? True
+  : False
+
 
   /**
    * If it's T[], return T
@@ -462,14 +435,20 @@ export namespace Prisma {
 
   type EitherLoose<O extends object, K extends Key> = ComputeRaw<__Either<O, K>>
 
-  type _Either<O extends object, K extends Key, strict extends Boolean> = {
+  type _Either<
+    O extends object,
+    K extends Key,
+    strict extends Boolean
+  > = {
     1: EitherStrict<O, K>
     0: EitherLoose<O, K>
   }[strict]
 
-  type Either<O extends object, K extends Key, strict extends Boolean = 1> = O extends unknown
-    ? _Either<O, K, strict>
-    : never
+  type Either<
+    O extends object,
+    K extends Key,
+    strict extends Boolean = 1
+  > = O extends unknown ? _Either<O, K, strict> : never
 
   export type Union = any
 
@@ -478,68 +457,57 @@ export namespace Prisma {
   } & {}
 
   /** Helper Types for "Merge" **/
-  export type IntersectOf<U extends Union> = (U extends unknown ? (k: U) => void : never) extends (
-    k: infer I
-  ) => void
+  export type IntersectOf<U extends Union> = (
+    U extends unknown ? (k: U) => void : never
+  ) extends (k: infer I) => void
     ? I
     : never
 
   export type Overwrite<O extends object, O1 extends object> = {
-    [K in keyof O]: K extends keyof O1 ? O1[K] : O[K]
-  } & {}
+      [K in keyof O]: K extends keyof O1 ? O1[K] : O[K];
+  } & {};
 
-  type _Merge<U extends object> = IntersectOf<
-    Overwrite<
-      U,
-      {
-        [K in keyof U]-?: At<U, K>
-      }
-    >
-  >
+  type _Merge<U extends object> = IntersectOf<Overwrite<U, {
+      [K in keyof U]-?: At<U, K>;
+  }>>;
 
-  type Key = string | number | symbol
-  type AtBasic<O extends object, K extends Key> = K extends keyof O ? O[K] : never
-  type AtStrict<O extends object, K extends Key> = O[K & keyof O]
-  type AtLoose<O extends object, K extends Key> = O extends unknown ? AtStrict<O, K> : never
+  type Key = string | number | symbol;
+  type AtBasic<O extends object, K extends Key> = K extends keyof O ? O[K] : never;
+  type AtStrict<O extends object, K extends Key> = O[K & keyof O];
+  type AtLoose<O extends object, K extends Key> = O extends unknown ? AtStrict<O, K> : never;
   export type At<O extends object, K extends Key, strict extends Boolean = 1> = {
-    1: AtStrict<O, K>
-    0: AtLoose<O, K>
-  }[strict]
+      1: AtStrict<O, K>;
+      0: AtLoose<O, K>;
+  }[strict];
 
-  export type ComputeRaw<A extends any> = A extends Function
-    ? A
-    : {
-        [K in keyof A]: A[K]
-      } & {}
+  export type ComputeRaw<A extends any> = A extends Function ? A : {
+    [K in keyof A]: A[K];
+  } & {};
 
   export type OptionalFlat<O> = {
-    [K in keyof O]?: O[K]
-  } & {}
+    [K in keyof O]?: O[K];
+  } & {};
 
   type _Record<K extends keyof any, T> = {
-    [P in K]: T
-  }
+    [P in K]: T;
+  };
 
   // cause typescript not to expand types and preserve names
-  type NoExpand<T> = T extends unknown ? T : never
+  type NoExpand<T> = T extends unknown ? T : never;
 
   // this type assumes the passed object is entirely optional
   type AtLeast<O extends object, K extends string> = NoExpand<
     O extends unknown
-      ?
-          | (K extends keyof O ? { [P in K]: O[P] } & O : O)
-          | ({ [P in keyof O as P extends K ? P : never]-?: O[P] } & O)
-      : never
-  >
+    ? | (K extends keyof O ? { [P in K]: O[P] } & O : O)
+      | {[P in keyof O as P extends K ? P : never]-?: O[P]} & O
+    : never>;
 
-  type _Strict<U, _U = U> = U extends unknown
-    ? U & OptionalFlat<_Record<Exclude<Keys<_U>, keyof U>, never>>
-    : never
+  type _Strict<U, _U = U> = U extends unknown ? U & OptionalFlat<_Record<Exclude<Keys<_U>, keyof U>, never>> : never;
 
-  export type Strict<U extends object> = ComputeRaw<_Strict<U>>
+  export type Strict<U extends object> = ComputeRaw<_Strict<U>>;
   /** End Helper Types for "Merge" **/
 
-  export type Merge<U extends object> = ComputeRaw<_Merge<Strict<U>>>
+  export type Merge<U extends object> = ComputeRaw<_Merge<Strict<U>>>;
 
   /**
   A [[Boolean]]
@@ -564,10 +532,12 @@ export namespace Prisma {
   export type Extends<A1 extends any, A2 extends any> = [A1] extends [never]
     ? 0 // anything `never` is false
     : A1 extends A2
-      ? 1
-      : 0
+    ? 1
+    : 0
 
-  export type Has<U extends Union, U1 extends Union> = Not<Extends<Exclude<U1, U>, U1>>
+  export type Has<U extends Union, U1 extends Union> = Not<
+    Extends<Exclude<U1, U>, U1>
+  >
 
   export type Or<B1 extends Boolean, B2 extends Boolean> = {
     0: {
@@ -582,25 +552,32 @@ export namespace Prisma {
 
   export type Keys<U extends Union> = U extends unknown ? keyof U : never
 
-  type Cast<A, B> = A extends B ? A : B
+  type Cast<A, B> = A extends B ? A : B;
 
-  export const type: unique symbol
+  export const type: unique symbol;
+
+
 
   /**
    * Used by group by
    */
 
-  export type GetScalarType<T, O> = O extends object
-    ? {
-        [P in keyof T]: P extends keyof O ? O[P] : never
-      }
-    : never
+  export type GetScalarType<T, O> = O extends object ? {
+    [P in keyof T]: P extends keyof O
+      ? O[P]
+      : never
+  } : never
 
-  type FieldPaths<T, U = Omit<T, '_avg' | '_sum' | '_count' | '_min' | '_max'>> =
-    IsObject<T> extends True ? U : T
+  type FieldPaths<
+    T,
+    U = Omit<T, '_avg' | '_sum' | '_count' | '_min' | '_max'>
+  > = IsObject<T> extends True ? U : T
 
   type GetHavingFields<T> = {
-    [K in keyof T]: Or<Or<Extends<'OR', K>, Extends<'AND', K>>, Extends<'NOT', K>> extends True
+    [K in keyof T]: Or<
+      Or<Extends<'OR', K>, Extends<'AND', K>>,
+      Extends<'NOT', K>
+    > extends True
       ? // infer is only needed to not hit TS limit
         // based on the brilliant idea of Pierre-Antoine Mills
         // https://github.com/microsoft/TypeScript/issues/30188#issuecomment-478938437
@@ -608,8 +585,8 @@ export namespace Prisma {
         ? GetHavingFields<UnEnumerate<TK> extends object ? Merge<UnEnumerate<TK>> : never>
         : never
       : {} extends FieldPaths<T[K]>
-        ? never
-        : K
+      ? never
+      : K
   }[keyof T]
 
   /**
@@ -622,49 +599,39 @@ export namespace Prisma {
   /**
    * Like `Pick`, but additionally can also accept an array of keys
    */
-  type PickEnumerable<T, K extends Enumerable<keyof T> | keyof T> = Prisma__Pick<
-    T,
-    MaybeTupleToUnion<K>
-  >
+  type PickEnumerable<T, K extends Enumerable<keyof T> | keyof T> = Prisma__Pick<T, MaybeTupleToUnion<K>>
 
   /**
    * Exclude all keys with underscores
    */
   type ExcludeUnderscoreKeys<T extends string> = T extends `_${string}` ? never : T
 
+
   export type FieldRef<Model, FieldType> = runtime.FieldRef<Model, FieldType>
 
-  type FieldRefInputType<Model, FieldType> = Model extends never
-    ? never
-    : FieldRef<Model, FieldType>
+  type FieldRefInputType<Model, FieldType> = Model extends never ? never : FieldRef<Model, FieldType>
+
 
   export const ModelName: {
-    SchoolRun: 'SchoolRun'
-    RunDriver: 'RunDriver'
-    RunSkip: 'RunSkip'
-  }
+    SchoolRun: 'SchoolRun',
+    RunDriver: 'RunDriver',
+    RunDay: 'RunDay'
+  };
 
   export type ModelName = (typeof ModelName)[keyof typeof ModelName]
 
-  interface TypeMapCb<ClientOptions = {}> extends $Utils.Fn<
-    { extArgs: $Extensions.InternalArgs },
-    $Utils.Record<string, any>
-  > {
-    returns: Prisma.TypeMap<
-      this['params']['extArgs'],
-      ClientOptions extends { omit: infer OmitOptions } ? OmitOptions : {}
-    >
+
+
+  interface TypeMapCb<ClientOptions = {}> extends $Utils.Fn<{extArgs: $Extensions.InternalArgs }, $Utils.Record<string, any>> {
+    returns: Prisma.TypeMap<this['params']['extArgs'], ClientOptions extends { omit: infer OmitOptions } ? OmitOptions : {}>
   }
 
-  export type TypeMap<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-    GlobalOmitOptions = {},
-  > = {
+  export type TypeMap<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> = {
     globalOmitOptions: {
       omit: GlobalOmitOptions
     }
     meta: {
-      modelProps: 'schoolRun' | 'runDriver' | 'runSkip'
+      modelProps: "schoolRun" | "runDriver" | "runDay"
       txIsolationLevel: Prisma.TransactionIsolationLevel
     }
     model: {
@@ -816,77 +783,77 @@ export namespace Prisma {
           }
         }
       }
-      RunSkip: {
-        payload: Prisma.$RunSkipPayload<ExtArgs>
-        fields: Prisma.RunSkipFieldRefs
+      RunDay: {
+        payload: Prisma.$RunDayPayload<ExtArgs>
+        fields: Prisma.RunDayFieldRefs
         operations: {
           findUnique: {
-            args: Prisma.RunSkipFindUniqueArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$RunSkipPayload> | null
+            args: Prisma.RunDayFindUniqueArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RunDayPayload> | null
           }
           findUniqueOrThrow: {
-            args: Prisma.RunSkipFindUniqueOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$RunSkipPayload>
+            args: Prisma.RunDayFindUniqueOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RunDayPayload>
           }
           findFirst: {
-            args: Prisma.RunSkipFindFirstArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$RunSkipPayload> | null
+            args: Prisma.RunDayFindFirstArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RunDayPayload> | null
           }
           findFirstOrThrow: {
-            args: Prisma.RunSkipFindFirstOrThrowArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$RunSkipPayload>
+            args: Prisma.RunDayFindFirstOrThrowArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RunDayPayload>
           }
           findMany: {
-            args: Prisma.RunSkipFindManyArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$RunSkipPayload>[]
+            args: Prisma.RunDayFindManyArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RunDayPayload>[]
           }
           create: {
-            args: Prisma.RunSkipCreateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$RunSkipPayload>
+            args: Prisma.RunDayCreateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RunDayPayload>
           }
           createMany: {
-            args: Prisma.RunSkipCreateManyArgs<ExtArgs>
+            args: Prisma.RunDayCreateManyArgs<ExtArgs>
             result: BatchPayload
           }
           createManyAndReturn: {
-            args: Prisma.RunSkipCreateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$RunSkipPayload>[]
+            args: Prisma.RunDayCreateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RunDayPayload>[]
           }
           delete: {
-            args: Prisma.RunSkipDeleteArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$RunSkipPayload>
+            args: Prisma.RunDayDeleteArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RunDayPayload>
           }
           update: {
-            args: Prisma.RunSkipUpdateArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$RunSkipPayload>
+            args: Prisma.RunDayUpdateArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RunDayPayload>
           }
           deleteMany: {
-            args: Prisma.RunSkipDeleteManyArgs<ExtArgs>
+            args: Prisma.RunDayDeleteManyArgs<ExtArgs>
             result: BatchPayload
           }
           updateMany: {
-            args: Prisma.RunSkipUpdateManyArgs<ExtArgs>
+            args: Prisma.RunDayUpdateManyArgs<ExtArgs>
             result: BatchPayload
           }
           updateManyAndReturn: {
-            args: Prisma.RunSkipUpdateManyAndReturnArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$RunSkipPayload>[]
+            args: Prisma.RunDayUpdateManyAndReturnArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RunDayPayload>[]
           }
           upsert: {
-            args: Prisma.RunSkipUpsertArgs<ExtArgs>
-            result: $Utils.PayloadToResult<Prisma.$RunSkipPayload>
+            args: Prisma.RunDayUpsertArgs<ExtArgs>
+            result: $Utils.PayloadToResult<Prisma.$RunDayPayload>
           }
           aggregate: {
-            args: Prisma.RunSkipAggregateArgs<ExtArgs>
-            result: $Utils.Optional<AggregateRunSkip>
+            args: Prisma.RunDayAggregateArgs<ExtArgs>
+            result: $Utils.Optional<AggregateRunDay>
           }
           groupBy: {
-            args: Prisma.RunSkipGroupByArgs<ExtArgs>
-            result: $Utils.Optional<RunSkipGroupByOutputType>[]
+            args: Prisma.RunDayGroupByArgs<ExtArgs>
+            result: $Utils.Optional<RunDayGroupByOutputType>[]
           }
           count: {
-            args: Prisma.RunSkipCountArgs<ExtArgs>
-            result: $Utils.Optional<RunSkipCountAggregateOutputType> | number
+            args: Prisma.RunDayCountArgs<ExtArgs>
+            result: $Utils.Optional<RunDayCountAggregateOutputType> | number
           }
         }
       }
@@ -896,29 +863,25 @@ export namespace Prisma {
       payload: any
       operations: {
         $executeRaw: {
-          args: [query: TemplateStringsArray | Prisma.Sql, ...values: any[]]
+          args: [query: TemplateStringsArray | Prisma.Sql, ...values: any[]],
           result: any
         }
         $executeRawUnsafe: {
-          args: [query: string, ...values: any[]]
+          args: [query: string, ...values: any[]],
           result: any
         }
         $queryRaw: {
-          args: [query: TemplateStringsArray | Prisma.Sql, ...values: any[]]
+          args: [query: TemplateStringsArray | Prisma.Sql, ...values: any[]],
           result: any
         }
         $queryRawUnsafe: {
-          args: [query: string, ...values: any[]]
+          args: [query: string, ...values: any[]],
           result: any
         }
       }
     }
   }
-  export const defineExtension: $Extensions.ExtendsHook<
-    'define',
-    Prisma.TypeMapCb,
-    $Extensions.DefaultArgs
-  >
+  export const defineExtension: $Extensions.ExtendsHook<"define", Prisma.TypeMapCb, $Extensions.DefaultArgs>
   export type DefaultPrismaClient = PrismaClient
   export type ErrorFormat = 'pretty' | 'colorless' | 'minimal'
   export interface PrismaClientOptions {
@@ -931,7 +894,7 @@ export namespace Prisma {
      * ```
      * // Shorthand for `emit: 'stdout'`
      * log: ['query', 'info', 'warn', 'error']
-     *
+     * 
      * // Emit as events only
      * log: [
      *   { emit: 'event', level: 'query' },
@@ -939,14 +902,14 @@ export namespace Prisma {
      *   { emit: 'event', level: 'warn' }
      *   { emit: 'event', level: 'error' }
      * ]
-     *
+     * 
      * / Emit as events and log to stdout
      * og: [
      *  { emit: 'stdout', level: 'query' },
      *  { emit: 'stdout', level: 'info' },
      *  { emit: 'stdout', level: 'warn' }
      *  { emit: 'stdout', level: 'error' }
-     *
+     * 
      * ```
      * Read more in our [docs](https://pris.ly/d/logging).
      */
@@ -971,7 +934,7 @@ export namespace Prisma {
     accelerateUrl?: string
     /**
      * Global configuration for omitting model fields by default.
-     *
+     * 
      * @example
      * ```
      * const prisma = new PrismaClient({
@@ -987,7 +950,7 @@ export namespace Prisma {
     /**
      * SQL commenter plugins that add metadata to SQL queries as comments.
      * Comments follow the sqlcommenter format: https://google.github.io/sqlcommenter/
-     *
+     * 
      * @example
      * ```
      * const prisma = new PrismaClient({
@@ -1004,7 +967,7 @@ export namespace Prisma {
   export type GlobalOmitConfig = {
     schoolRun?: SchoolRunOmit
     runDriver?: RunDriverOmit
-    runSkip?: RunSkipOmit
+    runDay?: RunDayOmit
   }
 
   /* Types for Logging */
@@ -1014,12 +977,15 @@ export namespace Prisma {
     emit: 'stdout' | 'event'
   }
 
-  export type CheckIsLogLevel<T> = T extends LogLevel ? T : never
+  export type CheckIsLogLevel<T> = T extends LogLevel ? T : never;
 
-  export type GetLogType<T> = CheckIsLogLevel<T extends LogDefinition ? T['level'] : T>
+  export type GetLogType<T> = CheckIsLogLevel<
+    T extends LogDefinition ? T['level'] : T
+  >;
 
-  export type GetEvents<T extends any[]> =
-    T extends Array<LogLevel | LogDefinition> ? GetLogType<T[number]> : never
+  export type GetEvents<T extends any[]> = T extends Array<LogLevel | LogDefinition>
+    ? GetLogType<T[number]>
+    : never;
 
   export type QueryEvent = {
     timestamp: Date
@@ -1035,6 +1001,7 @@ export namespace Prisma {
     target: string
   }
   /* End Types for Logging */
+
 
   export type PrismaAction =
     | 'findUnique'
@@ -1060,7 +1027,7 @@ export namespace Prisma {
     | 'groupBy'
 
   // tested in getLogLevel.test.ts
-  export function getLogLevel(log: Array<LogLevel | LogDefinition>): LogLevel | undefined
+  export function getLogLevel(log: Array<LogLevel | LogDefinition>): LogLevel | undefined;
 
   /**
    * `PrismaClient` proxy available in interactive transactions.
@@ -1075,29 +1042,26 @@ export namespace Prisma {
    * Count Types
    */
 
+
   /**
    * Count Type SchoolRunCountOutputType
    */
 
   export type SchoolRunCountOutputType = {
     drivers: number
-    skips: number
+    days: number
   }
 
-  export type SchoolRunCountOutputTypeSelect<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+  export type SchoolRunCountOutputTypeSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     drivers?: boolean | SchoolRunCountOutputTypeCountDriversArgs
-    skips?: boolean | SchoolRunCountOutputTypeCountSkipsArgs
+    days?: boolean | SchoolRunCountOutputTypeCountDaysArgs
   }
 
   // Custom InputTypes
   /**
    * SchoolRunCountOutputType without action
    */
-  export type SchoolRunCountOutputTypeDefaultArgs<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+  export type SchoolRunCountOutputTypeDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the SchoolRunCountOutputType
      */
@@ -1107,20 +1071,17 @@ export namespace Prisma {
   /**
    * SchoolRunCountOutputType without action
    */
-  export type SchoolRunCountOutputTypeCountDriversArgs<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+  export type SchoolRunCountOutputTypeCountDriversArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: RunDriverWhereInput
   }
 
   /**
    * SchoolRunCountOutputType without action
    */
-  export type SchoolRunCountOutputTypeCountSkipsArgs<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
-    where?: RunSkipWhereInput
+  export type SchoolRunCountOutputTypeCountDaysArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: RunDayWhereInput
   }
+
 
   /**
    * Models
@@ -1188,6 +1149,7 @@ export namespace Prisma {
     _all: number
   }
 
+
   export type SchoolRunAvgAggregateInputType = {
     weekday?: true
     minutes?: true
@@ -1238,80 +1200,79 @@ export namespace Prisma {
     _all?: true
   }
 
-  export type SchoolRunAggregateArgs<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+  export type SchoolRunAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Filter which SchoolRun to aggregate.
      */
     where?: SchoolRunWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     *
+     * 
      * Determine the order of SchoolRuns to fetch.
      */
     orderBy?: SchoolRunOrderByWithRelationInput | SchoolRunOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     *
+     * 
      * Sets the start position
      */
     cursor?: SchoolRunWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     *
+     * 
      * Take `±n` SchoolRuns from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     *
+     * 
      * Skip the first `n` SchoolRuns.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     *
+     * 
      * Count returned SchoolRuns
-     **/
+    **/
     _count?: true | SchoolRunCountAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     *
+     * 
      * Select which fields to average
-     **/
+    **/
     _avg?: SchoolRunAvgAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     *
+     * 
      * Select which fields to sum
-     **/
+    **/
     _sum?: SchoolRunSumAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     *
+     * 
      * Select which fields to find the minimum value
-     **/
+    **/
     _min?: SchoolRunMinAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     *
+     * 
      * Select which fields to find the maximum value
-     **/
+    **/
     _max?: SchoolRunMaxAggregateInputType
   }
 
   export type GetSchoolRunAggregateType<T extends SchoolRunAggregateArgs> = {
-    [P in keyof T & keyof AggregateSchoolRun]: P extends '_count' | 'count'
+        [P in keyof T & keyof AggregateSchoolRun]: P extends '_count' | 'count'
       ? T[P] extends true
         ? number
         : GetScalarType<T[P], AggregateSchoolRun[P]>
       : GetScalarType<T[P], AggregateSchoolRun[P]>
   }
 
-  export type SchoolRunGroupByArgs<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+
+
+
+  export type SchoolRunGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: SchoolRunWhereInput
     orderBy?: SchoolRunOrderByWithAggregationInput | SchoolRunOrderByWithAggregationInput[]
     by: SchoolRunScalarFieldEnum[] | SchoolRunScalarFieldEnum
@@ -1345,71 +1306,59 @@ export namespace Prisma {
 
   type GetSchoolRunGroupByPayload<T extends SchoolRunGroupByArgs> = Prisma.PrismaPromise<
     Array<
-      PickEnumerable<SchoolRunGroupByOutputType, T['by']> & {
-        [P in keyof T & keyof SchoolRunGroupByOutputType]: P extends '_count'
-          ? T[P] extends boolean
-            ? number
+      PickEnumerable<SchoolRunGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof SchoolRunGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], SchoolRunGroupByOutputType[P]>
             : GetScalarType<T[P], SchoolRunGroupByOutputType[P]>
-          : GetScalarType<T[P], SchoolRunGroupByOutputType[P]>
-      }
-    >
-  >
-
-  export type SchoolRunSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    $Extensions.GetSelect<
-      {
-        id?: boolean
-        kidId?: boolean
-        weekday?: boolean
-        kind?: boolean
-        place?: boolean
-        minutes?: boolean
-        startsOn?: boolean
-        endsOn?: boolean
-        createdBy?: boolean
-        createdAt?: boolean
-        drivers?: boolean | SchoolRun$driversArgs<ExtArgs>
-        skips?: boolean | SchoolRun$skipsArgs<ExtArgs>
-        _count?: boolean | SchoolRunCountOutputTypeDefaultArgs<ExtArgs>
-      },
-      ExtArgs['result']['schoolRun']
+        }
+      >
     >
 
-  export type SchoolRunSelectCreateManyAndReturn<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = $Extensions.GetSelect<
-    {
-      id?: boolean
-      kidId?: boolean
-      weekday?: boolean
-      kind?: boolean
-      place?: boolean
-      minutes?: boolean
-      startsOn?: boolean
-      endsOn?: boolean
-      createdBy?: boolean
-      createdAt?: boolean
-    },
-    ExtArgs['result']['schoolRun']
-  >
 
-  export type SchoolRunSelectUpdateManyAndReturn<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = $Extensions.GetSelect<
-    {
-      id?: boolean
-      kidId?: boolean
-      weekday?: boolean
-      kind?: boolean
-      place?: boolean
-      minutes?: boolean
-      startsOn?: boolean
-      endsOn?: boolean
-      createdBy?: boolean
-      createdAt?: boolean
-    },
-    ExtArgs['result']['schoolRun']
-  >
+  export type SchoolRunSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    kidId?: boolean
+    weekday?: boolean
+    kind?: boolean
+    place?: boolean
+    minutes?: boolean
+    startsOn?: boolean
+    endsOn?: boolean
+    createdBy?: boolean
+    createdAt?: boolean
+    drivers?: boolean | SchoolRun$driversArgs<ExtArgs>
+    days?: boolean | SchoolRun$daysArgs<ExtArgs>
+    _count?: boolean | SchoolRunCountOutputTypeDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["schoolRun"]>
+
+  export type SchoolRunSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    kidId?: boolean
+    weekday?: boolean
+    kind?: boolean
+    place?: boolean
+    minutes?: boolean
+    startsOn?: boolean
+    endsOn?: boolean
+    createdBy?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["schoolRun"]>
+
+  export type SchoolRunSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    id?: boolean
+    kidId?: boolean
+    weekday?: boolean
+    kind?: boolean
+    place?: boolean
+    minutes?: boolean
+    startsOn?: boolean
+    endsOn?: boolean
+    createdBy?: boolean
+    createdAt?: boolean
+  }, ExtArgs["result"]["schoolRun"]>
 
   export type SchoolRunSelectScalar = {
     id?: boolean
@@ -1424,75 +1373,45 @@ export namespace Prisma {
     createdAt?: boolean
   }
 
-  export type SchoolRunOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    $Extensions.GetOmit<
-      | 'id'
-      | 'kidId'
-      | 'weekday'
-      | 'kind'
-      | 'place'
-      | 'minutes'
-      | 'startsOn'
-      | 'endsOn'
-      | 'createdBy'
-      | 'createdAt',
-      ExtArgs['result']['schoolRun']
-    >
-  export type SchoolRunInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    {
-      drivers?: boolean | SchoolRun$driversArgs<ExtArgs>
-      skips?: boolean | SchoolRun$skipsArgs<ExtArgs>
-      _count?: boolean | SchoolRunCountOutputTypeDefaultArgs<ExtArgs>
-    }
-  export type SchoolRunIncludeCreateManyAndReturn<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {}
-  export type SchoolRunIncludeUpdateManyAndReturn<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {}
+  export type SchoolRunOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"id" | "kidId" | "weekday" | "kind" | "place" | "minutes" | "startsOn" | "endsOn" | "createdBy" | "createdAt", ExtArgs["result"]["schoolRun"]>
+  export type SchoolRunInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    drivers?: boolean | SchoolRun$driversArgs<ExtArgs>
+    days?: boolean | SchoolRun$daysArgs<ExtArgs>
+    _count?: boolean | SchoolRunCountOutputTypeDefaultArgs<ExtArgs>
+  }
+  export type SchoolRunIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
+  export type SchoolRunIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {}
 
-  export type $SchoolRunPayload<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
-    name: 'SchoolRun'
+  export type $SchoolRunPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "SchoolRun"
     objects: {
       drivers: Prisma.$RunDriverPayload<ExtArgs>[]
-      skips: Prisma.$RunSkipPayload<ExtArgs>[]
+      days: Prisma.$RunDayPayload<ExtArgs>[]
     }
-    scalars: $Extensions.GetPayloadResult<
-      {
-        id: string
-        kidId: string
-        weekday: number
-        kind: string
-        place: string | null
-        minutes: number
-        startsOn: Date
-        endsOn: Date | null
-        createdBy: string
-        createdAt: Date
-      },
-      ExtArgs['result']['schoolRun']
-    >
+    scalars: $Extensions.GetPayloadResult<{
+      id: string
+      kidId: string
+      weekday: number
+      kind: string
+      place: string | null
+      minutes: number
+      startsOn: Date
+      endsOn: Date | null
+      createdBy: string
+      createdAt: Date
+    }, ExtArgs["result"]["schoolRun"]>
     composites: {}
   }
 
-  type SchoolRunGetPayload<S extends boolean | null | undefined | SchoolRunDefaultArgs> =
-    $Result.GetResult<Prisma.$SchoolRunPayload, S>
+  type SchoolRunGetPayload<S extends boolean | null | undefined | SchoolRunDefaultArgs> = $Result.GetResult<Prisma.$SchoolRunPayload, S>
 
   type SchoolRunCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
     Omit<SchoolRunFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
       select?: SchoolRunCountAggregateInputType | true
     }
 
-  export interface SchoolRunDelegate<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-    GlobalOmitOptions = {},
-  > {
-    [K: symbol]: {
-      types: Prisma.TypeMap<ExtArgs>['model']['SchoolRun']
-      meta: { name: 'SchoolRun' }
-    }
+  export interface SchoolRunDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['SchoolRun'], meta: { name: 'SchoolRun' } }
     /**
      * Find zero or one SchoolRun that matches the filter.
      * @param {SchoolRunFindUniqueArgs} args - Arguments to find a SchoolRun
@@ -1504,19 +1423,7 @@ export namespace Prisma {
      *   }
      * })
      */
-    findUnique<T extends SchoolRunFindUniqueArgs>(
-      args: SelectSubset<T, SchoolRunFindUniqueArgs<ExtArgs>>
-    ): Prisma__SchoolRunClient<
-      $Result.GetResult<
-        Prisma.$SchoolRunPayload<ExtArgs>,
-        T,
-        'findUnique',
-        GlobalOmitOptions
-      > | null,
-      null,
-      ExtArgs,
-      GlobalOmitOptions
-    >
+    findUnique<T extends SchoolRunFindUniqueArgs>(args: SelectSubset<T, SchoolRunFindUniqueArgs<ExtArgs>>): Prisma__SchoolRunClient<$Result.GetResult<Prisma.$SchoolRunPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
 
     /**
      * Find one SchoolRun that matches the filter or throw an error with `error.code='P2025'`
@@ -1530,19 +1437,7 @@ export namespace Prisma {
      *   }
      * })
      */
-    findUniqueOrThrow<T extends SchoolRunFindUniqueOrThrowArgs>(
-      args: SelectSubset<T, SchoolRunFindUniqueOrThrowArgs<ExtArgs>>
-    ): Prisma__SchoolRunClient<
-      $Result.GetResult<
-        Prisma.$SchoolRunPayload<ExtArgs>,
-        T,
-        'findUniqueOrThrow',
-        GlobalOmitOptions
-      >,
-      never,
-      ExtArgs,
-      GlobalOmitOptions
-    >
+    findUniqueOrThrow<T extends SchoolRunFindUniqueOrThrowArgs>(args: SelectSubset<T, SchoolRunFindUniqueOrThrowArgs<ExtArgs>>): Prisma__SchoolRunClient<$Result.GetResult<Prisma.$SchoolRunPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
      * Find the first SchoolRun that matches the filter.
@@ -1557,19 +1452,7 @@ export namespace Prisma {
      *   }
      * })
      */
-    findFirst<T extends SchoolRunFindFirstArgs>(
-      args?: SelectSubset<T, SchoolRunFindFirstArgs<ExtArgs>>
-    ): Prisma__SchoolRunClient<
-      $Result.GetResult<
-        Prisma.$SchoolRunPayload<ExtArgs>,
-        T,
-        'findFirst',
-        GlobalOmitOptions
-      > | null,
-      null,
-      ExtArgs,
-      GlobalOmitOptions
-    >
+    findFirst<T extends SchoolRunFindFirstArgs>(args?: SelectSubset<T, SchoolRunFindFirstArgs<ExtArgs>>): Prisma__SchoolRunClient<$Result.GetResult<Prisma.$SchoolRunPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
 
     /**
      * Find the first SchoolRun that matches the filter or
@@ -1585,19 +1468,7 @@ export namespace Prisma {
      *   }
      * })
      */
-    findFirstOrThrow<T extends SchoolRunFindFirstOrThrowArgs>(
-      args?: SelectSubset<T, SchoolRunFindFirstOrThrowArgs<ExtArgs>>
-    ): Prisma__SchoolRunClient<
-      $Result.GetResult<
-        Prisma.$SchoolRunPayload<ExtArgs>,
-        T,
-        'findFirstOrThrow',
-        GlobalOmitOptions
-      >,
-      never,
-      ExtArgs,
-      GlobalOmitOptions
-    >
+    findFirstOrThrow<T extends SchoolRunFindFirstOrThrowArgs>(args?: SelectSubset<T, SchoolRunFindFirstOrThrowArgs<ExtArgs>>): Prisma__SchoolRunClient<$Result.GetResult<Prisma.$SchoolRunPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
      * Find zero or more SchoolRuns that matches the filter.
@@ -1607,19 +1478,15 @@ export namespace Prisma {
      * @example
      * // Get all SchoolRuns
      * const schoolRuns = await prisma.schoolRun.findMany()
-     *
+     * 
      * // Get first 10 SchoolRuns
      * const schoolRuns = await prisma.schoolRun.findMany({ take: 10 })
-     *
+     * 
      * // Only select the `id`
      * const schoolRunWithIdOnly = await prisma.schoolRun.findMany({ select: { id: true } })
-     *
+     * 
      */
-    findMany<T extends SchoolRunFindManyArgs>(
-      args?: SelectSubset<T, SchoolRunFindManyArgs<ExtArgs>>
-    ): Prisma.PrismaPromise<
-      $Result.GetResult<Prisma.$SchoolRunPayload<ExtArgs>, T, 'findMany', GlobalOmitOptions>
-    >
+    findMany<T extends SchoolRunFindManyArgs>(args?: SelectSubset<T, SchoolRunFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SchoolRunPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
 
     /**
      * Create a SchoolRun.
@@ -1631,16 +1498,9 @@ export namespace Prisma {
      *     // ... data to create a SchoolRun
      *   }
      * })
-     *
+     * 
      */
-    create<T extends SchoolRunCreateArgs>(
-      args: SelectSubset<T, SchoolRunCreateArgs<ExtArgs>>
-    ): Prisma__SchoolRunClient<
-      $Result.GetResult<Prisma.$SchoolRunPayload<ExtArgs>, T, 'create', GlobalOmitOptions>,
-      never,
-      ExtArgs,
-      GlobalOmitOptions
-    >
+    create<T extends SchoolRunCreateArgs>(args: SelectSubset<T, SchoolRunCreateArgs<ExtArgs>>): Prisma__SchoolRunClient<$Result.GetResult<Prisma.$SchoolRunPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
      * Create many SchoolRuns.
@@ -1652,11 +1512,9 @@ export namespace Prisma {
      *     // ... provide data here
      *   ]
      * })
-     *
+     *     
      */
-    createMany<T extends SchoolRunCreateManyArgs>(
-      args?: SelectSubset<T, SchoolRunCreateManyArgs<ExtArgs>>
-    ): Prisma.PrismaPromise<BatchPayload>
+    createMany<T extends SchoolRunCreateManyArgs>(args?: SelectSubset<T, SchoolRunCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
      * Create many SchoolRuns and returns the data saved in the database.
@@ -1668,7 +1526,7 @@ export namespace Prisma {
      *     // ... provide data here
      *   ]
      * })
-     *
+     * 
      * // Create many SchoolRuns and only return the `id`
      * const schoolRunWithIdOnly = await prisma.schoolRun.createManyAndReturn({
      *   select: { id: true },
@@ -1678,18 +1536,9 @@ export namespace Prisma {
      * })
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     *
+     * 
      */
-    createManyAndReturn<T extends SchoolRunCreateManyAndReturnArgs>(
-      args?: SelectSubset<T, SchoolRunCreateManyAndReturnArgs<ExtArgs>>
-    ): Prisma.PrismaPromise<
-      $Result.GetResult<
-        Prisma.$SchoolRunPayload<ExtArgs>,
-        T,
-        'createManyAndReturn',
-        GlobalOmitOptions
-      >
-    >
+    createManyAndReturn<T extends SchoolRunCreateManyAndReturnArgs>(args?: SelectSubset<T, SchoolRunCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SchoolRunPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
 
     /**
      * Delete a SchoolRun.
@@ -1701,16 +1550,9 @@ export namespace Prisma {
      *     // ... filter to delete one SchoolRun
      *   }
      * })
-     *
+     * 
      */
-    delete<T extends SchoolRunDeleteArgs>(
-      args: SelectSubset<T, SchoolRunDeleteArgs<ExtArgs>>
-    ): Prisma__SchoolRunClient<
-      $Result.GetResult<Prisma.$SchoolRunPayload<ExtArgs>, T, 'delete', GlobalOmitOptions>,
-      never,
-      ExtArgs,
-      GlobalOmitOptions
-    >
+    delete<T extends SchoolRunDeleteArgs>(args: SelectSubset<T, SchoolRunDeleteArgs<ExtArgs>>): Prisma__SchoolRunClient<$Result.GetResult<Prisma.$SchoolRunPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
      * Update one SchoolRun.
@@ -1725,16 +1567,9 @@ export namespace Prisma {
      *     // ... provide data here
      *   }
      * })
-     *
+     * 
      */
-    update<T extends SchoolRunUpdateArgs>(
-      args: SelectSubset<T, SchoolRunUpdateArgs<ExtArgs>>
-    ): Prisma__SchoolRunClient<
-      $Result.GetResult<Prisma.$SchoolRunPayload<ExtArgs>, T, 'update', GlobalOmitOptions>,
-      never,
-      ExtArgs,
-      GlobalOmitOptions
-    >
+    update<T extends SchoolRunUpdateArgs>(args: SelectSubset<T, SchoolRunUpdateArgs<ExtArgs>>): Prisma__SchoolRunClient<$Result.GetResult<Prisma.$SchoolRunPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
      * Delete zero or more SchoolRuns.
@@ -1746,11 +1581,9 @@ export namespace Prisma {
      *     // ... provide filter here
      *   }
      * })
-     *
+     * 
      */
-    deleteMany<T extends SchoolRunDeleteManyArgs>(
-      args?: SelectSubset<T, SchoolRunDeleteManyArgs<ExtArgs>>
-    ): Prisma.PrismaPromise<BatchPayload>
+    deleteMany<T extends SchoolRunDeleteManyArgs>(args?: SelectSubset<T, SchoolRunDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
      * Update zero or more SchoolRuns.
@@ -1767,11 +1600,9 @@ export namespace Prisma {
      *     // ... provide data here
      *   }
      * })
-     *
+     * 
      */
-    updateMany<T extends SchoolRunUpdateManyArgs>(
-      args: SelectSubset<T, SchoolRunUpdateManyArgs<ExtArgs>>
-    ): Prisma.PrismaPromise<BatchPayload>
+    updateMany<T extends SchoolRunUpdateManyArgs>(args: SelectSubset<T, SchoolRunUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
      * Update zero or more SchoolRuns and returns the data updated in the database.
@@ -1786,7 +1617,7 @@ export namespace Prisma {
      *     // ... provide data here
      *   ]
      * })
-     *
+     * 
      * // Update zero or more SchoolRuns and only return the `id`
      * const schoolRunWithIdOnly = await prisma.schoolRun.updateManyAndReturn({
      *   select: { id: true },
@@ -1799,18 +1630,9 @@ export namespace Prisma {
      * })
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     *
+     * 
      */
-    updateManyAndReturn<T extends SchoolRunUpdateManyAndReturnArgs>(
-      args: SelectSubset<T, SchoolRunUpdateManyAndReturnArgs<ExtArgs>>
-    ): Prisma.PrismaPromise<
-      $Result.GetResult<
-        Prisma.$SchoolRunPayload<ExtArgs>,
-        T,
-        'updateManyAndReturn',
-        GlobalOmitOptions
-      >
-    >
+    updateManyAndReturn<T extends SchoolRunUpdateManyAndReturnArgs>(args: SelectSubset<T, SchoolRunUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$SchoolRunPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
 
     /**
      * Create or update one SchoolRun.
@@ -1829,14 +1651,8 @@ export namespace Prisma {
      *   }
      * })
      */
-    upsert<T extends SchoolRunUpsertArgs>(
-      args: SelectSubset<T, SchoolRunUpsertArgs<ExtArgs>>
-    ): Prisma__SchoolRunClient<
-      $Result.GetResult<Prisma.$SchoolRunPayload<ExtArgs>, T, 'upsert', GlobalOmitOptions>,
-      never,
-      ExtArgs,
-      GlobalOmitOptions
-    >
+    upsert<T extends SchoolRunUpsertArgs>(args: SelectSubset<T, SchoolRunUpsertArgs<ExtArgs>>): Prisma__SchoolRunClient<$Result.GetResult<Prisma.$SchoolRunPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
 
     /**
      * Count the number of SchoolRuns.
@@ -1850,9 +1666,9 @@ export namespace Prisma {
      *     // ... the filter for the SchoolRuns we want to count
      *   }
      * })
-     **/
+    **/
     count<T extends SchoolRunCountArgs>(
-      args?: Subset<T, SchoolRunCountArgs>
+      args?: Subset<T, SchoolRunCountArgs>,
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
@@ -1884,10 +1700,8 @@ export namespace Prisma {
      *   },
      *   take: 10,
      * })
-     **/
-    aggregate<T extends SchoolRunAggregateArgs>(
-      args: Subset<T, SchoolRunAggregateArgs>
-    ): Prisma.PrismaPromise<GetSchoolRunAggregateType<T>>
+    **/
+    aggregate<T extends SchoolRunAggregateArgs>(args: Subset<T, SchoolRunAggregateArgs>): Prisma.PrismaPromise<GetSchoolRunAggregateType<T>>
 
     /**
      * Group by SchoolRun.
@@ -1905,11 +1719,14 @@ export namespace Prisma {
      *     _all: true
      *   },
      * })
-     *
-     **/
+     * 
+    **/
     groupBy<
       T extends SchoolRunGroupByArgs,
-      HasSelectOrTake extends Or<Extends<'skip', Keys<T>>, Extends<'take', Keys<T>>>,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
       OrderByArg extends True extends HasSelectOrTake
         ? { orderBy: SchoolRunGroupByArgs['orderBy'] }
         : { orderBy?: SchoolRunGroupByArgs['orderBy'] },
@@ -1920,49 +1737,52 @@ export namespace Prisma {
       HavingValid extends Has<ByFields, HavingFields>,
       ByEmpty extends T['by'] extends never[] ? True : False,
       InputErrors extends ByEmpty extends True
-        ? `Error: "by" must not be empty.`
-        : HavingValid extends False
-          ? {
-              [P in HavingFields]: P extends ByFields
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
                 ? never
-                : P extends string
-                  ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-                  : [Error, 'Field ', P, ` in "having" needs to be provided in "by"`]
-            }[HavingFields]
-          : 'take' extends Keys<T>
-            ? 'orderBy' extends Keys<T>
-              ? ByValid extends True
-                ? {}
-                : {
-                    [P in OrderFields]: P extends ByFields
-                      ? never
-                      : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-                  }[OrderFields]
-              : 'Error: If you provide "take", you also need to provide "orderBy"'
-            : 'skip' extends Keys<T>
-              ? 'orderBy' extends Keys<T>
-                ? ByValid extends True
-                  ? {}
-                  : {
-                      [P in OrderFields]: P extends ByFields
-                        ? never
-                        : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-                    }[OrderFields]
-                : 'Error: If you provide "skip", you also need to provide "orderBy"'
-              : ByValid extends True
-                ? {}
-                : {
-                    [P in OrderFields]: P extends ByFields
-                      ? never
-                      : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-                  }[OrderFields],
-    >(
-      args: SubsetIntersection<T, SchoolRunGroupByArgs, OrderByArg> & InputErrors
-    ): {} extends InputErrors ? GetSchoolRunGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-    /**
-     * Fields of the SchoolRun model
-     */
-    readonly fields: SchoolRunFieldRefs
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, SchoolRunGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetSchoolRunGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the SchoolRun model
+   */
+  readonly fields: SchoolRunFieldRefs;
   }
 
   /**
@@ -1971,41 +1791,23 @@ export namespace Prisma {
    * Because we want to prevent naming conflicts as mentioned in
    * https://github.com/prisma/prisma-client-js/issues/707
    */
-  export interface Prisma__SchoolRunClient<
-    T,
-    Null = never,
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-    GlobalOmitOptions = {},
-  > extends Prisma.PrismaPromise<T> {
-    readonly [Symbol.toStringTag]: 'PrismaPromise'
-    drivers<T extends SchoolRun$driversArgs<ExtArgs> = {}>(
-      args?: Subset<T, SchoolRun$driversArgs<ExtArgs>>
-    ): Prisma.PrismaPromise<
-      $Result.GetResult<Prisma.$RunDriverPayload<ExtArgs>, T, 'findMany', GlobalOmitOptions> | Null
-    >
-    skips<T extends SchoolRun$skipsArgs<ExtArgs> = {}>(
-      args?: Subset<T, SchoolRun$skipsArgs<ExtArgs>>
-    ): Prisma.PrismaPromise<
-      $Result.GetResult<Prisma.$RunSkipPayload<ExtArgs>, T, 'findMany', GlobalOmitOptions> | Null
-    >
+  export interface Prisma__SchoolRunClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    drivers<T extends SchoolRun$driversArgs<ExtArgs> = {}>(args?: Subset<T, SchoolRun$driversArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RunDriverPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
+    days<T extends SchoolRun$daysArgs<ExtArgs> = {}>(args?: Subset<T, SchoolRun$daysArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RunDayPayload<ExtArgs>, T, "findMany", GlobalOmitOptions> | Null>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(
-      onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null,
-      onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null
-    ): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(
-      onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null
-    ): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
@@ -2015,29 +1817,31 @@ export namespace Prisma {
     finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
   }
 
+
+
+
   /**
    * Fields of the SchoolRun model
    */
   interface SchoolRunFieldRefs {
-    readonly id: FieldRef<'SchoolRun', 'String'>
-    readonly kidId: FieldRef<'SchoolRun', 'String'>
-    readonly weekday: FieldRef<'SchoolRun', 'Int'>
-    readonly kind: FieldRef<'SchoolRun', 'String'>
-    readonly place: FieldRef<'SchoolRun', 'String'>
-    readonly minutes: FieldRef<'SchoolRun', 'Int'>
-    readonly startsOn: FieldRef<'SchoolRun', 'DateTime'>
-    readonly endsOn: FieldRef<'SchoolRun', 'DateTime'>
-    readonly createdBy: FieldRef<'SchoolRun', 'String'>
-    readonly createdAt: FieldRef<'SchoolRun', 'DateTime'>
+    readonly id: FieldRef<"SchoolRun", 'String'>
+    readonly kidId: FieldRef<"SchoolRun", 'String'>
+    readonly weekday: FieldRef<"SchoolRun", 'Int'>
+    readonly kind: FieldRef<"SchoolRun", 'String'>
+    readonly place: FieldRef<"SchoolRun", 'String'>
+    readonly minutes: FieldRef<"SchoolRun", 'Int'>
+    readonly startsOn: FieldRef<"SchoolRun", 'DateTime'>
+    readonly endsOn: FieldRef<"SchoolRun", 'DateTime'>
+    readonly createdBy: FieldRef<"SchoolRun", 'String'>
+    readonly createdAt: FieldRef<"SchoolRun", 'DateTime'>
   }
+    
 
   // Custom InputTypes
   /**
    * SchoolRun findUnique
    */
-  export type SchoolRunFindUniqueArgs<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+  export type SchoolRunFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the SchoolRun
      */
@@ -2059,9 +1863,7 @@ export namespace Prisma {
   /**
    * SchoolRun findUniqueOrThrow
    */
-  export type SchoolRunFindUniqueOrThrowArgs<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+  export type SchoolRunFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the SchoolRun
      */
@@ -2083,9 +1885,7 @@ export namespace Prisma {
   /**
    * SchoolRun findFirst
    */
-  export type SchoolRunFindFirstArgs<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+  export type SchoolRunFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the SchoolRun
      */
@@ -2104,31 +1904,31 @@ export namespace Prisma {
     where?: SchoolRunWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     *
+     * 
      * Determine the order of SchoolRuns to fetch.
      */
     orderBy?: SchoolRunOrderByWithRelationInput | SchoolRunOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     *
+     * 
      * Sets the position for searching for SchoolRuns.
      */
     cursor?: SchoolRunWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     *
+     * 
      * Take `±n` SchoolRuns from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     *
+     * 
      * Skip the first `n` SchoolRuns.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     *
+     * 
      * Filter by unique combinations of SchoolRuns.
      */
     distinct?: SchoolRunScalarFieldEnum | SchoolRunScalarFieldEnum[]
@@ -2137,9 +1937,7 @@ export namespace Prisma {
   /**
    * SchoolRun findFirstOrThrow
    */
-  export type SchoolRunFindFirstOrThrowArgs<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+  export type SchoolRunFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the SchoolRun
      */
@@ -2158,31 +1956,31 @@ export namespace Prisma {
     where?: SchoolRunWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     *
+     * 
      * Determine the order of SchoolRuns to fetch.
      */
     orderBy?: SchoolRunOrderByWithRelationInput | SchoolRunOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     *
+     * 
      * Sets the position for searching for SchoolRuns.
      */
     cursor?: SchoolRunWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     *
+     * 
      * Take `±n` SchoolRuns from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     *
+     * 
      * Skip the first `n` SchoolRuns.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     *
+     * 
      * Filter by unique combinations of SchoolRuns.
      */
     distinct?: SchoolRunScalarFieldEnum | SchoolRunScalarFieldEnum[]
@@ -2191,9 +1989,7 @@ export namespace Prisma {
   /**
    * SchoolRun findMany
    */
-  export type SchoolRunFindManyArgs<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+  export type SchoolRunFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the SchoolRun
      */
@@ -2212,31 +2008,31 @@ export namespace Prisma {
     where?: SchoolRunWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     *
+     * 
      * Determine the order of SchoolRuns to fetch.
      */
     orderBy?: SchoolRunOrderByWithRelationInput | SchoolRunOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     *
+     * 
      * Sets the position for listing SchoolRuns.
      */
     cursor?: SchoolRunWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     *
+     * 
      * Take `±n` SchoolRuns from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     *
+     * 
      * Skip the first `n` SchoolRuns.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     *
+     * 
      * Filter by unique combinations of SchoolRuns.
      */
     distinct?: SchoolRunScalarFieldEnum | SchoolRunScalarFieldEnum[]
@@ -2245,9 +2041,7 @@ export namespace Prisma {
   /**
    * SchoolRun create
    */
-  export type SchoolRunCreateArgs<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+  export type SchoolRunCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the SchoolRun
      */
@@ -2269,9 +2063,7 @@ export namespace Prisma {
   /**
    * SchoolRun createMany
    */
-  export type SchoolRunCreateManyArgs<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+  export type SchoolRunCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * The data used to create many SchoolRuns.
      */
@@ -2282,9 +2074,7 @@ export namespace Prisma {
   /**
    * SchoolRun createManyAndReturn
    */
-  export type SchoolRunCreateManyAndReturnArgs<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+  export type SchoolRunCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the SchoolRun
      */
@@ -2303,9 +2093,7 @@ export namespace Prisma {
   /**
    * SchoolRun update
    */
-  export type SchoolRunUpdateArgs<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+  export type SchoolRunUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the SchoolRun
      */
@@ -2331,9 +2119,7 @@ export namespace Prisma {
   /**
    * SchoolRun updateMany
    */
-  export type SchoolRunUpdateManyArgs<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+  export type SchoolRunUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * The data used to update SchoolRuns.
      */
@@ -2351,9 +2137,7 @@ export namespace Prisma {
   /**
    * SchoolRun updateManyAndReturn
    */
-  export type SchoolRunUpdateManyAndReturnArgs<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+  export type SchoolRunUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the SchoolRun
      */
@@ -2379,9 +2163,7 @@ export namespace Prisma {
   /**
    * SchoolRun upsert
    */
-  export type SchoolRunUpsertArgs<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+  export type SchoolRunUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the SchoolRun
      */
@@ -2411,9 +2193,7 @@ export namespace Prisma {
   /**
    * SchoolRun delete
    */
-  export type SchoolRunDeleteArgs<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+  export type SchoolRunDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the SchoolRun
      */
@@ -2435,9 +2215,7 @@ export namespace Prisma {
   /**
    * SchoolRun deleteMany
    */
-  export type SchoolRunDeleteManyArgs<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+  export type SchoolRunDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Filter which SchoolRuns to delete
      */
@@ -2451,9 +2229,7 @@ export namespace Prisma {
   /**
    * SchoolRun.drivers
    */
-  export type SchoolRun$driversArgs<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+  export type SchoolRun$driversArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the RunDriver
      */
@@ -2475,37 +2251,33 @@ export namespace Prisma {
   }
 
   /**
-   * SchoolRun.skips
+   * SchoolRun.days
    */
-  export type SchoolRun$skipsArgs<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+  export type SchoolRun$daysArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the RunSkip
+     * Select specific fields to fetch from the RunDay
      */
-    select?: RunSkipSelect<ExtArgs> | null
+    select?: RunDaySelect<ExtArgs> | null
     /**
-     * Omit specific fields from the RunSkip
+     * Omit specific fields from the RunDay
      */
-    omit?: RunSkipOmit<ExtArgs> | null
+    omit?: RunDayOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: RunSkipInclude<ExtArgs> | null
-    where?: RunSkipWhereInput
-    orderBy?: RunSkipOrderByWithRelationInput | RunSkipOrderByWithRelationInput[]
-    cursor?: RunSkipWhereUniqueInput
+    include?: RunDayInclude<ExtArgs> | null
+    where?: RunDayWhereInput
+    orderBy?: RunDayOrderByWithRelationInput | RunDayOrderByWithRelationInput[]
+    cursor?: RunDayWhereUniqueInput
     take?: number
     skip?: number
-    distinct?: RunSkipScalarFieldEnum | RunSkipScalarFieldEnum[]
+    distinct?: RunDayScalarFieldEnum | RunDayScalarFieldEnum[]
   }
 
   /**
    * SchoolRun without action
    */
-  export type SchoolRunDefaultArgs<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+  export type SchoolRunDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the SchoolRun
      */
@@ -2519,6 +2291,7 @@ export namespace Prisma {
      */
     include?: SchoolRunInclude<ExtArgs> | null
   }
+
 
   /**
    * Model RunDriver
@@ -2555,6 +2328,7 @@ export namespace Prisma {
     _all: number
   }
 
+
   export type RunDriverMinAggregateInputType = {
     runId?: true
     fromDate?: true
@@ -2580,68 +2354,67 @@ export namespace Prisma {
     _all?: true
   }
 
-  export type RunDriverAggregateArgs<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+  export type RunDriverAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Filter which RunDriver to aggregate.
      */
     where?: RunDriverWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     *
+     * 
      * Determine the order of RunDrivers to fetch.
      */
     orderBy?: RunDriverOrderByWithRelationInput | RunDriverOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     *
+     * 
      * Sets the start position
      */
     cursor?: RunDriverWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     *
+     * 
      * Take `±n` RunDrivers from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     *
+     * 
      * Skip the first `n` RunDrivers.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     *
+     * 
      * Count returned RunDrivers
-     **/
+    **/
     _count?: true | RunDriverCountAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     *
+     * 
      * Select which fields to find the minimum value
-     **/
+    **/
     _min?: RunDriverMinAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     *
+     * 
      * Select which fields to find the maximum value
-     **/
+    **/
     _max?: RunDriverMaxAggregateInputType
   }
 
   export type GetRunDriverAggregateType<T extends RunDriverAggregateArgs> = {
-    [P in keyof T & keyof AggregateRunDriver]: P extends '_count' | 'count'
+        [P in keyof T & keyof AggregateRunDriver]: P extends '_count' | 'count'
       ? T[P] extends true
         ? number
         : GetScalarType<T[P], AggregateRunDriver[P]>
       : GetScalarType<T[P], AggregateRunDriver[P]>
   }
 
-  export type RunDriverGroupByArgs<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+
+
+
+  export type RunDriverGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     where?: RunDriverWhereInput
     orderBy?: RunDriverOrderByWithAggregationInput | RunDriverOrderByWithAggregationInput[]
     by: RunDriverScalarFieldEnum[] | RunDriverScalarFieldEnum
@@ -2666,56 +2439,44 @@ export namespace Prisma {
 
   type GetRunDriverGroupByPayload<T extends RunDriverGroupByArgs> = Prisma.PrismaPromise<
     Array<
-      PickEnumerable<RunDriverGroupByOutputType, T['by']> & {
-        [P in keyof T & keyof RunDriverGroupByOutputType]: P extends '_count'
-          ? T[P] extends boolean
-            ? number
+      PickEnumerable<RunDriverGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof RunDriverGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], RunDriverGroupByOutputType[P]>
             : GetScalarType<T[P], RunDriverGroupByOutputType[P]>
-          : GetScalarType<T[P], RunDriverGroupByOutputType[P]>
-      }
-    >
-  >
-
-  export type RunDriverSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    $Extensions.GetSelect<
-      {
-        runId?: boolean
-        fromDate?: boolean
-        driverId?: boolean
-        updatedBy?: boolean
-        updatedAt?: boolean
-        run?: boolean | SchoolRunDefaultArgs<ExtArgs>
-      },
-      ExtArgs['result']['runDriver']
+        }
+      >
     >
 
-  export type RunDriverSelectCreateManyAndReturn<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = $Extensions.GetSelect<
-    {
-      runId?: boolean
-      fromDate?: boolean
-      driverId?: boolean
-      updatedBy?: boolean
-      updatedAt?: boolean
-      run?: boolean | SchoolRunDefaultArgs<ExtArgs>
-    },
-    ExtArgs['result']['runDriver']
-  >
 
-  export type RunDriverSelectUpdateManyAndReturn<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = $Extensions.GetSelect<
-    {
-      runId?: boolean
-      fromDate?: boolean
-      driverId?: boolean
-      updatedBy?: boolean
-      updatedAt?: boolean
-      run?: boolean | SchoolRunDefaultArgs<ExtArgs>
-    },
-    ExtArgs['result']['runDriver']
-  >
+  export type RunDriverSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    runId?: boolean
+    fromDate?: boolean
+    driverId?: boolean
+    updatedBy?: boolean
+    updatedAt?: boolean
+    run?: boolean | SchoolRunDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["runDriver"]>
+
+  export type RunDriverSelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    runId?: boolean
+    fromDate?: boolean
+    driverId?: boolean
+    updatedBy?: boolean
+    updatedAt?: boolean
+    run?: boolean | SchoolRunDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["runDriver"]>
+
+  export type RunDriverSelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    runId?: boolean
+    fromDate?: boolean
+    driverId?: boolean
+    updatedBy?: boolean
+    updatedAt?: boolean
+    run?: boolean | SchoolRunDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["runDriver"]>
 
   export type RunDriverSelectScalar = {
     runId?: boolean
@@ -2725,62 +2486,41 @@ export namespace Prisma {
     updatedAt?: boolean
   }
 
-  export type RunDriverOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    $Extensions.GetOmit<
-      'runId' | 'fromDate' | 'driverId' | 'updatedBy' | 'updatedAt',
-      ExtArgs['result']['runDriver']
-    >
-  export type RunDriverInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    {
-      run?: boolean | SchoolRunDefaultArgs<ExtArgs>
-    }
-  export type RunDriverIncludeCreateManyAndReturn<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+  export type RunDriverOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"runId" | "fromDate" | "driverId" | "updatedBy" | "updatedAt", ExtArgs["result"]["runDriver"]>
+  export type RunDriverInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     run?: boolean | SchoolRunDefaultArgs<ExtArgs>
   }
-  export type RunDriverIncludeUpdateManyAndReturn<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+  export type RunDriverIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    run?: boolean | SchoolRunDefaultArgs<ExtArgs>
+  }
+  export type RunDriverIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     run?: boolean | SchoolRunDefaultArgs<ExtArgs>
   }
 
-  export type $RunDriverPayload<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
-    name: 'RunDriver'
+  export type $RunDriverPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "RunDriver"
     objects: {
       run: Prisma.$SchoolRunPayload<ExtArgs>
     }
-    scalars: $Extensions.GetPayloadResult<
-      {
-        runId: string
-        fromDate: Date
-        driverId: string
-        updatedBy: string
-        updatedAt: Date
-      },
-      ExtArgs['result']['runDriver']
-    >
+    scalars: $Extensions.GetPayloadResult<{
+      runId: string
+      fromDate: Date
+      driverId: string
+      updatedBy: string
+      updatedAt: Date
+    }, ExtArgs["result"]["runDriver"]>
     composites: {}
   }
 
-  type RunDriverGetPayload<S extends boolean | null | undefined | RunDriverDefaultArgs> =
-    $Result.GetResult<Prisma.$RunDriverPayload, S>
+  type RunDriverGetPayload<S extends boolean | null | undefined | RunDriverDefaultArgs> = $Result.GetResult<Prisma.$RunDriverPayload, S>
 
   type RunDriverCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
     Omit<RunDriverFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
       select?: RunDriverCountAggregateInputType | true
     }
 
-  export interface RunDriverDelegate<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-    GlobalOmitOptions = {},
-  > {
-    [K: symbol]: {
-      types: Prisma.TypeMap<ExtArgs>['model']['RunDriver']
-      meta: { name: 'RunDriver' }
-    }
+  export interface RunDriverDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['RunDriver'], meta: { name: 'RunDriver' } }
     /**
      * Find zero or one RunDriver that matches the filter.
      * @param {RunDriverFindUniqueArgs} args - Arguments to find a RunDriver
@@ -2792,19 +2532,7 @@ export namespace Prisma {
      *   }
      * })
      */
-    findUnique<T extends RunDriverFindUniqueArgs>(
-      args: SelectSubset<T, RunDriverFindUniqueArgs<ExtArgs>>
-    ): Prisma__RunDriverClient<
-      $Result.GetResult<
-        Prisma.$RunDriverPayload<ExtArgs>,
-        T,
-        'findUnique',
-        GlobalOmitOptions
-      > | null,
-      null,
-      ExtArgs,
-      GlobalOmitOptions
-    >
+    findUnique<T extends RunDriverFindUniqueArgs>(args: SelectSubset<T, RunDriverFindUniqueArgs<ExtArgs>>): Prisma__RunDriverClient<$Result.GetResult<Prisma.$RunDriverPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
 
     /**
      * Find one RunDriver that matches the filter or throw an error with `error.code='P2025'`
@@ -2818,19 +2546,7 @@ export namespace Prisma {
      *   }
      * })
      */
-    findUniqueOrThrow<T extends RunDriverFindUniqueOrThrowArgs>(
-      args: SelectSubset<T, RunDriverFindUniqueOrThrowArgs<ExtArgs>>
-    ): Prisma__RunDriverClient<
-      $Result.GetResult<
-        Prisma.$RunDriverPayload<ExtArgs>,
-        T,
-        'findUniqueOrThrow',
-        GlobalOmitOptions
-      >,
-      never,
-      ExtArgs,
-      GlobalOmitOptions
-    >
+    findUniqueOrThrow<T extends RunDriverFindUniqueOrThrowArgs>(args: SelectSubset<T, RunDriverFindUniqueOrThrowArgs<ExtArgs>>): Prisma__RunDriverClient<$Result.GetResult<Prisma.$RunDriverPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
      * Find the first RunDriver that matches the filter.
@@ -2845,19 +2561,7 @@ export namespace Prisma {
      *   }
      * })
      */
-    findFirst<T extends RunDriverFindFirstArgs>(
-      args?: SelectSubset<T, RunDriverFindFirstArgs<ExtArgs>>
-    ): Prisma__RunDriverClient<
-      $Result.GetResult<
-        Prisma.$RunDriverPayload<ExtArgs>,
-        T,
-        'findFirst',
-        GlobalOmitOptions
-      > | null,
-      null,
-      ExtArgs,
-      GlobalOmitOptions
-    >
+    findFirst<T extends RunDriverFindFirstArgs>(args?: SelectSubset<T, RunDriverFindFirstArgs<ExtArgs>>): Prisma__RunDriverClient<$Result.GetResult<Prisma.$RunDriverPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
 
     /**
      * Find the first RunDriver that matches the filter or
@@ -2873,19 +2577,7 @@ export namespace Prisma {
      *   }
      * })
      */
-    findFirstOrThrow<T extends RunDriverFindFirstOrThrowArgs>(
-      args?: SelectSubset<T, RunDriverFindFirstOrThrowArgs<ExtArgs>>
-    ): Prisma__RunDriverClient<
-      $Result.GetResult<
-        Prisma.$RunDriverPayload<ExtArgs>,
-        T,
-        'findFirstOrThrow',
-        GlobalOmitOptions
-      >,
-      never,
-      ExtArgs,
-      GlobalOmitOptions
-    >
+    findFirstOrThrow<T extends RunDriverFindFirstOrThrowArgs>(args?: SelectSubset<T, RunDriverFindFirstOrThrowArgs<ExtArgs>>): Prisma__RunDriverClient<$Result.GetResult<Prisma.$RunDriverPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
      * Find zero or more RunDrivers that matches the filter.
@@ -2895,19 +2587,15 @@ export namespace Prisma {
      * @example
      * // Get all RunDrivers
      * const runDrivers = await prisma.runDriver.findMany()
-     *
+     * 
      * // Get first 10 RunDrivers
      * const runDrivers = await prisma.runDriver.findMany({ take: 10 })
-     *
+     * 
      * // Only select the `runId`
      * const runDriverWithRunIdOnly = await prisma.runDriver.findMany({ select: { runId: true } })
-     *
+     * 
      */
-    findMany<T extends RunDriverFindManyArgs>(
-      args?: SelectSubset<T, RunDriverFindManyArgs<ExtArgs>>
-    ): Prisma.PrismaPromise<
-      $Result.GetResult<Prisma.$RunDriverPayload<ExtArgs>, T, 'findMany', GlobalOmitOptions>
-    >
+    findMany<T extends RunDriverFindManyArgs>(args?: SelectSubset<T, RunDriverFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RunDriverPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
 
     /**
      * Create a RunDriver.
@@ -2919,16 +2607,9 @@ export namespace Prisma {
      *     // ... data to create a RunDriver
      *   }
      * })
-     *
+     * 
      */
-    create<T extends RunDriverCreateArgs>(
-      args: SelectSubset<T, RunDriverCreateArgs<ExtArgs>>
-    ): Prisma__RunDriverClient<
-      $Result.GetResult<Prisma.$RunDriverPayload<ExtArgs>, T, 'create', GlobalOmitOptions>,
-      never,
-      ExtArgs,
-      GlobalOmitOptions
-    >
+    create<T extends RunDriverCreateArgs>(args: SelectSubset<T, RunDriverCreateArgs<ExtArgs>>): Prisma__RunDriverClient<$Result.GetResult<Prisma.$RunDriverPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
      * Create many RunDrivers.
@@ -2940,11 +2621,9 @@ export namespace Prisma {
      *     // ... provide data here
      *   ]
      * })
-     *
+     *     
      */
-    createMany<T extends RunDriverCreateManyArgs>(
-      args?: SelectSubset<T, RunDriverCreateManyArgs<ExtArgs>>
-    ): Prisma.PrismaPromise<BatchPayload>
+    createMany<T extends RunDriverCreateManyArgs>(args?: SelectSubset<T, RunDriverCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
      * Create many RunDrivers and returns the data saved in the database.
@@ -2956,7 +2635,7 @@ export namespace Prisma {
      *     // ... provide data here
      *   ]
      * })
-     *
+     * 
      * // Create many RunDrivers and only return the `runId`
      * const runDriverWithRunIdOnly = await prisma.runDriver.createManyAndReturn({
      *   select: { runId: true },
@@ -2966,18 +2645,9 @@ export namespace Prisma {
      * })
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     *
+     * 
      */
-    createManyAndReturn<T extends RunDriverCreateManyAndReturnArgs>(
-      args?: SelectSubset<T, RunDriverCreateManyAndReturnArgs<ExtArgs>>
-    ): Prisma.PrismaPromise<
-      $Result.GetResult<
-        Prisma.$RunDriverPayload<ExtArgs>,
-        T,
-        'createManyAndReturn',
-        GlobalOmitOptions
-      >
-    >
+    createManyAndReturn<T extends RunDriverCreateManyAndReturnArgs>(args?: SelectSubset<T, RunDriverCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RunDriverPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
 
     /**
      * Delete a RunDriver.
@@ -2989,16 +2659,9 @@ export namespace Prisma {
      *     // ... filter to delete one RunDriver
      *   }
      * })
-     *
+     * 
      */
-    delete<T extends RunDriverDeleteArgs>(
-      args: SelectSubset<T, RunDriverDeleteArgs<ExtArgs>>
-    ): Prisma__RunDriverClient<
-      $Result.GetResult<Prisma.$RunDriverPayload<ExtArgs>, T, 'delete', GlobalOmitOptions>,
-      never,
-      ExtArgs,
-      GlobalOmitOptions
-    >
+    delete<T extends RunDriverDeleteArgs>(args: SelectSubset<T, RunDriverDeleteArgs<ExtArgs>>): Prisma__RunDriverClient<$Result.GetResult<Prisma.$RunDriverPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
      * Update one RunDriver.
@@ -3013,16 +2676,9 @@ export namespace Prisma {
      *     // ... provide data here
      *   }
      * })
-     *
+     * 
      */
-    update<T extends RunDriverUpdateArgs>(
-      args: SelectSubset<T, RunDriverUpdateArgs<ExtArgs>>
-    ): Prisma__RunDriverClient<
-      $Result.GetResult<Prisma.$RunDriverPayload<ExtArgs>, T, 'update', GlobalOmitOptions>,
-      never,
-      ExtArgs,
-      GlobalOmitOptions
-    >
+    update<T extends RunDriverUpdateArgs>(args: SelectSubset<T, RunDriverUpdateArgs<ExtArgs>>): Prisma__RunDriverClient<$Result.GetResult<Prisma.$RunDriverPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
      * Delete zero or more RunDrivers.
@@ -3034,11 +2690,9 @@ export namespace Prisma {
      *     // ... provide filter here
      *   }
      * })
-     *
+     * 
      */
-    deleteMany<T extends RunDriverDeleteManyArgs>(
-      args?: SelectSubset<T, RunDriverDeleteManyArgs<ExtArgs>>
-    ): Prisma.PrismaPromise<BatchPayload>
+    deleteMany<T extends RunDriverDeleteManyArgs>(args?: SelectSubset<T, RunDriverDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
      * Update zero or more RunDrivers.
@@ -3055,11 +2709,9 @@ export namespace Prisma {
      *     // ... provide data here
      *   }
      * })
-     *
+     * 
      */
-    updateMany<T extends RunDriverUpdateManyArgs>(
-      args: SelectSubset<T, RunDriverUpdateManyArgs<ExtArgs>>
-    ): Prisma.PrismaPromise<BatchPayload>
+    updateMany<T extends RunDriverUpdateManyArgs>(args: SelectSubset<T, RunDriverUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
      * Update zero or more RunDrivers and returns the data updated in the database.
@@ -3074,7 +2726,7 @@ export namespace Prisma {
      *     // ... provide data here
      *   ]
      * })
-     *
+     * 
      * // Update zero or more RunDrivers and only return the `runId`
      * const runDriverWithRunIdOnly = await prisma.runDriver.updateManyAndReturn({
      *   select: { runId: true },
@@ -3087,18 +2739,9 @@ export namespace Prisma {
      * })
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     *
+     * 
      */
-    updateManyAndReturn<T extends RunDriverUpdateManyAndReturnArgs>(
-      args: SelectSubset<T, RunDriverUpdateManyAndReturnArgs<ExtArgs>>
-    ): Prisma.PrismaPromise<
-      $Result.GetResult<
-        Prisma.$RunDriverPayload<ExtArgs>,
-        T,
-        'updateManyAndReturn',
-        GlobalOmitOptions
-      >
-    >
+    updateManyAndReturn<T extends RunDriverUpdateManyAndReturnArgs>(args: SelectSubset<T, RunDriverUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RunDriverPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
 
     /**
      * Create or update one RunDriver.
@@ -3117,14 +2760,8 @@ export namespace Prisma {
      *   }
      * })
      */
-    upsert<T extends RunDriverUpsertArgs>(
-      args: SelectSubset<T, RunDriverUpsertArgs<ExtArgs>>
-    ): Prisma__RunDriverClient<
-      $Result.GetResult<Prisma.$RunDriverPayload<ExtArgs>, T, 'upsert', GlobalOmitOptions>,
-      never,
-      ExtArgs,
-      GlobalOmitOptions
-    >
+    upsert<T extends RunDriverUpsertArgs>(args: SelectSubset<T, RunDriverUpsertArgs<ExtArgs>>): Prisma__RunDriverClient<$Result.GetResult<Prisma.$RunDriverPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
 
     /**
      * Count the number of RunDrivers.
@@ -3138,9 +2775,9 @@ export namespace Prisma {
      *     // ... the filter for the RunDrivers we want to count
      *   }
      * })
-     **/
+    **/
     count<T extends RunDriverCountArgs>(
-      args?: Subset<T, RunDriverCountArgs>
+      args?: Subset<T, RunDriverCountArgs>,
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
@@ -3172,10 +2809,8 @@ export namespace Prisma {
      *   },
      *   take: 10,
      * })
-     **/
-    aggregate<T extends RunDriverAggregateArgs>(
-      args: Subset<T, RunDriverAggregateArgs>
-    ): Prisma.PrismaPromise<GetRunDriverAggregateType<T>>
+    **/
+    aggregate<T extends RunDriverAggregateArgs>(args: Subset<T, RunDriverAggregateArgs>): Prisma.PrismaPromise<GetRunDriverAggregateType<T>>
 
     /**
      * Group by RunDriver.
@@ -3193,11 +2828,14 @@ export namespace Prisma {
      *     _all: true
      *   },
      * })
-     *
-     **/
+     * 
+    **/
     groupBy<
       T extends RunDriverGroupByArgs,
-      HasSelectOrTake extends Or<Extends<'skip', Keys<T>>, Extends<'take', Keys<T>>>,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
       OrderByArg extends True extends HasSelectOrTake
         ? { orderBy: RunDriverGroupByArgs['orderBy'] }
         : { orderBy?: RunDriverGroupByArgs['orderBy'] },
@@ -3208,49 +2846,52 @@ export namespace Prisma {
       HavingValid extends Has<ByFields, HavingFields>,
       ByEmpty extends T['by'] extends never[] ? True : False,
       InputErrors extends ByEmpty extends True
-        ? `Error: "by" must not be empty.`
-        : HavingValid extends False
-          ? {
-              [P in HavingFields]: P extends ByFields
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
                 ? never
-                : P extends string
-                  ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-                  : [Error, 'Field ', P, ` in "having" needs to be provided in "by"`]
-            }[HavingFields]
-          : 'take' extends Keys<T>
-            ? 'orderBy' extends Keys<T>
-              ? ByValid extends True
-                ? {}
-                : {
-                    [P in OrderFields]: P extends ByFields
-                      ? never
-                      : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-                  }[OrderFields]
-              : 'Error: If you provide "take", you also need to provide "orderBy"'
-            : 'skip' extends Keys<T>
-              ? 'orderBy' extends Keys<T>
-                ? ByValid extends True
-                  ? {}
-                  : {
-                      [P in OrderFields]: P extends ByFields
-                        ? never
-                        : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-                    }[OrderFields]
-                : 'Error: If you provide "skip", you also need to provide "orderBy"'
-              : ByValid extends True
-                ? {}
-                : {
-                    [P in OrderFields]: P extends ByFields
-                      ? never
-                      : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-                  }[OrderFields],
-    >(
-      args: SubsetIntersection<T, RunDriverGroupByArgs, OrderByArg> & InputErrors
-    ): {} extends InputErrors ? GetRunDriverGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-    /**
-     * Fields of the RunDriver model
-     */
-    readonly fields: RunDriverFieldRefs
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, RunDriverGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetRunDriverGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the RunDriver model
+   */
+  readonly fields: RunDriverFieldRefs;
   }
 
   /**
@@ -3259,45 +2900,22 @@ export namespace Prisma {
    * Because we want to prevent naming conflicts as mentioned in
    * https://github.com/prisma/prisma-client-js/issues/707
    */
-  export interface Prisma__RunDriverClient<
-    T,
-    Null = never,
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-    GlobalOmitOptions = {},
-  > extends Prisma.PrismaPromise<T> {
-    readonly [Symbol.toStringTag]: 'PrismaPromise'
-    run<T extends SchoolRunDefaultArgs<ExtArgs> = {}>(
-      args?: Subset<T, SchoolRunDefaultArgs<ExtArgs>>
-    ): Prisma__SchoolRunClient<
-      | $Result.GetResult<
-          Prisma.$SchoolRunPayload<ExtArgs>,
-          T,
-          'findUniqueOrThrow',
-          GlobalOmitOptions
-        >
-      | Null,
-      Null,
-      ExtArgs,
-      GlobalOmitOptions
-    >
+  export interface Prisma__RunDriverClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    run<T extends SchoolRunDefaultArgs<ExtArgs> = {}>(args?: Subset<T, SchoolRunDefaultArgs<ExtArgs>>): Prisma__SchoolRunClient<$Result.GetResult<Prisma.$SchoolRunPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(
-      onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null,
-      onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null
-    ): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(
-      onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null
-    ): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
@@ -3307,24 +2925,26 @@ export namespace Prisma {
     finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
   }
 
+
+
+
   /**
    * Fields of the RunDriver model
    */
   interface RunDriverFieldRefs {
-    readonly runId: FieldRef<'RunDriver', 'String'>
-    readonly fromDate: FieldRef<'RunDriver', 'DateTime'>
-    readonly driverId: FieldRef<'RunDriver', 'String'>
-    readonly updatedBy: FieldRef<'RunDriver', 'String'>
-    readonly updatedAt: FieldRef<'RunDriver', 'DateTime'>
+    readonly runId: FieldRef<"RunDriver", 'String'>
+    readonly fromDate: FieldRef<"RunDriver", 'DateTime'>
+    readonly driverId: FieldRef<"RunDriver", 'String'>
+    readonly updatedBy: FieldRef<"RunDriver", 'String'>
+    readonly updatedAt: FieldRef<"RunDriver", 'DateTime'>
   }
+    
 
   // Custom InputTypes
   /**
    * RunDriver findUnique
    */
-  export type RunDriverFindUniqueArgs<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+  export type RunDriverFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the RunDriver
      */
@@ -3346,9 +2966,7 @@ export namespace Prisma {
   /**
    * RunDriver findUniqueOrThrow
    */
-  export type RunDriverFindUniqueOrThrowArgs<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+  export type RunDriverFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the RunDriver
      */
@@ -3370,9 +2988,7 @@ export namespace Prisma {
   /**
    * RunDriver findFirst
    */
-  export type RunDriverFindFirstArgs<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+  export type RunDriverFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the RunDriver
      */
@@ -3391,31 +3007,31 @@ export namespace Prisma {
     where?: RunDriverWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     *
+     * 
      * Determine the order of RunDrivers to fetch.
      */
     orderBy?: RunDriverOrderByWithRelationInput | RunDriverOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     *
+     * 
      * Sets the position for searching for RunDrivers.
      */
     cursor?: RunDriverWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     *
+     * 
      * Take `±n` RunDrivers from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     *
+     * 
      * Skip the first `n` RunDrivers.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     *
+     * 
      * Filter by unique combinations of RunDrivers.
      */
     distinct?: RunDriverScalarFieldEnum | RunDriverScalarFieldEnum[]
@@ -3424,9 +3040,7 @@ export namespace Prisma {
   /**
    * RunDriver findFirstOrThrow
    */
-  export type RunDriverFindFirstOrThrowArgs<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+  export type RunDriverFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the RunDriver
      */
@@ -3445,31 +3059,31 @@ export namespace Prisma {
     where?: RunDriverWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     *
+     * 
      * Determine the order of RunDrivers to fetch.
      */
     orderBy?: RunDriverOrderByWithRelationInput | RunDriverOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     *
+     * 
      * Sets the position for searching for RunDrivers.
      */
     cursor?: RunDriverWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     *
+     * 
      * Take `±n` RunDrivers from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     *
+     * 
      * Skip the first `n` RunDrivers.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     *
+     * 
      * Filter by unique combinations of RunDrivers.
      */
     distinct?: RunDriverScalarFieldEnum | RunDriverScalarFieldEnum[]
@@ -3478,9 +3092,7 @@ export namespace Prisma {
   /**
    * RunDriver findMany
    */
-  export type RunDriverFindManyArgs<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+  export type RunDriverFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the RunDriver
      */
@@ -3499,31 +3111,31 @@ export namespace Prisma {
     where?: RunDriverWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     *
+     * 
      * Determine the order of RunDrivers to fetch.
      */
     orderBy?: RunDriverOrderByWithRelationInput | RunDriverOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     *
+     * 
      * Sets the position for listing RunDrivers.
      */
     cursor?: RunDriverWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     *
+     * 
      * Take `±n` RunDrivers from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     *
+     * 
      * Skip the first `n` RunDrivers.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     *
+     * 
      * Filter by unique combinations of RunDrivers.
      */
     distinct?: RunDriverScalarFieldEnum | RunDriverScalarFieldEnum[]
@@ -3532,9 +3144,7 @@ export namespace Prisma {
   /**
    * RunDriver create
    */
-  export type RunDriverCreateArgs<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+  export type RunDriverCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the RunDriver
      */
@@ -3556,9 +3166,7 @@ export namespace Prisma {
   /**
    * RunDriver createMany
    */
-  export type RunDriverCreateManyArgs<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+  export type RunDriverCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * The data used to create many RunDrivers.
      */
@@ -3569,9 +3177,7 @@ export namespace Prisma {
   /**
    * RunDriver createManyAndReturn
    */
-  export type RunDriverCreateManyAndReturnArgs<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+  export type RunDriverCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the RunDriver
      */
@@ -3594,9 +3200,7 @@ export namespace Prisma {
   /**
    * RunDriver update
    */
-  export type RunDriverUpdateArgs<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+  export type RunDriverUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the RunDriver
      */
@@ -3622,9 +3226,7 @@ export namespace Prisma {
   /**
    * RunDriver updateMany
    */
-  export type RunDriverUpdateManyArgs<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+  export type RunDriverUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * The data used to update RunDrivers.
      */
@@ -3642,9 +3244,7 @@ export namespace Prisma {
   /**
    * RunDriver updateManyAndReturn
    */
-  export type RunDriverUpdateManyAndReturnArgs<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+  export type RunDriverUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the RunDriver
      */
@@ -3674,9 +3274,7 @@ export namespace Prisma {
   /**
    * RunDriver upsert
    */
-  export type RunDriverUpsertArgs<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+  export type RunDriverUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the RunDriver
      */
@@ -3706,9 +3304,7 @@ export namespace Prisma {
   /**
    * RunDriver delete
    */
-  export type RunDriverDeleteArgs<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+  export type RunDriverDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the RunDriver
      */
@@ -3730,9 +3326,7 @@ export namespace Prisma {
   /**
    * RunDriver deleteMany
    */
-  export type RunDriverDeleteManyArgs<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+  export type RunDriverDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Filter which RunDrivers to delete
      */
@@ -3746,9 +3340,7 @@ export namespace Prisma {
   /**
    * RunDriver without action
    */
-  export type RunDriverDefaultArgs<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+  export type RunDriverDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
      * Select specific fields to fetch from the RunDriver
      */
@@ -3763,395 +3355,352 @@ export namespace Prisma {
     include?: RunDriverInclude<ExtArgs> | null
   }
 
+
   /**
-   * Model RunSkip
+   * Model RunDay
    */
 
-  export type AggregateRunSkip = {
-    _count: RunSkipCountAggregateOutputType | null
-    _min: RunSkipMinAggregateOutputType | null
-    _max: RunSkipMaxAggregateOutputType | null
+  export type AggregateRunDay = {
+    _count: RunDayCountAggregateOutputType | null
+    _min: RunDayMinAggregateOutputType | null
+    _max: RunDayMaxAggregateOutputType | null
   }
 
-  export type RunSkipMinAggregateOutputType = {
+  export type RunDayMinAggregateOutputType = {
     runId: string | null
     date: Date | null
+    driverId: string | null
+    skipped: boolean | null
     updatedBy: string | null
   }
 
-  export type RunSkipMaxAggregateOutputType = {
+  export type RunDayMaxAggregateOutputType = {
     runId: string | null
     date: Date | null
+    driverId: string | null
+    skipped: boolean | null
     updatedBy: string | null
   }
 
-  export type RunSkipCountAggregateOutputType = {
+  export type RunDayCountAggregateOutputType = {
     runId: number
     date: number
+    driverId: number
+    skipped: number
     updatedBy: number
     _all: number
   }
 
-  export type RunSkipMinAggregateInputType = {
+
+  export type RunDayMinAggregateInputType = {
     runId?: true
     date?: true
+    driverId?: true
+    skipped?: true
     updatedBy?: true
   }
 
-  export type RunSkipMaxAggregateInputType = {
+  export type RunDayMaxAggregateInputType = {
     runId?: true
     date?: true
+    driverId?: true
+    skipped?: true
     updatedBy?: true
   }
 
-  export type RunSkipCountAggregateInputType = {
+  export type RunDayCountAggregateInputType = {
     runId?: true
     date?: true
+    driverId?: true
+    skipped?: true
     updatedBy?: true
     _all?: true
   }
 
-  export type RunSkipAggregateArgs<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+  export type RunDayAggregateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Filter which RunSkip to aggregate.
+     * Filter which RunDay to aggregate.
      */
-    where?: RunSkipWhereInput
+    where?: RunDayWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     *
-     * Determine the order of RunSkips to fetch.
+     * 
+     * Determine the order of RunDays to fetch.
      */
-    orderBy?: RunSkipOrderByWithRelationInput | RunSkipOrderByWithRelationInput[]
+    orderBy?: RunDayOrderByWithRelationInput | RunDayOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     *
+     * 
      * Sets the start position
      */
-    cursor?: RunSkipWhereUniqueInput
+    cursor?: RunDayWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     *
-     * Take `±n` RunSkips from the position of the cursor.
+     * 
+     * Take `±n` RunDays from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     *
-     * Skip the first `n` RunSkips.
+     * 
+     * Skip the first `n` RunDays.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     *
-     * Count returned RunSkips
-     **/
-    _count?: true | RunSkipCountAggregateInputType
+     * 
+     * Count returned RunDays
+    **/
+    _count?: true | RunDayCountAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     *
+     * 
      * Select which fields to find the minimum value
-     **/
-    _min?: RunSkipMinAggregateInputType
+    **/
+    _min?: RunDayMinAggregateInputType
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/aggregations Aggregation Docs}
-     *
+     * 
      * Select which fields to find the maximum value
-     **/
-    _max?: RunSkipMaxAggregateInputType
+    **/
+    _max?: RunDayMaxAggregateInputType
   }
 
-  export type GetRunSkipAggregateType<T extends RunSkipAggregateArgs> = {
-    [P in keyof T & keyof AggregateRunSkip]: P extends '_count' | 'count'
+  export type GetRunDayAggregateType<T extends RunDayAggregateArgs> = {
+        [P in keyof T & keyof AggregateRunDay]: P extends '_count' | 'count'
       ? T[P] extends true
         ? number
-        : GetScalarType<T[P], AggregateRunSkip[P]>
-      : GetScalarType<T[P], AggregateRunSkip[P]>
+        : GetScalarType<T[P], AggregateRunDay[P]>
+      : GetScalarType<T[P], AggregateRunDay[P]>
   }
 
-  export type RunSkipGroupByArgs<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
-    where?: RunSkipWhereInput
-    orderBy?: RunSkipOrderByWithAggregationInput | RunSkipOrderByWithAggregationInput[]
-    by: RunSkipScalarFieldEnum[] | RunSkipScalarFieldEnum
-    having?: RunSkipScalarWhereWithAggregatesInput
+
+
+
+  export type RunDayGroupByArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    where?: RunDayWhereInput
+    orderBy?: RunDayOrderByWithAggregationInput | RunDayOrderByWithAggregationInput[]
+    by: RunDayScalarFieldEnum[] | RunDayScalarFieldEnum
+    having?: RunDayScalarWhereWithAggregatesInput
     take?: number
     skip?: number
-    _count?: RunSkipCountAggregateInputType | true
-    _min?: RunSkipMinAggregateInputType
-    _max?: RunSkipMaxAggregateInputType
+    _count?: RunDayCountAggregateInputType | true
+    _min?: RunDayMinAggregateInputType
+    _max?: RunDayMaxAggregateInputType
   }
 
-  export type RunSkipGroupByOutputType = {
+  export type RunDayGroupByOutputType = {
     runId: string
     date: Date
+    driverId: string | null
+    skipped: boolean
     updatedBy: string
-    _count: RunSkipCountAggregateOutputType | null
-    _min: RunSkipMinAggregateOutputType | null
-    _max: RunSkipMaxAggregateOutputType | null
+    _count: RunDayCountAggregateOutputType | null
+    _min: RunDayMinAggregateOutputType | null
+    _max: RunDayMaxAggregateOutputType | null
   }
 
-  type GetRunSkipGroupByPayload<T extends RunSkipGroupByArgs> = Prisma.PrismaPromise<
+  type GetRunDayGroupByPayload<T extends RunDayGroupByArgs> = Prisma.PrismaPromise<
     Array<
-      PickEnumerable<RunSkipGroupByOutputType, T['by']> & {
-        [P in keyof T & keyof RunSkipGroupByOutputType]: P extends '_count'
-          ? T[P] extends boolean
-            ? number
-            : GetScalarType<T[P], RunSkipGroupByOutputType[P]>
-          : GetScalarType<T[P], RunSkipGroupByOutputType[P]>
-      }
-    >
-  >
-
-  export type RunSkipSelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    $Extensions.GetSelect<
-      {
-        runId?: boolean
-        date?: boolean
-        updatedBy?: boolean
-        run?: boolean | SchoolRunDefaultArgs<ExtArgs>
-      },
-      ExtArgs['result']['runSkip']
+      PickEnumerable<RunDayGroupByOutputType, T['by']> &
+        {
+          [P in ((keyof T) & (keyof RunDayGroupByOutputType))]: P extends '_count'
+            ? T[P] extends boolean
+              ? number
+              : GetScalarType<T[P], RunDayGroupByOutputType[P]>
+            : GetScalarType<T[P], RunDayGroupByOutputType[P]>
+        }
+      >
     >
 
-  export type RunSkipSelectCreateManyAndReturn<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = $Extensions.GetSelect<
-    {
-      runId?: boolean
-      date?: boolean
-      updatedBy?: boolean
-      run?: boolean | SchoolRunDefaultArgs<ExtArgs>
-    },
-    ExtArgs['result']['runSkip']
-  >
 
-  export type RunSkipSelectUpdateManyAndReturn<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = $Extensions.GetSelect<
-    {
-      runId?: boolean
-      date?: boolean
-      updatedBy?: boolean
-      run?: boolean | SchoolRunDefaultArgs<ExtArgs>
-    },
-    ExtArgs['result']['runSkip']
-  >
-
-  export type RunSkipSelectScalar = {
+  export type RunDaySelect<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
     runId?: boolean
     date?: boolean
+    driverId?: boolean
+    skipped?: boolean
+    updatedBy?: boolean
+    run?: boolean | SchoolRunDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["runDay"]>
+
+  export type RunDaySelectCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    runId?: boolean
+    date?: boolean
+    driverId?: boolean
+    skipped?: boolean
+    updatedBy?: boolean
+    run?: boolean | SchoolRunDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["runDay"]>
+
+  export type RunDaySelectUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetSelect<{
+    runId?: boolean
+    date?: boolean
+    driverId?: boolean
+    skipped?: boolean
+    updatedBy?: boolean
+    run?: boolean | SchoolRunDefaultArgs<ExtArgs>
+  }, ExtArgs["result"]["runDay"]>
+
+  export type RunDaySelectScalar = {
+    runId?: boolean
+    date?: boolean
+    driverId?: boolean
+    skipped?: boolean
     updatedBy?: boolean
   }
 
-  export type RunSkipOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    $Extensions.GetOmit<'runId' | 'date' | 'updatedBy', ExtArgs['result']['runSkip']>
-  export type RunSkipInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+  export type RunDayOmit<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = $Extensions.GetOmit<"runId" | "date" | "driverId" | "skipped" | "updatedBy", ExtArgs["result"]["runDay"]>
+  export type RunDayInclude<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     run?: boolean | SchoolRunDefaultArgs<ExtArgs>
   }
-  export type RunSkipIncludeCreateManyAndReturn<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+  export type RunDayIncludeCreateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     run?: boolean | SchoolRunDefaultArgs<ExtArgs>
   }
-  export type RunSkipIncludeUpdateManyAndReturn<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+  export type RunDayIncludeUpdateManyAndReturn<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     run?: boolean | SchoolRunDefaultArgs<ExtArgs>
   }
 
-  export type $RunSkipPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
-    {
-      name: 'RunSkip'
-      objects: {
-        run: Prisma.$SchoolRunPayload<ExtArgs>
-      }
-      scalars: $Extensions.GetPayloadResult<
-        {
-          runId: string
-          date: Date
-          updatedBy: string
-        },
-        ExtArgs['result']['runSkip']
-      >
-      composites: {}
+  export type $RunDayPayload<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
+    name: "RunDay"
+    objects: {
+      run: Prisma.$SchoolRunPayload<ExtArgs>
+    }
+    scalars: $Extensions.GetPayloadResult<{
+      runId: string
+      date: Date
+      driverId: string | null
+      skipped: boolean
+      updatedBy: string
+    }, ExtArgs["result"]["runDay"]>
+    composites: {}
+  }
+
+  type RunDayGetPayload<S extends boolean | null | undefined | RunDayDefaultArgs> = $Result.GetResult<Prisma.$RunDayPayload, S>
+
+  type RunDayCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> =
+    Omit<RunDayFindManyArgs, 'select' | 'include' | 'distinct' | 'omit'> & {
+      select?: RunDayCountAggregateInputType | true
     }
 
-  type RunSkipGetPayload<S extends boolean | null | undefined | RunSkipDefaultArgs> =
-    $Result.GetResult<Prisma.$RunSkipPayload, S>
-
-  type RunSkipCountArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = Omit<
-    RunSkipFindManyArgs,
-    'select' | 'include' | 'distinct' | 'omit'
-  > & {
-    select?: RunSkipCountAggregateInputType | true
-  }
-
-  export interface RunSkipDelegate<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-    GlobalOmitOptions = {},
-  > {
-    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['RunSkip']; meta: { name: 'RunSkip' } }
+  export interface RunDayDelegate<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> {
+    [K: symbol]: { types: Prisma.TypeMap<ExtArgs>['model']['RunDay'], meta: { name: 'RunDay' } }
     /**
-     * Find zero or one RunSkip that matches the filter.
-     * @param {RunSkipFindUniqueArgs} args - Arguments to find a RunSkip
+     * Find zero or one RunDay that matches the filter.
+     * @param {RunDayFindUniqueArgs} args - Arguments to find a RunDay
      * @example
-     * // Get one RunSkip
-     * const runSkip = await prisma.runSkip.findUnique({
+     * // Get one RunDay
+     * const runDay = await prisma.runDay.findUnique({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findUnique<T extends RunSkipFindUniqueArgs>(
-      args: SelectSubset<T, RunSkipFindUniqueArgs<ExtArgs>>
-    ): Prisma__RunSkipClient<
-      $Result.GetResult<Prisma.$RunSkipPayload<ExtArgs>, T, 'findUnique', GlobalOmitOptions> | null,
-      null,
-      ExtArgs,
-      GlobalOmitOptions
-    >
+    findUnique<T extends RunDayFindUniqueArgs>(args: SelectSubset<T, RunDayFindUniqueArgs<ExtArgs>>): Prisma__RunDayClient<$Result.GetResult<Prisma.$RunDayPayload<ExtArgs>, T, "findUnique", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find one RunSkip that matches the filter or throw an error with `error.code='P2025'`
+     * Find one RunDay that matches the filter or throw an error with `error.code='P2025'`
      * if no matches were found.
-     * @param {RunSkipFindUniqueOrThrowArgs} args - Arguments to find a RunSkip
+     * @param {RunDayFindUniqueOrThrowArgs} args - Arguments to find a RunDay
      * @example
-     * // Get one RunSkip
-     * const runSkip = await prisma.runSkip.findUniqueOrThrow({
+     * // Get one RunDay
+     * const runDay = await prisma.runDay.findUniqueOrThrow({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findUniqueOrThrow<T extends RunSkipFindUniqueOrThrowArgs>(
-      args: SelectSubset<T, RunSkipFindUniqueOrThrowArgs<ExtArgs>>
-    ): Prisma__RunSkipClient<
-      $Result.GetResult<Prisma.$RunSkipPayload<ExtArgs>, T, 'findUniqueOrThrow', GlobalOmitOptions>,
-      never,
-      ExtArgs,
-      GlobalOmitOptions
-    >
+    findUniqueOrThrow<T extends RunDayFindUniqueOrThrowArgs>(args: SelectSubset<T, RunDayFindUniqueOrThrowArgs<ExtArgs>>): Prisma__RunDayClient<$Result.GetResult<Prisma.$RunDayPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find the first RunSkip that matches the filter.
+     * Find the first RunDay that matches the filter.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {RunSkipFindFirstArgs} args - Arguments to find a RunSkip
+     * @param {RunDayFindFirstArgs} args - Arguments to find a RunDay
      * @example
-     * // Get one RunSkip
-     * const runSkip = await prisma.runSkip.findFirst({
+     * // Get one RunDay
+     * const runDay = await prisma.runDay.findFirst({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findFirst<T extends RunSkipFindFirstArgs>(
-      args?: SelectSubset<T, RunSkipFindFirstArgs<ExtArgs>>
-    ): Prisma__RunSkipClient<
-      $Result.GetResult<Prisma.$RunSkipPayload<ExtArgs>, T, 'findFirst', GlobalOmitOptions> | null,
-      null,
-      ExtArgs,
-      GlobalOmitOptions
-    >
+    findFirst<T extends RunDayFindFirstArgs>(args?: SelectSubset<T, RunDayFindFirstArgs<ExtArgs>>): Prisma__RunDayClient<$Result.GetResult<Prisma.$RunDayPayload<ExtArgs>, T, "findFirst", GlobalOmitOptions> | null, null, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find the first RunSkip that matches the filter or
+     * Find the first RunDay that matches the filter or
      * throw `PrismaKnownClientError` with `P2025` code if no matches were found.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {RunSkipFindFirstOrThrowArgs} args - Arguments to find a RunSkip
+     * @param {RunDayFindFirstOrThrowArgs} args - Arguments to find a RunDay
      * @example
-     * // Get one RunSkip
-     * const runSkip = await prisma.runSkip.findFirstOrThrow({
+     * // Get one RunDay
+     * const runDay = await prisma.runDay.findFirstOrThrow({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
      */
-    findFirstOrThrow<T extends RunSkipFindFirstOrThrowArgs>(
-      args?: SelectSubset<T, RunSkipFindFirstOrThrowArgs<ExtArgs>>
-    ): Prisma__RunSkipClient<
-      $Result.GetResult<Prisma.$RunSkipPayload<ExtArgs>, T, 'findFirstOrThrow', GlobalOmitOptions>,
-      never,
-      ExtArgs,
-      GlobalOmitOptions
-    >
+    findFirstOrThrow<T extends RunDayFindFirstOrThrowArgs>(args?: SelectSubset<T, RunDayFindFirstOrThrowArgs<ExtArgs>>): Prisma__RunDayClient<$Result.GetResult<Prisma.$RunDayPayload<ExtArgs>, T, "findFirstOrThrow", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Find zero or more RunSkips that matches the filter.
+     * Find zero or more RunDays that matches the filter.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {RunSkipFindManyArgs} args - Arguments to filter and select certain fields only.
+     * @param {RunDayFindManyArgs} args - Arguments to filter and select certain fields only.
      * @example
-     * // Get all RunSkips
-     * const runSkips = await prisma.runSkip.findMany()
-     *
-     * // Get first 10 RunSkips
-     * const runSkips = await prisma.runSkip.findMany({ take: 10 })
-     *
+     * // Get all RunDays
+     * const runDays = await prisma.runDay.findMany()
+     * 
+     * // Get first 10 RunDays
+     * const runDays = await prisma.runDay.findMany({ take: 10 })
+     * 
      * // Only select the `runId`
-     * const runSkipWithRunIdOnly = await prisma.runSkip.findMany({ select: { runId: true } })
-     *
+     * const runDayWithRunIdOnly = await prisma.runDay.findMany({ select: { runId: true } })
+     * 
      */
-    findMany<T extends RunSkipFindManyArgs>(
-      args?: SelectSubset<T, RunSkipFindManyArgs<ExtArgs>>
-    ): Prisma.PrismaPromise<
-      $Result.GetResult<Prisma.$RunSkipPayload<ExtArgs>, T, 'findMany', GlobalOmitOptions>
-    >
+    findMany<T extends RunDayFindManyArgs>(args?: SelectSubset<T, RunDayFindManyArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RunDayPayload<ExtArgs>, T, "findMany", GlobalOmitOptions>>
 
     /**
-     * Create a RunSkip.
-     * @param {RunSkipCreateArgs} args - Arguments to create a RunSkip.
+     * Create a RunDay.
+     * @param {RunDayCreateArgs} args - Arguments to create a RunDay.
      * @example
-     * // Create one RunSkip
-     * const RunSkip = await prisma.runSkip.create({
+     * // Create one RunDay
+     * const RunDay = await prisma.runDay.create({
      *   data: {
-     *     // ... data to create a RunSkip
+     *     // ... data to create a RunDay
      *   }
      * })
-     *
+     * 
      */
-    create<T extends RunSkipCreateArgs>(
-      args: SelectSubset<T, RunSkipCreateArgs<ExtArgs>>
-    ): Prisma__RunSkipClient<
-      $Result.GetResult<Prisma.$RunSkipPayload<ExtArgs>, T, 'create', GlobalOmitOptions>,
-      never,
-      ExtArgs,
-      GlobalOmitOptions
-    >
+    create<T extends RunDayCreateArgs>(args: SelectSubset<T, RunDayCreateArgs<ExtArgs>>): Prisma__RunDayClient<$Result.GetResult<Prisma.$RunDayPayload<ExtArgs>, T, "create", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Create many RunSkips.
-     * @param {RunSkipCreateManyArgs} args - Arguments to create many RunSkips.
+     * Create many RunDays.
+     * @param {RunDayCreateManyArgs} args - Arguments to create many RunDays.
      * @example
-     * // Create many RunSkips
-     * const runSkip = await prisma.runSkip.createMany({
+     * // Create many RunDays
+     * const runDay = await prisma.runDay.createMany({
      *   data: [
      *     // ... provide data here
      *   ]
      * })
-     *
+     *     
      */
-    createMany<T extends RunSkipCreateManyArgs>(
-      args?: SelectSubset<T, RunSkipCreateManyArgs<ExtArgs>>
-    ): Prisma.PrismaPromise<BatchPayload>
+    createMany<T extends RunDayCreateManyArgs>(args?: SelectSubset<T, RunDayCreateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Create many RunSkips and returns the data saved in the database.
-     * @param {RunSkipCreateManyAndReturnArgs} args - Arguments to create many RunSkips.
+     * Create many RunDays and returns the data saved in the database.
+     * @param {RunDayCreateManyAndReturnArgs} args - Arguments to create many RunDays.
      * @example
-     * // Create many RunSkips
-     * const runSkip = await prisma.runSkip.createManyAndReturn({
+     * // Create many RunDays
+     * const runDay = await prisma.runDay.createManyAndReturn({
      *   data: [
      *     // ... provide data here
      *   ]
      * })
-     *
-     * // Create many RunSkips and only return the `runId`
-     * const runSkipWithRunIdOnly = await prisma.runSkip.createManyAndReturn({
+     * 
+     * // Create many RunDays and only return the `runId`
+     * const runDayWithRunIdOnly = await prisma.runDay.createManyAndReturn({
      *   select: { runId: true },
      *   data: [
      *     // ... provide data here
@@ -4159,46 +3708,30 @@ export namespace Prisma {
      * })
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     *
+     * 
      */
-    createManyAndReturn<T extends RunSkipCreateManyAndReturnArgs>(
-      args?: SelectSubset<T, RunSkipCreateManyAndReturnArgs<ExtArgs>>
-    ): Prisma.PrismaPromise<
-      $Result.GetResult<
-        Prisma.$RunSkipPayload<ExtArgs>,
-        T,
-        'createManyAndReturn',
-        GlobalOmitOptions
-      >
-    >
+    createManyAndReturn<T extends RunDayCreateManyAndReturnArgs>(args?: SelectSubset<T, RunDayCreateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RunDayPayload<ExtArgs>, T, "createManyAndReturn", GlobalOmitOptions>>
 
     /**
-     * Delete a RunSkip.
-     * @param {RunSkipDeleteArgs} args - Arguments to delete one RunSkip.
+     * Delete a RunDay.
+     * @param {RunDayDeleteArgs} args - Arguments to delete one RunDay.
      * @example
-     * // Delete one RunSkip
-     * const RunSkip = await prisma.runSkip.delete({
+     * // Delete one RunDay
+     * const RunDay = await prisma.runDay.delete({
      *   where: {
-     *     // ... filter to delete one RunSkip
+     *     // ... filter to delete one RunDay
      *   }
      * })
-     *
+     * 
      */
-    delete<T extends RunSkipDeleteArgs>(
-      args: SelectSubset<T, RunSkipDeleteArgs<ExtArgs>>
-    ): Prisma__RunSkipClient<
-      $Result.GetResult<Prisma.$RunSkipPayload<ExtArgs>, T, 'delete', GlobalOmitOptions>,
-      never,
-      ExtArgs,
-      GlobalOmitOptions
-    >
+    delete<T extends RunDayDeleteArgs>(args: SelectSubset<T, RunDayDeleteArgs<ExtArgs>>): Prisma__RunDayClient<$Result.GetResult<Prisma.$RunDayPayload<ExtArgs>, T, "delete", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Update one RunSkip.
-     * @param {RunSkipUpdateArgs} args - Arguments to update one RunSkip.
+     * Update one RunDay.
+     * @param {RunDayUpdateArgs} args - Arguments to update one RunDay.
      * @example
-     * // Update one RunSkip
-     * const runSkip = await prisma.runSkip.update({
+     * // Update one RunDay
+     * const runDay = await prisma.runDay.update({
      *   where: {
      *     // ... provide filter here
      *   },
@@ -4206,41 +3739,32 @@ export namespace Prisma {
      *     // ... provide data here
      *   }
      * })
-     *
+     * 
      */
-    update<T extends RunSkipUpdateArgs>(
-      args: SelectSubset<T, RunSkipUpdateArgs<ExtArgs>>
-    ): Prisma__RunSkipClient<
-      $Result.GetResult<Prisma.$RunSkipPayload<ExtArgs>, T, 'update', GlobalOmitOptions>,
-      never,
-      ExtArgs,
-      GlobalOmitOptions
-    >
+    update<T extends RunDayUpdateArgs>(args: SelectSubset<T, RunDayUpdateArgs<ExtArgs>>): Prisma__RunDayClient<$Result.GetResult<Prisma.$RunDayPayload<ExtArgs>, T, "update", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
 
     /**
-     * Delete zero or more RunSkips.
-     * @param {RunSkipDeleteManyArgs} args - Arguments to filter RunSkips to delete.
+     * Delete zero or more RunDays.
+     * @param {RunDayDeleteManyArgs} args - Arguments to filter RunDays to delete.
      * @example
-     * // Delete a few RunSkips
-     * const { count } = await prisma.runSkip.deleteMany({
+     * // Delete a few RunDays
+     * const { count } = await prisma.runDay.deleteMany({
      *   where: {
      *     // ... provide filter here
      *   }
      * })
-     *
+     * 
      */
-    deleteMany<T extends RunSkipDeleteManyArgs>(
-      args?: SelectSubset<T, RunSkipDeleteManyArgs<ExtArgs>>
-    ): Prisma.PrismaPromise<BatchPayload>
+    deleteMany<T extends RunDayDeleteManyArgs>(args?: SelectSubset<T, RunDayDeleteManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Update zero or more RunSkips.
+     * Update zero or more RunDays.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {RunSkipUpdateManyArgs} args - Arguments to update one or more rows.
+     * @param {RunDayUpdateManyArgs} args - Arguments to update one or more rows.
      * @example
-     * // Update many RunSkips
-     * const runSkip = await prisma.runSkip.updateMany({
+     * // Update many RunDays
+     * const runDay = await prisma.runDay.updateMany({
      *   where: {
      *     // ... provide filter here
      *   },
@@ -4248,18 +3772,16 @@ export namespace Prisma {
      *     // ... provide data here
      *   }
      * })
-     *
+     * 
      */
-    updateMany<T extends RunSkipUpdateManyArgs>(
-      args: SelectSubset<T, RunSkipUpdateManyArgs<ExtArgs>>
-    ): Prisma.PrismaPromise<BatchPayload>
+    updateMany<T extends RunDayUpdateManyArgs>(args: SelectSubset<T, RunDayUpdateManyArgs<ExtArgs>>): Prisma.PrismaPromise<BatchPayload>
 
     /**
-     * Update zero or more RunSkips and returns the data updated in the database.
-     * @param {RunSkipUpdateManyAndReturnArgs} args - Arguments to update many RunSkips.
+     * Update zero or more RunDays and returns the data updated in the database.
+     * @param {RunDayUpdateManyAndReturnArgs} args - Arguments to update many RunDays.
      * @example
-     * // Update many RunSkips
-     * const runSkip = await prisma.runSkip.updateManyAndReturn({
+     * // Update many RunDays
+     * const runDay = await prisma.runDay.updateManyAndReturn({
      *   where: {
      *     // ... provide filter here
      *   },
@@ -4267,9 +3789,9 @@ export namespace Prisma {
      *     // ... provide data here
      *   ]
      * })
-     *
-     * // Update zero or more RunSkips and only return the `runId`
-     * const runSkipWithRunIdOnly = await prisma.runSkip.updateManyAndReturn({
+     * 
+     * // Update zero or more RunDays and only return the `runId`
+     * const runDayWithRunIdOnly = await prisma.runDay.updateManyAndReturn({
      *   select: { runId: true },
      *   where: {
      *     // ... provide filter here
@@ -4280,73 +3802,58 @@ export namespace Prisma {
      * })
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     *
+     * 
      */
-    updateManyAndReturn<T extends RunSkipUpdateManyAndReturnArgs>(
-      args: SelectSubset<T, RunSkipUpdateManyAndReturnArgs<ExtArgs>>
-    ): Prisma.PrismaPromise<
-      $Result.GetResult<
-        Prisma.$RunSkipPayload<ExtArgs>,
-        T,
-        'updateManyAndReturn',
-        GlobalOmitOptions
-      >
-    >
+    updateManyAndReturn<T extends RunDayUpdateManyAndReturnArgs>(args: SelectSubset<T, RunDayUpdateManyAndReturnArgs<ExtArgs>>): Prisma.PrismaPromise<$Result.GetResult<Prisma.$RunDayPayload<ExtArgs>, T, "updateManyAndReturn", GlobalOmitOptions>>
 
     /**
-     * Create or update one RunSkip.
-     * @param {RunSkipUpsertArgs} args - Arguments to update or create a RunSkip.
+     * Create or update one RunDay.
+     * @param {RunDayUpsertArgs} args - Arguments to update or create a RunDay.
      * @example
-     * // Update or create a RunSkip
-     * const runSkip = await prisma.runSkip.upsert({
+     * // Update or create a RunDay
+     * const runDay = await prisma.runDay.upsert({
      *   create: {
-     *     // ... data to create a RunSkip
+     *     // ... data to create a RunDay
      *   },
      *   update: {
      *     // ... in case it already exists, update
      *   },
      *   where: {
-     *     // ... the filter for the RunSkip we want to update
+     *     // ... the filter for the RunDay we want to update
      *   }
      * })
      */
-    upsert<T extends RunSkipUpsertArgs>(
-      args: SelectSubset<T, RunSkipUpsertArgs<ExtArgs>>
-    ): Prisma__RunSkipClient<
-      $Result.GetResult<Prisma.$RunSkipPayload<ExtArgs>, T, 'upsert', GlobalOmitOptions>,
-      never,
-      ExtArgs,
-      GlobalOmitOptions
-    >
+    upsert<T extends RunDayUpsertArgs>(args: SelectSubset<T, RunDayUpsertArgs<ExtArgs>>): Prisma__RunDayClient<$Result.GetResult<Prisma.$RunDayPayload<ExtArgs>, T, "upsert", GlobalOmitOptions>, never, ExtArgs, GlobalOmitOptions>
+
 
     /**
-     * Count the number of RunSkips.
+     * Count the number of RunDays.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {RunSkipCountArgs} args - Arguments to filter RunSkips to count.
+     * @param {RunDayCountArgs} args - Arguments to filter RunDays to count.
      * @example
-     * // Count the number of RunSkips
-     * const count = await prisma.runSkip.count({
+     * // Count the number of RunDays
+     * const count = await prisma.runDay.count({
      *   where: {
-     *     // ... the filter for the RunSkips we want to count
+     *     // ... the filter for the RunDays we want to count
      *   }
      * })
-     **/
-    count<T extends RunSkipCountArgs>(
-      args?: Subset<T, RunSkipCountArgs>
+    **/
+    count<T extends RunDayCountArgs>(
+      args?: Subset<T, RunDayCountArgs>,
     ): Prisma.PrismaPromise<
       T extends $Utils.Record<'select', any>
         ? T['select'] extends true
           ? number
-          : GetScalarType<T['select'], RunSkipCountAggregateOutputType>
+          : GetScalarType<T['select'], RunDayCountAggregateOutputType>
         : number
     >
 
     /**
-     * Allows you to perform aggregations operations on a RunSkip.
+     * Allows you to perform aggregations operations on a RunDay.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {RunSkipAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
+     * @param {RunDayAggregateArgs} args - Select which aggregations you would like to apply and on what fields.
      * @example
      * // Ordered by age ascending
      * // Where email contains prisma.io
@@ -4365,16 +3872,14 @@ export namespace Prisma {
      *   },
      *   take: 10,
      * })
-     **/
-    aggregate<T extends RunSkipAggregateArgs>(
-      args: Subset<T, RunSkipAggregateArgs>
-    ): Prisma.PrismaPromise<GetRunSkipAggregateType<T>>
+    **/
+    aggregate<T extends RunDayAggregateArgs>(args: Subset<T, RunDayAggregateArgs>): Prisma.PrismaPromise<GetRunDayAggregateType<T>>
 
     /**
-     * Group by RunSkip.
+     * Group by RunDay.
      * Note, that providing `undefined` is treated as the value not being there.
      * Read more here: https://pris.ly/d/null-undefined
-     * @param {RunSkipGroupByArgs} args - Group by arguments.
+     * @param {RunDayGroupByArgs} args - Group by arguments.
      * @example
      * // Group by city, order by createdAt, get count
      * const result = await prisma.user.groupBy({
@@ -4386,14 +3891,17 @@ export namespace Prisma {
      *     _all: true
      *   },
      * })
-     *
-     **/
+     * 
+    **/
     groupBy<
-      T extends RunSkipGroupByArgs,
-      HasSelectOrTake extends Or<Extends<'skip', Keys<T>>, Extends<'take', Keys<T>>>,
+      T extends RunDayGroupByArgs,
+      HasSelectOrTake extends Or<
+        Extends<'skip', Keys<T>>,
+        Extends<'take', Keys<T>>
+      >,
       OrderByArg extends True extends HasSelectOrTake
-        ? { orderBy: RunSkipGroupByArgs['orderBy'] }
-        : { orderBy?: RunSkipGroupByArgs['orderBy'] },
+        ? { orderBy: RunDayGroupByArgs['orderBy'] }
+        : { orderBy?: RunDayGroupByArgs['orderBy'] },
       OrderFields extends ExcludeUnderscoreKeys<Keys<MaybeTupleToUnion<T['orderBy']>>>,
       ByFields extends MaybeTupleToUnion<T['by']>,
       ByValid extends Has<ByFields, OrderFields>,
@@ -4401,96 +3909,76 @@ export namespace Prisma {
       HavingValid extends Has<ByFields, HavingFields>,
       ByEmpty extends T['by'] extends never[] ? True : False,
       InputErrors extends ByEmpty extends True
-        ? `Error: "by" must not be empty.`
-        : HavingValid extends False
-          ? {
-              [P in HavingFields]: P extends ByFields
+      ? `Error: "by" must not be empty.`
+      : HavingValid extends False
+      ? {
+          [P in HavingFields]: P extends ByFields
+            ? never
+            : P extends string
+            ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
+            : [
+                Error,
+                'Field ',
+                P,
+                ` in "having" needs to be provided in "by"`,
+              ]
+        }[HavingFields]
+      : 'take' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
                 ? never
-                : P extends string
-                  ? `Error: Field "${P}" used in "having" needs to be provided in "by".`
-                  : [Error, 'Field ', P, ` in "having" needs to be provided in "by"`]
-            }[HavingFields]
-          : 'take' extends Keys<T>
-            ? 'orderBy' extends Keys<T>
-              ? ByValid extends True
-                ? {}
-                : {
-                    [P in OrderFields]: P extends ByFields
-                      ? never
-                      : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-                  }[OrderFields]
-              : 'Error: If you provide "take", you also need to provide "orderBy"'
-            : 'skip' extends Keys<T>
-              ? 'orderBy' extends Keys<T>
-                ? ByValid extends True
-                  ? {}
-                  : {
-                      [P in OrderFields]: P extends ByFields
-                        ? never
-                        : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-                    }[OrderFields]
-                : 'Error: If you provide "skip", you also need to provide "orderBy"'
-              : ByValid extends True
-                ? {}
-                : {
-                    [P in OrderFields]: P extends ByFields
-                      ? never
-                      : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
-                  }[OrderFields],
-    >(
-      args: SubsetIntersection<T, RunSkipGroupByArgs, OrderByArg> & InputErrors
-    ): {} extends InputErrors ? GetRunSkipGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
-    /**
-     * Fields of the RunSkip model
-     */
-    readonly fields: RunSkipFieldRefs
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "take", you also need to provide "orderBy"'
+      : 'skip' extends Keys<T>
+      ? 'orderBy' extends Keys<T>
+        ? ByValid extends True
+          ? {}
+          : {
+              [P in OrderFields]: P extends ByFields
+                ? never
+                : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+            }[OrderFields]
+        : 'Error: If you provide "skip", you also need to provide "orderBy"'
+      : ByValid extends True
+      ? {}
+      : {
+          [P in OrderFields]: P extends ByFields
+            ? never
+            : `Error: Field "${P}" in "orderBy" needs to be provided in "by"`
+        }[OrderFields]
+    >(args: SubsetIntersection<T, RunDayGroupByArgs, OrderByArg> & InputErrors): {} extends InputErrors ? GetRunDayGroupByPayload<T> : Prisma.PrismaPromise<InputErrors>
+  /**
+   * Fields of the RunDay model
+   */
+  readonly fields: RunDayFieldRefs;
   }
 
   /**
-   * The delegate class that acts as a "Promise-like" for RunSkip.
+   * The delegate class that acts as a "Promise-like" for RunDay.
    * Why is this prefixed with `Prisma__`?
    * Because we want to prevent naming conflicts as mentioned in
    * https://github.com/prisma/prisma-client-js/issues/707
    */
-  export interface Prisma__RunSkipClient<
-    T,
-    Null = never,
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-    GlobalOmitOptions = {},
-  > extends Prisma.PrismaPromise<T> {
-    readonly [Symbol.toStringTag]: 'PrismaPromise'
-    run<T extends SchoolRunDefaultArgs<ExtArgs> = {}>(
-      args?: Subset<T, SchoolRunDefaultArgs<ExtArgs>>
-    ): Prisma__SchoolRunClient<
-      | $Result.GetResult<
-          Prisma.$SchoolRunPayload<ExtArgs>,
-          T,
-          'findUniqueOrThrow',
-          GlobalOmitOptions
-        >
-      | Null,
-      Null,
-      ExtArgs,
-      GlobalOmitOptions
-    >
+  export interface Prisma__RunDayClient<T, Null = never, ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs, GlobalOmitOptions = {}> extends Prisma.PrismaPromise<T> {
+    readonly [Symbol.toStringTag]: "PrismaPromise"
+    run<T extends SchoolRunDefaultArgs<ExtArgs> = {}>(args?: Subset<T, SchoolRunDefaultArgs<ExtArgs>>): Prisma__SchoolRunClient<$Result.GetResult<Prisma.$SchoolRunPayload<ExtArgs>, T, "findUniqueOrThrow", GlobalOmitOptions> | Null, Null, ExtArgs, GlobalOmitOptions>
     /**
      * Attaches callbacks for the resolution and/or rejection of the Promise.
      * @param onfulfilled The callback to execute when the Promise is resolved.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of which ever callback is executed.
      */
-    then<TResult1 = T, TResult2 = never>(
-      onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null,
-      onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null
-    ): $Utils.JsPromise<TResult1 | TResult2>
+    then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): $Utils.JsPromise<TResult1 | TResult2>
     /**
      * Attaches a callback for only the rejection of the Promise.
      * @param onrejected The callback to execute when the Promise is rejected.
      * @returns A Promise for the completion of the callback.
      */
-    catch<TResult = never>(
-      onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null
-    ): $Utils.JsPromise<T | TResult>
+    catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): $Utils.JsPromise<T | TResult>
     /**
      * Attaches a callback that is invoked when the Promise is settled (fulfilled or rejected). The
      * resolved value cannot be modified from the callback.
@@ -4500,598 +3988,600 @@ export namespace Prisma {
     finally(onfinally?: (() => void) | undefined | null): $Utils.JsPromise<T>
   }
 
+
+
+
   /**
-   * Fields of the RunSkip model
+   * Fields of the RunDay model
    */
-  interface RunSkipFieldRefs {
-    readonly runId: FieldRef<'RunSkip', 'String'>
-    readonly date: FieldRef<'RunSkip', 'DateTime'>
-    readonly updatedBy: FieldRef<'RunSkip', 'String'>
+  interface RunDayFieldRefs {
+    readonly runId: FieldRef<"RunDay", 'String'>
+    readonly date: FieldRef<"RunDay", 'DateTime'>
+    readonly driverId: FieldRef<"RunDay", 'String'>
+    readonly skipped: FieldRef<"RunDay", 'Boolean'>
+    readonly updatedBy: FieldRef<"RunDay", 'String'>
   }
+    
 
   // Custom InputTypes
   /**
-   * RunSkip findUnique
+   * RunDay findUnique
    */
-  export type RunSkipFindUniqueArgs<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+  export type RunDayFindUniqueArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the RunSkip
+     * Select specific fields to fetch from the RunDay
      */
-    select?: RunSkipSelect<ExtArgs> | null
+    select?: RunDaySelect<ExtArgs> | null
     /**
-     * Omit specific fields from the RunSkip
+     * Omit specific fields from the RunDay
      */
-    omit?: RunSkipOmit<ExtArgs> | null
+    omit?: RunDayOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: RunSkipInclude<ExtArgs> | null
+    include?: RunDayInclude<ExtArgs> | null
     /**
-     * Filter, which RunSkip to fetch.
+     * Filter, which RunDay to fetch.
      */
-    where: RunSkipWhereUniqueInput
+    where: RunDayWhereUniqueInput
   }
 
   /**
-   * RunSkip findUniqueOrThrow
+   * RunDay findUniqueOrThrow
    */
-  export type RunSkipFindUniqueOrThrowArgs<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+  export type RunDayFindUniqueOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the RunSkip
+     * Select specific fields to fetch from the RunDay
      */
-    select?: RunSkipSelect<ExtArgs> | null
+    select?: RunDaySelect<ExtArgs> | null
     /**
-     * Omit specific fields from the RunSkip
+     * Omit specific fields from the RunDay
      */
-    omit?: RunSkipOmit<ExtArgs> | null
+    omit?: RunDayOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: RunSkipInclude<ExtArgs> | null
+    include?: RunDayInclude<ExtArgs> | null
     /**
-     * Filter, which RunSkip to fetch.
+     * Filter, which RunDay to fetch.
      */
-    where: RunSkipWhereUniqueInput
+    where: RunDayWhereUniqueInput
   }
 
   /**
-   * RunSkip findFirst
+   * RunDay findFirst
    */
-  export type RunSkipFindFirstArgs<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+  export type RunDayFindFirstArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the RunSkip
+     * Select specific fields to fetch from the RunDay
      */
-    select?: RunSkipSelect<ExtArgs> | null
+    select?: RunDaySelect<ExtArgs> | null
     /**
-     * Omit specific fields from the RunSkip
+     * Omit specific fields from the RunDay
      */
-    omit?: RunSkipOmit<ExtArgs> | null
+    omit?: RunDayOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: RunSkipInclude<ExtArgs> | null
+    include?: RunDayInclude<ExtArgs> | null
     /**
-     * Filter, which RunSkip to fetch.
+     * Filter, which RunDay to fetch.
      */
-    where?: RunSkipWhereInput
+    where?: RunDayWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     *
-     * Determine the order of RunSkips to fetch.
+     * 
+     * Determine the order of RunDays to fetch.
      */
-    orderBy?: RunSkipOrderByWithRelationInput | RunSkipOrderByWithRelationInput[]
+    orderBy?: RunDayOrderByWithRelationInput | RunDayOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     *
-     * Sets the position for searching for RunSkips.
+     * 
+     * Sets the position for searching for RunDays.
      */
-    cursor?: RunSkipWhereUniqueInput
+    cursor?: RunDayWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     *
-     * Take `±n` RunSkips from the position of the cursor.
+     * 
+     * Take `±n` RunDays from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     *
-     * Skip the first `n` RunSkips.
+     * 
+     * Skip the first `n` RunDays.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     *
-     * Filter by unique combinations of RunSkips.
+     * 
+     * Filter by unique combinations of RunDays.
      */
-    distinct?: RunSkipScalarFieldEnum | RunSkipScalarFieldEnum[]
+    distinct?: RunDayScalarFieldEnum | RunDayScalarFieldEnum[]
   }
 
   /**
-   * RunSkip findFirstOrThrow
+   * RunDay findFirstOrThrow
    */
-  export type RunSkipFindFirstOrThrowArgs<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+  export type RunDayFindFirstOrThrowArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the RunSkip
+     * Select specific fields to fetch from the RunDay
      */
-    select?: RunSkipSelect<ExtArgs> | null
+    select?: RunDaySelect<ExtArgs> | null
     /**
-     * Omit specific fields from the RunSkip
+     * Omit specific fields from the RunDay
      */
-    omit?: RunSkipOmit<ExtArgs> | null
+    omit?: RunDayOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: RunSkipInclude<ExtArgs> | null
+    include?: RunDayInclude<ExtArgs> | null
     /**
-     * Filter, which RunSkip to fetch.
+     * Filter, which RunDay to fetch.
      */
-    where?: RunSkipWhereInput
+    where?: RunDayWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     *
-     * Determine the order of RunSkips to fetch.
+     * 
+     * Determine the order of RunDays to fetch.
      */
-    orderBy?: RunSkipOrderByWithRelationInput | RunSkipOrderByWithRelationInput[]
+    orderBy?: RunDayOrderByWithRelationInput | RunDayOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     *
-     * Sets the position for searching for RunSkips.
+     * 
+     * Sets the position for searching for RunDays.
      */
-    cursor?: RunSkipWhereUniqueInput
+    cursor?: RunDayWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     *
-     * Take `±n` RunSkips from the position of the cursor.
+     * 
+     * Take `±n` RunDays from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     *
-     * Skip the first `n` RunSkips.
+     * 
+     * Skip the first `n` RunDays.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     *
-     * Filter by unique combinations of RunSkips.
+     * 
+     * Filter by unique combinations of RunDays.
      */
-    distinct?: RunSkipScalarFieldEnum | RunSkipScalarFieldEnum[]
+    distinct?: RunDayScalarFieldEnum | RunDayScalarFieldEnum[]
   }
 
   /**
-   * RunSkip findMany
+   * RunDay findMany
    */
-  export type RunSkipFindManyArgs<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+  export type RunDayFindManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the RunSkip
+     * Select specific fields to fetch from the RunDay
      */
-    select?: RunSkipSelect<ExtArgs> | null
+    select?: RunDaySelect<ExtArgs> | null
     /**
-     * Omit specific fields from the RunSkip
+     * Omit specific fields from the RunDay
      */
-    omit?: RunSkipOmit<ExtArgs> | null
+    omit?: RunDayOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: RunSkipInclude<ExtArgs> | null
+    include?: RunDayInclude<ExtArgs> | null
     /**
-     * Filter, which RunSkips to fetch.
+     * Filter, which RunDays to fetch.
      */
-    where?: RunSkipWhereInput
+    where?: RunDayWhereInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/sorting Sorting Docs}
-     *
-     * Determine the order of RunSkips to fetch.
+     * 
+     * Determine the order of RunDays to fetch.
      */
-    orderBy?: RunSkipOrderByWithRelationInput | RunSkipOrderByWithRelationInput[]
+    orderBy?: RunDayOrderByWithRelationInput | RunDayOrderByWithRelationInput[]
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination#cursor-based-pagination Cursor Docs}
-     *
-     * Sets the position for listing RunSkips.
+     * 
+     * Sets the position for listing RunDays.
      */
-    cursor?: RunSkipWhereUniqueInput
+    cursor?: RunDayWhereUniqueInput
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     *
-     * Take `±n` RunSkips from the position of the cursor.
+     * 
+     * Take `±n` RunDays from the position of the cursor.
      */
     take?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/pagination Pagination Docs}
-     *
-     * Skip the first `n` RunSkips.
+     * 
+     * Skip the first `n` RunDays.
      */
     skip?: number
     /**
      * {@link https://www.prisma.io/docs/concepts/components/prisma-client/distinct Distinct Docs}
-     *
-     * Filter by unique combinations of RunSkips.
+     * 
+     * Filter by unique combinations of RunDays.
      */
-    distinct?: RunSkipScalarFieldEnum | RunSkipScalarFieldEnum[]
+    distinct?: RunDayScalarFieldEnum | RunDayScalarFieldEnum[]
   }
 
   /**
-   * RunSkip create
+   * RunDay create
    */
-  export type RunSkipCreateArgs<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+  export type RunDayCreateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the RunSkip
+     * Select specific fields to fetch from the RunDay
      */
-    select?: RunSkipSelect<ExtArgs> | null
+    select?: RunDaySelect<ExtArgs> | null
     /**
-     * Omit specific fields from the RunSkip
+     * Omit specific fields from the RunDay
      */
-    omit?: RunSkipOmit<ExtArgs> | null
+    omit?: RunDayOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: RunSkipInclude<ExtArgs> | null
+    include?: RunDayInclude<ExtArgs> | null
     /**
-     * The data needed to create a RunSkip.
+     * The data needed to create a RunDay.
      */
-    data: XOR<RunSkipCreateInput, RunSkipUncheckedCreateInput>
+    data: XOR<RunDayCreateInput, RunDayUncheckedCreateInput>
   }
 
   /**
-   * RunSkip createMany
+   * RunDay createMany
    */
-  export type RunSkipCreateManyArgs<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+  export type RunDayCreateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * The data used to create many RunSkips.
+     * The data used to create many RunDays.
      */
-    data: RunSkipCreateManyInput | RunSkipCreateManyInput[]
+    data: RunDayCreateManyInput | RunDayCreateManyInput[]
     skipDuplicates?: boolean
   }
 
   /**
-   * RunSkip createManyAndReturn
+   * RunDay createManyAndReturn
    */
-  export type RunSkipCreateManyAndReturnArgs<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+  export type RunDayCreateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the RunSkip
+     * Select specific fields to fetch from the RunDay
      */
-    select?: RunSkipSelectCreateManyAndReturn<ExtArgs> | null
+    select?: RunDaySelectCreateManyAndReturn<ExtArgs> | null
     /**
-     * Omit specific fields from the RunSkip
+     * Omit specific fields from the RunDay
      */
-    omit?: RunSkipOmit<ExtArgs> | null
+    omit?: RunDayOmit<ExtArgs> | null
     /**
-     * The data used to create many RunSkips.
+     * The data used to create many RunDays.
      */
-    data: RunSkipCreateManyInput | RunSkipCreateManyInput[]
+    data: RunDayCreateManyInput | RunDayCreateManyInput[]
     skipDuplicates?: boolean
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: RunSkipIncludeCreateManyAndReturn<ExtArgs> | null
+    include?: RunDayIncludeCreateManyAndReturn<ExtArgs> | null
   }
 
   /**
-   * RunSkip update
+   * RunDay update
    */
-  export type RunSkipUpdateArgs<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+  export type RunDayUpdateArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the RunSkip
+     * Select specific fields to fetch from the RunDay
      */
-    select?: RunSkipSelect<ExtArgs> | null
+    select?: RunDaySelect<ExtArgs> | null
     /**
-     * Omit specific fields from the RunSkip
+     * Omit specific fields from the RunDay
      */
-    omit?: RunSkipOmit<ExtArgs> | null
+    omit?: RunDayOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: RunSkipInclude<ExtArgs> | null
+    include?: RunDayInclude<ExtArgs> | null
     /**
-     * The data needed to update a RunSkip.
+     * The data needed to update a RunDay.
      */
-    data: XOR<RunSkipUpdateInput, RunSkipUncheckedUpdateInput>
+    data: XOR<RunDayUpdateInput, RunDayUncheckedUpdateInput>
     /**
-     * Choose, which RunSkip to update.
+     * Choose, which RunDay to update.
      */
-    where: RunSkipWhereUniqueInput
+    where: RunDayWhereUniqueInput
   }
 
   /**
-   * RunSkip updateMany
+   * RunDay updateMany
    */
-  export type RunSkipUpdateManyArgs<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+  export type RunDayUpdateManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * The data used to update RunSkips.
+     * The data used to update RunDays.
      */
-    data: XOR<RunSkipUpdateManyMutationInput, RunSkipUncheckedUpdateManyInput>
+    data: XOR<RunDayUpdateManyMutationInput, RunDayUncheckedUpdateManyInput>
     /**
-     * Filter which RunSkips to update
+     * Filter which RunDays to update
      */
-    where?: RunSkipWhereInput
+    where?: RunDayWhereInput
     /**
-     * Limit how many RunSkips to update.
+     * Limit how many RunDays to update.
      */
     limit?: number
   }
 
   /**
-   * RunSkip updateManyAndReturn
+   * RunDay updateManyAndReturn
    */
-  export type RunSkipUpdateManyAndReturnArgs<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+  export type RunDayUpdateManyAndReturnArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the RunSkip
+     * Select specific fields to fetch from the RunDay
      */
-    select?: RunSkipSelectUpdateManyAndReturn<ExtArgs> | null
+    select?: RunDaySelectUpdateManyAndReturn<ExtArgs> | null
     /**
-     * Omit specific fields from the RunSkip
+     * Omit specific fields from the RunDay
      */
-    omit?: RunSkipOmit<ExtArgs> | null
+    omit?: RunDayOmit<ExtArgs> | null
     /**
-     * The data used to update RunSkips.
+     * The data used to update RunDays.
      */
-    data: XOR<RunSkipUpdateManyMutationInput, RunSkipUncheckedUpdateManyInput>
+    data: XOR<RunDayUpdateManyMutationInput, RunDayUncheckedUpdateManyInput>
     /**
-     * Filter which RunSkips to update
+     * Filter which RunDays to update
      */
-    where?: RunSkipWhereInput
+    where?: RunDayWhereInput
     /**
-     * Limit how many RunSkips to update.
+     * Limit how many RunDays to update.
      */
     limit?: number
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: RunSkipIncludeUpdateManyAndReturn<ExtArgs> | null
+    include?: RunDayIncludeUpdateManyAndReturn<ExtArgs> | null
   }
 
   /**
-   * RunSkip upsert
+   * RunDay upsert
    */
-  export type RunSkipUpsertArgs<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+  export type RunDayUpsertArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the RunSkip
+     * Select specific fields to fetch from the RunDay
      */
-    select?: RunSkipSelect<ExtArgs> | null
+    select?: RunDaySelect<ExtArgs> | null
     /**
-     * Omit specific fields from the RunSkip
+     * Omit specific fields from the RunDay
      */
-    omit?: RunSkipOmit<ExtArgs> | null
+    omit?: RunDayOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: RunSkipInclude<ExtArgs> | null
+    include?: RunDayInclude<ExtArgs> | null
     /**
-     * The filter to search for the RunSkip to update in case it exists.
+     * The filter to search for the RunDay to update in case it exists.
      */
-    where: RunSkipWhereUniqueInput
+    where: RunDayWhereUniqueInput
     /**
-     * In case the RunSkip found by the `where` argument doesn't exist, create a new RunSkip with this data.
+     * In case the RunDay found by the `where` argument doesn't exist, create a new RunDay with this data.
      */
-    create: XOR<RunSkipCreateInput, RunSkipUncheckedCreateInput>
+    create: XOR<RunDayCreateInput, RunDayUncheckedCreateInput>
     /**
-     * In case the RunSkip was found with the provided `where` argument, update it with this data.
+     * In case the RunDay was found with the provided `where` argument, update it with this data.
      */
-    update: XOR<RunSkipUpdateInput, RunSkipUncheckedUpdateInput>
+    update: XOR<RunDayUpdateInput, RunDayUncheckedUpdateInput>
   }
 
   /**
-   * RunSkip delete
+   * RunDay delete
    */
-  export type RunSkipDeleteArgs<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+  export type RunDayDeleteArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the RunSkip
+     * Select specific fields to fetch from the RunDay
      */
-    select?: RunSkipSelect<ExtArgs> | null
+    select?: RunDaySelect<ExtArgs> | null
     /**
-     * Omit specific fields from the RunSkip
+     * Omit specific fields from the RunDay
      */
-    omit?: RunSkipOmit<ExtArgs> | null
+    omit?: RunDayOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: RunSkipInclude<ExtArgs> | null
+    include?: RunDayInclude<ExtArgs> | null
     /**
-     * Filter which RunSkip to delete.
+     * Filter which RunDay to delete.
      */
-    where: RunSkipWhereUniqueInput
+    where: RunDayWhereUniqueInput
   }
 
   /**
-   * RunSkip deleteMany
+   * RunDay deleteMany
    */
-  export type RunSkipDeleteManyArgs<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+  export type RunDayDeleteManyArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Filter which RunSkips to delete
+     * Filter which RunDays to delete
      */
-    where?: RunSkipWhereInput
+    where?: RunDayWhereInput
     /**
-     * Limit how many RunSkips to delete.
+     * Limit how many RunDays to delete.
      */
     limit?: number
   }
 
   /**
-   * RunSkip without action
+   * RunDay without action
    */
-  export type RunSkipDefaultArgs<
-    ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs,
-  > = {
+  export type RunDayDefaultArgs<ExtArgs extends $Extensions.InternalArgs = $Extensions.DefaultArgs> = {
     /**
-     * Select specific fields to fetch from the RunSkip
+     * Select specific fields to fetch from the RunDay
      */
-    select?: RunSkipSelect<ExtArgs> | null
+    select?: RunDaySelect<ExtArgs> | null
     /**
-     * Omit specific fields from the RunSkip
+     * Omit specific fields from the RunDay
      */
-    omit?: RunSkipOmit<ExtArgs> | null
+    omit?: RunDayOmit<ExtArgs> | null
     /**
      * Choose, which related nodes to fetch as well
      */
-    include?: RunSkipInclude<ExtArgs> | null
+    include?: RunDayInclude<ExtArgs> | null
   }
+
 
   /**
    * Enums
    */
 
   export const TransactionIsolationLevel: {
-    ReadUncommitted: 'ReadUncommitted'
-    ReadCommitted: 'ReadCommitted'
-    RepeatableRead: 'RepeatableRead'
+    ReadUncommitted: 'ReadUncommitted',
+    ReadCommitted: 'ReadCommitted',
+    RepeatableRead: 'RepeatableRead',
     Serializable: 'Serializable'
-  }
+  };
 
-  export type TransactionIsolationLevel =
-    (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
+  export type TransactionIsolationLevel = (typeof TransactionIsolationLevel)[keyof typeof TransactionIsolationLevel]
+
 
   export const SchoolRunScalarFieldEnum: {
-    id: 'id'
-    kidId: 'kidId'
-    weekday: 'weekday'
-    kind: 'kind'
-    place: 'place'
-    minutes: 'minutes'
-    startsOn: 'startsOn'
-    endsOn: 'endsOn'
-    createdBy: 'createdBy'
+    id: 'id',
+    kidId: 'kidId',
+    weekday: 'weekday',
+    kind: 'kind',
+    place: 'place',
+    minutes: 'minutes',
+    startsOn: 'startsOn',
+    endsOn: 'endsOn',
+    createdBy: 'createdBy',
     createdAt: 'createdAt'
-  }
+  };
 
-  export type SchoolRunScalarFieldEnum =
-    (typeof SchoolRunScalarFieldEnum)[keyof typeof SchoolRunScalarFieldEnum]
+  export type SchoolRunScalarFieldEnum = (typeof SchoolRunScalarFieldEnum)[keyof typeof SchoolRunScalarFieldEnum]
+
 
   export const RunDriverScalarFieldEnum: {
-    runId: 'runId'
-    fromDate: 'fromDate'
-    driverId: 'driverId'
-    updatedBy: 'updatedBy'
+    runId: 'runId',
+    fromDate: 'fromDate',
+    driverId: 'driverId',
+    updatedBy: 'updatedBy',
     updatedAt: 'updatedAt'
-  }
+  };
 
-  export type RunDriverScalarFieldEnum =
-    (typeof RunDriverScalarFieldEnum)[keyof typeof RunDriverScalarFieldEnum]
+  export type RunDriverScalarFieldEnum = (typeof RunDriverScalarFieldEnum)[keyof typeof RunDriverScalarFieldEnum]
 
-  export const RunSkipScalarFieldEnum: {
-    runId: 'runId'
-    date: 'date'
+
+  export const RunDayScalarFieldEnum: {
+    runId: 'runId',
+    date: 'date',
+    driverId: 'driverId',
+    skipped: 'skipped',
     updatedBy: 'updatedBy'
-  }
+  };
 
-  export type RunSkipScalarFieldEnum =
-    (typeof RunSkipScalarFieldEnum)[keyof typeof RunSkipScalarFieldEnum]
+  export type RunDayScalarFieldEnum = (typeof RunDayScalarFieldEnum)[keyof typeof RunDayScalarFieldEnum]
+
 
   export const SortOrder: {
-    asc: 'asc'
+    asc: 'asc',
     desc: 'desc'
-  }
+  };
 
   export type SortOrder = (typeof SortOrder)[keyof typeof SortOrder]
 
+
   export const QueryMode: {
-    default: 'default'
+    default: 'default',
     insensitive: 'insensitive'
-  }
+  };
 
   export type QueryMode = (typeof QueryMode)[keyof typeof QueryMode]
 
+
   export const NullsOrder: {
-    first: 'first'
+    first: 'first',
     last: 'last'
-  }
+  };
 
   export type NullsOrder = (typeof NullsOrder)[keyof typeof NullsOrder]
+
 
   /**
    * Field references
    */
 
+
   /**
    * Reference to a field of type 'String'
    */
   export type StringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'String'>
+    
+
 
   /**
    * Reference to a field of type 'String[]'
    */
   export type ListStringFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'String[]'>
+    
+
 
   /**
    * Reference to a field of type 'Int'
    */
   export type IntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int'>
+    
+
 
   /**
    * Reference to a field of type 'Int[]'
    */
   export type ListIntFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Int[]'>
+    
+
 
   /**
    * Reference to a field of type 'DateTime'
    */
   export type DateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime'>
+    
+
 
   /**
    * Reference to a field of type 'DateTime[]'
    */
-  export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<
-    $PrismaModel,
-    'DateTime[]'
-  >
+  export type ListDateTimeFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'DateTime[]'>
+    
+
+
+  /**
+   * Reference to a field of type 'Boolean'
+   */
+  export type BooleanFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Boolean'>
+    
+
 
   /**
    * Reference to a field of type 'Float'
    */
   export type FloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float'>
+    
+
 
   /**
    * Reference to a field of type 'Float[]'
    */
   export type ListFloatFieldRefInput<$PrismaModel> = FieldRefInputType<$PrismaModel, 'Float[]'>
-
+    
   /**
    * Deep Input Types
    */
+
 
   export type SchoolRunWhereInput = {
     AND?: SchoolRunWhereInput | SchoolRunWhereInput[]
     OR?: SchoolRunWhereInput[]
     NOT?: SchoolRunWhereInput | SchoolRunWhereInput[]
-    id?: UuidFilter<'SchoolRun'> | string
-    kidId?: StringFilter<'SchoolRun'> | string
-    weekday?: IntFilter<'SchoolRun'> | number
-    kind?: StringFilter<'SchoolRun'> | string
-    place?: StringNullableFilter<'SchoolRun'> | string | null
-    minutes?: IntFilter<'SchoolRun'> | number
-    startsOn?: DateTimeFilter<'SchoolRun'> | Date | string
-    endsOn?: DateTimeNullableFilter<'SchoolRun'> | Date | string | null
-    createdBy?: StringFilter<'SchoolRun'> | string
-    createdAt?: DateTimeFilter<'SchoolRun'> | Date | string
+    id?: UuidFilter<"SchoolRun"> | string
+    kidId?: StringFilter<"SchoolRun"> | string
+    weekday?: IntFilter<"SchoolRun"> | number
+    kind?: StringFilter<"SchoolRun"> | string
+    place?: StringNullableFilter<"SchoolRun"> | string | null
+    minutes?: IntFilter<"SchoolRun"> | number
+    startsOn?: DateTimeFilter<"SchoolRun"> | Date | string
+    endsOn?: DateTimeNullableFilter<"SchoolRun"> | Date | string | null
+    createdBy?: StringFilter<"SchoolRun"> | string
+    createdAt?: DateTimeFilter<"SchoolRun"> | Date | string
     drivers?: RunDriverListRelationFilter
-    skips?: RunSkipListRelationFilter
+    days?: RunDayListRelationFilter
   }
 
   export type SchoolRunOrderByWithRelationInput = {
@@ -5106,29 +4596,26 @@ export namespace Prisma {
     createdBy?: SortOrder
     createdAt?: SortOrder
     drivers?: RunDriverOrderByRelationAggregateInput
-    skips?: RunSkipOrderByRelationAggregateInput
+    days?: RunDayOrderByRelationAggregateInput
   }
 
-  export type SchoolRunWhereUniqueInput = Prisma.AtLeast<
-    {
-      id?: string
-      AND?: SchoolRunWhereInput | SchoolRunWhereInput[]
-      OR?: SchoolRunWhereInput[]
-      NOT?: SchoolRunWhereInput | SchoolRunWhereInput[]
-      kidId?: StringFilter<'SchoolRun'> | string
-      weekday?: IntFilter<'SchoolRun'> | number
-      kind?: StringFilter<'SchoolRun'> | string
-      place?: StringNullableFilter<'SchoolRun'> | string | null
-      minutes?: IntFilter<'SchoolRun'> | number
-      startsOn?: DateTimeFilter<'SchoolRun'> | Date | string
-      endsOn?: DateTimeNullableFilter<'SchoolRun'> | Date | string | null
-      createdBy?: StringFilter<'SchoolRun'> | string
-      createdAt?: DateTimeFilter<'SchoolRun'> | Date | string
-      drivers?: RunDriverListRelationFilter
-      skips?: RunSkipListRelationFilter
-    },
-    'id'
-  >
+  export type SchoolRunWhereUniqueInput = Prisma.AtLeast<{
+    id?: string
+    AND?: SchoolRunWhereInput | SchoolRunWhereInput[]
+    OR?: SchoolRunWhereInput[]
+    NOT?: SchoolRunWhereInput | SchoolRunWhereInput[]
+    kidId?: StringFilter<"SchoolRun"> | string
+    weekday?: IntFilter<"SchoolRun"> | number
+    kind?: StringFilter<"SchoolRun"> | string
+    place?: StringNullableFilter<"SchoolRun"> | string | null
+    minutes?: IntFilter<"SchoolRun"> | number
+    startsOn?: DateTimeFilter<"SchoolRun"> | Date | string
+    endsOn?: DateTimeNullableFilter<"SchoolRun"> | Date | string | null
+    createdBy?: StringFilter<"SchoolRun"> | string
+    createdAt?: DateTimeFilter<"SchoolRun"> | Date | string
+    drivers?: RunDriverListRelationFilter
+    days?: RunDayListRelationFilter
+  }, "id">
 
   export type SchoolRunOrderByWithAggregationInput = {
     id?: SortOrder
@@ -5152,27 +4639,27 @@ export namespace Prisma {
     AND?: SchoolRunScalarWhereWithAggregatesInput | SchoolRunScalarWhereWithAggregatesInput[]
     OR?: SchoolRunScalarWhereWithAggregatesInput[]
     NOT?: SchoolRunScalarWhereWithAggregatesInput | SchoolRunScalarWhereWithAggregatesInput[]
-    id?: UuidWithAggregatesFilter<'SchoolRun'> | string
-    kidId?: StringWithAggregatesFilter<'SchoolRun'> | string
-    weekday?: IntWithAggregatesFilter<'SchoolRun'> | number
-    kind?: StringWithAggregatesFilter<'SchoolRun'> | string
-    place?: StringNullableWithAggregatesFilter<'SchoolRun'> | string | null
-    minutes?: IntWithAggregatesFilter<'SchoolRun'> | number
-    startsOn?: DateTimeWithAggregatesFilter<'SchoolRun'> | Date | string
-    endsOn?: DateTimeNullableWithAggregatesFilter<'SchoolRun'> | Date | string | null
-    createdBy?: StringWithAggregatesFilter<'SchoolRun'> | string
-    createdAt?: DateTimeWithAggregatesFilter<'SchoolRun'> | Date | string
+    id?: UuidWithAggregatesFilter<"SchoolRun"> | string
+    kidId?: StringWithAggregatesFilter<"SchoolRun"> | string
+    weekday?: IntWithAggregatesFilter<"SchoolRun"> | number
+    kind?: StringWithAggregatesFilter<"SchoolRun"> | string
+    place?: StringNullableWithAggregatesFilter<"SchoolRun"> | string | null
+    minutes?: IntWithAggregatesFilter<"SchoolRun"> | number
+    startsOn?: DateTimeWithAggregatesFilter<"SchoolRun"> | Date | string
+    endsOn?: DateTimeNullableWithAggregatesFilter<"SchoolRun"> | Date | string | null
+    createdBy?: StringWithAggregatesFilter<"SchoolRun"> | string
+    createdAt?: DateTimeWithAggregatesFilter<"SchoolRun"> | Date | string
   }
 
   export type RunDriverWhereInput = {
     AND?: RunDriverWhereInput | RunDriverWhereInput[]
     OR?: RunDriverWhereInput[]
     NOT?: RunDriverWhereInput | RunDriverWhereInput[]
-    runId?: UuidFilter<'RunDriver'> | string
-    fromDate?: DateTimeFilter<'RunDriver'> | Date | string
-    driverId?: StringFilter<'RunDriver'> | string
-    updatedBy?: StringFilter<'RunDriver'> | string
-    updatedAt?: DateTimeFilter<'RunDriver'> | Date | string
+    runId?: UuidFilter<"RunDriver"> | string
+    fromDate?: DateTimeFilter<"RunDriver"> | Date | string
+    driverId?: StringFilter<"RunDriver"> | string
+    updatedBy?: StringFilter<"RunDriver"> | string
+    updatedAt?: DateTimeFilter<"RunDriver"> | Date | string
     run?: XOR<SchoolRunScalarRelationFilter, SchoolRunWhereInput>
   }
 
@@ -5185,21 +4672,18 @@ export namespace Prisma {
     run?: SchoolRunOrderByWithRelationInput
   }
 
-  export type RunDriverWhereUniqueInput = Prisma.AtLeast<
-    {
-      runId_fromDate?: RunDriverRunIdFromDateCompoundUniqueInput
-      AND?: RunDriverWhereInput | RunDriverWhereInput[]
-      OR?: RunDriverWhereInput[]
-      NOT?: RunDriverWhereInput | RunDriverWhereInput[]
-      runId?: UuidFilter<'RunDriver'> | string
-      fromDate?: DateTimeFilter<'RunDriver'> | Date | string
-      driverId?: StringFilter<'RunDriver'> | string
-      updatedBy?: StringFilter<'RunDriver'> | string
-      updatedAt?: DateTimeFilter<'RunDriver'> | Date | string
-      run?: XOR<SchoolRunScalarRelationFilter, SchoolRunWhereInput>
-    },
-    'runId_fromDate'
-  >
+  export type RunDriverWhereUniqueInput = Prisma.AtLeast<{
+    runId_fromDate?: RunDriverRunIdFromDateCompoundUniqueInput
+    AND?: RunDriverWhereInput | RunDriverWhereInput[]
+    OR?: RunDriverWhereInput[]
+    NOT?: RunDriverWhereInput | RunDriverWhereInput[]
+    runId?: UuidFilter<"RunDriver"> | string
+    fromDate?: DateTimeFilter<"RunDriver"> | Date | string
+    driverId?: StringFilter<"RunDriver"> | string
+    updatedBy?: StringFilter<"RunDriver"> | string
+    updatedAt?: DateTimeFilter<"RunDriver"> | Date | string
+    run?: XOR<SchoolRunScalarRelationFilter, SchoolRunWhereInput>
+  }, "runId_fromDate">
 
   export type RunDriverOrderByWithAggregationInput = {
     runId?: SortOrder
@@ -5216,60 +4700,67 @@ export namespace Prisma {
     AND?: RunDriverScalarWhereWithAggregatesInput | RunDriverScalarWhereWithAggregatesInput[]
     OR?: RunDriverScalarWhereWithAggregatesInput[]
     NOT?: RunDriverScalarWhereWithAggregatesInput | RunDriverScalarWhereWithAggregatesInput[]
-    runId?: UuidWithAggregatesFilter<'RunDriver'> | string
-    fromDate?: DateTimeWithAggregatesFilter<'RunDriver'> | Date | string
-    driverId?: StringWithAggregatesFilter<'RunDriver'> | string
-    updatedBy?: StringWithAggregatesFilter<'RunDriver'> | string
-    updatedAt?: DateTimeWithAggregatesFilter<'RunDriver'> | Date | string
+    runId?: UuidWithAggregatesFilter<"RunDriver"> | string
+    fromDate?: DateTimeWithAggregatesFilter<"RunDriver"> | Date | string
+    driverId?: StringWithAggregatesFilter<"RunDriver"> | string
+    updatedBy?: StringWithAggregatesFilter<"RunDriver"> | string
+    updatedAt?: DateTimeWithAggregatesFilter<"RunDriver"> | Date | string
   }
 
-  export type RunSkipWhereInput = {
-    AND?: RunSkipWhereInput | RunSkipWhereInput[]
-    OR?: RunSkipWhereInput[]
-    NOT?: RunSkipWhereInput | RunSkipWhereInput[]
-    runId?: UuidFilter<'RunSkip'> | string
-    date?: DateTimeFilter<'RunSkip'> | Date | string
-    updatedBy?: StringFilter<'RunSkip'> | string
+  export type RunDayWhereInput = {
+    AND?: RunDayWhereInput | RunDayWhereInput[]
+    OR?: RunDayWhereInput[]
+    NOT?: RunDayWhereInput | RunDayWhereInput[]
+    runId?: UuidFilter<"RunDay"> | string
+    date?: DateTimeFilter<"RunDay"> | Date | string
+    driverId?: StringNullableFilter<"RunDay"> | string | null
+    skipped?: BoolFilter<"RunDay"> | boolean
+    updatedBy?: StringFilter<"RunDay"> | string
     run?: XOR<SchoolRunScalarRelationFilter, SchoolRunWhereInput>
   }
 
-  export type RunSkipOrderByWithRelationInput = {
+  export type RunDayOrderByWithRelationInput = {
     runId?: SortOrder
     date?: SortOrder
+    driverId?: SortOrderInput | SortOrder
+    skipped?: SortOrder
     updatedBy?: SortOrder
     run?: SchoolRunOrderByWithRelationInput
   }
 
-  export type RunSkipWhereUniqueInput = Prisma.AtLeast<
-    {
-      runId_date?: RunSkipRunIdDateCompoundUniqueInput
-      AND?: RunSkipWhereInput | RunSkipWhereInput[]
-      OR?: RunSkipWhereInput[]
-      NOT?: RunSkipWhereInput | RunSkipWhereInput[]
-      runId?: UuidFilter<'RunSkip'> | string
-      date?: DateTimeFilter<'RunSkip'> | Date | string
-      updatedBy?: StringFilter<'RunSkip'> | string
-      run?: XOR<SchoolRunScalarRelationFilter, SchoolRunWhereInput>
-    },
-    'runId_date'
-  >
+  export type RunDayWhereUniqueInput = Prisma.AtLeast<{
+    runId_date?: RunDayRunIdDateCompoundUniqueInput
+    AND?: RunDayWhereInput | RunDayWhereInput[]
+    OR?: RunDayWhereInput[]
+    NOT?: RunDayWhereInput | RunDayWhereInput[]
+    runId?: UuidFilter<"RunDay"> | string
+    date?: DateTimeFilter<"RunDay"> | Date | string
+    driverId?: StringNullableFilter<"RunDay"> | string | null
+    skipped?: BoolFilter<"RunDay"> | boolean
+    updatedBy?: StringFilter<"RunDay"> | string
+    run?: XOR<SchoolRunScalarRelationFilter, SchoolRunWhereInput>
+  }, "runId_date">
 
-  export type RunSkipOrderByWithAggregationInput = {
+  export type RunDayOrderByWithAggregationInput = {
     runId?: SortOrder
     date?: SortOrder
+    driverId?: SortOrderInput | SortOrder
+    skipped?: SortOrder
     updatedBy?: SortOrder
-    _count?: RunSkipCountOrderByAggregateInput
-    _max?: RunSkipMaxOrderByAggregateInput
-    _min?: RunSkipMinOrderByAggregateInput
+    _count?: RunDayCountOrderByAggregateInput
+    _max?: RunDayMaxOrderByAggregateInput
+    _min?: RunDayMinOrderByAggregateInput
   }
 
-  export type RunSkipScalarWhereWithAggregatesInput = {
-    AND?: RunSkipScalarWhereWithAggregatesInput | RunSkipScalarWhereWithAggregatesInput[]
-    OR?: RunSkipScalarWhereWithAggregatesInput[]
-    NOT?: RunSkipScalarWhereWithAggregatesInput | RunSkipScalarWhereWithAggregatesInput[]
-    runId?: UuidWithAggregatesFilter<'RunSkip'> | string
-    date?: DateTimeWithAggregatesFilter<'RunSkip'> | Date | string
-    updatedBy?: StringWithAggregatesFilter<'RunSkip'> | string
+  export type RunDayScalarWhereWithAggregatesInput = {
+    AND?: RunDayScalarWhereWithAggregatesInput | RunDayScalarWhereWithAggregatesInput[]
+    OR?: RunDayScalarWhereWithAggregatesInput[]
+    NOT?: RunDayScalarWhereWithAggregatesInput | RunDayScalarWhereWithAggregatesInput[]
+    runId?: UuidWithAggregatesFilter<"RunDay"> | string
+    date?: DateTimeWithAggregatesFilter<"RunDay"> | Date | string
+    driverId?: StringNullableWithAggregatesFilter<"RunDay"> | string | null
+    skipped?: BoolWithAggregatesFilter<"RunDay"> | boolean
+    updatedBy?: StringWithAggregatesFilter<"RunDay"> | string
   }
 
   export type SchoolRunCreateInput = {
@@ -5284,7 +4775,7 @@ export namespace Prisma {
     createdBy: string
     createdAt?: Date | string
     drivers?: RunDriverCreateNestedManyWithoutRunInput
-    skips?: RunSkipCreateNestedManyWithoutRunInput
+    days?: RunDayCreateNestedManyWithoutRunInput
   }
 
   export type SchoolRunUncheckedCreateInput = {
@@ -5299,7 +4790,7 @@ export namespace Prisma {
     createdBy: string
     createdAt?: Date | string
     drivers?: RunDriverUncheckedCreateNestedManyWithoutRunInput
-    skips?: RunSkipUncheckedCreateNestedManyWithoutRunInput
+    days?: RunDayUncheckedCreateNestedManyWithoutRunInput
   }
 
   export type SchoolRunUpdateInput = {
@@ -5314,7 +4805,7 @@ export namespace Prisma {
     createdBy?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     drivers?: RunDriverUpdateManyWithoutRunNestedInput
-    skips?: RunSkipUpdateManyWithoutRunNestedInput
+    days?: RunDayUpdateManyWithoutRunNestedInput
   }
 
   export type SchoolRunUncheckedUpdateInput = {
@@ -5329,7 +4820,7 @@ export namespace Prisma {
     createdBy?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
     drivers?: RunDriverUncheckedUpdateManyWithoutRunNestedInput
-    skips?: RunSkipUncheckedUpdateManyWithoutRunNestedInput
+    days?: RunDayUncheckedUpdateManyWithoutRunNestedInput
   }
 
   export type SchoolRunCreateManyInput = {
@@ -5426,44 +4917,58 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type RunSkipCreateInput = {
+  export type RunDayCreateInput = {
     date: Date | string
+    driverId?: string | null
+    skipped?: boolean
     updatedBy: string
-    run: SchoolRunCreateNestedOneWithoutSkipsInput
+    run: SchoolRunCreateNestedOneWithoutDaysInput
   }
 
-  export type RunSkipUncheckedCreateInput = {
+  export type RunDayUncheckedCreateInput = {
     runId: string
     date: Date | string
+    driverId?: string | null
+    skipped?: boolean
     updatedBy: string
   }
 
-  export type RunSkipUpdateInput = {
+  export type RunDayUpdateInput = {
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    driverId?: NullableStringFieldUpdateOperationsInput | string | null
+    skipped?: BoolFieldUpdateOperationsInput | boolean
     updatedBy?: StringFieldUpdateOperationsInput | string
-    run?: SchoolRunUpdateOneRequiredWithoutSkipsNestedInput
+    run?: SchoolRunUpdateOneRequiredWithoutDaysNestedInput
   }
 
-  export type RunSkipUncheckedUpdateInput = {
+  export type RunDayUncheckedUpdateInput = {
     runId?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    driverId?: NullableStringFieldUpdateOperationsInput | string | null
+    skipped?: BoolFieldUpdateOperationsInput | boolean
     updatedBy?: StringFieldUpdateOperationsInput | string
   }
 
-  export type RunSkipCreateManyInput = {
+  export type RunDayCreateManyInput = {
     runId: string
     date: Date | string
+    driverId?: string | null
+    skipped?: boolean
     updatedBy: string
   }
 
-  export type RunSkipUpdateManyMutationInput = {
+  export type RunDayUpdateManyMutationInput = {
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    driverId?: NullableStringFieldUpdateOperationsInput | string | null
+    skipped?: BoolFieldUpdateOperationsInput | boolean
     updatedBy?: StringFieldUpdateOperationsInput | string
   }
 
-  export type RunSkipUncheckedUpdateManyInput = {
+  export type RunDayUncheckedUpdateManyInput = {
     runId?: StringFieldUpdateOperationsInput | string
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    driverId?: NullableStringFieldUpdateOperationsInput | string | null
+    skipped?: BoolFieldUpdateOperationsInput | boolean
     updatedBy?: StringFieldUpdateOperationsInput | string
   }
 
@@ -5548,10 +5053,10 @@ export namespace Prisma {
     none?: RunDriverWhereInput
   }
 
-  export type RunSkipListRelationFilter = {
-    every?: RunSkipWhereInput
-    some?: RunSkipWhereInput
-    none?: RunSkipWhereInput
+  export type RunDayListRelationFilter = {
+    every?: RunDayWhereInput
+    some?: RunDayWhereInput
+    none?: RunDayWhereInput
   }
 
   export type SortOrderInput = {
@@ -5563,7 +5068,7 @@ export namespace Prisma {
     _count?: SortOrder
   }
 
-  export type RunSkipOrderByRelationAggregateInput = {
+  export type RunDayOrderByRelationAggregateInput = {
     _count?: SortOrder
   }
 
@@ -5745,75 +5250,74 @@ export namespace Prisma {
     updatedAt?: SortOrder
   }
 
-  export type RunSkipRunIdDateCompoundUniqueInput = {
+  export type BoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
+  export type RunDayRunIdDateCompoundUniqueInput = {
     runId: string
     date: Date | string
   }
 
-  export type RunSkipCountOrderByAggregateInput = {
+  export type RunDayCountOrderByAggregateInput = {
     runId?: SortOrder
     date?: SortOrder
+    driverId?: SortOrder
+    skipped?: SortOrder
     updatedBy?: SortOrder
   }
 
-  export type RunSkipMaxOrderByAggregateInput = {
+  export type RunDayMaxOrderByAggregateInput = {
     runId?: SortOrder
     date?: SortOrder
+    driverId?: SortOrder
+    skipped?: SortOrder
     updatedBy?: SortOrder
   }
 
-  export type RunSkipMinOrderByAggregateInput = {
+  export type RunDayMinOrderByAggregateInput = {
     runId?: SortOrder
     date?: SortOrder
+    driverId?: SortOrder
+    skipped?: SortOrder
     updatedBy?: SortOrder
+  }
+
+  export type BoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
   }
 
   export type RunDriverCreateNestedManyWithoutRunInput = {
-    create?:
-      | XOR<RunDriverCreateWithoutRunInput, RunDriverUncheckedCreateWithoutRunInput>
-      | RunDriverCreateWithoutRunInput[]
-      | RunDriverUncheckedCreateWithoutRunInput[]
-    connectOrCreate?:
-      | RunDriverCreateOrConnectWithoutRunInput
-      | RunDriverCreateOrConnectWithoutRunInput[]
+    create?: XOR<RunDriverCreateWithoutRunInput, RunDriverUncheckedCreateWithoutRunInput> | RunDriverCreateWithoutRunInput[] | RunDriverUncheckedCreateWithoutRunInput[]
+    connectOrCreate?: RunDriverCreateOrConnectWithoutRunInput | RunDriverCreateOrConnectWithoutRunInput[]
     createMany?: RunDriverCreateManyRunInputEnvelope
     connect?: RunDriverWhereUniqueInput | RunDriverWhereUniqueInput[]
   }
 
-  export type RunSkipCreateNestedManyWithoutRunInput = {
-    create?:
-      | XOR<RunSkipCreateWithoutRunInput, RunSkipUncheckedCreateWithoutRunInput>
-      | RunSkipCreateWithoutRunInput[]
-      | RunSkipUncheckedCreateWithoutRunInput[]
-    connectOrCreate?:
-      | RunSkipCreateOrConnectWithoutRunInput
-      | RunSkipCreateOrConnectWithoutRunInput[]
-    createMany?: RunSkipCreateManyRunInputEnvelope
-    connect?: RunSkipWhereUniqueInput | RunSkipWhereUniqueInput[]
+  export type RunDayCreateNestedManyWithoutRunInput = {
+    create?: XOR<RunDayCreateWithoutRunInput, RunDayUncheckedCreateWithoutRunInput> | RunDayCreateWithoutRunInput[] | RunDayUncheckedCreateWithoutRunInput[]
+    connectOrCreate?: RunDayCreateOrConnectWithoutRunInput | RunDayCreateOrConnectWithoutRunInput[]
+    createMany?: RunDayCreateManyRunInputEnvelope
+    connect?: RunDayWhereUniqueInput | RunDayWhereUniqueInput[]
   }
 
   export type RunDriverUncheckedCreateNestedManyWithoutRunInput = {
-    create?:
-      | XOR<RunDriverCreateWithoutRunInput, RunDriverUncheckedCreateWithoutRunInput>
-      | RunDriverCreateWithoutRunInput[]
-      | RunDriverUncheckedCreateWithoutRunInput[]
-    connectOrCreate?:
-      | RunDriverCreateOrConnectWithoutRunInput
-      | RunDriverCreateOrConnectWithoutRunInput[]
+    create?: XOR<RunDriverCreateWithoutRunInput, RunDriverUncheckedCreateWithoutRunInput> | RunDriverCreateWithoutRunInput[] | RunDriverUncheckedCreateWithoutRunInput[]
+    connectOrCreate?: RunDriverCreateOrConnectWithoutRunInput | RunDriverCreateOrConnectWithoutRunInput[]
     createMany?: RunDriverCreateManyRunInputEnvelope
     connect?: RunDriverWhereUniqueInput | RunDriverWhereUniqueInput[]
   }
 
-  export type RunSkipUncheckedCreateNestedManyWithoutRunInput = {
-    create?:
-      | XOR<RunSkipCreateWithoutRunInput, RunSkipUncheckedCreateWithoutRunInput>
-      | RunSkipCreateWithoutRunInput[]
-      | RunSkipUncheckedCreateWithoutRunInput[]
-    connectOrCreate?:
-      | RunSkipCreateOrConnectWithoutRunInput
-      | RunSkipCreateOrConnectWithoutRunInput[]
-    createMany?: RunSkipCreateManyRunInputEnvelope
-    connect?: RunSkipWhereUniqueInput | RunSkipWhereUniqueInput[]
+  export type RunDayUncheckedCreateNestedManyWithoutRunInput = {
+    create?: XOR<RunDayCreateWithoutRunInput, RunDayUncheckedCreateWithoutRunInput> | RunDayCreateWithoutRunInput[] | RunDayUncheckedCreateWithoutRunInput[]
+    connectOrCreate?: RunDayCreateOrConnectWithoutRunInput | RunDayCreateOrConnectWithoutRunInput[]
+    createMany?: RunDayCreateManyRunInputEnvelope
+    connect?: RunDayWhereUniqueInput | RunDayWhereUniqueInput[]
   }
 
   export type StringFieldUpdateOperationsInput = {
@@ -5841,103 +5345,59 @@ export namespace Prisma {
   }
 
   export type RunDriverUpdateManyWithoutRunNestedInput = {
-    create?:
-      | XOR<RunDriverCreateWithoutRunInput, RunDriverUncheckedCreateWithoutRunInput>
-      | RunDriverCreateWithoutRunInput[]
-      | RunDriverUncheckedCreateWithoutRunInput[]
-    connectOrCreate?:
-      | RunDriverCreateOrConnectWithoutRunInput
-      | RunDriverCreateOrConnectWithoutRunInput[]
-    upsert?:
-      | RunDriverUpsertWithWhereUniqueWithoutRunInput
-      | RunDriverUpsertWithWhereUniqueWithoutRunInput[]
+    create?: XOR<RunDriverCreateWithoutRunInput, RunDriverUncheckedCreateWithoutRunInput> | RunDriverCreateWithoutRunInput[] | RunDriverUncheckedCreateWithoutRunInput[]
+    connectOrCreate?: RunDriverCreateOrConnectWithoutRunInput | RunDriverCreateOrConnectWithoutRunInput[]
+    upsert?: RunDriverUpsertWithWhereUniqueWithoutRunInput | RunDriverUpsertWithWhereUniqueWithoutRunInput[]
     createMany?: RunDriverCreateManyRunInputEnvelope
     set?: RunDriverWhereUniqueInput | RunDriverWhereUniqueInput[]
     disconnect?: RunDriverWhereUniqueInput | RunDriverWhereUniqueInput[]
     delete?: RunDriverWhereUniqueInput | RunDriverWhereUniqueInput[]
     connect?: RunDriverWhereUniqueInput | RunDriverWhereUniqueInput[]
-    update?:
-      | RunDriverUpdateWithWhereUniqueWithoutRunInput
-      | RunDriverUpdateWithWhereUniqueWithoutRunInput[]
-    updateMany?:
-      | RunDriverUpdateManyWithWhereWithoutRunInput
-      | RunDriverUpdateManyWithWhereWithoutRunInput[]
+    update?: RunDriverUpdateWithWhereUniqueWithoutRunInput | RunDriverUpdateWithWhereUniqueWithoutRunInput[]
+    updateMany?: RunDriverUpdateManyWithWhereWithoutRunInput | RunDriverUpdateManyWithWhereWithoutRunInput[]
     deleteMany?: RunDriverScalarWhereInput | RunDriverScalarWhereInput[]
   }
 
-  export type RunSkipUpdateManyWithoutRunNestedInput = {
-    create?:
-      | XOR<RunSkipCreateWithoutRunInput, RunSkipUncheckedCreateWithoutRunInput>
-      | RunSkipCreateWithoutRunInput[]
-      | RunSkipUncheckedCreateWithoutRunInput[]
-    connectOrCreate?:
-      | RunSkipCreateOrConnectWithoutRunInput
-      | RunSkipCreateOrConnectWithoutRunInput[]
-    upsert?:
-      | RunSkipUpsertWithWhereUniqueWithoutRunInput
-      | RunSkipUpsertWithWhereUniqueWithoutRunInput[]
-    createMany?: RunSkipCreateManyRunInputEnvelope
-    set?: RunSkipWhereUniqueInput | RunSkipWhereUniqueInput[]
-    disconnect?: RunSkipWhereUniqueInput | RunSkipWhereUniqueInput[]
-    delete?: RunSkipWhereUniqueInput | RunSkipWhereUniqueInput[]
-    connect?: RunSkipWhereUniqueInput | RunSkipWhereUniqueInput[]
-    update?:
-      | RunSkipUpdateWithWhereUniqueWithoutRunInput
-      | RunSkipUpdateWithWhereUniqueWithoutRunInput[]
-    updateMany?:
-      | RunSkipUpdateManyWithWhereWithoutRunInput
-      | RunSkipUpdateManyWithWhereWithoutRunInput[]
-    deleteMany?: RunSkipScalarWhereInput | RunSkipScalarWhereInput[]
+  export type RunDayUpdateManyWithoutRunNestedInput = {
+    create?: XOR<RunDayCreateWithoutRunInput, RunDayUncheckedCreateWithoutRunInput> | RunDayCreateWithoutRunInput[] | RunDayUncheckedCreateWithoutRunInput[]
+    connectOrCreate?: RunDayCreateOrConnectWithoutRunInput | RunDayCreateOrConnectWithoutRunInput[]
+    upsert?: RunDayUpsertWithWhereUniqueWithoutRunInput | RunDayUpsertWithWhereUniqueWithoutRunInput[]
+    createMany?: RunDayCreateManyRunInputEnvelope
+    set?: RunDayWhereUniqueInput | RunDayWhereUniqueInput[]
+    disconnect?: RunDayWhereUniqueInput | RunDayWhereUniqueInput[]
+    delete?: RunDayWhereUniqueInput | RunDayWhereUniqueInput[]
+    connect?: RunDayWhereUniqueInput | RunDayWhereUniqueInput[]
+    update?: RunDayUpdateWithWhereUniqueWithoutRunInput | RunDayUpdateWithWhereUniqueWithoutRunInput[]
+    updateMany?: RunDayUpdateManyWithWhereWithoutRunInput | RunDayUpdateManyWithWhereWithoutRunInput[]
+    deleteMany?: RunDayScalarWhereInput | RunDayScalarWhereInput[]
   }
 
   export type RunDriverUncheckedUpdateManyWithoutRunNestedInput = {
-    create?:
-      | XOR<RunDriverCreateWithoutRunInput, RunDriverUncheckedCreateWithoutRunInput>
-      | RunDriverCreateWithoutRunInput[]
-      | RunDriverUncheckedCreateWithoutRunInput[]
-    connectOrCreate?:
-      | RunDriverCreateOrConnectWithoutRunInput
-      | RunDriverCreateOrConnectWithoutRunInput[]
-    upsert?:
-      | RunDriverUpsertWithWhereUniqueWithoutRunInput
-      | RunDriverUpsertWithWhereUniqueWithoutRunInput[]
+    create?: XOR<RunDriverCreateWithoutRunInput, RunDriverUncheckedCreateWithoutRunInput> | RunDriverCreateWithoutRunInput[] | RunDriverUncheckedCreateWithoutRunInput[]
+    connectOrCreate?: RunDriverCreateOrConnectWithoutRunInput | RunDriverCreateOrConnectWithoutRunInput[]
+    upsert?: RunDriverUpsertWithWhereUniqueWithoutRunInput | RunDriverUpsertWithWhereUniqueWithoutRunInput[]
     createMany?: RunDriverCreateManyRunInputEnvelope
     set?: RunDriverWhereUniqueInput | RunDriverWhereUniqueInput[]
     disconnect?: RunDriverWhereUniqueInput | RunDriverWhereUniqueInput[]
     delete?: RunDriverWhereUniqueInput | RunDriverWhereUniqueInput[]
     connect?: RunDriverWhereUniqueInput | RunDriverWhereUniqueInput[]
-    update?:
-      | RunDriverUpdateWithWhereUniqueWithoutRunInput
-      | RunDriverUpdateWithWhereUniqueWithoutRunInput[]
-    updateMany?:
-      | RunDriverUpdateManyWithWhereWithoutRunInput
-      | RunDriverUpdateManyWithWhereWithoutRunInput[]
+    update?: RunDriverUpdateWithWhereUniqueWithoutRunInput | RunDriverUpdateWithWhereUniqueWithoutRunInput[]
+    updateMany?: RunDriverUpdateManyWithWhereWithoutRunInput | RunDriverUpdateManyWithWhereWithoutRunInput[]
     deleteMany?: RunDriverScalarWhereInput | RunDriverScalarWhereInput[]
   }
 
-  export type RunSkipUncheckedUpdateManyWithoutRunNestedInput = {
-    create?:
-      | XOR<RunSkipCreateWithoutRunInput, RunSkipUncheckedCreateWithoutRunInput>
-      | RunSkipCreateWithoutRunInput[]
-      | RunSkipUncheckedCreateWithoutRunInput[]
-    connectOrCreate?:
-      | RunSkipCreateOrConnectWithoutRunInput
-      | RunSkipCreateOrConnectWithoutRunInput[]
-    upsert?:
-      | RunSkipUpsertWithWhereUniqueWithoutRunInput
-      | RunSkipUpsertWithWhereUniqueWithoutRunInput[]
-    createMany?: RunSkipCreateManyRunInputEnvelope
-    set?: RunSkipWhereUniqueInput | RunSkipWhereUniqueInput[]
-    disconnect?: RunSkipWhereUniqueInput | RunSkipWhereUniqueInput[]
-    delete?: RunSkipWhereUniqueInput | RunSkipWhereUniqueInput[]
-    connect?: RunSkipWhereUniqueInput | RunSkipWhereUniqueInput[]
-    update?:
-      | RunSkipUpdateWithWhereUniqueWithoutRunInput
-      | RunSkipUpdateWithWhereUniqueWithoutRunInput[]
-    updateMany?:
-      | RunSkipUpdateManyWithWhereWithoutRunInput
-      | RunSkipUpdateManyWithWhereWithoutRunInput[]
-    deleteMany?: RunSkipScalarWhereInput | RunSkipScalarWhereInput[]
+  export type RunDayUncheckedUpdateManyWithoutRunNestedInput = {
+    create?: XOR<RunDayCreateWithoutRunInput, RunDayUncheckedCreateWithoutRunInput> | RunDayCreateWithoutRunInput[] | RunDayUncheckedCreateWithoutRunInput[]
+    connectOrCreate?: RunDayCreateOrConnectWithoutRunInput | RunDayCreateOrConnectWithoutRunInput[]
+    upsert?: RunDayUpsertWithWhereUniqueWithoutRunInput | RunDayUpsertWithWhereUniqueWithoutRunInput[]
+    createMany?: RunDayCreateManyRunInputEnvelope
+    set?: RunDayWhereUniqueInput | RunDayWhereUniqueInput[]
+    disconnect?: RunDayWhereUniqueInput | RunDayWhereUniqueInput[]
+    delete?: RunDayWhereUniqueInput | RunDayWhereUniqueInput[]
+    connect?: RunDayWhereUniqueInput | RunDayWhereUniqueInput[]
+    update?: RunDayUpdateWithWhereUniqueWithoutRunInput | RunDayUpdateWithWhereUniqueWithoutRunInput[]
+    updateMany?: RunDayUpdateManyWithWhereWithoutRunInput | RunDayUpdateManyWithWhereWithoutRunInput[]
+    deleteMany?: RunDayScalarWhereInput | RunDayScalarWhereInput[]
   }
 
   export type SchoolRunCreateNestedOneWithoutDriversInput = {
@@ -5951,27 +5411,25 @@ export namespace Prisma {
     connectOrCreate?: SchoolRunCreateOrConnectWithoutDriversInput
     upsert?: SchoolRunUpsertWithoutDriversInput
     connect?: SchoolRunWhereUniqueInput
-    update?: XOR<
-      XOR<SchoolRunUpdateToOneWithWhereWithoutDriversInput, SchoolRunUpdateWithoutDriversInput>,
-      SchoolRunUncheckedUpdateWithoutDriversInput
-    >
+    update?: XOR<XOR<SchoolRunUpdateToOneWithWhereWithoutDriversInput, SchoolRunUpdateWithoutDriversInput>, SchoolRunUncheckedUpdateWithoutDriversInput>
   }
 
-  export type SchoolRunCreateNestedOneWithoutSkipsInput = {
-    create?: XOR<SchoolRunCreateWithoutSkipsInput, SchoolRunUncheckedCreateWithoutSkipsInput>
-    connectOrCreate?: SchoolRunCreateOrConnectWithoutSkipsInput
+  export type SchoolRunCreateNestedOneWithoutDaysInput = {
+    create?: XOR<SchoolRunCreateWithoutDaysInput, SchoolRunUncheckedCreateWithoutDaysInput>
+    connectOrCreate?: SchoolRunCreateOrConnectWithoutDaysInput
     connect?: SchoolRunWhereUniqueInput
   }
 
-  export type SchoolRunUpdateOneRequiredWithoutSkipsNestedInput = {
-    create?: XOR<SchoolRunCreateWithoutSkipsInput, SchoolRunUncheckedCreateWithoutSkipsInput>
-    connectOrCreate?: SchoolRunCreateOrConnectWithoutSkipsInput
-    upsert?: SchoolRunUpsertWithoutSkipsInput
+  export type BoolFieldUpdateOperationsInput = {
+    set?: boolean
+  }
+
+  export type SchoolRunUpdateOneRequiredWithoutDaysNestedInput = {
+    create?: XOR<SchoolRunCreateWithoutDaysInput, SchoolRunUncheckedCreateWithoutDaysInput>
+    connectOrCreate?: SchoolRunCreateOrConnectWithoutDaysInput
+    upsert?: SchoolRunUpsertWithoutDaysInput
     connect?: SchoolRunWhereUniqueInput
-    update?: XOR<
-      XOR<SchoolRunUpdateToOneWithWhereWithoutSkipsInput, SchoolRunUpdateWithoutSkipsInput>,
-      SchoolRunUncheckedUpdateWithoutSkipsInput
-    >
+    update?: XOR<XOR<SchoolRunUpdateToOneWithWhereWithoutDaysInput, SchoolRunUpdateWithoutDaysInput>, SchoolRunUncheckedUpdateWithoutDaysInput>
   }
 
   export type NestedUuidFilter<$PrismaModel = never> = {
@@ -6160,6 +5618,19 @@ export namespace Prisma {
     _max?: NestedDateTimeNullableFilter<$PrismaModel>
   }
 
+  export type NestedBoolFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolFilter<$PrismaModel> | boolean
+  }
+
+  export type NestedBoolWithAggregatesFilter<$PrismaModel = never> = {
+    equals?: boolean | BooleanFieldRefInput<$PrismaModel>
+    not?: NestedBoolWithAggregatesFilter<$PrismaModel> | boolean
+    _count?: NestedIntFilter<$PrismaModel>
+    _min?: NestedBoolFilter<$PrismaModel>
+    _max?: NestedBoolFilter<$PrismaModel>
+  }
+
   export type RunDriverCreateWithoutRunInput = {
     fromDate: Date | string
     driverId: string
@@ -6184,23 +5655,27 @@ export namespace Prisma {
     skipDuplicates?: boolean
   }
 
-  export type RunSkipCreateWithoutRunInput = {
+  export type RunDayCreateWithoutRunInput = {
     date: Date | string
+    driverId?: string | null
+    skipped?: boolean
     updatedBy: string
   }
 
-  export type RunSkipUncheckedCreateWithoutRunInput = {
+  export type RunDayUncheckedCreateWithoutRunInput = {
     date: Date | string
+    driverId?: string | null
+    skipped?: boolean
     updatedBy: string
   }
 
-  export type RunSkipCreateOrConnectWithoutRunInput = {
-    where: RunSkipWhereUniqueInput
-    create: XOR<RunSkipCreateWithoutRunInput, RunSkipUncheckedCreateWithoutRunInput>
+  export type RunDayCreateOrConnectWithoutRunInput = {
+    where: RunDayWhereUniqueInput
+    create: XOR<RunDayCreateWithoutRunInput, RunDayUncheckedCreateWithoutRunInput>
   }
 
-  export type RunSkipCreateManyRunInputEnvelope = {
-    data: RunSkipCreateManyRunInput | RunSkipCreateManyRunInput[]
+  export type RunDayCreateManyRunInputEnvelope = {
+    data: RunDayCreateManyRunInput | RunDayCreateManyRunInput[]
     skipDuplicates?: boolean
   }
 
@@ -6224,36 +5699,38 @@ export namespace Prisma {
     AND?: RunDriverScalarWhereInput | RunDriverScalarWhereInput[]
     OR?: RunDriverScalarWhereInput[]
     NOT?: RunDriverScalarWhereInput | RunDriverScalarWhereInput[]
-    runId?: UuidFilter<'RunDriver'> | string
-    fromDate?: DateTimeFilter<'RunDriver'> | Date | string
-    driverId?: StringFilter<'RunDriver'> | string
-    updatedBy?: StringFilter<'RunDriver'> | string
-    updatedAt?: DateTimeFilter<'RunDriver'> | Date | string
+    runId?: UuidFilter<"RunDriver"> | string
+    fromDate?: DateTimeFilter<"RunDriver"> | Date | string
+    driverId?: StringFilter<"RunDriver"> | string
+    updatedBy?: StringFilter<"RunDriver"> | string
+    updatedAt?: DateTimeFilter<"RunDriver"> | Date | string
   }
 
-  export type RunSkipUpsertWithWhereUniqueWithoutRunInput = {
-    where: RunSkipWhereUniqueInput
-    update: XOR<RunSkipUpdateWithoutRunInput, RunSkipUncheckedUpdateWithoutRunInput>
-    create: XOR<RunSkipCreateWithoutRunInput, RunSkipUncheckedCreateWithoutRunInput>
+  export type RunDayUpsertWithWhereUniqueWithoutRunInput = {
+    where: RunDayWhereUniqueInput
+    update: XOR<RunDayUpdateWithoutRunInput, RunDayUncheckedUpdateWithoutRunInput>
+    create: XOR<RunDayCreateWithoutRunInput, RunDayUncheckedCreateWithoutRunInput>
   }
 
-  export type RunSkipUpdateWithWhereUniqueWithoutRunInput = {
-    where: RunSkipWhereUniqueInput
-    data: XOR<RunSkipUpdateWithoutRunInput, RunSkipUncheckedUpdateWithoutRunInput>
+  export type RunDayUpdateWithWhereUniqueWithoutRunInput = {
+    where: RunDayWhereUniqueInput
+    data: XOR<RunDayUpdateWithoutRunInput, RunDayUncheckedUpdateWithoutRunInput>
   }
 
-  export type RunSkipUpdateManyWithWhereWithoutRunInput = {
-    where: RunSkipScalarWhereInput
-    data: XOR<RunSkipUpdateManyMutationInput, RunSkipUncheckedUpdateManyWithoutRunInput>
+  export type RunDayUpdateManyWithWhereWithoutRunInput = {
+    where: RunDayScalarWhereInput
+    data: XOR<RunDayUpdateManyMutationInput, RunDayUncheckedUpdateManyWithoutRunInput>
   }
 
-  export type RunSkipScalarWhereInput = {
-    AND?: RunSkipScalarWhereInput | RunSkipScalarWhereInput[]
-    OR?: RunSkipScalarWhereInput[]
-    NOT?: RunSkipScalarWhereInput | RunSkipScalarWhereInput[]
-    runId?: UuidFilter<'RunSkip'> | string
-    date?: DateTimeFilter<'RunSkip'> | Date | string
-    updatedBy?: StringFilter<'RunSkip'> | string
+  export type RunDayScalarWhereInput = {
+    AND?: RunDayScalarWhereInput | RunDayScalarWhereInput[]
+    OR?: RunDayScalarWhereInput[]
+    NOT?: RunDayScalarWhereInput | RunDayScalarWhereInput[]
+    runId?: UuidFilter<"RunDay"> | string
+    date?: DateTimeFilter<"RunDay"> | Date | string
+    driverId?: StringNullableFilter<"RunDay"> | string | null
+    skipped?: BoolFilter<"RunDay"> | boolean
+    updatedBy?: StringFilter<"RunDay"> | string
   }
 
   export type SchoolRunCreateWithoutDriversInput = {
@@ -6267,7 +5744,7 @@ export namespace Prisma {
     endsOn?: Date | string | null
     createdBy: string
     createdAt?: Date | string
-    skips?: RunSkipCreateNestedManyWithoutRunInput
+    days?: RunDayCreateNestedManyWithoutRunInput
   }
 
   export type SchoolRunUncheckedCreateWithoutDriversInput = {
@@ -6281,7 +5758,7 @@ export namespace Prisma {
     endsOn?: Date | string | null
     createdBy: string
     createdAt?: Date | string
-    skips?: RunSkipUncheckedCreateNestedManyWithoutRunInput
+    days?: RunDayUncheckedCreateNestedManyWithoutRunInput
   }
 
   export type SchoolRunCreateOrConnectWithoutDriversInput = {
@@ -6311,7 +5788,7 @@ export namespace Prisma {
     endsOn?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdBy?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    skips?: RunSkipUpdateManyWithoutRunNestedInput
+    days?: RunDayUpdateManyWithoutRunNestedInput
   }
 
   export type SchoolRunUncheckedUpdateWithoutDriversInput = {
@@ -6325,10 +5802,10 @@ export namespace Prisma {
     endsOn?: NullableDateTimeFieldUpdateOperationsInput | Date | string | null
     createdBy?: StringFieldUpdateOperationsInput | string
     createdAt?: DateTimeFieldUpdateOperationsInput | Date | string
-    skips?: RunSkipUncheckedUpdateManyWithoutRunNestedInput
+    days?: RunDayUncheckedUpdateManyWithoutRunNestedInput
   }
 
-  export type SchoolRunCreateWithoutSkipsInput = {
+  export type SchoolRunCreateWithoutDaysInput = {
     id?: string
     kidId: string
     weekday: number
@@ -6342,7 +5819,7 @@ export namespace Prisma {
     drivers?: RunDriverCreateNestedManyWithoutRunInput
   }
 
-  export type SchoolRunUncheckedCreateWithoutSkipsInput = {
+  export type SchoolRunUncheckedCreateWithoutDaysInput = {
     id?: string
     kidId: string
     weekday: number
@@ -6356,23 +5833,23 @@ export namespace Prisma {
     drivers?: RunDriverUncheckedCreateNestedManyWithoutRunInput
   }
 
-  export type SchoolRunCreateOrConnectWithoutSkipsInput = {
+  export type SchoolRunCreateOrConnectWithoutDaysInput = {
     where: SchoolRunWhereUniqueInput
-    create: XOR<SchoolRunCreateWithoutSkipsInput, SchoolRunUncheckedCreateWithoutSkipsInput>
+    create: XOR<SchoolRunCreateWithoutDaysInput, SchoolRunUncheckedCreateWithoutDaysInput>
   }
 
-  export type SchoolRunUpsertWithoutSkipsInput = {
-    update: XOR<SchoolRunUpdateWithoutSkipsInput, SchoolRunUncheckedUpdateWithoutSkipsInput>
-    create: XOR<SchoolRunCreateWithoutSkipsInput, SchoolRunUncheckedCreateWithoutSkipsInput>
+  export type SchoolRunUpsertWithoutDaysInput = {
+    update: XOR<SchoolRunUpdateWithoutDaysInput, SchoolRunUncheckedUpdateWithoutDaysInput>
+    create: XOR<SchoolRunCreateWithoutDaysInput, SchoolRunUncheckedCreateWithoutDaysInput>
     where?: SchoolRunWhereInput
   }
 
-  export type SchoolRunUpdateToOneWithWhereWithoutSkipsInput = {
+  export type SchoolRunUpdateToOneWithWhereWithoutDaysInput = {
     where?: SchoolRunWhereInput
-    data: XOR<SchoolRunUpdateWithoutSkipsInput, SchoolRunUncheckedUpdateWithoutSkipsInput>
+    data: XOR<SchoolRunUpdateWithoutDaysInput, SchoolRunUncheckedUpdateWithoutDaysInput>
   }
 
-  export type SchoolRunUpdateWithoutSkipsInput = {
+  export type SchoolRunUpdateWithoutDaysInput = {
     id?: StringFieldUpdateOperationsInput | string
     kidId?: StringFieldUpdateOperationsInput | string
     weekday?: IntFieldUpdateOperationsInput | number
@@ -6386,7 +5863,7 @@ export namespace Prisma {
     drivers?: RunDriverUpdateManyWithoutRunNestedInput
   }
 
-  export type SchoolRunUncheckedUpdateWithoutSkipsInput = {
+  export type SchoolRunUncheckedUpdateWithoutDaysInput = {
     id?: StringFieldUpdateOperationsInput | string
     kidId?: StringFieldUpdateOperationsInput | string
     weekday?: IntFieldUpdateOperationsInput | number
@@ -6407,8 +5884,10 @@ export namespace Prisma {
     updatedAt?: Date | string
   }
 
-  export type RunSkipCreateManyRunInput = {
+  export type RunDayCreateManyRunInput = {
     date: Date | string
+    driverId?: string | null
+    skipped?: boolean
     updatedBy: string
   }
 
@@ -6433,20 +5912,28 @@ export namespace Prisma {
     updatedAt?: DateTimeFieldUpdateOperationsInput | Date | string
   }
 
-  export type RunSkipUpdateWithoutRunInput = {
+  export type RunDayUpdateWithoutRunInput = {
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    driverId?: NullableStringFieldUpdateOperationsInput | string | null
+    skipped?: BoolFieldUpdateOperationsInput | boolean
     updatedBy?: StringFieldUpdateOperationsInput | string
   }
 
-  export type RunSkipUncheckedUpdateWithoutRunInput = {
+  export type RunDayUncheckedUpdateWithoutRunInput = {
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    driverId?: NullableStringFieldUpdateOperationsInput | string | null
+    skipped?: BoolFieldUpdateOperationsInput | boolean
     updatedBy?: StringFieldUpdateOperationsInput | string
   }
 
-  export type RunSkipUncheckedUpdateManyWithoutRunInput = {
+  export type RunDayUncheckedUpdateManyWithoutRunInput = {
     date?: DateTimeFieldUpdateOperationsInput | Date | string
+    driverId?: NullableStringFieldUpdateOperationsInput | string | null
+    skipped?: BoolFieldUpdateOperationsInput | boolean
     updatedBy?: StringFieldUpdateOperationsInput | string
   }
+
+
 
   /**
    * Batch Payload for updateMany & deleteMany & createMany

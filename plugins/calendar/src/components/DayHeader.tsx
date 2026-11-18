@@ -43,10 +43,12 @@ export function DayHeader({
   if (marks.length === 0 && !action && !heading) return null
   return (
     <>
-      <div className={cn('flex items-baseline justify-between gap-2', className)}>
-        {heading ?? <span />}
+      <div
+        className={cn('flex flex-wrap items-baseline justify-between gap-x-2 gap-y-1', className)}
+      >
+        <div className="shrink-0">{heading}</div>
         {(marks.length > 0 || action) && (
-          <div className="flex flex-wrap items-center justify-end gap-x-3 gap-y-1">
+          <div className="ml-auto flex flex-wrap items-center justify-end gap-x-3 gap-y-1">
             {marks.map((mark) => {
               const owner = mark.ownerId ? membersById.get(mark.ownerId) : undefined
               const Glyph = DAY_MARK_GLYPHS[mark.glyph]

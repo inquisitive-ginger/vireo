@@ -236,11 +236,13 @@ describe('editor edge cases', () => {
       headers: { cookie: await cookieFor(HALLIE) },
     })
 
-  it('D-097 an editor change holds from its week on, over later swaps [F-041]', async () => {
+  it('D-100 an editor change carries forward from its week, and a day’s swap still stands on its day [F-041]', async () => {
     const ids = await seedTuesday()
     await changeDay(TUE_AFTER, { lineId: ids[2], ownerId: ZACH })
+    await driverChange(ids[2], NEXT_TUE, ZACH)
     await driverChange(ids[2], TUE, HALLIE)
-    expect(await driverOnDay(TUE_AFTER, 2)).toBe(HALLIE)
+    expect(await driverOnDay(NEXT_TUE, 2)).toBe(HALLIE)
+    expect(await driverOnDay(TUE_AFTER, 2)).toBe(ZACH)
   })
 
   it('D-097 removing a run again from a later week never brings it back [F-041]', async () => {
@@ -321,21 +323,28 @@ describe('the rides mark', () => {
 })
 
 describe('changing a day', () => {
-  it('D-097 a swap holds from its day on: earlier weeks keep the old driver, later weeks take the new one [F-042]', async () => {
+  it('D-100 a swap changes its day only; the weeks before and after keep the set driver [F-042]', async () => {
     const ids = await seedTuesday()
     expect((await changeDay(NEXT_TUE, { lineId: ids[2], ownerId: ZACH })).statusCode).toBe(204)
     expect(await driverOnDay(TUE, 2)).toBe(HALLIE)
-    expect(await driverOnDay(TUE_AFTER, 2)).toBe(ZACH)
     expect(await driverOnDay(NEXT_TUE, 2)).toBe(ZACH)
+    expect(await driverOnDay(TUE_AFTER, 2)).toBe(HALLIE)
     expect((await marks(NEXT_TUE, NEXT_TUE))[0].lines?.[2].text).toBe('Zach picks up Teddy')
   })
 
-  it('D-097 a later swap wins from its own day, and swapping back returns the run [F-042]', async () => {
+  it('D-100 swapping back to the set driver leaves no change behind [F-042]', async () => {
     const ids = await seedTuesday()
     await changeDay(TUE, { lineId: ids[2], ownerId: ZACH })
-    await changeDay(TUE_AFTER, { lineId: ids[2], ownerId: HALLIE })
-    expect(await driverOnDay(NEXT_TUE, 2)).toBe(ZACH)
-    expect(await driverOnDay(TUE_AFTER, 2)).toBe(HALLIE)
+    await changeDay(TUE, { lineId: ids[2], ownerId: HALLIE })
+    expect(await ridesPrisma.runDay.count({ where: { runId: ids[2] } })).toBe(0)
+  })
+
+  it('D-100 a swapped run marked not needed, then restored, keeps its swap [F-042]', async () => {
+    const ids = await seedTuesday()
+    await changeDay(TUE, { lineId: ids[2], ownerId: ZACH })
+    await changeDay(TUE, { lineId: ids[2], ownerId: ZACH, cleared: true })
+    await changeDay(TUE, { lineId: ids[2], ownerId: ZACH, cleared: false })
+    expect(await driverOnDay(TUE, 2)).toBe(ZACH)
   })
 
   it('D-099 "Not needed today" takes a run off that day only, and Restore brings it back [F-042]', async () => {

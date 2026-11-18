@@ -136,7 +136,7 @@ const ridesPlugin: FastifyPluginAsync = async (fastify) => {
     ) {
       return reply.status(404).send({ error: 'That run isn’t on that week' })
     }
-    // The editor sets the week from here on, so later swaps give way to it.
+    // The editor sets the week from here on, over its own later changes.
     const fromDate = dateOnly(day)
     const data = { driverId, updatedBy: request.profile.id }
     await ridesPrisma.$transaction([
@@ -169,8 +169,8 @@ const ridesPlugin: FastifyPluginAsync = async (fastify) => {
     return reply.status(204).send()
   })
 
-  // Swap a run, or mark it "Not needed today", on one day (D-097, D-099). A
-  // swap holds from that day on; "Not needed today" holds for that day only.
+  // Swap a run, or mark it "Not needed today", on one day only (D-099, D-100).
+  // A change that lands back on the set week drops the day's row.
   fastify.post('/rides/days/:date', async (request, reply) => {
     if (!request.ability.can('update', 'rides.Run')) {
       return reply.status(403).send({ error: 'Permission denied' })
@@ -194,21 +194,19 @@ const ridesPlugin: FastifyPluginAsync = async (fastify) => {
     }
 
     const day = dateOnly(date)
-    if (cleared) {
-      await ridesPrisma.runSkip.upsert({
-        where: { runId_date: { runId: lineId, date: day } },
-        update: {},
-        create: { runId: lineId, date: day, updatedBy: request.profile.id },
-      })
+    const usual = driverOn(run.drivers, date)
+    if (ownerId === usual && !cleared) {
+      await ridesPrisma.runDay.deleteMany({ where: { runId: lineId, date: day } })
     } else {
-      await ridesPrisma.runSkip.deleteMany({ where: { runId: lineId, date: day } })
-    }
-    if (ownerId !== driverOn(run.drivers, date)) {
-      const data = { driverId: ownerId, updatedBy: request.profile.id }
-      await ridesPrisma.runDriver.upsert({
-        where: { runId_fromDate: { runId: lineId, fromDate: day } },
+      const data = {
+        driverId: ownerId === usual ? null : ownerId,
+        skipped: cleared,
+        updatedBy: request.profile.id,
+      }
+      await ridesPrisma.runDay.upsert({
+        where: { runId_date: { runId: lineId, date: day } },
         update: data,
-        create: { runId: lineId, fromDate: day, ...data },
+        create: { runId: lineId, date: day, ...data },
       })
     }
     return reply.status(204).send()
@@ -225,7 +223,7 @@ const ridesPlugin: FastifyPluginAsync = async (fastify) => {
       const from = localKey(rangeFrom)
       const to = localKey(rangeTo)
       const canAct = ability.can('update', 'rides.Run')
-      const [rows, skipRows, profiles] = await Promise.all([
+      const [rows, dayRows, profiles] = await Promise.all([
         ridesPrisma.schoolRun.findMany({
           where: {
             startsOn: { lte: dateOnly(to) },
@@ -233,7 +231,7 @@ const ridesPlugin: FastifyPluginAsync = async (fastify) => {
           },
           include: withDrivers,
         }),
-        ridesPrisma.runSkip.findMany({
+        ridesPrisma.runDay.findMany({
           where: { date: { gte: dateOnly(from), lte: dateOnly(to) } },
         }),
         prisma.profile.findMany({ select: { id: true, name: true, tier: true } }),
@@ -262,11 +260,16 @@ const ridesPlugin: FastifyPluginAsync = async (fastify) => {
       }
 
       const runs = rows.map(toRecord)
-      const skips = new Set(skipRows.map((s) => `${s.runId}:${keyOf(s.date)}`))
+      const changes = new Map(
+        dayRows.map((d) => [
+          `${d.runId}:${keyOf(d.date)}`,
+          { driverId: d.driverId, skipped: d.skipped },
+        ])
+      )
       const names = new Map(profiles.map((p) => [p.id, p.name]))
       const marks: DayMark[] = []
       for (const date of dateKeys(from, to)) {
-        const day = dayRuns(runs, skips, date)
+        const day = dayRuns(runs, changes, date)
         if (day.length === 0) continue
         const live = day.filter((r) => !r.skipped).length
         marks.push({

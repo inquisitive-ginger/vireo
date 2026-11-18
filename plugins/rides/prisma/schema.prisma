@@ -23,16 +23,16 @@ model SchoolRun {
   createdBy String      @map("created_by")
   createdAt DateTime    @default(now()) @map("created_at") @db.Timestamptz(6)
   drivers   RunDriver[]
-  skips     RunSkip[]
+  days      RunDay[]
 
   @@index([weekday])
   @@map("school_runs")
   @@schema("rides")
 }
 
-// Who drives a run from a date on (D-097: a swap carries forward). The driver
-// on a date is the entry with the latest `fromDate` on or before it. There is
-// always one from `startsOn` (D-098: no open runs).
+// Who drives a run from a date on, as set in the week editor (D-100). The
+// driver on a date is the entry with the latest `fromDate` on or before it.
+// There is always one from `startsOn` (D-098: no open runs).
 model RunDriver {
   runId     String    @map("run_id") @db.Uuid
   fromDate  DateTime  @map("from_date") @db.Date
@@ -46,14 +46,17 @@ model RunDriver {
   @@schema("rides")
 }
 
-// "Not needed today" (D-099): one day only, never carried forward.
-model RunSkip {
+// One day's change (D-100): a swapped driver, "Not needed today" (D-099), or
+// both. Never carried forward.
+model RunDay {
   runId     String    @map("run_id") @db.Uuid
   date      DateTime  @db.Date
+  driverId  String?   @map("driver_id")
+  skipped   Boolean   @default(false)
   updatedBy String    @map("updated_by")
   run       SchoolRun @relation(fields: [runId], references: [id], onDelete: Cascade)
 
   @@id([runId, date])
-  @@map("run_skips")
+  @@map("run_days")
   @@schema("rides")
 }
