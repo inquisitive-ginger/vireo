@@ -17,7 +17,9 @@ import { RunDaySchema, RunDriverSchema, SchoolRunInputSchema } from '@family-os/
 const DATE_KEY = /^\d{4}-\d{2}-\d{2}$/
 
 function isRealDate(key: string) {
-  return DATE_KEY.test(key) && new Date(`${key}T00:00:00Z`).toISOString().startsWith(key)
+  if (!DATE_KEY.test(key)) return false
+  const d = new Date(`${key}T00:00:00Z`)
+  return !Number.isNaN(d.getTime()) && d.toISOString().startsWith(key)
 }
 
 const dateOnly = (key: string) => new Date(`${key}T00:00:00Z`)
@@ -124,13 +126,27 @@ const ridesPlugin: FastifyPluginAsync = async (fastify) => {
     if (!(await isDriver(driverId))) {
       return reply.status(400).send({ error: 'Only a parent can drive' })
     }
-    const fromDate = dateOnly(dateInWeek(from, run.weekday))
+    const day = dateInWeek(from, run.weekday)
+    if (
+      !runsOn(day)({
+        weekday: run.weekday,
+        startsOn: keyOf(run.startsOn),
+        endsOn: run.endsOn && keyOf(run.endsOn),
+      })
+    ) {
+      return reply.status(404).send({ error: 'That run isn’t on that week' })
+    }
+    // The editor sets the week from here on, so later swaps give way to it.
+    const fromDate = dateOnly(day)
     const data = { driverId, updatedBy: request.profile.id }
-    await ridesPrisma.runDriver.upsert({
-      where: { runId_fromDate: { runId: id, fromDate } },
-      update: data,
-      create: { runId: id, fromDate, ...data },
-    })
+    await ridesPrisma.$transaction([
+      ridesPrisma.runDriver.deleteMany({ where: { runId: id, fromDate: { gt: fromDate } } }),
+      ridesPrisma.runDriver.upsert({
+        where: { runId_fromDate: { runId: id, fromDate } },
+        update: data,
+        create: { runId: id, fromDate, ...data },
+      }),
+    ])
     return reply.status(204).send()
   })
 
@@ -147,6 +163,7 @@ const ridesPlugin: FastifyPluginAsync = async (fastify) => {
     const run = await ridesPrisma.schoolRun.findUnique({ where: { id } })
     if (!run) return reply.status(404).send({ error: 'Run not found' })
     const endsOn = dateInWeek(from, run.weekday)
+    if (run.endsOn && endsOn >= keyOf(run.endsOn)) return reply.status(204).send()
     if (endsOn <= keyOf(run.startsOn)) await ridesPrisma.schoolRun.delete({ where: { id } })
     else await ridesPrisma.schoolRun.update({ where: { id }, data: { endsOn: dateOnly(endsOn) } })
     return reply.status(204).send()
@@ -209,7 +226,13 @@ const ridesPlugin: FastifyPluginAsync = async (fastify) => {
       const to = localKey(rangeTo)
       const canAct = ability.can('update', 'rides.Run')
       const [rows, skipRows, profiles] = await Promise.all([
-        ridesPrisma.schoolRun.findMany({ include: withDrivers }),
+        ridesPrisma.schoolRun.findMany({
+          where: {
+            startsOn: { lte: dateOnly(to) },
+            OR: [{ endsOn: null }, { endsOn: { gt: dateOnly(from) } }],
+          },
+          include: withDrivers,
+        }),
         ridesPrisma.runSkip.findMany({
           where: { date: { gte: dateOnly(from), lte: dateOnly(to) } },
         }),
@@ -230,6 +253,10 @@ const ridesPlugin: FastifyPluginAsync = async (fastify) => {
       if (rows.length === 0) {
         const today = localKey(new Date())
         if (!canAct || today < from || today > to) return []
+        const active = await ridesPrisma.schoolRun.count({
+          where: { OR: [{ endsOn: null }, { endsOn: { gt: dateOnly(today) } }] },
+        })
+        if (active > 0) return []
         const label = 'Set up school runs'
         return [{ date: today, glyph: 'car', label, lines: [], ...act(today, label) }]
       }

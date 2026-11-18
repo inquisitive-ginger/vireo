@@ -192,8 +192,8 @@ export const PERMISSION_REGISTRY = {
     action: 'view',
     subject: 'rides.Run',
   },
-  'rides.run.claim': {
-    label: 'Claim, swap or clear a school run for a day',
+  'rides.run.swap': {
+    label: 'Swap a school run, or mark it not needed, for a day',
     module: 'rides',
     action: 'update',
     subject: 'rides.Run',

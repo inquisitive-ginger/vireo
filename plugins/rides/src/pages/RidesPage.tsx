@@ -35,7 +35,11 @@ export function RidesPage() {
   const queryClient = useQueryClient()
   const navigate = useNavigate()
   const [params] = useSearchParams()
-  const on = params.get('on') ?? todayKey()
+  const asked = params.get('on')
+  const on =
+    asked && /^\d{4}-\d{2}-\d{2}$/.test(asked) && !Number.isNaN(Date.parse(asked))
+      ? asked
+      : todayKey()
   const canEdit = ability.can('manage', 'rides.Run')
 
   const weekQuery = useQuery<{ runs: WeekRun[] }>({
@@ -78,7 +82,13 @@ export function RidesPage() {
   const setDriver = useMutation({
     mutationFn: ({ run, driverId }: { run: WeekRun; driverId: string }) =>
       send(`/api/rides/runs/${run.id}/driver`, 'POST', { driverId, from: on }),
-    onSuccess: refresh,
+    // Shown at once, so arrow keys move from the new driver, not the stale one.
+    onMutate: ({ run, driverId }) =>
+      queryClient.setQueryData<{ runs: WeekRun[] }>(
+        ['rides/week', on],
+        (week) => week && { runs: week.runs.map((r) => (r.id === run.id ? { ...r, driverId } : r)) }
+      ),
+    onSettled: refresh,
     onError,
   })
   const addRun = useMutation({

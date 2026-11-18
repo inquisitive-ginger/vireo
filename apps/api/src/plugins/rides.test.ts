@@ -221,6 +221,58 @@ describe('seeding the week', () => {
   })
 })
 
+describe('editor edge cases', () => {
+  const driverChange = async (id: string, from: string, driverId = ZACH) =>
+    app.inject({
+      method: 'POST',
+      url: `/api/rides/runs/${id}/driver`,
+      headers: { cookie: await cookieFor(HALLIE) },
+      payload: { driverId, from },
+    })
+  const remove = async (id: string, from: string) =>
+    app.inject({
+      method: 'DELETE',
+      url: `/api/rides/runs/${id}?from=${from}`,
+      headers: { cookie: await cookieFor(HALLIE) },
+    })
+
+  it('D-097 an editor change holds from its week on, over later swaps [F-041]', async () => {
+    const ids = await seedTuesday()
+    await changeDay(TUE_AFTER, { lineId: ids[2], ownerId: ZACH })
+    await driverChange(ids[2], TUE, HALLIE)
+    expect(await driverOnDay(TUE_AFTER, 2)).toBe(HALLIE)
+  })
+
+  it('D-097 removing a run again from a later week never brings it back [F-041]', async () => {
+    const ids = await seedTuesday()
+    await remove(ids[0], NEXT_TUE)
+    await remove(ids[0], TUE_AFTER)
+    expect((await marks(NEXT_TUE, NEXT_TUE))[0].lines).toHaveLength(3)
+  })
+
+  it('D-097 a driver change on a week the run isn’t on is refused [F-041]', async () => {
+    const ids = await seedTuesday()
+    await remove(ids[0], NEXT_TUE)
+    expect((await driverChange(ids[0], TUE_AFTER)).statusCode).toBe(404)
+  })
+
+  it('D-097 once every run has ended, a parent gets the set-up mark again [F-041]', async () => {
+    const ids = await seedTuesday()
+    const today = new Date()
+    const key = `${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}-${String(today.getDate()).padStart(2, '0')}`
+    await ridesPrisma.schoolRun.updateMany({
+      where: { id: { in: ids } },
+      data: { startsOn: new Date('2020-01-07'), endsOn: new Date('2020-01-14') },
+    })
+    expect((await marks(key, key))[0]?.label).toBe('Set up school runs')
+  })
+
+  it('D-087 a date that only looks like one is refused, not a server error [F-042]', async () => {
+    const ids = await seedTuesday()
+    expect((await changeDay('2026-13-45', { lineId: ids[0], ownerId: ZACH })).statusCode).toBe(400)
+  })
+})
+
 describe('the rides mark', () => {
   it('D-087 a day with school runs gets one car mark whose lines are its runs, in time order [F-042]', async () => {
     await seedTuesday()

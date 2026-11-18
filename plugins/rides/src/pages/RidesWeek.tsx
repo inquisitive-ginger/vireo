@@ -105,7 +105,7 @@ export function RidesWeek({
                             aria-label={`Who drives ${label} ${runWhat(run).toLowerCase()}`}
                             options={driverOptions}
                             value={run.driverId ?? ''}
-                            onChange={(v) => onDriver(run, v)}
+                            onChange={(v) => v !== run.driverId && onDriver(run, v)}
                           />
                         </span>
                       ) : (

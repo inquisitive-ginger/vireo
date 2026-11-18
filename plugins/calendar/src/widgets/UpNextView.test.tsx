@@ -301,7 +301,7 @@ describe('D-095 today’s rides in the widget', () => {
     ].sort((a, b) => a.minutes - b.minutes),
     act: {
       endpoint: `/api/rides/days/${today}`,
-      owners: ['p1'],
+      owners: ['p1', 'p2'],
       manage: { href: '/rides/week', label: 'Set the week' },
     },
   }

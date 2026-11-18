@@ -487,10 +487,12 @@ export function UpNextView({
   let inner: ReactNode
   if (empty) {
     inner = (
-      <>
-        <AllClear withBody={size === 'large' || size === undefined} />
-        {markLine && <div className="absolute inset-x-4 bottom-3">{markLine}</div>}
-      </>
+      <div className="flex size-full flex-col">
+        <div className="min-h-0 flex-1">
+          <AllClear withBody={size === 'large' || size === undefined} />
+        </div>
+        {markLine && <div className="px-4 pb-3">{markLine}</div>}
+      </div>
     )
   } else if (size) {
     inner =

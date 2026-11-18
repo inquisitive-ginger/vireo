@@ -262,6 +262,16 @@ describe('the rides mark (D-087, D-091, D-098, D-099)', () => {
     ])
   })
 
+  it('D-098 with one parent there is no one to swap to, so Swap is hidden [F-042]', () => {
+    view({
+      marksByDate: withRides({ ...RIDES, act: { ...RIDES.act!, owners: ['p1'] } }),
+      onMarkAction: vi.fn(),
+    })
+    fireEvent.click(screen.getByRole('button', { name: /Show the day's list/ }))
+    expect(screen.queryByRole('button', { name: /^Swap/ })).toBeNull()
+    expect(screen.getAllByRole('button', { name: /^Not needed today/ })).toHaveLength(3)
+  })
+
   it('D-099 a run not needed today reads struck through and offers Restore [F-042]', () => {
     const cleared = {
       ...RIDES,

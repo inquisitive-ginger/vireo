@@ -23,7 +23,7 @@ const rides = (date: Date): DayMark => ({
       cleared: false,
     },
   ],
-  act: { endpoint: '/api/rides/days/x', owners: ['h'] },
+  act: { endpoint: '/api/rides/days/x', owners: ['h', 'z'] },
 })
 const dinner = (date: Date): DayMark => ({
   date: localDateKey(date),

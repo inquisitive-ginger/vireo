@@ -34,7 +34,7 @@ export function MarkLines({
             trailing={
               act && (
                 <span className="flex items-center gap-1">
-                  {!line.cleared && (
+                  {!line.cleared && (mark.act?.owners.length ?? 0) > 1 && (
                     <Button
                       size="sm"
                       variant="outline"

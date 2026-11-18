@@ -660,7 +660,7 @@ describe('GET /api/profiles/:id/permissions', () => {
     expect(permissions.find((p) => p.key === 'shopping.item.file')?.inBaseline).toBe(false)
     // + see the school runs (D-086); claiming a day is a parent's
     expect(permissions.find((p) => p.key === 'rides.run.view')?.inBaseline).toBe(true)
-    expect(permissions.find((p) => p.key === 'rides.run.claim')?.inBaseline).toBe(false)
+    expect(permissions.find((p) => p.key === 'rides.run.swap')?.inBaseline).toBe(false)
     expect(permissions.find((p) => p.key === 'shopping.item.manage')?.inBaseline).toBe(false)
   })
 
