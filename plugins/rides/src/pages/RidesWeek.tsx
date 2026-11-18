@@ -130,9 +130,13 @@ export function RidesWeek({
                     />
                   ) : (
                     <div className="px-2 py-1">
-                      <Button variant="ghost" size="sm" onClick={() => setAdding(weekday)}>
+                      <Button
+                        variant="ghost"
+                        size="sm"
+                        aria-label={`Add a run on ${label}`}
+                        onClick={() => setAdding(weekday)}
+                      >
                         <Plus className="h-4 w-4" aria-hidden /> Add a run
-                        <span className="sr-only"> on {label}</span>
                       </Button>
                     </div>
                   ))}
