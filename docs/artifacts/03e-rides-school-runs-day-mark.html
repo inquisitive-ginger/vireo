@@ -82,7 +82,7 @@ const ITEMS_R1 = [
  },
 ];
 const ROUND1 = ITEMS_R1;
-const ITEMS = [
+const ITEMS_R2 = [
  {
   id: 'walkthrough-r2',
   type: 'approve',
@@ -133,5 +133,38 @@ const ITEMS = [
   ask: 'Anything to change before it merges.',
  },
 ];
-ReviewBoard.mount({ owner: 'Zach', type: 'web-app', items: ITEMS, earlier: [{ group: 'Round 1', intro: '' }, ...ROUND1] });
+const ITEMS = [
+ {
+  id: 'walkthrough-r3',
+  type: 'approve',
+  title: 'Round 3: the phone layout, and swaps for one day',
+  ask: 'Ship this?',
+  href: 'http://192.168.0.6:5173/',
+  body: `<div class="run"><span><b>1598</b> passed</span><span><b>0</b> failed</span><span>was 1548 before this session</span></div>
+<p>Your two round 2 notes, on the same dev server (week of Nov 16 reseeded):</p>
+<ul>
+<li>On a phone, a run’s actions wrap under its text instead of squeezing it, and a day heading keeps its date on one line, with the marks wrapping below.</li>
+<li>D-100: a swap changes its day only. What carries into later weeks is the week set in “Set the week”.</li>
+</ul>`,
+ },
+ {
+  id: 'checks-r3',
+  type: 'checklist',
+  title: 'Acceptance checks',
+  ask: 'Does each one hold in the app?',
+  checks: [
+   { id: 'widget-phone', label: 'On a phone, the widget’s unfolded runs read as whole sentences, with Swap and “Not needed today” on their own line.' },
+   { id: 'heading-phone', label: 'On a phone, “Tomorrow Nov 18” stays on one line; the dinner and rides marks wrap below it when there isn’t room.' },
+   { id: 'swap-day', label: 'Swapping today’s Teddy pickup changes today only; next Tuesday still shows the set driver.', test: 'D-100 a swap changes its day only; the weeks before and after keep the set driver [F-042]' },
+   { id: 'set-week', label: 'Changing a driver in “Set the week” shows on that weekday this week and every week after.', test: 'D-100 an editor change carries forward from its week, and a day’s swap still stands on its day [F-041]' },
+  ],
+ },
+ {
+  id: 'notes-r3',
+  type: 'comment',
+  title: 'Anything else',
+  ask: 'Anything to change before it merges.',
+ },
+];
+ReviewBoard.mount({ owner: 'Zach', type: 'web-app', items: ITEMS, earlier: [{ group: 'Round 2', intro: '' }, ...ITEMS_R2, { group: 'Round 1', intro: '' }, ...ROUND1] });
 </script>
