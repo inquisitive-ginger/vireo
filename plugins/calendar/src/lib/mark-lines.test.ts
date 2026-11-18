@@ -2,12 +2,7 @@ import { describe, it, expect } from 'vitest'
 import type { DayMark, DayMarkLine } from '@family-os/platform/types'
 import { headlineLine, lineChange } from './mark-lines'
 
-const line = (
-  id: string,
-  minutes: number,
-  ownerId: string | null,
-  cleared = false
-): DayMarkLine => ({
+const line = (id: string, minutes: number, ownerId: string, cleared = false): DayMarkLine => ({
   id,
   minutes,
   text: id,
@@ -18,7 +13,7 @@ const MARK: DayMark = {
   date: '2026-11-17',
   glyph: 'car',
   label: '',
-  lines: [line('a', 495, 'h'), line('b', 990, 'h'), line('c', 1050, null)],
+  lines: [line('a', 495, 'h'), line('b', 990, 'h'), line('c', 1050, 'z')],
 }
 
 describe('mark lines', () => {
@@ -33,28 +28,24 @@ describe('mark lines', () => {
     expect(headlineLine(cleared, new Date(2026, 10, 16, 16, 0))?.id).toBe('b')
   })
 
-  it('D-087 claim takes the run, swap hands it to the next parent [F-042]', () => {
-    expect(lineChange(line('c', 1050, null), 'claim', ['h', 'z'], 'teen').ownerId).toBe('teen')
-    expect(lineChange(line('c', 1050, null), 'claim', ['h', 'z'], 'z')).toEqual({
+  it('D-098 swap hands the run to the next parent and never leaves it without one [F-042]', () => {
+    expect(lineChange(line('b', 990, 'h'), 'swap', ['h', 'z'])).toEqual({
       ownerId: 'z',
       cleared: false,
     })
-    expect(lineChange(line('b', 990, 'h'), 'swap', ['h', 'z'], 'h')).toEqual({
-      ownerId: 'z',
-      cleared: false,
-    })
-    expect(lineChange(line('b', 990, 'z'), 'swap', ['h', 'z'], 'h')).toEqual({
+    expect(lineChange(line('b', 990, 'z'), 'swap', ['h', 'z'])).toEqual({
       ownerId: 'h',
       cleared: false,
     })
+    expect(lineChange(line('b', 990, 'h'), 'swap', ['h'])).toEqual({ ownerId: 'h', cleared: false })
   })
 
-  it('D-094 clear and restore keep the driver [F-042]', () => {
-    expect(lineChange(line('b', 990, 'h'), 'clear', ['h', 'z'], 'z')).toEqual({
+  it('D-099 "Not needed today" and Restore keep the driver [F-042]', () => {
+    expect(lineChange(line('b', 990, 'h'), 'clear', ['h', 'z'])).toEqual({
       ownerId: 'h',
       cleared: true,
     })
-    expect(lineChange(line('b', 990, 'h', true), 'restore', ['h', 'z'], 'z')).toEqual({
+    expect(lineChange(line('b', 990, 'h', true), 'restore', ['h', 'z'])).toEqual({
       ownerId: 'h',
       cleared: false,
     })

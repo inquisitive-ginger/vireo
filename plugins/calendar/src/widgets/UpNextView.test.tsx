@@ -1,5 +1,7 @@
-import { describe, it, expect } from 'vitest'
-import { render, screen, within } from '@testing-library/react'
+import { describe, it, expect, vi } from 'vitest'
+import { fireEvent, render, screen, within } from '@testing-library/react'
+import type { DayMark } from '@family-os/platform/types'
+import { localDateKey } from '../lib/grid'
 import { MemoryRouter } from 'react-router-dom'
 import type { CalendarEvent, CalendarMember } from '../types'
 import { UpNextView, type UpNextFraming, type WidgetSize } from './UpNextView'
@@ -243,11 +245,12 @@ describe('UpNextView', () => {
     expect(screen.getByText('Tomorrow')).toHaveClass('text-foreground')
   })
 
-  it('deep-links the whole tile to /calendar', () => {
+  it('deep-links the whole tile to /calendar, the link laid under the content', () => {
     renderWidget({})
     const link = screen.getByRole('link', { name: 'Open Calendar' })
     expect(link).toHaveAttribute('href', '/calendar')
-    expect(within(link).getByText('Karate')).toBeInTheDocument()
+    expect(link).toHaveClass('absolute', 'inset-0')
+    expect(within(link.parentElement!).getByText('Karate')).toBeInTheDocument()
   })
 })
 
@@ -283,5 +286,62 @@ describe('D-083 the All week band, rendered', () => {
     renderWidget({ events: [french(21), french(23)], now: new Date('2026-07-20T08:45:00') })
     expect(screen.queryByText('All week')).not.toBeInTheDocument()
     expect(screen.getAllByText('Middle School French')).toHaveLength(2)
+  })
+})
+
+describe('D-095 today’s rides in the widget', () => {
+  const today = localDateKey(NOW)
+  const RIDES: DayMark = {
+    date: today,
+    glyph: 'car',
+    label: '2 school runs',
+    lines: [
+      { id: 'tp', minutes: 1439, text: 'Zoe picks up Teddy', ownerId: 'p1', cleared: false },
+      { id: 'zd', minutes: 1, text: 'Zoe drops off Zoe', ownerId: 'p1', cleared: false },
+    ].sort((a, b) => a.minutes - b.minutes),
+    act: {
+      endpoint: `/api/rides/days/${today}`,
+      owners: ['p1'],
+      manage: { href: '/rides/week', label: 'Set the week' },
+    },
+  }
+  const widget = (mark: DayMark, onMarkAction = vi.fn()) => {
+    render(
+      <MemoryRouter>
+        <UpNextView
+          events={EVENTS}
+          membersById={MEMBERS}
+          now={NOW}
+          framing="family"
+          size="large"
+          todayMark={mark}
+          onMarkAction={onMarkAction}
+        />
+      </MemoryRouter>
+    )
+    return onMarkAction
+  }
+
+  it('D-095 a line under the hero names the next run and unfolds today’s runs to swap in place [F-042]', () => {
+    const onMarkAction = widget(RIDES)
+    const line = screen.getByRole('button', { name: /Next: 11:59 PM, Zoe picks up Teddy/ })
+    expect(screen.queryByRole('button', { name: /^Swap/ })).toBeNull()
+    fireEvent.click(line)
+    fireEvent.click(screen.getByRole('button', { name: 'Swap: Zoe picks up Teddy' }))
+    expect(onMarkAction.mock.calls[0][2]).toBe('swap')
+    fireEvent.click(screen.getByRole('button', { name: 'Done' }))
+    expect(screen.queryByRole('button', { name: /^Swap/ })).toBeNull()
+  })
+
+  it('D-097 before any run exists the widget line sets the week up [F-041]', () => {
+    widget({
+      ...RIDES,
+      lines: [],
+      act: { ...RIDES.act!, manage: { href: '/rides/week', label: 'Set up school runs' } },
+    })
+    expect(screen.getByRole('link', { name: 'Set up school runs' })).toHaveAttribute(
+      'href',
+      '/rides/week'
+    )
   })
 })

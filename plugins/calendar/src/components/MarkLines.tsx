@@ -1,5 +1,6 @@
 import type { DayMark, DayMarkLine } from '@family-os/platform/types'
-import { Button, ListRow, cn } from '@family-os/ui'
+import { Link } from 'react-router-dom'
+import { Button, ListRow, buttonVariants, cn } from '@family-os/ui'
 import type { CalendarMember } from '../types'
 import { formatMinutes, type MarkLineAction } from '../lib/mark-lines'
 import { DayMarkOwnerDot } from './DayMarkOwnerDot'
@@ -24,8 +25,7 @@ export function MarkLines({
       className="mb-3 rounded-panel bg-surface-sunken shadow-[var(--shadow-inset)]"
     >
       {(mark.lines ?? []).map((line) => {
-        const owner = line.ownerId ? membersById.get(line.ownerId) : undefined
-        const open = !line.cleared && line.ownerId === null
+        const owner = membersById.get(line.ownerId)
         return (
           <ListRow
             key={line.id}
@@ -37,22 +37,22 @@ export function MarkLines({
                   {!line.cleared && (
                     <Button
                       size="sm"
-                      variant={open ? 'default' : 'outline'}
+                      variant="outline"
                       disabled={pending}
-                      aria-label={`${open ? 'Claim' : 'Swap'}: ${line.text}`}
-                      onClick={() => act(mark, line, open ? 'claim' : 'swap')}
+                      aria-label={`Swap: ${line.text}`}
+                      onClick={() => act(mark, line, 'swap')}
                     >
-                      {open ? 'Claim' : 'Swap'}
+                      Swap
                     </Button>
                   )}
                   <Button
                     size="sm"
                     variant="ghost"
                     disabled={pending}
-                    aria-label={`${line.cleared ? 'Restore' : 'Clear'}: ${line.text}`}
+                    aria-label={`${line.cleared ? 'Restore' : 'Not needed today'}: ${line.text}`}
                     onClick={() => act(mark, line, line.cleared ? 'restore' : 'clear')}
                   >
-                    {line.cleared ? 'Restore' : 'Clear'}
+                    {line.cleared ? 'Restore' : 'Not needed today'}
                   </Button>
                 </span>
               )
@@ -73,17 +73,26 @@ export function MarkLines({
               <span
                 className={cn(
                   'min-w-0 flex-1 text-base-token',
-                  open && 'text-error',
                   line.cleared && 'text-muted-foreground line-through'
                 )}
               >
                 {line.text}
-                {line.cleared && <span className="sr-only"> (cleared)</span>}
+                {line.cleared && <span className="sr-only"> (not needed)</span>}
               </span>
             </div>
           </ListRow>
         )
       })}
+      {act && mark.act?.manage && (
+        <li className="px-2 py-1">
+          <Link
+            to={mark.act.manage.href}
+            className={buttonVariants({ variant: 'ghost', size: 'sm' })}
+          >
+            {mark.act.manage.label}
+          </Link>
+        </li>
+      )}
     </ul>
   )
 }

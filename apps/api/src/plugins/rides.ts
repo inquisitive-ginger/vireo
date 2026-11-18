@@ -3,9 +3,16 @@ import type { FastifyPluginAsync } from 'fastify'
 import { prisma } from '@family-os/platform/server'
 import { FAMILY_PROFILE_ID, type DayMark } from '@family-os/platform/types'
 import { ridesPrisma } from '@family-os/plugin-rides/db'
-import { dateKeys, dayRuns, runText } from '@family-os/plugin-rides/lib/runs'
-import type { RunKind, SchoolRun } from '@family-os/plugin-rides/lib/runs'
-import { RunDaySchema, SchoolRunInputSchema, SchoolRunPatchSchema } from '@family-os/schemas'
+import {
+  dateInWeek,
+  dateKeys,
+  dayRuns,
+  driverOn,
+  runText,
+  runsOn,
+} from '@family-os/plugin-rides/lib/runs'
+import type { RunKind, SchoolRunRecord } from '@family-os/plugin-rides/lib/runs'
+import { RunDaySchema, RunDriverSchema, SchoolRunInputSchema } from '@family-os/schemas'
 
 const DATE_KEY = /^\d{4}-\d{2}-\d{2}$/
 
@@ -13,17 +20,23 @@ function isRealDate(key: string) {
   return DATE_KEY.test(key) && new Date(`${key}T00:00:00Z`).toISOString().startsWith(key)
 }
 
+const dateOnly = (key: string) => new Date(`${key}T00:00:00Z`)
+const keyOf = (d: Date) => d.toISOString().slice(0, 10)
+
 /** The calendar sends range instants; the api runs in the household's zone
  *  (docker-compose.prod.yml `TZ`), so local getters give the household date. */
-function localKey(value: string) {
-  if (DATE_KEY.test(value)) return value
+function localKey(value: string | Date) {
+  if (typeof value === 'string' && DATE_KEY.test(value)) return value
   const d = new Date(value)
   return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`
 }
 
-type RunRow = Awaited<ReturnType<typeof ridesPrisma.schoolRun.create>>
+const withDrivers = { drivers: true } as const
+type RunRow = Awaited<
+  ReturnType<typeof ridesPrisma.schoolRun.findMany<{ include: typeof withDrivers }>>
+>[number]
 
-function serializeRun(run: RunRow): SchoolRun {
+function toRecord(run: RunRow): SchoolRunRecord {
   return {
     id: run.id,
     kidId: run.kidId,
@@ -31,11 +44,13 @@ function serializeRun(run: RunRow): SchoolRun {
     kind: run.kind as RunKind,
     place: run.place,
     minutes: run.minutes,
-    driverId: run.driverId,
+    startsOn: keyOf(run.startsOn),
+    endsOn: run.endsOn ? keyOf(run.endsOn) : null,
+    drivers: run.drivers.map((d) => ({ fromDate: keyOf(d.fromDate), driverId: d.driverId })),
   }
 }
 
-/** Drivers are parents (tier 4); kids are everyone below (D-086, 3e). */
+/** Drivers are parents (tier 4); kids are everyone below but the family dashboard. */
 async function isDriver(id: string) {
   const profile = await prisma.profile.findUnique({ where: { id }, select: { tier: true } })
   return profile?.tier === 4
@@ -46,29 +61,27 @@ async function isKid(id: string) {
   return id !== FAMILY_PROFILE_ID && profile !== null && profile.tier < 4
 }
 
-async function loadDays(from: string, to: string) {
-  const [runs, overrides] = await Promise.all([
-    ridesPrisma.schoolRun.findMany(),
-    ridesPrisma.runDay.findMany({ where: { date: { gte: new Date(from), lte: new Date(to) } } }),
-  ])
-  return {
-    runs: runs.map(serializeRun),
-    overrides: overrides.map((o) => ({
-      runId: o.runId,
-      date: o.date.toISOString().slice(0, 10),
-      driverId: o.driverId,
-      cleared: o.cleared,
-    })),
-  }
-}
-
 const ridesPlugin: FastifyPluginAsync = async (fastify) => {
-  fastify.get('/rides/runs', async (request, reply) => {
+  // The week holding `on`, as the editor shows it: each run that runs that
+  // week, with its driver on its own day that week.
+  fastify.get('/rides/week', async (request, reply) => {
     if (!request.ability.can('view', 'rides.Run')) {
       return reply.status(403).send({ error: 'Permission denied' })
     }
-    const runs = await ridesPrisma.schoolRun.findMany({ orderBy: { minutes: 'asc' } })
-    return { runs: runs.map(serializeRun) }
+    const { on } = request.query as { on?: string }
+    const day = on && isRealDate(on) ? on : localKey(new Date())
+    const rows = await ridesPrisma.schoolRun.findMany({
+      include: withDrivers,
+      orderBy: { minutes: 'asc' },
+    })
+    const runs = rows
+      .map(toRecord)
+      .filter((run) => runsOn(dateInWeek(day, run.weekday))(run))
+      .map(({ drivers, ...run }) => ({
+        ...run,
+        driverId: driverOn(drivers, dateInWeek(day, run.weekday)),
+      }))
+    return { runs }
   })
 
   fastify.post('/rides/runs', async (request, reply) => {
@@ -77,46 +90,70 @@ const ridesPlugin: FastifyPluginAsync = async (fastify) => {
     }
     const parsed = SchoolRunInputSchema.safeParse(request.body ?? {})
     if (!parsed.success) return reply.status(400).send({ error: parsed.error.flatten() })
-    const input = parsed.data
+    const { from, driverId, ...input } = parsed.data
+    if (!isRealDate(from)) return reply.status(400).send({ error: 'Expected YYYY-MM-DD' })
     if (!(await isKid(input.kidId))) return reply.status(400).send({ error: 'Not a kid' })
-    if (input.driverId && !(await isDriver(input.driverId))) {
+    if (!(await isDriver(driverId))) {
       return reply.status(400).send({ error: 'Only a parent can drive' })
     }
+    const startsOn = dateOnly(dateInWeek(from, input.weekday))
     const run = await ridesPrisma.schoolRun.create({
-      data: { ...input, createdBy: request.profile.id },
+      data: {
+        ...input,
+        startsOn,
+        createdBy: request.profile.id,
+        drivers: { create: { fromDate: startsOn, driverId, updatedBy: request.profile.id } },
+      },
+      include: withDrivers,
     })
-    return reply.status(201).send(serializeRun(run))
+    return reply.status(201).send(toRecord(run))
   })
 
-  fastify.patch('/rides/runs/:id', async (request, reply) => {
+  // A new usual driver from the opened week on (D-097).
+  fastify.post('/rides/runs/:id/driver', async (request, reply) => {
     if (!request.ability.can('manage', 'rides.Run')) {
       return reply.status(403).send({ error: 'Permission denied' })
     }
-    const parsed = SchoolRunPatchSchema.safeParse(request.body ?? {})
+    const parsed = RunDriverSchema.safeParse(request.body ?? {})
     if (!parsed.success) return reply.status(400).send({ error: parsed.error.flatten() })
+    const { driverId, from } = parsed.data
+    if (!isRealDate(from)) return reply.status(400).send({ error: 'Expected YYYY-MM-DD' })
     const { id } = request.params as { id: string }
-    const existing = await ridesPrisma.schoolRun.findUnique({ where: { id } })
-    if (!existing) return reply.status(404).send({ error: 'Run not found' })
-    if (parsed.data.driverId && !(await isDriver(parsed.data.driverId))) {
+    const run = await ridesPrisma.schoolRun.findUnique({ where: { id } })
+    if (!run) return reply.status(404).send({ error: 'Run not found' })
+    if (!(await isDriver(driverId))) {
       return reply.status(400).send({ error: 'Only a parent can drive' })
     }
-    const run = await ridesPrisma.schoolRun.update({ where: { id }, data: parsed.data })
-    return serializeRun(run)
+    const fromDate = dateOnly(dateInWeek(from, run.weekday))
+    const data = { driverId, updatedBy: request.profile.id }
+    await ridesPrisma.runDriver.upsert({
+      where: { runId_fromDate: { runId: id, fromDate } },
+      update: data,
+      create: { runId: id, fromDate, ...data },
+    })
+    return reply.status(204).send()
   })
 
+  // Off the week from the opened week on; earlier weeks keep it.
   fastify.delete('/rides/runs/:id', async (request, reply) => {
     if (!request.ability.can('manage', 'rides.Run')) {
       return reply.status(403).send({ error: 'Permission denied' })
     }
     const { id } = request.params as { id: string }
-    const existing = await ridesPrisma.schoolRun.findUnique({ where: { id } })
-    if (!existing) return reply.status(404).send({ error: 'Run not found' })
-    await ridesPrisma.schoolRun.delete({ where: { id } })
+    const { from } = request.query as { from?: string }
+    if (!from || !isRealDate(from)) {
+      return reply.status(400).send({ error: 'Expected ?from=YYYY-MM-DD' })
+    }
+    const run = await ridesPrisma.schoolRun.findUnique({ where: { id } })
+    if (!run) return reply.status(404).send({ error: 'Run not found' })
+    const endsOn = dateInWeek(from, run.weekday)
+    if (endsOn <= keyOf(run.startsOn)) await ridesPrisma.schoolRun.delete({ where: { id } })
+    else await ridesPrisma.schoolRun.update({ where: { id }, data: { endsOn: dateOnly(endsOn) } })
     return reply.status(204).send()
   })
 
-  // Claim, swap or clear one run for one day (D-087, D-094). The usual week is
-  // never touched; a change that lands back on the usual driver drops the row.
+  // Swap a run, or mark it "Not needed today", on one day (D-097, D-099). A
+  // swap holds from that day on; "Not needed today" holds for that day only.
   fastify.post('/rides/days/:date', async (request, reply) => {
     if (!request.ability.can('update', 'rides.Run')) {
       return reply.status(403).send({ error: 'Permission denied' })
@@ -127,31 +164,42 @@ const ridesPlugin: FastifyPluginAsync = async (fastify) => {
     if (!parsed.success) return reply.status(400).send({ error: parsed.error.flatten() })
     const { lineId, ownerId, cleared } = parsed.data
 
-    const run = await ridesPrisma.schoolRun.findUnique({ where: { id: lineId } })
-    if (!run || dayRuns([serializeRun(run)], [], date).length === 0) {
+    const row = await ridesPrisma.schoolRun.findUnique({
+      where: { id: lineId },
+      include: withDrivers,
+    })
+    const run = row && toRecord(row)
+    if (!run || !runsOn(date)(run)) {
       return reply.status(404).send({ error: 'No such run that day' })
     }
-    if (ownerId && !(await isDriver(ownerId))) {
+    if (!(await isDriver(ownerId))) {
       return reply.status(400).send({ error: 'Only a parent can drive' })
     }
 
-    const key = { runId_date: { runId: lineId, date: new Date(date) } }
-    if (!cleared && ownerId === run.driverId) {
-      await ridesPrisma.runDay.deleteMany({ where: { runId: lineId, date: new Date(date) } })
+    const day = dateOnly(date)
+    if (cleared) {
+      await ridesPrisma.runSkip.upsert({
+        where: { runId_date: { runId: lineId, date: day } },
+        update: {},
+        create: { runId: lineId, date: day, updatedBy: request.profile.id },
+      })
     } else {
-      const data = { driverId: ownerId, cleared, updatedBy: request.profile.id }
-      await ridesPrisma.runDay.upsert({
-        where: key,
+      await ridesPrisma.runSkip.deleteMany({ where: { runId: lineId, date: day } })
+    }
+    if (ownerId !== driverOn(run.drivers, date)) {
+      const data = { driverId: ownerId, updatedBy: request.profile.id }
+      await ridesPrisma.runDriver.upsert({
+        where: { runId_fromDate: { runId: lineId, fromDate: day } },
         update: data,
-        create: { runId: lineId, date: new Date(date), ...data },
+        create: { runId: lineId, fromDate: day, ...data },
       })
     }
     return reply.status(204).send()
   })
 
   // Day-mark provider (ADR 050/066, D-087). One mark per day that has school
-  // runs; its lines are the runs, and `act` rides along only for a caller who
-  // can change them.
+  // runs; its lines are the runs. A parent also gets `act`, and, before any run
+  // exists, a mark on today that only sets the week up.
   fastify.dayMarks.register({
     name: 'rides',
     action: 'view',
@@ -159,37 +207,54 @@ const ridesPlugin: FastifyPluginAsync = async (fastify) => {
     async fetch(rangeFrom, rangeTo, ability) {
       const from = localKey(rangeFrom)
       const to = localKey(rangeTo)
-      const { runs, overrides } = await loadDays(from, to)
-      if (runs.length === 0) return []
-
-      const profiles = await prisma.profile.findMany({
-        select: { id: true, name: true, tier: true },
-      })
-      const names = new Map(profiles.map((p) => [p.id, p.name]))
-      const owners = profiles.filter((p) => p.tier === 4).map((p) => p.id)
       const canAct = ability.can('update', 'rides.Run')
+      const [rows, skipRows, profiles] = await Promise.all([
+        ridesPrisma.schoolRun.findMany({ include: withDrivers }),
+        ridesPrisma.runSkip.findMany({
+          where: { date: { gte: dateOnly(from), lte: dateOnly(to) } },
+        }),
+        prisma.profile.findMany({ select: { id: true, name: true, tier: true } }),
+      ])
+      const owners = profiles.filter((p) => p.tier === 4).map((p) => p.id)
+      const act = (date: string, label: string) =>
+        canAct
+          ? {
+              act: {
+                endpoint: `/api/rides/days/${date}`,
+                owners,
+                manage: { href: `/rides/week?on=${date}`, label },
+              },
+            }
+          : {}
 
+      if (rows.length === 0) {
+        const today = localKey(new Date())
+        if (!canAct || today < from || today > to) return []
+        const label = 'Set up school runs'
+        return [{ date: today, glyph: 'car', label, lines: [], ...act(today, label) }]
+      }
+
+      const runs = rows.map(toRecord)
+      const skips = new Set(skipRows.map((s) => `${s.runId}:${keyOf(s.date)}`))
+      const names = new Map(profiles.map((p) => [p.id, p.name]))
       const marks: DayMark[] = []
       for (const date of dateKeys(from, to)) {
-        const day = dayRuns(runs, overrides, date)
+        const day = dayRuns(runs, skips, date)
         if (day.length === 0) continue
-        const live = day.filter((r) => !r.cleared)
-        const open = live.filter((r) => !r.driverId).length
+        const live = day.filter((r) => !r.skipped).length
         marks.push({
           date,
           glyph: 'car',
           label:
-            live.length === 0
-              ? 'School runs cleared'
-              : `${live.length} school ${live.length === 1 ? 'run' : 'runs'}${open ? `, ${open} open` : ''}`,
+            live === 0 ? 'School runs not needed' : `${live} school ${live === 1 ? 'run' : 'runs'}`,
           lines: day.map((r) => ({
             id: r.id,
             minutes: r.minutes,
             text: runText(r, names),
             ownerId: r.driverId,
-            cleared: r.cleared,
+            cleared: r.skipped,
           })),
-          ...(canAct ? { act: { endpoint: `/api/rides/days/${date}`, owners } } : {}),
+          ...act(date, 'Set the week'),
         })
       }
       return marks

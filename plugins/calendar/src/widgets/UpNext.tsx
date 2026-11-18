@@ -1,9 +1,10 @@
 import { useMemo } from 'react'
 import { Loader2 } from 'lucide-react'
 import { FAMILY_PROFILE_ID, useAuth, useQuery } from '@family-os/platform'
-import type { Profile } from '@family-os/platform/types'
+import type { DayMark, Profile } from '@family-os/platform/types'
 import type { EventsResponse, CalendarMember } from '../types'
-import { agendaRange } from '../lib/grid'
+import { agendaRange, localDateKey } from '../lib/grid'
+import { useMarkAction } from '../lib/use-mark-action'
 import { WEEK_WINDOW_DAYS } from '../lib/week'
 import { UpNextView, type UpNextFraming } from './UpNextView'
 
@@ -43,6 +44,26 @@ export default function UpNext() {
     retry: 1,
   })
 
+  // Today's marks, for the rides line (D-095). Same key shape and prefix as the
+  // page's, so a swap in either place refreshes both (ADR 013), and
+  // profile-scoped for the same reason (ADR 066).
+  const todayKey = localDateKey(now)
+  const { data: marks } = useQuery<{ marks: DayMark[] }>({
+    queryKey: ['calendar/day-marks', id, { from: todayKey, to: todayKey }],
+    queryFn: () =>
+      fetch(`/api/calendar/day-marks?from=${todayKey}&to=${todayKey}`).then((r) => {
+        if (!r.ok) {
+          console.error('[calendar] widget failed to load day marks', r.status)
+          throw new Error(String(r.status))
+        }
+        return r.json() as Promise<{ marks: DayMark[] }>
+      }),
+    staleTime: 60_000,
+    retry: 1,
+  })
+  const todayMark = marks?.marks.find((m) => m.lines)
+  const markAction = useMarkAction()
+
   const { data: profiles } = useQuery<Profile[]>({
     queryKey: ['api/profiles'],
     queryFn: () =>
@@ -70,6 +91,15 @@ export default function UpNext() {
   }
 
   return (
-    <UpNextView events={data?.events ?? []} membersById={membersById} now={now} framing={framing} />
+    <UpNextView
+      events={data?.events ?? []}
+      membersById={membersById}
+      now={now}
+      framing={framing}
+      todayMark={todayMark}
+      onMarkAction={(mark, line, action) => markAction.mutate({ mark, line, action })}
+      markPending={markAction.isPending}
+      markFailed={markAction.isError}
+    />
   )
 }

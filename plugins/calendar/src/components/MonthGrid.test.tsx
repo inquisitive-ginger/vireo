@@ -183,37 +183,46 @@ describe('MonthGrid', () => {
       expect(screen.getByLabelText(/Zoe's got dinner/)).toBeInTheDocument()
     })
 
-    it('D-087 a rides mark shows the car, flagged when a run is open, and says so in the cell name [F-042]', () => {
-      const rides = (open: boolean): DayMark => ({
+    it('D-096 a rides mark shows the car with the next driver’s disc and names them in the cell [F-042]', () => {
+      const rides: DayMark = {
         date: dayKey,
         glyph: 'car',
-        label: open ? '2 school runs, 1 open' : '2 school runs',
+        label: '2 school runs',
         lines: [
-          { id: 'a', minutes: 495, text: 'Hallie drops off Teddy', ownerId: 'p1', cleared: false },
-          {
-            id: 'b',
-            minutes: 990,
-            text: 'Nobody yet picks up Teddy',
-            ownerId: open ? null : 'p1',
-            cleared: false,
-          },
+          { id: 'a', minutes: 495, text: 'Zoe drops off Teddy', ownerId: 'p1', cleared: false },
+          { id: 'b', minutes: 990, text: 'Teddy picks up Teddy', ownerId: 'p2', cleared: false },
         ],
-      })
-      const grid = (mark: DayMark) => (
+      }
+      const { container } = render(
+        <MonthGrid
+          weeks={layoutMonth([], 2026, 5)}
+          membersById={members}
+          today={new Date(2026, 5, 22, 12, 0)}
+          onDrillDay={vi.fn()}
+          marksByDate={new Map([[dayKey, [rides]]])}
+        />
+      )
+      expect(container.querySelector('.lucide-car')).toBeInTheDocument()
+      expect(container.querySelector('.bg-error')).not.toBeInTheDocument()
+      expect(screen.getByLabelText(/2 school runs, next: Zoe drops off Teddy/)).toBeInTheDocument()
+      expect(screen.getByText('Z', { selector: 'span[aria-hidden]' })).toBeInTheDocument()
+    })
+
+    it('D-096 a setup-only mark draws nothing in the cell [F-042]', () => {
+      const { container } = render(
         <MonthGrid
           weeks={layoutMonth([], 2026, 5)}
           membersById={members}
           today={new Date(2026, 5, 22)}
           onDrillDay={vi.fn()}
-          marksByDate={new Map([[dayKey, [mark]]])}
+          marksByDate={
+            new Map([
+              [dayKey, [{ date: dayKey, glyph: 'car', label: 'Set up school runs', lines: [] }]],
+            ])
+          }
         />
       )
-      const { container, rerender } = render(grid(rides(true)))
-      expect(container.querySelector('.lucide-car')).toBeInTheDocument()
-      expect(container.querySelector('.bg-error')).toBeInTheDocument()
-      expect(screen.getByLabelText(/2 school runs, 1 open/)).toBeInTheDocument()
-      rerender(grid(rides(false)))
-      expect(container.querySelector('.bg-error')).not.toBeInTheDocument()
+      expect(container.querySelector('.lucide-car')).not.toBeInTheDocument()
     })
 
     it('renders no mark on an unmarked day', () => {

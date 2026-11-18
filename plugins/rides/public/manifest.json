@@ -3,17 +3,11 @@
   "version": "0.0.1",
   "remoteEntry": "http://localhost:3017/assets/remoteEntry.js",
   "exposes": ["./Plugin"],
-  "routes": ["/rides"],
+  "routes": ["/rides/week"],
   "schema": "rides",
   "events": {
     "publishes": [],
     "subscribes": []
   },
-  "widgets": [],
-  "navItem": {
-    "label": "Rides",
-    "route": "/rides",
-    "icon": "car",
-    "minTier": 1
-  }
+  "widgets": []
 }

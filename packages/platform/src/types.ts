@@ -283,8 +283,9 @@ export type DayMark = {
    *  names the next line and the mark unfolds them all (D-091). */
   lines?: DayMarkLine[]
   /** Present only when the caller may change a line: where the calendar posts
-   *  `{ lineId, ownerId, cleared }`, and who a line can be handed to. */
-  act?: { endpoint: string; owners: string[] }
+   *  `{ lineId, ownerId, cleared }`, who a line can be handed to, and the
+   *  provider's own page for setting things up. */
+  act?: { endpoint: string; owners: string[]; manage?: { href: string; label: string } }
 }
 
 export type DayMarkLine = {
@@ -292,8 +293,8 @@ export type DayMarkLine = {
   /** Local minutes after midnight. */
   minutes: number
   text: string
-  /** null = open: nobody has it yet. */
-  ownerId: string | null
+  ownerId: string
+  /** Off for this day only (rides: "Not needed today", D-099). */
   cleared: boolean
 }
 

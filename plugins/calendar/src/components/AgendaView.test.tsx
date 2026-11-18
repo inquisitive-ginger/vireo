@@ -1,5 +1,7 @@
 import { describe, it, expect, vi } from 'vitest'
 import { render, screen, fireEvent } from '@testing-library/react'
+import type { ComponentProps } from 'react'
+import { MemoryRouter } from 'react-router-dom'
 import type { DayMark } from '@family-os/platform/types'
 import type { CalendarEvent, CalendarMember } from '../types'
 import { localDateKey } from '../lib/grid'
@@ -182,53 +184,60 @@ describe('D-083 the Ongoing panel, rendered', () => {
   })
 })
 
-describe('the rides mark (D-087, D-091)', () => {
+describe('the rides mark (D-087, D-091, D-098, D-099)', () => {
   const today = localDateKey(NOW)
   const RIDES: DayMark = {
     date: today,
     glyph: 'car',
-    label: '3 school runs, 1 open',
+    label: '3 school runs',
     lines: [
       { id: 'td', minutes: 495, text: 'Hallie drops off Teddy', ownerId: 'p1', cleared: false },
       { id: 'tp', minutes: 990, text: 'Hallie picks up Teddy', ownerId: 'p1', cleared: false },
       {
         id: 'zp',
         minutes: 1050,
-        text: 'Nobody yet picks up Zoë at yarn club',
-        ownerId: null,
+        text: 'Zach picks up Zoë at yarn club',
+        ownerId: 'p2',
         cleared: false,
       },
     ],
-    act: { endpoint: `/api/rides/days/${today}`, owners: ['p1', 'p2'] },
+    act: {
+      endpoint: `/api/rides/days/${today}`,
+      owners: ['p1', 'p2'],
+      manage: { href: `/rides/week?on=${today}`, label: 'Set the week' },
+    },
   }
   const withRides = (mark: DayMark = RIDES) => new Map<string, DayMark[]>([[mark.date, [mark]]])
+  const view = (props: Partial<ComponentProps<typeof AgendaView>> = {}) =>
+    render(
+      <MemoryRouter>
+        <AgendaView
+          events={[]}
+          membersById={MEMBERS}
+          now={NOW}
+          marksByDate={withRides()}
+          {...props}
+        />
+      </MemoryRouter>
+    )
 
-  it('D-087 names the next run in words and flags an open one [F-042]', () => {
-    const fourPm = new Date(2026, 5, 22, 16, 0)
-    render(<AgendaView events={[]} membersById={MEMBERS} now={fourPm} marksByDate={withRides()} />)
-    const mark = screen.getByRole('button', {
-      name: /Next: 4:30 PM, Hallie picks up Teddy\. One is open/,
-    })
-    expect(mark).toHaveTextContent('4:30 PM · Hallie picks up Teddy')
+  it('D-087 names the next run in words [F-042]', () => {
+    view({ now: new Date(2026, 5, 22, 16, 0) })
+    expect(
+      screen.getByRole('button', { name: /Next: 4:30 PM, Hallie picks up Teddy/ })
+    ).toHaveTextContent('4:30 PM · Hallie picks up Teddy')
   })
 
   it('D-087 a later day names its first run [F-042]', () => {
     const tomorrow = localDateKey(new Date(2026, 5, 23))
-    render(
-      <AgendaView
-        events={[]}
-        membersById={MEMBERS}
-        now={NOW}
-        marksByDate={withRides({ ...RIDES, date: tomorrow })}
-      />
-    )
+    view({ marksByDate: withRides({ ...RIDES, date: tomorrow }) })
     expect(
       screen.getByRole('button', { name: /Next: 8:15 AM, Hallie drops off Teddy/ })
     ).toBeInTheDocument()
   })
 
   it('D-091 tapping the mark unfolds the day’s runs under the heading, and again folds them [F-042]', () => {
-    render(<AgendaView events={[]} membersById={MEMBERS} now={NOW} marksByDate={withRides()} />)
+    view()
     const mark = screen.getByRole('button', { name: /Show the day's list/ })
     expect(mark).toHaveAttribute('aria-expanded', 'false')
     fireEvent.click(mark)
@@ -238,65 +247,66 @@ describe('the rides mark (D-087, D-091)', () => {
     expect(screen.queryAllByRole('listitem')).toHaveLength(0)
   })
 
-  it('D-087 an open run offers Claim and a covered one Swap; both, and Clear, report the line [F-042]', () => {
+  it('D-098 every run offers Swap and never Claim; Swap and "Not needed today" report the line [F-042]', () => {
     const onMarkAction = vi.fn()
-    render(
-      <AgendaView
-        events={[]}
-        membersById={MEMBERS}
-        now={NOW}
-        marksByDate={withRides()}
-        onMarkAction={onMarkAction}
-      />
-    )
+    view({ onMarkAction })
     fireEvent.click(screen.getByRole('button', { name: /Show the day's list/ }))
-    fireEvent.click(
-      screen.getByRole('button', { name: 'Claim: Nobody yet picks up Zoë at yarn club' })
-    )
+    expect(screen.queryByRole('button', { name: /^Claim/ })).toBeNull()
     fireEvent.click(screen.getByRole('button', { name: 'Swap: Hallie picks up Teddy' }))
-    fireEvent.click(screen.getByRole('button', { name: 'Clear: Hallie drops off Teddy' }))
+    fireEvent.click(
+      screen.getByRole('button', { name: 'Not needed today: Hallie drops off Teddy' })
+    )
     expect(onMarkAction.mock.calls.map(([, line, action]) => [line.id, action])).toEqual([
-      ['zp', 'claim'],
       ['tp', 'swap'],
       ['td', 'clear'],
     ])
   })
 
-  it('D-094 a cleared run reads struck through and offers Restore [F-042]', () => {
+  it('D-099 a run not needed today reads struck through and offers Restore [F-042]', () => {
     const cleared = {
       ...RIDES,
       lines: RIDES.lines!.map((l) => (l.id === 'zp' ? { ...l, cleared: true } : l)),
     }
-    render(
-      <AgendaView
-        events={[]}
-        membersById={MEMBERS}
-        now={NOW}
-        marksByDate={withRides(cleared)}
-        onMarkAction={vi.fn()}
-      />
-    )
-    const mark = screen.getByRole('button', { name: /Show the day's list/ })
-    expect(mark.getAttribute('aria-label')).not.toMatch(/open/)
-    fireEvent.click(mark)
+    view({ marksByDate: withRides(cleared), onMarkAction: vi.fn() })
+    fireEvent.click(screen.getByRole('button', { name: /Show the day's list/ }))
     expect(
-      screen.getByRole('button', { name: 'Restore: Nobody yet picks up Zoë at yarn club' })
+      screen.getByRole('button', { name: 'Restore: Zach picks up Zoë at yarn club' })
     ).toBeInTheDocument()
+  })
+
+  it('D-097 the unfolded runs link to the week editor [F-041]', () => {
+    view({ onMarkAction: vi.fn() })
+    fireEvent.click(screen.getByRole('button', { name: /Show the day's list/ }))
+    expect(screen.getByRole('link', { name: 'Set the week' })).toHaveAttribute(
+      'href',
+      `/rides/week?on=${today}`
+    )
+  })
+
+  it('D-097 before any run exists, a parent’s day header links to setting the week up [F-041]', () => {
+    const setup: DayMark = {
+      date: today,
+      glyph: 'car',
+      label: 'Set up school runs',
+      lines: [],
+      act: {
+        ...RIDES.act!,
+        manage: { href: `/rides/week?on=${today}`, label: 'Set up school runs' },
+      },
+    }
+    view({ marksByDate: withRides(setup) })
+    expect(screen.getByRole('link', { name: 'Set up school runs' })).toHaveAttribute(
+      'href',
+      `/rides/week?on=${today}`
+    )
   })
 
   it('D-086 without act the runs are read-only [F-042]', () => {
     const { act: _act, ...readOnly } = RIDES
-    render(
-      <AgendaView
-        events={[]}
-        membersById={MEMBERS}
-        now={NOW}
-        marksByDate={withRides(readOnly)}
-        onMarkAction={vi.fn()}
-      />
-    )
+    view({ marksByDate: withRides(readOnly), onMarkAction: vi.fn() })
     fireEvent.click(screen.getByRole('button', { name: /Show the day's list/ }))
     expect(screen.getAllByRole('listitem')).toHaveLength(3)
-    expect(screen.queryByRole('button', { name: /^(Claim|Swap|Clear)/ })).toBeNull()
+    expect(screen.queryByRole('button', { name: /^(Swap|Not needed)/ })).toBeNull()
+    expect(screen.queryByRole('link', { name: 'Set the week' })).toBeNull()
   })
 })

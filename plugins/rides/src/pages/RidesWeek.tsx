@@ -10,16 +10,21 @@ import {
   identityToken,
   resolveHue,
 } from '@family-os/ui'
-import { WEEKDAYS, formatMinutes, runWhat, type RunKind, type SchoolRun } from '../lib/runs'
+import { WEEKDAYS, formatMinutes, runWhat, type RunKind, type WeekRun } from '../lib/runs'
 
 export type RidesMember = { id: string; name: string; identityHue?: string | null; tier: number }
 
-export type NewRun = { weekday: number; kind: RunKind; place: string | null; minutes: number }
+export type NewRun = {
+  weekday: number
+  kind: RunKind
+  place: string | null
+  minutes: number
+  driverId: string
+}
 
-const OPEN = 'open'
-
-/* The usual week, one kid at a time (D-092): a tab per kid, each school day
-   listing that kid's runs with the driver beside each. */
+/* The seeded week, one kid at a time (D-092, D-097): a tab per kid, each school
+   day listing that kid's runs with the driver beside each. Every run has a
+   driver (D-098). */
 export function RidesWeek({
   runs,
   kids,
@@ -29,24 +34,21 @@ export function RidesWeek({
   onAdd,
   onRemove,
 }: {
-  runs: SchoolRun[]
+  runs: WeekRun[]
   kids: RidesMember[]
   drivers: RidesMember[]
   canEdit: boolean
-  onDriver: (run: SchoolRun, driverId: string | null) => void
+  onDriver: (run: WeekRun, driverId: string) => void
   onAdd: (kidId: string, run: NewRun) => void
-  onRemove: (run: SchoolRun) => void
+  onRemove: (run: WeekRun) => void
 }) {
   const [kidId, setKidId] = useState(kids[0]?.id ?? '')
   const [adding, setAdding] = useState<number | null>(null)
   const kid = kids.find((k) => k.id === kidId) ?? kids[0]
   if (!kid) return <p className="text-base-token text-muted-foreground">No kids to drive yet.</p>
 
-  const name = (id: string | null) => drivers.find((d) => d.id === id)?.name ?? 'Nobody yet'
-  const driverOptions = [
-    ...drivers.map((d) => ({ value: d.id, label: d.name })),
-    { value: OPEN, label: 'Open' },
-  ]
+  const name = (id: string | null) => drivers.find((d) => d.id === id)?.name ?? 'Someone'
+  const driverOptions = drivers.map((d) => ({ value: d.id, label: d.name }))
 
   return (
     <div className="flex flex-col gap-6">
@@ -102,8 +104,8 @@ export function RidesWeek({
                           <SegmentedControl
                             aria-label={`Who drives ${label} ${runWhat(run).toLowerCase()}`}
                             options={driverOptions}
-                            value={run.driverId ?? OPEN}
-                            onChange={(v) => onDriver(run, v === OPEN ? null : v)}
+                            value={run.driverId ?? ''}
+                            onChange={(v) => onDriver(run, v)}
                           />
                         </span>
                       ) : (
@@ -119,6 +121,7 @@ export function RidesWeek({
                   (adding === weekday ? (
                     <AddRunForm
                       day={label}
+                      driverOptions={driverOptions}
                       onCancel={() => setAdding(null)}
                       onAdd={(input) => {
                         onAdd(kid.id, { weekday, ...input })
@@ -173,25 +176,28 @@ function DriverName({ member, name }: { member?: RidesMember; name: string }) {
 
 function AddRunForm({
   day,
+  driverOptions,
   onAdd,
   onCancel,
 }: {
   day: string
+  driverOptions: { value: string; label: string }[]
   onAdd: (run: Omit<NewRun, 'weekday'>) => void
   onCancel: () => void
 }) {
   const [kind, setKind] = useState<RunKind>('dropoff')
+  const [driverId, setDriverId] = useState(driverOptions[0]?.value ?? '')
   const [place, setPlace] = useState('')
   const [time, setTime] = useState('08:00')
   const [h, m] = time.split(':').map(Number)
-  const valid = Number.isFinite(h) && Number.isFinite(m)
+  const valid = Number.isFinite(h) && Number.isFinite(m) && driverId !== ''
   return (
     <form
       aria-label={`New run on ${day}`}
       className="flex flex-wrap items-end gap-3 border-t border-border px-4 py-3"
       onSubmit={(e) => {
         e.preventDefault()
-        if (valid) onAdd({ kind, place: place.trim() || null, minutes: h * 60 + m })
+        if (valid) onAdd({ kind, place: place.trim() || null, minutes: h * 60 + m, driverId })
       }}
     >
       <SegmentedControl
@@ -207,6 +213,12 @@ function AddRunForm({
         Where
         <Input value={place} placeholder="School" onChange={(e) => setPlace(e.target.value)} />
       </label>
+      <SegmentedControl
+        aria-label="Who drives"
+        options={driverOptions}
+        value={driverId}
+        onChange={setDriverId}
+      />
       <label className="flex flex-col gap-1 text-sm-token">
         Time
         <Input type="time" value={time} required onChange={(e) => setTime(e.target.value)} />
