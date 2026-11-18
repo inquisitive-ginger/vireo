@@ -247,7 +247,7 @@ export function createDayMarkRegistry(): DayMarkRegistry // { register, list }
 - **Rides** (D-086–D-099) stretches the contract: its mark carries the next run's
   time in its label and its \`lines\` unfold for swap and "Not needed today"; the
   calendar posts to the mark's \`act.endpoint\` and never imports \`rides\`. A
-  seeded week copies forward every Sunday night (D-097). Drives are stored by
+  set week carries forward; a swap changes its day only (D-100). Drives are stored by
   \`rides\` against an event and its date.
 
 ---

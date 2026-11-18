@@ -420,3 +420,8 @@ Features: F-042, F-043.
 
 A run marked "Not needed today" (a holiday, a sick day) drops off that day only, so no one is reminded to drive it, and can be restored. It never copies forward (D-097). Amends D-094. Options: drop it; keep it as "Not needed today" (chosen); a per-day "No school" switch. Zach on 3e: "Don't really get what the clear mechanism is for". Approved: Zach. Board: https://claude.ai/artifact/4ciroms6PVuBDBsEtvwaAK
 Features: F-042.
+
+## D-100 · 2026-11-17 · A swap changes its day only; the set week is what carries forward
+
+A swap or "Not needed today" in a day's runs changes that day only. What carries into later weeks is the week set in "Set the week": a driver changed there, or a run added or removed there, holds from that week on. Replaces D-097's "swaps included". Options at 3h: a usual week that repeats; copy forward after a review; copy forward automatically, swaps included (chosen then, reversed here). Zach on the 3e round 2 board: "re-open D-097 switch it to swaps only affecting that day, otherwise the "default" runs set in set week are what propagate each week." Approved: Zach. Board: https://claude.ai/artifact/KHmBN7tXS9ADkYWYbVs6hD
+Features: F-041, F-042.

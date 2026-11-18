@@ -55,6 +55,8 @@ Not accepted. Checks: 12 pass, "changing a driver shows on that weekday's mark" 
 
 This reopens D-087 (grid cell), D-088 (open-run nudge), D-091 (entry point), D-092 (Rides page) and D-094 (clear). Zach chose a new decide session, 3h, before rebuilding; the branch `session-03e-rides-school-runs` (worktree `../vireo-3e`) stays unmerged. Kept from this round: the API, the day-mark lines contract, marks in the iPad day and week views.
 
-Round 2, 2026-11-17 · Sent 2026-11-17 19:06
+Round 2, 2026-11-17 · Sent 2026-11-17 19:06 · Back 2026-11-17 19:27
 
 Rebuilt from D-095–D-099 on the same branch. Suite: 1597 passed, 0 failed. Code review (high): 10 findings, all fixed — the widget's unfolded runs squeezed on an empty week, no way back to the editor once every run ended, a frozen widget clock (a swap could land on yesterday and carry forward), Swap with one parent did nothing, re-removing a run could bring it back, a look-alike date made a 500, arrow keys fired a POST each and fell out of step, an editor change lost to later swaps, the permission label still said Claim (now `rides.run.swap`), and the mark provider read every run ever made.
+
+Round 2 back: all 13 checks pass; walkthrough "changes". Zach: "Some minor tweaks needed on mobile to keep views from collapsing." and "Almost there. Fix the collapsing UI on mobile and also re-open D-097 switch it to swaps only affecting that day, otherwise the "default" runs set in set week are what propagate each week." Screenshots: the widget's unfolded runs squeeze the run text to one word per line; the agenda's day heading wraps its date under the marks. D-100 records the reversal; both go into round 3 on the branch.
