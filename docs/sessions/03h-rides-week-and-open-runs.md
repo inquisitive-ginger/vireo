@@ -1,6 +1,6 @@
 # Session 03h — Rides: where the week is set, and no open runs
 
-Type: decide · Approver: Zach · Status: in progress · Started: 2026-11-17 18:14 · Ended: —
+Type: decide · Approver: Zach · Status: locked · Started: 2026-11-17 18:14 · Ended: 2026-11-17 18:24
 
 ## Goal
 
@@ -42,4 +42,6 @@ A pick or answer on each item. At lock-in: a D-### each (marked "replaces D-0xx"
 
 ## Outcome
 
-Round 1, 2026-11-17 · Sent 2026-11-17 18:16
+Round 1, 2026-11-17 · Sent 2026-11-17 18:16 · Back 2026-11-17 18:24
+
+Entry A, a car line in the calendar widget that unfolds today's runs, "It's fine" (D-095). Cell A, the next driver's disc, "It's fine" (D-096). Week C, copy forward automatically, swaps included (D-097); at lock-in Zach confirmed "Not needed today" stays on its day. No open runs approved (D-098). Clear kept as "Not needed today" (D-099). Picks confirmed as meant (the board bug). No comments; why 3e's driver check failed is still unanswered. Files: `docs/decisions.md`, `docs/design-system.md`, `docs/architecture.md`, `docs/roadmap.md`, `03e`'s session file.

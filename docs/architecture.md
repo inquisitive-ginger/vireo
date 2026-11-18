@@ -244,11 +244,11 @@ export function createDayMarkRegistry(): DayMarkRegistry // { register, list }
 - meals is the first consumer (`view meals.PlannedMeal`, glyph `'utensils'`); M7
   School is the second, intended to register with no code changes to
   `plugins/calendar` or the aggregator.
-- **Rides** (D-086–D-093) stretches the contract: its mark carries the next run's
-  time in its label and is interactive, unfolding the day's school runs and drives
-  for claim and swap. Drives are stored by `rides` against an event and its date;
-  the calendar renders the row's car and driver. How the calendar hosts the
-  unfolded runs without importing `rides` is 3e's call.
+- **Rides** (D-086–D-099) stretches the contract: its mark carries the next run's
+  time in its label and its \`lines\` unfold for swap and "Not needed today"; the
+  calendar posts to the mark's \`act.endpoint\` and never imports \`rides\`. A
+  seeded week copies forward every Sunday night (D-097). Drives are stored by
+  \`rides\` against an event and its date.
 
 ---
 

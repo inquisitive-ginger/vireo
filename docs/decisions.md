@@ -395,3 +395,28 @@ Features: F-044.
 
 There is no "No school" switch: a parent clears each run on that day by hand from the unfolded rides, which changes only that day. A day with no runs and no drives shows no mark. Options: "No school" clears the day's runs and keeps drives; clear each run by hand (chosen); runs stay. Approved: Zach. Board: https://claude.ai/artifact/1fQd1nRPivomZysk8Jj1Qr
 Features: F-041, F-042.
+
+## D-095 · 2026-11-17 · Today's rides unfold from a line in the calendar widget
+
+The calendar widget on Home carries a car line under its hero naming the next school run; tapping it unfolds today's runs in the widget, each with Swap. The calendar's day header keeps its mark (D-091), on the phone agenda and the iPad day and week views. There is no Rides page or nav item. Replaces D-091's single entry point and D-092's Rides page. Options: a line in the calendar widget (chosen); its own Rides widget; a line that opens the calendar on today. Zach on 3e: "I don't think a dedicated Rides nav / page is adding anything here. I'd rather a entry point from the calendar widget and calendar itself." Approved: Zach, "It's fine". Board: https://claude.ai/artifact/4ciroms6PVuBDBsEtvwaAK
+Features: F-042.
+
+## D-096 · 2026-11-17 · A school day's month cell shows the next driver's disc beside the car
+
+The month cell pairs the car with the identity disc of whoever drives that day's next run (today) or first run (a later day), as dinner pairs the fork with its owner. Replaces D-087's bare car and red flag in the cell. Options: the next driver's disc (chosen); a muted time-and-name line; nothing. Zach on 3e: "Don't think the empty glyph is super useful on the month cell." Approved: Zach, "It's fine". Board: https://claude.ai/artifact/4ciroms6PVuBDBsEtvwaAK
+Features: F-042.
+
+## D-097 · 2026-11-17 · A seeded week copies forward automatically, swaps included
+
+A parent seeds a week once, a tab per kid, in a drawer opened from the day's runs. Every Sunday night the week copies to the next as it ended, swaps included; there is no review step. A run marked "Not needed today" does not carry forward (confirmed via Zach at lock-in). Replaces D-092's standing usual week and D-087's "a swap never touches the pattern". Options: a usual week that repeats; copy forward after a Sunday review nudge; copy forward automatically (chosen). Zach on 3e: "I should be able to set a week for this initial "seed" and then each week it should copy to the next and the mechanism to update becomes add new runs and swaps." Approved: Zach. Board: https://claude.ai/artifact/4ciroms6PVuBDBsEtvwaAK
+Features: F-041, F-042.
+
+## D-098 · 2026-11-17 · No open runs
+
+Every run always has a driver: seeding the week and adding a run both need one to save, Claim goes away (a run only swaps between parents), and the red dot leaves the mark and the cell. 3g drops the parents' open-run nudge; D-088 keeps the driver's reminders and the kid's swap notice. Replaces D-087's open state and red flag and part of D-088. Zach on 3e: "There shouldn't be a "open" state for runs after the initial seed and subsequent clones to the next week. if a new one-off activity with a run is added it needs to have a driver added to get through." Approved: Zach. Board: https://claude.ai/artifact/4ciroms6PVuBDBsEtvwaAK
+Features: F-042, F-043.
+
+## D-099 · 2026-11-17 · Clear is renamed "Not needed today"
+
+A run marked "Not needed today" (a holiday, a sick day) drops off that day only, so no one is reminded to drive it, and can be restored. It never copies forward (D-097). Amends D-094. Options: drop it; keep it as "Not needed today" (chosen); a per-day "No school" switch. Zach on 3e: "Don't really get what the clear mechanism is for". Approved: Zach. Board: https://claude.ai/artifact/4ciroms6PVuBDBsEtvwaAK
+Features: F-042.

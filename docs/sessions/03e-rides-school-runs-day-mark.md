@@ -23,7 +23,7 @@ Assumed:
 
 ## Implements
 
-D-086, D-087, D-091, D-092, D-094.
+D-086, D-087, D-091, D-094, as amended by 3h: D-095 (a car line in the calendar widget unfolds today's runs; no Rides page or nav), D-096 (the month cell shows the next driver's disc beside the car), D-097 (seed a week in a drawer from the day's runs, a tab per kid; it copies forward every Sunday night, swaps included, "Not needed today" excluded), D-098 (no open runs: a driver is required, no Claim, no red dot), D-099 (Clear becomes "Not needed today").
 
 ## Deliverable
 
